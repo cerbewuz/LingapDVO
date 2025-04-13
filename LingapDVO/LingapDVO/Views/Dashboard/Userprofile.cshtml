@@ -1,0 +1,804 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Profile</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --cobalt: #DC143C;
+            --cobalt-dark: #b01030;
+            --cobalt-light: #ffe6ea;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-size: 0.95rem;
+        }
+
+        .profile-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 1rem auto;
+        }
+
+        .cobalt-text {
+            color: var(--cobalt) !important;
+        }
+
+        .btn-cobalt {
+            background-color: var(--cobalt);
+            color: white;
+            border: none;
+        }
+
+            .btn-cobalt:hover {
+                background-color: var(--cobalt-dark);
+                color: white;
+            }
+
+        .btn-outline-cobalt {
+            border-color: var(--cobalt);
+            color: var(--cobalt);
+        }
+
+            .btn-outline-cobalt:hover {
+                background-color: var(--cobalt);
+                color: white;
+            }
+
+        .profile-header {
+            border-bottom: 2px solid var(--cobalt);
+            padding-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .profile-icon {
+            width: 80px;
+            height: 80px;
+            background-color: var(--cobalt-light);
+            color: var(--cobalt);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 1rem;
+        }
+
+        .profile-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-section-title {
+            color: var(--cobalt);
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .info-value {
+            color: #212529;
+            word-break: break-word;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--cobalt);
+            border-color: var(--cobalt);
+            font-weight: bold;
+        }
+
+        .nav-tabs .nav-link {
+            color: #495057;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+            .nav-tabs .nav-link:hover {
+                color: var(--cobalt);
+                border-color: transparent;
+            }
+
+        .activity-table th {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .activity-table td {
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+        /* Editable field styles */
+        .editable-field {
+            cursor: pointer;
+            position: relative;
+            padding-right: 20px;
+        }
+
+            .editable-field:hover {
+                background-color: var(--cobalt-light);
+                border-radius: 4px;
+            }
+
+            .editable-field::after {
+                content: "\f044";
+                font-family: "Font Awesome 6 Free";
+                font-weight: 900;
+                position: absolute;
+                right: 5px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 0.8em;
+                color: var(--cobalt);
+                opacity: 0;
+                transition: opacity 0.2s;
+            }
+
+            .editable-field:hover::after {
+                opacity: 1;
+            }
+
+        .edit-mode {
+            background-color: #fff8e1;
+            border: 1px solid #ffd54f;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* OTP Modal Styles */
+        .otp-input {
+            letter-spacing: 2rem;
+            padding-left: 1rem;
+            font-size: 1.5rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        .otp-digit {
+            display: inline-block;
+            width: 2rem;
+            text-align: center;
+        }
+
+        .otp-delivery-option {
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+            .otp-delivery-option:hover {
+                border-color: var(--cobalt);
+                background-color: var(--cobalt-light);
+            }
+
+            .otp-delivery-option.selected {
+                border-color: var(--cobalt);
+                background-color: var(--cobalt-light);
+            }
+
+        @@media (max-width: 767.98px) {
+            .profile-container {
+                padding: 1rem;
+            }
+
+            .profile-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+
+            .info-label,
+            .info-value {
+                padding: 0.25rem 0;
+            }
+
+            .nav-tabs .nav-link {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .btn {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .profile-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .profile-section-title {
+                font-size: 1rem;
+            }
+
+            .activity-table th,
+            .activity-table td {
+                font-size: 0.75rem;
+                padding: 0.5rem;
+            }
+
+            .editable-field::after {
+                opacity: 1;
+                right: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-3">
+        <div class="profile-container">
+            <div class="profile-header">
+                <button class="btn btn-cobalt btn-sm edit-btn position-absolute top-0 end-0 mt-2 me-2" id="toggleEditMode">
+                    <i class="fas fa-edit me-1"></i>Edit
+                </button>
+
+                <div class="row align-items-center text-center text-md-start">
+                    <div class="col-12 col-md-3 text-center mb-3 mb-md-0">
+                        <div class="profile-icon editable-field" id="profileIconEdit">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h5 class="mb-1" id="profileName">John Doe</h5>
+                        <p class="text-muted mb-2">Customer</p>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="col-12 col-md-9">
+                        <h2 class="cobalt-text mb-2">My Profile</h2>
+                        <p class="text-muted mb-3">Member since: January 15, 2023</p>
+
+                        <div class="row">
+                            <div class="col-12 col-sm-6 mb-2 mb-sm-0">
+                                <p class="mb-1"><i class="fas fa-envelope me-2 cobalt-text"></i> <span class="editable-field" id="emailField">johndoe@example.com</span></p>
+                                <p class="mb-1"><i class="fas fa-phone me-2 cobalt-text"></i> <span class="editable-field" id="phoneField">(123) 456-7890</span></p>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <p class="mb-1">
+                                    <i class="fas fa-map-marker-alt me-2 cobalt-text"></i> <span class="editable-field" id="locationField">Davao City, PH</span>
+                                </p>
+                                <p class="mb-1">
+                                    <i class="fas fa-birthday-cake me-2 cobalt-text"></i> <span class="editable-field" id="birthdayField">January 1, 1990</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs mb-3 flex-nowrap overflow-auto" id="profileTabs" role="tablist">
+                <li class="nav-item flex-shrink-0" role="presentation">
+                    <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal"
+                            type="button" role="tab">
+                        <i class="fas fa-user me-1 d-md-none"></i>
+                        <span class="d-none d-md-inline">Personal Info</span>
+                    </button>
+                </li>
+                <li class="nav-item flex-shrink-0" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security"
+                            type="button" role="tab">
+                        <i class="fas fa-shield-alt me-1 d-md-none"></i>
+                        <span class="d-none d-md-inline">Security</span>
+                    </button>
+                </li>
+                <li class="nav-item flex-shrink-0" role="presentation">
+                    <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity"
+                            type="button" role="tab">
+                        <i class="fas fa-history me-1 d-md-none"></i>
+                        <span class="d-none d-md-inline">Activity</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="profileTabsContent">
+                <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="profile-section">
+                                <h4 class="profile-section-title">Basic Information</h4>
+                                <div class="row mb-2">
+                                    <div class="col-5 col-sm-4 info-label">Full Name:</div>
+                                    <div class="col-7 col-sm-8 info-value">
+                                        <span class="editable-field" id="fullNameField">John Doe</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 col-sm-4 info-label">Username:</div>
+                                    <div class="col-7 col-sm-8 info-value">
+                                        <span class="editable-field" id="usernameField">johndoe123</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 col-sm-4 info-label">Date of Birth:</div>
+                                    <div class="col-7 col-sm-8 info-value">
+                                        <span class="editable-field" id="dobField">January 1, 1990</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 col-sm-4 info-label">Gender:</div>
+                                    <div class="col-7 col-sm-8 info-value">
+                                        <span class="editable-field" id="genderField">Male</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="profile-section">
+                                <h4 class="profile-section-title">Contact Information</h4>
+                                <div class="row mb-2">
+                                    <div class="col-5 col-sm-4 info-label">Email:</div>
+                                    <div class="col-7 col-sm-8 info-value">
+                                        <span class="editable-field" id="contactEmailField">johndoe@example.com</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 col-sm-4 info-label">Phone:</div>
+                                    <div class="col-7 col-sm-8 info-value">
+                                        <span class="editable-field" id="contactPhoneField">(123) 456-7890</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 col-sm-4 info-label">Address:</div>
+                                    <div class="col-7 col-sm-8 info-value">
+                                        <span class="editable-field" id="addressField">123 Main St, Davao City, 8000, Philippines</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="security" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="profile-section">
+                                <h4 class="profile-section-title">Account Security</h4>
+                                <div class="row mb-2">
+                                    <div class="col-6 col-sm-5 info-label">Last Password Change:</div>
+                                    <div class="col-6 col-sm-7 info-value">March 15, 2023</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6 col-sm-5 info-label">Last Login:</div>
+                                    <div class="col-6 col-sm-7 info-value">Today, 10:30 AM</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-6 col-sm-5 info-label">Two-Factor Auth:</div>
+                                    <div class="col-6 col-sm-7 info-value">
+                                        <span class="editable-field" id="twoFactorField">Enabled (SMS)</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-cobalt btn-sm mt-2" id="changePasswordBtn">
+                                    <i class="fas fa-lock me-1"></i>Change Password
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="profile-section">
+                                <h4 class="profile-section-title">Security Questions</h4>
+                                <div class="row mb-2">
+                                    <div class="col-6 col-sm-5 info-label">Security Question:</div>
+                                    <div class="col-6 col-sm-7 info-value">
+                                        <span class="editable-field" id="securityQuestionField">What is your first pet's name?</span>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info py-2 px-3 mt-3 mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Security answers are not displayed for your protection.
+                                </div>
+                                <button class="btn btn-outline-cobalt btn-sm" id="updateSecurityBtn">
+                                    <i class="fas fa-shield-alt me-1"></i>Update Security
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="activity" role="tabpanel">
+                    <div class="profile-section">
+                        <h4 class="profile-section-title">Recent Activity</h4>
+                        <div class="table-responsive">
+                            <table class="table activity-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Activity</th>
+                                        <th class="d-none d-sm-table-cell">IP Address</th>
+                                        <th class="d-none d-md-table-cell">Location</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Today, 10:30 AM</td>
+                                        <td>Logged in</td>
+                                        <td class="d-none d-sm-table-cell">192.168.1.1</td>
+                                        <td class="d-none d-md-table-cell">Davao City</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Yesterday, 3:45 PM</td>
+                                        <td>Profile updated</td>
+                                        <td class="d-none d-sm-table-cell">192.168.1.1</td>
+                                        <td class="d-none d-md-table-cell">Davao City</td>
+                                    </tr>
+                                    <tr>
+                                        <td>March 20, 9:15 AM</td>
+                                        <td>Password changed</td>
+                                        <td class="d-none d-sm-table-cell">192.168.1.1</td>
+                                        <td class="d-none d-md-table-cell">Davao City</td>
+                                    </tr>
+                                    <tr>
+                                        <td>March 15, 2:30 PM</td>
+                                        <td>Logged in</td>
+                                        <td class="d-none d-sm-table-cell">203.177.45.67</td>
+                                        <td class="d-none d-md-table-cell">Manila</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row justify-content-between mt-4 gap-2">
+                <a asp-controller="Dashboard" asp-action="Homepage" class="btn btn-outline-secondary order-sm-1">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+                <button class="btn btn-outline-danger order-sm-2">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Delivery Method Modal -->
+    <div class="modal fade" id="otpDeliveryModal" tabindex="-1" aria-labelledby="otpDeliveryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="otpDeliveryModalLabel">Send Verification Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Where would you like to receive your verification code?</p>
+
+                    <div class="otp-delivery-option" data-method="sms">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="otpDelivery" id="otpSms" checked>
+                            <label class="form-check-label fw-bold" for="otpSms">
+                                Send via SMS
+                            </label>
+                        </div>
+                        <div class="ms-4 mt-1">
+                            <small class="text-muted">We'll send a 6-digit code to your mobile number ending with <span id="smsNumberEnding">7890</span></small>
+                        </div>
+                    </div>
+
+                    <div class="otp-delivery-option" data-method="email">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="otpDelivery" id="otpEmail">
+                            <label class="form-check-label fw-bold" for="otpEmail">
+                                Send via Email
+                            </label>
+                        </div>
+                        <div class="ms-4 mt-1">
+                            <small class="text-muted">We'll send a 6-digit code to your email address: <span id="emailAddress">johndoe@example.com</span></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-cobalt" id="sendOtpBtn">
+                        <i class="fas fa-paper-plane me-1"></i>Send Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Verification Modal -->
+    <div class="modal fade" id="otpVerificationModal" tabindex="-1" aria-labelledby="otpVerificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="otpVerificationModalLabel">Verify Your Identity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>We've sent a 6-digit verification code to your <span id="otpDeliveryMethod">mobile number ending with 7890</span>.</p>
+
+                    <div class="mb-3">
+                        <label for="otpInput" class="form-label">Enter Verification Code</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control otp-input" id="otpInput" maxlength="6" placeholder="______">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-link p-0" id="resendOtp">
+                            <i class="fas fa-redo me-1"></i>Resend Code
+                        </button>
+                        <small class="text-muted" id="otpTimer">02:00</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-cobalt" id="verifyOtpBtn">
+                        <i class="fas fa-check me-1"></i>Verify
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="passwordForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                            <div class="form-text">Password must be at least 8 characters long</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-cobalt" id="savePasswordBtn">
+                        <i class="fas fa-save me-1"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-0">
+                    <div class="mb-3">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h5 class="modal-title mb-3" id="successModalLabel">Changes Saved Successfully!</h5>
+                    <p id="successMessage">Your profile information has been updated.</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-cobalt" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Bootstrap tabs
+            var tabElms = document.querySelectorAll('button[data-bs-toggle="tab"]');
+            tabElms.forEach(function (tabEl) {
+                tabEl.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var tab = new bootstrap.Tab(tabEl);
+                    tab.show();
+                });
+            });
+
+            // Initialize modals
+            const otpDeliveryModal = new bootstrap.Modal(document.getElementById('otpDeliveryModal'));
+            const otpVerificationModal = new bootstrap.Modal(document.getElementById('otpVerificationModal'));
+            const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+
+            // Store original values for comparison
+            const originalValues = {};
+            document.querySelectorAll('.editable-field').forEach(field => {
+                originalValues[field.id] = field.textContent;
+            });
+
+            // Edit mode toggle
+            const toggleEditMode = document.getElementById('toggleEditMode');
+            let editMode = false;
+            let changesMade = false;
+
+            toggleEditMode.addEventListener('click', function() {
+                if (!editMode) {
+                    // Entering edit mode
+                    editMode = true;
+                    this.innerHTML = '<i class="fas fa-save me-1"></i>Save';
+
+                    document.querySelectorAll('.editable-field').forEach(field => {
+                        field.classList.add('edit-mode');
+                        field.setAttribute('contenteditable', 'true');
+                    });
+                } else {
+                    // Check if any changes were made
+                    changesMade = false;
+                    document.querySelectorAll('.editable-field').forEach(field => {
+                        if (field.textContent !== originalValues[field.id]) {
+                            changesMade = true;
+                        }
+                    });
+
+                    if (changesMade) {
+                        // Show OTP delivery options before saving
+                        otpDeliveryModal.show();
+                    } else {
+                        // No changes, just exit edit mode
+                        exitEditMode();
+                    }
+                }
+            });
+
+            function exitEditMode() {
+                editMode = false;
+                toggleEditMode.innerHTML = '<i class="fas fa-edit me-1"></i>Edit';
+
+                document.querySelectorAll('.editable-field').forEach(field => {
+                    field.classList.remove('edit-mode');
+                    field.removeAttribute('contenteditable');
+                });
+            }
+
+            // OTP delivery method selection
+            document.querySelectorAll('.otp-delivery-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.otp-delivery-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                });
+            });
+
+            // Send OTP button
+            document.getElementById('sendOtpBtn').addEventListener('click', function() {
+                const selectedMethod = document.querySelector('input[name="otpDelivery"]:checked').parentElement
+                    .parentElement.getAttribute('data-method');
+
+                // Update the verification modal with the selected method
+                const methodText = selectedMethod === 'sms'
+                    ? 'mobile number ending with 7890'
+                    : 'email address johndoe@example.com';
+                document.getElementById('otpDeliveryMethod').textContent = methodText;
+
+                otpDeliveryModal.hide();
+                otpVerificationModal.show();
+
+                // Start OTP timer (2 minutes)
+                startOtpTimer();
+            });
+
+            // Resend OTP button
+            document.getElementById('resendOtp').addEventListener('click', function() {
+                alert('A new verification code has been sent.');
+                startOtpTimer();
+            });
+
+            // Verify OTP button
+            document.getElementById('verifyOtpBtn').addEventListener('click', function() {
+                const otpInput = document.getElementById('otpInput').value;
+
+                if (otpInput.length === 6) {
+                    otpVerificationModal.hide();
+
+                    if (changesMade) {
+                        // Save profile changes
+                        document.querySelectorAll('.editable-field').forEach(field => {
+                            originalValues[field.id] = field.textContent;
+                        });
+
+                        // Show success message
+                        document.getElementById('successMessage').textContent =
+                            'Your profile information has been updated successfully.';
+                        successModal.show();
+
+                        exitEditMode();
+                    } else {
+                        // For password change
+                        changePasswordModal.show();
+                    }
+                } else {
+                    alert('Please enter a valid 6-digit verification code');
+                }
+            });
+
+            // Change Password button
+            document.getElementById('changePasswordBtn').addEventListener('click', function() {
+                otpDeliveryModal.show();
+            });
+
+            // Update Security button
+            document.getElementById('updateSecurityBtn').addEventListener('click', function() {
+                otpDeliveryModal.show();
+            });
+
+            // Save Password button
+            document.getElementById('savePasswordBtn').addEventListener('click', function() {
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (newPassword !== confirmPassword) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+
+                if (newPassword.length < 8) {
+                    alert('Password must be at least 8 characters long');
+                    return;
+                }
+
+                changePasswordModal.hide();
+
+                // Show success message
+                document.getElementById('successMessage').textContent =
+                    'Your password has been changed successfully.';
+                successModal.show();
+            });
+
+            // Profile icon edit
+            document.getElementById('profileIconEdit').addEventListener('click', function() {
+                if (editMode) {
+                    alert('In a real app, this would open a file picker to upload a new profile image');
+                }
+            });
+
+            // OTP timer function
+            function startOtpTimer() {
+                let timeLeft = 120;
+                const otpTimer = document.getElementById('otpTimer');
+                const otpInterval = setInterval(() => {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    otpTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(otpInterval);
+                        otpTimer.textContent = "Expired";
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+
+</html>

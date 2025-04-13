@@ -1,0 +1,367 @@
+﻿@model RegisterDto
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .register-form {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .cobalt-text {
+            color: #DC143C !important;
+        }
+
+        .btn-cobalt {
+            background-color: #DC143C;
+            color: white;
+            border: none;
+        }
+
+            .btn-cobalt:hover {
+                background-color: #b01030;
+                color: white;
+            }
+
+        .password-strength {
+            height: 5px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            display: none;
+            border-radius: 5px;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .password-requirements {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .requirement {
+            margin-bottom: 3px;
+            transition: color 0.3s;
+        }
+
+        .valid {
+            color: #28a745;
+        }
+
+        .invalid {
+            color: #dc3545;
+        }
+
+        .form-control:focus {
+            border-color: #DC143C;
+            box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
+        }
+
+        #imagePreview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-top: 10px;
+            display: none;
+            border: 2px solid #DC143C;
+        }
+
+        .phone-input-group {
+            position: relative;
+        }
+
+        .phone-prefix {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 5;
+            color: #6c757d;
+        }
+
+        .phone-input {
+            padding-left: 40px !important;
+        }
+    </style>
+</head>
+<body>
+    <section class="register container-fluid">
+        <div class="row min-vh-100 d-flex justify-content-center align-items-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="register-form text-center text-dark">
+                    <article class="mb-4">
+                        <h1 class="cobalt-text fw-bold">Create Your Account</h1>
+                        <p class="text-muted">Join LINGAPDVO</p>
+                    </article>
+                    <form id="registrationForm" method="post" enctype="multipart/form-data">
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-user fa-lg me-2 cobalt-text"></i>Full Name</label>
+                            <input asp-for="Fullname" type="text" class="form-control" placeholder="Enter your first and last name">
+                            <span asp-validation-for="Fullname" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-user fa-lg me-2 cobalt-text"></i>Username</label>
+                            <input asp-for="Username" type="text" class="form-control" placeholder="Choose a username">
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-envelope fa-lg me-2 cobalt-text"></i>Email</label>
+                            <input asp-for="Email" type="email" id="email" class="form-control" placeholder="Enter your email" required>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-phone fa-lg me-2 cobalt-text"></i>Phone Number</label>
+                            <div class="phone-input-group">
+                                <span class="phone-prefix">+63</span>
+                                <input asp-for="Phonenumber" type="tel" id="phone" class="form-control phone-input"
+                                       placeholder="9123456789" pattern="[9]\d{9}" title="Please enter a valid Philippine phone number (e.g. 9123456789)" required>
+                            </div>
+                            <small class="text-muted">Format: 9123456789 (10 digits starting with 9)</small>
+                            <span asp-validation-for="Phonenumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-lock fa-lg me-2 cobalt-text"></i>Password</label>
+                            <input asp-for="Password" type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                            <span asp-validation-for="Password"" class="text-danger"></span>
+                            <div class="password-strength" id="passwordStrength"></div>
+                            <div class="password-requirements">
+                                <div class="requirement" id="length"><i class="fas fa-circle"></i> At least 8 characters</div>
+                                <div class="requirement" id="uppercase"><i class="fas fa-circle"></i> At least 1 uppercase letter</div>
+                                <div class="requirement" id="lowercase"><i class="fas fa-circle"></i> At least 1 lowercase letter</div>
+                                <div class="requirement" id="number"><i class="fas fa-circle"></i> At least 1 number</div>
+                                <div class="requirement" id="special"><i class="fas fa-circle"></i> At least 1 special character</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-lock fa-lg me-2 cobalt-text"></i>Confirm Password</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                            <div id="passwordMatch" class="password-requirements"></div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-calendar fa-lg me-2 cobalt-text"></i>Date of Birth</label>
+                            <input asp-for="Dateofbirth" type="date" class="form-control" required>
+                            <span asp-validation-for="Dateofbirth" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-venus-mars fa-lg me-2 cobalt-text"></i>Gender</label>
+                            <select asp-for="Gender" class="form-control">
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-home fa-lg me-2 cobalt-text"></i>Address</label>
+                            <input asp-for="Address" type="text" class="form-control" placeholder="Street, City, State, ZIP Code, Country">
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-image fa-lg me-2 cobalt-text"></i>Profile Picture</label>
+                            <input asp-for="ImageFile" type="file" id="imageUpload" class="form-control" accept="image/*">
+                            <img id="imagePreview" src="#" alt="Profile Preview" class="img-thumbnail">
+                            <span asp-validation-for="ImageFile" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-shield-alt fa-lg me-2 cobalt-text"></i>Security Question</label>
+                            <select asp-for="SecurityQuestions" class="form-control" required>
+                                <option value="">Select a question</option>
+                                <option value="pet">What is your first pet's name?</option>
+                                <option value="mother">What is your mother's maiden name?</option>
+                                <option value="school">What was your first school?</option>
+                            </select>
+                            <span asp-validation-for="SecurityQuestions" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-key fa-lg me-2 cobalt-text"></i>Security Answer</label>
+                            <input asp-for="Securityanswer" type="text" class="form-control" placeholder="Enter your answer" required>
+                            <span asp-validation-for="Securityanswer" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <input type="checkbox" id="terms" required> I agree to the <a href="#" class="text-decoration-none cobalt-text">terms and conditions</a>
+                        </div>
+                        <button type="submit" class="btn btn-cobalt w-100 py-2 fw-bold">Register</button>
+                    </form>
+
+                    <div class="mt-3">
+                        <p>Already have an account? <a asp-controller="Login" asp-action="Login" class="text-decoration-none cobalt-text fw-bold">Login</a></p>
+
+                        <p><a asp-controller="Dashboard" asp-action="Landingpage" class="text-decoration-none cobalt-text fw-bold">Back to Home</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form elements
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const passwordStrength = document.getElementById('passwordStrength');
+            const registrationForm = document.getElementById('registrationForm');
+            const imageUpload = document.getElementById('imageUpload');
+            const imagePreview = document.getElementById('imagePreview');
+            const phoneInput = document.getElementById('phone');
+
+            // Image preview functionality
+            imageUpload.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Password strength checker
+            password.addEventListener('input', function() {
+                const value = password.value;
+                const requirements = {
+                    length: value.length >= 8,
+                    uppercase: /[A-Z]/.test(value),
+                    lowercase: /[a-z]/.test(value),
+                    number: /[0-9]/.test(value),
+                    special: /[^A-Za-z0-9]/.test(value)
+                };
+
+                // Update requirement indicators
+                for (const [key, met] of Object.entries(requirements)) {
+                    const element = document.getElementById(key);
+                    if (met) {
+                        element.classList.add('valid');
+                        element.classList.remove('invalid');
+                        element.querySelector('i').className = 'fas fa-check-circle';
+                    } else {
+                        element.classList.add('invalid');
+                        element.classList.remove('valid');
+                        element.querySelector('i').className = 'fas fa-circle';
+                    }
+                }
+
+                // Update strength meter
+                const strength = Object.values(requirements).filter(met => met).length;
+                passwordStrength.style.display = 'block';
+                passwordStrength.style.width = (strength * 20) + '%';
+
+                if (strength < 2) {
+                    passwordStrength.style.backgroundColor = '#dc3545';
+                } else if (strength < 4) {
+                    passwordStrength.style.backgroundColor = '#ffc107';
+                } else {
+                    passwordStrength.style.backgroundColor = '#28a745';
+                }
+            });
+
+            // Confirm password checker
+            confirmPassword.addEventListener('input', function() {
+                const matchElement = document.getElementById('passwordMatch');
+                if (confirmPassword.value === password.value && password.value.length > 0) {
+                    matchElement.innerHTML = '<i class="fas fa-check-circle valid"></i> Passwords match';
+                } else if (password.value.length > 0) {
+                    matchElement.innerHTML = '<i class="fas fa-times-circle invalid"></i> Passwords do not match';
+                } else {
+                    matchElement.innerHTML = '';
+                }
+            });
+
+            // Philippine phone number validation
+            phoneInput.addEventListener('input', function() {
+                // Remove any non-digit characters
+                let phoneNumber = this.value.replace(/\D/g, '');
+
+                // Ensure it starts with 9 and has exactly 10 digits (including the 9)
+                if (phoneNumber.length > 0 && !phoneNumber.startsWith('9')) {
+                    phoneNumber = '9' + phoneNumber;
+                }
+
+                // Limit to 10 digits
+                phoneNumber = phoneNumber.substring(0, 10);
+
+                // Update the input value (just the digits, the +63 prefix is fixed)
+                this.value = phoneNumber;
+            });
+
+            // Form submission
+            registrationForm.addEventListener('submit', function(e) {
+                // Validate password strength
+                const value = password.value;
+                const requirements = {
+                    length: value.length >= 8,
+                    uppercase: /[A-Z]/.test(value),
+                    lowercase: /[a-z]/.test(value),
+                    number: /[0-9]/.test(value),
+                    special: /[^A-Za-z0-9]/.test(value)
+                };
+
+                const strength = Object.values(requirements).filter(met => met).length;
+                if (strength < 3) {
+                    alert('Please ensure your password meets all requirements (at least 3 of 5 requirements).');
+                    e.preventDefault();
+                    return;
+                }
+
+                if (confirmPassword.value !== password.value) {
+                    alert('Passwords do not match.');
+                    e.preventDefault();
+                    return;
+                }
+
+                // Validate phone number (must be exactly 10 digits starting with 9)
+                const phoneNumber = phoneInput.value;
+                if (!/^9\d{9}$/.test(phoneNumber)) {
+                    alert('Please enter a valid Philippine phone number (10 digits starting with 9, e.g. 9123456789)');
+                    e.preventDefault();
+                    return;
+                }
+
+                if (!document.getElementById('terms').checked) {
+                    alert('You must agree to the terms and conditions.');
+                    e.preventDefault();
+                    return;
+                }
+
+                // If all validations pass, the form will submit normally
+            });
+        });
+    </script>
+</body>
+</html>
