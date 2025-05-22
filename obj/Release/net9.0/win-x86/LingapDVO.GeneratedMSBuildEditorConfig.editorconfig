@@ -1,0 +1,181 @@
+is_global = true
+build_property.TargetFramework = net9.0
+build_property.TargetFramework = net9.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = LingapDVO
+build_property.RootNamespace = LingapDVO
+build_property.ProjectDir = C:\Users\Toji\Desktop\LingapDVO\LingapDVO\LingapDVO\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\Toji\Desktop\LingapDVO\LingapDVO\LingapDVO
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 9.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Adminuser/Admin.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW51c2VyXEFkbWluLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Adminuser/FillupformHospitalBillUpdatestatus.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW51c2VyXEZpbGx1cGZvcm1Ib3NwaXRhbEJpbGxVcGRhdGVzdGF0dXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Adminuser/Funeralburialformstatus.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW51c2VyXEZ1bmVyYWxidXJpYWxmb3Jtc3RhdHVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Adminuser/Medicalandlabformstatus.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW51c2VyXE1lZGljYWxhbmRsYWJmb3Jtc3RhdHVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Eligibilitychecking.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEVsaWdpYmlsaXR5Y2hlY2tpbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/FillupformHospitalBill.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEZpbGx1cGZvcm1Ib3NwaXRhbEJpbGwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/FillupformHospitalBilledit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEZpbGx1cGZvcm1Ib3NwaXRhbEJpbGxlZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Fillupformhospitalbillview.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEZpbGx1cGZvcm1ob3NwaXRhbGJpbGx2aWV3LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Funeralburialform.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEZ1bmVyYWxidXJpYWxmb3JtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Funeralburialformedit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEZ1bmVyYWxidXJpYWxmb3JtZWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Funeralburialformview.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEZ1bmVyYWxidXJpYWxmb3Jtdmlldy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Homepage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEhvbWVwYWdlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Landingpage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXExhbmRpbmdwYWdlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Listofpartners.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXExpc3RvZnBhcnRuZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Maps.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXE1hcHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Medicalandlabform.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXE1lZGljYWxhbmRsYWJmb3JtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Medicalandlabformedit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXE1lZGljYWxhbmRsYWJmb3JtZWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Medicalandlabformview.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXE1lZGljYWxhbmRsYWJmb3Jtdmlldy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Uploads.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXFVwbG9hZHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Dashboard/Userprofile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXFVzZXJwcm9maWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Login/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cTG9naW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Login/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cUmVnaXN0ZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Login/Registeredit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTG9naW5cUmVnaXN0ZXJlZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Superadmin/Admincreateaccount.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxBZG1pbmNyZWF0ZWFjY291bnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Superadmin/Choice.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxDaG9pY2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Superadmin/Fillupformhospitalbillview.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxGaWxsdXBmb3JtaG9zcGl0YWxiaWxsdmlldy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Superadmin/Funeralburialformview.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxGdW5lcmFsYnVyaWFsZm9ybXZpZXcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Superadmin/Medicalandlabformview.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxNZWRpY2FsYW5kbGFiZm9ybXZpZXcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Superadmin/Superadmin.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxTdXBlcmFkbWluLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Superadmin/Superadminchangepass.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxTdXBlcmFkbWluY2hhbmdlcGFzcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Superadmin/Users.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwZXJhZG1pblxVc2Vycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Toji/Desktop/LingapDVO/LingapDVO/LingapDVO/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-ywfz1siqpx

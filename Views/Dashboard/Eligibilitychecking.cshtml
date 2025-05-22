@@ -1,0 +1,520 @@
+﻿@model LingapDVO.Models.CombinedFormsViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Type of Assistance</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #DC143C;
+            --primary-light: #FFE5E5;
+            --primary-dark: #B01030;
+            --secondary-color: #6c757d;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            padding: 1rem;
+        }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(220, 20, 60, 0.2);
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+            .section-title::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                background: var(--primary-color);
+                border-radius: 4px;
+            }
+
+        .card-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-item {
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+
+
+
+            .file-item:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                border-left-color: var(--primary-color);
+            }
+
+        .file-icon {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-right: 0.75rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-light);
+            border-radius: 8px;
+        }
+
+
+
+        .file-info {
+            flex: 1;
+            margin-bottom: 0.5rem;
+        }
+
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--dark-gray);
+            word-break: break-word;
+        }
+
+        .file-size {
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+
+
+            .status-badge i {
+                font-size: 0.5rem;
+                margin-right: 0.5rem;
+            }
+
+        .status-approved {
+            background-color: #D4EDDA;
+            color: #155724;
+        }
+
+        .dropdown-toggle {
+            border: none;
+            background: transparent;
+            color: var(--secondary-color);
+            padding: 0.5rem;
+        }
+
+            .dropdown-toggle:hover {
+                color: var(--primary-color);
+                background: var(--primary-light);
+            }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+            .dropdown-item i {
+                width: 20px;
+                text-align: center;
+                margin-right: 0.75rem;
+                color: var(--secondary-color);
+            }
+
+            .dropdown-item:hover {
+                background: var(--primary-light);
+                color: var(--primary-color);
+            }
+
+                .dropdown-item:hover i {
+                    color: var(--primary-color);
+                }
+
+        .empty-state {
+            padding: 2rem 1rem;
+            text-align: center;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+            .empty-state i {
+                font-size: 2.5rem;
+                color: var(--primary-color);
+                margin-bottom: 1rem;
+                opacity: 0.7;
+            }
+
+            .empty-state p {
+                color: var(--secondary-color);
+                font-size: 1rem;
+                margin-bottom: 0;
+            }
+
+        .btn-primary-custom {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+
+            .btn-primary-custom:hover {
+                background-color: var(--primary-dark);
+                border-color: var(--primary-dark);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+            }
+
+        .tab-container {
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            display: inline-flex;
+            min-width: 100%;
+        }
+
+
+
+            .nav-tabs .nav-link {
+                border: none;
+                color: var(--secondary-color);
+                font-weight: 600;
+                padding: 0.6rem 1rem;
+                margin-right: 0.3rem;
+                border-radius: 8px 8px 0 0;
+                font-size: 0.9rem;
+            }
+
+
+
+                .nav-tabs .nav-link.active {
+                    color: var(--primary-color);
+                    background-color: white;
+                    border-bottom: 3px solid var(--primary-color);
+                }
+
+                .nav-tabs .nav-link:hover:not(.active) {
+                    color: var(--primary-dark);
+                    background-color: var(--primary-light);
+                }
+
+        .file-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 class="mb-0" style="color: var(--primary-color); font-weight: 700;">Assistance Requests</h2>
+          <button class="btn btn-primary-custom" onclick="history.back()">
+              <i class="fas fa-arrow-left me-2"></i>Back
+            </button>
+
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-container">
+            <ul class="nav nav-tabs" id="assistanceTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="hospital-tab" data-bs-toggle="tab" data-bs-target="#hospital" type="button" role="tab" aria-controls="hospital" aria-selected="true">
+                        <i class="fas fa-hospital me-2"></i>Hospital Bills
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="medical-tab" data-bs-toggle="tab" data-bs-target="#medical" type="button" role="tab" aria-controls="medical" aria-selected="false">
+                        <i class="fas fa-microscope me-2"></i>Medical/Lab
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="funeral-tab" data-bs-toggle="tab" data-bs-target="#funeral" type="button" role="tab" aria-controls="funeral" aria-selected="false">
+                        <i class="fas fa-cross me-2"></i>Funeral
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="assistanceTabsContent">
+            <!-- Hospital Bills Section -->
+            <div class="tab-pane fade show active" id="hospital" role="tabpanel" aria-labelledby="hospital-tab">
+                <div class="card-container">
+                    <h3 class="section-title">Hospital Bill Assistance (Private Hospital)</h3>
+
+                    @{
+                        var approvedHospitalBills = Model.HospitalBills.Where(f => f.Status?.ToLower() == "approved").ToList();
+                    }
+                    @if (approvedHospitalBills.Any())
+                    {
+                        @foreach (var file in approvedHospitalBills)
+                        {
+                            <div class="file-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="file-icon">
+                                        <i class="fas fa-file-medical-alt"></i>
+                                    </div>
+                                    <div class="file-info">
+                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
+                                        <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                    </div>
+                                </div>
+                                <div class="file-actions">
+                                    <span class="status-badge status-approved">
+                                        <i class="fas fa-circle"></i>Approved
+                                    </span>
+                                    <!-- Dropdown -->
+                                    <div class="dropdown">
+                                        <button class="btn dropdown-toggle ellipsis-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Dashboard" asp-action="Fillupformhospitalbillview" asp-route-id="@file.Id">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <p>No approved hospital bill forms found.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Medical and Lab Forms Section -->
+            <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-tab">
+                <div class="card-container">
+                    <h3 class="section-title">Medical and laboratory Procedure(Private Hospital)</h3>
+
+                    @{
+                        var approvedMedicalForms = Model.MedicalLabForms.Where(f => f.Status?.ToLower() == "approved").ToList();
+                    }
+                    @if (approvedMedicalForms.Any())
+                    {
+                        @foreach (var file in approvedMedicalForms)
+                        {
+                            <div class="file-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="file-icon">
+                                        <i class="fas fa-microscope"></i>
+                                    </div>
+                                    <div class="file-info">
+                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
+                                        <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                    </div>
+                                </div>
+                                <div class="file-actions">
+                                    <span class="status-badge status-approved">
+                                        <i class="fas fa-circle"></i>Approved
+                                    </span>
+                                    <div class="dropdown">
+                                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Dashboard" asp-action="Medicalandlabformview" asp-route-id="@file.Id">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <p>No approved medical and lab forms found.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Funeralform Section -->
+            <div class="tab-pane fade" id="funeral" role="tabpanel" aria-labelledby="funeral-tab">
+                <div class="card-container">
+                    <h3 class="section-title">Funeral and burial assistance</h3>
+
+                    @{
+                        var approvedFuneralForms = Model.Funeralburialform.Where(f => f.Status?.ToLower() == "approved").ToList();
+                    }
+                    @if (approvedFuneralForms.Any())
+                    {
+                        @foreach (var file in approvedFuneralForms)
+                        {
+                            <div class="file-item">
+                                <div class="d-flex align-items-center">
+                                    <div class="file-icon">
+                                        <i class="fas fa-cross"></i>
+                                    </div>
+                                    <div class="file-info">
+                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
+                                        <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                    </div>
+                                </div>
+                                <div class="file-actions">
+                                    <span class="status-badge status-approved">
+                                        <i class="fas fa-circle"></i>Approved
+                                    </span>
+                                    <div class="dropdown">
+                                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Dashboard" asp-action="Funeralburialformview" asp-route-id="@file.Id">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <p>No approved funeral forms found.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Single Comments Modal (outside the loop) -->
+        <div class="modal fade" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="commentsModalLabel">Comments</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modalCommentsContent"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the modal
+            var commentsModal = new bootstrap.Modal(document.getElementById('commentsModal'));
+
+            // Handle click events for all comment buttons
+            document.querySelectorAll('.view-comments-btn').forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Get comments from data attribute
+                    var comments = this.getAttribute('data-comments');
+
+                    // Update modal content
+                    document.getElementById('modalCommentsContent').textContent = comments || "No comments available";
+
+                    // Show the modal
+                    commentsModal.show();
+                });
+            });
+
+            // Initialize tabs
+            var tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+            tabEls.forEach(function(tabEl) {
+                tabEl.addEventListener('shown.bs.tab', function (event) {
+                    // You can add additional logic here when a tab is shown
+                });
+            });
+        });
+    </script>
+</body>
+</html>

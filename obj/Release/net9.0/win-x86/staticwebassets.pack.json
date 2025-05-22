@@ -1,0 +1,1793 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\obj\\Release\\net9.0\\win-x86\\scopedcss\\projectbundle\\LingapDVO.bundle.scp.css",
+      "PackagePath": "staticwebassets\\LingapDVO.b7l94t9dh6.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250418183711275.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250418183711275.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419000450161.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419000450161.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419102951555.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419102951555.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419105902432.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419105902432.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419112937395.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419112937395.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419120702496.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419120702496.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419121011438.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419121011438.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419121756807.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419121756807.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419122746528.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419122746528.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419124445001.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419124445001.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419204851822.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419204851822.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419205613504.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419205613504.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419211725822.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419211725822.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419213242804.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419213242804.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250419220552204.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250419220552204.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250423002154730.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250423002154730.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250423002744157.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250423002744157.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250423002847277.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250423002847277.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250423003619504.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250423003619504.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250423003755123.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250423003755123.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250423003834679.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250423003834679.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250424225652241.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250424225652241.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250424230205462.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250424230205462.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250424231253604.png",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250424231253604.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250425231909519.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250425231909519.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250425232008126.png",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250425232008126.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250426102246943.png",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250426102246943.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250426103817019.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250426103817019.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250426110445612.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250426110445612.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250426111340824.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250426111340824.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250426120447247.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250426120447247.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250426232001729.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250426232001729.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250430212414996.PNG",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250430212414996.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250430231948499.JPG",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250430231948499.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250503203233919.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250503203233919.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250503210733636.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250503210733636.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250513124351455.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250513124351455.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250513124452201.jpg",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250513124452201.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250513212557187.JPG",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250513212557187.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250513214425937.JPG",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250513214425937.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250513214901014.JPG",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250513214901014.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250514055216995.png",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250514055216995.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250514055305243.PNG",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250514055305243.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250514055346474.png",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250514055346474.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250514060800135.PNG",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250514060800135.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250514061211510.png",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250514061211510.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\DoctorPrescriptionimage\\20250514061305430.PNG",
+      "PackagePath": "staticwebassets\\DoctorPrescriptionimage\\20250514061305430.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250424225652241.png",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250424225652241.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250424230205462.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250424230205462.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250425231909524.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250425231909524.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250425232008128.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250425232008128.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426102246944.png",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426102246944.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426103850893.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426103850893.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426111340827.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426111340827.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426114719538.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426114719538.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426115024681.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426115024681.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426120220539.png",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426120220539.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426120447249.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426120447249.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426220511651.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426220511651.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426221458553.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426221458553.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426221533786.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426221533786.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426222037298.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426222037298.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250426232001732.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250426232001732.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250427215142404.png",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250427215142404.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250430212414999.PNG",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250430212414999.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250430231948501.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250430231948501.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250503203233928.jpg",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250503203233928.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Funeralimg\\20250514061305432.png",
+      "PackagePath": "staticwebassets\\Funeralimg\\20250514061305432.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\202504122331437.jpg",
+      "PackagePath": "staticwebassets\\UsersImg\\202504122331437.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413000258695.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413000258695.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413000337270.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413000337270.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413000418516.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413000418516.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413000437604.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413000437604.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413000737144.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413000737144.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413000753329.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413000753329.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413000810660.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413000810660.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413223717240.jpg",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413223717240.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413224707544.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413224707544.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250413224724022.jpg",
+      "PackagePath": "staticwebassets\\UsersImg\\20250413224724022.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250414100632973.jpg",
+      "PackagePath": "staticwebassets\\UsersImg\\20250414100632973.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250506182010133.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250506182010133.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507091437179.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507091437179.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507091537816.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507091537816.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507091718376.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507091718376.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507092152277.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507092152277.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507092631962.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507092631962.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507093559099.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507093559099.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507094202164.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507094202164.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507094644356.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507094644356.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507101559354.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507101559354.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507102237512.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507102237512.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507102952442.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507102952442.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507103736022.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507103736022.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507104025407.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507104025407.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507105715778.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507105715778.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507105928880.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507105928880.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507111527172.avif",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507111527172.avif"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250507134356222.JPG",
+      "PackagePath": "staticwebassets\\UsersImg\\20250507134356222.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250511160733054.png",
+      "PackagePath": "staticwebassets\\UsersImg\\20250511160733054.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250511173528546.JPG",
+      "PackagePath": "staticwebassets\\UsersImg\\20250511173528546.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250511183520110.jpg",
+      "PackagePath": "staticwebassets\\UsersImg\\20250511183520110.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250511184420808.PNG",
+      "PackagePath": "staticwebassets\\UsersImg\\20250511184420808.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250512221259085.jpg",
+      "PackagePath": "staticwebassets\\UsersImg\\20250512221259085.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\UsersImg\\20250513233356149.jpg",
+      "PackagePath": "staticwebassets\\UsersImg\\20250513233356149.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250418183711275.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250418183711275.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419000450157.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419000450157.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419000450161.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419000450161.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419102951551.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419102951551.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419102951555.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419102951555.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419105902428.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419105902428.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419105902432.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419105902432.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419112937391.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419112937391.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419112937395.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419112937395.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419120702492.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419120702492.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419120702496.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419120702496.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419121011435.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419121011435.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419121011438.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419121011438.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419121756803.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419121756803.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419121756807.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419121756807.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419122746525.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419122746525.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419122746528.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419122746528.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419124444998.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419124444998.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419124445001.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419124445001.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419204851819.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419204851819.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419204851822.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419204851822.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419205613500.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419205613500.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419205613504.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419205613504.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419211725818.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419211725818.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419211725822.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250419211725822.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419213242800.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419213242800.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250419213242804.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250419213242804.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423002154729.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423002154729.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423002154730.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423002154730.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423002744153.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423002744153.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423002744157.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423002744157.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423002847272.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423002847272.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423002847277.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423002847277.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423003619501.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423003619501.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423003619504.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423003619504.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423003755119.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423003755119.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423003755123.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250423003755123.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250423003834679.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250423003834679.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250424225652238.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250424225652238.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250424225652241.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250424225652241.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250424230205458.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250424230205458.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250424230205462.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250424230205462.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250424231253600.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250424231253600.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250424231253604.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250424231253604.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250425231909518.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250425231909518.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250425231909519.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250425231909519.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250425232008126.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250425232008126.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426102246940.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250426102246940.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426102246942.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250426102246942.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426103817019.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250426103817019.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426110445609.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250426110445609.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426110445612.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250426110445612.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426111340823.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250426111340823.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426111340824.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250426111340824.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426120447247.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250426120447247.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426232001729.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250426232001729.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250426232001729.webp",
+      "PackagePath": "staticwebassets\\Validimg\\20250426232001729.webp"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250430212414995.PNG",
+      "PackagePath": "staticwebassets\\Validimg\\20250430212414995.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250430212414996.PNG",
+      "PackagePath": "staticwebassets\\Validimg\\20250430212414996.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250430231948498.JPG",
+      "PackagePath": "staticwebassets\\Validimg\\20250430231948498.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250430231948499.png",
+      "PackagePath": "staticwebassets\\Validimg\\20250430231948499.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250503203233917.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250503203233917.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250503203233919.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250503203233919.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250503210733634.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250503210733634.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250503210733636.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250503210733636.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513124351451.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250513124351451.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513124351455.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250513124351455.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513124452201.JPG",
+      "PackagePath": "staticwebassets\\Validimg\\20250513124452201.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513124452201.PNG",
+      "PackagePath": "staticwebassets\\Validimg\\20250513124452201.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513212557187.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250513212557187.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513214425934.JPG",
+      "PackagePath": "staticwebassets\\Validimg\\20250513214425934.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513214425937.png",
+      "PackagePath": "staticwebassets\\Validimg\\20250513214425937.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513214901014.JPG",
+      "PackagePath": "staticwebassets\\Validimg\\20250513214901014.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250513214901014.png",
+      "PackagePath": "staticwebassets\\Validimg\\20250513214901014.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514055216994.JPG",
+      "PackagePath": "staticwebassets\\Validimg\\20250514055216994.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514055216995.JPG",
+      "PackagePath": "staticwebassets\\Validimg\\20250514055216995.JPG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514055305243.PNG",
+      "PackagePath": "staticwebassets\\Validimg\\20250514055305243.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514055346474.PNG",
+      "PackagePath": "staticwebassets\\Validimg\\20250514055346474.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514060800131.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250514060800131.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514060800135.PNG",
+      "PackagePath": "staticwebassets\\Validimg\\20250514060800135.PNG"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514061211506.png",
+      "PackagePath": "staticwebassets\\Validimg\\20250514061211506.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514061211510.png",
+      "PackagePath": "staticwebassets\\Validimg\\20250514061211510.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\Validimg\\20250514061305430.jpg",
+      "PackagePath": "staticwebassets\\Validimg\\20250514061305430.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\aos.css",
+      "PackagePath": "staticwebassets\\css\\aos.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\bootstrap-datepicker.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap-datepicker.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\bootstrap\\bootstrap-grid.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap-grid.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\bootstrap\\bootstrap-reboot.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap-reboot.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\bootstrap\\bootstrap.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\bootstrap\\bootstrap.css.map",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\jquery-ui.css",
+      "PackagePath": "staticwebassets\\css\\jquery-ui.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\jquery.fancybox.min.css",
+      "PackagePath": "staticwebassets\\css\\jquery.fancybox.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\magnific-popup.css",
+      "PackagePath": "staticwebassets\\css\\magnific-popup.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\mediaelementplayer.css",
+      "PackagePath": "staticwebassets\\css\\mediaelementplayer.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\owl.carousel.min.css",
+      "PackagePath": "staticwebassets\\css\\owl.carousel.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\owl.theme.default.min.css",
+      "PackagePath": "staticwebassets\\css\\owl.theme.default.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\css\\style.css",
+      "PackagePath": "staticwebassets\\css\\style.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\backup.txt",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\backup.txt"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\font\\Flaticon.eot",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\font\\Flaticon.eot"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\font\\Flaticon.svg",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\font\\Flaticon.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\font\\Flaticon.ttf",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\font\\Flaticon.ttf"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\font\\Flaticon.woff",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\font\\Flaticon.woff"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\font\\Flaticon.woff2",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\font\\Flaticon.woff2"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\font\\_flaticon.scss",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\font\\_flaticon.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\font\\flaticon.css",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\font\\flaticon.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\font\\flaticon.html",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\font\\flaticon.html"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\flaticon\\license\\license.pdf",
+      "PackagePath": "staticwebassets\\fonts\\flaticon\\license\\license.pdf"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\Read Me.txt",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\Read Me.txt"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\demo-files\\demo.css",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\demo-files\\demo.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\demo-files\\demo.js",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\demo-files\\demo.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\demo.html",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\demo.html"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\fonts\\icomoon.eot",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\fonts\\icomoon.eot"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\fonts\\icomoon.svg",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\fonts\\icomoon.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\fonts\\icomoon.ttf",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\fonts\\icomoon.ttf"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\fonts\\icomoon.woff",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\fonts\\icomoon.woff"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\selection.json",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\selection.json"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\fonts\\icomoon\\style.css",
+      "PackagePath": "staticwebassets\\fonts\\icomoon\\style.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\Untitled-8.jpg",
+      "PackagePath": "staticwebassets\\images\\Untitled-8.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\about_2.jpg",
+      "PackagePath": "staticwebassets\\images\\about_2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\alexander-mils-1469813-unsplash.jpg",
+      "PackagePath": "staticwebassets\\images\\alexander-mils-1469813-unsplash.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\dabawenyos.jpeg",
+      "PackagePath": "staticwebassets\\images\\dabawenyos.jpeg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\family.png",
+      "PackagePath": "staticwebassets\\images\\family.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\financial.jpg",
+      "PackagePath": "staticwebassets\\images\\financial.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\backup.txt",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\backup.txt"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\license\\license.pdf",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\license\\license.pdf"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\svg\\001-wallet.svg",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\svg\\001-wallet.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\svg\\002-rich.svg",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\svg\\002-rich.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\svg\\003-notes.svg",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\svg\\003-notes.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\svg\\004-cart.svg",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\svg\\004-cart.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\svg\\005-megaphone.svg",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\svg\\005-megaphone.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\svg\\006-credit-card.svg",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\svg\\006-credit-card.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\flaticon-svg\\svg\\007-piggy-bank.svg",
+      "PackagePath": "staticwebassets\\images\\flaticon-svg\\svg\\007-piggy-bank.svg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\help.jpg",
+      "PackagePath": "staticwebassets\\images\\help.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\helping.jpg",
+      "PackagePath": "staticwebassets\\images\\helping.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\hero_1.jpg",
+      "PackagePath": "staticwebassets\\images\\hero_1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\hero_2.jpg",
+      "PackagePath": "staticwebassets\\images\\hero_2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\img_1.jpg",
+      "PackagePath": "staticwebassets\\images\\img_1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\img_2.jpg",
+      "PackagePath": "staticwebassets\\images\\img_2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\img_3.jpg",
+      "PackagePath": "staticwebassets\\images\\img_3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\img_4.jpg",
+      "PackagePath": "staticwebassets\\images\\img_4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\img_5.jpg",
+      "PackagePath": "staticwebassets\\images\\img_5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\librengsol.png",
+      "PackagePath": "staticwebassets\\images\\librengsol.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\lingap.png",
+      "PackagePath": "staticwebassets\\images\\lingap.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\local.png",
+      "PackagePath": "staticwebassets\\images\\local.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\person_1.jpg",
+      "PackagePath": "staticwebassets\\images\\person_1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\person_2.jpg",
+      "PackagePath": "staticwebassets\\images\\person_2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\person_3.jpg",
+      "PackagePath": "staticwebassets\\images\\person_3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\person_4.jpg",
+      "PackagePath": "staticwebassets\\images\\person_4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\person_5.jpg",
+      "PackagePath": "staticwebassets\\images\\person_5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\person_6.jpg",
+      "PackagePath": "staticwebassets\\images\\person_6.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\person_7.jpg",
+      "PackagePath": "staticwebassets\\images\\person_7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\person_8.jpg",
+      "PackagePath": "staticwebassets\\images\\person_8.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\slide_1.jpg",
+      "PackagePath": "staticwebassets\\images\\slide_1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\slide_2.jpg",
+      "PackagePath": "staticwebassets\\images\\slide_2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\slide_3.jpg",
+      "PackagePath": "staticwebassets\\images\\slide_3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\team1.jpg",
+      "PackagePath": "staticwebassets\\images\\team1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\team2.jpg",
+      "PackagePath": "staticwebassets\\images\\team2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\images\\team3.jpg",
+      "PackagePath": "staticwebassets\\images\\team3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\aos.js",
+      "PackagePath": "staticwebassets\\js\\aos.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\bootstrap-datepicker.min.js",
+      "PackagePath": "staticwebassets\\js\\bootstrap-datepicker.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\bootstrap.min.js",
+      "PackagePath": "staticwebassets\\js\\bootstrap.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\isotope.pkgd.min.js",
+      "PackagePath": "staticwebassets\\js\\isotope.pkgd.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery-3.3.1.min.js",
+      "PackagePath": "staticwebassets\\js\\jquery-3.3.1.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery-migrate-3.0.1.min.js",
+      "PackagePath": "staticwebassets\\js\\jquery-migrate-3.0.1.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery-ui.js",
+      "PackagePath": "staticwebassets\\js\\jquery-ui.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery.countdown.min.js",
+      "PackagePath": "staticwebassets\\js\\jquery.countdown.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery.easing.1.3.js",
+      "PackagePath": "staticwebassets\\js\\jquery.easing.1.3.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery.fancybox.min.js",
+      "PackagePath": "staticwebassets\\js\\jquery.fancybox.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery.magnific-popup.min.js",
+      "PackagePath": "staticwebassets\\js\\jquery.magnific-popup.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery.stellar.min.js",
+      "PackagePath": "staticwebassets\\js\\jquery.stellar.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\jquery.sticky.js",
+      "PackagePath": "staticwebassets\\js\\jquery.sticky.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\main.js",
+      "PackagePath": "staticwebassets\\js\\main.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\mediaelement-and-player.min.js",
+      "PackagePath": "staticwebassets\\js\\mediaelement-and-player.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\owl.carousel.min.js",
+      "PackagePath": "staticwebassets\\js\\owl.carousel.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\popper.min.js",
+      "PackagePath": "staticwebassets\\js\\popper.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\site.js",
+      "PackagePath": "staticwebassets\\js\\site.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\slick.min.js",
+      "PackagePath": "staticwebassets\\js\\slick.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\js\\typed.js",
+      "PackagePath": "staticwebassets\\js\\typed.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\LICENSE",
+      "PackagePath": "staticwebassets\\lib\\bootstrap"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery-validation-unobtrusive\\dist\\jquery.validate.unobtrusive.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\dist\\jquery.validate.unobtrusive.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery-validation-unobtrusive\\dist\\jquery.validate.unobtrusive.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\dist\\jquery.validate.unobtrusive.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery-validation\\LICENSE.md",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\LICENSE.md"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery\\dist\\jquery.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery\\dist\\jquery.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery\\dist\\jquery.slim.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.slim.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery\\dist\\jquery.slim.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.slim.min.js"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\lib\\jquery\\dist\\jquery.slim.min.map",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.slim.min.map"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\listofpartners\\dswd.png",
+      "PackagePath": "staticwebassets\\listofpartners\\dswd.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\listofpartners\\malasakit.png",
+      "PackagePath": "staticwebassets\\listofpartners\\malasakit.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\listofpartners\\pcso.png",
+      "PackagePath": "staticwebassets\\listofpartners\\pcso.png"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\_site-base.scss",
+      "PackagePath": "staticwebassets\\scss\\_site-base.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\_site-blocks.scss",
+      "PackagePath": "staticwebassets\\scss\\_site-blocks.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\_site-navbar.scss",
+      "PackagePath": "staticwebassets\\scss\\_site-navbar.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_alert.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_alert.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_badge.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_badge.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_breadcrumb.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_breadcrumb.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_button-group.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_button-group.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_buttons.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_buttons.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_card.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_card.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_carousel.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_carousel.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_close.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_close.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_code.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_code.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_custom-forms.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_custom-forms.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_dropdown.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_dropdown.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_forms.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_forms.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_functions.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_functions.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_grid.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_grid.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_images.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_images.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_input-group.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_input-group.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_jumbotron.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_jumbotron.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_list-group.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_list-group.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_media.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_media.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_mixins.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_mixins.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_modal.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_modal.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_nav.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_nav.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_navbar.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_navbar.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_pagination.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_pagination.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_popover.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_popover.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_print.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_print.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_progress.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_progress.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_reboot.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_reboot.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_root.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_root.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_spinners.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_spinners.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_tables.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_tables.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_toasts.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_toasts.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_tooltip.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_tooltip.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_transitions.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_transitions.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_type.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_type.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_utilities.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_utilities.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\_variables.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\_variables.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\bootstrap-grid.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\bootstrap-grid.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\bootstrap-reboot.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\bootstrap-reboot.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\bootstrap.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\bootstrap.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_alert.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_alert.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_background-variant.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_background-variant.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_badge.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_badge.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_border-radius.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_border-radius.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_box-shadow.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_box-shadow.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_breakpoints.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_breakpoints.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_buttons.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_buttons.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_caret.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_caret.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_clearfix.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_clearfix.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_deprecate.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_deprecate.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_float.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_float.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_forms.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_forms.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_gradients.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_gradients.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_grid-framework.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_grid-framework.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_grid.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_grid.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_hover.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_hover.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_image.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_image.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_list-group.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_list-group.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_lists.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_lists.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_nav-divider.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_nav-divider.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_pagination.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_pagination.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_reset-text.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_reset-text.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_resize.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_resize.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_screen-reader.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_screen-reader.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_size.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_size.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_table-row.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_table-row.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_text-emphasis.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_text-emphasis.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_text-hide.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_text-hide.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_text-truncate.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_text-truncate.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_transition.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_transition.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\mixins\\_visibility.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\mixins\\_visibility.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_align.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_align.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_background.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_background.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_borders.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_borders.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_clearfix.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_clearfix.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_display.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_display.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_embed.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_embed.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_flex.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_flex.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_float.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_float.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_overflow.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_overflow.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_position.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_position.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_screenreaders.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_screenreaders.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_shadows.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_shadows.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_sizing.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_sizing.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_spacing.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_spacing.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_stretched-link.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_stretched-link.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_text.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_text.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\utilities\\_visibility.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\utilities\\_visibility.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\bootstrap\\vendor\\_rfs.scss",
+      "PackagePath": "staticwebassets\\scss\\bootstrap\\vendor\\_rfs.scss"
+    },
+    {
+      "Id": "C:\\Users\\Toji\\Desktop\\LingapDVO\\LingapDVO\\LingapDVO\\wwwroot\\scss\\style.scss",
+      "PackagePath": "staticwebassets\\scss\\style.scss"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\win-x86\\staticwebassets\\msbuild.LingapDVO.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\win-x86\\staticwebassets\\msbuild.LingapDVO.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\win-x86\\staticwebassets\\msbuild.build.LingapDVO.props",
+      "PackagePath": "build\\LingapDVO.props"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\win-x86\\staticwebassets\\msbuild.buildMultiTargeting.LingapDVO.props",
+      "PackagePath": "buildMultiTargeting\\LingapDVO.props"
+    },
+    {
+      "Id": "obj\\Release\\net9.0\\win-x86\\staticwebassets\\msbuild.buildTransitive.LingapDVO.props",
+      "PackagePath": "buildTransitive\\LingapDVO.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

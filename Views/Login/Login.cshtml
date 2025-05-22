@@ -1,0 +1,302 @@
+﻿@model LoginDto
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- reCAPTCHA v2 Script -->
+    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
+
+    <style>
+        :root {
+            --google-blue: #DC143C;
+            --google-red: #EA4335;
+            --google-yellow: #FBBC05;
+            --google-green: #34A853;
+            --google-gray: #F1F3F4;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--google-gray);
+            margin: 0;
+            padding: 0;
+        }
+
+        .login-form {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            width: 100%;
+            max-width: 450px;
+            margin: 20px auto;
+            border-top: 4px solid var(--google-blue);
+        }
+
+        .google-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .google-logo {
+            display: flex;
+            margin-right: 10px;
+        }
+
+        .google-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin: 0 2px;
+        }
+
+        .blue {
+            background-color: var(--google-blue);
+        }
+
+        .red {
+            background-color: var(--google-red);
+        }
+
+        .yellow {
+            background-color: var(--google-yellow);
+        }
+
+        .green {
+            background-color: var(--google-green);
+        }
+
+        .google-title {
+            font-size: 22px;
+            font-weight: 500;
+            color: #202124;
+        }
+
+        .btn-google {
+            background-color: var(--google-blue);
+            color: white;
+            font-weight: 500;
+            border-radius: 4px;
+            padding: 10px 24px;
+            border: none;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+            .btn-google:hover {
+                background-color: #3367D6;
+                color: white;
+            }
+
+        .form-control {
+            border-radius: 4px;
+            padding: 12px;
+            border: 1px solid #dadce0;
+        }
+
+            .form-control:focus {
+                border-color: var(--google-blue);
+                box-shadow: 0 0 0 2px rgba(66,133,244,0.2);
+            }
+
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 25px;
+            font-size: 13px;
+            gap: 10px;
+        }
+
+            .footer-links a {
+                color: #5f6368;
+                text-decoration: none;
+                white-space: nowrap;
+            }
+
+                .footer-links a:hover {
+                    color: var(--google-blue);
+                    text-decoration: underline;
+                }
+
+        /* Calendar mini-preview */
+        .calendar-preview {
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .calendar-header {
+            background: var(--google-blue);
+            color: white;
+            padding: 6px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .calendar-day {
+            font-size: 30px;
+            font-weight: 500;
+            color: #202124;
+            margin: 8px 0;
+        }
+
+        .calendar-month {
+            font-size: 13px;
+            color: #5f6368;
+            text-transform: uppercase;
+        }
+
+        /* reCAPTCHA container */
+        .recaptcha-container {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+
+      
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-form">
+            <div class="google-header">
+                <div class="google-logo">
+                    <div class="google-dot blue"></div>
+                    <div class="google-dot red"></div>
+                    <div class="google-dot yellow"></div>
+                    <div class="google-dot green"></div>
+                </div>
+                <div class="google-title">Sign in</div>
+            </div>
+
+            <!-- Calendar preview -->
+            <div class="calendar-preview">
+                <div class="calendar-header">Today</div>
+                <div class="calendar-day" id="currentDay"></div>
+                <div class="calendar-month" id="currentMonth"></div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" id="loginForm">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input asp-for="Username"
+                           type="text"
+                           class="form-control"
+                           id="username"
+                           placeholder="Enter your username"
+                           required>
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <script>
+                    document.getElementById('username').addEventListener('input', function (e) {
+                        // Allow only letters and numbers
+                        this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+                    });
+                </script>
+
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input asp-for="Password" type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember">
+                        <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                </div>
+
+                <!-- reCAPTCHA v2 Implementation -->
+                <div class="recaptcha-container">
+                    <div id="recaptcha-widget"></div>
+                </div>
+                <input type="hidden" id="recaptchaResponse" name="recaptchaResponse">
+
+                <button type="submit" class="btn btn-google mt-3" id="loginButton">Sign in</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Set current date in calendar preview
+        const now = new Date();
+        document.getElementById('currentDay').textContent = now.getDate();
+        document.getElementById('currentMonth').textContent = now.toLocaleString('default', { month: 'long' });
+
+        // reCAPTCHA explicit rendering
+        var onloadCallback = function() {
+            grecaptcha.render('recaptcha-widget', {
+                'sitekey': '6Lef3DgrAAAAAE-4rHDNdIR8bDh82o61m4Oc54bQ',
+                'callback': verifyCallback,
+                'expired-callback': expiredCallback,
+                'size': window.innerWidth < 400 ? 'compact' : 'normal'
+            });
+        };
+
+        var verifyCallback = function(response) {
+            document.getElementById('recaptchaResponse').value = response;
+        };
+
+        var expiredCallback = function() {
+            document.getElementById('recaptchaResponse').value = '';
+            grecaptcha.reset();
+        };
+
+        // Form submission handler
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            const recaptchaResponse = document.getElementById('recaptchaResponse').value;
+
+            if (!recaptchaResponse) {
+                event.preventDefault();
+                alert('Please complete the reCAPTCHA verification.');
+            }
+        });
+
+        // Responsive reCAPTCHA adjustment
+        function handleResize() {
+            if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+                grecaptcha.reset();
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+    </script>
+</body>
+</html>

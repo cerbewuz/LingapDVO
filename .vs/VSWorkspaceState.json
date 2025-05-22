@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\LingapDVO",
+    "\\LingapDVO\\LingapDVO",
+    "\\LingapDVO\\LingapDVO\\Controllers",
+    "\\LingapDVO\\LingapDVO\\Views",
+    "\\LingapDVO\\LingapDVO\\Views\\Dashboard",
+    "\\LingapDVO\\LingapDVO\\Views\\Home",
+    "\\LingapDVO\\LingapDVO\\Views\\Login",
+    "\\LingapDVO\\LingapDVO\\Views\\Shared",
+    "\\LingapDVO\\LingapDVO\\Views\\Superadmin"
+  ],
+  "SelectedNode": "\\LingapDVO\\LingapDVO\\Views\\Shared\\Error.cshtml",
+  "PreviewInSolutionExplorer": false
+}

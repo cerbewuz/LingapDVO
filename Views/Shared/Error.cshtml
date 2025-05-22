@@ -1,0 +1,213 @@
+﻿@model ErrorViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Error</title>
+    <style>
+        :root {
+            --error-red: #ff3e3e;
+            --error-dark: #0f0f0f;
+            --error-accent: #00ffaa;
+            --error-text: #f0f0f0;
+        }
+
+        body {
+            background-color: var(--error-dark);
+            color: var(--error-text);
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .error-container {
+            border: 1px solid var(--error-red);
+            padding: 2rem;
+            background-color: rgba(15, 15, 15, 0.9);
+            max-width: 800px;
+            width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(255, 62, 62, 0.3);
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--error-red);
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .error-details {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--error-accent);
+            text-align: left;
+            font-family: 'Consolas', monospace;
+        }
+
+        .error-code {
+            color: var(--error-accent);
+            margin-top: 1.5rem;
+            font-size: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .glitch-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( rgba(255, 62, 62, 0.1), rgba(255, 62, 62, 0.1) );
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background-color: var(--error-red);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .refresh-btn {
+            margin-top: 2rem;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--error-red);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .refresh-btn:hover {
+                background-color: #ff1e1e;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(255, 62, 62, 0.4);
+            }
+
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>SYSTEM ERROR</h1>
+        <p>We've encountered an unexpected problem</p>
+        <p>The operation could not be completed due to a system error.</p>
+
+        <div class="error-details">
+            <p><strong>Request ID:</strong> <code id="requestId"></code></p>
+            <p><strong>Timestamp:</strong> <span id="timestamp"></span></p>
+        </div>
+
+        <div class="error-code">
+            <span>STATUS: SYSTEM_FAILURE</span>
+            <span id="errorCode">CODE: 0x00000000</span>
+        </div>
+
+        <button class="refresh-btn" onclick="window.location.reload()">TRY AGAIN</button>
+    </div>
+
+    <div class="glitch-effect" id="glitch"></div>
+
+    <script>
+        // Set dynamic values
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set timestamp
+            const now = new Date();
+            document.getElementById('timestamp').textContent =
+                now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0') + ' ' +
+                String(now.getHours()).padStart(2, '0') + ':' +
+                String(now.getMinutes()).padStart(2, '0') + ':' +
+                String(now.getSeconds()).padStart(2, '0');
+
+            // Generate random error code
+            const hexCode = Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase().padStart(8, '0');
+            document.getElementById('errorCode').textContent = 'CODE: 0x' + hexCode;
+
+            // You would typically get the request ID from your server-side code
+            // document.getElementById('requestId').textContent = 'SERVER_GENERATED_ID';
+        });
+
+        // Modern particle effect
+        function createParticles() {
+            const colors = ['#ff3e3e', '#00ffaa', '#ffffff', '#ff3e3e'];
+            const count = Math.floor(window.innerWidth / 10);
+
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                const size = Math.random() * 5 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+
+                particle.style.left = (Math.random() * 100) + 'vw';
+                particle.style.top = (Math.random() * 100) + 'vh';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.opacity = Math.random() * 0.7;
+
+                const duration = Math.random() * 20 + 10;
+                particle.style.animation = 'keyframes-float ' + duration + 's linear infinite';
+
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Glitch effect
+        function triggerGlitch() {
+            const glitch = document.getElementById('glitch');
+            glitch.style.opacity = '0.3';
+            glitch.style.animation = 'keyframes-glitch 0.5s linear';
+
+            setTimeout(function() {
+                glitch.style.opacity = '0';
+                glitch.style.animation = '';
+            }, 500);
+        }
+
+        // Random glitches
+        function randomGlitch() {
+            const delay = Math.random() * 10000 + 5000;
+            setTimeout(function() {
+                triggerGlitch();
+                randomGlitch();
+            }, delay);
+        }
+
+        // Initialize effects
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            randomGlitch();
+        });
+    </script>
+</body>
+</html>
