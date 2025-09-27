@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿    using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace LingapDVO.Models
@@ -16,15 +16,15 @@ namespace LingapDVO.Models
         public string Fullname { get; set; } = "";
 
         [MaxLength(100)]
-        public string Username{ get; set; } = "";
+        public string Username { get; set; } = "";
 
         [MaxLength(100)]
         public string Email { get; set; } = "";
 
-        [MaxLength(100)] 
+        [MaxLength(100)]
         public string Phonenumber { get; set; } = "";
 
-        [MaxLength(16)]
+        [MaxLength(250)]
         public string Password { get; set; } = "";
 
         [MaxLength(100)]
@@ -36,7 +36,7 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string Address { get; set; } = "";
 
-        [MaxLength(100)]    
+        [MaxLength(100)]
         public string ImageFilename { get; set; } = "";
 
         [MaxLength(100)]
@@ -44,6 +44,7 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string Securityanswer { get; set; } = "";
 
+        public string? Status { get; set; } = "";
 
 
     }

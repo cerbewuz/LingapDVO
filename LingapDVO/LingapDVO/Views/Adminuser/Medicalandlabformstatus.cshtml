@@ -1,0 +1,1123 @@
+﻿@model MedicalandlabformDto
+@{
+    Layout = null;
+    var selectedSex = ViewData["Sex"]?.ToString();
+    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
+    var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Assistance Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #DC143C;
+            --primary-light: #FFE6EA;
+            --primary-dark: #B01030;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            border-top: 5px solid var(--primary-color);
+        }
+
+        .form-header {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-header {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-control, .form-select {
+            border-radius: 5px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ddd;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
+            }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 0.5rem 2rem;
+            font-weight: 500;
+            border-radius: 5px;
+        }
+
+            .btn-primary:hover {
+                background-color: var(--primary-dark);
+                border-color: var(--primary-dark);
+            }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .img-preview {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 300px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            object-fit: contain;
+            display: none;
+        }
+
+        .upload-box {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #fafafa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+            .upload-box:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+            }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .required-field::after {
+            content: " *";
+            color: var(--primary-color);
+        }
+
+        .form-note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container form-container">
+        <div class="form-header">
+            <h3>Request Assistance Form</h3>
+            <p class="text-muted">Please fill out all required fields to process your request</p>
+        </div>
+
+        <form asp-action="Medicalandlabformstatus" enctype="multipart/form-data" method="post">
+
+            <div class="mb-4 mt-3">
+                <label for="statusDropdown" class="form-label">Status</label>
+                <select class="form-select" id="statusDropdown" name="status" value="@ViewData["Status"]">
+                    <option value="Pending" selected="@(ViewData["Status"]?.ToString() == "Pending")">Pending</option>
+                    <option value="Approved" selected="@(ViewData["Status"]?.ToString() == "Approved")">Approved</option>
+                    <option value="Unapproved" selected="@(ViewData["Status"]?.ToString() == "Unapproved")">Unapproved</option>
+                    <option value="Processing" selected="@(ViewData["Status"]?.ToString() == "Processing")">Processing</option>
+                    <option value="Claimed" selected="@(ViewData["Status"]?.ToString() == "Claimed")">Claimed</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="mb-4 form-check">
+                <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                <label class="form-check-label" for="termsCheck">I certify that all information provided is true and accurate</label>
+            </div>
+
+            <!-- RAF Number -->
+            <div class="mb-3">
+                <label for="rafNumber" class="form-label required-field">RAF No.</label>
+                <input readonly value="@ViewData["Id"]" type="text" class="form-control" id="rafNumber" placeholder="Enter RAF Number">
+            </div>
+
+            <!-- Patient Details -->
+            <h5 class="section-header">Patient's Details</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label required-field">Last Name</label>
+                    <input value="@ViewData["Lastname"]" asp-for="Lastname" type="text" class="form-control" required disabled>
+                    <span asp-validation-for="Lastname" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label required-field">First Name</label>
+                    <input value="@ViewData["Firstname"]" asp-for="Firstname" type="text" class="form-control" required disabled>
+                    <span asp-validation-for="Firstname" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Middle Name</label>
+                    <input value="@ViewData["Middlename"]" asp-for="Middlename" type="text" class="form-control" disabled>
+                    <span asp-validation-for="Middlename" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Suffix</label>
+                    <select class="form-select" asp-for="Suffix" value="@ViewData["Suffix"]" disabled>
+                        <option value="">-- Select Suffix --</option>
+                        <option value="Jr." selected="@(ViewData["Suffix"]?.ToString() == "None")">None.</option>
+                        <option value="Jr." selected="@(ViewData["Suffix"]?.ToString() == "Jr.")">Jr.</option>
+                        <option value="Sr." selected="@(ViewData["Suffix"]?.ToString() == "Sr.")">Sr.</option>
+                        <option value="II." selected="@(ViewData["Suffix"]?.ToString() == "II.")">II.</option>
+                        <option value="III." selected="@(ViewData["Suffix"]?.ToString() == "III.")">III.</option>
+                        <option value="IV." selected="@(ViewData["Suffix"]?.ToString() == "IV.")">IV.</option>
+                        <option value="V." selected="@(ViewData["Suffix"]?.ToString() == "V.")">V.</option>
+
+                    </select>
+                    <span asp-validation-for="Suffix" class="text-danger"></span>
+                </div>
+
+            </div>
+
+            <!-- Address -->
+            <div class="row g-3 mt-2">
+
+                <div class="col-md-3">
+                    <label class="form-label required-field">Blk / Lot / Street</label>
+                    <input value="@ViewData["BlkLotStreet"]" asp-for="BlkLotStreet" type="text" class="form-control" required disabled>
+                    <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Sub / Vill.</label>
+                    <input value="@ViewData["SubVill"]" asp-for="SubVill" type="text" class="form-control" disabled>
+                    <span asp-validation-for="SubVill" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label required-field">Brgy.</label>
+                    <input value="@ViewData["Brgy"]" asp-for="Brgy" type="text" class="form-control" required disabled>
+                    <span asp-validation-for="Brgy" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label required-field">District</label>
+                    <input value="@ViewData["District"]" asp-for="District" type="text" class="form-control" required disabled>
+                    <span asp-validation-for="District" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Gender, PhilHealth, DOB, Age -->
+            <div class="row g-3 mt-2">
+                <div class="col-md-2">
+                    <label class="form-label required-field d-block">Sex</label>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="Sex" id="male" value="Male" @(selectedSex == "Male" ? "checked" : "") required disabled>
+                        <label class="form-check-label" for="male">Male</label>
+                    </div>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="Sex" id="female" value="Female" @(selectedSex == "Female" ? "checked" : "") disabled>
+                        <label class="form-check-label" for="female">Female</label>
+                    </div>
+
+                    <span asp-validation-for="Sex" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label required-field">PhilHealth</label>
+                    <select class="form-select" asp-for="PhilHealth" value="@ViewData["PhilHealth"]" disabled>
+                        <option value="">Select option</option>
+                        <option value="Without PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "Without PhilHealth")">Without PhilHealth</option>
+                        <option value="With PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "With PhilHealth")">With PhilHealth</option>
+                    </select>
+                    <span asp-validation-for="PhilHealth" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">PhilHealth No. (if any)</label>
+                    <input value="@ViewData["PhilHealthNo"]" asp-for="PhilHealthNo" type="text" class="form-control" disabled>
+                    <span asp-validation-for="PhilHealthNo"></span>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label required-field">Date of Birth</label>
+                    <input value="@ViewData["Dateofbirth"]" asp-for="Dateofbirth" type="date" class="form-control" required disabled>
+                    <span asp-validation-for="Dateofbirth" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label">Age</label>
+                    <input value="@ViewData["Age"]" asp-for="Age" type="number" class="form-control" disabled>
+                    <span asp-validation-for="Age" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Requestor Details -->
+            <h5 class="section-header">Requestor's Details</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label required-field">Last Name</label>
+                    <input value="@ViewData["RLastname"]" asp-for="RLastname" type="text" class="form-control" disabled>
+                    <span asp-validation-for="RLastname"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label required-field">First Name</label>
+                    <input value="@ViewData["RFirstname"]" asp-for="RFirstname" type="text" class="form-control" disabled>
+                    <span asp-validation-for="RFirstname"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Middle Name</label>
+                    <input value="@ViewData["RMiddlename"]" asp-for="RMiddlename" type="text" class="form-control" disabled>
+                    <span asp-validation-for="RMiddlename"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Suffix</label>
+                    <select class="form-select" asp-for="RSuffix" value="@ViewData["RPhilHealth"]" disabled>
+                        <option value="">-- Select Suffix --</option>
+                        <option value="Jr." selected="@(ViewData["RSuffix"]?.ToString() == "None.")">None.</option>
+                        <option value="Jr." selected="@(ViewData["RSuffix"]?.ToString() == "Jr.")">Jr.</option>
+                        <option value="Sr." selected="@(ViewData["RSuffix"]?.ToString() == "Sr.")">Sr.</option>
+                        <option value="II." selected="@(ViewData["RSuffix"]?.ToString() == "II")">II.</option>
+                        <option value="III." selected="@(ViewData["RSuffix"]?.ToString() == "III")">III.</option>
+                        <option value="IV." selected="@(ViewData["RSuffix"]?.ToString() == "IV")">IV.</option>
+                        <option value="V." selected="@(ViewData["RSuffix"]?.ToString() == "V")">V.</option>
+                    </select>
+                    <span asp-validation-for="RSuffix"></span>
+                </div>
+            </div>
+
+            <!-- Requestor Address -->
+            <div class="row g-3 mt-2">
+                <div class="col-md-3">
+                    <label class="form-label required-field">Blk / Lot / Street</label>
+                    <input value="@ViewData["RBlkLotStreet"]" asp-for="RBlkLotStreet" type="text" class="form-control" disabled>
+                    <span asp-validation-for="RBlkLotStreet"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Sub / Vill.</label>
+                    <input value="@ViewData["RSubVill"]" asp-for="RSubVill" type="text" class="form-control" disabled>
+                    <span asp-validation-for="RSubVill"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label required-field">Brgy.</label>
+                    <input value="@ViewData["RBrgy"]" asp-for="RBrgy" type="text" class="form-control" disabled>
+                    <span asp-validation-for="RBrgy"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label required-field">District</label>
+                    <input value="@ViewData["RDistrict"]" asp-for="RDistrict" type="text" class="form-control" disabled>
+                    <span asp-validation-for="RDistrict"></span>
+                </div>
+
+            </div>
+
+            <div class="row g-3 mt-2">
+                <div class="col-md-6">
+                    <label class="form-label required-field">Relationship to Patient</label>
+                    <input value="@ViewData["RelationshipPatient"]" asp-for="RelationshipPatient" type="text" class="form-control" disabled>
+                    <span asp-validation-for="RelationshipPatient"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label required-field">Contact No.</label>
+                    <input value="@ViewData["ContactNo"]" asp-for="ContactNo" type="text" class="form-control" disabled>
+                    <span asp-validation-for="ContactNo"></span>
+                </div>
+            </div>
+
+            <!-- Type of Assistance Requested Section -->
+            <h5 class="section-header">Type of Assistance Requested</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <!-- Column 1 -->
+                    <!-- Funeral Assistance -->
+                    <div class="form-check">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="funeralAssistance" name="TypeassistanceOptions" value="Funeral Assistance"
+                        @(checkedAssistance.ContainsKey("Funeral Assistance") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="funeralAssistance">Funeral Assistance</label>
+                    </div>
+
+                    <!-- Hospital Assistance -->
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance"
+                        @(checkedAssistance.ContainsKey("Hospital Assistance") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="hospitalAssistance">Hospital Assistance</label>
+                    </div>
+
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="governmentAssistance" name="TypeassistanceOptions" value="Government"
+                        @(checkedAssistance.ContainsKey("Government") ? "checked" : "") disabled />
+                        <label class="form-check-label" for="governmentAssistance">Government</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="GovernmentDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Government") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Government") ? checkedAssistance["Government"] : "")" />
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="privateAssistance" name="TypeassistanceOptions" value="Private"
+                        @(checkedAssistance.ContainsKey("Private") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="privateAssistance">Private</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="PrivateDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Private") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Private") ? checkedAssistance["Private"] : "")" />
+                    </div>
+
+
+                    <!-- Case -->
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="caseAssistance" name="TypeassistanceOptions" value="Case"
+                        @(checkedAssistance.ContainsKey("Case") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="caseAssistance">Case</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="CaseDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Case") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Case") ? checkedAssistance["Case"] : "")" />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <!-- Column 2 -->
+                    <div class="form-check">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="medicineAssistance" name="TypeassistanceOptions" value="Medicine Assistance"
+                        @(checkedAssistance.ContainsKey("Medicine Assistance") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="medicineAssistance">Medicine Assistance</label>
+                    </div>
+
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="procedure" name="TypeassistanceOptions" value="Procedure"
+                        @(checkedAssistance.ContainsKey("Procedure") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="procedure">Procedure</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="ProcedureDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Procedure") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Procedure") ? checkedAssistance["Procedure"] : "")" />
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="laboratory" name="TypeassistanceOptions" value="Laboratory"
+                        @(checkedAssistance.ContainsKey("Laboratory") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="laboratory">Laboratory</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="LaboratoryDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Laboratory") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Laboratory") ? checkedAssistance["Laboratory"] : "")" />
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="dialysis" name="TypeassistanceOptions" value="Dialysis"
+                        @(checkedAssistance.ContainsKey("Dialysis") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="dialysis">Dialysis</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="DialysisDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Dialysis") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Dialysis") ? checkedAssistance["Dialysis"] : "")" />
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="apparatus" name="TypeassistanceOptions" value="Apparatus"
+                        @(checkedAssistance.ContainsKey("Apparatus") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="apparatus">Apparatus</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="ApparatusDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Apparatus") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Apparatus") ? checkedAssistance["Apparatus"] : "")" />
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="others" name="TypeassistanceOptions" value="Others"
+                        @(checkedAssistance.ContainsKey("Others") ? "checked" : "") disabled>
+                        <label class="form-check-label" for="others">Others</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="OthersDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Others") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Others") ? checkedAssistance["Others"] : "")" />
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
+                <label for="assistanceReflection" class="form-label">Reflection info:</label>
+                <input type="text" class="form-control" id="assistanceReflection"
+                       name="Typeassistance" placeholder="Auto-generated info..." readonly>
+                <span asp-validation-for="Typeassistance"></span>
+            </div>
+
+            <!-- FOR CMO PERSONNEL USE ONLY Section -->
+            <div class="mt-5">
+                <h5 class="section-header">FOR CMO PERSONNEL USE ONLY</h5>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Bill Amount:</label>
+                        <input type="text" class="form-control" id="billAmountInput" name="BillAmount"
+                               value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")" disabled>
+                    </div>
+                </div>
+
+
+
+                <div class="mt-3">
+                    <label class="form-label">Supporting Documents Attached:</label>
+                    <div class="row g-3 mt-1">
+
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input supporting-doc" type="checkbox"
+                                       id="barangayClearance" name="SupportingDocs" value="Barangay Clearance"
+                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "") disabled>
+                                <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input supporting-doc" type="checkbox"
+                                       id="hospitalBill" name="SupportingDocs" value="Hospital Bill"
+                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "") disabled>
+                                <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input supporting-doc" type="checkbox"
+                                       id="medicalCertificate" name="SupportingDocs" value="Medical Certificate"
+                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "") disabled>
+                                <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input supporting-doc" type="checkbox"
+                                       id="funeralBill" name="SupportingDocs" value="Funeral Bill"
+                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "") disabled>
+                                <label class="form-check-label" for="funeralBill">Funeral Bill</label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input supporting-doc" type="checkbox"
+                                       id="deathCertificate" name="SupportingDocs" value="Death Certificate"
+                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "") disabled>
+                                <label class="form-check-label" for="deathCertificate">Death Certificate</label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input supporting-doc" type="checkbox"
+                                       id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request"
+                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "") disabled>
+                                <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Others:</label>
+                            <input type="text" class="form-control" id="cmoNotesInput"
+                                   placeholder="Enter notes..."
+                                   value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating position-relative" style="height: 100px;">
+                            <input asp-for="Processby" type="text"
+                                   class="form-control border rounded p-3 h-100 d-flex align-items-center justify-content-center text-center"
+                                   id="processedBy"
+                                   value="@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")"
+                                   readonly
+                                   style="font-size: 1.2rem;">
+                            <span asp-validation-for="Processby" class="text-danger"></span>
+                            <label class="form-label text-center w-100 position-absolute bottom-0 start-0">Processed by:</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ForCMOPERSONNEL" class="form-label">CMO Reflection info:</label>
+                    <input asp-for="ForCMOPERSONNEL" type="text" class="form-control" id="cmoReflectionField"
+                           name="ForCMOPERSONNEL" placeholder="Auto-generated info..." readonly
+                           value="@ViewData["ForCMOPERSONNEL"]">
+                    <span asp-validation-for="ForCMOPERSONNEL" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Upload Section -->
+            <h5 class="section-header">Upload Required Documents</h5>
+
+            <div class="mb-3">
+                <label class="form-label required-field">Valid ID (Front)</label>
+                <div class="upload-box" onclick="document.getElementById('idFront').click()">
+                    <div class="upload-icon">
+                        <i class="bi bi-card-image"></i>
+                    </div>
+                    <p>Click to upload ID Front</p>
+                    <p class="form-note">Accepted formats: JPG, PNG (Max 5MB)</p>
+                </div>
+                <input asp-for="IdFrontimage" type="file" id="idFront" class="d-none" accept="image/*" onchange="previewImage(this, 'idFrontPreview')" disabled>
+                <span asp-validation-for="IdFrontimage" class="text-danger"></span>
+
+                <img id="idFrontPreview" class="img-preview mt-2" alt="Front ID Preview"
+                     src="@(ViewData["Validfrontimage"] != null ? Url.Content("~/Validimg/" + ViewData["Validfrontimage"]) : "")"
+                     style="@(ViewData["Validfrontimage"] != null ? "display: block;" : "display: none;")">
+
+            </div>
+
+
+            <div class="mb-3">
+                <label class="form-label required-field">Valid ID (Back)</label>
+                <div class="upload-box" onclick="document.getElementById('idBack').click()">
+                    <div class="upload-icon">
+                        <i class="bi bi-card-image"></i>
+                    </div>
+                    <p>Click to upload ID Back</p>
+                    <p class="form-note">Accepted formats: JPG, PNG (Max 5MB)</p>
+                </div>
+                <input asp-for="IdBackimage" type="file" id="idBack" class="d-none" accept="image/*" onchange="previewImage(this, 'idBackPreview')" disabled>
+                <span asp-validation-for="IdBackimage" class="text-danger"></span>
+
+                <img id="idBackPreview" class="img-preview mt-2" alt="Back ID Preview" src="@(ViewData["ValidBackimage"] != null ? Url.Content("~/Validimg/" + ViewData["ValidBackimage"]) : "")"
+                     style="@(ViewData["ValidBackimage"] != null ? "display: block;" : "display: none;")">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
+                <div class="upload-box" onclick="document.getElementById('receipt').click()">
+                    <div class="upload-icon">
+                        <i class="bi bi-card-image"></i>
+                    </div>
+                    <p>Click to upload document</p>
+                    <p class="form-note">Accepted formats: JPG, PNG,Etc.. (Max 10MB)</p>
+                </div>
+                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')" disabled>
+                <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
+
+                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview" src="@(ViewData["DoctorPrescription"] != null ? Url.Content("~/DoctorPrescriptionimage/" + ViewData["DoctorPrescription"]) : "")"
+                     style="@(ViewData["DoctorPrescription"] != null ? "display: block;" : "display: none;")">
+                <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
+            </div>
+
+
+
+            <!-- Funeral Contract/Receipt Upload Section -->
+            <div class="mb-3">
+                <label class="form-label required-field">Funeral Contract/Receipt</label>
+                <div class="upload-box" onclick="document.getElementById('funeralReceipt').click()">
+                    <div class="upload-icon">
+                        <i class="bi bi-card-image"></i>
+                    </div>
+                    <p>Click to upload funeral receipt</p>
+                    <p class="form-note">Accepted formats: JPG, PNG, Etc.. (Max 10MB)</p>
+                </div>
+                <input asp-for="DeathCertificateimage" type="file" id="funeralReceipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'funeralReceiptPreview')" disabled>
+                <span asp-validation-for="DeathCertificateimage" class="text-danger"></span>
+
+                <div class="text-center">
+                    <!-- Added text-center class here -->
+                    <div class="position-relative d-inline-block">
+                        <!-- Changed to d-inline-block -->
+                        <img id="funeralReceiptPreview" class="img-preview mt-2" alt="Funeral Receipt Preview"
+                             src="@(ViewData["DeathCertificate"] != null ? Url.Content("~/Funeralimg/" + ViewData["DeathCertificate"]) : "")"
+                             style="@(ViewData["DeathCertificate"] != null ? "display: block; max-width: 100%;" : "display: none; max-width: 100%;")">
+                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                                onclick="deleteImage('funeralReceipt', 'funeralReceiptPreview', this)"
+                                style="@(ViewData["DeathCertificate"] != null ? "display: block;" : "display: none;")">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
+            </div>
+
+            <!-- Description / Comment Section -->
+            <label for="idFrontDescription" class="form-label mt-2">Description / Comments</label>
+            <textarea asp-for="Comments" class="form-control" id="idFrontDescription" rows="8" cols="100" placeholder="Add any notes or comments about this document..."></textarea>
+            <span asp-validation-for="Comments" class="text-danger"></span>
+
+            <script>
+                // Preview image function
+                function previewImage(input, previewId) {
+                    const preview = document.getElementById(previewId);
+                    const container = preview.closest('.position-relative');
+                    const deleteBtn = container.querySelector('button');
+                    const file = input.files[0];
+
+                    if (file) {
+                        const reader = new FileReader();
+
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                            preview.style.display = 'block';
+                            if (deleteBtn) deleteBtn.style.display = 'block';
+                        }
+
+                        reader.readAsDataURL(file);
+                    }
+                }
+
+                // Delete image function
+                function deleteImage(inputId, previewId, button) {
+                    const input = document.getElementById(inputId);
+                    const preview = document.getElementById(previewId);
+
+                    // Clear the file input
+                    input.value = '';
+
+                    // Hide the preview and delete button
+                    preview.style.display = 'none';
+                    preview.src = '';
+                    button.style.display = 'none';
+                }
+            </script>
+
+            <!-- Submit Button -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+
+            <a asp-controller="Adminuser" asp-action="Admin" class="btn btn-primary">Back</a>
+
+        </form>
+    </div>
+
+
+    <!-- For zooming photo -->
+    <!-- Add this modal HTML at the end of your form container but before the closing </div> -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                    <div class="zoom-controls">
+                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="zoomOut">
+                            <i class="bi bi-zoom-out"></i>
+                        </button>
+                        <span id="zoomPercentage">100%</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="zoomIn">
+                            <i class="bi bi-zoom-in"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="zoomReset">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <div id="imageContainer">
+                        <img id="modalImage" src="" class="img-fluid" alt="Enlarged Image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this JavaScript to your existing scripts section -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make all preview images clickable to open modal
+            const previewImages = document.querySelectorAll('.img-preview');
+            const modalImage = document.getElementById('modalImage');
+            const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+            const modalTitle = document.getElementById('imageModalLabel');
+            const imageContainer = document.getElementById('imageContainer');
+            const zoomPercentage = document.getElementById('zoomPercentage');
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const zoomResetBtn = document.getElementById('zoomReset');
+
+            // Zoom variables
+            let currentZoom = 1;
+            const zoomFactor = 0.1;
+            const maxZoom = 3;
+            const minZoom = 0.5;
+
+            // Reset zoom on modal open
+            function resetZoom() {
+                currentZoom = 1;
+                updateZoom();
+            }
+
+            // Apply zoom level
+            function updateZoom() {
+                modalImage.style.transform = `scale(${currentZoom})`;
+                zoomPercentage.textContent = `${Math.round(currentZoom * 100)}%`;
+            }
+
+            // Zoom in function
+            function zoomIn() {
+                if (currentZoom < maxZoom) {
+                    currentZoom += zoomFactor;
+                    updateZoom();
+                }
+            }
+
+            // Zoom out function
+            function zoomOut() {
+                if (currentZoom > minZoom) {
+                    currentZoom -= zoomFactor;
+                    updateZoom();
+                }
+            }
+
+            // Make images clickable
+            previewImages.forEach(img => {
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', function() {
+                    modalImage.src = this.src;
+                    modalTitle.textContent = this.alt || 'Image Preview';
+                    resetZoom();
+                    imageModal.show();
+                });
+            });
+
+            // Add zoom event listeners
+            zoomInBtn.addEventListener('click', zoomIn);
+            zoomOutBtn.addEventListener('click', zoomOut);
+            zoomResetBtn.addEventListener('click', resetZoom);
+
+            // Mouse wheel zoom
+            imageContainer.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    zoomIn();
+                } else {
+                    zoomOut();
+                }
+            });
+
+            // Pan image when dragging
+            let isDragging = false;
+            let startX, startY, translateX = 0, translateY = 0;
+
+            imageContainer.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                imageContainer.style.cursor = 'grabbing';
+            });
+
+            window.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+
+                // Only allow panning when zoomed in
+                if (currentZoom > 1) {
+                    modalImage.style.transform = `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`;
+                }
+            });
+
+            window.addEventListener('mouseup', function() {
+                isDragging = false;
+                imageContainer.style.cursor = 'grab';
+            });
+
+            // Allow closing modal with ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    imageModal.hide();
+                }
+            });
+
+            // Reset zoom and position when modal is closed
+            document.getElementById('imageModal').addEventListener('hidden.bs.modal', function() {
+                resetZoom();
+                translateX = 0;
+                translateY = 0;
+                modalImage.style.transform = 'scale(1) translate(0, 0)';
+            });
+        });
+    </script>
+
+    <!-- Add these styles to your existing style section -->
+    <style>
+        .img-preview {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .img-preview:hover {
+                transform: scale(1.05);
+            }
+
+        #imageContainer {
+            overflow: hidden;
+            height: 70vh;
+            position: relative;
+            cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modalImage {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+            transition: transform 0.2s ease-out;
+        }
+
+        .modal-content {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--primary-light);
+            background-color: white;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+
+        #zoomPercentage {
+            min-width: 48px;
+            text-align: center;
+        }
+
+        .modal-body {
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .btn-close:focus {
+            box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
+        }
+    </style>
+    <!-- For zooming photo -->
+
+    <script>
+        function previewImage(input, previewId) {
+            const file = input.files[0];
+            const preview = document.getElementById(previewId);
+            const uploadBox = input.previousElementSibling;
+
+            if (file) {
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                }
+
+                // Update upload box text
+                uploadBox.querySelector('p:first-of-type').textContent = file.name;
+                uploadBox.style.borderColor = "var(--primary-color)";
+                uploadBox.style.backgroundColor = "var(--primary-light)";
+            }
+
+        }
+    </script>
+
+    <script>
+
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+
+        assistanceCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Uncheck all other checkboxes
+                    assistanceCheckboxes.forEach(cb => {
+                        if (cb !== this) {
+                            cb.checked = false;
+                            // Hide any specification fields for unchecked boxes
+                            const specField = cb.closest('.form-check').querySelector('.assistance-spec');
+                            if (specField) specField.style.display = 'none';
+                        }
+                    });
+
+                    // Show specification field for checked box if it exists
+                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
+                    if (specField) {
+                        specField.style.display = this.checked ? 'block' : 'none';
+                    }
+                }
+                updateAssistanceReflection();
+            });
+        });
+        //1box only
+
+         document.addEventListener('DOMContentLoaded', function() {
+            // Type of Assistance Reflection
+            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+            const assistanceSpecs = document.querySelectorAll('.assistance-spec');
+            const assistanceReflection = document.getElementById('assistanceReflection');
+
+            // Initialize - hide all specification fields
+            assistanceSpecs.forEach(field => field.style.display = 'none');
+
+            // Update reflection function
+            function updateAssistanceReflection() {
+                let selectedOptions = [];
+
+                assistanceCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const label = checkbox.nextElementSibling.textContent.trim();
+                        const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
+
+                        if (specField && specField.value.trim() !== '') {
+                            selectedOptions.push(`${label}: ${specField.value.trim()}`);
+                        } else {
+                            selectedOptions.push(label);
+                        }
+                    }
+                });
+
+                assistanceReflection.value = selectedOptions.join(', ');
+            }
+
+            // Add event listeners
+            assistanceCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
+                    if (specField) {
+                        specField.style.display = this.checked ? 'block' : 'none';
+                    }
+                    updateAssistanceReflection();
+                });
+            });
+
+            assistanceSpecs.forEach(field => {
+                field.addEventListener('input', updateAssistanceReflection);
+            });
+
+            // Initial update
+            updateAssistanceReflection();
+        });
+    </script>
+
+
+    <script>
+
+                 document.addEventListener('DOMContentLoaded', function() {
+            // CMO Single Checkbox Selection
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+
+            cmoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Uncheck all other checkboxes
+                        cmoCheckboxes.forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    }
+                    updateReflection(); // Update the reflection field
+                });
+            });
+        });
+        //1 box only
+
+            document.addEventListener('DOMContentLoaded', function() {
+            // Get all elements
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            const reflectionField = document.getElementById('cmoReflectionField');
+            const docCheckboxes = document.querySelectorAll('.supporting-doc');
+
+            // Update reflection function
+            function updateReflection() {
+                let parts = [];
+
+                // Add bill amount if exists
+                if (billInput.value.trim()) {
+                    parts.push(`Bill: ${billInput.value.trim()}`);
+                }
+
+                // Add checked documents
+                const checkedDocs = [];
+                docCheckboxes.forEach(cb => {
+                    if (cb.checked) checkedDocs.push(cb.value);
+                });
+                if (checkedDocs.length) {
+                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                }
+
+                // Add CMO notes if exists
+                if (cmoNotes.value.trim()) {
+                    parts.push(`Others: ${cmoNotes.value.trim()}`);
+                }
+
+                // Update reflection field
+                reflectionField.value = parts.join(' , ');
+            }
+
+            // Set up event listeners
+            billInput.addEventListener('input', updateReflection);
+            cmoNotes.addEventListener('input', updateReflection);
+            docCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updateReflection);
+            });
+
+            // Initial update (to reflect any pre-loaded data)
+            updateReflection();
+        });
+    </script>
+
+
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

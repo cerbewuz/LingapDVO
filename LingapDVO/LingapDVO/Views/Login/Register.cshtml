@@ -1,4 +1,4 @@
-﻿@model RegisterDto
+﻿@model UseraccountDto
 @{
     Layout = null;
 }
@@ -15,7 +15,11 @@
           integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
           crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
     <style>
+        /* Your existing CSS styles here */
         body {
             background-color: #f8f9fa;
         }
@@ -28,7 +32,7 @@
         }
 
         .cobalt-text {
-            color: #DC143C !important;
+            color: black !important;
         }
 
         .btn-cobalt {
@@ -76,8 +80,8 @@
         }
 
         #imagePreview {
-            width: 100px;
-            height: 100px;
+            width: 200px;
+            height: 200px;
             object-fit: cover;
             border-radius: 50%;
             margin-top: 10px;
@@ -101,6 +105,108 @@
         .phone-input {
             padding-left: 40px !important;
         }
+
+        /* ID Upload Styles */
+        .id-upload-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .id-upload-section {
+            flex: 1;
+            border: 2px dashed #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+            .id-upload-section:hover {
+                border-color: #DC143C;
+            }
+
+            .id-upload-section.active {
+                border-color: #DC143C;
+                background-color: rgba(220, 20, 60, 0.05);
+            }
+
+        .id-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-top: 10px;
+            display: none;
+            border-radius: 5px;
+        }
+
+        .id-upload-label {
+            cursor: pointer;
+            display: block;
+        }
+
+        .id-upload-icon {
+            font-size: 2rem;
+            color: #DC143C;
+            margin-bottom: 10px;
+        }
+
+        .id-upload-text {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .id-upload-hint {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .id-type-selector {
+            margin-bottom: 15px;
+        }
+
+        .extracted-text {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            max-height: 100px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+
+        /* OCR Status Styles */
+        #ocr-status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .progress {
+            height: 10px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        #ocr-result {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        #document-warning {
+            display: none;
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -112,12 +218,296 @@
                         <h1 class="cobalt-text fw-bold">Create Your Account</h1>
                         <p class="text-muted">Join LINGAPDVO</p>
                     </article>
-                    <form id="registrationForm" method="post" enctype="multipart/form-data">
+
+                    <form asp-action="Register" method="post" enctype="multipart/form-data" id="registrationForm">
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-image fa-lg me-2 cobalt-text"></i>Profile Picture</label>
+                            <input asp-for="ValidProfilepicture" type="file" id="imageUpload" class="form-control" accept="image/*">
+                            <img id="imagePreview" src="#" alt="Profile Preview" class="img-thumbnail">
+                            <span asp-validation-for="ValidProfilepicture" class="text-danger"></span>
+                        </div>
+
+                        <!-- ID Upload Section -->
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-id-card fa-lg me-2 cobalt-text"></i>Valid ID Verification</label>
+
+                            <div class="mb-3">
+                                <label class="form-label">ID Type</label>
+                                <select asp-for="IDtype" class="form-control" id="document-type" required>
+                                    <option value="">Select Valid ID</option>
+                                    <option value="phil-id">Philippine Identification Card / National ID</option>
+                                    <option value="driver-license">Driver's License</option>
+                                </select>
+                                <span asp-validation-for="IDtype" class="text-danger"></span>
+                                <div id="document-warning">OCR is not available for the selected document type</div>
+                            </div>
+                        </div>
+
+                        <div class="id-upload-container">
+                            <div class="id-upload-section" id="upload-area-front">
+                                <label class="id-upload-label">
+                                    <div class="id-upload-icon">
+                                        <i class="fas fa-id-card"></i>
+                                    </div>
+                                    <div class="id-upload-text">Front of ID</div>
+                                    <div class="id-upload-hint">Click to upload or drag and drop</div>
+                                    <input asp-for="ValidFrontID" type="file" id="file-input-front" class="d-none" accept="image/*">
+                                    <img id="image-preview" class="id-preview" alt="Front ID Preview">
+                                    <span asp-validation-for="ValidFrontID" class="text-danger"></span>
+                                </label>
+                            </div>
+
+                            <div class="id-upload-section" id="upload-area-back">
+                                <label class="id-upload-label">
+                                    <div class="id-upload-icon">
+                                        <i class="fas fa-id-card"></i>
+                                    </div>
+                                    <div class="id-upload-text">Back of ID</div>
+                                    <div class="id-upload-hint">Click to upload or drag and drop</div>
+                                    <input asp-for="ValidBackID" type="file" id="file-input-back" class="d-none" accept="image/*">
+                                    <img id="image-preview-back" class="id-preview" alt="Back ID Preview">
+                                    <span asp-validation-for="ValidBackID" class="text-danger"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- OCR Status -->
+                        <div id="ocr-status">Select a document to begin</div>
+                        <div class="progress" id="progress-bar">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" id="progress" style="width: 0%"></div>
+                        </div>
+                        <div id="ocr-result"></div>
+
+                        <small class="text-muted">Upload clear images of your valid ID (JPEG, PNG). Max file size: 5MB each.</small>
+                        <br />
+                        <br />
 
                         <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-user fa-lg me-2 cobalt-text"></i>Full Name</label>
-                            <input asp-for="Fullname" type="text" class="form-control" placeholder="Enter your first and last name">
-                            <span asp-validation-for="Fullname" class="text-danger"></span>
+                            <label class="form-label">ID Number</label>
+                            <input asp-for="IDnumber" type="text" id="idnumber"
+                                   class="form-control"
+                                   placeholder="Enter your ID number"
+                                   required
+                                   inputmode="numeric"
+                                   pattern="[0-9]*"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <span asp-validation-for="IDnumber" class="text-danger"></span>
+                            <small class="text-muted">Enter the number exactly as it appears on your ID</small>
+                        </div>
+
+                        <div class="row mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-list-check fa-lg me-2 cobalt-text"></i>User Information</label>
+                            <br />
+                            <br />
+                            <div class="col-md-6">
+                                <label><i></i>Last Name *</label>
+                                <input asp-for="Lastname" type="text" id="lastname" class="form-control" placeholder="Enter your last name" required>
+                                <span asp-validation-for="Lastname" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label><i></i>First Name *</label>
+                                <input asp-for="Firstname" type="text" id="firstname" class="form-control" placeholder="Enter your first name" required>
+                                <span asp-validation-for="Firstname" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 text-start">
+                            <div class="col-md-6">
+                                <label><i></i>Middle Name</label>
+                                <input asp-for="Middlename" type="text" id="middlename" class="form-control" placeholder="Enter your middle name">
+                                <span asp-validation-for="Middlename" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label><i></i>Suffix</label>
+                                <select asp-for="Suffix" class="form-control">
+                                    <option value="None">None</option>
+                                    <option value="Jr.">Jr</option>
+                                    <option value="Sr.">Sr</option>
+                                    <option value="II">II</option>
+                                    <option value="III">III</option>
+                                    <option value="IV">IV</option>
+                                </select>
+                                <span asp-validation-for="Suffix" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-venus-mars fa-lg me-2 cobalt-text"></i>Gender</label>
+                            <select asp-for="Gender" class="form-control" id="sex">
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold"><i class="fa-solid fa-calendar fa-lg me-2 cobalt-text"></i>Date of Birth</label>
+                            <input asp-for="Dateofbirth" type="date" id="birthdate" class="form-control" required>
+                            <span asp-validation-for="Dateofbirth" class="text-danger"></span>
+                        </div>
+
+                        <!-- Replace the existing Address field with this detailed version -->
+                        <div class="mb-3 text-start">
+                            <br />
+                            <label class="form-label fw-bold"><i class="fa-solid fa-home fa-lg me-2 cobalt-text"></i>Address</label>
+                            <br />
+                            <div class="row mb-2">
+                                <div class="col-md-8">
+                                    <label class="form-label">Blk / Lot / Street *</label>
+                                    <input asp-for="BlkLotStreet" type="text" class="form-control" placeholder="Enter block, lot, or street" required>
+                                    <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Sub / Vill.</label>
+                                    <input asp-for="SubVill" type="text" class="form-control" placeholder="Enter subdivision or village">
+                                    <span asp-validation-for="SubVill" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Barangay *</label>
+                                    <select asp-for="Barangay" class="form-control" required>
+                                        <option value="">Select Barangay</option>
+                                        <option value="Acacia">Acacia</option>
+                                        <option value="Agdao">Agdao</option>
+                                        <option value="Alambre">Alambre</option>
+                                        <option value="Alejandro Navarro">Alejandro Navarro (Lasang)</option>
+                                        <option value="Alfonso Angliongto Sr.">Alfonso Angliongto Sr.</option>
+                                        <option value="Angalan">Angalan</option>
+                                        <!-- Add all 182 barangays here -->
+                                        <option value="Baguio Proper">Baguio Proper</option>
+                                        <option value="Baliok">Baliok</option>
+                                        <option value="Bangkas Heights">Bangkas Heights</option>
+                                        <option value="Baracatan">Baracatan</option>
+                                        <option value="Bato">Bato</option>
+                                        <option value="Bayabas">Bayabas</option>
+                                        <option value="Biao Escuela">Biao Escuela</option>
+                                        <option value="Biao Guianga">Biao Guianga</option>
+                                        <option value="Binugao">Binugao</option>
+                                        <option value="Bucana">Bucana</option>
+                                        <option value="Buhangin Proper">Buhangin Proper</option>
+                                        <option value="Cabantian">Cabantian</option>
+                                        <option value="Cadalian">Cadalian</option>
+                                        <option value="Calinan Proper">Calinan Proper</option>
+                                        <option value="Callawa">Callawa</option>
+                                        <option value="Camansi">Camansi</option>
+                                        <option value="Carmen">Carmen</option>
+                                        <option value="Catalunan Grande">Catalunan Grande</option>
+                                        <option value="Catalunan Pequeño">Catalunan Pequeño</option>
+                                        <option value="Catigan">Catigan</option>
+                                        <option value="Cawayan">Cawayan</option>
+                                        <option value="Centro (San Juan)">Centro (San Juan)</option>
+                                        <option value="Colosas">Colosas</option>
+                                        <option value="Communal">Communal</option>
+                                        <option value="Crossing Bayabas">Crossing Bayabas</option>
+                                        <option value="Dacudao">Dacudao</option>
+                                        <option value="Dalagdag">Dalagdag</option>
+                                        <option value="Daliao">Daliao</option>
+                                        <option value="Dalican">Dalican</option>
+                                        <option value="Datu Salumay">Datu Salumay</option>
+                                        <option value="Dominga">Dominga</option>
+                                        <option value="Eden">Eden</option>
+                                        <option value="Fatima (Benowang)">Fatima (Benowang)</option>
+                                        <option value="Gatungan">Gatungan</option>
+                                        <option value="Gov. Paciano Bangoy">Gov. Paciano Bangoy</option>
+                                        <option value="Gov. Vicente Duterte">Gov. Vicente Duterte</option>
+                                        <option value="Gumalang">Gumalang</option>
+                                        <option value="Gumitan">Gumitan</option>
+                                        <option value="Indangan">Indangan</option>
+                                        <option value="Kap. Tomas Monteverde Sr.">Kap. Tomas Monteverde Sr.</option>
+                                        <option value="Kilate">Kilate</option>
+                                        <option value="Lamanan">Lamanan</option>
+                                        <option value="Lampianao">Lampianao</option>
+                                        <option value="Langub">Langub</option>
+                                        <option value="Lapu-lapu">Lapu-lapu</option>
+                                        <option value="Leon Garcia Sr.">Leon Garcia Sr.</option>
+                                        <option value="Los Amigos">Los Amigos</option>
+                                        <option value="Lubogan">Lubogan</option>
+                                        <option value="Lumiad">Lumiad</option>
+                                        <option value="Ma-a">Ma-a</option>
+                                        <option value="Mabuhay">Mabuhay</option>
+                                        <option value="Mabuhay">Mabuhay</option>
+                                        <option value="Madapo">Madapo</option>
+                                        <option value="Magtuod">Magtuod</option>
+                                        <option value="Mahayag">Mahayag</option>
+                                        <option value="Malabog">Malabog</option>
+                                        <option value="Malagos">Malagos</option>
+                                        <option value="Malamba">Malamba</option>
+                                        <option value="Malandog">Malandog</option>
+                                        <option value="Mampising">Mampising</option>
+                                        <option value="Manambulan">Manambulan</option>
+                                        <option value="Mandug">Mandug</option>
+                                        <option value="Manuel Guianga">Manuel Guianga</option>
+                                        <option value="Mapula">Mapula</option>
+                                        <option value="Marapangi">Marapangi</option>
+                                        <option value="Marilog Proper">Marilog Proper</option>
+                                        <option value="Matina Aplaya">Matina Aplaya</option>
+                                        <option value="Matina Crossing">Matina Crossing</option>
+                                        <option value="Matina Pangi">Matina Pangi</option>
+                                        <option value="Mintal">Mintal</option>
+                                        <option value="Mudiang">Mudiang</option>
+                                        <option value="Mulig">Mulig</option>
+                                        <option value="New Carmen">New Carmen</option>
+                                        <option value="New Valencia">New Valencia</option>
+                                        <option value="Pampanga">Pampanga</option>
+                                        <option value="Panacan">Panacan</option>
+                                        <option value="Pandaitan">Pandaitan</option>
+                                        <option value="Panorama">Panorama</option>
+                                        <option value="Paquibato Proper">Paquibato Proper</option>
+                                        <option value="Paradise Embak">Paradise Embak</option>
+                                        <option value="Rafael Castillo">Rafael Castillo</option>
+                                        <option value="Salapawan">Salapawan</option>
+                                        <option value="Salaysay">Salaysay</option>
+                                        <option value="Saloy">Saloy</option>
+                                        <option value="San Antonio">San Antonio</option>
+                                        <option value="San Isidro">San Isidro</option>
+                                        <option value="Sasa">Sasa</option>
+                                        <option value="Sirib">Sirib</option>
+                                        <option value="Suawan">Suawan</option>
+                                        <option value="Tacunan">Tacunan</option>
+                                        <option value="Tagakpan">Tagakpan</option>
+                                        <option value="Tagluno">Tagluno</option>
+                                        <option value="Tagurano">Tagurano</option>
+                                        <option value="Talomo Proper">Talomo Proper</option>
+                                        <option value="Talomo River">Talomo River</option>
+                                        <option value="Tamurayan">Tamurayan</option>
+                                        <option value="Tibungco">Tibungco</option>
+                                        <option value="Tigatto">Tigatto</option>
+                                        <option value="Tungkalan">Tungkalan</option>
+                                        <option value="Ubalde">Ubalde</option>
+                                        <option value="Ugac">Ugac</option>
+                                        <option value="Ula">Ula</option>
+                                        <option value="Vicente Hizon Sr.">Vicente Hizon Sr.</option>
+                                        <option value="Waan">Waan</option>
+                                        <option value="Wangan">Wangan</option>
+                                        <option value="Wilfredo Aquino">Wilfredo Aquino</option>
+                                        <option value="Wines">Wines</option>
+                                    </select>
+                                    <span asp-validation-for="Barangay" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">District *</label>
+                                    <select asp-for="District" class="form-control" required>
+                                        <option value="" disabled selected>Select district</option>
+                                        <option value="1">District 1 </option>
+                                        <option value="2">District 2 </option>
+                                        <option value="3">District 3 </option>
+                                        <option value="4">District 4 </option>
+                                        <option value="5">District 5 </option>
+                                        <option value="6">District 6 </option>
+                                        <option value="7">District 7 </option>
+                                        <option value="8">District 8 </option>
+                                        <option value="9">District 9 </option>
+                                        <option value="10">District 10 </option>
+                                        <option value="10">District 11 </option>
+                                    </select>
+                                    <span asp-validation-for="District" class="text-danger"></span>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mb-3 text-start">
@@ -146,7 +536,7 @@
                         <div class="mb-3 text-start">
                             <label class="form-label fw-bold"><i class="fa-solid fa-lock fa-lg me-2 cobalt-text"></i>Password</label>
                             <input asp-for="Password" type="password" id="password" class="form-control" placeholder="Enter your password" required>
-                            <span asp-validation-for="Password"" class="text-danger"></span>
+                            <span asp-validation-for="Password" class="text-danger"></span>
                             <div class="password-strength" id="passwordStrength"></div>
                             <div class="password-requirements">
                                 <div class="requirement" id="length"><i class="fas fa-circle"></i> At least 8 characters</div>
@@ -163,43 +553,14 @@
                             <div id="passwordMatch" class="password-requirements"></div>
                         </div>
 
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-calendar fa-lg me-2 cobalt-text"></i>Date of Birth</label>
-                            <input asp-for="Dateofbirth" type="date" class="form-control" required>
-                            <span asp-validation-for="Dateofbirth" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-venus-mars fa-lg me-2 cobalt-text"></i>Gender</label>
-                            <select asp-for="Gender" class="form-control">
-                                <option value="">Select</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <span asp-validation-for="Gender" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-home fa-lg me-2 cobalt-text"></i>Address</label>
-                            <input asp-for="Address" type="text" class="form-control" placeholder="Street, City, State, ZIP Code, Country">
-                            <span asp-validation-for="Address" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-image fa-lg me-2 cobalt-text"></i>Profile Picture</label>
-                            <input asp-for="ImageFile" type="file" id="imageUpload" class="form-control" accept="image/*">
-                            <img id="imagePreview" src="#" alt="Profile Preview" class="img-thumbnail">
-                            <span asp-validation-for="ImageFile" class="text-danger"></span>
-                        </div>
 
                         <div class="mb-3 text-start">
                             <label class="form-label fw-bold"><i class="fa-solid fa-shield-alt fa-lg me-2 cobalt-text"></i>Security Question</label>
                             <select asp-for="SecurityQuestions" class="form-control" required>
                                 <option value="">Select a question</option>
-                                <option value="pet">What is your first pet's name?</option>
-                                <option value="mother">What is your mother's maiden name?</option>
-                                <option value="school">What was your first school?</option>
+                                <option value="What is your first pet's name?">What is your first pet's name?</option>
+                                <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                                <option value="What was your first school?">What was your first school?</option>
                             </select>
                             <span asp-validation-for="SecurityQuestions" class="text-danger"></span>
                         </div>
@@ -211,15 +572,84 @@
                         </div>
 
                         <div class="mb-3 text-start">
-                            <input type="checkbox" id="terms" required> I agree to the <a href="#" class="text-decoration-none cobalt-text">terms and conditions</a>
+                            <input type="checkbox" id="terms" required> I agree to the <a href="#" class="text-decoration-none cobalt-text" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
                         </div>
                         <button type="submit" class="btn btn-cobalt w-100 py-2 fw-bold">Register</button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                <div class="modal-content shadow-lg rounded-4">
+                                    <div class="modal-header bg-cobalt text-white rounded-top-4">
+                                        <h5 class="modal-title fw-bold" id="termsModalLabel">Lingap Terms & Privacy Policy</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+
+                                        <h6 class="fw-bold text-cobalt">1. Acceptance of Terms</h6>
+                                        <p>By signing up for Lingap, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.</p>
+
+                                        <h6 class="fw-bold text-cobalt">2. Data Privacy & Protection</h6>
+                                        <p>Lingap is committed to safeguarding your personal data. We comply with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your information will only be used to verify eligibility and for program coordination. We will never sell or misuse your data.</p>
+
+                                        <h6 class="fw-bold text-cobalt">3. Purpose of Data Collection</h6>
+                                        <ul>
+                                            <li>Eligibility verification for Lingap programs</li>
+                                            <li>Contact and follow-up regarding assistance</li>
+                                            <li>Government or partner validation (as needed)</li>
+                                        </ul>
+
+                                        <h6 class="fw-bold text-cobalt">4. Account Integrity</h6>
+                                        <p>Each individual is allowed <strong>one account only</strong>. Creating multiple accounts or submitting false documents may result in permanent disqualification.</p>
+
+
+                                        <h6 class="fw-bold text-cobalt">5. Changes to Terms</h6>
+                                        <p>Lingap reserves the right to update this policy at any time. All changes will be posted publicly, and continued use of the service implies agreement with updated terms.</p>
+
+                                        <h6 class="fw-bold text-cobalt">6. Questions or Concerns</h6>
+                                        <p>If you have any questions regarding your privacy, you may contact our support team at <a href="mailto:support@lingap.org">support@lingap.org</a>.</p>
+
+                                    </div>
+                                    <div class="modal-footer justify-content-between">
+                                        <small class="text-muted">Last updated: May 2025</small>
+                                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <style>
+                            .text-cobalt {
+                                color: #DC143C;
+                            }
+
+                            .bg-cobalt {
+                                background-color: #DC143C;
+                            }
+
+                            .btn-cobalt {
+                                background-color: #DC143C;
+                                color: white;
+                            }
+
+                                .btn-cobalt:hover {
+                                    background-color: #DC143C;
+                                    color: white;
+                                }
+
+                            .rounded-top-4 {
+                                border-top-left-radius: 1rem;
+                                border-top-right-radius: 1rem;
+                            }
+
+                            .rounded-4 {
+                                border-radius: 1rem;
+                            }
+                        </style>
                     </form>
 
                     <div class="mt-3">
-                        <p>Already have an account? <a asp-controller="Login" asp-action="Login" class="text-decoration-none cobalt-text fw-bold">Login</a></p>
-
-                        <p><a asp-controller="Dashboard" asp-action="Landingpage" class="text-decoration-none cobalt-text fw-bold">Back to Home</a></p>
+                        <a href="javascript:history.back()" class="text-decoration-none cobalt-text fw-bold">Go Back</a>
                     </div>
                 </div>
             </div>
@@ -228,7 +658,95 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Add this to your head section -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script>
+                // Add this function to your existing JavaScript
+        function extractTextFromImage(file, previewElement, section) {
+            Tesseract.recognize(
+                file,
+                'eng', // Language (you might want to add 'fil' for Filipino)
+                {
+                    logger: m => console.log(m) // Optional: for debugging
+                }
+            ).then(({ data: { text } }) => {
+                console.log('Extracted text:', text);
+
+                // Create a div to display the extracted text
+                const textPreview = document.createElement('div');
+                textPreview.className = 'extracted-text';
+                textPreview.style.marginTop = '10px';
+                textPreview.style.padding = '8px';
+                textPreview.style.backgroundColor = '#f8f9fa';
+                textPreview.style.borderRadius = '5px';
+                textPreview.style.fontSize = '0.8rem';
+                textPreview.style.maxHeight = '100px';
+                textPreview.style.overflowY = 'auto';
+                textPreview.innerHTML = `<strong>Extracted Text:</strong><br>${text}`;
+
+                // Remove any existing text preview
+                const existingPreview = section.querySelector('.extracted-text');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+
+                // Append the new text preview
+                section.appendChild(textPreview);
+            }).catch(err => {
+                console.error('OCR Error:', err);
+            });
+        }
+
+        // Modify your front ID upload event listener
+        frontIdUpload.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (!validateFile(file)) {
+                    return;
+                }
+
+                frontIdSection.classList.add('active');
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (file.type.includes('pdf')) {
+                        frontIdPreview.src = 'https://cdn-icons-png.flaticon.com/512/337/337946.png';
+                        frontIdPreview.alt = 'PDF File';
+                    } else {
+                        frontIdPreview.src = e.target.result;
+                        frontIdPreview.style.display = 'block';
+                        // Extract text from image
+                        extractTextFromImage(file, frontIdPreview, frontIdSection);
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Modify your back ID upload event listener
+        backIdUpload.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (!validateFile(file)) {
+                    return;
+                }
+
+                backIdSection.classList.add('active');
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (file.type.includes('pdf')) {
+                        backIdPreview.src = 'https://cdn-icons-png.flaticon.com/512/337/337946.png';
+                        backIdPreview.alt = 'PDF File';
+                    } else {
+                        backIdPreview.src = e.target.result;
+                        backIdPreview.style.display = 'block';
+                        // Extract text from image
+                        extractTextFromImage(file, backIdPreview, backIdSection);
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        //sample
         document.addEventListener('DOMContentLoaded', function() {
             // Form elements
             const password = document.getElementById('password');
@@ -238,6 +756,15 @@
             const imageUpload = document.getElementById('imageUpload');
             const imagePreview = document.getElementById('imagePreview');
             const phoneInput = document.getElementById('phone');
+
+            // ID Upload elements
+            const frontIdUpload = document.getElementById('frontIdUpload');
+            const backIdUpload = document.getElementById('backIdUpload');
+            const frontIdPreview = document.getElementById('frontIdPreview');
+            const backIdPreview = document.getElementById('backIdPreview');
+            const frontIdSection = document.getElementById('frontIdSection');
+            const backIdSection = document.getElementById('backIdSection');
+            const idType = document.getElementById('idType');
 
             // Image preview functionality
             imageUpload.addEventListener('change', function(event) {
@@ -251,6 +778,118 @@
                     reader.readAsDataURL(file);
                 }
             });
+
+            // Front ID upload functionality
+            frontIdUpload.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // Validate file type and size
+                    if (!validateFile(file)) {
+                        return;
+                    }
+
+                    frontIdSection.classList.add('active');
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (file.type.includes('pdf')) {
+                            frontIdPreview.src = 'https://cdn-icons-png.flaticon.com/512/337/337946.png';
+                            frontIdPreview.alt = 'PDF File';
+                        } else {
+                            frontIdPreview.src = e.target.result;
+                        }
+                        frontIdPreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Back ID upload functionality
+            backIdUpload.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // Validate file type and size
+                    if (!validateFile(file)) {
+                        return;
+                    }
+
+                    backIdSection.classList.add('active');
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (file.type.includes('pdf')) {
+                            backIdPreview.src = 'https://cdn-icons-png.flaticon.com/512/337/337946.png';
+                            backIdPreview.alt = 'PDF File';
+                        } else {
+                            backIdPreview.src = e.target.result;
+                        }
+                        backIdPreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Drag and drop functionality for ID uploads
+            [frontIdSection, backIdSection].forEach(section => {
+                section.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    section.classList.add('active');
+                });
+
+                section.addEventListener('dragleave', () => {
+                    section.classList.remove('active');
+                });
+
+                section.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    section.classList.remove('active');
+
+                    const fileInput = section === frontIdSection ? frontIdUpload : backIdUpload;
+                    const preview = section === frontIdSection ? frontIdPreview : backIdPreview;
+
+                    if (e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                        const file = e.dataTransfer.files[0];
+
+                        // Validate file type and size
+                        if (!validateFile(file)) {
+                            return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            if (file.type.includes('pdf')) {
+                                preview.src = 'https://cdn-icons-png.flaticon.com/512/337/337946.png';
+                                preview.alt = 'PDF File';
+                            } else {
+                                preview.src = e.target.result;
+                            }
+                            preview.style.display = 'block';
+                        }
+                        reader.readAsDataURL(file);
+
+                        // Trigger change event
+                        const event = new Event('change');
+                        fileInput.dispatchEvent(event);
+                    }
+                });
+            });
+
+            // File validation function
+            function validateFile(file) {
+                const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+                const maxSize = 5 * 1024 * 1024; // 5MB
+
+                if (!validTypes.includes(file.type)) {
+                    alert('Please upload a valid file type (JPEG, PNG, or PDF).');
+                    return false;
+                }
+
+                if (file.size > maxSize) {
+                    alert('File size exceeds 5MB limit.');
+                    return false;
+                }
+
+                return true;
+            }
 
             // Password strength checker
             password.addEventListener('input', function() {
@@ -353,6 +992,19 @@
                     return;
                 }
 
+                // Validate ID upload
+                if (!idType.value) {
+                    alert('Please select your ID type.');
+                    e.preventDefault();
+                    return;
+                }
+
+                if (!frontIdUpload.files || frontIdUpload.files.length === 0) {
+                    alert('Please upload the front of your ID.');
+                    e.preventDefault();
+                    return;
+                }
+
                 if (!document.getElementById('terms').checked) {
                     alert('You must agree to the terms and conditions.');
                     e.preventDefault();
@@ -361,6 +1013,411 @@
 
                 // If all validations pass, the form will submit normally
             });
+        });
+
+
+    </script>
+
+    <script>
+        // Profile picture preview
+        document.getElementById('imageUpload').addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Password strength checker
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('password-strength');
+            const requirements = {
+                length: document.getElementById('length'),
+                uppercase: document.getElementById('uppercase'),
+                lowercase: document.getElementById('lowercase'),
+                number: document.getElementById('number'),
+                special: document.getElementById('special')
+            };
+
+            let strength = 0;
+            let messages = [];
+
+            // Check length
+            if (password.length >= 8) {
+                strength += 20;
+                requirements.length.classList.add('valid');
+                requirements.length.classList.remove('invalid');
+            } else {
+                requirements.length.classList.add('invalid');
+                requirements.length.classList.remove('valid');
+            }
+
+            // Check uppercase
+            if (/[A-Z]/.test(password)) {
+                strength += 20;
+                requirements.uppercase.classList.add('valid');
+                requirements.uppercase.classList.remove('invalid');
+            } else {
+                requirements.uppercase.classList.add('invalid');
+                requirements.uppercase.classList.remove('valid');
+            }
+
+            // Check lowercase
+            if (/[a-z]/.test(password)) {
+                strength += 20;
+                requirements.lowercase.classList.add('valid');
+                requirements.lowercase.classList.remove('invalid');
+            } else {
+                requirements.lowercase.classList.add('invalid');
+                requirements.lowercase.classList.remove('valid');
+            }
+
+            // Check number
+            if (/[0-9]/.test(password)) {
+                strength += 20;
+                requirements.number.classList.add('valid');
+                requirements.number.classList.remove('invalid');
+            } else {
+                requirements.number.classList.add('invalid');
+                requirements.number.classList.remove('valid');
+            }
+
+            // Check special character
+            if (/[^A-Za-z0-9]/.test(password)) {
+                strength += 20;
+                requirements.special.classList.add('valid');
+                requirements.special.classList.remove('invalid');
+            } else {
+                requirements.special.classList.add('invalid');
+                requirements.special.classList.remove('valid');
+            }
+
+            // Update strength bar
+            strengthBar.style.display = 'block';
+            strengthBar.style.width = strength + '%';
+
+            if (strength < 40) {
+                strengthBar.style.backgroundColor = '#dc3545';
+            } else if (strength < 80) {
+                strengthBar.style.backgroundColor = '#ffc107';
+            } else {
+                strengthBar.style.backgroundColor = '#28a745';
+            }
+        });
+
+        // OCR Integration
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements for OCR
+            const documentType = document.getElementById('document-type');
+            const documentWarning = document.getElementById('document-warning');
+            const uploadFront = document.getElementById('upload-area-front');
+            const uploadBack = document.getElementById('upload-area-back');
+            const fileFront = document.getElementById('file-input-front');
+            const fileBack = document.getElementById('file-input-back');
+            const imagePreview = document.getElementById('image-preview');
+            const imagePreviewBack = document.getElementById('image-preview-back');
+            const status = document.getElementById('ocr-status');
+            const resultBox = document.getElementById('ocr-result');
+            const progressBar = document.getElementById('progress-bar');
+            const progress = document.getElementById('progress');
+
+            // Track if OCR is enabled
+            let ocrEnabled = false;
+
+            // Handle document type selection
+            documentType.addEventListener('change', function() {
+                const selectedValue = this.value;
+
+                if (selectedValue === 'phil-id' || selectedValue === 'driver-license') {
+                    ocrEnabled = true;
+                    uploadFront.classList.remove('disabled');
+                    uploadBack.classList.remove('disabled');
+                    documentWarning.style.display = 'none';
+                    status.textContent = 'You can now upload ID images';
+                } else {
+                    ocrEnabled = false;
+                    uploadFront.classList.add('disabled');
+                    uploadBack.classList.add('disabled');
+                    if (selectedValue) {
+                        documentWarning.style.display = 'block';
+                        status.textContent = 'OCR not available for selected document type';
+                    } else {
+                        documentWarning.style.display = 'none';
+                        status.textContent = 'Select a document to begin';
+                    }
+                    resultBox.style.display = 'none';
+                    imagePreview.style.display = 'none';
+                    imagePreviewBack.style.display = 'none';
+                }
+            });
+
+            // Setup drag & drop for uploaders
+            function setupUploader(uploadArea, fileInput, preview, isBack = false) {
+                uploadArea.addEventListener('dragover', e => {
+                    if (!ocrEnabled) return;
+                    e.preventDefault();
+                    uploadArea.style.background = '#e1f0ff';
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    if (!ocrEnabled) return;
+                    uploadArea.style.background = '#f8f9fa';
+                });
+
+                uploadArea.addEventListener('drop', e => {
+                    if (!ocrEnabled) return;
+                    e.preventDefault();
+                    uploadArea.style.background = '#f8f9fa';
+                    if (e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                        handleFile(e.dataTransfer.files[0], preview, isBack);
+                    }
+                });
+
+                uploadArea.addEventListener('click', () => {
+                    if (!ocrEnabled) return;
+                    fileInput.click();
+                });
+
+                fileInput.addEventListener('change', () => {
+                    if (!ocrEnabled) return;
+                    if (fileInput.files.length) handleFile(fileInput.files[0], preview, isBack);
+                });
+            }
+
+            setupUploader(uploadFront, fileFront, imagePreview, false);
+            setupUploader(uploadBack, fileBack, imagePreviewBack, true);
+
+            // Handle file selection
+            function handleFile(file, preview, isBack) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    processImage(preview, isBack);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Process image with OCR
+            function processImage(preview, isBack) {
+                if (!ocrEnabled) {
+                    status.textContent = "OCR not enabled for selected document type";
+                    return;
+                }
+                status.textContent = "Processing...";
+                progressBar.style.display = 'block';
+                progress.style.width = '0%';
+
+                Tesseract.recognize(preview.src, 'eng', {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            progress.style.width = `${Math.round(m.progress * 100)}%`;
+                        }
+                    }
+                }).then(({ data: { text } }) => {
+                    status.textContent = "OCR completed!";
+                    progressBar.style.display = 'none';
+
+                    if (documentType.value === "driver-license") {
+                        // Driver’s License → sex is on the front
+                        if (!isBack) {
+                            parseNameAndBirthdate(text);
+                        }
+                    } else if (documentType.value === "phil-id") {
+                        // PhilSys ID → sex is on the back
+                        if (isBack) {
+                            parseSex(text);
+                        } else {
+                            parseNameAndBirthdate(text);
+                        }
+                    }
+
+                }).catch(err => {
+                    status.textContent = "Error: " + err.message;
+                    progressBar.style.display = 'none';
+                });
+            }
+
+            // ===== cleaning helpers =====
+            function cleanName(text) {
+                if (!text) return "";
+                return text
+                    .replace(/[^a-z\s]/gi, "")   // keep only letters + spaces
+                    .replace(/\s+/g, " ")        // normalize spaces
+                    .trim()
+                    .replace(/^[a-z]\s+/, "")    // remove stray single letter at start
+                    .replace(/\s+[a-z]$/, "")    // remove stray single letter at end
+                    .replace(/^\s*[a-z]\s*$/, ""); // if only a single letter, remove it
+            }
+
+            // Always return MM/DD/YY
+            function cleanBirthdate(text) {
+                if (!text) return "";
+                let cleaned = text.replace(/[^0-9]/g, "");
+
+                // Case: YYYYMMDD (20011018)
+                if (/^\d{8}$/.test(cleaned)) {
+                    let yyyy = cleaned.slice(0, 4);
+                    let mm = parseInt(cleaned.slice(4, 6));
+                    let dd = parseInt(cleaned.slice(6, 8));
+                    if (mm > 12) [mm, dd] = [dd, mm];
+                    if (mm > 12) mm = 10;
+                    return `${String(mm).padStart(2, "0")}/${String(dd).padStart(2, "0")}/${yyyy.slice(-2)}`;
+                }
+
+                // Case: MMDDYY (101801)
+                if (/^\d{6}$/.test(cleaned)) {
+                    let mm = parseInt(cleaned.slice(0, 2));
+                    let dd = parseInt(cleaned.slice(2, 4));
+                    let yy = cleaned.slice(4);
+                    if (mm > 12) [mm, dd] = [dd, mm];
+                    if (mm > 12) mm = 10;
+                    return `${String(mm).padStart(2, "0")}/${String(dd).padStart(2, "0")}/${yy}`;
+                }
+
+                // Case: With slashes/dashes like 18/10/2001 or 10-18-01
+                let parts = text.split(/[^0-9]/).filter(Boolean);
+                if (parts.length === 3) {
+                    let mm = parseInt(parts[0]);
+                    let dd = parseInt(parts[1]);
+                    let yy = parts[2].slice(-2);
+                    if (mm > 12) [mm, dd] = [dd, mm];
+                    if (mm > 12) mm = 10;
+                    return `${String(mm).padStart(2, "0")}/${String(dd).padStart(2, "0")}/${yy}`;
+                }
+
+                return "";
+            }
+
+            function cleanSex(text) {
+                if (!text) return "";
+                const upper = text.toUpperCase();
+                if (/MALE/.test(upper) || /\bM\b/.test(upper) || /SEX[:\s-]*M\b/.test(upper)) return "Male";
+                if (/FEMALE/.test(upper) || /\bF\b/.test(upper) || /SEX[:\s-]*F\b/.test(upper)) return "Female";
+                if (/LALAKI/.test(upper)) return "Male";
+                if (/BABAE/.test(upper)) return "Female";
+                return "";
+            }
+
+            // ===== Parse (front) =====
+            function parseNameAndBirthdate(text) {
+                const rawLines = text.split(/\n/).map(l => l.trim()).filter(l => l);
+                const linesUpper = rawLines.map(l => l.toUpperCase());
+
+                let idNumber = "", lastName = "", firstName = "", middleName = "", birthdate = "", sex = "";
+
+                if (documentType.value === "driver-license") {
+                    // ========== DRIVER'S LICENSE ==========
+
+                    // Find license number
+                    for (const line of rawLines) {
+                        const licenseMatch = line.match(/[A-Z0-9]{1,3}-[A-Z0-9]{2}-\d{6}/);
+                        if (licenseMatch) {
+                            idNumber = licenseMatch[0];   // reflect license no. as ID number
+                            break;
+                        }
+                    }
+
+                    // Find name (Lastname,Firstname MiddleName format)
+                    for (let i = 0; i < linesUpper.length; i++) {
+                        if (linesUpper[i].includes(',')) {
+                            const nameParts = rawLines[i].split(',');
+                            if (nameParts.length >= 2) {
+                                lastName = cleanName(nameParts[0]);
+                                const firstMiddleParts = nameParts[1].trim().split(' ');
+                                if (firstMiddleParts.length > 0) firstName = cleanName(firstMiddleParts[0]);
+                                if (firstMiddleParts.length > 1) middleName = cleanName(firstMiddleParts.slice(1).join(' '));
+                            }
+                            break;
+                        }
+                    }
+
+                    // Find birthdate
+                    for (const line of rawLines) {
+                        const dateMatch = line.match(/\b\d{4}\/\d{2}\/\d{2}\b/);
+                        if (dateMatch) {
+                            const [year, month, day] = dateMatch[0].split('/');
+                            birthdate = `${month}/${day}/${year.slice(-2)}`;
+                            break;
+                        }
+                        const altDateMatch = line.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
+                        if (altDateMatch) {
+                            const [month, day, year] = altDateMatch[0].split('/');
+                            birthdate = `${month}/${day}/${year.slice(-2)}`;
+                            break;
+                        }
+                    }
+
+                    // Find gender/sex (driver’s license → front)
+                    for (const line of rawLines) {
+                        const candidate = cleanSex(line);
+                        if (candidate) {
+                            sex = candidate;
+                            break;
+                        }
+                    }
+
+                } else {
+                    // ========== PHILSYS ID ==========
+                    for (let i = 0; i < linesUpper.length; i++) {
+                        const line = linesUpper[i];
+                        const idMatch = line.match(/\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}/);
+                        if (idMatch) idNumber = idMatch[0].replace(/\s+/g, "").trim();
+                        if (line.includes("APELYIDO") && !line.includes("GITNANG")) lastName = cleanName(rawLines[i+1] || "");
+                        if (line.includes("MGA PANGALAN") || line.includes("GIVEN NAMES")) firstName = cleanName(rawLines[i+1] || "");
+                        if (line.includes("GITNANG") || line.includes("MIDDLE NAME")) middleName = cleanName(rawLines[i+1] || "");
+                        if (line.includes("KAPANGANAKAN") || line.includes("PETSA") || line.includes("BIRTHDATE") || line.includes("DATE OF BIRTH")) {
+                            birthdate = cleanBirthdate(rawLines[i+1] || "");
+                        }
+                    }
+                    if (!birthdate) {
+                        const dateLine = rawLines.find(l => /\b\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}\b/.test(l));
+                        if (dateLine) birthdate = cleanBirthdate(dateLine);
+                    }
+                }
+
+                // Update the form fields
+                document.getElementById('idnumber').value = idNumber;
+                document.getElementById('firstname').value = firstName.toUpperCase();
+                document.getElementById('middlename').value = middleName.toUpperCase();
+                document.getElementById('lastname').value = lastName.toUpperCase();
+
+                // Convert MM/DD/YY to YYYY-MM-DD format for date input
+                if (birthdate) {
+                    const [month, day, year] = birthdate.split('/');
+                    const fullYear = parseInt(year) < 50 ? `20${year}` : `19${year}`;
+                    document.getElementById('birthdate').value = `${fullYear}-${month}-${day}`;
+                }
+
+                if (sex) {
+                    document.getElementById('sex').value = sex;
+                }
+
+                resultBox.style.display = "block";
+                resultBox.textContent = "Information extracted from ID. Please verify the details.";
+            }
+
+            // ===== Parse (back) =====
+            function parseSex(text) {
+                const rawLines = text.split(/\n/).map(l => l.trim()).filter(l => l);
+                let sex = "";
+                for (const line of rawLines) {
+                    const candidate = cleanSex(line);
+                    if (candidate) {
+                        sex = candidate;
+                        break;
+                    }
+                }
+                document.getElementById('sex').value = sex;
+                resultBox.style.display = "block";
+                resultBox.textContent = "Gender information extracted from ID. Please verify.";
+            }
         });
     </script>
 </body>

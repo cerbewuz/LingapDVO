@@ -18,7 +18,7 @@ namespace LingapDVO.Models
 
         [Required, MaxLength(100)]
         public string Phonenumber { get; set; } = "";
-        [Required, MaxLength(16)]
+        [Required, MaxLength(250)]
         public string Password { get; set; } = "";
 
         [Required, MaxLength(100)]
