@@ -108,4 +108,15 @@ app.MapControllerRoute(
     pattern: "{controller=Dashboard}/{action=Landingpage}/{id?}")
     .WithStaticAssets();
 
+
+app.MapControllerRoute(
+    name: "hashed-login",
+    pattern: "Login",
+    defaults: new { controller = "Login", action = "Login" });
+
+app.MapControllerRoute(
+    name: "hashed-login",
+    pattern: "Register",
+    defaults: new { controller = "Login", action = "Register" });
+
 app.Run();
