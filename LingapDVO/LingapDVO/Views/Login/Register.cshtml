@@ -276,37 +276,7 @@
                         <p class="text-muted">Join LINGAPDVO</p>
                     </article>
 
-                    <form id="registrationForm">
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">First Name *</label>
-                                <input type="text" id="firstname" class="form-control" placeholder="Enter your first name" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Last Name *</label>
-                                <input type="text" id="lastname" class="form-control" placeholder="Enter your last name" required>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Middle Name</label>
-                                <input type="text" id="middlename" class="form-control" placeholder="Enter your middle name">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Suffix</label>
-                                <select class="form-control">
-                                    <option value="None">None</option>
-                                    <option value="Jr.">Jr</option>
-                                    <option value="Sr.">Sr</option>
-                                    <option value="II">II</option>
-                                    <option value="III">III</option>
-                                    <option value="IV">IV</option>
-                                </select>
-                            </div>
-                        </div>
-
-
+                    <form id="registrationForm">           
                         <div class="mb-3">
                             <label class="form-label">Username *</label>
                             <input type="text" class="form-control" placeholder="Choose a username" required>
@@ -349,7 +319,7 @@
                             <label class="form-label">Password *</label>
                             <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
                             <div class="password-strength" id="passwordStrength"></div>
-                            <div class="password-requirements">
+                            <div class="password-requirements" id="passwordRequirements" style="display:none;">
                                 <div class="requirement" id="length"><i class="fas fa-circle"></i> At least 8 characters</div>
                                 <div class="requirement" id="uppercase"><i class="fas fa-circle"></i> At least 1 uppercase letter</div>
                                 <div class="requirement" id="lowercase"><i class="fas fa-circle"></i> At least 1 lowercase letter</div>
@@ -439,6 +409,7 @@
             const registrationForm = document.getElementById('registrationForm');
             const phoneInput = document.getElementById('phone');
             const goBackBtn = document.getElementById('goBackBtn');
+            const passwordRequirements = document.getElementById('passwordRequirements');
 
             // Go Back button functionality
             goBackBtn.addEventListener('click', function() {
@@ -511,6 +482,19 @@
 
                 // Update the input value
                 this.value = phoneNumber;
+            });
+
+            // Show/hide password requirements on input/focus/blur
+            password.addEventListener('focus', function() {
+                passwordRequirements.style.display = 'block';
+            });
+            password.addEventListener('input', function() {
+                passwordRequirements.style.display = password.value.length > 0 ? 'block' : 'none';
+            });
+            password.addEventListener('blur', function() {
+                if (password.value.length === 0) {
+                    passwordRequirements.style.display = 'none';
+                }
             });
 
             // Form submission
