@@ -1,12 +1,13 @@
 ﻿using LingapDVO.Models;
 using LingapDVO.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Net.Mail;
-using System.Net;
-using System.Text;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Mail;
+using System.Text;
 
 namespace LingapDVO.Controllers
 {
@@ -171,6 +172,7 @@ namespace LingapDVO.Controllers
                 fillupformhospitalBill.ForCMOPERSONNEL = fillupformHospitalbilldto.ForCMOPERSONNEL;
                 fillupformhospitalBill.Comments = fillupformHospitalbilldto.Comments;
                 fillupformhospitalBill.Processby = fillupformHospitalbilldto.Processby;
+                fillupformhospitalBill.ProcessAt = DateTime.Now;
                 context.SaveChanges();
 
                 // Get the user's email using UserId
