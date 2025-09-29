@@ -174,7 +174,7 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Get the user's email using UserId
-                var user = context.Register.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
+                var user = context.Useraccount.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
                     // Get email settings from configuration
