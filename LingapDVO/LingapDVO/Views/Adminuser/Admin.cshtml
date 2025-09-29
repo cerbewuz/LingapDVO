@@ -1,4 +1,4 @@
-﻿    @model LingapDVO.Models.CombinedFormsViewModel
+﻿@model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
 }
@@ -7,165 +7,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin</title>
+    <title>LingapDVO Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-
-        .table-responsive {
-            min-height: 400px;
-            position: relative;
-        }
-
-            .table-responsive .empty-state {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 100%;
-            }
-
         :root {
-            --primary-color: #4361ee;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --info-color: #3498db;
-            --lingap-red: #dc143c; /* Crimson red for LingapDVO */
+            --primary: #4361ee;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --processing: #9b59b6;
+            --lingap-red: #dc143c;
+            --dark: #1e1e2c;
+            --light: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-800: #343a40;
         }
 
         body {
-            padding: 20px;
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #f5f7fb;
+            color: var(--gray-800);
+            margin: 0;
+            padding: 0;
         }
 
-        .card-box {
-            border-radius: 1rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: none;
-        }
-
-        .status-card {
-            color: white;
-            padding: 15px;
-        }
-
-        .bg-approved {
-            background-color: var(--success-color);
-        }
-
-        .bg-unapproved {
-            background-color: var(--danger-color);
-        }
-
-        .bg-pending {
-            background-color: var(--warning-color);
-        }
-
-        .bg-uploaded {
-            background-color: var(--info-color);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 10px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 250px;
-        }
-
-        .badge-status {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-
-        /* Burger menu styles */
-        .burger-menu {
+        .dashboard-container {
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 30px;
-            height: 24px;
-            cursor: pointer;
-            margin-bottom: 20px;
+            min-height: 100vh;
         }
 
-        .burger-line {
-            width: 100%;
-            height: 3px;
-            background-color: var(--primary-color);
-            transition: all 0.3s ease;
-        }
-
-        .burger-menu.active .burger-line:nth-child(1) {
-            transform: translateY(10px) rotate(45deg);
-        }
-
-        .burger-menu.active .burger-line:nth-child(2) {
-            opacity: 0;
-        }
-
-        .burger-menu.active .burger-line:nth-child(3) {
-            transform: translateY(-10px) rotate(-45deg);
-        }
-
-        /* Sidebar styles */
+        /* Sidebar */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 280px;
-            height: 100%;
-            background-color: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            transition: left 0.3s ease;
-            padding: 20px;
+            width: 260px;
+            background: linear-gradient(180deg, var(--dark) 0%, #2d2d44 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
-
-            .sidebar.active {
-                left: 0;
-            }
-
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-            .sidebar-overlay.active {
-                opacity: 1;
-                visibility: visible;
-            }
 
         .sidebar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
         }
 
         .sidebar-title {
-            font-weight: bold;
-            color: var(--lingap-red);
-            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: white;
         }
+
+            .sidebar-title i {
+                color: var(--lingap-red);
+                margin-right: 0.75rem;
+                font-size: 1.6rem;
+            }
 
         .sidebar-nav {
             list-style: none;
@@ -173,1215 +76,726 @@
         }
 
             .sidebar-nav li {
-                margin-bottom: 15px;
+                margin-bottom: 0.5rem;
             }
 
             .sidebar-nav a {
                 display: flex;
                 align-items: center;
-                color: #333;
+                color: rgba(255, 255, 255, 0.8);
                 text-decoration: none;
-                padding: 10px;
-                border-radius: 8px;
-                transition: all 0.3s ease;
+                padding: 0.85rem 1.5rem;
+                border-radius: 0.5rem;
+                transition: all 0.2s ease;
+                font-weight: 500;
             }
 
-                .sidebar-nav a:hover {
-                    background-color: #f0f0f0;
-                    color: var(--lingap-red);
+                .sidebar-nav a:hover, .sidebar-nav a.active {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
                 }
 
             .sidebar-nav i {
-                margin-right: 10px;
-                font-size: 1.1rem;
+                margin-right: 0.75rem;
+                font-size: 1.2rem;
             }
 
-        .close-btn {
-            background: none;
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            background-color: #f5f7fb;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .page-title h1 {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+            font-size: 1.8rem;
+        }
+
+        .page-title p {
+            color: var(--gray-600);
+            margin-bottom: 0;
+            font-size: 1rem;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: none;
-            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
             cursor: pointer;
-            color: #666;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .stat-card.active {
+                border-left: 4px solid;
+            }
+
+            .stat-card.approved.active {
+                border-left-color: var(--success);
+            }
+
+            .stat-card.unapproved.active {
+                border-left-color: var(--danger);
+            }
+
+            .stat-card.pending.active {
+                border-left-color: var(--warning);
+            }
+
+            .stat-card.processing.active {
+                border-left-color: var(--processing);
+            }
+
+            .stat-card.claimed.active {
+                border-left-color: var(--info);
+            }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.75rem;
+        }
+
+        .stat-card.approved .stat-icon {
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+        }
+
+        .stat-card.unapproved .stat-icon {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+
+        .stat-card.pending .stat-icon {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+        }
+
+        .stat-card.processing .stat-icon {
+            background: rgba(155, 89, 182, 0.15);
+            color: var(--processing);
+        }
+
+        .stat-card.claimed .stat-icon {
+            background: rgba(52, 152, 219, 0.15);
+            color: var(--info);
+        }
+
+        .stat-info h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            color: var(--gray-600);
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+
+        /* Main Table Card */
+        .main-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0;
+            font-size: 1.3rem;
+        }
+
+        .card-tools {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+            .search-box input {
+                padding-left: 2.5rem;
+                border-radius: 0.5rem;
+                border: 1px solid var(--gray-200);
+                width: 250px;
+                height: 40px;
+            }
+
+            .search-box i {
+                position: absolute;
+                left: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--gray-500);
+            }
+
+        .filter-select {
+            border-radius: 0.5rem;
+            border: 1px solid var(--gray-200);
+            padding: 0.5rem;
+            width: 200px;
+            height: 40px;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .table {
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+            .table thead {
+                position: sticky;
+                top: 0;
+                background: var(--light);
+                z-index: 10;
+            }
+
+            .table th {
+                border-top: none;
+                font-weight: 600;
+                color: var(--gray-800);
+                padding: 1rem;
+                border-bottom: 1px solid var(--gray-200);
+                background-color: var(--light);
+            }
+
+            .table td {
+                padding: 1rem;
+                vertical-align: middle;
+                border-bottom: 1px solid var(--gray-200);
+            }
+
+            .table tbody tr:hover {
+                background-color: rgba(67, 97, 238, 0.03);
+            }
+
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
         }
 
         .status-approved {
-            color: var(--success-color);
-            font-weight: 500;
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success);
         }
 
         .status-pending {
-            color: var(--warning-color);
-            font-weight: 500;
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
         }
 
-        .status-rejected {
-            color: var(--danger-color);
-            font-weight: 500;
+        .status-processing {
+            background: rgba(155, 89, 182, 0.15);
+            color: var(--processing);
         }
 
-
-
-        .status-unknown {
-            color: #6c757d;
-            font-weight: 500;
+        .status-unapproved {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
         }
 
+        .status-claimed {
+            background: rgba(52, 152, 219, 0.15);
+            color: var(--info);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-view {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+            .btn-view:hover {
+                background: var(--primary);
+                color: white;
+            }
+
+        .btn-edit {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+        }
+
+            .btn-edit:hover {
+                background: var(--success);
+                color: white;
+            }
+
+        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
-            color: #6c757d;
+            padding: 3rem 1rem;
+            color: var(--gray-600);
         }
 
             .empty-state i {
-                font-size: 3rem;
-                margin-bottom: 15px;
+                font-size: 3.5rem;
+                margin-bottom: 1rem;
+                opacity: 0.5;
             }
 
+            .empty-state h4 {
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+            }
     </style>
 </head>
 <body>
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay"></div>
-
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <i class="bi bi-speedometer2 me-2"></i>LingapDVO
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="bi bi-heart-pulse"></i>
+                    <span>LingapDVO</span>
+                </div>
             </div>
-            <button class="close-btn">&times;</button>
-        </div>
-        <ul class="sidebar-nav">
-            <li>
-                <a asp-controller="Adminuser" asp-action="Analyticsdashboard">
-                    <i class="bi bi-house-door"></i>
-                    <span>Home</span>
-                </a>
-            </li>
-
-            <li>
-                <a asp-controller="Adminuser" asp-action="Analyticsdashboard">
-                    <i class="bi bi-bar-chart"></i>
-                    <span>Analytics Dashboard</span>
-                </a>
-            </li>
-
-            <li>
-                <a asp-controller="Adminuser" asp-action="Admin">
-                    <i class="bi bi-person-gear me-2"></i>
-                    <span>Update Status</span>
-                </a>
-            </li>
-
-            <li>
-                <a asp-controller="Login" asp-action="Logout">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Logout</span>
-                </a>
-
-            </li>
-        </ul>
-    </div>
-
-    <div class="container-fluid">
-        <!-- Burger Menu Button -->
-        <div class="burger-menu">
-            <div class="burger-line"></div>
-            <div class="burger-line"></div>
-            <div class="burger-line"></div>
+            <ul class="sidebar-nav">
+                <li>
+                    <a asp-controller="Adminuser" asp-action="Analyticsdashboard">
+                        <i class="bi bi-house-door"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Adminuser" asp-action="Analyticsdashboard">
+                        <i class="bi bi-bar-chart"></i>
+                        <span>Analytics</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Login" asp-action="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
         </div>
 
-        <!-- LingapDVO Title -->
-        <h2 class="mb-4" style="color: var(--lingap-red); font-weight: 700;">LingapDVO</h2>
-
-        <!-- Status Cards -->
-        <div class="row mb-4 g-4">
-            <div class="col-md-3">
-                <div class="card status-card bg-approved">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2">Approved</h6>
-                                <h2 class="card-title mb-0" id="approved-count">
-                                    @{
-                                        var approvedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved");
-                                        @approvedCount
-                                    }
-                                </h2>
-                            </div>
-                            <i class="bi bi-check-circle-fill fs-1 opacity-75"></i>
-                        </div>
-                    </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="page-title">
+                    <h1>Application Dashboard</h1>
+                    <p>Manage and monitor all assistance applications</p>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="card status-card bg-unapproved">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2">Unapproved</h6>
-                                <h2 class="card-title mb-0" id="unapproved-count">
-                                    @{
-                                        var unapprovedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved");
-                                        @unapprovedCount
-                                    }
-                                </h2>
-                            </div>
-                            <i class="bi bi-x-circle-fill fs-1 opacity-75"></i>
-                        </div>
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card approved active" data-status="approved">
+                    <div class="stat-icon">
+                        <i class="bi bi-check-circle"></i>
                     </div>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card status-card bg-pending">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2">Pending User</h6>
-                                <h2 class="card-title mb-0" id="pending-count">
-                                    @{
-                                        var pendingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending");
-                                        @pendingCount
-                                    }
-                                </h2>
-                            </div>
-                            <i class="bi bi-hourglass-split fs-1 opacity-75"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Replace your current Claimed card with this -->
-            <div class="col-md-3">
-                <div class="card status-card bg-uploaded" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#claimedModal">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2">Claimed</h6>
-                                <h2 class="card-title mb-0" id="upload-count">
-                                    @{
-                                        var claimedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed");
-                                        @claimedCount
-                                    }
-                                </h2>
-                            </div>
-                            <i class="bi bi-cloud-arrow-up-fill fs-1 opacity-75"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4">
-
-            <!-- Claimed Status Section -->
-            <div class="col-lg-6">
-                <div class="card card-box h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Claimed Applications</h5>
-
-                        <!-- Search Box -->
-                        <div class="mb-3">
-                            <label for="claimedSearchInput" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="claimedSearchInput" placeholder="Search by name or type..." onkeyup="applyClaimedFilters()">
-                        </div>
-
-                        <!-- Dropdown to filter types -->
-                        <div class="mb-3">
-                            <label for="claimedTypeFilter" class="form-label">Filter by Type</label>
-                            <select id="claimedTypeFilter" class="form-select" onchange="applyClaimedFilters()">
-                                <option value="All">All Types</option>
-                                <option value="Hospital Bill Assistance">Hospital Bill Assistance</option>
-                                <option value="Medical and laboratory Procedure">Medical and laboratory Procedure</option>
-                                <option value="Funeral and burial assistance">Funeral and burial assistance</option>
-                            </select>
-                        </div>
-
-                        <!-- Table -->
-                        <div class="table-responsive" style="height: 400px; overflow-y: auto;">
-                            <table class="table table-hover mb-0" id="claimedFilesTable">
-                                <thead class="sticky-top bg-light" style="z-index: 1;">
-                                    <tr>
-                                        <th>Type</th>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                        <th>Created At</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        var allClaimedFiles = new List<dynamic>();
-
-                                        allClaimedFiles.AddRange(Model.HospitalBills
-                                        .Where(f => f.Status?.ToLower() == "claimed")
-                                        .Select(f => new
-                                        {
-                                            Type = "Hospital Bill Assistance",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard"
-                                        }));
-
-                                        allClaimedFiles.AddRange(Model.MedicalLabForms
-                                        .Where(f => f.Status?.ToLower() == "claimed")
-                                        .Select(f => new
-                                        {
-                                            Type = "Medical and laboratory Procedure",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard"
-                                        }));
-
-                                        allClaimedFiles.AddRange(Model.Funeralburialform
-                                        .Where(f => f.Status?.ToLower() == "claimed")
-                                        .Select(f => new
-                                        {
-                                            Type = "Funeral and burial assistance",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard"
-                                        }));
-
-                                        var claimedFiles = allClaimedFiles
-                                        .OrderByDescending(f => f.CreatedAt)
-                                        .ToList();
-                                    }
-
-                                    @if (claimedFiles.Any())
-                                    {
-                                        foreach (var file in claimedFiles)
-                                        {
-                                            <tr class="claimed-row" data-type="@file.Type">
-                                                <td>@file.Type</td>
-                                                <td>@file.Name</td>
-                                                <td>
-                                                    <span class="badge bg-success">
-                                                        <i class="bi bi-check-circle-fill"></i> @file.Status
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group">
-                                                        @if (file.Type == "Hospital Bill Assistance")
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Superadmin" asp-action="Fillupformhospitalbillview" asp-route-id="@file.FormId" title="View Details">
-                                                                <i class="bi bi-eye"></i>
-                                                            </a>
-                                                        }
-                                                        else if (file.Type == "Medical and laboratory Procedure")
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Superadmin" asp-action="Medicalandlabformview" asp-route-id="@file.FormId" title="View Details">
-                                                                <i class="bi bi-eye"></i>
-                                                            </a>
-                                                        }
-                                                        else
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Superadmin" asp-action="Funeralburialformview" asp-route-id="@file.FormId" title="View Details">
-                                                                <i class="bi bi-eye"></i>
-                                                            </a>
-                                                        }
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    @file.CreatedAt.ToString("yyyy-MM-dd hh:mm tt")
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <tr id="noClaimedResults">
-                                            <td colspan="5" class="text-center py-3">
-                                                <i class="bi bi-check-circle text-muted fs-3"></i>
-                                                <p class="mt-2 text-muted">No claimed applications found.</p>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <script>
-                // Combined function to apply both search and type filters
-                function applyClaimedFilters() {
-                    const searchInput = document.getElementById('claimedSearchInput');
-                    const typeFilter = document.getElementById('claimedTypeFilter');
-                    const table = document.getElementById('claimedFilesTable');
-                    const rows = table.getElementsByTagName('tr');
-
-                    if (!searchInput || !typeFilter || !table) {
-                        console.error('Required elements not found');
-                        return;
-                    }
-
-                    const searchTerm = searchInput.value.trim().toUpperCase();
-                    const selectedType = typeFilter.value;
-                    let visibleRowsCount = 0;
-
-                    // Start from index 1 to skip the header row
-                    for (let i = 1; i < rows.length; i++) {
-                        const row = rows[i];
-
-                        // Skip the "no results" row if it exists
-                        if (row.id === 'noClaimedResults') {
-                            continue;
-                        }
-
-                        const cells = row.getElementsByTagName('td');
-
-                        // Make sure the row has the expected number of cells
-                        if (cells.length < 2) {
-                            continue;
-                        }
-
-                        const type = cells[0].textContent.trim();
-                        const name = cells[1].textContent.trim().toUpperCase();
-
-                        // Check type filter match
-                        const typeMatch = selectedType === "All" || type === selectedType;
-
-                        // Check search term match (search in both type and name)
-                        const searchMatch = searchTerm === "" ||
-                                           name.includes(searchTerm) ||
-                                           type.toUpperCase().includes(searchTerm);
-
-                        // Show/hide row based on both filters
-                        if (typeMatch && searchMatch) {
-                            row.style.display = "";
-                            visibleRowsCount++;
-                        } else {
-                            row.style.display = "none";
-                        }
-                    }
-
-                    // Handle "no results" message
-                    handleNoClaimedResults(visibleRowsCount);
-                }
-
-                // Function to show/hide "no results" message
-                function handleNoClaimedResults(visibleCount) {
-                    const table = document.getElementById('claimedFilesTable');
-                    const tbody = table.getElementsByTagName('tbody')[0];
-                    let noResultsRow = document.getElementById('noClaimedResults');
-
-                    if (visibleCount === 0) {
-                        // Show "no results" message
-                        if (!noResultsRow) {
-                            noResultsRow = document.createElement('tr');
-                            noResultsRow.id = 'noClaimedResults';
-                            noResultsRow.innerHTML = `
-                                <td colspan="5" class="text-center py-3">
-                                    <i class="bi bi-search text-muted fs-3"></i>
-                                    <p class="mt-2 text-muted">No applications match your search criteria.</p>
-                                </td>
-                            `;
-                            tbody.appendChild(noResultsRow);
-                        }
-                        noResultsRow.style.display = "";
-                    } else {
-                        // Hide "no results" message
-                        if (noResultsRow) {
-                            noResultsRow.style.display = "none";
-                        }
-                    }
-                }
-
-                // Clear search function
-                function clearClaimedSearch() {
-                    document.getElementById('claimedSearchInput').value = '';
-                    document.getElementById('claimedTypeFilter').value = 'All';
-                    applyClaimedFilters();
-                }
-
-                // Initialize filters when page loads
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Small delay to ensure all elements are loaded
-                    setTimeout(function() {
-                        applyClaimedFilters();
-                    }, 100);
-                });
-
-                // Add enter key support for search
-                document.addEventListener('DOMContentLoaded', function() {
-                    const searchInput = document.getElementById('claimedSearchInput');
-                    if (searchInput) {
-                        searchInput.addEventListener('keypress', function(e) {
-                            if (e.key === 'Enter') {
-                                applyClaimedFilters();
+                    <div class="stat-info">
+                        <h3>
+                            @{
+                                var approvedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
+                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
+                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved");
+                                @approvedCount
                             }
-                        });
-                    }
-                });
-            </script>
-
-
-            <!-- Pending Status Section -->
-            <div class="col-lg-6">
-                <div class="card card-box h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Pending Status</h5>
-
-                        <!-- Search Box -->
-                        <div class="mb-3">
-                            <label for="pendingSearchInput" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="pendingSearchInput" placeholder="Search by name or type..." onkeyup="searchPendingFiles()">
-                        </div>
-
-                        <!-- Dropdown to filter types -->
-                        <div class="mb-3">
-                            <label for="pendingTypeFilter" class="form-label">Filter by Type</label>
-                            <select id="pendingTypeFilter" class="form-select" onchange="filterPendingByType()">
-                                <option value="All">All Types</option>
-                                <option value="Hospital Bill Assistance">Hospital Bill Assistance</option>
-                                <option value="Medical and laboratory Procedure">Medical and laboratory Procedure</option>
-                                <option value="Funeral and burial assistance">Funeral and burial assistance</option>
-                            </select>
-                        </div>
-
-                        <!-- Table -->
-                        <div class="table-responsive" style="height: 400px; overflow-y: auto;">
-                            <table class="table table-hover mb-0" id="pendingFilesTable">
-                                <thead class="sticky-top bg-light" style="z-index: 1;">
-                                    <tr>
-                                        <th>Type</th>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                        <th>Created At</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        var allFiles = new List<dynamic>();
-
-                                        allFiles.AddRange(Model.HospitalBills
-                                        .Select(f => new
-                                        {
-                                            Type = "Hospital Bill Assistance",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "FillupformHospitalBilledit",
-                                            DeleteAction = "FillupformHospitalBilldelete"
-                                        }));
-
-                                        allFiles.AddRange(Model.MedicalLabForms
-                                        .Select(f => new
-                                        {
-                                            Type = "Medical and laboratory Procedure",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "Medicalandlabformedit",
-                                            DeleteAction = "Medicalandlabformedelete"
-                                        }));
-
-                                        allFiles.AddRange(Model.Funeralburialform
-                                        .Select(f => new
-                                        {
-                                            Type = "Funeral and burial assistance",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "Funeralburialformedit",
-                                            DeleteAction = "Funeralburialformedelete"
-                                        }));
-
-                                        var pendingFiles = allFiles
-                                        .Where(f => (f.Status?.ToLower() == "pending" || f.Status?.ToLower() == "processing"))
-                                        .OrderByDescending(f => f.CreatedAt)
-                                        .ToList();
-                                    }
-
-                                    @if (pendingFiles.Any())
-                                    {
-                                        foreach (var file in pendingFiles)
-                                        {
-                                            <tr class="file-row" data-type="@file.Type">
-                                                <td>@file.Type</td>
-                                                <td>@file.Name</td>
-                                                <td>
-                                                    <span class="status-pending">
-                                                        <i class="bi bi-hourglass-split"></i> @file.Status
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group">
-                                                        @if (file.Type == "Hospital Bill Assistance")
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="FillupformHospitalBillUpdatestatus" asp-route-id="@file.FormId">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </a>
-                                                        }
-                                                        else if (file.Type == "Medical and laboratory Procedure")
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="Medicalandlabformstatus" asp-route-id="@file.FormId">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </a>
-                                                        }
-                                                        else
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="Funeralburialformstatus" asp-route-id="@file.FormId">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </a>
-                                                        }
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    @file.CreatedAt.ToString("yyyy-MM-dd hh:mm tt")
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <td colspan="5" class="text-center py-3">
-                                                <i class="bi bi-check-circle text-muted fs-3"></i>
-                                                <p class="mt-2 text-muted">No pending applications found.</p>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
+                        </h3>
+                        <p>Approved</p>
+                    </div>
+                </div>
+                <div class="stat-card unapproved" data-status="unapproved">
+                    <div class="stat-icon">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>
+                            @{
+                                var unapprovedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
+                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
+                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved");
+                                @unapprovedCount
+                            }
+                        </h3>
+                        <p>Unapproved</p>
+                    </div>
+                </div>
+                <div class="stat-card pending" data-status="pending">
+                    <div class="stat-icon">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>
+                            @{
+                                var pendingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
+                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
+                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending");
+                                @pendingCount
+                            }
+                        </h3>
+                        <p>Pending</p>
+                    </div>
+                </div>
+                <div class="stat-card processing" data-status="processing">
+                    <div class="stat-icon">
+                        <i class="bi bi-gear"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>
+                            @{
+                                var processingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "processing") +
+                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "processing") +
+                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "processing");
+                                @processingCount
+                            }
+                        </h3>
+                        <p>Processing</p>
+                    </div>
+                </div>
+                <div class="stat-card claimed" data-status="claimed">
+                    <div class="stat-icon">
+                        <i class="bi bi-cloud-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>
+                            @{
+                                var claimedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
+                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
+                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed");
+                                @claimedCount
+                            }
+                        </h3>
+                        <p>Claimed</p>
                     </div>
                 </div>
             </div>
 
-            <script>
-                // Search function for pending files
-                function searchPendingFiles() {
-                    const input = document.getElementById('pendingSearchInput');
-                    const filter = input.value.toUpperCase();
-                    const table = document.getElementById('pendingFilesTable');
-                    const tr = table.getElementsByTagName('tr');
-
-                    for (let i = 1; i < tr.length; i++) {
-                        const type = tr[i].getElementsByTagName('td')[0].textContent.toUpperCase();
-                        const name = tr[i].getElementsByTagName('td')[1].textContent.toUpperCase();
-
-                        if (type.includes(filter) || name.includes(filter)) {
-                            tr[i].style.display = "";
-                        } else {
-                            tr[i].style.display = "none";
-                        }
-                    }
-                }
-
-                // Filter function for pending files (updated to work with search)
-                function filterPendingByType() {
-                    const filter = document.getElementById('pendingTypeFilter').value;
-                    const searchTerm = document.getElementById('pendingSearchInput').value.toUpperCase();
-                    const table = document.getElementById('pendingFilesTable');
-                    const tr = table.getElementsByTagName('tr');
-
-                    for (let i = 1; i < tr.length; i++) {
-                        const type = tr[i].getElementsByTagName('td')[0].textContent;
-                        const name = tr[i].getElementsByTagName('td')[1].textContent.toUpperCase();
-                        const typeMatch = filter === "All" || type === filter;
-                        const searchMatch = name.includes(searchTerm) || type.toUpperCase().includes(searchTerm);
-
-                        if (typeMatch && searchMatch) {
-                            tr[i].style.display = "";
-                        } else {
-                            tr[i].style.display = "none";
-                        }
-                    }
-                }
-            </script>
-
-        </div>
-
-
-        <div class="row mt-4 g-4">
-
-            <!-- Recent Unapproved Activity -->
-            <div class="col-lg-6">
-                <div class="card card-box h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Unapproved Status</h5>
-
-                        <!-- Search Box -->
-                        <div class="mb-3">
-                            <label for="unapprovedSearchInput" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="unapprovedSearchInput" placeholder="Search by name or type..." onkeyup="searchUnapprovedFiles()">
+            <!-- Main Table Card -->
+            <div class="main-card">
+                <div class="card-header">
+                    <h3 class="card-title">Applications</h3>
+                    <div class="card-tools">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search applications...">
                         </div>
+                        <select class="filter-select" id="typeFilter">
+                            <option value="all">All Types</option>
+                            <option value="Hospital Bill Assistance">Hospital Bill Assistance</option>
+                            <option value="Medical and laboratory Procedure">Medical & Laboratory</option>
+                            <option value="Funeral and burial assistance">Funeral & Burial</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Date Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTable">
+                                @{
+                                    // Combine all applications
+                                    var allApplications = new List<dynamic>();
 
-                        <!-- Dropdown to filter types -->
-                        <div class="mb-3">
-                            <label for="unapprovedTypeFilter" class="form-label">Filter by Type</label>
-                            <select id="unapprovedTypeFilter" class="form-select" onchange="filterUnapprovedByType()">
-                                <option value="All">All Types</option>
-                                <option value="Hospital Bill Assistance">Hospital Bill Assistance</option>
-                                <option value="Medical and laboratory Procedure">Medical and laboratory Procedure</option>
-                                <option value="Funeral and burial assistance">Funeral and burial assistance</option>
-                            </select>
-                        </div>
-
-                        <!-- Table -->
-                        <div class="table-responsive" style="height: 400px; overflow-y: auto;">
-                            <table class="table table-hover mb-0" id="unapprovedFilesTable">
-                                <thead class="sticky-top bg-light" style="z-index: 1;">
-                                    <tr>
-                                        <th>Type</th>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                        <th>Created At</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        var allUnapprovedFiles = new List<dynamic>();
-
-                                        allUnapprovedFiles.AddRange(Model.HospitalBills
-                                        .Select(f => new
-                                        {
-                                            Type = "Hospital Bill Assistance",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "FillupformHospitalBilledit",
-                                            DeleteAction = "FillupformHospitalBilldelete"
-                                        }));
-
-                                        allUnapprovedFiles.AddRange(Model.MedicalLabForms
-                                        .Select(f => new
-                                        {
-                                            Type = "Medical and laboratory Procedure",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "Medicalandlabformedit",
-                                            DeleteAction = "Medicalandlabformedelete"
-                                        }));
-
-                                        allUnapprovedFiles.AddRange(Model.Funeralburialform
-                                        .Select(f => new
-                                        {
-                                            Type = "Funeral and burial assistance",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "Funeralburialformedit",
-                                            DeleteAction = "Funeralburialformedelete"
-                                        }));
-
-                                        var unapprovedFiles = allUnapprovedFiles
-                                        .Where(f => f.Status?.ToLower() == "unapproved")
-                                        .OrderByDescending(f => f.CreatedAt)
-                                        .ToList();
-                                    }
-
-                                    @if (unapprovedFiles.Any())
+                                    // Hospital Bills
+                                    allApplications.AddRange(Model.HospitalBills.Select(f => new
                                     {
-                                        foreach (var file in unapprovedFiles)
-                                        {
-                                            <tr class="file-row" data-type="@file.Type">
-                                                <td>@file.Type</td>
-                                                <td>@file.Name</td>
-                                                <td>
-                                                    <span class="status-rejected">
-                                                        <i class="bi bi-x-circle-fill"></i> @file.Status
+                                        Type = "Hospital Bill Assistance",
+                                        Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
+                                        CreatedAt = f.CreatedAt,
+                                        Status = f.Status?.ToLower(),
+                                        FormId = f.Id,
+                                        Controller = "Dashboard"
+                                    }));
+
+                                    // Medical Lab Forms
+                                    allApplications.AddRange(Model.MedicalLabForms.Select(f => new
+                                    {
+                                        Type = "Medical and laboratory Procedure",
+                                        Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
+                                        CreatedAt = f.CreatedAt,
+                                        Status = f.Status?.ToLower(),
+                                        FormId = f.Id,
+                                        Controller = "Dashboard"
+                                    }));
+
+                                    // Funeral Forms
+                                    allApplications.AddRange(Model.Funeralburialform.Select(f => new
+                                    {
+                                        Type = "Funeral and burial assistance",
+                                        Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
+                                        CreatedAt = f.CreatedAt,
+                                        Status = f.Status?.ToLower(),
+                                        FormId = f.Id,
+                                        Controller = "Dashboard"
+                                    }));
+
+                                    // Order by creation date
+                                    var orderedApplications = allApplications.OrderByDescending(f => f.CreatedAt).ToList();
+                                }
+
+                                @if (orderedApplications.Any())
+                                {
+                                    foreach (var app in orderedApplications)
+                                    {
+                                        <tr data-status="@app.Status" data-type="@app.Type">
+                                            <td>@app.Name</td>
+                                            <td>@app.Type</td>
+                                            <td>
+                                                @if (app.Status == "approved")
+                                                {
+                                                    <span class="status-badge status-approved">
+                                                        <i class="bi bi-check-circle"></i> Approved
                                                     </span>
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group">
-                                                        @if (file.Type == "Hospital Bill Assistance")
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="FillupformHospitalBillUpdatestatus" asp-route-id="@file.FormId">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </a>
-                                                        }
-                                                        else if (file.Type == "Medical and laboratory Procedure")
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="Medicalandlabformstatus" asp-route-id="@file.FormId">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </a>
-                                                        }
-                                                        else
-                                                        {
-                                                            <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="Funeralburialformstatus" asp-route-id="@file.FormId">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </a>
-                                                        }
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    @file.CreatedAt.ToString("yyyy-MM-dd hh:mm tt")
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <td colspan="5" class="text-center py-3">
-                                                <i class="bi bi-check-circle text-muted fs-3"></i>
-                                                <p class="mt-2 text-muted">No unapproved applications found.</p>
+                                                }
+                                                else if (app.Status == "unapproved")
+                                                {
+                                                    <span class="status-badge status-unapproved">
+                                                        <i class="bi bi-x-circle"></i> Unapproved
+                                                    </span>
+                                                }
+                                                else if (app.Status == "pending")
+                                                {
+                                                    <span class="status-badge status-pending">
+                                                        <i class="bi bi-hourglass-split"></i> Pending
+                                                    </span>
+                                                }
+                                                else if (app.Status == "processing")
+                                                {
+                                                    <span class="status-badge status-processing">
+                                                        <i class="bi bi-gear"></i> Processing
+                                                    </span>
+                                                }
+                                                else if (app.Status == "claimed")
+                                                {
+                                                    <span class="status-badge status-claimed">
+                                                        <i class="bi bi-cloud-check"></i> Claimed
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="status-badge">
+                                                        <i class="bi bi-question-circle"></i> @app.Status
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>@app.CreatedAt.ToString("yyyy-MM-dd hh:mm tt")</td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    @if (app.Type == "Hospital Bill Assistance")
+                                                    {
+                                                        <a class="btn-action btn-view" asp-controller="Superadmin" asp-action="Fillupformhospitalbillview" asp-route-id="@app.FormId" title="View Details">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        <a class="btn-action btn-edit" asp-controller="Adminuser" asp-action="FillupformHospitalBillUpdatestatus" asp-route-id="@app.FormId" title="Update Status">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                    }
+                                                    else if (app.Type == "Medical and laboratory Procedure")
+                                                    {
+                                                        <a class="btn-action btn-view" asp-controller="Superadmin" asp-action="Medicalandlabformview" asp-route-id="@app.FormId" title="View Details">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        <a class="btn-action btn-edit" asp-controller="Adminuser" asp-action="Medicalandlabformstatus" asp-route-id="@app.FormId" title="Update Status">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a class="btn-action btn-view" asp-controller="Superadmin" asp-action="Funeralburialformview" asp-route-id="@app.FormId" title="View Details">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        <a class="btn-action btn-edit" asp-controller="Adminuser" asp-action="Funeralburialformstatus" asp-route-id="@app.FormId" title="Update Status">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                    }
+                                                </div>
                                             </td>
                                         </tr>
                                     }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <script>
-                // Search function for unapproved files
-                function searchUnapprovedFiles() {
-                    const input = document.getElementById('unapprovedSearchInput');
-                    const filter = input.value.toUpperCase();
-                    const table = document.getElementById('unapprovedFilesTable');
-                    const tr = table.getElementsByTagName('tr');
-
-                    for (let i = 1; i < tr.length; i++) {
-                        const type = tr[i].getElementsByTagName('td')[0].textContent.toUpperCase();
-                        const name = tr[i].getElementsByTagName('td')[1].textContent.toUpperCase();
-
-                        if (type.includes(filter) || name.includes(filter)) {
-                            tr[i].style.display = "";
-                        } else {
-                            tr[i].style.display = "none";
-                        }
-                    }
-                }
-
-                // Filter function for unapproved files (updated to work with search)
-                function filterUnapprovedByType() {
-                    const filter = document.getElementById('unapprovedTypeFilter').value;
-                    const searchTerm = document.getElementById('unapprovedSearchInput').value.toUpperCase();
-                    const table = document.getElementById('unapprovedFilesTable');
-                    const tr = table.getElementsByTagName('tr');
-
-                    for (let i = 1; i < tr.length; i++) {
-                        const type = tr[i].getElementsByTagName('td')[0].textContent;
-                        const name = tr[i].getElementsByTagName('td')[1].textContent.toUpperCase();
-                        const typeMatch = filter === "All" || type === filter;
-                        const searchMatch = name.includes(searchTerm) || type.toUpperCase().includes(searchTerm);
-
-                        if (typeMatch && searchMatch) {
-                            tr[i].style.display = "";
-                        } else {
-                            tr[i].style.display = "none";
-                        }
-                    }
-                }
-            </script>
-
-
-
-            <!-- Approved User Files -->
-            <div class="col-lg-6">
-                <div class="card card-box h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">Approved Status</h5>
-
-                        <!-- Search Box -->
-                        <div class="mb-3">
-                            <label for="approvedSearchInput" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="approvedSearchInput" placeholder="Search by name or type..." onkeyup="searchApprovedFiles()">
-                        </div>
-
-                        <!-- Dropdown to filter types -->
-                        <div class="mb-3">
-                            <label for="approvedTypeFilter" class="form-label">Filter by Type</label>
-                            <select id="approvedTypeFilter" class="form-select" onchange="filterApprovedByType()">
-                                <option value="All">All Types</option>
-                                <option value="Hospital Bill Assistance">Hospital Bill Assistance</option>
-                                <option value="Medical and laboratory Procedure">Medical and laboratory Procedure</option>
-                                <option value="Funeral and burial assistance">Funeral and burial assistance</option>
-                            </select>
-                        </div>
-
-                        <!-- Table -->
-                        <div class="table-responsive" style="height: 400px; overflow-y: auto;">
-                            <table class="table table-hover mb-0" id="approvedFilesTable">
-                                <thead class="sticky-top bg-light" style="z-index: 1;">
+                                }
+                                else
+                                {
                                     <tr>
-                                        <th>Type</th>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                        <th>Created At</th>
+                                        <td colspan="5" class="empty-state">
+                                            <i class="bi bi-inbox"></i>
+                                            <h4>No applications found</h4>
+                                            <p>There are currently no applications to display.</p>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        var allFiles1 = new List<dynamic>();
-
-                                        allFiles1.AddRange(Model.HospitalBills
-                                        .Select(f => new
-                                        {
-                                            Type = "Hospital Bill Assistance",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "FillupformHospitalBilledit",
-                                            DeleteAction = "FillupformHospitalBilldelete"
-                                        }));
-
-                                        allFiles1.AddRange(Model.MedicalLabForms
-                                        .Select(f => new
-                                        {
-                                            Type = "Medical and laboratory Procedure",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "Medicalandlabformedit",
-                                            DeleteAction = "Medicalandlabformedelete"
-                                        }));
-
-                                        allFiles1.AddRange(Model.Funeralburialform
-                                        .Select(f => new
-                                        {
-                                            Type = "Funeral and burial assistance",
-                                            Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                            CreatedAt = f.CreatedAt,
-                                            Status = f.Status,
-                                            FormId = f.Id,
-                                            Controller = "Dashboard",
-                                            EditAction = "Funeralburialformedit",
-                                            DeleteAction = "Funeralburialformedelete"
-                                        }));
-
-                                        var approvedFiles = allFiles1
-                                        .Where(f => f.Status?.ToLower() == "approved")
-                                        .OrderByDescending(f => f.CreatedAt)
-                                        .ToList();
-                                    }
-
-                                    @if (approvedFiles.Any())
-                                    {
-                                        foreach (var file in approvedFiles)
-                                        {
-                                            <tr class="file-row" data-type="@file.Type">
-                                                <td>@file.Type</td>
-                                                <td>@file.Name</td>
-                                                <td>
-                                                    <span class="status-approved">
-                                                        <i class="bi bi-check-circle-fill"></i> @file.Status
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group">
-                                                        <div class="btn-group">
-                                                            @if (file.Type == "Hospital Bill Assistance")
-                                                            {
-                                                                <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="FillupformHospitalBillUpdatestatus" asp-route-id="@file.FormId">
-                                                                    <i class="bi bi-pencil"></i>
-                                                                </a>
-                                                            }
-                                                            else if (file.Type == "Medical and laboratory Procedure")
-                                                            {
-                                                                <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="Medicalandlabformstatus" asp-route-id="@file.FormId">
-                                                                    <i class="bi bi-pencil"></i>
-                                                                </a>
-                                                            }
-                                                            else
-                                                            {
-                                                                <a class="btn btn-sm btn-outline-primary" asp-controller="Adminuser" asp-action="Funeralburialformstatus" asp-route-id="@file.FormId">
-                                                                    <i class="bi bi-pencil"></i>
-                                                                </a>
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    @file.CreatedAt.ToString("yyyy-MM-dd hh:mm tt")
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <td colspan="5" class="text-center py-3">
-                                                <i class="bi bi-check-circle text-muted fs-3"></i>
-                                                <p class="mt-2 text-muted">No approved applications found.</p>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
+                                }
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-
-            <script>
-                // Search function for approved files
-                function searchApprovedFiles() {
-                    const input = document.getElementById('approvedSearchInput');
-                    const filter = input.value.toUpperCase();
-                    const table = document.getElementById('approvedFilesTable');
-                    const tr = table.getElementsByTagName('tr');
-
-                    for (let i = 1; i < tr.length; i++) {
-                        const type = tr[i].getElementsByTagName('td')[0].textContent.toUpperCase();
-                        const name = tr[i].getElementsByTagName('td')[1].textContent.toUpperCase();
-
-                        if (type.includes(filter) || name.includes(filter)) {
-                            tr[i].style.display = "";
-                        } else {
-                            tr[i].style.display = "none";
-                        }
-                    }
-                }
-
-                // Existing filter function (if you need it to work with search)
-                function filterApprovedByType() {
-                    const filter = document.getElementById('approvedTypeFilter').value;
-                    const searchTerm = document.getElementById('approvedSearchInput').value.toUpperCase();
-                    const table = document.getElementById('approvedFilesTable');
-                    const tr = table.getElementsByTagName('tr');
-
-                    for (let i = 1; i < tr.length; i++) {
-                        const type = tr[i].getElementsByTagName('td')[0].textContent;
-                        const name = tr[i].getElementsByTagName('td')[1].textContent.toUpperCase();
-                        const typeMatch = filter === "All" || type === filter;
-                        const searchMatch = name.includes(searchTerm) || type.toUpperCase().includes(searchTerm);
-
-                        if (typeMatch && searchMatch) {
-                            tr[i].style.display = "";
-                        } else {
-                            tr[i].style.display = "none";
-                        }
-                    }
-                }
-            </script>
-
-
-
         </div>
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Status card filtering
+            const statCards = document.querySelectorAll('.stat-card');
+            const applicationsTable = document.getElementById('applicationsTable');
+            const tableRows = applicationsTable.querySelectorAll('tr');
+            const searchInput = document.getElementById('searchInput');
+            const typeFilter = document.getElementById('typeFilter');
 
+            // Function to filter table by status
+            function filterByStatus(status) {
+                let visibleCount = 0;
 
-        // Burger menu functionality
-        const burgerMenu = document.querySelector('.burger-menu');
-        const sidebar = document.querySelector('.sidebar');
-        const sidebarOverlay = document.querySelector('.sidebar-overlay');
-        const closeBtn = document.querySelector('.close-btn');
+                tableRows.forEach(row => {
+                    if (row.cells.length > 1) { // Skip empty state row
+                        const rowStatus = row.dataset.status;
 
-        burgerMenu.addEventListener('click', () => {
-            burgerMenu.classList.toggle('active');
-            sidebar.classList.toggle('active');
-            sidebarOverlay.classList.toggle('active');
-        });
-
-        closeBtn.addEventListener('click', () => {
-            burgerMenu.classList.remove('active');
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            burgerMenu.classList.remove('active');
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        });
-
-
-    </script>
-
-
-    <!-- Script for Pending Filter -->
-    <script>
-         // For Pending Filter
-        function filterByType() {
-            var selectedType = document.getElementById("pendingTypeFilter").value;
-            var rows = document.querySelectorAll("#pendingFilesTable tbody .file-row");
-            var tableContainer = document.querySelector("#pendingFilesTable").closest('.table-responsive');
-
-            let visibleCount = 0;
-
-            rows.forEach(function(row) {
-                var rowType = row.getAttribute("data-type");
-
-                if (selectedType === "All" || rowType === selectedType) {
-                    row.style.display = "";
-                    visibleCount++;
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            if (visibleCount === 0) {
-                tableContainer.style.minHeight = "200px";
-            } else {
-                tableContainer.style.minHeight = "auto";
-            }
-        }
-
-    </script>
-
-    <!-- Script for Unapproved Filter -->
-    <script>
-        function filterUnapprovedByType() {
-            var selectedType = document.getElementById("unapprovedTypeFilter").value;
-            var rows = document.querySelectorAll("#unapprovedFilesTable tbody .file-row");
-            var tableContainer = document.querySelector("#unapprovedFilesTable").closest('.table-responsive');
-
-            let visibleCount = 0;
-
-            rows.forEach(function(row) {
-                var rowType = row.getAttribute("data-type");
-
-                if (selectedType === "All" || rowType === selectedType) {
-                    row.style.display = "";
-                    visibleCount++;
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            if (visibleCount === 0) {
-                tableContainer.style.minHeight = "200px";
-            } else {
-                tableContainer.style.minHeight = "auto";
-            }
-        }
-    </script>
-
-    <!-- Script for Approved Filter -->
-    <script>
-        function filterApprovedByType() {
-            var selectedType = document.getElementById("approvedTypeFilter").value;
-            var rows = document.querySelectorAll("#approvedFilesTable tbody .file-row");
-            var tableContainer = document.querySelector("#approvedFilesTable").closest('.table-responsive');
-
-            let visibleCount = 0;
-
-            rows.forEach(function(row) {
-                var rowType = row.getAttribute("data-type");
-
-                if (selectedType === "All" || rowType === selectedType) {
-                    row.style.display = "";
-                    visibleCount++;
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            if (visibleCount === 0) {
-                tableContainer.style.minHeight = "200px";
-            } else {
-                tableContainer.style.minHeight = "auto";
-            }
-        }
-    </script>
-
-    <!-- Script for Claimed Filter -->
-    <script>
-              // For Claimed Filter
-        function filterClaimedByType() {
-            var selectedType = document.getElementById("claimedTypeFilter").value;
-            var rows = document.querySelectorAll("#claimedTableBody .claimed-row");
-            var tableContainer = document.querySelector("#claimedTableBody").closest('.table-responsive');
-
-            let visibleCount = 0;
-
-            rows.forEach(function(row) {
-                var rowType = row.getAttribute("data-type");
-
-                if (selectedType === "All" || rowType === selectedType) {
-                    row.style.display = "";
-                    visibleCount++;
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            if (visibleCount === 0) {
-                tableContainer.style.minHeight = "200px";
-            } else {
-                tableContainer.style.minHeight = "auto";
-            }
-        }
-    </script>
-
-    <script>
-        window.addEventListener('pageshow', function (event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelector('li a').addEventListener('click', () => {
-                document.getElementById('sidebar').classList.remove('show');
-                document.getElementById('sidebar').classList.add('hidden');
-            });
-        });
-    </script>
-
-
-    <script>
-        function searchClaimed() {
-            var input = document.getElementById("claimedSearch");
-            var filter = input.value.toLowerCase();
-            var table = document.getElementById("claimedTable");
-            var tr = table.getElementsByTagName("tr");
-
-            for (var i = 1; i < tr.length; i++) { // Start from 1 to skip the header
-                var td = tr[i].getElementsByTagName("td");
-                var match = false;
-                for (var j = 0; j < td.length; j++) {
-                    if (td[j] && td[j].innerText.toLowerCase().includes(filter)) {
-                        match = true;
-                        break;
+                        if (rowStatus === status) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
                     }
+                });
+
+                // Show empty state if no results
+                const emptyState = applicationsTable.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.style.display = visibleCount === 0 ? '' : 'none';
                 }
-                tr[i].style.display = match ? "" : "none";
+
+                // Update active card
+                statCards.forEach(card => {
+                    if (card.dataset.status === status) {
+                        card.classList.add('active');
+                    } else {
+                        card.classList.remove('active');
+                    }
+                });
             }
-        }
+
+            // Add click event to status cards
+            statCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const status = this.dataset.status;
+                    filterByStatus(status);
+                    // Apply current search and type filters
+                    applyFilters();
+                });
+            });
+
+            // Combined filter function
+            function applyFilters() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedType = typeFilter.value;
+                const activeStatus = document.querySelector('.stat-card.active').dataset.status;
+                let visibleCount = 0;
+
+                tableRows.forEach(row => {
+                    if (row.cells.length > 1) { // Skip empty state row
+                        const statusMatch = row.dataset.status === activeStatus;
+                        const typeMatch = selectedType === "all" || row.dataset.type === selectedType;
+                        const name = row.cells[0].textContent.toLowerCase();
+                        const type = row.cells[1].textContent.toLowerCase();
+                        const searchMatch = searchTerm === "" || name.includes(searchTerm) || type.includes(searchTerm);
+
+                        if (statusMatch && typeMatch && searchMatch) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+
+                // Show empty state if no results
+                const emptyState = applicationsTable.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.style.display = visibleCount === 0 ? '' : 'none';
+                }
+            }
+
+            // Event listeners for search and type filter
+            searchInput.addEventListener('input', applyFilters);
+            typeFilter.addEventListener('change', applyFilters);
+
+            // Initialize with approved applications
+            filterByStatus('approved');
+        });
     </script>
-
-
-
-
-
 </body>
 </html>
