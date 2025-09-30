@@ -253,6 +253,7 @@
         .card-tools {
             display: flex;
             gap: 1rem;
+            align-items: center;
         }
 
         .search-box {
@@ -282,6 +283,32 @@
             width: 200px;
             height: 40px;
         }
+
+        .time-filter {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .time-filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--gray-200);
+            background: white;
+            color: var(--gray-600);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .time-filter-btn:hover {
+                background: var(--gray-200);
+            }
+
+            .time-filter-btn.active {
+                background: var(--primary);
+                color: white;
+                border-color: var(--primary);
+            }
 
         /* Table Styles */
         .table-responsive {
@@ -409,6 +436,13 @@
                 margin-bottom: 0.5rem;
                 font-weight: 600;
             }
+
+        /* Time Filter Label */
+        .time-filter-label {
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -453,6 +487,22 @@
                 </div>
             </div>
 
+            <!-- Time Filter Section -->
+            <div class="main-card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Filter by Time Period</h3>
+                    <div class="card-tools">
+                        <div class="time-filter">
+                            <span class="time-filter-label">Show:</span>
+                            <button class="time-filter-btn" data-period="1year">Last Year</button>
+                            <button class="time-filter-btn" data-period="1week">Last Week</button>
+                            <button class="time-filter-btn active" data-period="currentMonth">Current Month</button>
+                            <button class="time-filter-btn" data-period="all">All Time</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stats Cards -->
             <div class="stats-container">
                 <div class="stat-card approved active" data-status="approved">
@@ -460,14 +510,7 @@
                         <i class="bi bi-check-circle"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>
-                            @{
-                                var approvedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
-                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
-                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved");
-                                @approvedCount
-                            }
-                        </h3>
+                        <h3 id="approved-count">0</h3>
                         <p>Approved</p>
                     </div>
                 </div>
@@ -476,14 +519,7 @@
                         <i class="bi bi-x-circle"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>
-                            @{
-                                var unapprovedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
-                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
-                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved");
-                                @unapprovedCount
-                            }
-                        </h3>
+                        <h3 id="unapproved-count">0</h3>
                         <p>Unapproved</p>
                     </div>
                 </div>
@@ -492,14 +528,7 @@
                         <i class="bi bi-hourglass-split"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>
-                            @{
-                                var pendingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
-                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
-                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending");
-                                @pendingCount
-                            }
-                        </h3>
+                        <h3 id="pending-count">0</h3>
                         <p>Pending</p>
                     </div>
                 </div>
@@ -508,14 +537,7 @@
                         <i class="bi bi-gear"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>
-                            @{
-                                var processingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "processing") +
-                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "processing") +
-                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "processing");
-                                @processingCount
-                            }
-                        </h3>
+                        <h3 id="processing-count">0</h3>
                         <p>Processing</p>
                     </div>
                 </div>
@@ -524,14 +546,7 @@
                         <i class="bi bi-cloud-check"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>
-                            @{
-                                var claimedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
-                                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
-                                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed");
-                                @claimedCount
-                            }
-                        </h3>
+                        <h3 id="claimed-count">0</h3>
                         <p>Claimed</p>
                     </div>
                 </div>
@@ -567,137 +582,7 @@
                                 </tr>
                             </thead>
                             <tbody id="applicationsTable">
-                                @{
-                                    // Combine all applications
-                                    var allApplications = new List<dynamic>();
-
-                                    // Hospital Bills
-                                    allApplications.AddRange(Model.HospitalBills.Select(f => new
-                                    {
-                                        Type = "Hospital Bill Assistance",
-                                        Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                        CreatedAt = f.CreatedAt,
-                                        Status = f.Status?.ToLower(),
-                                        FormId = f.Id,
-                                        Controller = "Dashboard"
-                                    }));
-
-                                    // Medical Lab Forms
-                                    allApplications.AddRange(Model.MedicalLabForms.Select(f => new
-                                    {
-                                        Type = "Medical and laboratory Procedure",
-                                        Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                        CreatedAt = f.CreatedAt,
-                                        Status = f.Status?.ToLower(),
-                                        FormId = f.Id,
-                                        Controller = "Dashboard"
-                                    }));
-
-                                    // Funeral Forms
-                                    allApplications.AddRange(Model.Funeralburialform.Select(f => new
-                                    {
-                                        Type = "Funeral and burial assistance",
-                                        Name = $"{f.Lastname} {f.Firstname} {f.Middlename}",
-                                        CreatedAt = f.CreatedAt,
-                                        Status = f.Status?.ToLower(),
-                                        FormId = f.Id,
-                                        Controller = "Dashboard"
-                                    }));
-
-                                    // Order by creation date
-                                    var orderedApplications = allApplications.OrderByDescending(f => f.CreatedAt).ToList();
-                                }
-
-                                @if (orderedApplications.Any())
-                                {
-                                    foreach (var app in orderedApplications)
-                                    {
-                                        <tr data-status="@app.Status" data-type="@app.Type">
-                                            <td>@app.Name</td>
-                                            <td>@app.Type</td>
-                                            <td>
-                                                @if (app.Status == "approved")
-                                                {
-                                                    <span class="status-badge status-approved">
-                                                        <i class="bi bi-check-circle"></i> Approved
-                                                    </span>
-                                                }
-                                                else if (app.Status == "unapproved")
-                                                {
-                                                    <span class="status-badge status-unapproved">
-                                                        <i class="bi bi-x-circle"></i> Unapproved
-                                                    </span>
-                                                }
-                                                else if (app.Status == "pending")
-                                                {
-                                                    <span class="status-badge status-pending">
-                                                        <i class="bi bi-hourglass-split"></i> Pending
-                                                    </span>
-                                                }
-                                                else if (app.Status == "processing")
-                                                {
-                                                    <span class="status-badge status-processing">
-                                                        <i class="bi bi-gear"></i> Processing
-                                                    </span>
-                                                }
-                                                else if (app.Status == "claimed")
-                                                {
-                                                    <span class="status-badge status-claimed">
-                                                        <i class="bi bi-cloud-check"></i> Claimed
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="status-badge">
-                                                        <i class="bi bi-question-circle"></i> @app.Status
-                                                    </span>
-                                                }
-                                            </td>
-                                            <td>@app.CreatedAt.ToString("yyyy-MM-dd hh:mm tt")</td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    @if (app.Type == "Hospital Bill Assistance")
-                                                    {
-                                                        <a class="btn-action btn-view" asp-controller="Superadmin" asp-action="Fillupformhospitalbillview" asp-route-id="@app.FormId" title="View Details">
-                                                            <i class="bi bi-eye"></i>
-                                                        </a>
-                                                        <a class="btn-action btn-edit" asp-controller="Adminuser" asp-action="FillupformHospitalBillUpdatestatus" asp-route-id="@app.FormId" title="Update Status">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                    }
-                                                    else if (app.Type == "Medical and laboratory Procedure")
-                                                    {
-                                                        <a class="btn-action btn-view" asp-controller="Superadmin" asp-action="Medicalandlabformview" asp-route-id="@app.FormId" title="View Details">
-                                                            <i class="bi bi-eye"></i>
-                                                        </a>
-                                                        <a class="btn-action btn-edit" asp-controller="Adminuser" asp-action="Medicalandlabformstatus" asp-route-id="@app.FormId" title="Update Status">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                    }
-                                                    else
-                                                    {
-                                                        <a class="btn-action btn-view" asp-controller="Superadmin" asp-action="Funeralburialformview" asp-route-id="@app.FormId" title="View Details">
-                                                            <i class="bi bi-eye"></i>
-                                                        </a>
-                                                        <a class="btn-action btn-edit" asp-controller="Adminuser" asp-action="Funeralburialformstatus" asp-route-id="@app.FormId" title="Update Status">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                    }
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="5" class="empty-state">
-                                            <i class="bi bi-inbox"></i>
-                                            <h4>No applications found</h4>
-                                            <p>There are currently no applications to display.</p>
-                                        </td>
-                                    </tr>
-                                }
+                                <!-- Table rows will be populated by JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -708,93 +593,308 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Status card filtering
-            const statCards = document.querySelectorAll('.stat-card');
+            // Combine all applications from the model
+            const allApplications = [];
+
+            // Add Hospital Bills
+            @foreach (var f in Model.HospitalBills)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Hospital Bill Assistance",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
+            }
+
+            // Add Medical Lab Forms
+            @foreach (var f in Model.MedicalLabForms)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Medical and laboratory Procedure",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
+            }
+
+            // Add Funeral Forms
+            @foreach (var f in Model.Funeralburialform)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Funeral and burial assistance",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
+            }
+
+            // DOM elements
             const applicationsTable = document.getElementById('applicationsTable');
-            const tableRows = applicationsTable.querySelectorAll('tr');
             const searchInput = document.getElementById('searchInput');
             const typeFilter = document.getElementById('typeFilter');
+            const timeFilterButtons = document.querySelectorAll('.time-filter-btn');
+            const statCards = document.querySelectorAll('.stat-card');
 
-            // Function to filter table by status
-            function filterByStatus(status) {
-                let visibleCount = 0;
+            // Status count elements
+            const approvedCount = document.getElementById('approved-count');
+            const unapprovedCount = document.getElementById('unapproved-count');
+            const pendingCount = document.getElementById('pending-count');
+            const processingCount = document.getElementById('processing-count');
+            const claimedCount = document.getElementById('claimed-count');
 
-                tableRows.forEach(row => {
-                    if (row.cells.length > 1) { // Skip empty state row
-                        const rowStatus = row.dataset.status;
+            // Current filter state
+            let currentStatusFilter = 'approved';
+            let currentTimeFilter = 'currentMonth';
+            let currentTypeFilter = 'all';
+            let currentSearchTerm = '';
 
-                        if (rowStatus === status) {
-                            row.style.display = '';
-                            visibleCount++;
-                        } else {
-                            row.style.display = 'none';
-                        }
+            // Function to filter applications by time period
+            function filterByTimePeriod(applications, period) {
+                if (period === 'all') return applications;
+
+                const now = new Date();
+                let startDate;
+
+                switch (period) {
+                    case '1year':
+                        startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                        break;
+                    case '1week':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                        break;
+                    case 'currentMonth':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        break;
+                    default:
+                        return applications;
+                }
+
+                return applications.filter(app => app.createdAt >= startDate);
+            }
+
+            // Function to filter applications by status
+            function filterByStatus(applications, status) {
+                if (status === 'all') return applications;
+                return applications.filter(app => app.status === status);
+            }
+
+            // Function to filter applications by type
+            function filterByType(applications, type) {
+                if (type === 'all') return applications;
+                return applications.filter(app => app.type === type);
+            }
+
+            // Function to filter applications by search term
+            function filterBySearch(applications, searchTerm) {
+                if (!searchTerm) return applications;
+
+                const term = searchTerm.toLowerCase();
+                return applications.filter(app =>
+                    app.name.toLowerCase().includes(term) ||
+                    app.type.toLowerCase().includes(term)
+                );
+            }
+
+            // Function to update status counts based on time filter
+            function updateStatusCounts(timePeriod) {
+                // Filter applications by time period first
+                const timeFilteredApplications = filterByTimePeriod(allApplications, timePeriod);
+
+                const statusCounts = {
+                    approved: 0,
+                    unapproved: 0,
+                    pending: 0,
+                    processing: 0,
+                    claimed: 0
+                };
+
+                timeFilteredApplications.forEach(app => {
+                    if (statusCounts.hasOwnProperty(app.status)) {
+                        statusCounts[app.status]++;
                     }
                 });
 
-                // Show empty state if no results
-                const emptyState = applicationsTable.querySelector('.empty-state');
-                if (emptyState) {
-                    emptyState.style.display = visibleCount === 0 ? '' : 'none';
+                // Update the count displays
+                approvedCount.textContent = statusCounts.approved;
+                unapprovedCount.textContent = statusCounts.unapproved;
+                pendingCount.textContent = statusCounts.pending;
+                processingCount.textContent = statusCounts.processing;
+                claimedCount.textContent = statusCounts.claimed;
+            }
+
+            // Function to render applications table
+            function renderApplicationsTable(applications) {
+                applicationsTable.innerHTML = '';
+
+                if (applications.length === 0) {
+                    applicationsTable.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <h4>No applications found</h4>
+                                <p>There are currently no applications to display.</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
                 }
 
-                // Update active card
-                statCards.forEach(card => {
-                    if (card.dataset.status === status) {
-                        card.classList.add('active');
-                    } else {
-                        card.classList.remove('active');
-                    }
+                applications.forEach(app => {
+                    const statusBadge = getStatusBadge(app.status);
+                    const actionButtons = getActionButtons(app);
+
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-status', app.status);
+                    row.setAttribute('data-type', app.type);
+
+                    row.innerHTML = `
+                        <td>${app.name}</td>
+                        <td>${app.type}</td>
+                        <td>${statusBadge}</td>
+                        <td>${formatDate(app.createdAt)}</td>
+                        <td>${actionButtons}</td>
+                    `;
+
+                    applicationsTable.appendChild(row);
                 });
             }
 
-            // Add click event to status cards
+            // Helper function to get status badge HTML
+            function getStatusBadge(status) {
+                const statusMap = {
+                    'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approved' },
+                    'unapproved': { class: 'status-unapproved', icon: 'bi-x-circle', text: 'Unapproved' },
+                    'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
+                    'processing': { class: 'status-processing', icon: 'bi-gear', text: 'Processing' },
+                    'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
+                };
+
+                const statusInfo = statusMap[status] || { class: '', icon: 'bi-question-circle', text: status };
+
+                return `
+                    <span class="status-badge ${statusInfo.class}">
+                        <i class="bi ${statusInfo.icon}"></i> ${statusInfo.text}
+                    </span>
+                `;
+            }
+
+            // Helper function to get action buttons HTML
+            function getActionButtons(app) {
+                let viewUrl = '';
+                let editUrl = '';
+
+                if (app.type === "Hospital Bill Assistance") {
+                    viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
+                    editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                } else if (app.type === "Medical and laboratory Procedure") {
+                    viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
+                    editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                } else {
+                    viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
+                    editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                }
+
+                return `
+                    <div class="action-buttons">
+                        <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+                `;
+            }
+
+            // Helper function to format date
+            function formatDate(date) {
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+
+            // Function to apply all filters
+            function applyFilters() {
+                let filteredApplications = [...allApplications];
+
+                // Apply time filter
+                filteredApplications = filterByTimePeriod(filteredApplications, currentTimeFilter);
+
+                // Apply status filter
+                filteredApplications = filterByStatus(filteredApplications, currentStatusFilter);
+
+                // Apply type filter
+                filteredApplications = filterByType(filteredApplications, currentTypeFilter);
+
+                // Apply search filter
+                filteredApplications = filterBySearch(filteredApplications, currentSearchTerm);
+
+                // Update table
+                renderApplicationsTable(filteredApplications);
+            }
+
+            // Event listeners for status cards
             statCards.forEach(card => {
                 card.addEventListener('click', function() {
-                    const status = this.dataset.status;
-                    filterByStatus(status);
-                    // Apply current search and type filters
+                    currentStatusFilter = this.dataset.status;
+
+                    // Update active card
+                    statCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+
                     applyFilters();
                 });
             });
 
-            // Combined filter function
-            function applyFilters() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const selectedType = typeFilter.value;
-                const activeStatus = document.querySelector('.stat-card.active').dataset.status;
-                let visibleCount = 0;
+            // Event listeners for time filter buttons
+            timeFilterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    currentTimeFilter = this.dataset.period;
 
-                tableRows.forEach(row => {
-                    if (row.cells.length > 1) { // Skip empty state row
-                        const statusMatch = row.dataset.status === activeStatus;
-                        const typeMatch = selectedType === "all" || row.dataset.type === selectedType;
-                        const name = row.cells[0].textContent.toLowerCase();
-                        const type = row.cells[1].textContent.toLowerCase();
-                        const searchMatch = searchTerm === "" || name.includes(searchTerm) || type.includes(searchTerm);
+                    // Update active button
+                    timeFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
 
-                        if (statusMatch && typeMatch && searchMatch) {
-                            row.style.display = '';
-                            visibleCount++;
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    }
+                    // Update status counts based on the selected time period
+                    updateStatusCounts(currentTimeFilter);
+
+                    // Apply all filters to the table
+                    applyFilters();
                 });
-
-                // Show empty state if no results
-                const emptyState = applicationsTable.querySelector('.empty-state');
-                if (emptyState) {
-                    emptyState.style.display = visibleCount === 0 ? '' : 'none';
-                }
-            }
+            });
 
             // Event listeners for search and type filter
-            searchInput.addEventListener('input', applyFilters);
-            typeFilter.addEventListener('change', applyFilters);
+            searchInput.addEventListener('input', function() {
+                currentSearchTerm = this.value;
+                applyFilters();
+            });
 
-            // Initialize with approved applications
-            filterByStatus('approved');
+            typeFilter.addEventListener('change', function() {
+                currentTypeFilter = this.value;
+                applyFilters();
+            });
+
+            // Initialize the dashboard
+            updateStatusCounts(currentTimeFilter);
+            applyFilters();
         });
     </script>
 </body>

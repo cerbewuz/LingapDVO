@@ -14,92 +14,53 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-color: #4361ee;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --info-color: #3498db;
+            --primary: #4361ee;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
             --lingap-red: #dc143c;
+            --dark: #1e1e2c;
+            --light: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-800: #343a40;
         }
 
         body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .card-box {
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            background: white;
             border-radius: 1rem;
+            padding: 1.5rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: none;
-            margin-bottom: 20px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            padding: 15px;
-        }
-
-        .chart-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .chart-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .chart-select {
-            font-size: 0.8rem;
-            padding: 5px 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .badge-approved {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--success-color);
-        }
-
-        .badge-pending {
-            background-color: rgba(243, 156, 18, 0.1);
-            color: var(--warning-color);
-        }
-
-        .badge-unapproved {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--danger-color);
-        }
-
-        .badge-claimed {
-            background-color: rgba(52, 152, 219, 0.1);
-            color: var(--info-color);
-        }
-
-        .analytics-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .analytics-title {
-            color: var(--lingap-red);
+        .header-title h1 {
+            color: var(--dark);
             font-weight: 700;
+            margin: 0;
             font-size: 1.8rem;
+        }
+
+        .header-title p {
+            color: var(--gray-600);
+            margin: 0;
         }
 
         .date-filter {
@@ -110,785 +71,669 @@
 
         .date-input {
             padding: 8px 12px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6c757d;
+        .card-analytics {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: none;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-            .empty-state i {
-                font-size: 3rem;
-                margin-bottom: 15px;
-                color: #dee2e6;
+            .card-analytics:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
             }
 
-        .card-footer {
-            background-color: #f8f9fa;
-            border-top: 1px solid #eee;
-            padding: 15px;
+        .card-header-custom {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.25rem 1.5rem;
+            border-radius: 1rem 1rem 0 0 !important;
+        }
+
+        .card-title-custom {
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            padding: 1rem;
+        }
+
+        .summary-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .summary-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+
+        .summary-total .summary-icon {
+            background: rgba(67, 97, 238, 0.15);
+            color: var(--primary);
+        }
+
+        .summary-approved .summary-icon {
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+        }
+
+        .summary-pending .summary-icon {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+        }
+
+        .summary-unapproved .summary-icon {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .chart-select {
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
             font-size: 0.85rem;
-            color: #6c757d;
+        }
+
+        .btn-custom {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-outline-custom {
+            background: white;
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .barangay-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            padding: 0 1rem 1rem 1rem;
+        }
+
+        .barangay-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .barangay-name {
+            font-weight: 500;
+        }
+
+        .barangay-count {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <!-- Add this at the beginning of your body (right after the opening <body> tag) -->
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay"></div>
-
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <i class="bi bi-speedometer2 me-2"></i>LingapDVO
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-title">
+                <h1>📊 Analytics Dashboard</h1>
+                <p>Comprehensive overview of assistance applications</p>
             </div>
-            <button class="close-btn">&times;</button>
-        </div>
-        <ul class="sidebar-nav">
-
-            <li>
-                <a asp-controller="Adminuser" asp-action="Analyticsdashboard">
-                    <i class="bi bi-house-door"></i>
-                    <span>Home</span>
-                </a>
-            </li>
-
-            <li>
-                <a asp-controller="Adminuser" asp-action="Analyticsdashboard">
-                    <i class="bi bi-bar-chart"></i>
-                    <span>Analytics Dashboard</span>
-                </a>
-            </li>
-
-            <li>
-                <a asp-controller="Adminuser" asp-action="Admin">
-                    <i class="bi bi-person-gear me-2"></i>
-                    <span>Update Status</span>
-                </a>
-            </li>
-
-            <li>
-                <a asp-controller="Login" asp-action="Logout">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Add this burger menu button in your container-fluid div (right after opening tag) -->
-    <div class="burger-menu">
-        <div class="burger-line"></div>
-        <div class="burger-line"></div>
-        <div class="burger-line"></div>
-    </div>
-
-    <!-- Add this CSS to your style section (merge with existing styles) -->
-    <style>
-        /* Burger menu styles */
-        .burger-menu {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 30px;
-            height: 24px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-
-        .burger-line {
-            width: 100%;
-            height: 3px;
-            background-color: var(--lingap-red);
-            transition: all 0.3s ease;
-        }
-
-        .burger-menu.active .burger-line:nth-child(1) {
-            transform: translateY(10px) rotate(45deg);
-        }
-
-        .burger-menu.active .burger-line:nth-child(2) {
-            opacity: 0;
-        }
-
-        .burger-menu.active .burger-line:nth-child(3) {
-            transform: translateY(-10px) rotate(-45deg);
-        }
-
-        /* Sidebar styles */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 280px;
-            height: 100%;
-            background-color: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            transition: left 0.3s ease;
-            padding: 20px;
-        }
-
-            .sidebar.active {
-                left: 0;
-            }
-
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-            .sidebar-overlay.active {
-                opacity: 1;
-                visibility: visible;
-            }
-
-        .sidebar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .sidebar-title {
-            font-weight: bold;
-            color: var(--lingap-red);
-            font-size: 1.2rem;
-        }
-
-        .sidebar-nav {
-            list-style: none;
-            padding: 0;
-        }
-
-            .sidebar-nav li {
-                margin-bottom: 15px;
-            }
-
-            .sidebar-nav a {
-                display: flex;
-                align-items: center;
-                color: #333;
-                text-decoration: none;
-                padding: 10px;
-                border-radius: 8px;
-                transition: all 0.3s ease;
-            }
-
-                .sidebar-nav a:hover {
-                    background-color: #f0f0f0;
-                    color: var(--lingap-red);
-                }
-
-            .sidebar-nav i {
-                margin-right: 10px;
-                font-size: 1.1rem;
-            }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #666;
-        }
-    </style>
-
-    <!-- Add this JavaScript at the end of your file (before closing body tag) -->
-    <script>
-        // Burger menu functionality
-        const burgerMenu = document.querySelector('.burger-menu');
-        const sidebar = document.querySelector('.sidebar');
-        const sidebarOverlay = document.querySelector('.sidebar-overlay');
-        const closeBtn = document.querySelector('.close-btn');
-
-        burgerMenu.addEventListener('click', () => {
-            burgerMenu.classList.toggle('active');
-            sidebar.classList.toggle('active');
-            sidebarOverlay.classList.toggle('active');
-        });
-
-        closeBtn.addEventListener('click', () => {
-            burgerMenu.classList.remove('active');
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            burgerMenu.classList.remove('active');
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        });
-    </script>
-    <div class="container-fluid">
-        <div class="analytics-header">
-            <h1 class="analytics-title">Analytics Dashboard</h1>
             <div class="date-filter">
                 <input type="date" id="startDate" class="date-input">
-                <span>to</span>
+                <span class="text-muted">to</span>
                 <input type="date" id="endDate" class="date-input">
-                <button class="btn btn-primary btn-sm" onclick="applyDateFilter()">Apply</button>
-                <button class="btn btn-outline-secondary btn-sm" onclick="resetDateFilter()">Reset</button>
+                <button class="btn-custom btn-primary-custom" onclick="applyDateFilter()">Apply</button>
+                <button class="btn-custom btn-outline-custom" onclick="resetDateFilter()">Reset</button>
             </div>
         </div>
 
-        <!-- First Row: Summary Cards -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">Total Applications</h6>
-                        <h2 class="card-title" id="total-count">
-                            @{
-                                var totalCount = Model.HospitalBills.Count + Model.MedicalLabForms.Count + Model.Funeralburialform.Count;
-                                @totalCount
-                            }
-                        </h2>
-                        <div class="mt-3">
-                            <span class="badge status-badge badge-approved me-2">
-                                <i class="bi bi-check-circle"></i> Approved:
-                                <span id="approved-count">
-                                    @{
-                                        var approvedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved");
-                                        @approvedCount
-                                    }
-                                </span>
-                            </span>
-                            <span class="badge status-badge badge-pending me-2">
-                                <i class="bi bi-hourglass-split"></i> Pending:
-                                <span id="pending-count">
-                                    @{
-                                        var pendingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending");
-                                        @pendingCount
-                                    }
-                                </span>
-                            </span>
-                            <span class="badge status-badge badge-unapproved me-2">
-                                <i class="bi bi-x-circle"></i> Unapproved:
-                                <span id="unapproved-count">
-                                    @{
-                                        var unapprovedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved");
-                                        @unapprovedCount
-                                    }
-                                </span>
-                            </span>
-                            <span class="badge status-badge badge-claimed">
-                                <i class="bi bi-cloud-arrow-up"></i> Claimed:
-                                <span id="claimed-count">
-                                    @{
-                                        var claimedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed");
-                                        @claimedCount
-                                    }
-                                </span>
-                            </span>
-                        </div>
+        <!-- Summary Cards -->
+        <div class="row g-3 mb-4">
+            @{
+                var totalCount = Model.HospitalBills.Count + Model.MedicalLabForms.Count + Model.Funeralburialform.Count;
+                var approvedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
+                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
+                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved");
+                var pendingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
+                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
+                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending");
+                var unapprovedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
+                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
+                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved");
+                var claimedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
+                Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
+                Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed");
+            }
+
+            <div class="col-md-3">
+                <div class="card-analytics summary-card summary-total">
+                    <div class="summary-icon">
+                        <i class="bi bi-files"></i>
                     </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Shows all application statuses across all types
-                    </div>
+                    <div class="summary-number">@totalCount</div>
+                    <div class="summary-label">Total Applications</div>
                 </div>
             </div>
-
-            <div class="col-md-4">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">Application Types</h6>
-                        <div class="chart-container">
-                            <canvas id="typeDistributionChart"></canvas>
-                        </div>
+            <div class="col-md-3">
+                <div class="card-analytics summary-card summary-approved">
+                    <div class="summary-icon">
+                        <i class="bi bi-check-circle"></i>
                     </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Distribution of different application types
-                    </div>
+                    <div class="summary-number">@approvedCount</div>
+                    <div class="summary-label">Approved</div>
                 </div>
             </div>
-
-            <div class="col-md-4">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">Status Trend</h6>
-                        <div class="chart-container">
-                            <canvas id="statusTrendChart"></canvas>
-                        </div>
+            <div class="col-md-3">
+                <div class="card-analytics summary-card summary-pending">
+                    <div class="summary-icon">
+                        <i class="bi bi-hourglass-split"></i>
                     </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Monthly trend of application statuses
+                    <div class="summary-number">@pendingCount</div>
+                    <div class="summary-label">Pending</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-analytics summary-card summary-unapproved">
+                    <div class="summary-icon">
+                        <i class="bi bi-x-circle"></i>
                     </div>
+                    <div class="summary-number">@unapprovedCount</div>
+                    <div class="summary-label">Unapproved</div>
                 </div>
             </div>
         </div>
 
-        <!-- Second Row: Barangay Chart -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <div class="chart-title">
-                            <span>Barangay Distribution</span>
-                            <div class="chart-controls">
-                                <select class="chart-select" id="barangayChartType" onchange="updateBarangayChart()">
-                                    <option value="bar">Bar Chart</option>
-                                    <option value="pie">Pie Chart</option>
-                                    <option value="doughnut">Doughnut</option>
-                                </select>
-                                <select class="chart-select" id="barangaySort" onchange="updateBarangayChart()">
-                                    <option value="count-desc">Sort by Count (High-Low)</option>
-                                    <option value="count-asc">Sort by Count (Low-High)</option>
-                                    <option value="name-asc">Sort by Name (A-Z)</option>
-                                    <option value="name-desc">Sort by Name (Z-A)</option>
-                                </select>
-                                <select class="chart-select" id="barangayLimit" onchange="updateBarangayChart()">
-                                    <option value="10">Top 10</option>
-                                    <option value="15">Top 15</option>
-                                    <option value="20">Top 20</option>
-                                    <option value="0">Show All</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="barangayChart"></canvas>
-                        </div>
+        <!-- Charts Row 1 -->
+        <div class="row g-3">
+            <!-- Application Types -->
+            <div class="col-md-6">
+                <div class="card-analytics">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h5 class="card-title-custom">Application Types</h5>
+                        <select class="chart-select" onchange="updateTypeChart(this.value)">
+                            <option value="doughnut">Doughnut</option>
+                            <option value="pie">Pie</option>
+                            <option value="bar">Bar</option>
+                        </select>
                     </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Distribution of applications by barangay
+                    <div class="chart-container">
+                        <canvas id="typeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Distribution -->
+            <div class="col-md-6">
+                <div class="card-analytics">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h5 class="card-title-custom">Status Distribution</h5>
+                        <select class="chart-select" onchange="updateStatusChart(this.value)">
+                            <option value="doughnut">Doughnut</option>
+                            <option value="pie">Pie</option>
+                            <option value="bar">Bar</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Third Row: Status Chart -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <div class="chart-title">
-                            <span>Status Distribution</span>
-                            <div class="chart-controls">
-                                <select class="chart-select" id="statusChartType" onchange="updateStatusChart()">
-                                    <option value="doughnut">Doughnut</option>
-                                    <option value="pie">Pie</option>
-                                    <option value="bar">Bar</option>
-                                </select>
-                                <select class="chart-select" id="statusTypeFilter" onchange="updateStatusChart()">
-                                    <option value="all">All Types</option>
-                                    <option value="Hospital Bill Assistance">Hospital Bills</option>
-                                    <option value="Medical and laboratory Procedure">Medical/Lab</option>
-                                    <option value="Funeral and burial assistance">Funeral/Burial</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="statusChart"></canvas>
+        <!-- Barangay Distribution -->
+        <div class="row g-3 mt-3">
+            <div class="col-12">
+                <div class="card-analytics">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h5 class="card-title-custom">Barangay Distribution by Assistance Type</h5>
+                        <div class="chart-controls">
+                            <select class="chart-select" id="barangayChartType" onchange="updateBarangayChart()">
+                                <option value="bar">Bar Chart</option>
+                                <option value="stackedBar">Stacked Bar</option>
+                                <option value="pie">Pie Chart</option>
+                                <option value="doughnut">Doughnut Chart</option>
+                            </select>
+                            <select class="chart-select" id="barangayView" onchange="updateBarangayChart()">
+                                <option value="all">All Barangays</option>
+                                <option value="top10">Top 10 Barangays</option>
+                                <option value="top20">Top 20 Barangays</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Breakdown of application statuses
+                    <div class="chart-container">
+                        <canvas id="barangayChart"></canvas>
                     </div>
+                    <div id="barangayListContainer" class="barangay-list" style="display: none;"></div>
                 </div>
             </div>
         </div>
     </div>
 
     @{
-        // Prepare data for all charts
-        var allBarangays = new List<string>();
-        allBarangays.AddRange(Model.HospitalBills.Select(f => f.Brgy));
-        allBarangays.AddRange(Model.MedicalLabForms.Select(f => f.Brgy));
-        allBarangays.AddRange(Model.Funeralburialform.Select(f => f.Brgy));
+        // Prepare data for Barangay with Assistance Types
+        var barangayData = new Dictionary<string, Dictionary<string, int>>();
 
-        var barangayGroups = allBarangays
-        .Where(b => !string.IsNullOrEmpty(b))
-        .GroupBy(b => b)
-        .Select(g => new { Barangay = g.Key, Count = g.Count() })
-        .OrderByDescending(x => x.Count)
+        // Process all forms and group by barangay and type
+        foreach (var bill in Model.HospitalBills)
+        {
+            if (!string.IsNullOrEmpty(bill.Brgy))
+            {
+                if (!barangayData.ContainsKey(bill.Brgy))
+                    barangayData[bill.Brgy] = new Dictionary<string, int>();
+
+                barangayData[bill.Brgy]["Hospital"] =
+                barangayData[bill.Brgy].GetValueOrDefault("Hospital", 0) + 1;
+            }
+        }
+
+        foreach (var form in Model.MedicalLabForms)
+        {
+            if (!string.IsNullOrEmpty(form.Brgy))
+            {
+                if (!barangayData.ContainsKey(form.Brgy))
+                    barangayData[form.Brgy] = new Dictionary<string, int>();
+
+                barangayData[form.Brgy]["Medical"] =
+                barangayData[form.Brgy].GetValueOrDefault("Medical", 0) + 1;
+            }
+        }
+
+        foreach (var form in Model.Funeralburialform)
+        {
+            if (!string.IsNullOrEmpty(form.Brgy))
+            {
+                if (!barangayData.ContainsKey(form.Brgy))
+                    barangayData[form.Brgy] = new Dictionary<string, int>();
+
+                barangayData[form.Brgy]["Funeral"] =
+                barangayData[form.Brgy].GetValueOrDefault("Funeral", 0) + 1;
+            }
+        }
+
+        // Get ALL barangays ordered by total applications
+        var allBarangays = barangayData
+        .OrderByDescending(b => b.Value.Values.Sum())
         .ToList();
 
-        var barangaysJson = Json.Serialize(barangayGroups.Select(b => b.Barangay).ToList());
-        var barangayCountsJson = Json.Serialize(barangayGroups.Select(b => b.Count).ToList());
-
-        // Status counts
-        var statusCounts = new
-        {
-            Approved = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
-        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
-        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved"),
-            Pending = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
-        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
-        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending"),
-            Unapproved = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
-        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
-        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved"),
-            Claimed = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
-        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
-        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed")
-        };
-
-        var statusLabelsJson = Json.Serialize(new[] { "Approved", "Pending", "Unapproved", "Claimed" });
-        var statusDataJson = Json.Serialize(new[] { statusCounts.Approved, statusCounts.Pending, statusCounts.Unapproved, statusCounts.Claimed });
-
-        // Type distribution
-        var typeCounts = new
-        {
-            Hospital = Model.HospitalBills.Count,
-            MedicalLab = Model.MedicalLabForms.Count,
-            Funeral = Model.Funeralburialform.Count
-        };
-
-        var typeLabelsJson = Json.Serialize(new[] { "Hospital Bill", "Medical/Lab", "Funeral/Burial" });
-        var typeDataJson = Json.Serialize(new[] { typeCounts.Hospital, typeCounts.MedicalLab, typeCounts.Funeral });
-
-        // Monthly data (simplified for example)
-        var monthlyLabels = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-        var monthlyData = new[] { 120, 150, 180, 200, 220, 250, 280, 300, 270, 230, 190, 160 };
-        var monthlyLabelsJson = Json.Serialize(monthlyLabels);
-        var monthlyDataJson = Json.Serialize(monthlyData);
+        var barangayLabels = allBarangays.Select(b => b.Key).ToList();
+        var hospitalData = allBarangays.Select(b => b.Value.GetValueOrDefault("Hospital", 0)).ToList();
+        var medicalData = allBarangays.Select(b => b.Value.GetValueOrDefault("Medical", 0)).ToList();
+        var funeralData = allBarangays.Select(b => b.Value.GetValueOrDefault("Funeral", 0)).ToList();
+        var barangayTotals = allBarangays.Select(b => b.Value.Values.Sum()).ToList();
     }
 
     <script>
-        // Global variables for chart data
-        const barangays = @Html.Raw(barangaysJson);
-        const barangayCounts = @Html.Raw(barangayCountsJson);
-        const statusLabels = @Html.Raw(statusLabelsJson);
-        const statusData = @Html.Raw(statusDataJson);
-        const typeLabels = @Html.Raw(typeLabelsJson);
-        const typeData = @Html.Raw(typeDataJson);
-        const monthlyLabels = @Html.Raw(monthlyLabelsJson);
-        const monthlyData = @Html.Raw(monthlyDataJson);
-
-        // Chart instances
-        let barangayChart, statusChart, typeDistributionChart, statusTrendChart;
-
-        // Colors
-        const chartColors = {
-            approved: '#2ecc71',
-            pending: '#f39c12',
-            unapproved: '#e74c3c',
-            claimed: '#3498db',
-            hospital: '#4361ee',
-            medical: '#9b59b6',
-            funeral: '#e74c3c',
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: 'rgba(255, 255, 255, 0.2)'
+        // Fixed JavaScript data initialization - properly escaped for C# Razor
+        const chartData = {
+            barangayLabels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(barangayLabels)),
+            hospitalData: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(hospitalData)),
+            medicalData: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(medicalData)),
+            funeralData: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(funeralData)),
+            barangayTotals: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(barangayTotals)),
+            statusLabels: ['Approved', 'Pending', 'Unapproved', 'Claimed'],
+            statusData: [@approvedCount, @pendingCount, @unapprovedCount, @claimedCount],
+            typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+            typeData: [@Model.HospitalBills.Count, @Model.MedicalLabForms.Count, @Model.Funeralburialform.Count]
         };
 
-        // Initialize all charts
+        // Colors
+        const colors = {
+            primary: '#4361ee',
+            success: '#2ecc71',
+            danger: '#e74c3c',
+            warning: '#f39c12',
+            info: '#3498db',
+            hospital: '#4361ee',
+            medical: '#9b59b6',
+            funeral: '#e74c3c'
+        };
+
+        // Chart instances
+        let typeChart, statusChart, barangayChart;
+
+        // Initialize charts
         document.addEventListener('DOMContentLoaded', function() {
-            // Type Distribution Chart
-            typeDistributionChart = new Chart(
-                document.getElementById('typeDistributionChart').getContext('2d'),
-                {
-                    type: 'doughnut',
-                    data: {
-                        labels: typeLabels,
-                        datasets: [{
-                            data: typeData,
-                            backgroundColor: [chartColors.hospital, chartColors.medical, chartColors.funeral],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: getPieChartOptions('Application Types')
-                }
-            );
-
-            // Status Trend Chart (line chart)
-            statusTrendChart = new Chart(
-                document.getElementById('statusTrendChart').getContext('2d'),
-                {
-                    type: 'line',
-                    data: {
-                        labels: monthlyLabels,
-                        datasets: [
-                            {
-                                label: 'Approved',
-                                data: monthlyData.map(d => Math.round(d * 0.6)),
-                                borderColor: chartColors.approved,
-                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                                tension: 0.3,
-                                fill: true
-                            },
-                            {
-                                label: 'Pending',
-                                data: monthlyData.map(d => Math.round(d * 0.2)),
-                                borderColor: chartColors.pending,
-                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
-                                tension: 0.3,
-                                fill: true
-                            },
-                            {
-                                label: 'Unapproved',
-                                data: monthlyData.map(d => Math.round(d * 0.1)),
-                                borderColor: chartColors.unapproved,
-                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                                tension: 0.3,
-                                fill: true
-                            },
-                            {
-                                label: 'Claimed',
-                                data: monthlyData.map(d => Math.round(d * 0.5)),
-                                borderColor: chartColors.claimed,
-                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                                tension: 0.3,
-                                fill: true
-                            }
-                        ]
-                    },
-                    options: getLineChartOptions('Monthly Status Trend')
-                }
-            );
-
-            // Initialize other charts
-            updateBarangayChart();
-            updateStatusChart();
-
             // Set default dates
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth() - 3, 1);
             document.getElementById('endDate').valueAsDate = today;
             document.getElementById('startDate').valueAsDate = firstDay;
+
+            // Initialize charts
+            initTypeChart('doughnut');
+            initStatusChart('doughnut');
+            initBarangayChart();
         });
 
-        // Barangay Chart
-        function updateBarangayChart() {
-            const chartType = document.getElementById('barangayChartType').value;
-            const sortBy = document.getElementById('barangaySort').value;
-            const limit = parseInt(document.getElementById('barangayLimit').value);
+        // Type Chart
+        function initTypeChart(type) {
+            const ctx = document.getElementById('typeChart').getContext('2d');
+            if (typeChart) typeChart.destroy();
 
-            // Sort data
-            let sortedBarangays = [...barangays];
-            let sortedCounts = [...barangayCounts];
-
-            if (sortBy === 'count-desc') {
-                // Already sorted by count descending
-            } else if (sortBy === 'count-asc') {
-                sortedBarangays = [...barangays].reverse();
-                sortedCounts = [...barangayCounts].reverse();
-            } else if (sortBy === 'name-asc') {
-                const combined = sortedBarangays.map((b, i) => ({ barangay: b, count: sortedCounts[i] }))
-                    .sort((a, b) => a.barangay.localeCompare(b.barangay));
-                sortedBarangays = combined.map(item => item.barangay);
-                sortedCounts = combined.map(item => item.count);
-            } else if (sortBy === 'name-desc') {
-                const combined = sortedBarangays.map((b, i) => ({ barangay: b, count: sortedCounts[i] }))
-                    .sort((a, b) => b.barangay.localeCompare(a.barangay));
-                sortedBarangays = combined.map(item => item.barangay);
-                sortedCounts = combined.map(item => item.count);
-            }
-
-            // Apply limit
-            if (limit > 0 && limit < sortedBarangays.length) {
-                sortedBarangays = sortedBarangays.slice(0, limit);
-                sortedCounts = sortedCounts.slice(0, limit);
-            }
-
-            // Create or update chart
-            const ctx = document.getElementById('barangayChart').getContext('2d');
-
-            if (barangayChart) {
-                barangayChart.destroy();
-            }
-
-            barangayChart = new Chart(ctx, {
-                type: chartType,
+            typeChart = new Chart(ctx, {
+                type: type,
                 data: {
-                    labels: sortedBarangays,
+                    labels: chartData.typeLabels,
                     datasets: [{
-                        data: sortedCounts,
-                        backgroundColor: getChartColors(sortedBarangays.length),
-                        borderWidth: 1
+                        data: chartData.typeData,
+                        backgroundColor: [colors.hospital, colors.medical, colors.funeral],
+                        borderWidth: 0
                     }]
                 },
-                options: chartType === 'bar' ? getBarChartOptions('Applications by Barangay') :
-                       getPieChartOptions('Applications by Barangay')
+                options: getChartOptions('Application Types', type)
             });
         }
 
+        function updateTypeChart(type) {
+            initTypeChart(type);
+        }
+
         // Status Chart
-        function updateStatusChart() {
-            const chartType = document.getElementById('statusChartType').value;
-            const typeFilter = document.getElementById('statusTypeFilter').value;
-
-            // In a real app, you would filter data by type from your model
-            // For this example, we'll use the same data for all types
-            let filteredLabels = [...statusLabels];
-            let filteredData = [...statusData];
-
-            let chartTitle = 'Application Status Distribution';
-            if (typeFilter !== 'all') {
-                chartTitle = `Status Distribution for ${typeFilter}`;
-            }
-
-            // Create or update chart
+        function initStatusChart(type) {
             const ctx = document.getElementById('statusChart').getContext('2d');
-
-            if (statusChart) {
-                statusChart.destroy();
-            }
+            if (statusChart) statusChart.destroy();
 
             statusChart = new Chart(ctx, {
-                type: chartType,
+                type: type,
                 data: {
-                    labels: filteredLabels,
+                    labels: chartData.statusLabels,
                     datasets: [{
-                        data: filteredData,
-                        backgroundColor: [chartColors.approved, chartColors.pending, chartColors.unapproved, chartColors.claimed],
-                        borderWidth: 1
+                        data: chartData.statusData,
+                        backgroundColor: [colors.success, colors.warning, colors.danger, colors.info],
+                        borderWidth: 0
                     }]
                 },
-                options: chartType === 'bar' ? getBarChartOptions(chartTitle) :
-                       getPieChartOptions(chartTitle)
+                options: getChartOptions('Status Distribution', type)
             });
+        }
+
+        function updateStatusChart(type) {
+            initStatusChart(type);
+        }
+
+        // Barangay Chart with Multiple Types
+        function initBarangayChart() {
+            updateBarangayChart();
+        }
+
+        function updateBarangayChart() {
+            const chartType = document.getElementById('barangayChartType').value;
+            const viewType = document.getElementById('barangayView').value;
+
+            // Get data based on view type
+            let labels, hospital, medical, funeral, totals;
+
+            if (viewType === 'all') {
+                labels = [...chartData.barangayLabels];
+                hospital = [...chartData.hospitalData];
+                medical = [...chartData.medicalData];
+                funeral = [...chartData.funeralData];
+                totals = [...chartData.barangayTotals];
+            } else {
+                const limit = viewType === 'top10' ? 10 : 20;
+                labels = chartData.barangayLabels.slice(0, limit);
+                hospital = chartData.hospitalData.slice(0, limit);
+                medical = chartData.medicalData.slice(0, limit);
+                funeral = chartData.funeralData.slice(0, limit);
+                totals = chartData.barangayTotals.slice(0, limit);
+            }
+
+            const ctx = document.getElementById('barangayChart').getContext('2d');
+            if (barangayChart) barangayChart.destroy();
+
+            // Show/hide barangay list
+            const listContainer = document.getElementById('barangayListContainer');
+            if (chartType === 'pie' || chartType === 'doughnut') {
+                listContainer.style.display = 'block';
+                updateBarangayList(labels, totals);
+            } else {
+                listContainer.style.display = 'none';
+            }
+
+            // Create chart based on type
+            if (chartType === 'bar' || chartType === 'stackedBar') {
+                createBarChart(ctx, labels, hospital, medical, funeral, chartType);
+            } else {
+                createPieChart(ctx, labels, totals, chartType);
+            }
+        }
+
+        function createBarChart(ctx, labels, hospital, medical, funeral, chartType) {
+            const isStacked = chartType === 'stackedBar';
+
+            barangayChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Hospital Bill Assistance',
+                            data: hospital,
+                            backgroundColor: colors.hospital,
+                            borderWidth: 0
+                        },
+                        {
+                            label: 'Medical and Laboratory',
+                            data: medical,
+                            backgroundColor: colors.medical,
+                            borderWidth: 0
+                        },
+                        {
+                            label: 'Funeral and Burial',
+                            data: funeral,
+                            backgroundColor: colors.funeral,
+                            borderWidth: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Applications by Barangay and Assistance Type',
+                            font: { size: 14 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: isStacked,
+                        },
+                        y: {
+                            stacked: isStacked,
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Applications'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPieChart(ctx, labels, totals, chartType) {
+            barangayChart = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: totals,
+                        backgroundColor: generateColors(labels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Total Applications by Barangay',
+                            font: { size: 14 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((context.raw / total) * 100);
+                                    return `${context.label}: ${context.raw} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateBarangayList(labels, totals) {
+            const container = document.getElementById('barangayListContainer');
+            const colorList = generateColors(labels.length);
+
+            let html = '';
+            labels.forEach((label, index) => {
+                html += `
+                    <div class="barangay-item">
+                        <div class="barangay-name">
+                            <span style="display: inline-block; width: 12px; height: 12px; background: ${colorList[index]}; border-radius: 2px; margin-right: 8px;"></span>
+                            ${label}
+                        </div>
+                        <span class="barangay-count">${totals[index]}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Helper functions
+        function getChartOptions(title, type) {
+            const isPie = type === 'pie' || type === 'doughnut';
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: isPie ? 'right' : 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 14 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (isPie) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((context.raw / total) * 100);
+                                    return `${context.label}: ${context.raw} (${percentage}%)`;
+                                }
+                                return `${context.label}: ${context.raw}`;
+                            }
+                        }
+                    }
+                },
+                scales: isPie ? {} : {
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            };
+        }
+
+        function generateColors(count) {
+            const colorPalette = [
+                '#4361ee', '#3a0ca3', '#4cc9f0', '#f72585', '#7209b7',
+                '#3f37c9', '#560bad', '#b5179e', '#4895ef', '#480ca8',
+                '#f15bb5', '#00bbf9', '#00f5d4', '#00bbf9', '#fee440',
+                '#f96167', '#f9c74f', '#90be6d', '#43aa8b', '#577590',
+                '#4d908e', '#277da1', '#577590', '#43aa8b', '#90be6d'
+            ];
+
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                colors.push(colorPalette[i % colorPalette.length]);
+            }
+            return colors;
         }
 
         // Date filter functions
         function applyDateFilter() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            if (!startDate || !endDate) {
-                alert('Please select both start and end dates');
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if (!start || !end) {
+                alert('Please select both dates');
                 return;
             }
-
-            // In a real app, you would filter your data based on these dates
-            // For this example, we'll just log them
-            console.log(`Filtering from ${startDate} to ${endDate}`);
-
-            // Update all charts with filtered data
-            updateBarangayChart();
-            updateStatusChart();
+            console.log(`Filter: ${start} to ${end}`);
         }
 
         function resetDateFilter() {
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
-
-            // Reset all charts to show all data
-            updateBarangayChart();
-            updateStatusChart();
-        }
-
-        // Helper functions for chart options
-        function getPieChartOptions(title) {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    },
-                    title: {
-                        display: true,
-                        text: title,
-                        font: {
-                            size: 14
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
-                        }
-                    }
-                }
-            };
-        }
-
-        function getBarChartOptions(title) {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: title,
-                        font: {
-                            size: 14
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label || ''}: ${context.raw}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                }
-            };
-        }
-
-        function getLineChartOptions(title) {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: title,
-                        font: {
-                            size: 14
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                }
-            };
-        }
-
-        // Helper function to generate chart colors
-        function getChartColors(count) {
-            const colors = [
-                '#4361ee', '#3f37c9', '#4895ef', '#4cc9f0',
-                '#560bad', '#7209b7', '#b5179e', '#f72585',
-                '#480ca8', '#3a0ca3', '#3f37c9', '#4361ee',
-                '#4cc9f0', '#4895ef', '#3f37c9', '#4361ee',
-                '#560bad', '#7209b7', '#b5179e', '#f72585'
-            ];
-            return colors.slice(0, count);
         }
     </script>
 </body>
