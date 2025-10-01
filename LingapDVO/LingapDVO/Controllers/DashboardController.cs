@@ -46,54 +46,62 @@ namespace LingapDVO.Controllers
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "0";
 
-            // Case 3: No session and not authenticated → force back to Landing
-            var userId = HttpContext.Session.GetString("UserId");
+            var userIdString = HttpContext.Session.GetString("UserId");
             bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 
-            if (string.IsNullOrEmpty(userId) && !isAuthenticated)
+            if (string.IsNullOrEmpty(userIdString) && !isAuthenticated)
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
-            // Case 1 & 2: User is authenticated (either via session or Google)
-            // Set ViewBag properties
-            if (!string.IsNullOrEmpty(userId))
+            int userId = 0; // default
+            if (!string.IsNullOrEmpty(userIdString))
             {
-                // Case 1: Normal login
+                // ✅ Convert session UserId (string) → int
+                int.TryParse(userIdString, out userId);
+
                 ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
                 ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
             }
             else if (isAuthenticated)
             {
-                // Case 2: Google login
                 string firstname = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
                                    ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
                                    ?? "User";
-
                 ViewBag.Firstname = firstname;
-                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture"); // optional
+                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
             }
 
-            // Get all data from the database without filtering by userId
+            // ✅ Now you can safely filter only the logged-in user's data
             var hospitalBills = context.FillupformHospitalBill
+                .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
-                .OrderByDescending(f => f.ProcessAt)
-                .OrderByDescending(f => f.Processby)
                 .ToList();
 
             var medicalLabForms = context.Medicalandlabform
+                .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
-                .OrderByDescending(f => f.ProcessAt)
-                .OrderByDescending(f => f.Processby)
                 .ToList();
 
             var funeralburialform = context.Funeralburialform
+                .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
-                .OrderByDescending(f => f.ProcessAt)
-                .OrderByDescending(f => f.Processby)
                 .ToList();
 
-            // Create and populate the view model
+            // Find the latest document overall
+            var allDocs = new List<dynamic>();
+
+            if (hospitalBills.Any())
+                allDocs.Add(new { Type = "Hospital Bill", Data = hospitalBills.First() });
+            if (medicalLabForms.Any())
+                allDocs.Add(new { Type = "Medical/Lab Form", Data = medicalLabForms.First() });
+            if (funeralburialform.Any())
+                allDocs.Add(new { Type = "Funeral/Burial Form", Data = funeralburialform.First() });
+
+            var latestDoc = allDocs
+                .OrderByDescending(d => d.Data.CreatedAt)
+                .FirstOrDefault();
+
             var viewModel = new CombinedFormsViewModel
             {
                 HospitalBills = hospitalBills,
@@ -101,7 +109,8 @@ namespace LingapDVO.Controllers
                 Funeralburialform = funeralburialform
             };
 
-            // Pass the view model to the view
+            ViewBag.LatestDoc = latestDoc;
+
             return View(viewModel);
         }
 
