@@ -428,15 +428,20 @@
 
                             </div>
                             <div class="user-actions">
-                                <button class="btn-icon">
-                                    <i class="fas fa-upload"></i>
-                                </button>
-                                <button class="btn-icon">
-                                    <i class="fas fa-user"></i>
-                                </button>
-                                <button class="btn-icon">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                </button>
+                                <a asp-controller="Dashboard" asp-action="Uploads" class="btn btn-sm btn-link text-muted">
+                                    <i class="fas fa-upload" title="Uploads"></i>
+                                </a>
+
+                                <a asp-controller="Dashboard" asp-action="Userprofile" class="btn btn-sm btn-link text-muted">
+                                    <i class="fas fa-user" title="Profile"></i>
+                                </a>
+
+                                <form asp-controller="Login" asp-action="Logout" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-link text-danger">
+                                        <i class="fas fa-sign-out-alt" title="Logout"></i>
+                                    </button>
+                                </form>
+
                             </div>
                         </div>
                     </div>
@@ -447,7 +452,7 @@
                         <div class="row g-4">
                             <!-- Service 1 -->
                             <div class="col-md-6 col-lg-4">
-                                <a href="#" class="text-decoration-none">
+                                <a asp-controller="Dashboard" asp-action="FillupformHospitalBill" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-hospital"></i>
@@ -458,22 +463,10 @@
                                 </a>
                             </div>
 
+
                             <!-- Service 2 -->
                             <div class="col-md-6 col-lg-4">
-                                <a href="#" class="text-decoration-none">
-                                    <div class="service-card">
-                                        <div class="service-icon">
-                                            <i class="fas fa-check-circle"></i>
-                                        </div>
-                                        <h5 class="service-title">Eligibility Checking</h5>
-                                        <p class="service-description">Verify your eligibility for assistance programs</p>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <!-- Service 3 -->
-                            <div class="col-md-6 col-lg-4">
-                                <a href="#" class="text-decoration-none">
+                                <a asp-controller="Dashboard" asp-action="Medicalandlabform" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-microscope"></i>
@@ -484,22 +477,10 @@
                                 </a>
                             </div>
 
-                            <!-- Service 4 -->
-                            <div class="col-md-6 col-lg-4">
-                                <a href="#" class="text-decoration-none">
-                                    <div class="service-card">
-                                        <div class="service-icon">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                        </div>
-                                        <h5 class="service-title">Locate Facilities</h5>
-                                        <p class="service-description">Find offices, hospitals, and pharmacies</p>
-                                    </div>
-                                </a>
-                            </div>
 
-                            <!-- Service 5 -->
+                            <!-- Service 3 -->
                             <div class="col-md-6 col-lg-4">
-                                <a href="#" class="text-decoration-none">
+                                <a asp-controller="Dashboard" asp-action="Funeralburialform" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-monument"></i>
@@ -510,9 +491,38 @@
                                 </a>
                             </div>
 
+
+                            <!-- Service 4 -->
+                            <div class="col-md-6 col-lg-4">
+                                <a asp-controller="Dashboard" asp-action="Eligibilitychecking" class="col-md-6 col-lg-4 text-decoration-none">
+                                    <div class="service-card">
+                                        <div class="service-icon">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <h5 class="service-title">Eligibility Checking</h5>
+                                        <p class="service-description">Verify your eligibility for assistance programs</p>
+                                    </div>
+                                </a>
+                            </div>
+                    
+
+                            <!-- Service 5 -->
+                            <div class="col-md-6 col-lg-4">
+                                <a asp-controller="Dashboard" asp-action="Maps" class="col-md-6 col-lg-4 text-decoration-none">
+                                    <div class="service-card">
+                                        <div class="service-icon">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </div>
+                                        <h5 class="service-title">Locate Facilities</h5>
+                                        <p class="service-description">Find offices, hospitals, and pharmacies</p>
+                                    </div>
+                                </a>
+                            </div>
+
+               
                             <!-- Service 6 -->
                             <div class="col-md-6 col-lg-4">
-                                <a href="#" class="text-decoration-none">
+                                <a asp-controller="Dashboard" asp-action="Listofpartners" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-hands-helping"></i>
