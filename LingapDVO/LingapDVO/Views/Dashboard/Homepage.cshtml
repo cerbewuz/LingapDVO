@@ -1,5 +1,6 @@
 ﻿@using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
+@model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
     var agentId = Configuration["Dialogflow:AgentId"];

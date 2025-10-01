@@ -46,30 +46,63 @@ namespace LingapDVO.Controllers
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "0";
 
-            // Case 1: User logged in with normal login (session UserId)
+            // Case 3: No session and not authenticated → force back to Landing
             var userId = HttpContext.Session.GetString("UserId");
-            if (!string.IsNullOrEmpty(userId))
+            bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+
+            if (string.IsNullOrEmpty(userId) && !isAuthenticated)
             {
-                ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
-                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
-                return View();
+                return RedirectToAction("Landingpage", "Dashboard");
             }
 
-            // Case 2: User logged in with Google (claims available)
-            if (User.Identity?.IsAuthenticated ?? false)
+            // Case 1 & 2: User is authenticated (either via session or Google)
+            // Set ViewBag properties
+            if (!string.IsNullOrEmpty(userId))
             {
+                // Case 1: Normal login
+                ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
+            }
+            else if (isAuthenticated)
+            {
+                // Case 2: Google login
                 string firstname = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
                                    ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
                                    ?? "User";
 
                 ViewBag.Firstname = firstname;
                 ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture"); // optional
-
-                return View();
             }
 
-            // Case 3: No session and not authenticated → force back to Landing
-            return RedirectToAction("Landingpage", "Dashboard");
+            // Get all data from the database without filtering by userId
+            var hospitalBills = context.FillupformHospitalBill
+                .OrderByDescending(f => f.CreatedAt)
+                .OrderByDescending(f => f.ProcessAt)
+                .OrderByDescending(f => f.Processby)
+                .ToList();
+
+            var medicalLabForms = context.Medicalandlabform
+                .OrderByDescending(f => f.CreatedAt)
+                .OrderByDescending(f => f.ProcessAt)
+                .OrderByDescending(f => f.Processby)
+                .ToList();
+
+            var funeralburialform = context.Funeralburialform
+                .OrderByDescending(f => f.CreatedAt)
+                .OrderByDescending(f => f.ProcessAt)
+                .OrderByDescending(f => f.Processby)
+                .ToList();
+
+            // Create and populate the view model
+            var viewModel = new CombinedFormsViewModel
+            {
+                HospitalBills = hospitalBills,
+                MedicalLabForms = medicalLabForms,
+                Funeralburialform = funeralburialform
+            };
+
+            // Pass the view model to the view
+            return View(viewModel);
         }
 
 
