@@ -269,9 +269,39 @@
 
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <input asp-for="Password" type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                    <div class="input-group">
+                        <input asp-for="Password" type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const togglePassword = document.getElementById('togglePassword');
+                        const passwordInput = document.getElementById('password');
+                        const eyeIcon = togglePassword.querySelector('i');
+
+                        togglePassword.addEventListener('click', function() {
+                            // Toggle the password field type
+                            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                            passwordInput.setAttribute('type', type);
+
+                            // Toggle the eye icon
+                            if (type === 'text') {
+                                eyeIcon.classList.remove('fa-eye');
+                                eyeIcon.classList.add('fa-eye-slash');
+                                togglePassword.setAttribute('title', 'Hide password');
+                            } else {
+                                eyeIcon.classList.remove('fa-eye-slash');
+                                eyeIcon.classList.add('fa-eye');
+                                togglePassword.setAttribute('title', 'Show password');
+                            }
+                        });
+                    });
+                </script>
 
                 <div class="divider">
                     <div class="divider-line"></div>
