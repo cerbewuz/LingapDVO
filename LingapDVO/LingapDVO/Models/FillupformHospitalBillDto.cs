@@ -119,6 +119,7 @@ namespace LingapDVO.Models
 
         public DateTime Result { get; set; }
 
+        [MaxLength(100)]
         public string Status2 { get; set; } = "";
 
 

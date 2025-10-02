@@ -109,7 +109,7 @@
 
         .header {
             display: flex;
-            justify-content: space-between;
+            justify-content: between;
             align-items: center;
             margin-bottom: 2rem;
             padding-bottom: 1rem;
@@ -605,6 +605,7 @@
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -620,6 +621,7 @@
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -635,6 +637,7 @@
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -685,10 +688,22 @@
                 return applications.filter(app => app.createdAt >= startDate);
             }
 
-            // Function to filter applications by status
+            // Function to filter applications by status - FIXED VERSION
             function filterByStatus(applications, status) {
                 if (status === 'all') return applications;
-                return applications.filter(app => app.status === status);
+
+                return applications.filter(app => {
+                    // For approved/unapproved statuses, ONLY check Status2 field
+                    if (status === 'approved' || status === 'unapproved') {
+                        return app.status2 && app.status2.trim() !== '' && app.status2 === status;
+                    }
+
+                    // For other statuses (pending, processing, claimed), use the original Status field
+                    // But exclude applications that have Status2 with approved/unapproved values
+                    return app.status === status &&
+                           (!app.status2 || app.status2.trim() === '' ||
+                            (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
+                });
             }
 
             // Function to filter applications by type
@@ -708,7 +723,7 @@
                 );
             }
 
-            // Function to update status counts based on time filter
+            // Function to update status counts based on time filter - COMPLETELY FIXED VERSION
             function updateStatusCounts(timePeriod) {
                 // Filter applications by time period first
                 const timeFilteredApplications = filterByTimePeriod(allApplications, timePeriod);
@@ -722,8 +737,19 @@
                 };
 
                 timeFilteredApplications.forEach(app => {
-                    if (statusCounts.hasOwnProperty(app.status)) {
-                        statusCounts[app.status]++;
+                    // If Status2 has approved/unapproved, count ONLY in those categories
+                    if (app.status2 && app.status2.trim() !== '') {
+                        if (app.status2 === 'approved') {
+                            statusCounts.approved++;
+                        } else if (app.status2 === 'unapproved') {
+                            statusCounts.unapproved++;
+                        }
+                        // DO NOT count in processing/pending/claimed if Status2 is approved/unapproved
+                    } else {
+                        // No Status2 or Status2 is empty, use original status
+                        if (statusCounts.hasOwnProperty(app.status)) {
+                            statusCounts[app.status]++;
+                        }
                     }
                 });
 
@@ -753,7 +779,7 @@
                 }
 
                 applications.forEach(app => {
-                    const statusBadge = getStatusBadge(app.status);
+                    const statusBadge = getStatusBadge(app);
                     const actionButtons = getActionButtons(app);
 
                     const row = document.createElement('tr');
@@ -772,8 +798,22 @@
                 });
             }
 
-            // Helper function to get status badge HTML
-            function getStatusBadge(status) {
+            // Helper function to get status badge HTML - FIXED VERSION
+            function getStatusBadge(app) {
+                let displayStatus = app.status;
+                let displayText = app.status.charAt(0).toUpperCase() + app.status.slice(1);
+
+                // Only use Status2 if it has approved or unapproved value
+                // Do NOT display Status2 if it contains "processing" or any other value
+                if (app.status2 && app.status2.trim() !== '') {
+                    const status2 = app.status2.trim().toLowerCase();
+                    if (status2 === 'approved' || status2 === 'unapproved') {
+                        displayStatus = status2;
+                        displayText = status2.charAt(0).toUpperCase() + status2.slice(1);
+                    }
+                    // If status2 has any other value (like "processing"), ignore it and use the original status
+                }
+
                 const statusMap = {
                     'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approved' },
                     'unapproved': { class: 'status-unapproved', icon: 'bi-x-circle', text: 'Unapproved' },
@@ -782,7 +822,7 @@
                     'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
                 };
 
-                const statusInfo = statusMap[status] || { class: '', icon: 'bi-question-circle', text: status };
+                const statusInfo = statusMap[displayStatus] || { class: '', icon: 'bi-question-circle', text: displayText };
 
                 return `
                     <span class="status-badge ${statusInfo.class}">
@@ -791,41 +831,40 @@
                 `;
             }
 
-                          // Helper function to get action buttons HTML
-                function getActionButtons(app) {
-                    let viewUrl = '';
-                    let editUrl = '';
+            // Helper function to get action buttons HTML
+            function getActionButtons(app) {
+                let viewUrl = '';
+                let editUrl = '';
 
-                    if (app.type === "Hospital Bill Assistance") {
-                        viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
+                if (app.type === "Hospital Bill Assistance") {
+                    viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
 
-                        // Check if status is processing
-                        if (app.status === "processing") {
-                            editUrl = `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
-                        } else {
-                            editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
-                        }
-
-                    } else if (app.type === "Medical and laboratory Procedure") {
-                        viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
-                        editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                    // Check if status is processing
+                    if (app.status === "processing") {
+                        editUrl = `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
-                        editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                        editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
                     }
 
-                    return `
-                        <div class="action-buttons">
-                            <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                        </div>
-                    `;
+                } else if (app.type === "Medical and laboratory Procedure") {
+                    viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
+                    editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                } else {
+                    viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
+                    editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
                 }
 
+                return `
+                    <div class="action-buttons">
+                        <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+                `;
+            }
 
             // Helper function to format date
             function formatDate(date) {
