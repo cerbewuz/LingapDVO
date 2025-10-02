@@ -132,5 +132,7 @@ namespace LingapDVO.Models
 
         public string? Comments { get; set; } = "";
 
+        public string? Result { get; set; } = "";
+
     }
 }
