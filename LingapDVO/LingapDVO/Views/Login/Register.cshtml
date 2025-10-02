@@ -228,8 +228,6 @@
 
         }
 
-
-
         .register-form {
             padding: 15px;
             margin: 10px;
@@ -259,6 +257,19 @@
                 color: #fff !important;
                 transform: translateY(-2px);
             }
+
+        /* Reduced spacing */
+        .compact-form .mb-3 {
+            margin-bottom: 1rem !important;
+        }
+
+        .compact-form .row {
+            margin-bottom: 0.5rem !important;
+        }
+
+        .password-group {
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -276,29 +287,8 @@
                         <p class="text-muted">Join LINGAPDVO</p>
                     </article>
 
-                    <form id="registrationForm">           
-                        <div class="mb-3">
-                            <label class="form-label">Username *</label>
-                            <input type="text" class="form-control" placeholder="Choose a username" required>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Gender *</label>
-                                <select class="form-control" id="sex" required>
-                                    <option value="">Select</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Date of Birth *</label>
-                                <input type="date" id="birthdate" class="form-control" required>
-                            </div>
-                        </div>
-
-
-                        <div class="row mb-3">
+                    <form id="registrationForm" class="compact-form">
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Email *</label>
                                 <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
@@ -310,43 +300,30 @@
                                     <input type="tel" id="phone" class="form-control phone-input"
                                            placeholder="9123456789" pattern="[9]\d{9}" title="Please enter a valid Philippine phone number (e.g. 9123456789)" required>
                                 </div>
-                                <small class="text-muted">Format: 9123456789 (10 digits starting with 9)</small>
                             </div>
                         </div>
 
-
-                        <div class="mb-3">
-                            <label class="form-label">Password *</label>
-                            <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
-                            <div class="password-strength" id="passwordStrength"></div>
-                            <div class="password-requirements" id="passwordRequirements" style="display:none;">
-                                <div class="requirement" id="length"><i class="fas fa-circle"></i> At least 8 characters</div>
-                                <div class="requirement" id="uppercase"><i class="fas fa-circle"></i> At least 1 uppercase letter</div>
-                                <div class="requirement" id="lowercase"><i class="fas fa-circle"></i> At least 1 lowercase letter</div>
-                                <div class="requirement" id="number"><i class="fas fa-circle"></i> At least 1 number</div>
-                                <div class="requirement" id="special"><i class="fas fa-circle"></i> At least 1 special character</div>
+                        <!-- Password and Confirm Password placed together -->
+                        <div class="password-group">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Password *</label>
+                                    <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                                    <div class="password-strength" id="passwordStrength"></div>
+                                    <div class="password-requirements" id="passwordRequirements" style="display:none;">
+                                        <div class="requirement" id="length"><i class="fas fa-circle"></i> At least 8 characters</div>
+                                        <div class="requirement" id="uppercase"><i class="fas fa-circle"></i> At least 1 uppercase letter</div>
+                                        <div class="requirement" id="lowercase"><i class="fas fa-circle"></i> At least 1 lowercase letter</div>
+                                        <div class="requirement" id="number"><i class="fas fa-circle"></i> At least 1 number</div>
+                                        <div class="requirement" id="special"><i class="fas fa-circle"></i> At least 1 special character</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Confirm Password *</label>
+                                    <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                                    <div id="passwordMatch" class="password-requirements"></div>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Confirm Password *</label>
-                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
-                            <div id="passwordMatch" class="password-requirements"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Security Question *</label>
-                            <select class="form-control" required>
-                                <option value="">Select a question</option>
-                                <option value="What is your first pet's name?">What is your first pet's name?</option>
-                                <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
-                                <option value="What was your first school?">What was your first school?</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Security Answer *</label>
-                            <input type="text" class="form-control" placeholder="Enter your answer" required>
                         </div>
 
                         <div class="mb-3 form-check">
