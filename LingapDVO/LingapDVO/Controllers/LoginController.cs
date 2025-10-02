@@ -222,7 +222,7 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("Email", superadmin.Email);
                     HttpContext.Session.SetString("IsSuperadmin", "true");
 
-                    return RedirectToAction("Superadmin", "Superadmin");
+                    return Redirect("/Superadmin");
                 }
 
                 // Check if the login is an Admin first
@@ -243,7 +243,8 @@ namespace LingapDVO.Controllers
 
                     HttpContext.Session.SetString("IsAdmin", "true");
                     HttpContext.Session.SetString("AdminFullname", admin.Fullname);
-                    return RedirectToAction("Analyticsdashboard", "Adminuser");
+                    return Redirect("/Analyticsdashboard");
+
                 }
 
                 // Check if it's a regular user
@@ -317,7 +318,9 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("BackID", user.BackID);
                 HttpContext.Session.SetString("Profilepicture", user.Profilepicture);
 
-                return RedirectToAction("Homepage", "Dashboard");
+                return Redirect("/Homepage");
+
+
             }
             catch (Exception)
             {
@@ -526,6 +529,11 @@ namespace LingapDVO.Controllers
             }
         }
 
+
+        public IActionResult Accountverification()
+        {
+            return View();
+        }
 
 
 

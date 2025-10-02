@@ -461,11 +461,16 @@
 
                             </div>
                             <div class="user-actions">
-                                <a asp-controller="Dashboard" asp-action="Uploads" class="btn btn-sm btn-link text-muted">
+                                <!-- ✅ Verify Status -->
+                                <a asp-route="Accountverification" class="btn btn-sm btn-link text-success">
+                                    <i class="fas fa-check-circle" title="Verify Status"></i>
+                                </a>
+
+                                <a asp-route ="Uploads" class="btn btn-sm btn-link text-muted">
                                     <i class="fas fa-upload" title="Uploads"></i>
                                 </a>
 
-                                <a asp-controller="Dashboard" asp-action="Userprofile" class="btn btn-sm btn-link text-muted">
+                                <a asp-route ="Userprofile" class="btn btn-sm btn-link text-muted">
                                     <i class="fas fa-user" title="Profile"></i>
                                 </a>
 
@@ -485,7 +490,7 @@
                         <div class="row g-4">
                             <!-- Service 1 -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-controller="Dashboard" asp-action="FillupformHospitalBill" class="col-md-6 col-lg-4 text-decoration-none">
+                                <a asp-route="FillupformHospitalBill" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-hospital"></i>
@@ -499,7 +504,7 @@
 
                             <!-- Service 2 -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-controller="Dashboard" asp-action="Medicalandlabform" class="col-md-6 col-lg-4 text-decoration-none">
+                                <a asp-route="Medicalandlabform" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-microscope"></i>
@@ -513,7 +518,7 @@
 
                             <!-- Service 3 -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-controller="Dashboard" asp-action="Funeralburialform" class="col-md-6 col-lg-4 text-decoration-none">
+                                <a asp-route="Funeralburialform" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-monument"></i>
@@ -527,7 +532,7 @@
 
                             <!-- Service 4 -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-controller="Dashboard" asp-action="Eligibilitychecking" class="col-md-6 col-lg-4 text-decoration-none">
+                                <a asp-route="Eligibilitychecking" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-check-circle"></i>
@@ -541,7 +546,7 @@
 
                             <!-- Service 5 -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-controller="Dashboard" asp-action="Maps" class="col-md-6 col-lg-4 text-decoration-none">
+                                <a asp-route="Maps" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-map-marker-alt"></i>
@@ -555,7 +560,7 @@
 
                             <!-- Service 6 -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-controller="Dashboard" asp-action="Listofpartners" class="col-md-6 col-lg-4 text-decoration-none">
+                                <a asp-route="Listofpartners" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-hands-helping"></i>
