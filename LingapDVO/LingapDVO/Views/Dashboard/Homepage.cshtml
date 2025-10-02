@@ -413,6 +413,22 @@
             font-style: italic;
             margin-bottom: 0;
         }
+
+        .timeline-marker.completed {
+            background: #28a745; /* Green for completed Result */
+            color: #fff;
+        }
+
+
+        .timeline-marker.approved {
+            background: #28a745; /* Green for Approved */
+            color: #fff;
+        }
+
+        .timeline-marker.unapproved {
+            background: #dc3545; /* Red for Unapproved */
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -618,16 +634,35 @@
                                     </div>
                                 }
 
-                                <!-- Step C: Result - Waiting -->
-                                <div class="timeline-item">
-                                    <div class="timeline-marker" style="background: #6c757d; color: white;">
-                                        <i class="fas fa-clock"></i>
+
+                                <!-- Step C: Result - Show Status (Approved/Unapproved) and DateTime from Result field -->
+                                @if (doc.Data.Result > DateTime.MinValue && doc.Data.Result.Year > 1)
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker @(doc.Data.Status2 == "Approved" ? "approved" : "unapproved")">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>@doc.Data.Status</h6>
+                                            <span class="small text-muted">
+                                                @doc.Data.Result.ToString("dd MMM yyyy, hh:mm tt")
+                                            </span>
+                                            <p>Result: <strong>@doc.Data.Status2</strong></p>
+                                        </div>
                                     </div>
-                                    <div class="timeline-content">
-                                        <h6>Result</h6>
-                                        <p class="waiting-text">Waiting for result...</p>
+                                }
+                                else
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker" style="background: #6c757d; color: white;">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Result</h6>
+                                            <p class="waiting-text">Waiting for result...</p>
+                                        </div>
                                     </div>
-                                </div>
+                                }
                             </div>
                         </div>
                     }

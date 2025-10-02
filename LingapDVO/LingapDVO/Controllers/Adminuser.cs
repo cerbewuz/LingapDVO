@@ -71,6 +71,7 @@ namespace LingapDVO.Controllers
             return View(viewModel);
         }
 
+
         public IActionResult FillupformHospitalBillUpdatestatus(int id)
         {
 
@@ -565,7 +566,162 @@ namespace LingapDVO.Controllers
             return View(viewModel);
         }
 
+        public IActionResult FillupformHospitalBillUpdateprocessingstatus(int id)
+        {
 
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
+
+
+            if (fillupformhospitalBill == null)
+            {
+                return NotFound();
+            }
+
+            // Add all form field values to ViewData
+            ViewData["Status"] = fillupformhospitalBill.Status;
+            ViewData["Id"] = fillupformhospitalBill.Id;
+            ViewData["Lastname"] = fillupformhospitalBill.Lastname;
+            ViewData["Firstname"] = fillupformhospitalBill.Firstname;
+            ViewData["Middlename"] = fillupformhospitalBill.Middlename;
+            ViewData["Suffix"] = fillupformhospitalBill.Suffix;
+            ViewData["BlkLotStreet"] = fillupformhospitalBill.BlkLotStreet;
+            ViewData["SubVill"] = fillupformhospitalBill.SubVill;
+            ViewData["Brgy"] = fillupformhospitalBill.Brgy;
+            ViewData["District"] = fillupformhospitalBill.District;
+            ViewData["Sex"] = fillupformhospitalBill.Sex;
+            ViewData["PhilHealth"] = fillupformhospitalBill.PhilHealth;
+            ViewData["PhilHealthNo"] = fillupformhospitalBill.PhilHealthNo;
+            ViewData["Dateofbirth"] = fillupformhospitalBill.Dateofbirth;
+            ViewData["Age"] = fillupformhospitalBill.Age;
+
+            // Requestor details
+            ViewData["RLastname"] = fillupformhospitalBill.RLastname;
+            ViewData["RFirstname"] = fillupformhospitalBill.RFirstname;
+            ViewData["RMiddlename"] = fillupformhospitalBill.RMiddlename;
+            ViewData["RSuffix"] = fillupformhospitalBill.RSuffix;
+            ViewData["RBlkLotStreet"] = fillupformhospitalBill.RBlkLotStreet;
+            ViewData["RSubVill"] = fillupformhospitalBill.RSubVill;
+            ViewData["RBrgy"] = fillupformhospitalBill.RBrgy;
+            ViewData["RDistrict"] = fillupformhospitalBill.RDistrict;
+            ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
+            ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
+
+            // Type of assistance and CMO details
+            var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+
+            // Parse checkbox values into a Dictionary<string, string>
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+
+            ViewData["CheckedAssistance"] = parsed; // Pass dictionary to the view
+
+
+            // ForCMOPERSONNEL handling
+            var cmoPersonnelRaw = fillupformhospitalBill.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
+            ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
+
+            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
+            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
+
+            ViewData["Comments"] = fillupformhospitalBill.Comments;
+
+
+            return View();
+
+        }
+
+
+        [HttpPost]
+        public IActionResult FillupformHospitalBillUpdateprocessingstatus(int id, FillupformHospitalBillDto fillupformHospitalbilldto)
+        {
+            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
+
+            if (fillupformhospitalBill == null)
+            {
+                TempData["ErrorMessage"] = "Hospital bill record not found.";
+                return RedirectToAction();
+            }
+
+            try
+            {
+                // Update status and comments
+                fillupformhospitalBill.Status2 = fillupformHospitalbilldto.Status2;
+                fillupformhospitalBill.ForCMOPERSONNEL = fillupformHospitalbilldto.ForCMOPERSONNEL;
+                fillupformhospitalBill.Comments = fillupformHospitalbilldto.Comments;
+                fillupformhospitalBill.Processby = fillupformHospitalbilldto.Processby;
+                fillupformhospitalBill.Result = DateTime.Now;
+                context.SaveChanges();
+
+                // Get the user's email using UserId
+                var user = context.Useraccount.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
+                if (user != null && !string.IsNullOrEmpty(user.Email))
+                {
+                    // Get email settings from configuration
+                    var fromEmail = _configuration["EmailSettings:FromEmail"];
+                    var fromName = _configuration["EmailSettings:FromName"];
+                    var fromPassword = _configuration["EmailSettings:FromPassword"];
+
+                    // Null check for email settings
+                    if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
+                    {
+                        throw new ArgumentException("Email address or display name is missing.");
+                    }
+
+                    // Compose and send the email
+                    var fromAddress = new MailAddress(fromEmail, fromName);
+                    var toAddress = new MailAddress(user.Email, "User");
+
+                    string subject = "Hospital Bill Assistance Update";
+                    string body = $"Your hospital bill status has been updated.\n\nStatus: {fillupformHospitalbilldto.Status}\nComments: {fillupformHospitalbilldto.Comments}";
+
+                    var smtp = new SmtpClient
+                    {
+                        Host = "smtp.gmail.com",
+                        Port = 587,
+                        EnableSsl = true,
+                        DeliveryMethod = SmtpDeliveryMethod.Network,
+                        UseDefaultCredentials = false,
+                        Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                    };
+
+                    using (var message = new MailMessage(fromAddress, toAddress)
+                    {
+                        Subject = subject,
+                        Body = body
+                    })
+                    {
+                        smtp.Send(message);
+                    }
+                }
+                ;
+
+                TempData["ErrorMessage"] = "Hospital bill record not found.";
+                return RedirectToAction();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
+                return View(fillupformHospitalbilldto);
+            }
+        }
 
 
     }

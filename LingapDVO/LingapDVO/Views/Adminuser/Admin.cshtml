@@ -791,33 +791,41 @@
                 `;
             }
 
-            // Helper function to get action buttons HTML
-            function getActionButtons(app) {
-                let viewUrl = '';
-                let editUrl = '';
+                          // Helper function to get action buttons HTML
+                function getActionButtons(app) {
+                    let viewUrl = '';
+                    let editUrl = '';
 
-                if (app.type === "Hospital Bill Assistance") {
-                    viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
-                    editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
-                } else if (app.type === "Medical and laboratory Procedure") {
-                    viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
-                    editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
-                } else {
-                    viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
-                    editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                    if (app.type === "Hospital Bill Assistance") {
+                        viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
+
+                        // Check if status is processing
+                        if (app.status === "processing") {
+                            editUrl = `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
+                        } else {
+                            editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                        }
+
+                    } else if (app.type === "Medical and laboratory Procedure") {
+                        viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
+                        editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                    } else {
+                        viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
+                        editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                    }
+
+                    return `
+                        <div class="action-buttons">
+                            <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    `;
                 }
 
-                return `
-                    <div class="action-buttons">
-                        <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                    </div>
-                `;
-            }
 
             // Helper function to format date
             function formatDate(date) {

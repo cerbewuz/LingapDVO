@@ -117,6 +117,10 @@ namespace LingapDVO.Models
 
         public string? Comments { get; set; } = "";
 
+        public DateTime Result { get; set; }
+
+        public string Status2 { get; set; } = "";
+
 
 
     }
