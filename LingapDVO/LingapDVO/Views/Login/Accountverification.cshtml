@@ -24,6 +24,35 @@
             background-color: #f8f9fa;
         }
 
+        /* Go Back button styling for upper left */
+        .go-back-top {
+            position: fixed;
+            left: 30px;
+            top: 30px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #DC143C;
+            color: #DC143C;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            .go-back-top:hover, .go-back-top:focus {
+                background: #DC143C;
+                color: #fff !important;
+                box-shadow: 0 4px 16px rgba(220, 20, 60, 0.15);
+                transform: translateY(-2px);
+                text-decoration: none;
+            }
+
         .register-form {
             background: white;
             border-radius: 10px;
@@ -210,6 +239,13 @@
     </style>
 </head>
 <body>
+    <div>
+    <!-- Go Back Button -->
+    <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
+        <i class="fas"></i> Go Back
+    </a>
+    </div>
+
     <section class="register container-fluid">
         <div class="row min-vh-100 d-flex justify-content-center align-items-center">
             <div class="col-md-8 col-lg-6">
@@ -598,10 +634,6 @@
                             }
                         </style>
                     </form>
-
-                    <div class="mt-3">
-                        <a href="javascript:history.back()" class="text-decoration-none cobalt-text fw-bold">Go Back</a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -718,6 +750,11 @@
                 };
                 reader.readAsDataURL(file);
             }
+
+                    // Go Back button functionality
+        goBackBtn.addEventListener('click', function() {
+            window.history.back();
+        });
 
             // Process image with OCR
             function processImageWithOCR(preview, isBack) {

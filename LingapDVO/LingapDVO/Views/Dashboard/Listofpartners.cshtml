@@ -3,12 +3,10 @@
 }
 
 <div class="partners-container">
-    <!-- Back Button -->
-    <div class="back-button-container">
-        <a href="javascript:history.back()" class="back-button">
-            <i class="fas fa-arrow-left"></i> Back
+        <!-- Go Back Button -->
+        <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
+            <i class="fas"></i> Go Back
         </a>
-    </div>
 
     <!-- Header -->
     <div class="partners-header">
@@ -70,6 +68,35 @@
         color: var(--text-color);
         background-color: var(--light-color);
     }
+
+    /* Go Back button styling for upper left */
+    .go-back-top {
+        position: fixed;
+        left: 30px;
+        top: 30px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 16px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s;
+        cursor: pointer;
+        border: 1px solid #DC143C;
+        color: #DC143C;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        .go-back-top:hover, .go-back-top:focus {
+            background: #DC143C;
+            color: #fff !important;
+            box-shadow: 0 4px 16px rgba(220, 20, 60, 0.15);
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
 
     .partners-container {
         width: 100%;
@@ -181,6 +208,13 @@
 
     /* Responsive adjustments without media queries */
 </style>
+
+<script>
+        // Go Back button functionality
+    goBackBtn.addEventListener('click', function() {
+        window.history.back();
+    });
+</script>
 
 <!-- Font Awesome for the back button icon -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

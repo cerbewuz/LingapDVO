@@ -27,6 +27,36 @@
             color: #333;
         }
 
+        /* Go Back button styling for upper left */
+        .go-back-top {
+            position: fixed;
+            left: 30px;
+            top: 30px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #DC143C;
+            color: #DC143C;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            .go-back-top:hover, .go-back-top:focus {
+                background: #DC143C;
+                color: #fff !important;
+                box-shadow: 0 4px 16px rgba(220, 20, 60, 0.15);
+                transform: translateY(-2px);
+                text-decoration: none;
+            }
+
+
         .container {
             max-width: 1200px;
             padding: 1rem;
@@ -277,13 +307,14 @@
     </style>
 </head>
 <body>
+    <!-- Go Back Button -->
+    <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
+        <i class="fas"></i> Go Back
+    </a>
+
     <div class="container">
         <div class="header">
             <h2 class="mb-0" style="color: var(--primary-color); font-weight: 700;">Assistance Requests</h2>
-          <button class="btn btn-primary-custom" onclick="history.back()">
-              <i class="fas fa-arrow-left me-2"></i>Back
-            </button>
-
         </div>
 
         <!-- Tab Navigation -->
@@ -506,6 +537,11 @@
                     commentsModal.show();
                 });
             });
+
+                    // Go Back button functionality
+        goBackBtn.addEventListener('click', function() {
+            window.history.back();
+        });
 
             // Initialize tabs
             var tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
