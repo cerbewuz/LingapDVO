@@ -88,6 +88,7 @@
             --danger: #e74c3c;
             --warning: #f39c12;
             --info: #3498db;
+            --processing: #9b59b6;
             --lingap-red: #dc143c;
             --dark: #1e1e2c;
             --light: #f8f9fa;
@@ -287,9 +288,19 @@
             color: var(--warning);
         }
 
+        .summary-processing .summary-icon {
+            background: rgba(155, 89, 182, 0.15);
+            color: var(--processing);
+        }
+
         .summary-unapproved .summary-icon {
             background: rgba(231, 76, 60, 0.15);
             color: var(--danger);
+        }
+
+        .summary-claimed .summary-icon {
+            background: rgba(52, 152, 219, 0.15);
+            color: var(--info);
         }
 
         .summary-number {
@@ -426,9 +437,49 @@
         .main-content-expanded {
             margin-left: 70px;
         }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .status-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            min-width: 150px;
+        }
     </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <div class="dashboard-container">
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
@@ -482,60 +533,22 @@
                 </div>
             </div>
 
-            <!-- Summary Cards -->
-            <div class="row g-3 mb-4">
-                @{
-                    var totalCount = Model.HospitalBills.Count + Model.MedicalLabForms.Count + Model.Funeralburialform.Count;
-                    var approvedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
-                    Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
-                    Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved");
-                    var pendingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
-                    Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
-                    Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending");
-                    var unapprovedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
-                    Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
-                    Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved");
-                    var claimedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
-                    Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
-                    Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed");
-                }
+            <!-- Status Filter -->
+            <div class="status-filter">
+                <label for="statusFilter" class="form-label"><strong>Filter by Status:</strong></label>
+                <select id="statusFilter" class="status-select" onchange="applyStatusFilter()">
+                    <option value="all">All Statuses</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="unapproved">Unapproved</option>
+                    <option value="claimed">Claimed</option>
+                </select>
+            </div>
 
-                <div class="col-md-3">
-                    <div class="card-analytics summary-card summary-total">
-                        <div class="summary-icon">
-                            <i class="bi bi-files"></i>
-                        </div>
-                        <div class="summary-number">@totalCount</div>
-                        <div class="summary-label">Total Applications</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card-analytics summary-card summary-approved">
-                        <div class="summary-icon">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                        <div class="summary-number">@approvedCount</div>
-                        <div class="summary-label">Approved</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card-analytics summary-card summary-pending">
-                        <div class="summary-icon">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                        <div class="summary-number">@pendingCount</div>
-                        <div class="summary-label">Pending</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card-analytics summary-card summary-unapproved">
-                        <div class="summary-icon">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
-                        <div class="summary-number">@unapprovedCount</div>
-                        <div class="summary-label">Unapproved</div>
-                    </div>
-                </div>
+            <!-- Summary Cards -->
+            <div class="row g-3 mb-4" id="summaryCards">
+                <!-- Summary cards will be dynamically updated -->
             </div>
 
             <!-- Charts Row 1 -->
@@ -606,64 +619,41 @@
     </div>
 
     <script>
-        // Fixed JavaScript data initialization with detailed assistance types
-        const chartData = {
-            barangayLabels: @Html.Raw(Json.Serialize(barangayLabelsDetailed)),
-            barangayTotals: @Html.Raw(Json.Serialize(barangayTotalsDetailed)),
-            assistanceTypes: @Html.Raw(Json.Serialize(allAssistanceTypes)),
-            assistanceTypeData: @Html.Raw(Json.Serialize(assistanceTypeData)),
-            statusLabels: ['Approved', 'Pending', 'Unapproved', 'Claimed'],
-            statusData: [@approvedCount, @pendingCount, @unapprovedCount, @claimedCount],
-            typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
-            typeData: [@Model.HospitalBills.Count, @Model.MedicalLabForms.Count, @Model.Funeralburialform.Count]
-        };
+        // Global variables to store chart instances and data
+        let typeChart, statusChart, barangayChart;
+        let originalData = null;
+        let filteredData = null;
+        let currentStatusFilter = 'all';
 
-        // Colors for different assistance types
+        // Colors for different assistance types and statuses
         const colors = {
             primary: '#4361ee',
             success: '#2ecc71',
             danger: '#e74c3c',
             warning: '#f39c12',
             info: '#3498db',
+            processing: '#9b59b6',
             hospital: '#4361ee',
             medical: '#9b59b6',
             funeral: '#e74c3c'
         };
 
-        // Generate more colors for different assistance types
-        function generateAssistanceTypeColors(count) {
-            const colorPalette = [
-                '#4361ee', '#3a0ca3', '#4cc9f0', '#f72585', '#7209b7',
-                '#3f37c9', '#560bad', '#b5179e', '#4895ef', '#480ca8',
-                '#f15bb5', '#00bbf9', '#00f5d4', '#00bbf9', '#fee440',
-                '#f96167', '#f9c74f', '#90be6d', '#43aa8b', '#577590',
-                '#4d908e', '#277da1', '#577590', '#43aa8b', '#90be6d',
-                '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
-                '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
-            ];
-
-            const generatedColors = [];
-            for (let i = 0; i < count; i++) {
-                generatedColors.push(colorPalette[i % colorPalette.length]);
-            }
-            return generatedColors;
-        }
-
-        // Chart instances
-        let typeChart, statusChart, barangayChart;
-
-        // Initialize charts and sidebar toggle
+        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            // Set default dates
+            // Set default dates (last 3 months)
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-            document.getElementById('endDate').valueAsDate = today;
-            document.getElementById('startDate').valueAsDate = firstDay;
 
-            // Initialize charts
-            initTypeChart('doughnut');
-            initStatusChart('doughnut');
-            initBarangayChart();
+            // Format dates for input fields (YYYY-MM-DD)
+            const formatDateForInput = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+
+            document.getElementById('endDate').value = formatDateForInput(today);
+            document.getElementById('startDate').value = formatDateForInput(firstDay);
+
+            // Initialize dashboard with all data
+            initializeDashboard();
 
             // Sidebar toggle functionality
             const menuToggle = document.getElementById('menuToggle');
@@ -686,10 +676,349 @@
             }
         });
 
-        // Type Chart
-        function initTypeChart(type) {
+        // Initialize dashboard with data - FOLLOWING ADMIN.CSHTML PATTERN
+        function initializeDashboard() {
+            // Create combined applications array following Admin.cshtml pattern
+            const allApplications = [];
+
+            // Add Hospital Bills following Admin.cshtml pattern
+            @foreach (var f in Model.HospitalBills)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Hospital Bill Assistance",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
+            }
+
+            // Add Medical Lab Forms following Admin.cshtml pattern
+            @foreach (var f in Model.MedicalLabForms)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Medical and laboratory Procedure",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
+            }
+
+            // Add Funeral Forms following Admin.cshtml pattern
+            @foreach (var f in Model.Funeralburialform)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Funeral and burial assistance",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
+            }
+
+            originalData = {
+                allApplications: allApplications,
+                hospitalBills: @Html.Raw(Json.Serialize(Model.HospitalBills)),
+                medicalLabForms: @Html.Raw(Json.Serialize(Model.MedicalLabForms)),
+                funeralForms: @Html.Raw(Json.Serialize(Model.Funeralburialform))
+            };
+
+            console.log('Initial data loaded following Admin.cshtml pattern:', originalData);
+
+            // Process data for the initial view
+            processDataAndUpdateCharts();
+        }
+
+        // Process data and update all charts
+        function processDataAndUpdateCharts() {
+            showLoading(true);
+
+            // Use setTimeout to simulate processing time
+            setTimeout(() => {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                // Filter data based on date range and status
+                filteredData = filterDataByDateRange(originalData, startDate, endDate);
+                filteredData = filterDataByStatus(filteredData, currentStatusFilter);
+
+                console.log('Filtered data:', filteredData);
+
+                // Update summary cards
+                updateSummaryCards(filteredData);
+
+                // Update charts
+                updateTypeChart('doughnut');
+                updateStatusChart('doughnut');
+                updateBarangayChart();
+
+                showLoading(false);
+            }, 500);
+        }
+
+        // Filter data by date range using createdAt field
+        function filterDataByDateRange(data, startDate, endDate) {
+            // If no dates selected, return all data
+            if (!startDate || !endDate) return data;
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // Include the entire end date
+
+            const filtered = {
+                allApplications: [],
+                hospitalBills: [],
+                medicalLabForms: [],
+                funeralForms: []
+            };
+
+            // Filter all applications using createdAt
+            if (data.allApplications) {
+                filtered.allApplications = data.allApplications.filter(item => {
+                    if (!item.createdAt) return true; // Keep items without createdAt
+
+                    // Check if the date is valid
+                    if (isNaN(item.createdAt.getTime())) {
+                        return true; // Keep items with invalid dates
+                    }
+
+                    return item.createdAt >= start && item.createdAt <= end;
+                });
+            }
+
+            return filtered;
+        }
+
+        // Filter data by status - FOLLOWING ADMIN.CSHTML PATTERN
+        function filterDataByStatus(data, status) {
+            // If "all" status is selected, return all data
+            if (status === 'all') return data;
+
+            const filtered = {
+                allApplications: [],
+                hospitalBills: [],
+                medicalLabForms: [],
+                funeralForms: []
+            };
+
+            // Filter applications by status following Admin.cshtml pattern
+            if (data.allApplications) {
+                filtered.allApplications = data.allApplications.filter(app => {
+                    // For approved/unapproved statuses, ONLY check Status2 field
+                    if (status === 'approved' || status === 'unapproved') {
+                        return app.status2 && app.status2.trim() !== '' && app.status2 === status;
+                    }
+
+                    // For other statuses (pending, processing, claimed), use the original Status field
+                    // But exclude applications that have Status2 with approved/unapproved values
+                    return app.status === status &&
+                           (!app.status2 || app.status2.trim() === '' ||
+                            (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
+                });
+            }
+
+            return filtered;
+        }
+
+        // Apply status filter
+        function applyStatusFilter() {
+            currentStatusFilter = document.getElementById('statusFilter').value;
+            processDataAndUpdateCharts();
+        }
+
+        // Update summary cards with filtered data - FOLLOWING ADMIN.CSHTML STATUS COUNTING PATTERN
+        function updateSummaryCards(data) {
+            const applications = data.allApplications || [];
+
+            const statusCounts = {
+                approved: 0,
+                unapproved: 0,
+                pending: 0,
+                processing: 0,
+                claimed: 0,
+                total: 0
+            };
+
+            // Count applications by status following Admin.cshtml pattern
+            applications.forEach(app => {
+                // If Status2 has approved/unapproved, count ONLY in those categories
+                if (app.status2 && app.status2.trim() !== '') {
+                    if (app.status2 === 'approved') {
+                        statusCounts.approved++;
+                    } else if (app.status2 === 'unapproved') {
+                        statusCounts.unapproved++;
+                    }
+                    // DO NOT count in processing/pending/claimed if Status2 is approved/unapproved
+                } else {
+                    // No Status2 or Status2 is empty, use original status
+                    if (statusCounts.hasOwnProperty(app.status)) {
+                        statusCounts[app.status]++;
+                    }
+                }
+            });
+
+            // Calculate total
+            statusCounts.total = applications.length;
+
+            const summaryCards = document.getElementById('summaryCards');
+            summaryCards.innerHTML = `
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-total">
+                        <div class="summary-icon">
+                            <i class="bi bi-files"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.total}</div>
+                        <div class="summary-label">Total Applications</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-approved">
+                        <div class="summary-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.approved}</div>
+                        <div class="summary-label">Approved</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-pending">
+                        <div class="summary-icon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.pending}</div>
+                        <div class="summary-label">Pending</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-processing">
+                        <div class="summary-icon">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.processing}</div>
+                        <div class="summary-label">Processing</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-unapproved">
+                        <div class="summary-icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.unapproved}</div>
+                        <div class="summary-label">Unapproved</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-claimed">
+                        <div class="summary-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.claimed}</div>
+                        <div class="summary-label">Claimed</div>
+                    </div>
+                </div>
+            `;
+
+            // Update global chart data
+            window.chartData = {
+                statusData: [statusCounts.approved, statusCounts.pending, statusCounts.processing, statusCounts.unapproved, statusCounts.claimed],
+                typeData: countApplicationTypes(applications),
+                statusLabels: ['Approved', 'Pending', 'Processing', 'Unapproved', 'Claimed'],
+                typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                // Barangay data will be processed separately
+                ...processBarangayData(applications)
+            };
+        }
+
+        // Count application types
+        function countApplicationTypes(applications) {
+            const counts = {
+                hospital: 0,
+                medical: 0,
+                funeral: 0
+            };
+
+            applications.forEach(app => {
+                if (app.type === "Hospital Bill Assistance") counts.hospital++;
+                else if (app.type === "Medical and laboratory Procedure") counts.medical++;
+                else if (app.type === "Funeral and burial assistance") counts.funeral++;
+            });
+
+            return [counts.hospital, counts.medical, counts.funeral];
+        }
+
+        // Process barangay data for charts - UPDATED TO USE COMBINED APPLICATIONS
+        function processBarangayData(applications) {
+            const barangayDetailedData = {};
+
+            // Process all applications following the same pattern
+            applications.forEach(app => {
+                if (!app.brgy) return;
+
+                const barangay = app.brgy;
+                if (!barangayDetailedData[barangay]) {
+                    barangayDetailedData[barangay] = {};
+                }
+
+                // Use typeassistance if available, otherwise use type
+                const assistanceType = app.typeassistance ? app.typeassistance.trim() : app.type;
+                barangayDetailedData[barangay][assistanceType] =
+                    (barangayDetailedData[barangay][assistanceType] || 0) + 1;
+            });
+
+            // Sort barangays by total applications
+            const allBarangaysDetailed = Object.entries(barangayDetailedData)
+                .sort((a, b) => {
+                    const totalA = Object.values(a[1]).reduce((sum, count) => sum + count, 0);
+                    const totalB = Object.values(b[1]).reduce((sum, count) => sum + count, 0);
+                    return totalB - totalA;
+                });
+
+            const barangayLabelsDetailed = allBarangaysDetailed.map(b => b[0]);
+            const barangayTotalsDetailed = allBarangaysDetailed.map(b =>
+                Object.values(b[1]).reduce((sum, count) => sum + count, 0));
+
+            // Get all unique assistance types
+            const allAssistanceTypes = [...new Set(
+                allBarangaysDetailed.flatMap(b => Object.keys(b[1]))
+            )].sort();
+
+            // Prepare data for each assistance type
+            const assistanceTypeData = {};
+            allAssistanceTypes.forEach(type => {
+                assistanceTypeData[type] = allBarangaysDetailed.map(b => b[1][type] || 0);
+            });
+
+            return {
+                barangayLabels: barangayLabelsDetailed,
+                barangayTotals: barangayTotalsDetailed,
+                assistanceTypes: allAssistanceTypes,
+                assistanceTypeData: assistanceTypeData
+            };
+        }
+
+        // Type Chart functions
+        function updateTypeChart(type) {
             const ctx = document.getElementById('typeChart');
-            if (!ctx) return;
+            if (!ctx || !window.chartData) return;
 
             const context = ctx.getContext('2d');
             if (typeChart) typeChart.destroy();
@@ -697,9 +1026,9 @@
             typeChart = new Chart(context, {
                 type: type,
                 data: {
-                    labels: chartData.typeLabels,
+                    labels: window.chartData.typeLabels,
                     datasets: [{
-                        data: chartData.typeData,
+                        data: window.chartData.typeData,
                         backgroundColor: [colors.hospital, colors.medical, colors.funeral],
                         borderWidth: 0
                     }]
@@ -708,14 +1037,10 @@
             });
         }
 
-        function updateTypeChart(type) {
-            initTypeChart(type);
-        }
-
-        // Status Chart
-        function initStatusChart(type) {
+        // Status Chart functions
+        function updateStatusChart(type) {
             const ctx = document.getElementById('statusChart');
-            if (!ctx) return;
+            if (!ctx || !window.chartData) return;
 
             const context = ctx.getContext('2d');
             if (statusChart) statusChart.destroy();
@@ -723,10 +1048,10 @@
             statusChart = new Chart(context, {
                 type: type,
                 data: {
-                    labels: chartData.statusLabels,
+                    labels: window.chartData.statusLabels,
                     datasets: [{
-                        data: chartData.statusData,
-                        backgroundColor: [colors.success, colors.warning, colors.danger, colors.info],
+                        data: window.chartData.statusData,
+                        backgroundColor: [colors.success, colors.warning, colors.processing, colors.danger, colors.info],
                         borderWidth: 0
                     }]
                 },
@@ -734,16 +1059,10 @@
             });
         }
 
-        function updateStatusChart(type) {
-            initStatusChart(type);
-        }
-
-        // Barangay Chart with Specific Assistance Types
-        function initBarangayChart() {
-            updateBarangayChart();
-        }
-
+        // Barangay Chart functions
         function updateBarangayChart() {
+            if (!window.chartData) return;
+
             const chartType = document.getElementById('barangayChartType').value;
             const viewType = document.getElementById('barangayView').value;
 
@@ -752,17 +1071,17 @@
             let assistanceData = {};
 
             if (viewType === 'all') {
-                labels = [...chartData.barangayLabels];
-                totals = [...chartData.barangayTotals];
-                chartData.assistanceTypes.forEach(type => {
-                    assistanceData[type] = [...chartData.assistanceTypeData[type]];
+                labels = [...window.chartData.barangayLabels];
+                totals = [...window.chartData.barangayTotals];
+                window.chartData.assistanceTypes.forEach(type => {
+                    assistanceData[type] = [...window.chartData.assistanceTypeData[type]];
                 });
             } else {
                 const limit = viewType === 'top10' ? 10 : 20;
-                labels = chartData.barangayLabels.slice(0, limit);
-                totals = chartData.barangayTotals.slice(0, limit);
-                chartData.assistanceTypes.forEach(type => {
-                    assistanceData[type] = chartData.assistanceTypeData[type].slice(0, limit);
+                labels = window.chartData.barangayLabels.slice(0, limit);
+                totals = window.chartData.barangayTotals.slice(0, limit);
+                window.chartData.assistanceTypes.forEach(type => {
+                    assistanceData[type] = window.chartData.assistanceTypeData[type].slice(0, limit);
                 });
             }
 
@@ -945,21 +1264,55 @@
             };
         }
 
+        function generateAssistanceTypeColors(count) {
+            const colorPalette = [
+                '#4361ee', '#3a0ca3', '#4cc9f0', '#f72585', '#7209b7',
+                '#3f37c9', '#560bad', '#b5179e', '#4895ef', '#480ca8',
+                '#f15bb5', '#00bbf9', '#00f5d4', '#00bbf9', '#fee440',
+                '#f96167', '#f9c74f', '#90be6d', '#43aa8b', '#577590',
+                '#4d908e', '#277da1', '#577590', '#43aa8b', '#90be6d',
+                '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
+                '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
+            ];
+
+            const generatedColors = [];
+            for (let i = 0; i < count; i++) {
+                generatedColors.push(colorPalette[i % colorPalette.length]);
+            }
+            return generatedColors;
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
+        }
+
         // Date filter functions
         function applyDateFilter() {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
+
             if (!start || !end) {
-                alert('Please select both dates');
+                alert('Please select both start and end dates');
                 return;
             }
-            console.log(`Filter: ${start} to ${end}`);
+
+            if (new Date(start) > new Date(end)) {
+                alert('Start date cannot be after end date');
+                return;
+            }
+
+            processDataAndUpdateCharts();
         }
 
         function resetDateFilter() {
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
+            processDataAndUpdateCharts();
         }
     </script>
 </body>
 </html>
+}
