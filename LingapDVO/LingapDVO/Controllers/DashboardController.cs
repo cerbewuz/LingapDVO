@@ -193,24 +193,43 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // Check for recently approved forms
-            var oneMonthAgo = DateTime.Now.AddMonths(-1);
-
-            var hasRecentApproval = context.FillupformHospitalBill.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo) ||
-                                   context.Funeralburialform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo) ||
-                                   context.Medicalandlabform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
-
-            if (hasRecentApproval)
+            // Check for any pending forms first (user can only have one form at a time)
+            var hasPendingForm = context.FillupformHospitalBill.Any(f => f.UserId == userId && f.Status == "Pending"); 
+ 
+            if (hasPendingForm)
             {
-                ModelState.AddModelError("", "You cannot submit a new form because you have an approved form within the last month. Please wait until one month has passed since your last approval.");
+                ModelState.AddModelError("", "You already have a pending form. Please wait for it to be approved before submitting a new one.");
                 return View(fillupformHospitalbilldto);
             }
 
+            // IMPROVED: Check for recently approved forms (cooldown period)
+            var oneMonthAgo = DateTime.Now.AddMonths(-1);
+
+            // Check for forms with Status2 = "Approved" within the last month
+            var hasRecentApproval = context.FillupformHospitalBill.Any(f => f.UserId == userId && f.Status2 == "Approved" && f.CreatedAt >= oneMonthAgo);
+
+
+            if (hasRecentApproval)
+            {
+                // Get the most recent approved form to show the exact date
+                var recentApprovedForm = context.FillupformHospitalBill
+                    .Where(f => f.UserId == userId && f.Status2 == "Approved")
+                    .OrderByDescending(f => f.CreatedAt)
+                    .FirstOrDefault();
+
+                string approvedDate = recentApprovedForm?.CreatedAt.ToString("MMMM dd, yyyy") ?? "recently";
+
+                ModelState.AddModelError("", $"You cannot submit a new form because you have an approved form from {approvedDate}. Please wait until one month has passed since your last approval before submitting again.");
+                return View(fillupformHospitalbilldto);
+            }
+
+            // Optional field handling
             if (string.IsNullOrEmpty(fillupformHospitalbilldto.PhilHealthNo))
             {
                 ModelState.Remove("PhilHealthNo");
             }
 
+            // Image validation
             if (fillupformHospitalbilldto.IdBackimage == null && fillupformHospitalbilldto.IdFrontimage == null &&
                 fillupformHospitalbilldto.DoctorPrescriptionimage == null && fillupformHospitalbilldto.DeathCertificateimage == null)
             {
@@ -224,14 +243,16 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Generate unique filenames
-                string newFileNameFront = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
+                // Generate unique filenames with different timestamps to avoid conflicts
+                var timestamp = DateTime.Now;
+
+                string newFileNameFront = timestamp.ToString("yyyyMMddHHmmssfff") + "_front" +
                                         Path.GetExtension(fillupformHospitalbilldto.IdFrontimage!.FileName);
 
-                string newFileNameBack = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
+                string newFileNameBack = timestamp.AddMilliseconds(1).ToString("yyyyMMddHHmmssfff") + "_back" +
                                      Path.GetExtension(fillupformHospitalbilldto.IdBackimage!.FileName);
 
-                string newFileNamePrescription = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
+                string newFileNamePrescription = timestamp.AddMilliseconds(2).ToString("yyyyMMddHHmmssfff") + "_prescription" +
                                      Path.GetExtension(fillupformHospitalbilldto.DoctorPrescriptionimage!.FileName);
 
                 string? newFileNameDeathCertificate = null;
@@ -240,6 +261,11 @@ namespace LingapDVO.Controllers
                 string uploadsFolder = Path.Combine(environment.WebRootPath, "Validimg");
                 string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
                 string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
+
+                // Ensure directories exist
+                Directory.CreateDirectory(uploadsFolder);
+                Directory.CreateDirectory(uploadsFolder1);
+                Directory.CreateDirectory(uploadsFolder2);
 
                 // Save Front Image
                 string filePathFront = Path.Combine(uploadsFolder, newFileNameFront);
@@ -264,7 +290,7 @@ namespace LingapDVO.Controllers
 
                 if (fillupformHospitalbilldto.DeathCertificateimage != null)
                 {
-                    newFileNameDeathCertificate = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
+                    newFileNameDeathCertificate = timestamp.AddMilliseconds(3).ToString("yyyyMMddHHmmssfff") + "_deathcert" +
                         Path.GetExtension(fillupformHospitalbilldto.DeathCertificateimage.FileName);
 
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
@@ -273,6 +299,7 @@ namespace LingapDVO.Controllers
                         fillupformHospitalbilldto.DeathCertificateimage.CopyTo(stream);
                     }
                 }
+
                 // Map data to entity
                 FillupformHospitalBill fillupformHospitalBill = new FillupformHospitalBill()
                 {
@@ -314,6 +341,7 @@ namespace LingapDVO.Controllers
                     DoctorPrescription = newFileNamePrescription,
                     DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
                     Status = "Pending",
+                    Status2 = "Pending", // Initialize Status2 as Pending
 
                     // Created Timestamp
                     CreatedAt = DateTime.Now

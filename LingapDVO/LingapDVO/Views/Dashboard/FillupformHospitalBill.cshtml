@@ -533,64 +533,7 @@
                 <span asp-validation-for="Typeassistance" class="text-danger"></span>
             </div>
 
-            <!-- FOR CMO PERSONNEL USE ONLY Section -->
-            <div class="mt-5">
-                <h5 class="section-header">FOR CMO PERSONNEL USE ONLY</h5>
-
-                <div class="row g-3 mt-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Bill Amount:</label>
-                        <input type="text" class="form-control" id="billAmountInput" name="BillAmount">
-                    </div>
-                </div>
-
-                <div class="mt-3">
-                    <label class="form-label">Supporting Documents Attached:</label>
-                    <div class="row g-3 mt-1">
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance">
-                                <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="hospitalBill" name="SupportingDocs" value="Hospital Bill">
-                                <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
-                            </div>
-                 
-                        </div>
-
-                        <div class="col-md-6">                                                   
-                            <div class="form-check mt-2">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request">
-                                <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
-                            </div>  
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">Others:</label>
-                            <input type="text" class="form-control" id="cmoNotesInput" placeholder="Enter notes...">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <div class="border rounded p-3 mb-3" style="height: 100px;"></div>
-                            <label class="form-label text-center w-100">Processed by:</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="ForCMOPERSONNEL" class="form-label">CMO Reflection info:</label>
-                    <input asp-for="ForCMOPERSONNEL" type="text" class="form-control" id="cmoReflectionField"
-                           name="ForCMOPERSONNEL" placeholder="Auto-generated info..." readonly>
-                    <span asp-validation-for="ForCMOPERSONNEL"></span>
-                </div>
-            </div>
-
+         
 
             <!-- Upload Section -->
             <h5 class="section-header">Upload Required Documents</h5>
