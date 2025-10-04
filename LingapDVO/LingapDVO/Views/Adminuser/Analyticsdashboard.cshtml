@@ -520,8 +520,7 @@
                         <i class="bi bi-list"></i>
                     </button>
                     <div class="header-title">
-                        <h1>📊 Analytics Dashboard</h1>
-                        <p>Comprehensive overview of assistance applications</p>
+                        <h1>Analytics Dashboard</h1>
                     </div>
                 </div>
                 <div class="date-filter">
@@ -532,26 +531,8 @@
                     <button class="btn-custom btn-outline-custom" onclick="resetDateFilter()">Reset</button>
                 </div>
             </div>
-
-            <!-- Status Filter -->
-            <div class="status-filter">
-                <label for="statusFilter" class="form-label"><strong>Filter by Status:</strong></label>
-                <select id="statusFilter" class="status-select" onchange="applyStatusFilter()">
-                    <option value="all">All Statuses</option>
-                    <option value="approved">Approved</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="unapproved">Unapproved</option>
-                    <option value="claimed">Claimed</option>
-                </select>
-            </div>
-
-            <!-- Summary Cards -->
             <div class="row g-3 mb-4" id="summaryCards">
-                <!-- Summary cards will be dynamically updated -->
             </div>
-
-            <!-- Charts Row 1 -->
             <div class="row g-3">
                 <!-- Application Types -->
                 <div class="col-md-6">
@@ -569,7 +550,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Status Distribution -->
                 <div class="col-md-6">
                     <div class="card-analytics">

@@ -16,38 +16,95 @@
     <link rel="stylesheet" href="css/jquery-ui.css">
     <link rel="stylesheet" href="css/owl.carousel.min.css">
     <link rel="stylesheet" href="css/owl.theme.default.min.css">
-    <link rel="stylesheet" href="css/owl.theme.default.min.css">
-
     <link rel="stylesheet" href="css/jquery.fancybox.min.css">
-
     <link rel="stylesheet" href="css/bootstrap-datepicker.css">
-
     <link rel="stylesheet" href="fonts/flaticon/font/flaticon.css">
-
     <link rel="stylesheet" href="css/aos.css">
-
     <link rel="stylesheet" href="css/style.css">
 
     <style>
+        h1 {
+            color: antiquewhite;
+            transition: color 0.3s ease;
+        }
+
+        .site-navbar.is-sticky h1 {
+            color: #DC143C; /* red on scroll */
+        }
+
+        /* Optional - make buttons readable when navbar turns white */
+        .site-navbar.is-sticky .nav-btn {
+            color: black;
+            mix-blend-mode: normal; /* reset blend so text stays visible */
+        }
+
+        /* Transparent navbar with spacing */
+        .site-navbar {
+            background: transparent;
+            height: 80px;
+            padding-top: 14px;
+            padding-bottom: 20px;
+        }
+
         /* Navbar button style */
         .nav-btn {
             background: none;
             border: none;
             font-weight: bold;
-            color: #DC143C; 
-            font-size: 18px; 
+            font-size: 18px;
             padding: 10px 20px;
             cursor: pointer;
             transition: all 0.3s ease;
+            color: var(--nav-text, #ffff); /* Use variable color for flexibility */
         }
 
-            /* Hover effect */
-            .nav-btn:hover {
-                color: #ffffff; 
-                transform: scale(1.05);
-            }
-    </style>
+        /* Use mix-blend-mode for adaptive visibility */
+        .site-navbar .nav-btn {
+            mix-blend-mode: difference; /* Makes text invert depending on background brightness */
+        }
 
+        /* Hover effect */
+        .nav-btn:hover {
+            color: #DC143C; /* Bright hover color (crimson red) */
+            transform: scale(1.05);
+        }
+
+        /* Adjust text visibility when background is bright (auto handled by blend mode) */
+        .site-navbar,
+        .nav-btn {
+            isolation: isolate;
+        }
+
+        .site-mobile-menu {
+            background-color: rgba(0, 0, 0, 1); /* semi-transparent black */
+            color: white; /* text inside the menu */
+        }
+
+            /* Optional: style mobile links for readability */
+            .site-mobile-menu a,
+            .site-mobile-menu .nav-btn {
+                color: white;
+                font-weight: bold;
+            }
+
+                .site-mobile-menu a:hover,
+                .site-mobile-menu .nav-btn:hover {
+                    color: #DC143C; /* bright red hover for visibility */
+                }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const navbar = document.querySelector(".site-navbar");
+
+          window.addEventListener("scroll", function() {
+            if (window.scrollY > 50) {
+              navbar.classList.add("is-sticky");
+            } else {
+              navbar.classList.remove("is-sticky");
+            }
+          });
+        });
+    </script>
 </head>
 
 <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
@@ -78,10 +135,8 @@
                 <div class="row align-items-center">
 
                     <div class="col-6 col-xl-2">
-                        <h1 class="mb-0 site-logo">
-                            <a href="index.html" class="h2 mb-0">
-                                LingapDVO<span class="text-primary"></span>
-                            </a>
+                        <h1>                          
+                                LingapDVO                         
                         </h1>
                     </div>
 
@@ -146,7 +201,7 @@
                             </div>
 
                             <div class="slide">
-                                <h1 class="text-uppercase" data-aos="fade-up">Serbisyong May Malasaki</h1>
+                                <h1 class="text-uppercase" data-aos="fade-up">Serbisyong May Malasakit</h1>
                                 <p class="mb-5 desc" data-aos="fade-up" data-aos-delay="100">
                                     "Sa Lingap para sa Mahirap, inuuna namin ang inyong kapakanan sa pamamagitan ng mabilis at maaasahang tulong
                                     medikal at pinansyal. Nandito kami upang magbigay ng suporta at malasakit sa bawat Dabawenyong nangangailangan."
