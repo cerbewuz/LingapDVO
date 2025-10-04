@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
 }
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -27,6 +27,26 @@
     <link rel="stylesheet" href="css/aos.css">
 
     <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* Navbar button style */
+        .nav-btn {
+            background: none;
+            border: none;
+            font-weight: bold;
+            color: #DC143C; 
+            font-size: 18px; 
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            /* Hover effect */
+            .nav-btn:hover {
+                color: #ffffff; 
+                transform: scale(1.05);
+            }
+    </style>
 
 </head>
 
@@ -67,44 +87,24 @@
 
                     <div class="col-12 col-md-10 d-none d-xl-block">
                         <nav class="site-navigation position-relative text-right" role="navigation">
-
                             <ul class="site-menu main-menu js-clone-nav mr-auto d-none d-lg-block">
-                                <li><a href="#home-section" class="nav-link">Home</a></li>
                                 <li>
-                                    <a href="#about-section" class="nav-link">About Us</a>
-                                
+                                    <button type="button" class="nav-btn" onclick="location.href='#home-section'">Home</button>
                                 </li>
-                                <li><a href="#contact-section" class="nav-link">Contact</a></li>
-
-
-                                <a href="#"
-                                   class="nav-link login-link"
-                                   style="
-                                          display: inline-flex;
-                                          align-items: center;
-                                          justify-content: center;
-                                          padding: 12px 32px;
-                                          font-size: 16px;
-                                          font-weight: 500;
-                                          font-family: 'Inter', 'Helvetica Neue', sans-serif;
-                                          color: #dc143c;
-                                          background-color: transparent;
-                                          border: 1.5px solid #dc143c;
-                                          border-radius: 8px;
-                                          text-decoration: none;
-                                          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                                          backdrop-filter: blur(4px);
-                                          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-                                          height: 48px;
-                                        "
-                                   onmouseover="this.style.backgroundColor='rgba(220, 20, 60, 0.08)'; this.style.transform='translateY(-1px)'"
-                                   onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)'"
-                                   onclick="window.location.replace('/Login'); return false;">
-                                    Login
-                                </a>
+                                <li>
+                                    <button type="button" class="nav-btn" onclick="location.href='#about-section'">About Us</button>
+                                </li>
+                                <li>
+                                    <button type="button" class="nav-btn" onclick="location.href='#contact-section'">Contact</button>
+                                </li>
+                                <li>
+                                    <button type="button" class="nav-btn" onclick="location.href='/Login'">Login</button>
+                                </li>
                             </ul>
                         </nav>
                     </div>
+
+
 
 
                     <div class="col-6 d-inline-block d-xl-none ml-md-0 py-3" style="position: relative; top: 3px;">
