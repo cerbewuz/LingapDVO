@@ -560,8 +560,7 @@
                 </div>
             </div>
 
-            <div class="form-group mt-3">
-                <label for="assistanceReflection" class="form-label">Reflection info:</label>
+            <div class="form-group mt-3" style="display: none">
                 <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
                        name="Typeassistance" placeholder="Auto-generated info..." readonly>
                 <span asp-validation-for="Typeassistance" class="text-danger"></span>
@@ -572,35 +571,6 @@
             <!-- Upload Section -->
             <h5 class="section-header">Upload Required Documents</h5>
 
-            <div class="mb-3">
-                <label class="form-label required-field">Valid ID (Front)</label>
-                <div class="upload-box" onclick="document.getElementById('idFront').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload ID Front</p>
-                    <p class="form-note">Accepted formats: JPG, PNG (Max 5MB)</p>
-                </div>
-                <input asp-for="IdFrontimage" type="file" id="idFront" class="d-none" accept="image/*" onchange="previewImage(this, 'idFrontPreview')">
-                <span asp-validation-for="IdFrontimage" class="text-danger"></span>
-
-                <img  id="idFrontPreview" class="img-preview mt-2" alt="Front ID Preview">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label required-field">Valid ID (Back)</label>
-                <div class="upload-box" onclick="document.getElementById('idBack').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload ID Back</p>
-                    <p class="form-note">Accepted formats: JPG, PNG (Max 5MB)</p>
-                </div>
-                <input asp-for="IdBackimage" type="file" id="idBack" class="d-none" accept="image/*" onchange="previewImage(this, 'idBackPreview')">
-                <span asp-validation-for="IdBackimage" class="text-danger"></span>
-
-                <img id="idBackPreview" class="img-preview mt-2" alt="Back ID Preview">
-            </div>
 
             <div class="mb-3">
                 <label class="form-label required-field">Doctor's Prescription/Receipt</label>

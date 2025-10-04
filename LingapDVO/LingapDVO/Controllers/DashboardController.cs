@@ -179,6 +179,11 @@ namespace LingapDVO.Controllers
             ViewBag.Gender = HttpContext.Session.GetString("Gender");
             ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
 
+            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+            ViewBag.BackID = HttpContext.Session.GetString("BackID");
+
+
+
 
             return View();
         }
@@ -193,21 +198,16 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // Check for any pending forms first (user can only have one form at a time)
-            var hasPendingForm = context.FillupformHospitalBill.Any(f => f.UserId == userId && f.Status == "Pending"); 
- 
-            if (hasPendingForm)
-            {
-                ModelState.AddModelError("", "You already have a pending form. Please wait for it to be approved before submitting a new one.");
-                return View(fillupformHospitalbilldto);
-            }
+            // Get the user's ID filenames from session
+            string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
+            string userBackID = HttpContext.Session.GetString("BackID") ?? "";
 
-            // IMPROVED: Check for recently approved forms (cooldown period)
+            // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            // Check for forms with Status2 = "Approved" within the last month
-            var hasRecentApproval = context.FillupformHospitalBill.Any(f => f.UserId == userId && f.Status2 == "Approved" && f.CreatedAt >= oneMonthAgo);
-
+            // Check for forms with Status = "Approved" within the last month
+            var hasRecentApproval = context.FillupformHospitalBill
+                .Any(f => f.UserId == userId && f.Status2 == "Approved" && f.CreatedAt >= oneMonthAgo);
 
             if (hasRecentApproval)
             {
@@ -223,17 +223,32 @@ namespace LingapDVO.Controllers
                 return View(fillupformHospitalbilldto);
             }
 
+            // SECOND: Check for any pending or processing forms (user can only have one form at a time)
+            var hasPendingForm = context.FillupformHospitalBill
+                .Any(f => f.UserId == userId && (f.Status == "Pending" || f.Status == "Processing"));
+
+            if (hasPendingForm)
+            {
+                ModelState.AddModelError("", "You already have a pending or processing form. Please wait for it to be approved before submitting a new one.");
+                return View(fillupformHospitalbilldto);
+            }
+
+            // If neither condition above is met, proceed with form submission
+
             // Optional field handling
             if (string.IsNullOrEmpty(fillupformHospitalbilldto.PhilHealthNo))
             {
                 ModelState.Remove("PhilHealthNo");
             }
 
-            // Image validation
-            if (fillupformHospitalbilldto.IdBackimage == null && fillupformHospitalbilldto.IdFrontimage == null &&
-                fillupformHospitalbilldto.DoctorPrescriptionimage == null && fillupformHospitalbilldto.DeathCertificateimage == null)
+            // MODIFIED: Image validation - Only check for prescription and death certificate images
+            // Remove ID image validation since we'll use the existing ones from user account
+            ModelState.Remove("IdFrontimage");
+            ModelState.Remove("IdBackimage");
+
+            if (fillupformHospitalbilldto.DoctorPrescriptionimage == null && fillupformHospitalbilldto.DeathCertificateimage == null)
             {
-                ModelState.AddModelError("ImageFile", "The image file is required");
+                ModelState.AddModelError("DoctorPrescriptionimage", "At least one image file (Doctor Prescription or Death Certificate) is required");
             }
 
             if (!ModelState.IsValid)
@@ -243,54 +258,36 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Generate unique filenames with different timestamps to avoid conflicts
+                // Generate unique filenames only for new uploaded images
                 var timestamp = DateTime.Now;
 
-                string newFileNameFront = timestamp.ToString("yyyyMMddHHmmssfff") + "_front" +
-                                        Path.GetExtension(fillupformHospitalbilldto.IdFrontimage!.FileName);
-
-                string newFileNameBack = timestamp.AddMilliseconds(1).ToString("yyyyMMddHHmmssfff") + "_back" +
-                                     Path.GetExtension(fillupformHospitalbilldto.IdBackimage!.FileName);
-
-                string newFileNamePrescription = timestamp.AddMilliseconds(2).ToString("yyyyMMddHHmmssfff") + "_prescription" +
-                                     Path.GetExtension(fillupformHospitalbilldto.DoctorPrescriptionimage!.FileName);
-
+                string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
 
-                // Save image to wwwroot/UsersImg
-                string uploadsFolder = Path.Combine(environment.WebRootPath, "Validimg");
                 string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
                 string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
 
                 // Ensure directories exist
-                Directory.CreateDirectory(uploadsFolder);
                 Directory.CreateDirectory(uploadsFolder1);
                 Directory.CreateDirectory(uploadsFolder2);
 
-                // Save Front Image
-                string filePathFront = Path.Combine(uploadsFolder, newFileNameFront);
-                using (var stream = new FileStream(filePathFront, FileMode.Create))
+                // Save Prescription Image if provided
+                if (fillupformHospitalbilldto.DoctorPrescriptionimage != null)
                 {
-                    fillupformHospitalbilldto.IdFrontimage.CopyTo(stream);
+                    newFileNamePrescription = timestamp.ToString("yyyyMMddHHmmssfff") + "_prescription" +
+                                             Path.GetExtension(fillupformHospitalbilldto.DoctorPrescriptionimage.FileName);
+
+                    string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
+                    using (var stream = new FileStream(filePathPrescription, FileMode.Create))
+                    {
+                        fillupformHospitalbilldto.DoctorPrescriptionimage.CopyTo(stream);
+                    }
                 }
 
-                // Save Back Image
-                string filePathBack = Path.Combine(uploadsFolder, newFileNameBack);
-                using (var stream = new FileStream(filePathBack, FileMode.Create))
-                {
-                    fillupformHospitalbilldto.IdBackimage.CopyTo(stream);
-                }
-
-                // Save Prescription Image
-                string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
-                using (var stream = new FileStream(filePathPrescription, FileMode.Create))
-                {
-                    fillupformHospitalbilldto.DoctorPrescriptionimage.CopyTo(stream);
-                }
-
+                // Save Death Certificate Image if provided
                 if (fillupformHospitalbilldto.DeathCertificateimage != null)
                 {
-                    newFileNameDeathCertificate = timestamp.AddMilliseconds(3).ToString("yyyyMMddHHmmssfff") + "_deathcert" +
+                    newFileNameDeathCertificate = timestamp.AddMilliseconds(1).ToString("yyyyMMddHHmmssfff") + "_deathcert" +
                         Path.GetExtension(fillupformHospitalbilldto.DeathCertificateimage.FileName);
 
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
@@ -335,13 +332,12 @@ namespace LingapDVO.Controllers
                     Typeassistance = fillupformHospitalbilldto.Typeassistance,
                     ForCMOPERSONNEL = fillupformHospitalbilldto.ForCMOPERSONNEL,
 
-                    // Image Paths
-                    Validfrontimage = newFileNameFront,
-                    ValidBackimage = newFileNameBack,
-                    DoctorPrescription = newFileNamePrescription,
+                    // MODIFIED: Use existing ID images from user account instead of new uploads
+                    Validfrontimage = userFrontID, // Use the FrontID from user account
+                    ValidBackimage = userBackID,   // Use the BackID from user account
+                    DoctorPrescription = newFileNamePrescription ?? string.Empty,
                     DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
                     Status = "Pending",
-                    Status2 = "Pending", // Initialize Status2 as Pending
 
                     // Created Timestamp
                     CreatedAt = DateTime.Now
