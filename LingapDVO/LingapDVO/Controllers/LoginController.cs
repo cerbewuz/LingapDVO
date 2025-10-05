@@ -247,80 +247,133 @@ namespace LingapDVO.Controllers
 
                 }
 
-                // Check if it's a regular user
+                // Check if it's a regular user from Useraccount table
                 var user = context.Useraccount.FirstOrDefault(u =>
                     u.Username == loginModel.Username);
 
-                if (user == null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
+                if (user != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
                 {
-                    // Increment failed attempts
-                    int failedAttempts = Request.Cookies.TryGetValue("FailedAttempts", out var attempts) ?
-                        int.Parse(attempts) + 1 : 1;
-
-                    Response.Cookies.Append("FailedAttempts", failedAttempts.ToString(), new CookieOptions
+                    // Check if user is inactive
+                    if (user.Status == "Removed")
                     {
-                        Expires = DateTime.Now.AddMinutes(30),
+                        ModelState.AddModelError("Username", "Your account is Removed. Please contact support.");
+                        return View(loginModel);
+                    }
+
+                    // Reset failed attempts on successful login
+                    Response.Cookies.Delete("FailedAttempts");
+                    Response.Cookies.Delete("LoginCooldown");
+
+                    // Set session for user
+                    HttpContext.Session.SetString("UserId", user.Id.ToString());
+                    HttpContext.Session.SetString("IDtype", user.IDtype);
+                    HttpContext.Session.SetString("IDnumber", user.IDnumber);
+                    HttpContext.Session.SetString("Firstname", user.Firstname);
+                    HttpContext.Session.SetString("Middlename", user.Middlename);
+                    HttpContext.Session.SetString("Lastname", user.Lastname);
+                    HttpContext.Session.SetString("Gender", user.Gender);
+                    HttpContext.Session.SetString("Suffix", user.Suffix);
+                    HttpContext.Session.SetString("Dateofbirth", user.Dateofbirth);
+                    HttpContext.Session.SetString("BlkLotStreet", user.BlkLotStreet);
+                    HttpContext.Session.SetString("SubVill", user.SubVill);
+                    HttpContext.Session.SetString("District", user.District);
+                    HttpContext.Session.SetString("Barangay", user.Barangay);
+                    HttpContext.Session.SetString("Username", user.Username);
+                    HttpContext.Session.SetString("Email", user.Email);
+                    HttpContext.Session.SetString("Phonenumber", user.Phonenumber);
+                    HttpContext.Session.SetString("SecurityQuestions", user.SecurityQuestions);
+                    HttpContext.Session.SetString("Securityanswer", user.Securityanswer);
+                    HttpContext.Session.SetString("FrontID", user.FrontID);
+                    HttpContext.Session.SetString("BackID", user.BackID);
+                    HttpContext.Session.SetString("Profilepicture", user.Profilepicture);
+
+                    return Redirect("/Homepage");
+                }
+
+                // Check if it's a RegisterAcc user (new registration)
+                var registerAccUser = context.RegisterAcc.FirstOrDefault(u =>
+                    u.Email == loginModel.Username || u.Phonenumber == loginModel.Username);
+
+                if (registerAccUser != null)
+                {
+                    // Decrypt and verify password for RegisterAcc user
+                    string DecryptPassword(string encryptedPassword)
+                    {
+                        byte[] encryptedBytes = Convert.FromBase64String(encryptedPassword);
+
+                        using var memoryStream = new MemoryStream(encryptedBytes);
+
+                        // Read salt and IV
+                        byte[] salt = new byte[16];
+                        byte[] iv = new byte[16];
+                        memoryStream.Read(salt, 0, salt.Length);
+                        memoryStream.Read(iv, 0, iv.Length);
+
+                        // Derive key using same master password and salt
+                        string masterPassword = "SuperAdminMasterKey123!";
+                        using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                        byte[] key = pbkdf2.GetBytes(32);
+
+                        using var aes = Aes.Create();
+                        aes.Key = key;
+                        aes.IV = iv;
+                        aes.Mode = CipherMode.CBC;
+                        aes.Padding = PaddingMode.PKCS7;
+
+                        using var decryptor = aes.CreateDecryptor();
+                        using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                        using var reader = new StreamReader(cryptoStream);
+
+                        return reader.ReadToEnd();
+                    }
+
+                    string decryptedPassword = DecryptPassword(registerAccUser.Password);
+
+                    if (decryptedPassword == loginModel.Password)
+                    {
+                        // Reset failed attempts on successful login
+                        Response.Cookies.Delete("FailedAttempts");
+                        Response.Cookies.Delete("LoginCooldown");
+
+                        // Set session for RegisterAcc user (minimal session data)
+                        HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
+                        HttpContext.Session.SetString("Email", registerAccUser.Email);
+                        HttpContext.Session.SetString("Phonenumber", registerAccUser.Phonenumber);
+                        HttpContext.Session.SetString("IsRegisteredUser", "true");
+
+                        return Redirect("/Homepage");
+                    }
+                }
+
+                // If none of the above worked, increment failed attempts
+                int failedAttempts = Request.Cookies.TryGetValue("FailedAttempts", out var attempts) ?
+                    int.Parse(attempts) + 1 : 1;
+
+                Response.Cookies.Append("FailedAttempts", failedAttempts.ToString(), new CookieOptions
+                {
+                    Expires = DateTime.Now.AddMinutes(30),
+                    HttpOnly = true,
+                    Secure = true
+                });
+
+                if (failedAttempts >= 3)
+                {
+                    // Set cooldown cookie for 30 seconds
+                    Response.Cookies.Append("LoginCooldown", DateTime.Now.AddSeconds(30).ToString(), new CookieOptions
+                    {
+                        Expires = DateTime.Now.AddSeconds(30),
                         HttpOnly = true,
                         Secure = true
                     });
 
-                    if (failedAttempts >= 3)
-                    {
-                        // Set cooldown cookie for 30 seconds
-                        Response.Cookies.Append("LoginCooldown", DateTime.Now.AddSeconds(30).ToString(), new CookieOptions
-                        {
-                            Expires = DateTime.Now.AddSeconds(30),
-                            HttpOnly = true,
-                            Secure = true
-                        });
-
-                        ModelState.AddModelError("", "Too many failed attempts. Please try again after 30 seconds.");
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("Username", $"Invalid username or password. Attempts remaining: {3 - failedAttempts}");
-                    }
-
-                    return View(loginModel);
+                    ModelState.AddModelError("", "Too many failed attempts. Please try again after 30 seconds.");
                 }
-
-                // Check if user is inactive
-                if (user.Status == "Removed")
+                else
                 {
-                    ModelState.AddModelError("Username", "Your account is Removed. Please contact support.");
-                    return View(loginModel);
+                    ModelState.AddModelError("Username", $"Invalid username or password. Attempts remaining: {3 - failedAttempts}");
                 }
 
-                // Reset failed attempts on successful login
-                Response.Cookies.Delete("FailedAttempts");
-                Response.Cookies.Delete("LoginCooldown");
-
-                // Set session for user
-                HttpContext.Session.SetString("UserId", user.Id.ToString());
-                HttpContext.Session.SetString("IDtype", user.IDtype);
-                HttpContext.Session.SetString("IDnumber", user.IDnumber);
-                HttpContext.Session.SetString("Firstname", user.Firstname);
-                HttpContext.Session.SetString("Middlename", user.Middlename);
-                HttpContext.Session.SetString("Lastname", user.Lastname);
-                HttpContext.Session.SetString("Gender", user.Gender);
-                HttpContext.Session.SetString("Suffix", user.Suffix);
-                HttpContext.Session.SetString("Dateofbirth", user.Dateofbirth);
-                HttpContext.Session.SetString("BlkLotStreet", user.BlkLotStreet);
-                HttpContext.Session.SetString("SubVill", user.SubVill);
-                HttpContext.Session.SetString("District", user.District);
-                HttpContext.Session.SetString("Barangay", user.Barangay);
-                HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("Email", user.Email);
-                HttpContext.Session.SetString("Phonenumber", user.Phonenumber);
-                HttpContext.Session.SetString("SecurityQuestions", user.SecurityQuestions);
-                HttpContext.Session.SetString("Securityanswer", user.Securityanswer);
-                HttpContext.Session.SetString("FrontID", user.FrontID);
-                HttpContext.Session.SetString("BackID", user.BackID);
-                HttpContext.Session.SetString("Profilepicture", user.Profilepicture);
-
-                return Redirect("/Homepage");
-
-
+                return View(loginModel);
             }
             catch (Exception)
             {
@@ -352,10 +405,14 @@ namespace LingapDVO.Controllers
             return View();
         }
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         [HttpPost]
-        public IActionResult Register(UseraccountDto useraccountdto)
+        public IActionResult Register(RegisterAccDto registerAccDto)
         {
+<<<<<<< Updated upstream
             if (useraccountdto.ValidProfilepicture == null)
             {
                 ModelState.AddModelError("ImageFile", "The image file is required");
@@ -492,15 +549,70 @@ namespace LingapDVO.Controllers
                     SecurityQuestions = useraccountdto.SecurityQuestions,
                     Securityanswer = useraccountdto.Securityanswer,
                     Status = "Active"
+=======
+            if (!ModelState.IsValid)
+                return View(registerAccDto);
+
+            try
+            {
+                // ==========================
+                // 🔑 MASTER PASSWORD SECTION
+                // ==========================
+                string masterPassword = "SuperAdminMasterKey123!"; // secure this in config/env variable
+                byte[] salt = RandomNumberGenerator.GetBytes(16);  // unique salt
+
+                // Derive AES key from master password using PBKDF2
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32); // 256-bit key
+
+                // ==========================
+                // 🔐 PASSWORD ENCRYPTION
+                // ==========================
+                string EncryptPassword(string password)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    using var memoryStream = new MemoryStream();
+
+                    // Write salt and IV
+                    memoryStream.Write(salt, 0, salt.Length);
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                    using (var writer = new StreamWriter(cryptoStream))
+                    {
+                        writer.Write(password);
+                    }
+
+                    return Convert.ToBase64String(memoryStream.ToArray());
+                }
+
+                string encryptedPassword = EncryptPassword(registerAccDto.Password);
+
+                // ==========================
+                // 🗃 SAVE TO DATABASE
+                // ==========================
+                var registercacc = new RegisterAcc
+                {
+                    Email = registerAccDto.Email,
+                    Phonenumber = registerAccDto.Phonenumber,
+                    Password = encryptedPassword,         
+>>>>>>> Stashed changes
                 };
 
-                context.Useraccount.Add(useraccount);
+                context.RegisterAcc.Add(registercacc);
                 context.SaveChanges();
 
                 return RedirectToAction("Login", "Login");
             }
             catch (DbUpdateException ex)
             {
+<<<<<<< Updated upstream
                 if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
                 {
                     string message = sqlEx.Message.ToLower();
@@ -526,6 +638,10 @@ namespace LingapDVO.Controllers
             {
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
                 return View(useraccountdto);
+=======
+                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                return View(registerAccDto);
+>>>>>>> Stashed changes
             }
         }
 
