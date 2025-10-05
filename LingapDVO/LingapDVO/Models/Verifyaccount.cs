@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LingapDVO.Models
 {
@@ -6,6 +7,10 @@ namespace LingapDVO.Models
     {
 
         public int Id { get; set; }
+
+
+        [ForeignKey("User")]
+        public int UserId { get; set; } 
 
         [MaxLength(100)]
         public string IDtype { get; set; } = "";

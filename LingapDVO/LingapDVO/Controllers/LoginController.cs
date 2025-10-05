@@ -440,6 +440,14 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
         {
+
+            // Get the current user's ID from the session
+            if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
+            {
+                // If user is not logged in, redirect to login page
+                return RedirectToAction("Login", "Login");
+            }
+
             if (VerifyaccountDto.ValidFrontID == null)
                 ModelState.AddModelError("ValidFrontID", "Front ID image is required");
             if (VerifyaccountDto.ValidBackID == null)
@@ -533,6 +541,7 @@ namespace LingapDVO.Controllers
                 // ==========================
                 Verifyaccount verifyaccount = new Verifyaccount()
                 {
+                    UserId = userId,
                     FrontID = frontFileName,
                     BackID = backFileName,
                     IDtype = VerifyaccountDto.IDtype,

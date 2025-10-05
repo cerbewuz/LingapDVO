@@ -72,6 +72,11 @@ namespace LingapDVO.Controllers
                 ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
             }
 
+            // ✅ Check if user has completed verification
+            var verification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            bool isVerified = verification != null;
+            ViewBag.IsVerified = isVerified;
+
             // ✅ Now you can safely filter only the logged-in user's data
             var hospitalBills = context.FillupformHospitalBill
                 .Where(f => f.UserId == userId)
@@ -191,11 +196,20 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public IActionResult FillupformHospitalBill(FillupformHospitalBillDto fillupformHospitalbilldto)
         {
+
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
                 // If user is not logged in, redirect to login page
                 return RedirectToAction("Login", "Login");
+            }
+
+            // Check if user is verified
+            var verification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            if (verification == null)
+            {
+                TempData["Error"] = "Please complete account verification before accessing this service.";
+                return RedirectToAction("Dashboard", "Home");
             }
 
             // Get the user's ID filenames from session
