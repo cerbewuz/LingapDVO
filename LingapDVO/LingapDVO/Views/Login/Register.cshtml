@@ -1,4 +1,4 @@
-﻿@model UseraccountDto
+﻿@model RegisterAccDto
 @{
     Layout = null;
 }
@@ -286,18 +286,18 @@
                         <p class="text-muted">Join LINGAPDVO</p>
                     </article>
 
-                    <form id="registrationForm" class="compact-form">
+                    <form asp-action="Register" enctype="multipart/form-data" method="post">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Email *</label>
-                                <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+                                <label  class="form-label">Email *</label>
+                                <input asp-for="Email" type="email" id="email" class="form-control" placeholder="Enter your email" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Phone Number *</label>
                                 <div class="phone-input-group">
-                                    <span class="phone-prefix">+63</span>
-                                    <input type="tel" id="phone" class="form-control phone-input"
-                                           placeholder="9123456789" pattern="[9]\d{9}" title="Please enter a valid Philippine phone number (e.g. 9123456789)" required>
+                                    <span asp-validation-for="Phonenumber" class="phone-prefix">+63</span>
+                                    <input asp-for="Phonenumber" type="tel" id="phone" class="form-control phone-input"
+                                           placeholder="9123456789" pattern="[9]\d{9}" title="Please enter a valid Philippine phone number (e.g. 9123456789)" required>                                    
                                 </div>
                             </div>
                         </div>
@@ -305,11 +305,13 @@
                         <!-- Password and Confirm Password placed together -->
                         <div class="password-group">
                             <div class="row">
+
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Password *</label>
-                                    <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                                    <label class="form-label fw-bold"><i class="fa-solid fa-lock fa-lg me-2 cobalt-text"></i>Password</label>
+                                    <input asp-for="Password" type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                                    <span asp-validation-for="Password" class="text-danger"></span>
                                     <div class="password-strength" id="passwordStrength"></div>
-                                    <div class="password-requirements" id="passwordRequirements" style="display:none;">
+                                    <div class="password-requirements">
                                         <div class="requirement" id="length"><i class="fas fa-circle"></i> At least 8 characters</div>
                                         <div class="requirement" id="uppercase"><i class="fas fa-circle"></i> At least 1 uppercase letter</div>
                                         <div class="requirement" id="lowercase"><i class="fas fa-circle"></i> At least 1 lowercase letter</div>
@@ -317,12 +319,15 @@
                                         <div class="requirement" id="special"><i class="fas fa-circle"></i> At least 1 special character</div>
                                     </div>
                                 </div>
+
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Confirm Password *</label>
+                                    <label class="form-label fw-bold"><i class="fa-solid fa-lock fa-lg me-2 cobalt-text"></i>Confirm Password</label>
                                     <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
                                     <div id="passwordMatch" class="password-requirements"></div>
                                 </div>
                             </div>
+
+
                         </div>
 
                         <div class="mb-3 form-check">
@@ -330,7 +335,7 @@
                             <label class="form-check-label" for="terms">I agree to the <a href="#" class="text-decoration-none cobalt-text fw-bold" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a></label>
                         </div>
 
-                        <button type="submit" class="btn btn-cobalt w-100 py-2 fw-bold mt-3">Register</button>
+                        <button type="submit" class="btn btn-cobalt w-100 py-2 fw-bold">Register</button>
                     </form>
                 </div>
             </div>
