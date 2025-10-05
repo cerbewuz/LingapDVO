@@ -11,365 +11,185 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-dark: #0d9c6e;
-            --accent: #DC143C;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --border: #e5e7eb;
-            --background: #f8fafc;
-        }
-
-        body {
-            background: #ffffff; /* Antique White */
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            min-height: 100vh;
-        }
-
-        .register-container {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-input {
-            transition: all 0.3s ease;
-            border: 2px solid var(--border);
-            background: #ffffff;
-        }
-
-            .form-input:focus {
-                border-color: var(--primary);
-                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-                transform: translateY(-1px);
-            }
-
-            .form-input:hover {
-                border-color: #cbd5e1;
-            }
-
-        .password-strength {
-            height: 6px;
-            border-radius: 3px;
-            background: #e5e7eb;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .strength-fill {
-            height: 100%;
-            width: 0%;
-            transition: all 0.3s ease;
-            border-radius: 3px;
-        }
-
-        .requirement-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 0;
-            font-size: 0.75rem;
-            transition: all 0.3s ease;
-        }
-
-        .requirement-icon {
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.6rem;
-            border-radius: 50%;
-            background: #e5e7eb;
-            color: #6b7280;
-            transition: all 0.3s ease;
-        }
-
-        .requirement-valid .requirement-icon {
-            background: var(--primary);
-            color: white;
-        }
-
-        .requirement-valid {
-            color: var(--primary);
-        }
-
-        .requirement-invalid {
-            color: var(--text-light);
-        }
-
-        .btn-register {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-weight: 600;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
-        }
-
-            .btn-register:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 15px -3px rgba(16, 185, 129, 0.3);
-            }
-
-            .btn-register:active {
-                transform: translateY(0);
-            }
-
-        .phone-input-group {
-            position: relative;
-        }
-
-        .phone-prefix {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 10;
-            color: var(--text-light);
-            font-weight: 500;
-            background: #f8fafc;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        .phone-input {
-            padding-left: 60px !important;
-        }
-
-        .terms-checkbox {
-            accent-color: var(--accent); /* Changed to crimson */
-            transform: scale(1.1);
-        }
-
-        .password-match {
-            font-size: 0.75rem;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin-top: 8px;
-            display: none;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .match-valid {
-            background: #f0fdf4;
-            color: var(--primary);
-            border: 1px solid #bbf7d0;
-        }
-
-        .match-invalid {
-            background: #fef2f2;
-            color: #ef4444;
-            border: 1px solid #fecaca;
-        }
-
-        .floating-label {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            background: white;
-            padding: 0 4px;
-        }
-
-        .input-group {
-            position: relative;
-        }
-
-            .input-group input:focus + .floating-label,
-            .input-group input:not(:placeholder-shown) + .floating-label {
-                top: 0;
-                font-size: 0.75rem;
-                color: var(--primary);
-                background: white;
-            }
-
-        .header-gradient {
-            background: linear-gradient(135deg, var(--text) 0%, #374151 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .go-back-top {
-            position: fixed;
-            left: 24px;
-            top: 24px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(220, 20, 60, 0.2);
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-            .go-back-top:hover {
-                background: var(--accent);
-                color: white;
-                transform: translateY(-2px);
-                box-shadow: 0 8px 15px -3px rgba(220, 20, 60, 0.3);
-            }
-
-        .section-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent 0%, var(--border) 50%, transparent 100%);
-            margin: 24px 0;
-        }
-
-        /* Crimson accent styles */
-        .lock-icon {
-            color: #262626;
-        }
-
-        .terms-link {
-            color: #262626;
-        }
-
-            .terms-link:hover {
-                color: #b01030; /* Darker crimson on hover */
-            }
-    </style>
+    <!-- reCAPTCHA v2 Script -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 lg:p-8">
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
     <!-- Go Back Button -->
-    <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
-        <i class="fas fa-arrow-left"></i> Back
+    <a href="/" class="fixed left-4 top-4 lg:left-6 lg:top-6 z-50 flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-lg border border-gray-200 text-crimson-600 hover:bg-crimson-600 hover:text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 font-semibold text-sm">
+        <i class="fas fa-arrow-left text-xs"></i>
+        <span>Home</span>
     </a>
 
-    <div class="w-full max-w-2xl">
-        <div class="register-container rounded-2xl p-8 lg:p-12">
-            <!-- Header Section -->
-            <article class="text-center mb-8 lg:mb-12">
-                <h1 class="header-gradient font-bold text-3xl lg:text-4xl xl:text-5xl mb-3 lg:mb-4">
-                    Create Your Account
+    <div class="w-full max-w-sm lg:max-w-md">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/20 backdrop-blur-sm">
+            <!-- Compact Header -->
+            <div class="text-center mb-6 lg:mb-8">
+                <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-crimson-500 to-crimson-600 rounded-2xl flex items-center justify-center mx-auto mb-3 lg:mb-4 shadow-lg">
+                    <i class="fas fa-user-plus text-white text-lg lg:text-xl"></i>
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+                    Create an Account
                 </h1>
-            </article>
+                <p class="text-gray-500 text-sm lg:text-base">
+                    Join LINGAPDVO today
+                </p>
+            </div>
 
-            <form asp-action="Register" enctype="multipart/form-data" method="post" class="space-y-6 lg:space-y-8">
-                <!-- Contact Information -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            <form asp-action="Register" enctype="multipart/form-data" method="post" class="space-y-4 lg:space-y-5">
+                <!-- Compact Validation Summary -->
+                <div asp-validation-summary="All" class="bg-red-50 border border-red-200 rounded-xl p-3 text-red-600 text-xs lg:text-sm"></div>
+
+                <!-- Username and Email in Column -->
+                <div class="space-y-4">
+                    <!-- Username Field -->
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700">Email Address *</label>
-                        <div class="input-group">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Username
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Username" type="text" id="username"
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
+                                   placeholder=" "
+                                   required>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
+                                <i class="fas fa-user mr-2 text-crimson-500"></i>Enter your username
+                            </span>
+                        </div>
+                        <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Email Address
+                        </label>
+                        <div class="relative">
                             <input asp-for="Email" type="email" id="email"
-                                   class="form-input w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20"
-                                   placeholder=" " required>
-                            <span class="floating-label">you@example.com</span>
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
+                                   placeholder=" "
+                                   required>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
+                                <i class="fas fa-envelope mr-2 text-crimson-500"></i>you@example.com
+                            </span>
                         </div>
+                        <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
                     </div>
+                </div>
 
+                <!-- Password and Confirm Password in Column -->
+                <div class="space-y-4">
+                    <!-- Password Field -->
                     <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700">Phone Number *</label>
-                        <div class="phone-input-group">
-                            <span class="phone-prefix">+63</span>
-                            <input asp-for="Phonenumber" type="tel" id="phone"
-                                   class="form-input w-full px-4 py-3 rounded-xl phone-input focus:outline-none focus:ring-2 focus:ring-green-500/20"
-                                   placeholder="9123456789" pattern="[9]\d{9}"
-                                   title="Please enter a valid Philippine phone number (e.g. 9123456789)" required>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Password Section -->
-                <div class="space-y-4 lg:space-y-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                        <!-- Password Field -->
-                        <div class="space-y-3">
-                            <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                <i class="fas fa-lock lock-icon"></i>
-                                Password
-                            </label>
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Password
+                        </label>
+                        <div class="relative flex">
                             <input asp-for="Password" type="password" id="password"
-                                   class="form-input w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20"
-                                   placeholder="Enter your password" required>
-                            <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
-
-                            <!-- Password Strength -->
-                            <div class="password-strength mt-2">
-                                <div class="strength-fill" id="passwordStrength"></div>
-                            </div>
-
-                            <!-- Password Requirements -->
-                            <div class="password-requirements space-y-1 mt-3 hidden" id="passwordRequirements">
-                                <div class="requirement-item requirement-invalid" id="length">
-                                    <span class="requirement-icon"><i class="fas fa-circle"></i></span>
-                                    <span>At least 8 characters</span>
-                                </div>
-                                <div class="requirement-item requirement-invalid" id="uppercase">
-                                    <span class="requirement-icon"><i class="fas fa-circle"></i></span>
-                                    <span>1 uppercase letter</span>
-                                </div>
-                                <div class="requirement-item requirement-invalid" id="lowercase">
-                                    <span class="requirement-icon"><i class="fas fa-circle"></i></span>
-                                    <span>1 lowercase letter</span>
-                                </div>
-                                <div class="requirement-item requirement-invalid" id="number">
-                                    <span class="requirement-icon"><i class="fas fa-circle"></i></span>
-                                    <span>1 number</span>
-                                </div>
-                                <div class="requirement-item requirement-invalid" id="special">
-                                    <span class="requirement-icon"><i class="fas fa-circle"></i></span>
-                                    <span>1 special character</span>
-                                </div>
-                            </div>
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-l-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-gray-400 border-r-0"
+                                   placeholder="Enter your password"
+                                   required>
+                            <button type="button" class="px-4 border-2 border-gray-200 border-l-0 rounded-r-xl bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-green-600 transition-all duration-200" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
+                        <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
 
-                        <!-- Confirm Password Field -->
-                        <div class="space-y-3">
-                            <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                <i class="fas fa-lock lock-icon"></i>
-                                Confirm Password
-                            </label>
-                            <input type="password" id="confirmPassword"
-                                   class="form-input w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20"
-                                   placeholder="Confirm your password" required>
+                        <!-- Compact Password Strength -->
+                        <div class="password-strength mt-2">
+                            <div class="strength-fill" id="passwordStrength"></div>
+                        </div>
+                    </div>
 
-                            <!-- Password Match Indicator -->
-                            <div id="passwordMatch" class="password-match">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Passwords match</span>
-                            </div>
+                    <!-- Confirm Password Field -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Confirm Password
+                        </label>
+                        <input type="password" id="confirmPassword"
+                               class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-gray-400"
+                               placeholder="Confirm your password"
+                               required>
+
+                        <!-- Compact Password Match Indicator -->
+                        <div id="passwordMatch" class="password-match text-xs mt-1 hidden">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            <span>Passwords match</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Terms and Conditions -->
-                <div class="section-divider"></div>
+                <!-- Compact Password Requirements -->
+                <div class="password-requirements space-y-1 hidden bg-gray-50 rounded-xl p-3 border border-gray-200" id="passwordRequirements">
+                    <div class="requirement-item requirement-invalid text-xs" id="length">
+                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
+                        <span>At least 8 characters</span>
+                    </div>
+                    <div class="requirement-item requirement-invalid text-xs" id="uppercase">
+                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
+                        <span>1 uppercase letter</span>
+                    </div>
+                    <div class="requirement-item requirement-invalid text-xs" id="lowercase">
+                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
+                        <span>1 lowercase letter</span>
+                    </div>
+                    <div class="requirement-item requirement-invalid text-xs" id="number">
+                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
+                        <span>1 number</span>
+                    </div>
+                    <div class="requirement-item requirement-invalid text-xs" id="special">
+                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
+                        <span>1 special character</span>
+                    </div>
+                </div>
 
-                <div class="flex items-start space-x-3 p-4 bg-red-50 rounded-xl border border-red-200">
-                    <input type="checkbox" id="terms" class="terms-checkbox mt-1" required>
-                    <label class="text-sm text-gray-700 flex-1" for="terms">
-                        I agree to the <a href="#" class="terms-link font-semibold transition-colors" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                <!-- Social Login Section -->
+                <div class="pt-2">
+                    <div class="flex items-center my-4">
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                        <span class="px-3 text-xs text-gray-500 bg-white font-medium">or continue with</span>
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="/Login/GoogleLogin" class="flex items-center justify-center gap-2 px-3 py-2.5 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
+                            <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png" alt="Google" class="w-4 h-4">
+                            <span class="text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
+                        </a>
+
+                        <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
+                            <i class="fab fa-facebook-f text-xs"></i>
+                            <span class="text-xs font-medium">Facebook</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Compact reCAPTCHA -->
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <div class="g-recaptcha mx-auto scale-90 lg:scale-100" data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
+                </div>
+
+                <!-- Compact Terms and Conditions -->
+                <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <input type="checkbox" id="terms" class="mt-1 accent-crimson-600 scale-110" required>
+                    <label class="text-xs lg:text-sm text-gray-700 flex-1" for="terms">
+                        I agree to the <a href="#" class="text-crimson-600 hover:text-crimson-700 font-semibold transition-colors duration-200" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
                     </label>
                 </div>
 
-                <!-- Submit Button -->
-                <button type="submit" class="btn-register w-full text-lg font-semibold">
-                    Sign Up
-                    <i class="fas ml-2"></i>
+                <!-- Compact Submit Button -->
+                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 lg:py-3.5 rounded-xl font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 group" id="registerButton">
+                    <span class="flex items-center justify-center gap-2">
+                        <span>Sign Up</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
+                    </span>
                 </button>
 
-                <!-- Login Redirect -->
-                <div class="text-center pt-4">
-                    <p class="text-gray-600 text-sm">
+                <!-- Compact Login Redirect -->
+                <div class="text-center space-y-2 pt-2">
+                    <p class="text-gray-500 text-xs lg:text-sm">
                         Already have an account?
-                        <a href="/Login" class="terms-link font-semibold transition-colors">Login</a>
+                        <a href="/Login" class="text-crimson-600 hover:text-crimson-700 font-semibold transition-colors duration-200 ml-1">Sign in</a>
                     </p>
                 </div>
             </form>
@@ -416,20 +236,92 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirmPassword');
             const passwordStrength = document.getElementById('passwordStrength');
-            const phoneInput = document.getElementById('phone');
-            const goBackBtn = document.getElementById('goBackBtn');
             const passwordRequirements = document.getElementById('passwordRequirements');
             const passwordMatch = document.getElementById('passwordMatch');
+            const togglePassword = document.getElementById('togglePassword');
+            const emailInput = document.getElementById('email');
+            const emailLabel = emailInput.nextElementSibling;
+            const usernameInput = document.getElementById('username');
+            const usernameLabel = usernameInput.nextElementSibling;
 
-            // Go Back button functionality
-            goBackBtn.addEventListener('click', function() {
-                window.history.back();
-            });
+            // Password visibility toggle
+            if (togglePassword && password) {
+                const eyeIcon = togglePassword.querySelector('i');
+                togglePassword.addEventListener('click', function() {
+                    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                    password.setAttribute('type', type);
+
+                    if (type === 'text') {
+                        eyeIcon.classList.remove('fa-eye');
+                        eyeIcon.classList.add('fa-eye-slash');
+                        togglePassword.setAttribute('title', 'Hide password');
+                    } else {
+                        eyeIcon.classList.remove('fa-eye-slash');
+                        eyeIcon.classList.add('fa-eye');
+                        togglePassword.setAttribute('title', 'Show password');
+                    }
+                });
+            }
+
+            // Floating label for email
+            if (emailInput && emailLabel) {
+                emailInput.addEventListener('focus', function() {
+                    emailLabel.style.top = '0';
+                    emailLabel.style.fontSize = '0.75rem';
+                    emailLabel.style.color = '#10b981';
+                    emailLabel.style.transform = 'translateY(-50%)';
+                });
+
+                emailInput.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        emailLabel.style.top = '50%';
+                        emailLabel.style.fontSize = '0.875rem';
+                        emailLabel.style.color = '#9ca3af';
+                        emailLabel.style.transform = 'translateY(-50%)';
+                    }
+                });
+
+                // Initialize label position
+                if (emailInput.value.trim() !== '') {
+                    emailLabel.style.top = '0';
+                    emailLabel.style.fontSize = '0.75rem';
+                    emailLabel.style.color = '#10b981';
+                    emailLabel.style.transform = 'translateY(-50%)';
+                }
+            }
+
+            // Floating label for username
+            if (usernameInput && usernameLabel) {
+                usernameInput.addEventListener('focus', function() {
+                    usernameLabel.style.top = '0';
+                    usernameLabel.style.fontSize = '0.75rem';
+                    usernameLabel.style.color = '#10b981';
+                    usernameLabel.style.transform = 'translateY(-50%)';
+                });
+
+                usernameInput.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        usernameLabel.style.top = '50%';
+                        usernameLabel.style.fontSize = '0.875rem';
+                        usernameLabel.style.color = '#9ca3af';
+                        usernameLabel.style.transform = 'translateY(-50%)';
+                    }
+                });
+
+                // Initialize label position
+                if (usernameInput.value.trim() !== '') {
+                    usernameLabel.style.top = '0';
+                    usernameLabel.style.fontSize = '0.75rem';
+                    usernameLabel.style.color = '#10b981';
+                    usernameLabel.style.transform = 'translateY(-50%)';
+                }
+            }
 
             // Password strength checker
             password.addEventListener('input', function() {
@@ -445,54 +337,52 @@
                 // Update requirement indicators
                 for (const [key, met] of Object.entries(requirements)) {
                     const element = document.getElementById(key);
-                    if (met) {
-                        element.classList.remove('requirement-invalid');
-                        element.classList.add('requirement-valid');
-                        element.querySelector('.requirement-icon').innerHTML = '<i class="fas fa-check"></i>';
-                    } else {
-                        element.classList.remove('requirement-valid');
-                        element.classList.add('requirement-invalid');
-                        element.querySelector('.requirement-icon').innerHTML = '<i class="fas fa-circle"></i>';
+                    if (element) {
+                        if (met) {
+                            element.classList.remove('requirement-invalid');
+                            element.classList.add('requirement-valid');
+                            element.querySelector('.requirement-icon').innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+                            element.querySelector('.requirement-icon').classList.remove('bg-gray-300', 'text-gray-600');
+                            element.querySelector('.requirement-icon').classList.add('bg-green-500');
+                        } else {
+                            element.classList.remove('requirement-valid');
+                            element.classList.add('requirement-invalid');
+                            element.querySelector('.requirement-icon').innerHTML = '<i class="fas fa-circle text-xs"></i>';
+                            element.querySelector('.requirement-icon').classList.remove('bg-green-500');
+                            element.querySelector('.requirement-icon').classList.add('bg-gray-300', 'text-gray-600');
+                        }
                     }
                 }
 
                 // Update strength meter
                 const strength = Object.values(requirements).filter(met => met).length;
                 const strengthPercent = (strength * 20);
-                passwordStrength.style.width = strengthPercent + '%';
+                if (passwordStrength) {
+                    passwordStrength.style.width = strengthPercent + '%';
 
-                if (strength < 2) {
-                    passwordStrength.style.backgroundColor = '#ef4444';
-                } else if (strength < 4) {
-                    passwordStrength.style.backgroundColor = '#f59e0b';
-                } else {
-                    passwordStrength.style.backgroundColor = '#10b981';
+                    if (strength < 2) {
+                        passwordStrength.style.backgroundColor = '#ef4444';
+                    } else if (strength < 4) {
+                        passwordStrength.style.backgroundColor = '#f59e0b';
+                    } else {
+                        passwordStrength.style.backgroundColor = '#10b981';
+                    }
                 }
             });
 
             // Confirm password checker
             confirmPassword.addEventListener('input', function() {
                 if (confirmPassword.value === password.value && password.value.length > 0) {
-                    passwordMatch.innerHTML = '<i class="fas fa-check-circle"></i><span>Passwords match</span>';
-                    passwordMatch.className = 'password-match match-valid flex';
+                    passwordMatch.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-1"></i><span class="text-green-600">Passwords match</span>';
+                    passwordMatch.className = 'password-match text-xs mt-1 flex items-center';
                     passwordMatch.style.display = 'flex';
                 } else if (password.value.length > 0 && confirmPassword.value.length > 0) {
-                    passwordMatch.innerHTML = '<i class="fas fa-times-circle"></i><span>Passwords do not match</span>';
-                    passwordMatch.className = 'password-match match-invalid flex';
+                    passwordMatch.innerHTML = '<i class="fas fa-times-circle text-red-500 mr-1"></i><span class="text-red-600">Passwords do not match</span>';
+                    passwordMatch.className = 'password-match text-xs mt-1 flex items-center';
                     passwordMatch.style.display = 'flex';
                 } else {
                     passwordMatch.style.display = 'none';
                 }
-            });
-
-            // Philippine phone number validation
-            phoneInput.addEventListener('input', function() {
-                let phoneNumber = this.value.replace(/\D/g, '');
-                if (phoneNumber.length > 0 && !phoneNumber.startsWith('9')) {
-                    phoneNumber = '9' + phoneNumber;
-                }
-                phoneNumber = phoneNumber.substring(0, 10);
-                this.value = phoneNumber;
             });
 
             // Show/hide password requirements
@@ -504,29 +394,13 @@
                 if (password.value.length > 0) {
                     passwordRequirements.classList.remove('hidden');
                     passwordRequirements.style.display = 'block';
-                    passwordRequirements.style.opacity = '1';
-                    passwordRequirements.style.transform = 'translateY(0)';
-                    passwordRequirements.style.maxHeight = '200px';
-                    passwordRequirements.style.overflow = 'hidden';
-                    passwordRequirements.style.transition = 'all 0.3s ease';
-                    passwordRequirements.classList.add('block');
-                    passwordRequirements.classList.remove('hidden');
-                    passwordRequirements.style.display = 'block';
                 } else {
-                    passwordRequirements.style.opacity = '0';
-                    passwordRequirements.style.transform = 'translateY(-10px)';
-                    passwordRequirements.style.maxHeight = '0';
-                    setTimeout(() => {
-                        passwordRequirements.classList.add('hidden');
-                    }, 300);
+                    passwordRequirements.classList.add('hidden');
                 }
             });
 
             password.addEventListener('blur', function() {
                 if (password.value.length === 0) {
-                    passwordRequirements.style.opacity = '0';
-                    passwordRequirements.style.transform = 'translateY(-10px)';
-                    passwordRequirements.style.maxHeight = '0';
                     setTimeout(() => {
                         passwordRequirements.classList.add('hidden');
                     }, 300);
@@ -557,23 +431,93 @@
                     return;
                 }
 
-                const phoneNumber = phoneInput.value;
-                if (!/^9\d{9}$/.test(phoneNumber)) {
-                    alert('Please enter a valid Philippine phone number (10 digits starting with 9, e.g. 9123456789)');
-                    e.preventDefault();
-                    return;
-                }
-
                 if (!document.getElementById('terms').checked) {
                     alert('You must agree to the terms and conditions.');
                     e.preventDefault();
                     return;
                 }
 
-                alert('Form submitted successfully!');
-                e.preventDefault();
+                // Show loading state
+                const registerButton = document.getElementById('registerButton');
+                const originalContent = registerButton.innerHTML;
+                registerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+                registerButton.disabled = true;
+
+                setTimeout(() => {
+                    if (registerButton.disabled) {
+                        registerButton.innerHTML = originalContent;
+                        registerButton.disabled = false;
+                    }
+                }, 5000);
             });
         });
     </script>
+
+    <style>
+        .crimson-500 {
+            color: #DC143C;
+        }
+
+        .crimson-600 {
+            color: #b01030;
+        }
+
+        .bg-crimson-500 {
+            background-color: #DC143C;
+        }
+
+        .bg-crimson-600 {
+            background-color: #b01030;
+        }
+
+        .text-crimson-600 {
+            color: #DC143C;
+        }
+
+        .hover\:text-crimson-700:hover {
+            color: #b01030;
+        }
+
+        .accent-crimson-600 {
+            accent-color: #DC143C;
+        }
+
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .requirement-valid {
+            color: #10b981;
+        }
+
+        .requirement-invalid {
+            color: #6b7280;
+        }
+
+        /* Ensure proper focus states */
+        input:focus + span {
+            top: 0 !important;
+            font-size: 0.75rem !important;
+            color: #10b981 !important;
+            transform: translateY(-50%) !important;
+        }
+    </style>
 </body>
 </html>

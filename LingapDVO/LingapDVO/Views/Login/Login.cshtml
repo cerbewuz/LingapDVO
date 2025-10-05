@@ -7,291 +7,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - LINGAPDVO</title>
-
-    <!-- Bootstrap CSS -->
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-
-    <!-- reCAPTCHA v2 Script -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
-    <style>
-        :root {
-            --primary-color: #DC143C;
-            --primary-hover: #b01030;
-            --background-color: #F1F3F4;
-            --facebook-blue: #1877F2;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .login-form {
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-            border-top: 4px solid var(--primary-color);
-        }
-
-        .lingap-title {
-            color: var(--primary-color);
-            font-weight: bold;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .btn-primary-custom {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 500;
-            border-radius: 4px;
-            padding: 12px 24px;
-            border: none;
-            width: 100%;
-            transition: background-color 0.2s;
-        }
-
-            .btn-primary-custom:hover {
-                background-color: var(--primary-hover);
-                color: white;
-            }
-
-        .form-control {
-            border-radius: 4px;
-            padding: 12px;
-            border: 1px solid #dadce0;
-            font-size: 16px;
-        }
-
-            .form-control:focus {
-                border-color: var(--primary-color);
-                box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.2);
-            }
-
-        .input-group-text {
-            background-color: white;
-            border: 1px solid #dadce0;
-            border-left: none;
-            cursor: pointer;
-        }
-
-        .input-group .form-control:not(:first-child) {
-            border-left: 0;
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
-        }
-
-        .input-group .form-control:not(:last-child) {
-            border-right: 0;
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
-        }
-
-        .login-hint {
-            font-size: 0.875rem;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: var(--primary-color);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-            .back-link:hover {
-                color: var(--primary-hover);
-                text-decoration: underline;
-            }
-
-        /* Social login buttons */
-        .social-login {
-            margin: 20px 0;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        .divider-line {
-            flex-grow: 1;
-            height: 1px;
-            background-color: #dadce0;
-        }
-
-        .divider-text {
-            padding: 0 15px;
-            color: #5f6368;
-            font-size: 14px;
-            background: white;
-        }
-
-        .btn-social {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 12px;
-            border-radius: 4px;
-            border: 1px solid #dadce0;
-            background: white;
-            font-weight: 500;
-            margin-bottom: 10px;
-            transition: all 0.2s;
-            text-decoration: none;
-            color: #3c4043;
-        }
-
-            .btn-social:hover {
-                background-color: #f8f9fa;
-                border-color: #c6c6c6;
-            }
-
-        .btn-facebook {
-            background-color: var(--facebook-blue);
-            color: white;
-            border: none;
-        }
-
-            .btn-facebook:hover {
-                background-color: #166FE5;
-                color: white;
-            }
-
-        .social-icon {
-            margin-right: 10px;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* reCAPTCHA container */
-        .recaptcha-container {
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
-            min-height: 78px;
-        }
-
-        .text-danger {
-            font-size: 0.875rem;
-            margin-top: 5px;
-        }
-
-        /* Validation styles */
-        .input-group:has(.form-control:invalid:not(:focus)) {
-            border-color: #dc3545;
-        }
-
-        .form-control:invalid:not(:focus) {
-            border-color: #dc3545;
-        }
-    </style>
 </head>
-<body>
-    <div class="login-container">
-        <div class="login-form">
-            <div class="lingap-title">LingapDVO</div>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div class="w-full max-w-sm lg:max-w-md">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/20 backdrop-blur-sm">
+            <!-- Compact Header -->
+            <div class="text-center mb-6 lg:mb-8">
+                <h1 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+                    Welcome Back
+                </h1>
+            </div>
 
-            <form method="post" id="loginForm">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <form method="post" id="loginForm" class="space-y-4 lg:space-y-5">
+                <!-- Compact Validation Summary -->
+                <div asp-validation-summary="All" class="bg-red-50 border border-red-200 rounded-xl p-3 text-red-600 text-xs lg:text-sm"></div>
 
-                <div class="mb-3">
-                    <label for="usernameOrEmail" class="form-label">Username or Email *</label>
-                    <input asp-for="Username"
-                           type="text"
-                           class="form-control"
-                           id="usernameOrEmail"
-                           placeholder="Enter your username or email"
-                           required
-                           autocomplete="username">
-                    <span asp-validation-for="Username" class="text-danger"></span>
+                <!-- Username/Email Field - Compact -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        Username or Email
+                    </label>
+                    <div class="relative">
+                        <input asp-for="Username"
+                               type="text"
+                               class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
+                               placeholder=" "
+                               required
+                               autocomplete="username"
+                               id="usernameOrEmail">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
+                            <i class="fas fa-user mr-2 text-crimson-500"></i>Enter your username or email
+                        </span>
+                    </div>
+                    <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password *</label>
-                    <div class="input-group">
+                <!-- Password Field - Compact -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        Password
+                    </label>
+                    <div class="relative flex">
                         <input asp-for="Password"
                                type="password"
-                               class="form-control"
-                               id="password"
+                               class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-l-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-gray-400 border-r-0"
                                placeholder="Enter your password"
                                required
-                               autocomplete="current-password">
-                        <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                               autocomplete="current-password"
+                               id="password">
+                        <button type="button" class="px-4 border-2 border-gray-200 border-l-0 rounded-r-xl bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-green-600 transition-all duration-200" id="togglePassword">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
-                    <span asp-validation-for="Password" class="text-danger"></span>
+                    <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
                 </div>
 
-                <div class="divider">
-                    <div class="divider-line"></div>
-                    <div class="divider-text">or continue with</div>
-                    <div class="divider-line"></div>
+                <!-- Compact Social Login -->
+                <div class="pt-2">
+                    <div class="flex items-center my-4">
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                        <span class="px-3 text-xs text-gray-500 bg-white font-medium">or continue with</span>
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="/Login/GoogleLogin" class="flex items-center justify-center gap-2 px-3 py-2.5 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
+                            <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png" alt="Google" class="w-4 h-4">
+                            <span class="text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
+                        </a>
+
+                        <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
+                            <i class="fab fa-facebook-f text-xs"></i>
+                            <span class="text-xs font-medium">Facebook</span>
+                        </a>
+                    </div>
                 </div>
 
-                <!-- Social Login Buttons -->
-                <div class="social-login">
-                    <a href="/Login/GoogleLogin" class="btn btn-social">
-                        <div class="social-icon">
-                            <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png"
-                                 alt="Google logo" width="18" height="18">
-                        </div>
-                        Continue with Google
-                    </a>
-
-                    <a href="/Login/FacebookLogin" class="btn btn-social btn-facebook">
-                        <div class="social-icon">
-                            <i class="fab fa-facebook-f"></i>
-                        </div>
-                        Continue with Facebook
-                    </a>
+                <!-- Compact reCAPTCHA -->
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <div class="g-recaptcha mx-auto scale-90 lg:scale-100" data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
                 </div>
 
-                <!-- reCAPTCHA v2 Implementation -->
-                <div class="recaptcha-container">
-                    <div class="g-recaptcha" data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
-                </div>
+                <!-- Compact Submit Button -->
+                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 lg:py-3.5 rounded-xl font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 group" id="loginButton">
+                    <span class="flex items-center justify-center gap-2">
+                        <span>Sign In</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
+                    </span>
+                </button>
 
-                <button type="submit" class="btn btn-primary-custom mt-3" id="loginButton">Sign in</button>
-
-                <div class="mt-3 text-center">
-                    <a href="/Register" class="back-link">Create Account</a>
-                    <a href="/" class="back-link">Back to Home</a>
+                <!-- Compact Links -->
+                <div class="text-center space-y-2 pt-2">
+                    <p class="text-gray-500 text-xs lg:text-sm">
+                        Don't have an account?
+                        <a href="/Register" class="text-crimson-600 hover:text-crimson-700 font-semibold transition-colors duration-200 ml-1">Sign up</a>
+                    </p>
+                    <p class="text-gray-500 text-xs lg:text-sm">
+                        <a href="/" class="text-crimson-600 hover:text-crimson-700 font-semibold transition-colors duration-200">Back to Home</a>
+                    </p>
                 </div>
             </form>
         </div>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -325,7 +147,6 @@
                     return false;
                 }
 
-                // Basic client-side validation
                 const usernameOrEmail = document.getElementById('usernameOrEmail').value.trim();
                 const password = document.getElementById('password').value;
 
@@ -343,29 +164,73 @@
 
                 // Show loading state
                 const loginButton = document.getElementById('loginButton');
+                const originalContent = loginButton.innerHTML;
                 loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
                 loginButton.disabled = true;
+
+                setTimeout(() => {
+                    if (loginButton.disabled) {
+                        loginButton.innerHTML = originalContent;
+                        loginButton.disabled = false;
+                    }
+                }, 5000);
 
                 return true;
             });
 
             // Enhanced input validation
-            const usernameOrEmailInput = document.getElementById('usernameOrEmail');
+            const inputs = document.querySelectorAll('input[required]');
 
-            usernameOrEmailInput.addEventListener('input', function() {
-                this.setCustomValidity('');
-            });
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        this.style.borderColor = '#ef4444';
+                    } else {
+                        this.style.borderColor = '#10b981';
+                    }
+                });
 
-            usernameOrEmailInput.addEventListener('blur', function() {
-                const value = this.value.trim();
-                if (value && !this.checkValidity()) {
-                    this.setCustomValidity('Please enter a valid username or email address');
-                }
+                input.addEventListener('input', function() {
+                    if (this.checkValidity() && this.value.trim() !== '') {
+                        this.style.borderColor = '#10b981';
+                    } else {
+                        this.style.borderColor = '';
+                    }
+                });
             });
 
             // Auto-focus on first input
-            if (usernameOrEmailInput.value === '') {
-                usernameOrEmailInput.focus();
+            const firstInput = document.getElementById('usernameOrEmail');
+            if (firstInput && firstInput.value === '') {
+                setTimeout(() => firstInput.focus(), 100);
+            }
+
+            // Floating label functionality
+            const usernameInput = document.getElementById('usernameOrEmail');
+            const usernameLabel = usernameInput.nextElementSibling;
+
+            usernameInput.addEventListener('focus', function() {
+                usernameLabel.style.top = '0';
+                usernameLabel.style.fontSize = '0.75rem';
+                usernameLabel.style.color = '#10b981';
+                usernameLabel.style.transform = 'translateY(-50%)';
+            });
+
+            usernameInput.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    usernameLabel.style.top = '50%';
+                    usernameLabel.style.fontSize = '0.875rem';
+                    usernameLabel.style.color = '#9ca3af';
+                    usernameLabel.style.transform = 'translateY(-50%)';
+                }
+            });
+
+            // Initialize label position
+            if (usernameInput.value.trim() !== '') {
+                usernameLabel.style.top = '0';
+                usernameLabel.style.fontSize = '0.75rem';
+                usernameLabel.style.color = '#10b981';
+                usernameLabel.style.transform = 'translateY(-50%)';
             }
         });
 
@@ -382,5 +247,40 @@
             console.log('reCAPTCHA token expired');
         }
     </script>
+
+    <style>
+        .crimson-500 {
+            color: #DC143C;
+        }
+
+        .crimson-600 {
+            color: #b01030;
+        }
+
+        .bg-crimson-500 {
+            background-color: #DC143C;
+        }
+
+        .bg-crimson-600 {
+            background-color: #b01030;
+        }
+
+        /* Custom gradient for text */
+        .text-crimson-600 {
+            color: #DC143C;
+        }
+
+        .hover\:text-crimson-700:hover {
+            color: #b01030;
+        }
+
+        /* Ensure proper focus states */
+        input:focus + span {
+            top: 0 !important;
+            font-size: 0.75rem !important;
+            color: #10b981 !important;
+            transform: translateY(-50%) !important;
+        }
+    </style>
 </body>
 </html>

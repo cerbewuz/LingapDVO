@@ -7,6 +7,8 @@ namespace LingapDVO.Models
 
         [Required, MaxLength(100)]
         public string Email { get; set; } = "";
+        [Required, MaxLength(100)]
+        public string Username { get; set; } = "";
 
         [Required, MaxLength(100)]
         public string Phonenumber { get; set; } = "";
