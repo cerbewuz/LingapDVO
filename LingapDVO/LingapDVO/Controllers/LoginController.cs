@@ -141,7 +141,6 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
         [HttpPost]
         public IActionResult Login(LoginDto loginModel)
         {
@@ -245,12 +244,11 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("IsAdmin", "true");
                     HttpContext.Session.SetString("AdminFullname", admin.Fullname);
                     return Redirect("/Analyticsdashboard");
-
                 }
 
                 // Check if it's a RegisterAcc user (new registration)
                 var registerAccUser = context.RegisterAcc.FirstOrDefault(u =>
-                    u.Email == loginModel.Username || u.Phonenumber == loginModel.Username);
+                    u.Email == loginModel.Username || u.Username == loginModel.Username);
 
                 if (registerAccUser != null)
                 {
@@ -293,11 +291,46 @@ namespace LingapDVO.Controllers
                         Response.Cookies.Delete("FailedAttempts");
                         Response.Cookies.Delete("LoginCooldown");
 
-                        // Set session for RegisterAcc user (minimal session data)
-                        HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
-                        HttpContext.Session.SetString("Email", registerAccUser.Email);
-                        HttpContext.Session.SetString("Phonenumber", registerAccUser.Phonenumber);
-                        HttpContext.Session.SetString("IsRegisteredUser", "true");
+                        // Check if user has verified account data using RegisterAcc ID
+                        var verifiedUser = context.Verifyaccount
+                            .FirstOrDefault(v => v.UserId == registerAccUser.Id); // Assuming UserId is the foreign key
+
+                        if (verifiedUser != null)
+                        {
+                            // Set session for verified user (complete profile)
+                            HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
+                            HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
+                            HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
+                            HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
+                            HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
+                            HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
+                            HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
+                            HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
+                            HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
+                            HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
+                            HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
+                            HttpContext.Session.SetString("District", verifiedUser.District ?? "");
+                            HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
+          
+                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? ""); // From RegisterAcc
+         
+                            HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
+                            HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
+                            HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
+                            HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
+                  
+                            HttpContext.Session.SetString("IsVerifiedUser", "true");
+                            HttpContext.Session.SetString("IsRegisteredUser", "true");
+                        }
+                        else
+                        {
+                            // Set session for basic RegisterAcc user only
+                            HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
+                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
+
+                            HttpContext.Session.SetString("IsRegisteredUser", "true");
+                            HttpContext.Session.SetString("IsVerifiedUser", "false");
+                        }
 
                         return Redirect("/Homepage");
                     }
@@ -340,7 +373,6 @@ namespace LingapDVO.Controllers
             }
         }
 
-
         public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Clear();
@@ -371,13 +403,26 @@ namespace LingapDVO.Controllers
 
             try
             {
-                string masterPassword = "SuperAdminMasterKey123!";
+                // 🔎 Check for existing email or username before saving
+                if (context.RegisterAcc.Any(u => u.Email == registerAccDto.Email))
+                {
+                    ModelState.AddModelError("Email", "This email is already registered.");
+                    return View(registerAccDto);
+                }
 
-                // Generate unique salt and IV for each user
+                if (context.RegisterAcc.Any(u => u.Username == registerAccDto.Username))
+                {
+                    ModelState.AddModelError("Username", "This username is already taken.");
+                    return View(registerAccDto);
+                }
+
+                // ==========================
+                // 🔑 MASTER PASSWORD SECTION
+                // ==========================
+                string masterPassword = "SuperAdminMasterKey123!";
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
                 byte[] iv = RandomNumberGenerator.GetBytes(16);
 
-                // Derive AES key
                 using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
                 byte[] key = pbkdf2.GetBytes(32);
 
@@ -392,7 +437,6 @@ namespace LingapDVO.Controllers
                     using var encryptor = aes.CreateEncryptor();
                     using var memoryStream = new MemoryStream();
 
-                    // Encrypt the password
                     using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
                     using (var writer = new StreamWriter(cryptoStream))
                     {
@@ -400,9 +444,8 @@ namespace LingapDVO.Controllers
                     }
 
                     byte[] encryptedData = memoryStream.ToArray();
-
-                    // Combine salt + iv + encrypted data for storage
                     byte[] combinedData = new byte[salt.Length + iv.Length + encryptedData.Length];
+
                     Buffer.BlockCopy(salt, 0, combinedData, 0, salt.Length);
                     Buffer.BlockCopy(iv, 0, combinedData, salt.Length, iv.Length);
                     Buffer.BlockCopy(encryptedData, 0, combinedData, salt.Length + iv.Length, encryptedData.Length);
@@ -415,14 +458,27 @@ namespace LingapDVO.Controllers
                 var registercacc = new RegisterAcc
                 {
                     Email = registerAccDto.Email,
-                    Phonenumber = registerAccDto.Phonenumber,
+                    Username = registerAccDto.Username,
                     Password = encryptedPassword,
                 };
 
                 context.RegisterAcc.Add(registercacc);
                 context.SaveChanges();
 
+                TempData["SuccessMessage"] = "Registration successful! You can now log in.";
                 return RedirectToAction("Login", "Login");
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // 🧱 Handle SQL unique constraint error
+                if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Email"))
+                    ModelState.AddModelError("Email", "This email is already registered.");
+                else if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Username"))
+                    ModelState.AddModelError("Username", "This username is already taken.");
+                else
+                    ModelState.AddModelError("", "A database error occurred while saving. Please try again.");
+
+                return View(registerAccDto);
             }
             catch (Exception ex)
             {
@@ -430,6 +486,7 @@ namespace LingapDVO.Controllers
                 return View(registerAccDto);
             }
         }
+
 
         public IActionResult Accountverification()
         {

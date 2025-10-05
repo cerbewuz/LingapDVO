@@ -4,8 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace LingapDVO.Models
 {
     [Index("Email", IsUnique = true)]
-    [Index("Phonenumber", IsUnique = true)]
-
+    [Index("Username", IsUnique = true)]
     public class RegisterAcc
     {
 
@@ -14,8 +13,6 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string Email { get; set; } = "";
 
-        [MaxLength(100)]
-        public string Phonenumber { get; set; } = "";
 
         [MaxLength(250)]
         public string Password { get; set; } = "";

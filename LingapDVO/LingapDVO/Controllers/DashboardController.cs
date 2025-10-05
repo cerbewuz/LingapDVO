@@ -204,13 +204,7 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // Check if user is verified
-            var verification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
-            if (verification == null)
-            {
-                TempData["Error"] = "Please complete account verification before accessing this service.";
-                return RedirectToAction("Dashboard", "Home");
-            }
+   
 
             // Get the user's ID filenames from session
             string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
@@ -233,7 +227,7 @@ namespace LingapDVO.Controllers
 
                 string approvedDate = recentApprovedForm?.CreatedAt.ToString("MMMM dd, yyyy") ?? "recently";
 
-                ModelState.AddModelError("", $"You cannot submit a new form because you have an approved form from {approvedDate}. Please wait until one month has passed since your last approval before submitting again.");
+                ModelState.AddModelError("", $"You cannot submit a new form because you already have an approved request dated {approvedDate}. Please wait one month from {approvedDate} before submitting another application.");
                 return View(fillupformHospitalbilldto);
             }
 
@@ -243,7 +237,7 @@ namespace LingapDVO.Controllers
 
             if (hasPendingForm)
             {
-                ModelState.AddModelError("", "You already have a pending or processing form. Please wait for it to be approved before submitting a new one.");
+                ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it’s approved before submitting a new one.");
                 return View(fillupformHospitalbilldto);
             }
 
