@@ -405,204 +405,60 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
         [HttpPost]
         public IActionResult Register(RegisterAccDto registerAccDto)
         {
-<<<<<<< Updated upstream
-            if (useraccountdto.ValidProfilepicture == null)
-            {
-                ModelState.AddModelError("ImageFile", "The image file is required");
-            }
-
-            if (useraccountdto.ValidFrontID == null)
-            {
-                ModelState.AddModelError("ImageFile", "The image file is required");
-            }
-
-            if (useraccountdto.ValidBackID == null)
-            {
-                ModelState.AddModelError("ImageFile", "The image file is required");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View(useraccountdto);
-            }
-
-            try
-            {
-                // AES Configuration
-                string base64Key = "Jy4jDX7wGqiTD5OkkCnlH8/J9VPVfJr6ex609jvV8NU=";
-                string base64IV = "kOc2fXLswoq8Bp69GCGZSQ==";
-                byte[] key = Convert.FromBase64String(base64Key);
-                byte[] iv = Convert.FromBase64String(base64IV);
-
-                // Function to encrypt timestamp
-                string EncryptTimestamp(string timestamp)
-                {
-                    using (var aes = Aes.Create())
-                    {
-                        aes.Key = key;
-                        aes.IV = iv;
-                        aes.Mode = CipherMode.CBC;
-                        aes.Padding = PaddingMode.PKCS7;
-
-                        using (var encryptor = aes.CreateEncryptor())
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                            using (var streamWriter = new StreamWriter(cryptoStream))
-                            {
-                                streamWriter.Write(timestamp);
-                            }
-                            return Convert.ToBase64String(memoryStream.ToArray());
-                        }
-                    }
-                }
-
-                // Get current timestamp and encrypt it
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = EncryptTimestamp(timestamp);
-
-                // Remove special characters from encrypted string to make it filename-safe
-                string safeEncryptedTimestamp = new string(encryptedTimestamp
-                    .Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
-
-                // Profile picture (not encrypted)
-                string newFileName = safeEncryptedTimestamp + Path.GetExtension(useraccountdto.ValidProfilepicture!.FileName);
-                string uploadsFolder = Path.Combine(environment.WebRootPath, "UsersImg");
-                Directory.CreateDirectory(uploadsFolder);
-                string filePath = Path.Combine(uploadsFolder, newFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    useraccountdto.ValidProfilepicture.CopyTo(stream);
-                }
-
-                // Front ID (encrypted)
-                string newFileName1 = safeEncryptedTimestamp + "_front" + Path.GetExtension(useraccountdto.ValidFrontID!.FileName);
-                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "Validimg");
-                Directory.CreateDirectory(uploadsFolder1);
-                string filePath1 = Path.Combine(uploadsFolder1, newFileName1);
-
-                using (var aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.IV = iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using (var encryptor = aes.CreateEncryptor())
-                    using (var fileStream = new FileStream(filePath1, FileMode.Create))
-                    using (var cryptoStream = new CryptoStream(fileStream, encryptor, CryptoStreamMode.Write))
-                    {
-                        useraccountdto.ValidFrontID.CopyTo(cryptoStream);
-                    }
-                }
-
-                // Back ID (encrypted)
-                string newFileName2 = safeEncryptedTimestamp + "_back" + Path.GetExtension(useraccountdto.ValidBackID!.FileName);
-                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Validimg");
-                string filePath2 = Path.Combine(uploadsFolder2, newFileName2);
-
-                using (var aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.IV = iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using (var encryptor = aes.CreateEncryptor())
-                    using (var fileStream = new FileStream(filePath2, FileMode.Create))
-                    using (var cryptoStream = new CryptoStream(fileStream, encryptor, CryptoStreamMode.Write))
-                    {
-                        useraccountdto.ValidBackID.CopyTo(cryptoStream);
-                    }
-                }
-
-                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(useraccountdto.Password);
-
-                Useraccount useraccount = new Useraccount()
-                {
-                    Profilepicture = newFileName,
-                    FrontID = newFileName1,
-                    BackID = newFileName2,
-                    IDtype = useraccountdto.IDtype,
-                    IDnumber = useraccountdto.IDnumber,
-                    Lastname = useraccountdto.Lastname,
-                    Firstname = useraccountdto.Firstname,
-                    Middlename = useraccountdto.Middlename,
-                    Suffix = useraccountdto.Suffix,
-                    Gender = useraccountdto.Gender,
-                    Dateofbirth = useraccountdto.Dateofbirth,
-                    BlkLotStreet = useraccountdto.BlkLotStreet,
-                    SubVill = useraccountdto.SubVill,
-                    Barangay = useraccountdto.Barangay,
-                    District = useraccountdto.District,
-                    Username = useraccountdto.Username,
-                    Email = useraccountdto.Email,
-                    Phonenumber = useraccountdto.Phonenumber,
-                    Password = hashedPassword,
-                    SecurityQuestions = useraccountdto.SecurityQuestions,
-                    Securityanswer = useraccountdto.Securityanswer,
-                    Status = "Active"
-=======
             if (!ModelState.IsValid)
                 return View(registerAccDto);
 
             try
             {
-                // ==========================
-                // 🔑 MASTER PASSWORD SECTION
-                // ==========================
-                string masterPassword = "SuperAdminMasterKey123!"; // secure this in config/env variable
-                byte[] salt = RandomNumberGenerator.GetBytes(16);  // unique salt
+                string masterPassword = "SuperAdminMasterKey123!";
 
-                // Derive AES key from master password using PBKDF2
+                // Generate unique salt and IV for each user
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
+                byte[] iv = RandomNumberGenerator.GetBytes(16);
+
+                // Derive AES key
                 using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32); // 256-bit key
+                byte[] key = pbkdf2.GetBytes(32);
 
-                // ==========================
-                // 🔐 PASSWORD ENCRYPTION
-                // ==========================
                 string EncryptPassword(string password)
                 {
                     using var aes = Aes.Create();
                     aes.Key = key;
-                    aes.GenerateIV();
+                    aes.IV = iv;
                     aes.Mode = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;
 
                     using var encryptor = aes.CreateEncryptor();
                     using var memoryStream = new MemoryStream();
 
-                    // Write salt and IV
-                    memoryStream.Write(salt, 0, salt.Length);
-                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
-
+                    // Encrypt the password
                     using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
                     using (var writer = new StreamWriter(cryptoStream))
                     {
                         writer.Write(password);
                     }
 
-                    return Convert.ToBase64String(memoryStream.ToArray());
+                    byte[] encryptedData = memoryStream.ToArray();
+
+                    // Combine salt + iv + encrypted data for storage
+                    byte[] combinedData = new byte[salt.Length + iv.Length + encryptedData.Length];
+                    Buffer.BlockCopy(salt, 0, combinedData, 0, salt.Length);
+                    Buffer.BlockCopy(iv, 0, combinedData, salt.Length, iv.Length);
+                    Buffer.BlockCopy(encryptedData, 0, combinedData, salt.Length + iv.Length, encryptedData.Length);
+
+                    return Convert.ToBase64String(combinedData);
                 }
 
                 string encryptedPassword = EncryptPassword(registerAccDto.Password);
 
-                // ==========================
-                // 🗃 SAVE TO DATABASE
-                // ==========================
                 var registercacc = new RegisterAcc
                 {
                     Email = registerAccDto.Email,
                     Phonenumber = registerAccDto.Phonenumber,
-                    Password = encryptedPassword,         
->>>>>>> Stashed changes
+                    Password = encryptedPassword,
                 };
 
                 context.RegisterAcc.Add(registercacc);
@@ -610,41 +466,12 @@ namespace LingapDVO.Controllers
 
                 return RedirectToAction("Login", "Login");
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
-<<<<<<< Updated upstream
-                if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
-                {
-                    string message = sqlEx.Message.ToLower();
-
-                    if (message.Contains("fullname"))
-                        ModelState.AddModelError("Fullname", "This full name is already in use.");
-                    else if (message.Contains("username"))
-                        ModelState.AddModelError("Username", "This username is already taken.");
-                    else if (message.Contains("email"))
-                        ModelState.AddModelError("Email", "This email is already registered.");
-                    else if (message.Contains("phonenumber"))
-                        ModelState.AddModelError("Phonenumber", "This phone number is already in use.");
-                    else
-                        ModelState.AddModelError("", "A record with one of your inputs already exists.");
-
-                    return View(useraccountdto);
-                }
-
-                ModelState.AddModelError("", "A database error occurred while saving your data.");
-                return View(useraccountdto);
-            }
-            catch (Exception)
-            {
-                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
-                return View(useraccountdto);
-=======
                 ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
                 return View(registerAccDto);
->>>>>>> Stashed changes
             }
         }
-
 
         public IActionResult Accountverification()
         {
