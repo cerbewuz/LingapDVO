@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Request Assistance Form</title>
+    <title>RAF - Hospital Billing Assistance</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
@@ -94,18 +94,22 @@
                 box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
             }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            padding: 0.5rem 2rem;
-            font-weight: 500;
-            border-radius: 5px;
+        .btn-submit {
+            background-color: #28a745; /* Green */
+            color: white;
+            font-weight: 600;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-            .btn-primary:hover {
-                background-color: var(--primary-dark);
-                border-color: var(--primary-dark);
+            .btn-submit:hover {
+                background-color: #20c997; /* Green-blue hover */
+                transform: scale(1.05);
             }
+
 
         .form-check-input:checked {
             background-color: var(--primary-color);
@@ -341,20 +345,46 @@
                         return age;
                     }
 
-                    // ✅ Auto-calc on page load if DOB has a value
+                    // Auto-calc on page load if DOB has a value
                     if (dateOfBirth.value) {
                         ageInput.value = calculateAge(dateOfBirth.value);
                     }
 
-                    // ✅ Recalc whenever DOB changes
+                    // Recalc whenever DOB changes
                     dateOfBirth.addEventListener('change', function () {
                         ageInput.value = calculateAge(this.value);
                     });
                 </script>
 
             </div>
+            <br />
+            <!-- Applying for self button -->
+            <div class="mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button"
+                            class="btn btn-outline-success transition-all duration-300 ease-in-out font-medium
+                       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-green-500/30
+                       focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
+                       active:scale-95"
+                            id="sameAsPatientBtn">
+                        <i class="bi bi-person-check"></i> I am the patient
+                    </button>
 
-            <!-- Add this button above the Requestor Details section -->
+                    <button type="button"
+                            class="btn btn-outline-warning transition-all duration-300 ease-in-out font-medium
+                       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-yellow-500/30
+                       focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50
+                       active:scale-95"
+                            id="clearAutoFillBtn"
+                            style="display: none;">
+                        <i class="bi bi-eraser"></i> Clear Auto-Fill
+                    </button>
+
+                    <small class="text-muted ms-2">Click if you are applying for yourself</small>
+                </div>
+            </div>
+
+            <!-- Show requestor details -->
             <button type="button" class="btn btn-outline-primary mb-3" id="toggleRequestorBtn">
                 Show Requestor Details
             </button>
@@ -596,7 +626,7 @@
 
             <!-- Submit Button -->
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary">Submit Request</button>
+                <button type="submit" class="btn-submit">Submit Request</button>
             </div>
             <br />
             <br />
@@ -751,8 +781,207 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
+            const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
+            const toggleBtn = document.getElementById('toggleRequestorBtn');
+            const requestorSection = document.getElementById('requestorDetailsSection');
 
-    <!-- Add these styles to your existing style section -->
+            // Patient form fields
+            const patientLastname = document.getElementById('Lastname');
+            const patientFirstname = document.getElementById('Firstname');
+            const patientMiddlename = document.getElementById('Middlename');
+            const patientSuffix = document.getElementById('Suffix');
+            const patientBlkLotStreet = document.getElementById('BlkLotStreet');
+            const patientSubVill = document.getElementById('SubVill');
+            const patientBrgy = document.getElementById('Brgy');
+            const patientDistrict = document.getElementById('District');
+
+            // Requestor form fields
+            const requestorLastname = document.getElementById('RLastname');
+            const requestorFirstname = document.getElementById('RFirstname');
+            const requestorMiddlename = document.getElementById('RMiddlename');
+            const requestorSuffix = document.getElementById('RSuffix');
+            const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
+            const requestorSubVill = document.getElementById('RSubVill');
+            const requestorBrgy = document.getElementById('RBrgy');
+            const requestorDistrict = document.getElementById('RDistrict');
+            const relationshipPatient = document.getElementById('RelationshipPatient');
+
+            // Store original values to restore on clear
+            let originalRequestorValues = {};
+            let autoFillUsed = false;
+
+            // IMPROVED SHOW/HIDE TOGGLE FUNCTIONALITY
+            if (toggleBtn && requestorSection) {
+                toggleBtn.addEventListener('click', function() {
+                    // Use getComputedStyle for reliable display detection
+                    const isHidden = window.getComputedStyle(requestorSection).display === 'none';
+
+                    if (isHidden) {
+                        requestorSection.style.display = 'block';
+                        toggleBtn.textContent = 'Hide Requestor Details';
+                        toggleBtn.classList.remove('btn-outline-primary');
+                        toggleBtn.classList.add('btn-primary');
+                    } else {
+                        requestorSection.style.display = 'none';
+                        toggleBtn.textContent = 'Show Requestor Details';
+                        toggleBtn.classList.remove('btn-primary');
+                        toggleBtn.classList.add('btn-outline-primary');
+                    }
+                });
+            }
+
+            // "I am the patient" button functionality
+            sameAsPatientBtn.addEventListener('click', function() {
+                // Store original values before auto-filling
+                storeOriginalValues();
+                autoFillUsed = true;
+
+                // Auto-fill requestor details with patient information
+                if (patientLastname && patientLastname.value) requestorLastname.value = patientLastname.value;
+                if (patientFirstname && patientFirstname.value) requestorFirstname.value = patientFirstname.value;
+                if (patientMiddlename && patientMiddlename.value) requestorMiddlename.value = patientMiddlename.value;
+                if (patientSuffix && patientSuffix.value) requestorSuffix.value = patientSuffix.value;
+                if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
+                if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
+                if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
+                if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
+
+                // Set relationship to "Self"
+                if (relationshipPatient) relationshipPatient.value = "Self";
+
+                // Visual feedback with Tailwind
+                sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
+                sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
+                sameAsPatientBtn.classList.add('btn-success', 'ring-2', 'ring-green-500');
+
+                // Show clear button PERMANENTLY (never auto-hides)
+                if (clearAutoFillBtn) {
+                    clearAutoFillBtn.style.display = 'block';
+                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
+                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
+                    clearAutoFillBtn.classList.add('btn-outline-warning');
+                }
+
+                // Auto-show requestor section
+                if (requestorSection) {
+                    requestorSection.style.display = 'block';
+                    if (toggleBtn) {
+                        toggleBtn.textContent = 'Hide Requestor Details';
+                        toggleBtn.classList.remove('btn-outline-primary');
+                        toggleBtn.classList.add('btn-primary');
+                    }
+                }
+
+                // Reset main button after 2 seconds
+                setTimeout(() => {
+                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> I am the patient';
+                    sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
+                    sameAsPatientBtn.classList.add('btn-outline-success');
+                }, 2000);
+            });
+
+            // Clear button functionality - PERMANENT until manually clicked
+            clearAutoFillBtn.addEventListener('click', function() {
+                // Restore original values (clear all auto-filled data)
+                restoreOriginalValues();
+
+                // Reset the auto-fill flag
+                autoFillUsed = false;
+
+                // Visual feedback for clear
+                clearAutoFillBtn.innerHTML = '<i class="bi bi-check-circle"></i> Cleared!';
+                clearAutoFillBtn.classList.remove('btn-outline-warning');
+                clearAutoFillBtn.classList.add('btn-warning', 'ring-2', 'ring-yellow-500');
+
+                // Reset clear button after 1.5 seconds (but keep it visible)
+                setTimeout(() => {
+                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
+                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
+                    clearAutoFillBtn.classList.add('btn-outline-warning');
+
+                    // Only hide if ALL fields are empty after clearing
+                    const allFieldsEmpty = checkIfAllRequestorFieldsEmpty();
+                    if (allFieldsEmpty) {
+                        clearAutoFillBtn.style.display = 'none';
+                    }
+                    // Otherwise, keep it visible so user can clear again if needed
+                }, 1500);
+            });
+
+            // Store original values function
+            function storeOriginalValues() {
+                const fields = [
+                    'RLastname', 'RFirstname', 'RMiddlename', 'RSuffix',
+                    'RBlkLotStreet', 'RSubVill', 'RBrgy', 'RDistrict', 'RelationshipPatient'
+                ];
+
+                originalRequestorValues = {}; // Reset storage
+                fields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) {
+                        originalRequestorValues[field] = element.value;
+                    }
+                });
+            }
+
+            // Restore original values function
+            function restoreOriginalValues() {
+                Object.keys(originalRequestorValues).forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) {
+                        element.value = originalRequestorValues[field];
+                    }
+                });
+            }
+
+            // Check if all requestor fields are empty
+            function checkIfAllRequestorFieldsEmpty() {
+                const requestorFields = [
+                    requestorLastname, requestorFirstname, requestorMiddlename,
+                    requestorSuffix, requestorBlkLotStreet, requestorSubVill,
+                    requestorBrgy, requestorDistrict, relationshipPatient
+                ];
+
+                return requestorFields.every(field => !field || !field.value.trim());
+            }
+
+            // Smart hint with Tailwind (optional - can remove if not needed)
+            const patientFields = [patientLastname, patientFirstname, patientMiddlename];
+            patientFields.forEach(field => {
+                if (field) {
+                    field.addEventListener('input', function() {
+                        if (this.value &&
+                            requestorLastname && !requestorLastname.value &&
+                            requestorFirstname && !requestorFirstname.value &&
+                            !autoFillUsed) {
+                            sameAsPatientBtn.classList.add('ring-2', 'ring-green-500', 'animate-bounce');
+
+                            setTimeout(() => {
+                                sameAsPatientBtn.classList.remove('animate-bounce', 'ring-2', 'ring-green-500');
+                            }, 3000);
+                        }
+                    });
+                }
+            });
+
+            // Show clear button if page loads with pre-filled data
+            function checkInitialState() {
+                const anyFieldHasContent = !checkIfAllRequestorFieldsEmpty();
+                if (anyFieldHasContent) {
+                    storeOriginalValues();
+                    autoFillUsed = true;
+                    clearAutoFillBtn.style.display = 'block';
+                }
+            }
+
+            // Run initial state check
+            checkInitialState();
+        });
+    </script>
+
     <style>
         .img-preview {
             cursor: pointer;
@@ -993,27 +1222,6 @@
             updateReflection();
         });
     </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggleBtn = document.getElementById('toggleRequestorBtn');
-            const requestorSection = document.getElementById('requestorDetailsSection');
-
-            toggleBtn.addEventListener('click', function() {
-                if (requestorSection.style.display === 'none') {
-                    requestorSection.style.display = 'block';
-                    toggleBtn.textContent = 'Hide Requestor Details';
-                } else {
-                    requestorSection.style.display = 'none';
-                    toggleBtn.textContent = 'Show Requestor Details';
-                }
-            });
-        });
-    </script>
-
-
-
-
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
