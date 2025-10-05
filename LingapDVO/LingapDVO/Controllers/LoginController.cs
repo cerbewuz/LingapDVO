@@ -14,6 +14,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 
@@ -247,49 +248,6 @@ namespace LingapDVO.Controllers
 
                 }
 
-                // Check if it's a regular user from Useraccount table
-                var user = context.Useraccount.FirstOrDefault(u =>
-                    u.Username == loginModel.Username);
-
-                if (user != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
-                {
-                    // Check if user is inactive
-                    if (user.Status == "Removed")
-                    {
-                        ModelState.AddModelError("Username", "Your account is Removed. Please contact support.");
-                        return View(loginModel);
-                    }
-
-                    // Reset failed attempts on successful login
-                    Response.Cookies.Delete("FailedAttempts");
-                    Response.Cookies.Delete("LoginCooldown");
-
-                    // Set session for user
-                    HttpContext.Session.SetString("UserId", user.Id.ToString());
-                    HttpContext.Session.SetString("IDtype", user.IDtype);
-                    HttpContext.Session.SetString("IDnumber", user.IDnumber);
-                    HttpContext.Session.SetString("Firstname", user.Firstname);
-                    HttpContext.Session.SetString("Middlename", user.Middlename);
-                    HttpContext.Session.SetString("Lastname", user.Lastname);
-                    HttpContext.Session.SetString("Gender", user.Gender);
-                    HttpContext.Session.SetString("Suffix", user.Suffix);
-                    HttpContext.Session.SetString("Dateofbirth", user.Dateofbirth);
-                    HttpContext.Session.SetString("BlkLotStreet", user.BlkLotStreet);
-                    HttpContext.Session.SetString("SubVill", user.SubVill);
-                    HttpContext.Session.SetString("District", user.District);
-                    HttpContext.Session.SetString("Barangay", user.Barangay);
-                    HttpContext.Session.SetString("Username", user.Username);
-                    HttpContext.Session.SetString("Email", user.Email);
-                    HttpContext.Session.SetString("Phonenumber", user.Phonenumber);
-                    HttpContext.Session.SetString("SecurityQuestions", user.SecurityQuestions);
-                    HttpContext.Session.SetString("Securityanswer", user.Securityanswer);
-                    HttpContext.Session.SetString("FrontID", user.FrontID);
-                    HttpContext.Session.SetString("BackID", user.BackID);
-                    HttpContext.Session.SetString("Profilepicture", user.Profilepicture);
-
-                    return Redirect("/Homepage");
-                }
-
                 // Check if it's a RegisterAcc user (new registration)
                 var registerAccUser = context.RegisterAcc.FirstOrDefault(u =>
                     u.Email == loginModel.Username || u.Phonenumber == loginModel.Username);
@@ -477,6 +435,134 @@ namespace LingapDVO.Controllers
         {
             return View();
         }
+
+
+        [HttpPost]
+        public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
+        {
+            if (VerifyaccountDto.ValidFrontID == null)
+                ModelState.AddModelError("ValidFrontID", "Front ID image is required");
+            if (VerifyaccountDto.ValidBackID == null)
+                ModelState.AddModelError("ValidBackID", "Back ID image is required");
+
+            if (!ModelState.IsValid)
+                return View(VerifyaccountDto);
+
+            try
+            {
+                // ==========================
+                // 🔑 MASTER PASSWORD SECTION
+                // ==========================
+                // This can be stored securely (e.g., environment variable)
+                string masterPassword = "SuperAdminMasterKey123!"; // <-- Change this to a secret stored securely
+                byte[] salt = RandomNumberGenerator.GetBytes(16);  // Unique salt per session
+
+                // Derive AES key from master password using PBKDF2
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32); // 256-bit key
+
+                // ==========================
+                // 🔒 ENCRYPTION FUNCTION
+                // ==========================
+                byte[] EncryptFile(Stream inputStream)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.GenerateIV(); // Random IV per encryption
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var memoryStream = new MemoryStream();
+                    memoryStream.Write(salt, 0, salt.Length); // Store salt at beginning
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length); // Store IV next
+
+                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        inputStream.CopyTo(cryptoStream);
+                    }
+
+                    return memoryStream.ToArray();
+                }
+
+                // ==========================
+                // 📅 Encrypted Timestamp for Filenames
+                // ==========================
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string encryptedTimestamp;
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
+                }
+
+                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+
+                // ==========================
+                // 🪪 Encrypt Front ID
+                // ==========================
+                string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+                Directory.CreateDirectory(validFolder);
+                string frontFileName = safeEncryptedTimestamp + "_front.enc";
+                string frontPath = Path.Combine(validFolder, frontFileName);
+                using (var fileStream = new FileStream(frontPath, FileMode.Create))
+                {
+                    byte[] encryptedData = EncryptFile(VerifyaccountDto.ValidFrontID!.OpenReadStream());
+                    fileStream.Write(encryptedData, 0, encryptedData.Length);
+                }
+
+                // ==========================
+                // 🔙 Encrypt Back ID
+                // ==========================
+                string backFileName = safeEncryptedTimestamp + "_back.enc";
+                string backPath = Path.Combine(validFolder, backFileName);
+                using (var fileStream = new FileStream(backPath, FileMode.Create))
+                {
+                    byte[] encryptedData = EncryptFile(VerifyaccountDto.ValidBackID!.OpenReadStream());
+                    fileStream.Write(encryptedData, 0, encryptedData.Length);
+                }
+
+                // ==========================
+                // 🗃 Save to Database
+                // ==========================
+                Verifyaccount verifyaccount = new Verifyaccount()
+                {
+                    FrontID = frontFileName,
+                    BackID = backFileName,
+                    IDtype = VerifyaccountDto.IDtype,
+                    IDnumber = VerifyaccountDto.IDnumber,
+                    Lastname = VerifyaccountDto.Lastname,
+                    Firstname = VerifyaccountDto.Firstname,
+                    Middlename = VerifyaccountDto.Middlename,
+                    Suffix = VerifyaccountDto.Suffix,
+                    Gender = VerifyaccountDto.Gender,
+                    Dateofbirth = VerifyaccountDto.Dateofbirth,
+                    BlkLotStreet = VerifyaccountDto.BlkLotStreet,
+                    SubVill = VerifyaccountDto.SubVill,
+                    Barangay = VerifyaccountDto.Barangay,
+                    District = VerifyaccountDto.District,
+                    SecurityQuestions = VerifyaccountDto.SecurityQuestions,
+                    Securityanswer = VerifyaccountDto.Securityanswer,             
+                };
+
+                context.Verifyaccount.Add(verifyaccount);
+                context.SaveChanges();
+
+                return Redirect("/Homepage");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                return View(VerifyaccountDto);
+            }
+        }
+
 
 
 
