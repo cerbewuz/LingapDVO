@@ -20,6 +20,9 @@ namespace LingapDVO.Models
         [MaxLength(250)]
         public string Password { get; set; } = "";
 
+        [MaxLength(100)]
+        public string Username { get; set; } = "";
+
         public string? Status { get; set; } = "";
 
     }
