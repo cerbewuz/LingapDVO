@@ -577,48 +577,13 @@ namespace LingapDVO.Controllers
 
             var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
 
+
             if (fillupformhospitalBill == null)
             {
                 return NotFound();
             }
 
-            // AES Configuration
-            string base64Key = "Jy4jDX7wGqiTD5OkkCnlH8/J9VPVfJr6ex609jvV8NU=";
-            string base64IV = "kOc2fXLswoq8Bp69GCGZSQ==";
-            byte[] key = Convert.FromBase64String(base64Key);
-            byte[] iv = Convert.FromBase64String(base64IV);
-
-            // Local function to decrypt Base64 strings
-            string DecryptAES(string encryptedText)
-            {
-                if (string.IsNullOrEmpty(encryptedText)) return null;
-
-                try
-                {
-                    byte[] cipherBytes = Convert.FromBase64String(encryptedText);
-                    using (Aes aes = Aes.Create())
-                    {
-                        aes.Key = key;
-                        aes.IV = iv;
-                        aes.Mode = CipherMode.CBC;
-                        aes.Padding = PaddingMode.PKCS7;
-
-                        using (var decryptor = aes.CreateDecryptor(aes.Key, aes.IV))
-                        using (var ms = new MemoryStream(cipherBytes))
-                        using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                        using (var reader = new StreamReader(cs, Encoding.UTF8))
-                        {
-                            return reader.ReadToEnd();
-                        }
-                    }
-                }
-                catch
-                {
-                    return "[Decryption failed]";
-                }
-            }
-
-            // Set ViewData
+            // Add all form field values to ViewData
             ViewData["Status"] = fillupformhospitalBill.Status;
             ViewData["Id"] = fillupformhospitalBill.Id;
             ViewData["Lastname"] = fillupformhospitalBill.Lastname;
@@ -651,12 +616,16 @@ namespace LingapDVO.Controllers
             var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
 
+            // Parse checkbox values into a Dictionary<string, string>
             var parsed = typeAssistanceRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
-            ViewData["CheckedAssistance"] = parsed;
 
+            ViewData["CheckedAssistance"] = parsed; // Pass dictionary to the view
+
+
+            // ForCMOPERSONNEL handling
             var cmoPersonnelRaw = fillupformhospitalBill.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
 
@@ -664,15 +633,17 @@ namespace LingapDVO.Controllers
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
-            // 🔓 Decrypt image file names before showing
-            ViewData["Validfrontimage"] = DecryptAES(fillupformhospitalBill.Validfrontimage);
-            ViewData["ValidBackimage"] = DecryptAES(fillupformhospitalBill.ValidBackimage);
-            ViewData["DoctorPrescription"] = DecryptAES(fillupformhospitalBill.DoctorPrescription);
-            ViewData["DeathCertificate"] = DecryptAES(fillupformhospitalBill.DeathCertificate);
+            ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
+            ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
+
+            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
+            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
 
             ViewData["Comments"] = fillupformhospitalBill.Comments;
+
 
             return View();
         }

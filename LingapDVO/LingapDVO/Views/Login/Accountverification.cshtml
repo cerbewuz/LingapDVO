@@ -326,6 +326,20 @@
                             <small class="text-muted">Enter the number exactly as it appears on your ID</small>
                         </div>
 
+                        <div class="mb-3 text-start">
+                            <label class="form-label">Phone Number</label>
+                            <input asp-for="Phonenumber" type="text" id="phonenumber"
+                                   class="form-control"
+                                   placeholder="Enter your phone number"
+                                   required
+                                   inputmode="numeric"
+                                   pattern="[0-9]{10,11}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <span asp-validation-for="Phonenumber" class="text-danger"></span>
+                            <small class="text-muted">Enter a valid 10-11 digit phone number</small>
+                        </div>
+
+
                         <div class="row mb-3 text-start">
                             <label class="form-label fw-bold"><i class="fa-solid fa-list-check fa-lg me-2 cobalt-text"></i>User Information</label>
                             <br />
