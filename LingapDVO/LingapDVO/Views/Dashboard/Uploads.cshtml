@@ -911,7 +911,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Tracking data for different form types - INCLUDES ALL FORMS (not just pending/processing)
+        // Tracking data for different form types - FIXED VERSION
         const trackingData = {
             hospital: {
                 title: "Hospital Bill Applications",
@@ -919,20 +919,20 @@
                 forms: [
                     @foreach (var doc in Model.HospitalBills.Where(f => f.Status != null).OrderByDescending(f => f.CreatedAt))
                     {
-                            <text>
-                            {
-                                id: @doc.Id,
-                                name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
-                                type: "Hospital Bill Assistance",
-                                createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
-                                processAt: @(doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 ? $"\"{doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
-                                processBy: "@doc.Processby",
-                                result: @(doc.Result > DateTime.MinValue && doc.Result.Year > 1 ? $"\"{doc.Result.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
-                                status: "@doc.Status",
-                                status2: "@doc.Status2",
-                                comments: "@doc.Comments"
-                            },
-                            </text>
+                        <text>
+                        {
+                            id: @doc.Id,
+                            name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
+                            type: "Hospital Bill Assistance",
+                            createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
+                            processAt: @(doc.ProcessAt.HasValue && doc.ProcessAt.Value > DateTime.MinValue && doc.ProcessAt.Value.Year > 1 ? $"\"{doc.ProcessAt.Value.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                            processBy: "@(string.IsNullOrEmpty(doc.Processby) ? "" : doc.Processby)",
+                            result: @(doc.Result.HasValue && doc.Result.Value > DateTime.MinValue && doc.Result.Value.Year > 1 ? $"\"{doc.Result.Value.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                            status: "@doc.Status",
+                            status2: "@doc.Status2",
+                            comments: "@Html.Raw(string.IsNullOrEmpty(doc.Comments) ? "" : doc.Comments.Replace("\"", "&quot;"))"
+                        },
+                        </text>
                     }
                 ]
             },
@@ -942,20 +942,20 @@
                 forms: [
                     @foreach (var doc in Model.MedicalLabForms.Where(f => f.Status != null).OrderByDescending(f => f.CreatedAt))
                     {
-                            <text>
-                            {
-                                id: @doc.Id,
-                                name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
-                                type: "Medical and Laboratory Procedure",
-                                createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
-                                processAt: @(doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 ? $"\"{doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
-                                processBy: "@doc.Processby",
-                                result: @(doc.Result > DateTime.MinValue && doc.Result.Year > 1 ? $"\"{doc.Result.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
-                                status: "@doc.Status",
-                                status2: "@doc.Status2",
-                                comments: "@doc.Comments"
-                            },
-                            </text>
+                        <text>
+                        {
+                            id: @doc.Id,
+                            name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
+                            type: "Medical and Laboratory Procedure",
+                            createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
+                            processAt: @(doc.ProcessAt.HasValue && doc.ProcessAt.Value > DateTime.MinValue && doc.ProcessAt.Value.Year > 1 ? $"\"{doc.ProcessAt.Value.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                            processBy: "@(string.IsNullOrEmpty(doc.Processby) ? "" : doc.Processby)",
+                            result: @(doc.Result.HasValue && doc.Result.Value > DateTime.MinValue && doc.Result.Value.Year > 1 ? $"\"{doc.Result.Value.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                            status: "@doc.Status",
+                            status2: "@doc.Status2",
+                            comments: "@Html.Raw(string.IsNullOrEmpty(doc.Comments) ? "" : doc.Comments.Replace("\"", "&quot;"))"
+                        },
+                        </text>
                     }
                 ]
             },
@@ -965,40 +965,39 @@
                 forms: [
                     @foreach (var doc in Model.Funeralburialform.Where(f => f.Status != null).OrderByDescending(f => f.CreatedAt))
                     {
-                            <text>
-                            {
-                                id: @doc.Id,
-                                name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
-                                type: "Funeral and Burial Assistance",
-                                createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
-                                processAt: @(doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 ? $"\"{doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
-                                processBy: "@doc.Processby",
-                                result: @(doc.Result > DateTime.MinValue && doc.Result.Year > 1 ? $"\"{doc.Result.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
-                                status: "@doc.Status",
-                                status2: "@doc.Status2",
-                                comments: "@doc.Comments"
-                            },
-                            </text>
+                        <text>
+                        {
+                            id: @doc.Id,
+                            name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
+                            type: "Funeral and Burial Assistance",
+                            createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
+                            processAt: @(doc.ProcessAt.HasValue && doc.ProcessAt.Value > DateTime.MinValue && doc.ProcessAt.Value.Year > 1 ? $"\"{doc.ProcessAt.Value.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                            processBy: "@(string.IsNullOrEmpty(doc.Processby) ? "" : doc.Processby)",
+                            result: @(doc.Result.HasValue && doc.Result.Value > DateTime.MinValue && doc.Result.Value.Year > 1 ? $"\"{doc.Result.Value.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                            status: "@doc.Status",
+                            status2: "@doc.Status2",
+                            comments: "@Html.Raw(string.IsNullOrEmpty(doc.Comments) ? "" : doc.Comments.Replace("\"", "&quot;"))"
+                        },
+                        </text>
                     }
                 ]
             }
         };
 
-        // Function to update tracking display
+        // Function to update tracking display - FIXED VERSION
         function updateTracking(tabType) {
             const data = trackingData[tabType];
             const trackingContent = document.getElementById('tracking-content');
             const trackingSubtitle = document.getElementById('tracking-subtitle');
 
-            // Check if data exists and has forms
-            if (!data) {
-                trackingSubtitle.textContent = "Track your applications";
+            if (!data || data.forms.length === 0) {
+                trackingSubtitle.textContent = data ? data.subtitle : "Track your applications";
                 trackingContent.innerHTML = `
                     <div class="tracking-empty-state">
                         <div class="text-center text-muted">
-                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                            <h5>Data Not Available</h5>
-                            <p class="mb-0">Unable to load tracking data</p>
+                            <i class="fas fa-folder-open fa-3x mb-3"></i>
+                            <h5>No Applications Found</h5>
+                            <p class="mb-0">No ${data ? data.title.toLowerCase() : 'applications'} found for tracking</p>
                         </div>
                     </div>
                 `;
@@ -1007,87 +1006,78 @@
 
             trackingSubtitle.textContent = data.subtitle;
 
-            // Check if forms array exists and has items
-            if (!data.forms || data.forms.length === 0) {
-                trackingContent.innerHTML = `
-                    <div class="tracking-empty-state">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-folder-open fa-3x mb-3"></i>
-                            <h5>No Applications Found</h5>
-                            <p class="mb-0">No ${data.title.toLowerCase()} found for tracking</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
             let html = '';
             data.forms.forEach((doc, index) => {
+                // Check if processing data exists and is valid
+                const hasProcessing = doc.processAt && doc.processAt !== "null" && doc.processBy && doc.processBy.trim() !== "";
+                
+                // Check if result data exists and is valid
+                const hasResult = doc.result && doc.result !== "null";
+                
                 html += `
-                    <div class="individual-tracking" style="margin-bottom: ${index < data.forms.length - 1 ? '2rem' : '0'}; padding: 1rem; border: 1px solid #e9ecef; border-radius: 8px;">
-                        <h5 class="mb-3" style="color: var(--primary-color);">${doc.name}</h5>
-                        <div class="timeline">
-                            <!-- Step A: Document Submitted -->
+                    <div class="tracking-section" style="margin-bottom: ${index < data.forms.length - 1 ? '2rem' : '0'}; padding: 1rem; border: 1px solid #e9ecef; border-radius: 8px;">
+                        <h5 class="mb-3">${doc.name}</h5>
+
+                        <!-- Step A: Document Submitted - ALWAYS SHOW -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Document Submitted</h6>
+                                <span class="small text-muted">${doc.createdAt}</span>
+                                <p>${doc.type} form was successfully submitted.</p>
+                            </div>
+                        </div>
+
+                        <!-- Step B: Processing - SHOW BASED ON ACTUAL DATA -->
+                        ${hasProcessing ? `
                             <div class="timeline-item">
-                                <div class="timeline-marker submitted">
-                                    <i class="fas fa-file-alt"></i>
+                                <div class="timeline-marker processing">
+                                    <i class="fas fa-cog"></i>
                                 </div>
                                 <div class="timeline-content">
-                                    <h6>Document Submitted</h6>
-                                    <span class="small text-muted">${doc.createdAt}</span>
-                                    <p>${doc.type} form was successfully submitted.</p>
+                                    <h6>Processing</h6>
+                                    <span class="small text-muted">${doc.processAt}</span>
+                                    <p>Processed by: <strong>${doc.processBy}</strong></p>
                                 </div>
                             </div>
+                        ` : `
+                            <div class="timeline-item">
+                                <div class="timeline-marker" style="background: #6c757d; color: white;">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Processing</h6>
+                                    <p class="waiting-text">Waiting for staff to process...</p>
+                                </div>
+                            </div>
+                        `}
 
-                            <!-- Step B: Processing -->
-                            ${doc.processAt && doc.processBy ? `
-                                <div class="timeline-item">
-                                    <div class="timeline-marker processing">
-                                        <i class="fas fa-cog"></i>
-                                    </div>
-                                    <div class="timeline-content">
-                                        <h6>Processing</h6>
-                                        <span class="small text-muted">${doc.processAt}</span>
-                                        <p>Processed by: <strong>${doc.processBy}</strong></p>
-                                    </div>
+                        <!-- Step C: Result - SHOW BASED ON ACTUAL DATA -->
+                        ${hasResult ? `
+                            <div class="timeline-item">
+                                <div class="timeline-marker ${doc.status2 === 'Approved' ? 'approved' : 'unapproved'}">
+                                    <i class="fas fa-check-circle"></i>
                                 </div>
-                            ` : `
-                                <div class="timeline-item">
-                                    <div class="timeline-marker" style="background: #6c757d; color: white;">
-                                        <i class="fas fa-clock"></i>
-                                    </div>
-                                    <div class="timeline-content">
-                                        <h6>Processing</h6>
-                                        <p class="waiting-text">Waiting for staff to process...</p>
-                                    </div>
+                                <div class="timeline-content">
+                                    <h6>${doc.status}</h6>
+                                    <span class="small text-muted">${doc.result}</span>
+                                    <p>Result: <strong>${doc.status2}</strong></p>
+                                    ${doc.comments && doc.comments.trim() !== "" ? `<p class="mt-2"><strong>Comments:</strong> ${doc.comments}</p>` : ''}
                                 </div>
-                            `}
-
-                            <!-- Step C: Result -->
-                            ${doc.result ? `
-                                <div class="timeline-item">
-                                    <div class="timeline-marker ${doc.status2 && doc.status2.toLowerCase() === 'approved' ? 'approved' : 'unapproved'}">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <div class="timeline-content">
-                                        <h6>${doc.status || 'Completed'}</h6>
-                                        <span class="small text-muted">${doc.result}</span>
-                                        <p>Result: <strong>${doc.status2 || 'Completed'}</strong></p>
-                                        ${doc.comments && doc.comments.trim() !== '' ? `<p class="mt-2"><strong>Comments:</strong> ${doc.comments}</p>` : ''}
-                                    </div>
+                            </div>
+                        ` : `
+                            <div class="timeline-item">
+                                <div class="timeline-marker" style="background: #6c757d; color: white;">
+                                    <i class="fas fa-clock"></i>
                                 </div>
-                            ` : `
-                                <div class="timeline-item">
-                                    <div class="timeline-marker" style="background: #6c757d; color: white;">
-                                        <i class="fas fa-clock"></i>
-                                    </div>
-                                    <div class="timeline-content">
-                                        <h6>Result</h6>
-                                        <p class="waiting-text">Waiting for result...</p>
-                                    </div>
+                                <div class="timeline-content">
+                                    <h6>Result</h6>
+                                    <p class="waiting-text">Waiting for result...</p>
                                 </div>
-                            `}
-                        </div>
+                            </div>
+                        `}
                     </div>
                 `;
             });
