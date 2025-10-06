@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace LingapDVO.Models
 {
 
-    [Index("Phonenumber ", IsUnique = true)]
+
     public class Verifyaccount
     {
 
