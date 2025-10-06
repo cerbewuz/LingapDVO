@@ -69,6 +69,7 @@ namespace LingapDVO.Controllers
             // Store in session
             HttpContext.Session.SetString("FacebookEmail", email ?? "");
             HttpContext.Session.SetString("FacebookName", name ?? "");
+            HttpContext.Session.SetString("Username", name ?? "Facebook User");
 
             return RedirectToAction("Homepage", "Dashboard");
         }
@@ -106,6 +107,7 @@ namespace LingapDVO.Controllers
             // Store into session
             HttpContext.Session.SetString("GoogleEmail", email ?? "");
             HttpContext.Session.SetString("GoogleName", name ?? "");
+            HttpContext.Session.SetString("Username", name ?? "Google User");
 
             // Redirect to Homepage/Dashboard
             return RedirectToAction("Homepage", "Dashboard");
@@ -311,8 +313,9 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
                             HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                             HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
-          
-                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? ""); // From RegisterAcc
+
+                            HttpContext.Session.SetString("Username", registerAccUser.Username ?? "");
+                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? ""); 
          
                             HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
                             HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
@@ -327,7 +330,7 @@ namespace LingapDVO.Controllers
                             // Set session for basic RegisterAcc user only
                             HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
                             HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
-
+                            HttpContext.Session.SetString("Username", registerAccUser.Username ?? "");
                             HttpContext.Session.SetString("IsRegisteredUser", "true");
                             HttpContext.Session.SetString("IsVerifiedUser", "false");
                         }

@@ -7,469 +7,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - LINGAPDVO</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- reCAPTCHA v2 Script -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-</head>
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-    <!-- Go Back Button -->
-    <a href="/" class="fixed left-4 top-4 lg:left-6 lg:top-6 z-50 flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-lg border border-gray-200 text-crimson-600 hover:bg-crimson-600 hover:text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 font-semibold text-sm">
-        <i class="fas fa-arrow-left text-xs"></i>
-        <span>Home</span>
-    </a>
+    <title>Register</title>
 
-    <div class="w-full max-w-sm lg:max-w-md">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/20 backdrop-blur-sm">
-            <!-- Compact Header -->
-            <div class="text-center mb-6 lg:mb-8">
-                <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-crimson-500 to-crimson-600 rounded-2xl flex items-center justify-center mx-auto mb-3 lg:mb-4 shadow-lg">
-                    <i class="fas fa-user-plus text-white text-lg lg:text-xl"></i>
-                </div>
-                <h1 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
-                    Create an Account
-                </h1>
-                <p class="text-gray-500 text-sm lg:text-base">
-                    Join LINGAPDVO today
-                </p>
-            </div>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style">
 
-            <form asp-action="Register" enctype="multipart/form-data" method="post" class="space-y-4 lg:space-y-5">
-                <!-- Compact Validation Summary -->
-                <div asp-validation-summary="All" class="bg-red-50 border border-red-200 rounded-xl p-3 text-red-600 text-xs lg:text-sm"></div>
-
-                <!-- Username and Email in Column -->
-                <div class="space-y-4">
-                    <!-- Username Field -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700">
-                            Username
-                        </label>
-                        <div class="relative">
-                            <input asp-for="Username" type="text" id="username"
-                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
-                                   placeholder=" "
-                                   required>
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
-                                <i class="fas fa-user mr-2 text-crimson-500"></i>Enter your username
-                            </span>
-                        </div>
-                        <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
-                    </div>
-
-                    <!-- Email Field -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700">
-                            Email Address
-                        </label>
-                        <div class="relative">
-                            <input asp-for="Email" type="email" id="email"
-                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
-                                   placeholder=" "
-                                   required>
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
-                                <i class="fas fa-envelope mr-2 text-crimson-500"></i>you@example.com
-                            </span>
-                        </div>
-                        <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
-                    </div>
-                </div>
-
-                <!-- Password and Confirm Password in Column -->
-                <div class="space-y-4">
-                    <!-- Password Field -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700">
-                            Password
-                        </label>
-                        <div class="relative flex">
-                            <input asp-for="Password" type="password" id="password"
-                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-l-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-gray-400 border-r-0"
-                                   placeholder="Enter your password"
-                                   required>
-                            <button type="button" class="px-4 border-2 border-gray-200 border-l-0 rounded-r-xl bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-green-600 transition-all duration-200" id="togglePassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
-
-                        <!-- Compact Password Strength -->
-                        <div class="password-strength mt-2">
-                            <div class="strength-fill" id="passwordStrength"></div>
-                        </div>
-                    </div>
-
-                    <!-- Confirm Password Field -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700">
-                            Confirm Password
-                        </label>
-                        <input type="password" id="confirmPassword"
-                               class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-gray-400"
-                               placeholder="Confirm your password"
-                               required>
-
-                        <!-- Compact Password Match Indicator -->
-                        <div id="passwordMatch" class="password-match text-xs mt-1 hidden">
-                            <i class="fas fa-check-circle mr-1"></i>
-                            <span>Passwords match</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Compact Password Requirements -->
-                <div class="password-requirements space-y-1 hidden bg-gray-50 rounded-xl p-3 border border-gray-200" id="passwordRequirements">
-                    <div class="requirement-item requirement-invalid text-xs" id="length">
-                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
-                        <span>At least 8 characters</span>
-                    </div>
-                    <div class="requirement-item requirement-invalid text-xs" id="uppercase">
-                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
-                        <span>1 uppercase letter</span>
-                    </div>
-                    <div class="requirement-item requirement-invalid text-xs" id="lowercase">
-                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
-                        <span>1 lowercase letter</span>
-                    </div>
-                    <div class="requirement-item requirement-invalid text-xs" id="number">
-                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
-                        <span>1 number</span>
-                    </div>
-                    <div class="requirement-item requirement-invalid text-xs" id="special">
-                        <span class="requirement-icon w-3 h-3 flex items-center justify-center text-xs bg-gray-300 text-gray-600 rounded-full mr-2"><i class="fas fa-circle"></i></span>
-                        <span>1 special character</span>
-                    </div>
-                </div>
-
-                <!-- Social Login Section -->
-                <div class="pt-2">
-                    <div class="flex items-center my-4">
-                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                        <span class="px-3 text-xs text-gray-500 bg-white font-medium">or continue with</span>
-                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <a href="/Login/GoogleLogin" class="flex items-center justify-center gap-2 px-3 py-2.5 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
-                            <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png" alt="Google" class="w-4 h-4">
-                            <span class="text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
-                        </a>
-
-                        <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
-                            <i class="fab fa-facebook-f text-xs"></i>
-                            <span class="text-xs font-medium">Facebook</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Compact reCAPTCHA -->
-                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                    <div class="g-recaptcha mx-auto scale-90 lg:scale-100" data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
-                </div>
-
-                <!-- Compact Terms and Conditions -->
-                <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
-                    <input type="checkbox" id="terms" class="mt-1 accent-crimson-600 scale-110" required>
-                    <label class="text-xs lg:text-sm text-gray-700 flex-1" for="terms">
-                        I agree to the <a href="#" class="text-crimson-600 hover:text-crimson-700 font-semibold transition-colors duration-200" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
-                    </label>
-                </div>
-
-                <!-- Compact Submit Button -->
-                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 lg:py-3.5 rounded-xl font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 group" id="registerButton">
-                    <span class="flex items-center justify-center gap-2">
-                        <span>Sign Up</span>
-                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
-                    </span>
-                </button>
-
-                <!-- Compact Login Redirect -->
-                <div class="text-center space-y-2 pt-2">
-                    <p class="text-gray-500 text-xs lg:text-sm">
-                        Already have an account?
-                        <a href="/Login" class="text-crimson-600 hover:text-crimson-700 font-semibold transition-colors duration-200 ml-1">Sign in</a>
-                    </p>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Terms Modal -->
-    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header bg-red-600 text-white">
-                    <h5 class="modal-title" id="termsModalLabel">Lingap Terms & Privacy Policy</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h6 class="fw-bold text-cobalt">1. Acceptance of Terms</h6>
-                    <p>By signing up for Lingap, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.</p>
-
-                    <h6 class="fw-bold text-cobalt">2. Data Privacy & Protection</h6>
-                    <p>Lingap is committed to safeguarding your personal data. We comply with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your information will only be used to verify eligibility and for program coordination. We will never sell or misuse your data.</p>
-
-                    <h6 class="fw-bold text-cobalt">3. Purpose of Data Collection</h6>
-                    <ul>
-                        <li>Eligibility verification for Lingap programs</li>
-                        <li>Contact and follow-up regarding assistance</li>
-                        <li>Government or partner validation (as needed)</li>
-                    </ul>
-
-                    <h6 class="fw-bold text-cobalt">4. Account Integrity</h6>
-                    <p>Each individual is allowed <strong>one account only</strong>. Creating multiple accounts or submitting false documents may result in permanent disqualification.</p>
-
-                    <h6 class="fw-bold text-cobalt">5. Changes to Terms</h6>
-                    <p>Lingap reserves the right to update this policy at any time. All changes will be posted publicly, and continued use of the service implies agreement with updated terms.</p>
-
-                    <h6 class="fw-bold text-cobalt">6. Questions or Concerns</h6>
-                    <p>If you have any questions regarding your privacy, you may contact our support team at <a href="mailto:support@lingap.org">support@lingap.org</a>.</p>
-                </div>
-                <div class="modal-footer">
-                    <small class="text-muted me-auto">Last updated: May 2025</small>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('confirmPassword');
-            const passwordStrength = document.getElementById('passwordStrength');
-            const passwordRequirements = document.getElementById('passwordRequirements');
-            const passwordMatch = document.getElementById('passwordMatch');
-            const togglePassword = document.getElementById('togglePassword');
-            const emailInput = document.getElementById('email');
-            const emailLabel = emailInput.nextElementSibling;
-            const usernameInput = document.getElementById('username');
-            const usernameLabel = usernameInput.nextElementSibling;
-
-            // Password visibility toggle
-            if (togglePassword && password) {
-                const eyeIcon = togglePassword.querySelector('i');
-                togglePassword.addEventListener('click', function() {
-                    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-                    password.setAttribute('type', type);
-
-                    if (type === 'text') {
-                        eyeIcon.classList.remove('fa-eye');
-                        eyeIcon.classList.add('fa-eye-slash');
-                        togglePassword.setAttribute('title', 'Hide password');
-                    } else {
-                        eyeIcon.classList.remove('fa-eye-slash');
-                        eyeIcon.classList.add('fa-eye');
-                        togglePassword.setAttribute('title', 'Show password');
-                    }
-                });
-            }
-
-            // Floating label for email
-            if (emailInput && emailLabel) {
-                emailInput.addEventListener('focus', function() {
-                    emailLabel.style.top = '0';
-                    emailLabel.style.fontSize = '0.75rem';
-                    emailLabel.style.color = '#10b981';
-                    emailLabel.style.transform = 'translateY(-50%)';
-                });
-
-                emailInput.addEventListener('blur', function() {
-                    if (this.value.trim() === '') {
-                        emailLabel.style.top = '50%';
-                        emailLabel.style.fontSize = '0.875rem';
-                        emailLabel.style.color = '#9ca3af';
-                        emailLabel.style.transform = 'translateY(-50%)';
-                    }
-                });
-
-                // Initialize label position
-                if (emailInput.value.trim() !== '') {
-                    emailLabel.style.top = '0';
-                    emailLabel.style.fontSize = '0.75rem';
-                    emailLabel.style.color = '#10b981';
-                    emailLabel.style.transform = 'translateY(-50%)';
-                }
-            }
-
-            // Floating label for username
-            if (usernameInput && usernameLabel) {
-                usernameInput.addEventListener('focus', function() {
-                    usernameLabel.style.top = '0';
-                    usernameLabel.style.fontSize = '0.75rem';
-                    usernameLabel.style.color = '#10b981';
-                    usernameLabel.style.transform = 'translateY(-50%)';
-                });
-
-                usernameInput.addEventListener('blur', function() {
-                    if (this.value.trim() === '') {
-                        usernameLabel.style.top = '50%';
-                        usernameLabel.style.fontSize = '0.875rem';
-                        usernameLabel.style.color = '#9ca3af';
-                        usernameLabel.style.transform = 'translateY(-50%)';
-                    }
-                });
-
-                // Initialize label position
-                if (usernameInput.value.trim() !== '') {
-                    usernameLabel.style.top = '0';
-                    usernameLabel.style.fontSize = '0.75rem';
-                    usernameLabel.style.color = '#10b981';
-                    usernameLabel.style.transform = 'translateY(-50%)';
-                }
-            }
-
-            // Password strength checker
-            password.addEventListener('input', function() {
-                const value = password.value;
-                const requirements = {
-                    length: value.length >= 8,
-                    uppercase: /[A-Z]/.test(value),
-                    lowercase: /[a-z]/.test(value),
-                    number: /[0-9]/.test(value),
-                    special: /[^A-Za-z0-9]/.test(value)
-                };
-
-                // Update requirement indicators
-                for (const [key, met] of Object.entries(requirements)) {
-                    const element = document.getElementById(key);
-                    if (element) {
-                        if (met) {
-                            element.classList.remove('requirement-invalid');
-                            element.classList.add('requirement-valid');
-                            element.querySelector('.requirement-icon').innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
-                            element.querySelector('.requirement-icon').classList.remove('bg-gray-300', 'text-gray-600');
-                            element.querySelector('.requirement-icon').classList.add('bg-green-500');
-                        } else {
-                            element.classList.remove('requirement-valid');
-                            element.classList.add('requirement-invalid');
-                            element.querySelector('.requirement-icon').innerHTML = '<i class="fas fa-circle text-xs"></i>';
-                            element.querySelector('.requirement-icon').classList.remove('bg-green-500');
-                            element.querySelector('.requirement-icon').classList.add('bg-gray-300', 'text-gray-600');
-                        }
-                    }
-                }
-
-                // Update strength meter
-                const strength = Object.values(requirements).filter(met => met).length;
-                const strengthPercent = (strength * 20);
-                if (passwordStrength) {
-                    passwordStrength.style.width = strengthPercent + '%';
-
-                    if (strength < 2) {
-                        passwordStrength.style.backgroundColor = '#ef4444';
-                    } else if (strength < 4) {
-                        passwordStrength.style.backgroundColor = '#f59e0b';
-                    } else {
-                        passwordStrength.style.backgroundColor = '#10b981';
-                    }
-                }
-            });
-
-            // Confirm password checker
-            confirmPassword.addEventListener('input', function() {
-                if (confirmPassword.value === password.value && password.value.length > 0) {
-                    passwordMatch.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-1"></i><span class="text-green-600">Passwords match</span>';
-                    passwordMatch.className = 'password-match text-xs mt-1 flex items-center';
-                    passwordMatch.style.display = 'flex';
-                } else if (password.value.length > 0 && confirmPassword.value.length > 0) {
-                    passwordMatch.innerHTML = '<i class="fas fa-times-circle text-red-500 mr-1"></i><span class="text-red-600">Passwords do not match</span>';
-                    passwordMatch.className = 'password-match text-xs mt-1 flex items-center';
-                    passwordMatch.style.display = 'flex';
-                } else {
-                    passwordMatch.style.display = 'none';
-                }
-            });
-
-            // Show/hide password requirements
-            password.addEventListener('focus', function() {
-                passwordRequirements.classList.remove('hidden');
-            });
-
-            password.addEventListener('input', function() {
-                if (password.value.length > 0) {
-                    passwordRequirements.classList.remove('hidden');
-                    passwordRequirements.style.display = 'block';
-                } else {
-                    passwordRequirements.classList.add('hidden');
-                }
-            });
-
-            password.addEventListener('blur', function() {
-                if (password.value.length === 0) {
-                    setTimeout(() => {
-                        passwordRequirements.classList.add('hidden');
-                    }, 300);
-                }
-            });
-
-            // Form submission
-            document.querySelector('form').addEventListener('submit', function(e) {
-                const value = password.value;
-                const requirements = {
-                    length: value.length >= 8,
-                    uppercase: /[A-Z]/.test(value),
-                    lowercase: /[a-z]/.test(value),
-                    number: /[0-9]/.test(value),
-                    special: /[^A-Za-z0-9]/.test(value)
-                };
-
-                const strength = Object.values(requirements).filter(met => met).length;
-                if (strength < 3) {
-                    alert('Please ensure your password meets all requirements (at least 3 of 5 requirements).');
-                    e.preventDefault();
-                    return;
-                }
-
-                if (confirmPassword.value !== password.value) {
-                    alert('Passwords do not match.');
-                    e.preventDefault();
-                    return;
-                }
-
-                if (!document.getElementById('terms').checked) {
-                    alert('You must agree to the terms and conditions.');
-                    e.preventDefault();
-                    return;
-                }
-
-                // Show loading state
-                const registerButton = document.getElementById('registerButton');
-                const originalContent = registerButton.innerHTML;
-                registerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
-                registerButton.disabled = true;
-
-                setTimeout(() => {
-                    if (registerButton.disabled) {
-                        registerButton.innerHTML = originalContent;
-                        registerButton.disabled = false;
-                    }
-                }, 5000);
-            });
-        });
-    </script>
-
+    <!-- Inline critical CSS -->
     <style>
-        .crimson-500 {
-            color: #DC143C;
-        }
-
-        .crimson-600 {
-            color: #b01030;
-        }
-
-        .bg-crimson-500 {
-            background-color: #DC143C;
-        }
-
-        .bg-crimson-600 {
-            background-color: #b01030;
-        }
-
         .text-crimson-600 {
             color: #DC143C;
         }
@@ -481,43 +27,491 @@
         .accent-crimson-600 {
             accent-color: #DC143C;
         }
-
-        .password-strength {
-            height: 4px;
-            border-radius: 2px;
-            background: #e5e7eb;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .strength-fill {
-            height: 100%;
-            width: 0%;
-            transition: all 0.3s ease;
-            border-radius: 2px;
-        }
-
-        .requirement-item {
-            display: flex;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .requirement-valid {
-            color: #10b981;
-        }
-
-        .requirement-invalid {
-            color: #6b7280;
-        }
-
-        /* Ensure proper focus states */
-        input:focus + span {
-            top: 0 !important;
-            font-size: 0.75rem !important;
-            color: #10b981 !important;
-            transform: translateY(-50%) !important;
-        }
     </style>
+
+    <!-- Deferred non-critical styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+
+    <!-- Async scripts -->
+    <script src="https://cdn.tailwindcss.com" async></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <!-- Loading skeleton for initial paint -->
+    <div id="loadingSkeleton" class="fixed inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+            <div class="text-center mb-6">
+                <div class="h-8 bg-gray-200 rounded animate-pulse w-48 mx-auto mb-2"></div>
+            </div>
+            <div class="space-y-4">
+                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
+                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
+                    <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
+                </div>
+                <div class="h-32 bg-gray-200 rounded-xl animate-pulse"></div>
+                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Go Back Button -->
+    <a href="/" class="fixed left-4 top-4 z-50 flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-lg border border-gray-200 text-crimson-600 hover:bg-crimson-600 hover:text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 font-semibold text-sm hidden" id="backButton">
+        <i class="fas fa-arrow-left text-xs"></i>
+        <span>Home</span>
+    </a>
+
+    <!-- Register Card -->
+    <div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 backdrop-blur-sm hidden" id="registerCard">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                Create an Account
+            </h1>
+        </div>
+
+        <form asp-action="Register" method="post" enctype="multipart/form-data" class="space-y-6" id="registerForm">
+
+            <!-- Validation Summary -->
+            <div asp-validation-summary="All"
+                 id="validationSummary"
+                 class="hidden bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm transition-opacity duration-300">
+            </div>
+
+            <!-- Username & Email -->
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Username</label>
+                    <input asp-for="Username" type="text" placeholder="Enter your username" required
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all duration-200 bg-white" />
+                    <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Email Address</label>
+                    <input asp-for="Email" type="email" placeholder="you@example.com" required
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all duration-200 bg-white" />
+                    <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
+                </div>
+            </div>
+
+            <!-- Password & Confirm Password -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Password -->
+                <div class="relative">
+                    <label for="Password" class="block text-sm font-semibold text-gray-700">Password</label>
+                    <input asp-for="Password" type="password" id="password" required
+                           placeholder="Enter your password"
+                           class="w-full mt-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all duration-200" />
+                    <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
+
+                    <!-- Tooltip -->
+                    <div id="passwordTooltip"
+                         class="hidden absolute left-0 top-full mt-2 w-full md:w-72 bg-white border border-gray-300 rounded-xl shadow-lg p-4 text-sm z-20 transition-all duration-300">
+                        <p class="font-semibold mb-2 text-gray-800">Password must:</p>
+                        <ul class="space-y-1 text-gray-700">
+                            <li id="rule-lowercase" class="flex items-center gap-2">
+                                <i class="fas fa-circle text-red-500 text-xs"></i> At least one lowercase letter
+                            </li>
+                            <li id="rule-uppercase" class="flex items-center gap-2">
+                                <i class="fas fa-circle text-red-500 text-xs"></i> At least one uppercase letter
+                            </li>
+                            <li id="rule-number" class="flex items-center gap-2">
+                                <i class="fas fa-circle text-red-500 text-xs"></i> At least one number
+                            </li>
+                            <li id="rule-symbol" class="flex items-center gap-2">
+                                <i class="fas fa-circle text-red-500 text-xs"></i> At least one symbol
+                            </li>
+                            <li id="rule-length" class="flex items-center gap-2">
+                                <i class="fas fa-circle text-red-500 text-xs"></i> Minimum 8 characters
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="relative">
+                    <label for="confirmPassword" class="block text-sm font-semibold text-gray-700">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="ConfirmPassword" required
+                           placeholder="Re-enter your password"
+                           class="w-full mt-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all duration-200" />
+                    <div id="passwordMatch" class="mt-2 text-sm hidden transition-all duration-300"></div>
+                    <div id="confirmPasswordError" class="text-red-500 text-xs mt-1 hidden"></div>
+                </div>
+            </div>
+
+            <!-- reCAPTCHA -->
+            <div class="flex justify-center bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div class="g-recaptcha scale-90 sm:scale-100"
+                     data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
+            </div>
+
+            <!-- Terms -->
+            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <input type="checkbox" id="terms" name="terms" class="mt-1 accent-blue-600 scale-110" required>
+                <label for="terms" class="text-xs lg:text-sm text-gray-700 flex-1">
+                    I agree to the
+                    <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200"
+                       data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitButton"
+                    class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                <span class="flex items-center justify-center gap-2">
+                    <span>Sign Up</span>
+                    <i class="fas fa-arrow-right"></i>
+                </span>
+            </button>
+
+            <!-- Redirect -->
+            <div class="text-center">
+                <p class="text-gray-500 text-sm">
+                    Already have an account?
+                    <a href="/Login" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">Sign in</a>
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header -->
+                <div class="modal-header bg-gradient-to-r from-rose-400 to-rose-500 text-white py-3 px-4">
+                    <h5 class="modal-title font-semibold text-lg tracking-wide flex items-center gap-2" id="termsModalLabel">
+                        <i class="fas fa-file-contract text-white text-xl"></i>
+                        Lingap Terms & Privacy Policy
+                    </h5>
+                </div>
+                <div class="modal-body bg-rose-50 text-gray-800 leading-relaxed">
+                    <div class="space-y-4">
+                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
+                            <i class="fas fa-handshake text-rose-500"></i> 1. Acceptance of Terms
+                        </h6>
+                        <p>By signing up for Lingap, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.</p>
+                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
+                            <i class="fas fa-shield-alt text-rose-500"></i> 2. Data Privacy & Protection
+                        </h6>
+                        <p>Lingap complies with the <strong>Data Privacy Act of 2012 (RA 10173)</strong> and ensures responsible handling of your personal data with the highest level of security and care.</p>
+                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
+                            <i class="fas fa-database text-rose-500"></i> 3. Purpose of Data Collection
+                        </h6>
+                        <ul class="list-disc ps-5 text-gray-700 space-y-1">
+                            <li>Eligibility verification for Lingap programs</li>
+                            <li>Contact and follow-up regarding assistance</li>
+                            <li>Partner validation as necessary</li>
+                        </ul>
+                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
+                            <i class="fas fa-user-check text-rose-500"></i> 4. Account Integrity
+                        </h6>
+                        <p>Each individual is allowed <strong>only one account</strong>. Creating multiple or falsified accounts may result in disqualification and suspension of access.</p>
+                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
+                            <i class="fas fa-sync text-rose-500"></i> 5. Changes to Terms
+                        </h6>
+                        <p>Lingap reserves the right to modify these Terms at any time. All updates will be posted publicly, and continued use signifies acceptance of the latest terms.</p>
+                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
+                            <i class="fas fa-envelope-open-text text-rose-500"></i> 6. Questions or Concerns
+                        </h6>
+                        <p>
+                            For inquiries, you may reach out to our support team at
+                            <a href="mailto:support@lingap.org" class="text-rose-600 font-semibold hover:underline">support@lingap.org</a>.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-rose-100 border-0">
+                    <small class="text-gray-600 me-auto">Last updated: May 2025</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                <div class="modal-body p-6 text-center">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">You are now registered</h3>
+                    <p class="text-gray-600 mb-6">Welcome to our community! You'll be redirected shortly.</p>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p class="text-sm text-gray-600 mb-2">Redirecting to login page in:</p>
+                        <div class="text-2xl font-bold text-green-600" id="countdown">5</div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div id="countdownBar" class="bg-green-600 h-2 rounded-full transition-all duration-1000" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deferred JavaScript -->
+    <script>
+        // Minimal initial loader
+        function initPage() {
+            // Hide loading skeleton and show content
+            const loadingSkeleton = document.getElementById('loadingSkeleton');
+            const registerCard = document.getElementById('registerCard');
+            const backButton = document.getElementById('backButton');
+
+            if (loadingSkeleton && registerCard && backButton) {
+                loadingSkeleton.classList.add('hidden');
+                registerCard.classList.remove('hidden');
+                backButton.classList.remove('hidden');
+
+                // Initialize validation visibility
+                const validationSummary = document.getElementById('validationSummary');
+                if (validationSummary && validationSummary.innerText.trim() !== "") {
+                    validationSummary.classList.remove('hidden', 'opacity-0');
+                    validationSummary.classList.add('opacity-100');
+                }
+            }
+
+            // Load Bootstrap async
+            loadBootstrap();
+        }
+
+        function loadBootstrap() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+            script.onload = initializeApp;
+            document.head.appendChild(script);
+        }
+
+        function initializeApp() {
+            // Check for success modal
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('registration') === 'success') {
+                showSuccessModal();
+            }
+
+            // Initialize form functionality
+            initializeFormFunctionality();
+        }
+
+        function showSuccessModal() {
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+
+            let seconds = 5;
+            const countdownElement = document.getElementById('countdown');
+            const countdownBar = document.getElementById('countdownBar');
+
+            const countdown = setInterval(function() {
+                seconds--;
+                countdownElement.textContent = seconds;
+                countdownBar.style.width = (seconds * 20) + '%';
+
+                if (seconds <= 0) {
+                    clearInterval(countdown);
+                    window.location.href = '/Login';
+                }
+            }, 1000);
+        }
+
+        // Optimized form functionality
+        function initializeFormFunctionality() {
+            const form = document.getElementById('registerForm');
+            const passwordInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirmPassword');
+
+            if (!form || !passwordInput || !confirmInput) return;
+
+            // Password validation rules
+            const rules = {
+                lowercase: /[a-z]/,
+                uppercase: /[A-Z]/,
+                number: /[0-9]/,
+                symbol: /[^A-Za-z0-9]/,
+                length: /.{8,}/
+            };
+
+            // Debounced validation
+            let typingTimer;
+            const doneTypingInterval = 300;
+
+            function validatePasswordMatch() {
+                const password = passwordInput.value;
+                const confirmPassword = confirmInput.value;
+                const matchIndicator = document.getElementById('passwordMatch');
+                const confirmError = document.getElementById('confirmPasswordError');
+
+                if (!matchIndicator || !confirmError) return;
+
+                // Reset styles
+                confirmInput.classList.remove('border-red-500', 'border-green-500');
+                matchIndicator.classList.add('hidden');
+                confirmError.classList.add('hidden');
+
+                if (confirmPassword === '') return true;
+
+                if (password === confirmPassword) {
+                    confirmInput.classList.add('border-green-500');
+                    matchIndicator.classList.remove('hidden');
+                    matchIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> <span class="text-green-600 font-medium">Passwords match</span>';
+                    return true;
+                } else {
+                    confirmInput.classList.add('border-red-500');
+                    matchIndicator.classList.remove('hidden');
+                    matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Passwords do not match</span>';
+                    confirmError.classList.remove('hidden');
+                    confirmError.innerHTML = 'Passwords do not match. Please ensure both passwords are identical.';
+                    return false;
+                }
+            }
+
+            function validatePasswordRequirements() {
+                const val = passwordInput.value;
+                const tooltip = document.getElementById('passwordTooltip');
+                if (!tooltip) return;
+
+                const checks = {
+                    lowercase: rules.lowercase.test(val),
+                    uppercase: rules.uppercase.test(val),
+                    number: rules.number.test(val),
+                    symbol: rules.symbol.test(val),
+                    length: rules.length.test(val)
+                };
+
+                // Update requirement indicators
+                Object.entries(checks).forEach(([key, passed]) => {
+                    const el = document.getElementById(`rule-${key}`);
+                    if (!el) return;
+                    const icon = el.querySelector("i");
+                    if (passed) {
+                        icon.classList.replace("text-red-500", "text-green-500");
+                        el.classList.add("text-green-600", "font-medium");
+                    } else {
+                        icon.classList.replace("text-green-500", "text-red-500");
+                        el.classList.remove("text-green-600", "font-medium");
+                    }
+                });
+
+                const allPassed = Object.values(checks).every(Boolean);
+
+                // Auto-hide tooltip if all requirements are met
+                if (allPassed) {
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(() => {
+                        tooltip.classList.add("opacity-0");
+                        setTimeout(() => tooltip.classList.add("hidden"), 300);
+                    }, doneTypingInterval);
+                }
+            }
+
+            // Event listeners with debouncing
+            passwordInput.addEventListener('input', () => {
+                clearTimeout(typingTimer);
+                validatePasswordRequirements();
+                if (confirmInput.value) validatePasswordMatch();
+            });
+
+            confirmInput.addEventListener('input', () => {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(validatePasswordMatch, doneTypingInterval);
+            });
+
+            // Tooltip functionality
+            passwordInput.addEventListener('focus', () => {
+                const tooltip = document.getElementById('passwordTooltip');
+                if (tooltip) {
+                    tooltip.classList.remove("hidden", "opacity-0");
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                const tooltip = document.getElementById('passwordTooltip');
+                if (tooltip && !passwordInput.contains(e.target) && !tooltip.contains(e.target)) {
+                    tooltip.classList.add("opacity-0");
+                    setTimeout(() => tooltip.classList.add("hidden"), 300);
+                }
+            });
+
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Quick validation before fetch
+                const recaptchaResponse = grecaptcha.getResponse();
+                if (!recaptchaResponse) {
+                    alert('Please complete the reCAPTCHA');
+                    return;
+                }
+
+                if (passwordInput.value !== confirmInput.value) {
+                    confirmInput.focus();
+                    alert('Please ensure both passwords match before submitting.');
+                    return;
+                }
+
+                const termsCheckbox = document.getElementById('terms');
+                if (!termsCheckbox?.checked) {
+                    alert('Please agree to the terms and conditions');
+                    return;
+                }
+
+                // Submit form
+                const submitButton = document.getElementById('submitButton');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                }
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        if (response.url.includes('success') || response.url.includes('Login')) {
+                            showSuccessModal();
+                        } else {
+                            window.location.href = response.url;
+                        }
+                    } else {
+                        return response.text().then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const newForm = doc.getElementById('registerForm');
+                            if (newForm) {
+                                form.innerHTML = newForm.innerHTML;
+                                setTimeout(initializeFormFunctionality, 50);
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred during registration. Please try again.');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<span class="flex items-center justify-center gap-2"><span>Sign Up</span><i class="fas fa-arrow-right"></i></span>';
+                    }
+                });
+            });
+
+            // Initialize any existing values
+            if (passwordInput.value) validatePasswordRequirements();
+            if (confirmInput.value) validatePasswordMatch();
+        }
+
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPage);
+        } else {
+            initPage();
+        }
+    </script>
 </body>
 </html>
