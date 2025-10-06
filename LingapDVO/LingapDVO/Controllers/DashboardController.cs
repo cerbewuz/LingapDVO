@@ -61,16 +61,15 @@ namespace LingapDVO.Controllers
             {
                 // ✅ Convert session UserId (string) → int
                 int.TryParse(userIdString, out userId);
-
-                ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+                ViewBag.Username = HttpContext.Session.GetString("Username");
                 ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
             }
             else if (isAuthenticated)
             {
-                string firstname = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
+                string username = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
                                    ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
                                    ?? "User";
-                ViewBag.Firstname = firstname;
+                ViewBag.Username = username; 
                 ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
             }
 
