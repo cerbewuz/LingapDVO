@@ -567,23 +567,82 @@ namespace LingapDVO.Controllers
             return View(viewModel);
         }
 
+        // ====================================
+        // COMPLETE HOSPITAL BILL CONTROLLER - FIXED VERSION
+        // ====================================
+
+        // 1. DECRYPTION HELPER METHOD
+        private byte[] DecryptFile(string encryptedFilePath, string masterPassword)
+        {
+            byte[] encryptedData = System.IO.File.ReadAllBytes(encryptedFilePath);
+            using var memoryStream = new MemoryStream(encryptedData);
+
+            byte[] salt = new byte[16];
+            memoryStream.Read(salt, 0, salt.Length);
+
+            using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+            byte[] key = pbkdf2.GetBytes(32);
+
+            byte[] iv = new byte[16];
+            memoryStream.Read(iv, 0, iv.Length);
+
+            using var aes = Aes.Create();
+            aes.Key = key;
+            aes.IV = iv;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+
+            using var decryptedStream = new MemoryStream();
+            using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
+            {
+                cryptoStream.CopyTo(decryptedStream);
+            }
+
+            return decryptedStream.ToArray();
+        }
+
+        // PDF DETECTION HELPER METHOD
+        private bool IsPdfFile(byte[] data)
+        {
+            try
+            {
+                // Check PDF magic number (%PDF)
+                if (data.Length >= 4 && data[0] == 0x25 && data[1] == 0x50 && data[2] == 0x44 && data[3] == 0x46)
+                    return true;
+
+                // Also check for PDF in text (case insensitive)
+                if (data.Length >= 1000)
+                {
+                    string beginning = Encoding.UTF8.GetString(data, 0, Math.Min(1000, data.Length));
+                    if (beginning.Contains("%PDF") || beginning.Contains("%pdf"))
+                        return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // 2. MAIN VIEW METHOD - WITH PROPER PDF DETECTION
         public IActionResult FillupformHospitalBillUpdateprocessingstatus(int id)
         {
-
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
+
+
             var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
-
-
             if (fillupformhospitalBill == null)
             {
                 return NotFound();
             }
 
-            // Add all form field values to ViewData
+            // Basic ViewData setup
             ViewData["Status"] = fillupformhospitalBill.Status;
             ViewData["Id"] = fillupformhospitalBill.Id;
             ViewData["Lastname"] = fillupformhospitalBill.Lastname;
@@ -612,44 +671,330 @@ namespace LingapDVO.Controllers
             ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
             ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
 
-            // Type of assistance and CMO details
+            // Type of assistance
             var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
-
-            // Parse checkbox values into a Dictionary<string, string>
             var parsed = typeAssistanceRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
 
-            ViewData["CheckedAssistance"] = parsed; // Pass dictionary to the view
-
-
-            // ForCMOPERSONNEL handling
+            // CMO Personnel
             var cmoPersonnelRaw = fillupformhospitalBill.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
-
             var parsedCMO = cmoPersonnelRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
-
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
+            // ====================================
+            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // ====================================
+            string masterPassword = "SuperAdminMasterKey123!";
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, fillupformhospitalBill.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, fillupformhospitalBill.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, fillupformhospitalBill.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {fillupformhospitalBill.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, fillupformhospitalBill.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {fillupformhospitalBill.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
             ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
             ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
-
-            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
-            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
-
             ViewData["Comments"] = fillupformhospitalBill.Comments;
-
 
             return View();
         }
 
+        // 3. DOWNLOAD METHOD - IMPROVED CONTENT TYPE DETECTION
+        [HttpGet]
+        public IActionResult DownloadDecryptedImage(string fileName, string fileType = "validid")
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            string masterPassword = "SuperAdminMasterKey123!";
+            string folder;
+
+            switch (fileType.ToLower())
+            {
+                case "doctorprescription":
+                    folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+                    break;
+                case "deathcertificate":
+                    folder = Path.Combine(environment.WebRootPath, "Funeralimg");
+                    break;
+                default:
+                    folder = Path.Combine(environment.WebRootPath, "Validimg");
+                    break;
+            }
+
+            string filePath = Path.Combine(folder, fileName);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                byte[] decryptedData = DecryptFile(filePath, masterPassword);
+                string downloadName = fileName.Replace(".enc", "");
+
+                // ⭐ IMPROVED CONTENT TYPE DETECTION
+                string contentType;
+                if (IsPdfFile(decryptedData))
+                {
+                    contentType = "application/pdf";
+                    // Ensure download name has .pdf extension
+                    if (!downloadName.ToLower().EndsWith(".pdf"))
+                        downloadName += ".pdf";
+                }
+                else
+                {
+                    // Fallback to file extension detection for images
+                    contentType = fileName.ToLower().Contains(".png") ? "image/png" :
+                                 fileName.ToLower().Contains(".jpg") || fileName.ToLower().Contains(".jpeg") ? "image/jpeg" :
+                                 "application/octet-stream";
+                }
+
+                return File(decryptedData, contentType, downloadName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Decryption failed: " + ex.Message);
+            }
+        }
+
+        // 4. VIEW PDF METHOD - FIXED PATH ISSUE
+        [HttpGet]
+        public IActionResult ViewPDF(string fileName, string fileType)
+        {
+            try
+            {
+                Console.WriteLine($"🔍 ViewPDF called - FileName: {fileName}, FileType: {fileType}");
+
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    Console.WriteLine("❌ FileName is null or empty");
+                    return BadRequest("FileName is required");
+                }
+
+                if (string.IsNullOrEmpty(fileType))
+                {
+                    Console.WriteLine("❌ FileType is null or empty");
+                    return BadRequest("FileType is required");
+                }
+
+                // Define the directory based on file type
+                string folderPath = fileType.ToLower() switch
+                {
+                    "doctorprescription" => Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage"),
+                    "deathcertificate" => Path.Combine(environment.WebRootPath, "Funeralimg"),
+                    _ => Path.Combine(environment.WebRootPath, "Validimg")
+                };
+
+                Console.WriteLine($"📁 Folder path: {folderPath}");
+
+                string encryptedFilePath = Path.Combine(folderPath, fileName);
+                Console.WriteLine($"📄 Full file path: {encryptedFilePath}");
+
+                // Check if file exists
+                if (!System.IO.File.Exists(encryptedFilePath))
+                {
+                    Console.WriteLine($"❌ File does not exist: {encryptedFilePath}");
+                    return NotFound($"File not found: {fileName}");
+                }
+
+                Console.WriteLine($"✅ File exists. Size: {new FileInfo(encryptedFilePath).Length} bytes");
+
+                // Decrypt the file
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] decryptedBytes = DecryptFile(encryptedFilePath, masterPassword);
+                Console.WriteLine($"✅ File decrypted. Decrypted size: {decryptedBytes.Length} bytes");
+
+                // Check if it's a PDF
+                bool isPdf = IsPdfFile(decryptedBytes);
+                Console.WriteLine($"📊 Is PDF: {isPdf}");
+
+                // Always return as PDF for now
+                string downloadName = Path.GetFileNameWithoutExtension(fileName) + ".pdf";
+                Console.WriteLine($"📤 Returning file as: {downloadName}");
+
+                return File(decryptedBytes, "application/pdf", downloadName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"💥 ERROR in ViewPDF: {ex.Message}");
+                Console.WriteLine($"💥 Stack Trace: {ex.StackTrace}");
+                return BadRequest($"Error: {ex.Message}");
+            }
+        }
 
 
+
+        // 5. QUICK PDF CHECK METHOD (Optional helper)
+        [HttpGet]
+        public IActionResult CheckFileType(string fileName, string fileType = "validid")
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return Unauthorized();
+            }
+
+            string masterPassword = "SuperAdminMasterKey123!";
+            string folder;
+
+            switch (fileType.ToLower())
+            {
+                case "doctorprescription":
+                    folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+                    break;
+                case "deathcertificate":
+                    folder = Path.Combine(environment.WebRootPath, "Funeralimg");
+                    break;
+                default:
+                    folder = Path.Combine(environment.WebRootPath, "Validimg");
+                    break;
+            }
+
+            string filePath = Path.Combine(folder, fileName);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return Json(new { exists = false, isPdf = false });
+            }
+
+            try
+            {
+                byte[] decryptedData = DecryptFile(filePath, masterPassword);
+                bool isPdf = IsPdfFile(decryptedData);
+
+                return Json(new
+                {
+                    exists = true,
+                    isPdf = isPdf,
+                    fileSize = decryptedData.Length
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { exists = true, isPdf = false, error = ex.Message });
+            }
+        }
         [HttpPost]
         public IActionResult FillupformHospitalBillUpdateprocessingstatus(int id, FillupformHospitalBillDto fillupformHospitalbilldto)
         {

@@ -4,14 +4,13 @@
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
-
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Request Assistance - Receipt View</title>
+    <title>Hospital Bill Application - Receipt View</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -148,52 +147,152 @@
                 color: white;
             }
 
-        .document-previews {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1rem;
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
         }
 
-        .document-preview {
-            width: 150px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            overflow: hidden;
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+        }
+
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .zoom-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .close-zoom {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
             cursor: pointer;
         }
 
-            .document-preview img {
-                width: 100%;
-                height: 100px;
-                object-fit: cover;
-            }
-
-        .document-name {
-            padding: 0.5rem;
-            text-align: center;
-            font-size: 0.8rem;
-            background: var(--light-gray);
+        .id-image-container {
+            cursor: pointer;
+            transition: transform 0.2s;
         }
 
-        .crm-notes {
+            .id-image-container:hover {
+                transform: scale(1.02);
+            }
+
+        .id-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
             background-color: #f8f9fa;
-            border-left: 4px solid var(--primary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .pdf-container {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pdf-preview {
+            display: flex;
+            align-items: center;
             padding: 1rem;
-            margin-top: 1rem;
-            font-style: italic;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+            .pdf-preview:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+                transform: translateY(-2px);
+            }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: #dc143c;
+            margin-right: 1rem;
+        }
+
+        .pdf-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-filename {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .pdf-label {
+            font-size: 0.9rem;
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
+    <div id="zoomModal" class="zoom-modal">
+        <span class="close-zoom">&times;</span>
+        <img class="zoom-modal-content" id="zoomedImage">
+    </div>
+
     <div class="receipt-container">
         <form asp-action="FillupformHospitalBillUpdateprocessingstatus" enctype="multipart/form-data" method="post">
             <div class="receipt-header">
-                <h3>Request Assistance Receipt</h3>
-                <p class="mb-0">RAF No: <strong>@ViewData["Id"]</strong></p>
+                <h3>Hospital Bill Application Details</h3>
+                <p class="mb-0">Application ID: <strong>@ViewData["Id"]</strong></p>
             </div>
 
             <div class="receipt-body">
+                @if (ViewData["DecryptionError"] != null)
+                {
+                    <div class="alert alert-danger">
+                        @ViewData["DecryptionError"]
+                    </div>
+                }
+
+                <!-- DEBUG SECTION - Remove this after testing -->
+                @if (ViewData["DebugMessages"] != null)
+                {
+                    <div class="alert alert-info">
+                        <strong>🔍 Debug Information:</strong>
+                        <ul style="margin-bottom: 0; margin-top: 10px;">
+                            @foreach (var message in (List<string>)ViewData["DebugMessages"])
+                            {
+                                <li>@message</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
                 <!-- Status Section -->
                 <div class="receipt-section">
                     <div class="d-flex justify-content-between align-items-center">
@@ -218,30 +317,129 @@
                     </div>
                 </div>
 
-                <!-- Patient Details -->
+                <!-- Patient Information -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Patient's Details</h5>
-                    <div class="info-row">
-                        <div class="info-label">Full Name:</div>
-                        <div class="info-value">@ViewData["Lastname"], @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Suffix"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Address:</div>
-                        <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Sex:</div>
-                        <div class="info-value">@ViewData["Sex"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Date of Birth:</div>
-                        <div class="info-value">@ViewData["Dateofbirth"] (Age: @ViewData["Age"])</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">PhilHealth:</div>
-                        <div class="info-value">@ViewData["PhilHealth"] @(ViewData["PhilHealthNo"] != null ? $"({ViewData["PhilHealthNo"]})" : "")</div>
+                    <h5 class="section-title">Patient Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Name:</div>
+                                <div class="info-value">@ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"] @ViewData["Suffix"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Address:</div>
+                                <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Sex:</div>
+                                <div class="info-value">@ViewData["Sex"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Date of Birth:</div>
+                                <div class="info-value">@ViewData["Dateofbirth"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Age:</div>
+                                <div class="info-value">@ViewData["Age"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">PhilHealth:</div>
+                                <div class="info-value">@ViewData["PhilHealth"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">PhilHealth No:</div>
+                                <div class="info-value">@ViewData["PhilHealthNo"]</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Valid ID Section -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Valid ID</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Front ID</h6>
+                            @if (ViewData["ValidfrontimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No front ID image available</p>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Back ID</h6>
+                            @if (ViewData["ValidBackimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No back ID image available</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Prescription -->
+                @if (ViewData["DoctorPrescriptionBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Doctor Prescription</h5>
+                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDF('@ViewData["DoctorPrescription"]', 'doctorprescription')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-label">Click to view PDF in new tab</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Death Certificate - Single Section -->
+                @if (ViewData["DeathCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Death Certificate</h5>
+                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDF('@ViewData["DeathCertificate"]', 'deathcertificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF in new tab</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
 
                 <!-- Requestor Details -->
                 <div class="receipt-section">
@@ -277,151 +475,85 @@
                         <div class="info-label">Processed By:</div>
                         <div class="info-value">@(Context.Session.GetString("AdminFullname") ?? "Admin")</div>
                     </div>
-                    <!-- CRM Notes Section -->
-                    <div class="mt-5">
-                        <h5 class="section-header">FOR CMO PERSONNEL USE ONLY</h5>
-
+                    <div class="mt-3">
+                        <h6 class="section-title">FOR CMO PERSONNEL USE ONLY</h6>
                         <div class="row g-3 mt-2">
                             <div class="col-md-6">
                                 <label class="form-label">Bill Amount:</label>
-                                <input type="text" class="form-control" id="billAmountInput" name="BillAmount"
-                                       value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
+                                <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
                             </div>
                         </div>
-
-
-
                         <div class="mt-3">
                             <label class="form-label">Supporting Documents Attached:</label>
                             <div class="row g-3 mt-1">
-
                                 <div class="col-md-6">
                                     <div class="form-check">
-                                        <input class="form-check-input supporting-doc" type="checkbox"
-                                               id="barangayClearance" name="SupportingDocs" value="Barangay Clearance"
-                                               @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
                                         <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input supporting-doc" type="checkbox"
-                                               id="hospitalBill" name="SupportingDocs" value="Hospital Bill"
-                                               @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="hospitalBill" name="SupportingDocs" value="Hospital Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
                                         <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input supporting-doc" type="checkbox"
-                                               id="medicalCertificate" name="SupportingDocs" value="Medical Certificate"
-                                               @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="medicalCertificate" name="SupportingDocs" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
                                         <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
                                     </div>
                                 </div>
-
                                 <div class="col-md-6">
                                     <div class="form-check">
-                                        <input class="form-check-input supporting-doc" type="checkbox"
-                                               id="funeralBill" name="SupportingDocs" value="Funeral Bill"
-                                               @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "")>
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="funeralBill" name="SupportingDocs" value="Funeral Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "")>
                                         <label class="form-check-label" for="funeralBill">Funeral Bill</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input supporting-doc" type="checkbox"
-                                               id="deathCertificate" name="SupportingDocs" value="Death Certificate"
-                                               @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "")>
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="deathCertificate" name="SupportingDocs" value="Death Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "")>
                                         <label class="form-check-label" for="deathCertificate">Death Certificate</label>
                                     </div>
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input supporting-doc" type="checkbox"
-                                               id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request"
-                                               @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
                                         <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="row g-3 mt-3">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label">Others:</label>
-                                    <input type="text" class="form-control" id="cmoNotesInput"
-                                           placeholder="Enter notes..."
-                                           value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                    <input type="text" class="form-control" id="cmoNotesInput" placeholder="Enter notes..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating position-relative" style="height: 100px;">
-                                    <input asp-for="Processby" type="text"
-                                           class="form-control border rounded p-3 h-100 d-flex align-items-center justify-content-center text-center"
-                                           id="processedBy"
-                                           value="@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")"
-                                           readonly
-                                           style="font-size: 1.2rem;">
+                                    <input asp-for="Processby" type="text" class="form-control border rounded p-3 h-100 d-flex align-items-center justify-content-center text-center" id="processedBy" value="@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")" readonly style="font-size: 1.2rem;">
                                     <span asp-validation-for="Processby" class="text-danger"></span>
                                     <label class="form-label text-center w-100 position-absolute bottom-0 start-0">Processed by:</label>
                                 </div>
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label asp-for="ForCMOPERSONNEL" class="form-label">CMO Reflection info:</label>
-                            <input asp-for="ForCMOPERSONNEL" type="text" class="form-control" id="cmoReflectionField"
-                                   name="ForCMOPERSONNEL" placeholder="Auto-generated info..."
-                                   value="@ViewData["ForCMOPERSONNEL"]">
+                            <input asp-for="ForCMOPERSONNEL" type="text" class="form-control" id="cmoReflectionField" name="ForCMOPERSONNEL" placeholder="Auto-generated info..." value="@ViewData["ForCMOPERSONNEL"]">
                             <span asp-validation-for="ForCMOPERSONNEL" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Documents -->
+                <!-- Comments Section -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Attached Documents</h5>
-                    <div class="document-previews">
-                        @if (ViewData["Validfrontimage"] != null)
-                        {
-                            <div class="document-preview">
-                                <img src="@Url.Content("~/Validimg/" + ViewData["Validfrontimage"])" alt="ID Front">
-                                <div class="document-name">ID Front</div>
-                            </div>
-                        }
-
-                        @if (ViewData["ValidBackimage"] != null)
-                        {
-                            <div class="document-preview">
-                                <img src="@Url.Content("~/Validimg/" + ViewData["ValidBackimage"])" alt="ID Back">
-                                <div class="document-name">ID Back</div>
-                            </div>
-                        }
-
-                        @if (ViewData["DoctorPrescription"] != null)
-                        {
-                            <div class="document-preview">
-                                <img src="@Url.Content("~/DoctorPrescriptionimage/" + ViewData["DoctorPrescription"])" alt="Doctor Prescription">
-                                <div class="document-name">Prescription/Receipt</div>
-                            </div>
-                        }
-
-                        @if (ViewData["DeathCertificate"] != null)
-                        {
-                            <div class="document-preview">
-                                <img src="@Url.Content("~/Funeralimg/" + ViewData["DeathCertificate"])" alt="Funeral Document">
-                                <div class="document-name">Funeral Document</div>
-                            </div>
-                        }
-                    </div>
+                    <label for="idFrontDescription" class="form-label">Description / Comments</label>
+                    <textarea asp-for="Comments" class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
+                    <span asp-validation-for="Comments" class="text-danger"></span>
                 </div>
-                <!-- Description / Comment Section -->
-                <label for="idFrontDescription" class="form-label mt-2">Description / Comments</label>
-                <textarea asp-for="Comments" class="form-control" id="idFrontDescription" rows="8" cols="100" placeholder="Add any notes or comments about this document..."></textarea>
-                <span asp-validation-for="Comments" class="text-danger"></span>
             </div>
 
             <div class="receipt-footer">
                 <div class="edit-field mb-3" style="display: none;">
-                    <button class="btn btn-receipt" onclick="saveChanges()">Save Changes</button>
-                    <button class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
+                    <button type="submit" class="btn btn-receipt">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
                 </div>
                 <div class="view-mode">
-                    <button class="btn btn-receipt" onclick="window.print()">Print Receipt</button>
+                    <button type="button" class="btn btn-receipt" onclick="window.print()">Print Receipt</button>
                     <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
                 </div>
             </div>
@@ -429,120 +561,74 @@
     </div>
 
     <script>
+        // Image Zoom Functionality
+        function zoomImage(src) {
+            const modal = document.getElementById("zoomModal");
+            const modalImg = document.getElementById("zoomedImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        // Close zoom modal
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
+
+        // PDF Viewing Function
+        function viewPDF(fileName, fileType) {
+            // Properly encode the filename for URL
+            const encodedFileName = encodeURIComponent(fileName);
+            const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType;
+            console.log('Opening PDF URL:', url); // For debugging
+            window.open(url, '_blank');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById("zoomModal");
+            if (event.target == modal) modal.style.display = "none";
+        }
+
+        // Edit Mode Toggle
         function toggleEditMode() {
             const receiptBody = document.querySelector('.receipt-body');
             const editFields = document.querySelectorAll('.edit-field');
             const viewMode = document.querySelector('.view-mode');
-
             if (receiptBody.classList.contains('edit-mode')) {
-                // Exit edit mode
                 receiptBody.classList.remove('edit-mode');
                 editFields.forEach(field => field.style.display = 'none');
                 viewMode.style.display = 'block';
             } else {
-                // Enter edit mode
                 receiptBody.classList.add('edit-mode');
                 editFields.forEach(field => field.style.display = 'block');
                 viewMode.style.display = 'none';
             }
         }
 
-        function saveChanges() {
-            // Get updated values
-            const newStatus = document.getElementById('statusUpdate').value;
-            const newNotes = document.getElementById('crmNotesUpdate').value;
-
-            // Here you would typically send these updates to the server via AJAX
-            // For demonstration, we'll just show an alert and update the display
-
-            // Update status display
-            const statusBadge = document.querySelector('.status-badge');
-            statusBadge.className = `status-badge status-${newStatus.toLowerCase()}`;
-            statusBadge.textContent = newStatus;
-
-            // Update CRM notes display
-            const notesDisplay = document.querySelector('.crm-notes .info-value');
-            notesDisplay.textContent = newNotes;
-
-            // Show success message
-            alert('Changes saved successfully!');
-
-            // Exit edit mode
-            toggleEditMode();
-
-            // In a real implementation, you would send the data to the server:
-            /*
-            fetch('/your-update-endpoint', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    status: newStatus,
-                    comments: newNotes,
-                    id: '@ViewData["Id"]'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Handle response
-                alert('Changes saved successfully!');
-                toggleEditMode();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error saving changes.');
-            });
-            */
-        }
-
-        // Make document previews clickable to view larger
-        document.querySelectorAll('.document-preview').forEach(preview => {
-            preview.addEventListener('click', function() {
-                const imgSrc = this.querySelector('img').src;
-                window.open(imgSrc, '_blank');
-            });
-        });
-    </script>
-
-    <script>
-
-
-                 document.addEventListener('DOMContentLoaded', function() {
-            // CMO Single Checkbox Selection
+        // CMO Reflection Auto-generation
+        document.addEventListener('DOMContentLoaded', function() {
             const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-
             cmoCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     if (this.checked) {
-                        // Uncheck all other checkboxes
                         cmoCheckboxes.forEach(cb => {
                             if (cb !== this) cb.checked = false;
                         });
                     }
-                    updateReflection(); // Update the reflection field
+                    updateReflection();
                 });
             });
-        });
-        //1 box only
 
-            document.addEventListener('DOMContentLoaded', function() {
-            // Get all elements
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            const reflectionField = document.getElementById('cmoReflectionField');
-            const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-            // Update reflection function
             function updateReflection() {
-                let parts = [];
+                const billInput = document.getElementById('billAmountInput');
+                const cmoNotes = document.getElementById('cmoNotesInput');
+                const reflectionField = document.getElementById('cmoReflectionField');
+                const docCheckboxes = document.querySelectorAll('.supporting-doc');
 
-                // Add bill amount if exists
+                let parts = [];
                 if (billInput.value.trim()) {
                     parts.push(`Bill: ${billInput.value.trim()}`);
                 }
-
-                // Add checked documents
                 const checkedDocs = [];
                 docCheckboxes.forEach(cb => {
                     if (cb.checked) checkedDocs.push(cb.value);
@@ -550,28 +636,18 @@
                 if (checkedDocs.length) {
                     parts.push(`Docs: ${checkedDocs.join(', ')}`);
                 }
-
-                // Add CMO notes if exists
                 if (cmoNotes.value.trim()) {
                     parts.push(`Others: ${cmoNotes.value.trim()}`);
                 }
-
-                // Update reflection field
                 reflectionField.value = parts.join(' , ');
             }
 
-            // Set up event listeners
-            billInput.addEventListener('input', updateReflection);
-            cmoNotes.addEventListener('input', updateReflection);
-            docCheckboxes.forEach(cb => {
-                cb.addEventListener('change', updateReflection);
-            });
-
-            // Initial update (to reflect any pre-loaded data)
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
             updateReflection();
         });
     </script>
-
-
 </body>
 </html>

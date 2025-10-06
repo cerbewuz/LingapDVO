@@ -8,6 +8,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace LingapDVO.Controllers
@@ -196,15 +198,12 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public IActionResult FillupformHospitalBill(FillupformHospitalBillDto fillupformHospitalbilldto)
         {
-
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
                 // If user is not logged in, redirect to login page
                 return RedirectToAction("Login", "Login");
             }
-
-   
 
             // Get the user's ID filenames from session
             string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
@@ -237,7 +236,7 @@ namespace LingapDVO.Controllers
 
             if (hasPendingForm)
             {
-                ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it’s approved before submitting a new one.");
+                ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it's approved before submitting a new one.");
                 return View(fillupformHospitalbilldto);
             }
 
@@ -266,9 +265,54 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Generate unique filenames only for new uploaded images
-                var timestamp = DateTime.Now;
+                // 🔑 MASTER PASSWORD - Use the same as in Accountverification
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
 
+                // Derive AES key from master password
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32);
+
+                // 🔒 ENCRYPTION FUNCTION
+                byte[] EncryptFile(Stream inputStream)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var memoryStream = new MemoryStream();
+                    memoryStream.Write(salt, 0, salt.Length);
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        inputStream.CopyTo(cryptoStream);
+                    }
+
+                    return memoryStream.ToArray();
+                }
+
+                // 📅 Encrypted Timestamp for unique filenames
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string encryptedTimestamp;
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
+                }
+
+                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+
+                // Generate encrypted filenames
                 string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
 
@@ -279,29 +323,27 @@ namespace LingapDVO.Controllers
                 Directory.CreateDirectory(uploadsFolder1);
                 Directory.CreateDirectory(uploadsFolder2);
 
-                // Save Prescription Image if provided
+                // Encrypt and Save Prescription Image if provided
                 if (fillupformHospitalbilldto.DoctorPrescriptionimage != null)
                 {
-                    newFileNamePrescription = timestamp.ToString("yyyyMMddHHmmssfff") + "_prescription" +
-                                             Path.GetExtension(fillupformHospitalbilldto.DoctorPrescriptionimage.FileName);
-
+                    newFileNamePrescription = safeEncryptedTimestamp + "_prescription.enc";
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
-                    using (var stream = new FileStream(filePathPrescription, FileMode.Create))
+                    using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        fillupformHospitalbilldto.DoctorPrescriptionimage.CopyTo(stream);
+                        byte[] encryptedData = EncryptFile(fillupformHospitalbilldto.DoctorPrescriptionimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
 
-                // Save Death Certificate Image if provided
+                // Encrypt and Save Death Certificate Image if provided
                 if (fillupformHospitalbilldto.DeathCertificateimage != null)
                 {
-                    newFileNameDeathCertificate = timestamp.AddMilliseconds(1).ToString("yyyyMMddHHmmssfff") + "_deathcert" +
-                        Path.GetExtension(fillupformHospitalbilldto.DeathCertificateimage.FileName);
-
+                    newFileNameDeathCertificate = safeEncryptedTimestamp + "_deathcert.enc";
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
-                    using (var stream = new FileStream(filePathDeathCertificate, FileMode.Create))
+                    using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
-                        fillupformHospitalbilldto.DeathCertificateimage.CopyTo(stream);
+                        byte[] encryptedData = EncryptFile(fillupformHospitalbilldto.DeathCertificateimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
 
@@ -341,8 +383,8 @@ namespace LingapDVO.Controllers
                     ForCMOPERSONNEL = fillupformHospitalbilldto.ForCMOPERSONNEL,
 
                     // MODIFIED: Use existing ID images from user account instead of new uploads
-                    Validfrontimage = userFrontID, // Use the FrontID from user account
-                    ValidBackimage = userBackID,   // Use the BackID from user account
+                    Validfrontimage = userFrontID,
+                    ValidBackimage = userBackID,
                     DoctorPrescription = newFileNamePrescription ?? string.Empty,
                     DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
                     Status = "Pending",

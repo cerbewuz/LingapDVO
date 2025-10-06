@@ -4,7 +4,6 @@
 @{
     Layout = null;
     var agentId = Configuration["Dialogflow:AgentId"];
-    bool isVerified = ViewBag.IsVerified ?? false;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -44,7 +43,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -231,6 +229,112 @@
             margin-bottom: 0;
         }
 
+        /* Status Tracking */
+        .status-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .status-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+        }
+
+            .status-header h3 {
+                margin-bottom: 0.5rem;
+                font-weight: 700;
+            }
+
+            .status-header p {
+                margin-bottom: 0;
+                opacity: 0.9;
+            }
+
+        .status-body {
+            padding: 1.5rem;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+            .timeline::before {
+                content: '';
+                position: absolute;
+                left: 15px;
+                top: 0;
+                bottom: 0;
+                width: 2px;
+                background: var(--gray-300);
+            }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+            .timeline-item:last-child {
+                margin-bottom: 0;
+            }
+
+        .timeline-marker {
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            z-index: 1;
+        }
+
+        .timeline-content {
+            background: var(--gray-100);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .timeline-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+            .timeline-title h6 {
+                font-weight: 600;
+                margin-bottom: 0;
+            }
+
+        .timeline-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .timeline-date {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-description {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: 0;
+        }
+
         /* Footer */
         .footer {
             background: var(--secondary);
@@ -272,66 +376,172 @@
                 transform: scale(1.05);
             }
 
-        /* Verification Styles - Minimal additions to preserve design */
-        .service-card.disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            position: relative;
-        }
-
-            .service-card.disabled:hover {
-                transform: none;
-                box-shadow: var(--shadow-sm);
-                border-color: var(--gray-200);
-            }
-
-            .service-card.disabled::before {
-                display: none;
-            }
-
-            .service-card.disabled .service-icon {
-                background: var(--gray-200);
-                color: var(--gray-500);
-            }
-
-            .service-card.disabled:hover .service-icon {
-                background: var(--gray-200);
-                color: var(--gray-500);
-                transform: none;
-            }
-
-        .verification-badge {
+        /* Status Colors */
+        .timeline-marker.submitted {
             background: var(--success);
             color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
         }
 
-        .verification-required {
+        .timeline-marker.processing {
             background: var(--warning);
             color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
         }
 
-        .verification-alert {
+        .timeline-marker.approved {
+            background: var(--success);
+            color: white;
+        }
+
+        .timeline-marker.unapproved {
+            background: var(--primary);
+            color: white;
+        }
+
+        .timeline-badge.approved {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .timeline-badge.unapproved {
+            background: rgba(220, 20, 60, 0.1);
+            color: var(--primary);
+        }
+
+        .waiting-text {
+            color: var(--gray-500);
+            font-style: italic;
+            margin-bottom: 0;
+        }
+
+        .timeline-marker.completed {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .timeline-marker.approved {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .timeline-marker.unapproved {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        /* Individual Tracking Sections */
+        .tracking-section {
             background: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-md);
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--warning);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
+
+        .tracking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .tracking-title {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .view-all-btn {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+            .view-all-btn:hover {
+                background: var(--primary);
+                color: white;
+                text-decoration: none;
+            }
+
+        .file-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--gray-100);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+
+            .file-item:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-sm);
+            }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--secondary);
+        }
+
+        .file-date {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .file-status {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            background-color: #FFF3CD;
+            color: #856404;
+        }
+
+        .status-processing {
+            background-color: #CCE5FF;
+            color: #004085;
+        }
+
+        .status-approved {
+            background-color: #D1E7DD;
+            color: #0F5132;
+        }
+
+        .status-unapproved {
+            background-color: #F8D7DA;
+            color: #721C24;
+        }
+
+        .empty-tracking {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-500);
+        }
+
+            .empty-tracking i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                opacity: 0.5;
+            }
     </style>
 </head>
 <body>
@@ -339,7 +549,26 @@
     <header class="header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="logo mb-0">LingapDVO</h1>
+                <a href="#" class="logo">LingapDVO</a>
+                <div class="user-actions">
+                    <a asp-route="PendingProcessingRequests" class="btn btn-sm btn-link text-primary">
+                        <i class="fas fa-tasks" title="Track Applications"></i>
+                    </a>
+                    <a asp-route="Accountverification" class="btn btn-sm btn-link text-success">
+                        <i class="fas fa-check-circle" title="Verify Status"></i>
+                    </a>
+                    <a asp-route="Uploads" class="btn btn-sm btn-link text-muted">
+                        <i class="fas fa-upload" title="Uploads"></i>
+                    </a>
+                    <a asp-route="Userprofile" class="btn btn-sm btn-link text-muted">
+                        <i class="fas fa-user" title="Profile"></i>
+                    </a>
+                    <form asp-controller="Login" asp-action="Logout" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-link text-danger">
+                            <i class="fas fa-sign-out-alt" title="Logout"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </header>
@@ -347,84 +576,34 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="container">
-            <div class="row">
-                <!-- Full Width Content -->
-                <div class="col-12">
+            <div class="row align-items-stretch">
+                <!-- Left Column -->
+                <div class="col-lg-8">
                     <!-- Greeting Card -->
                     <div class="greeting-card">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <div class="d-flex align-items-center gap-3">
-                                    @if (string.IsNullOrEmpty(ViewBag.Profilepicture))
-                                    {
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-gray-300 text-gray-600" style="width: 60px; height: 60px;">
-                                            <i class="fas fa-user" style="font-size: 1.5rem;"></i>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <img src="~/UsersImg/@ViewBag.Profilepicture" alt="Profile" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
-                                    }
+                                    <img src="~/UsersImg/@ViewBag.Profilepicture" alt="Profile" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
                                     <div>
-                                        <h1 class="lead mb-0">Hello, @ViewBag.Firstname!</h1>
-                                        <div class="mt-1">
-                                            @if (isVerified)
-                                            {
-                                                <span class="verification-badge">
-                                                    <i class="fas fa-check-circle"></i>Verified Account
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="verification-required">
-                                                    <i class="fas fa-exclamation-triangle"></i>Verification Required
-                                                </span>
-                                            }
-                                        </div>
+                                        <h2 class="card-title text-primary mb-2">LingapDVO</h2>
+                                        <p class="lead mb-0">Hello, @ViewBag.Firstname!</p>
                                     </div>
                                 </div>
                             </div>
                             <div class="user-actions">
-                                <!-- Verify Status -->
-                                @if (isVerified)
-                                {
-                                    <span class="btn btn-sm btn-link text-success" style="cursor: not-allowed; opacity: 0.6;">
-                                        <i class="fas fa-check-circle" title="Verified"></i>
-                                    </span>
-                                }
-                                else
-                                {
-                                    <a asp-route="Accountverification" class="btn btn-sm btn-link text-warning">
-                                        <i class="fas fa-exclamation-triangle" title="Complete Verification"></i>
-                                    </a>
-                                }
-
-                                @if (isVerified)
-                                {
-                                    <a asp-route="Uploads" class="btn btn-sm btn-link text-muted">
-                                        <i class="fas fa-upload" title="Uploads"></i>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="btn btn-sm btn-link text-muted" style="cursor: not-allowed; opacity: 0.6;">
-                                        <i class="fas fa-upload" title="Uploads - Verification Required"></i>
-                                    </span>
-                                }
-
-                                @if (isVerified)
-                                {
-                                    <a asp-route="Userprofile" class="btn btn-sm btn-link text-muted">
-                                        <i class="fas fa-user" title="Profile"></i>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="btn btn-sm btn-link text-muted" style="cursor: not-allowed; opacity: 0.6;">
-                                        <i class="fas fa-user" title="Profile - Verification Required"></i>
-                                    </span>
-                                }
-
+                                <a asp-route="PendingProcessingRequests" class="btn btn-sm btn-link text-primary">
+                                    <i class="fas fa-tasks" title="Track Applications"></i>
+                                </a>
+                                <a asp-route="Accountverification" class="btn btn-sm btn-link text-success">
+                                    <i class="fas fa-check-circle" title="Verify Status"></i>
+                                </a>
+                                <a asp-route="Uploads" class="btn btn-sm btn-link text-muted">
+                                    <i class="fas fa-upload" title="Uploads"></i>
+                                </a>
+                                <a asp-route="Userprofile" class="btn btn-sm btn-link text-muted">
+                                    <i class="fas fa-user" title="Profile"></i>
+                                </a>
                                 <form asp-controller="Login" asp-action="Logout" method="post" style="display:inline;">
                                     <button type="submit" class="btn btn-sm btn-link text-danger">
                                         <i class="fas fa-sign-out-alt" title="Logout"></i>
@@ -434,138 +613,258 @@
                         </div>
                     </div>
 
-                    @if (!isVerified)
-                    {
-                        <!-- Verification Alert -->
-                        <div class="verification-alert">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-info-circle text-warning me-3" style="font-size: 1.5rem;"></i>
-                                    <div>
-                                        <strong class="d-block">Account Verification Required</strong>
-                                        <small class="text-muted">Complete verification to access Hospital Bill, Medical Procedures, and Funeral Assistance services.</small>
-                                    </div>
-                                </div>
-                                <a asp-route="Accountverification" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-user-check me-1"></i>Verify Now
-                                </a>
-                            </div>
+                    <!-- Individual Tracking Sections -->
+                    <!-- Hospital Bills Tracking -->
+                    <div class="tracking-section">
+                        <div class="tracking-header">
+                            <h3 class="tracking-title">
+                                <i class="fas fa-hospital me-2"></i>Hospital Bill Applications
+                            </h3>
+                            <a asp-route="PendingProcessingRequests" class="view-all-btn">
+                                View All <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
                         </div>
-                    }
+
+                        @{
+                            var hospitalBills = Model.HospitalBills
+                            .Where(f => f.Status != null)
+                            .OrderByDescending(f => f.CreatedAt)
+                            .Take(3)
+                            .ToList();
+                        }
+
+                        @if (hospitalBills.Any())
+                        {
+                            @foreach (var file in hospitalBills)
+                            {
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <div class="file-name">@file.Lastname @file.Firstname @file.Middlename</div>
+                                        <div class="file-date">Submitted: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</div>
+                                    </div>
+                                    @{
+                                        var statusClass = "file-status ";
+                                        switch (file.Status?.ToLower())
+                                        {
+                                            case "pending":
+                                                statusClass += "status-pending";
+                                                break;
+                                            case "processing":
+                                                statusClass += "status-processing";
+                                                break;
+                                            case "approved":
+                                                statusClass += "status-approved";
+                                                break;
+                                            case "unapproved":
+                                                statusClass += "status-unapproved";
+                                                break;
+                                            default:
+                                                statusClass += "status-pending";
+                                                break;
+                                        }
+                                    }
+                                    <span class="@statusClass">
+                                        <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>@file.Status
+                                    </span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-tracking">
+                                <i class="fas fa-hospital"></i>
+                                <p>No hospital bill applications found</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Medical/Lab Tracking -->
+                    <div class="tracking-section">
+                        <div class="tracking-header">
+                            <h3 class="tracking-title">
+                                <i class="fas fa-microscope me-2"></i>Medical & Lab Applications
+                            </h3>
+                            <a asp-route="PendingProcessingRequests" class="view-all-btn">
+                                View All <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+
+                        @{
+                            var medicalForms = Model.MedicalLabForms
+                            .Where(f => f.Status != null)
+                            .OrderByDescending(f => f.CreatedAt)
+                            .Take(3)
+                            .ToList();
+                        }
+
+                        @if (medicalForms.Any())
+                        {
+                            @foreach (var file in medicalForms)
+                            {
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <div class="file-name">@file.Lastname @file.Firstname @file.Middlename</div>
+                                        <div class="file-date">Submitted: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</div>
+                                    </div>
+                                    @{
+                                        var statusClass = "file-status ";
+                                        switch (file.Status?.ToLower())
+                                        {
+                                            case "pending":
+                                                statusClass += "status-pending";
+                                                break;
+                                            case "processing":
+                                                statusClass += "status-processing";
+                                                break;
+                                            case "approved":
+                                                statusClass += "status-approved";
+                                                break;
+                                            case "unapproved":
+                                                statusClass += "status-unapproved";
+                                                break;
+                                            default:
+                                                statusClass += "status-pending";
+                                                break;
+                                        }
+                                    }
+                                    <span class="@statusClass">
+                                        <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>@file.Status
+                                    </span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-tracking">
+                                <i class="fas fa-microscope"></i>
+                                <p>No medical & lab applications found</p>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Funeral Tracking -->
+                    <div class="tracking-section">
+                        <div class="tracking-header">
+                            <h3 class="tracking-title">
+                                <i class="fas fa-monument me-2"></i>Funeral Applications
+                            </h3>
+                            <a asp-route="PendingProcessingRequests" class="view-all-btn">
+                                View All <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+
+                        @{
+                            var funeralForms = Model.Funeralburialform
+                            .Where(f => f.Status != null)
+                            .OrderByDescending(f => f.CreatedAt)
+                            .Take(3)
+                            .ToList();
+                        }
+
+                        @if (funeralForms.Any())
+                        {
+                            @foreach (var file in funeralForms)
+                            {
+                                <div class="file-item">
+                                    <div class="file-info">
+                                        <div class="file-name">@file.Lastname @file.Firstname @file.Middlename</div>
+                                        <div class="file-date">Submitted: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</div>
+                                    </div>
+                                    @{
+                                        var statusClass = "file-status ";
+                                        switch (file.Status?.ToLower())
+                                        {
+                                            case "pending":
+                                                statusClass += "status-pending";
+                                                break;
+                                            case "processing":
+                                                statusClass += "status-processing";
+                                                break;
+                                            case "approved":
+                                                statusClass += "status-approved";
+                                                break;
+                                            case "unapproved":
+                                                statusClass += "status-unapproved";
+                                                break;
+                                            default:
+                                                statusClass += "status-pending";
+                                                break;
+                                        }
+                                    }
+                                    <span class="@statusClass">
+                                        <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>@file.Status
+                                    </span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-tracking">
+                                <i class="fas fa-monument"></i>
+                                <p>No funeral applications found</p>
+                            </div>
+                        }
+                    </div>
 
                     <!-- Services Section -->
                     <div class="mb-5">
                         <h3 class="section-title">SERVICES OFFERED</h3>
                         <div class="row g-4">
-                            <!-- Service 1 - Hospital Bill Assistance -->
+                            <!-- Service 1 -->
                             <div class="col-md-6 col-lg-4">
-                                @if (isVerified)
-                                {
-                                    <a asp-route="FillupformHospitalBill" class="text-decoration-none">
-                                        <div class="service-card">
-                                            <div class="service-icon">
-                                                <i class="fas fa-hospital"></i>
-                                            </div>
-                                            <h5 class="service-title">Hospital Bill Assistance</h5>
-                                            <p class="service-description">Private hospital bill support and financial aid</p>
-                                        </div>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                <a asp-route="FillupformHospitalBill" class="col-md-6 col-lg-4 text-decoration-none">
+                                    <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-hospital"></i>
                                         </div>
                                         <h5 class="service-title">Hospital Bill Assistance</h5>
                                         <p class="service-description">Private hospital bill support and financial aid</p>
                                     </div>
-                                }
+                                </a>
                             </div>
 
-                            <!-- Service 2 - Medical Procedures -->
+                            <!-- Service 2 -->
                             <div class="col-md-6 col-lg-4">
-                                @if (isVerified)
-                                {
-                                    <a asp-route="Medicalandlabform" class="text-decoration-none">
-                                        <div class="service-card">
-                                            <div class="service-icon">
-                                                <i class="fas fa-microscope"></i>
-                                            </div>
-                                            <h5 class="service-title">Medical Procedures</h5>
-                                            <p class="service-description">Private hospital laboratory procedures</p>
-                                        </div>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                <a asp-route="Medicalandlabform" class="col-md-6 col-lg-4 text-decoration-none">
+                                    <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-microscope"></i>
                                         </div>
                                         <h5 class="service-title">Medical Procedures</h5>
                                         <p class="service-description">Private hospital laboratory procedures</p>
                                     </div>
-                                }
+                                </a>
                             </div>
 
-                            <!-- Service 3 - Funeral Assistance -->
+                            <!-- Service 3 -->
                             <div class="col-md-6 col-lg-4">
-                                @if (isVerified)
-                                {
-                                    <a asp-route="Funeralburialform" class="text-decoration-none">
-                                        <div class="service-card">
-                                            <div class="service-icon">
-                                                <i class="fas fa-monument"></i>
-                                            </div>
-                                            <h5 class="service-title">Funeral Assistance</h5>
-                                            <p class="service-description">Burial and funeral support services</p>
-                                        </div>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                <a asp-route="Funeralburialform" class="col-md-6 col-lg-4 text-decoration-none">
+                                    <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-monument"></i>
                                         </div>
                                         <h5 class="service-title">Funeral Assistance</h5>
                                         <p class="service-description">Burial and funeral support services</p>
                                     </div>
-                                }
+                                </a>
                             </div>
 
-                            <!-- Service 4 - Eligibility Checking (Always Available) -->
+                            <!-- Service 4 -->
                             <div class="col-md-6 col-lg-4">
-
-                                @if (isVerified)
-                                {
-                                    <a asp-route="Eligibilitychecking" class="text-decoration-none">
-                                        <div class="service-card">
-                                            <div class="service-icon">
-                                                <i class="fas fa-check-circle"></i>
-                                            </div>
-                                            <h5 class="service-title">Eligibility Checking</h5>
-                                            <p class="service-description">Verify your eligibility for assistance programs</p>
-                                        </div>
-                                    </a>
-
-                                }
-                                else
-                                {
-                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                <a asp-route="Eligibilitychecking" class="col-md-6 col-lg-4 text-decoration-none">
+                                    <div class="service-card">
                                         <div class="service-icon">
-                                            <i class="fas fa-monument"></i>
+                                            <i class="fas fa-check-circle"></i>
                                         </div>
                                         <h5 class="service-title">Eligibility Checking</h5>
                                         <p class="service-description">Verify your eligibility for assistance programs</p>
                                     </div>
-                                }
+                                </a>
                             </div>
 
-                            <!-- Service 5 - Locate Facilities (Always Available) -->
+                            <!-- Service 5 -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-route="Maps" class="text-decoration-none">
+                                <a asp-route="Maps" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-map-marker-alt"></i>
@@ -576,9 +875,9 @@
                                 </a>
                             </div>
 
-                            <!-- Service 6 - Partner Directory (Always Available) -->
+                            <!-- Service 6 -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-route="Listofpartners" class="text-decoration-none">
+                                <a asp-route="Listofpartners" class="col-md-6 col-lg-4 text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-hands-helping"></i>
@@ -590,6 +889,114 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Right Column - Latest Document -->
+                <div class="col-lg-4">
+                    @if (ViewBag.LatestDoc != null)
+                    {
+                        <div class="status-card"
+                             style="height: 625px;
+                                overflow-y: auto;
+                                padding: 20px;
+                                border: none;
+                                border-radius: 12px;
+                                box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+                                font-weight: 600;">
+
+                            <div class="status-header">
+                                <h3><i class="fas fa-file-alt me-2"></i>Track your most recent application</h3>
+                            </div>
+
+                            <div class="status-body">
+                                @{
+                                    var doc = ViewBag.LatestDoc;
+                                }
+
+                                <!-- Step A: Document Submitted - GREEN -->
+                                <div class="timeline-item">
+                                    <div class="timeline-marker submitted">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>Document Submitted</h6>
+                                        <span class="small text-muted">
+                                            @doc.Data.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                                        </span>
+                                        <p>Your @doc.Type was successfully submitted.</p>
+                                    </div>
+                                </div>
+                                <!-- Step B: Processing - YELLOW or Waiting -->
+                                @if (doc.Data.ProcessAt > DateTime.MinValue && doc.Data.ProcessAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Data.Processby))
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker processing">
+                                            <i class="fas fa-cog"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Processing</h6>
+                                            <span class="small text-muted">
+                                                @doc.Data.ProcessAt?.ToString("dd MMM yyyy, hh:mm tt")
+                                            </span>
+                                            <p>Processed by: <strong>@doc.Data.Processby</strong></p>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker" style="background: #6c757d; color: white;">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Processing</h6>
+                                            <p class="waiting-text">Waiting for staff to process...</p>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Step C: Result - Show Status (Approved/Unapproved) and DateTime from Result field -->
+                                @if (doc.Data.Result > DateTime.MinValue && doc.Data.Result.Year > 1)
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker @(doc.Data.Status2 == "Approved" ? "approved" : "unapproved")">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>@doc.Data.Status</h6>
+                                            <span class="small text-muted">
+                                                @doc.Data.Result.ToString("dd MMM yyyy, hh:mm tt")
+                                            </span>
+                                            <p>Result: <strong>@doc.Data.Status2</strong></p>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker" style="background: #6c757d; color: white;">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Result</h6>
+                                            <p class="waiting-text">Waiting for result...</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Empty state when no documents -->
+                        <div class="status-card" style="height: 625px; display: flex; align-items: center; justify-content: center;">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-file-alt fa-3x mb-3"></i>
+                                <h5>No Recent Documents</h5>
+                                <p class="mb-0">You haven't submitted any applications yet.</p>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -604,13 +1011,5 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-    </script>
 </body>
 </html>
