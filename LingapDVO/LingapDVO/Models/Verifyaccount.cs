@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LingapDVO.Models
 {
+
+    [Index("Phonenumber ", IsUnique = true)]
     public class Verifyaccount
     {
 
@@ -64,6 +67,9 @@ namespace LingapDVO.Models
         public string SecurityQuestions { get; set; } = "";
         [MaxLength(100)]
         public string Securityanswer { get; set; } = "";
+
+        [MaxLength(100)]
+        public string Phonenumber { get; set; } = "";
 
 
 

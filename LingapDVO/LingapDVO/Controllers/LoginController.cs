@@ -311,7 +311,7 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
                             HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                             HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
-          
+                            HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
                             HttpContext.Session.SetString("Email", registerAccUser.Email ?? ""); // From RegisterAcc
          
                             HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
@@ -614,7 +614,8 @@ namespace LingapDVO.Controllers
                     Barangay = VerifyaccountDto.Barangay,
                     District = VerifyaccountDto.District,
                     SecurityQuestions = VerifyaccountDto.SecurityQuestions,
-                    Securityanswer = VerifyaccountDto.Securityanswer,             
+                    Securityanswer = VerifyaccountDto.Securityanswer,
+                    Phonenumber = VerifyaccountDto.Phonenumber,
                 };
 
                 context.Verifyaccount.Add(verifyaccount);
