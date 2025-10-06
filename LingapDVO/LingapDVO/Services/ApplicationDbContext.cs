@@ -23,5 +23,9 @@ namespace LingapDVO.Services
         public DbSet<Superadminaccount> Superadminaccount { get; set; }
 
         public DbSet<Useraccount> Useraccount { get; set; }
+
+        public DbSet<RegisterAcc> RegisterAcc { get; set; }
+
+        public DbSet<Verifyaccount> Verifyaccount { get; set; }
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 
@@ -68,6 +69,7 @@ namespace LingapDVO.Controllers
             // Store in session
             HttpContext.Session.SetString("FacebookEmail", email ?? "");
             HttpContext.Session.SetString("FacebookName", name ?? "");
+            HttpContext.Session.SetString("Username", name ?? "Facebook User");
 
             return RedirectToAction("Homepage", "Dashboard");
         }
@@ -105,6 +107,7 @@ namespace LingapDVO.Controllers
             // Store into session
             HttpContext.Session.SetString("GoogleEmail", email ?? "");
             HttpContext.Session.SetString("GoogleName", name ?? "");
+            HttpContext.Session.SetString("Username", name ?? "Google User");
 
             // Redirect to Homepage/Dashboard
             return RedirectToAction("Homepage", "Dashboard");
@@ -140,7 +143,6 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
         [HttpPost]
         public IActionResult Login(LoginDto loginModel)
         {
@@ -222,7 +224,7 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("Email", superadmin.Email);
                     HttpContext.Session.SetString("IsSuperadmin", "true");
 
-                    return RedirectToAction("Superadmin", "Superadmin");
+                    return Redirect("/Superadmin");
                 }
 
                 // Check if the login is an Admin first
@@ -243,81 +245,128 @@ namespace LingapDVO.Controllers
 
                     HttpContext.Session.SetString("IsAdmin", "true");
                     HttpContext.Session.SetString("AdminFullname", admin.Fullname);
-                    return RedirectToAction("Analyticsdashboard", "Adminuser");
+                    return Redirect("/Analyticsdashboard");
                 }
 
-                // Check if it's a regular user
-                var user = context.Useraccount.FirstOrDefault(u =>
-                    u.Username == loginModel.Username);
+                // Check if it's a RegisterAcc user (new registration)
+                var registerAccUser = context.RegisterAcc.FirstOrDefault(u =>
+                    u.Email == loginModel.Username || u.Username == loginModel.Username);
 
-                if (user == null || !BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
+                if (registerAccUser != null)
                 {
-                    // Increment failed attempts
-                    int failedAttempts = Request.Cookies.TryGetValue("FailedAttempts", out var attempts) ?
-                        int.Parse(attempts) + 1 : 1;
-
-                    Response.Cookies.Append("FailedAttempts", failedAttempts.ToString(), new CookieOptions
+                    // Decrypt and verify password for RegisterAcc user
+                    string DecryptPassword(string encryptedPassword)
                     {
-                        Expires = DateTime.Now.AddMinutes(30),
+                        byte[] encryptedBytes = Convert.FromBase64String(encryptedPassword);
+
+                        using var memoryStream = new MemoryStream(encryptedBytes);
+
+                        // Read salt and IV
+                        byte[] salt = new byte[16];
+                        byte[] iv = new byte[16];
+                        memoryStream.Read(salt, 0, salt.Length);
+                        memoryStream.Read(iv, 0, iv.Length);
+
+                        // Derive key using same master password and salt
+                        string masterPassword = "SuperAdminMasterKey123!";
+                        using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                        byte[] key = pbkdf2.GetBytes(32);
+
+                        using var aes = Aes.Create();
+                        aes.Key = key;
+                        aes.IV = iv;
+                        aes.Mode = CipherMode.CBC;
+                        aes.Padding = PaddingMode.PKCS7;
+
+                        using var decryptor = aes.CreateDecryptor();
+                        using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                        using var reader = new StreamReader(cryptoStream);
+
+                        return reader.ReadToEnd();
+                    }
+
+                    string decryptedPassword = DecryptPassword(registerAccUser.Password);
+
+                    if (decryptedPassword == loginModel.Password)
+                    {
+                        // Reset failed attempts on successful login
+                        Response.Cookies.Delete("FailedAttempts");
+                        Response.Cookies.Delete("LoginCooldown");
+
+                        // Check if user has verified account data using RegisterAcc ID
+                        var verifiedUser = context.Verifyaccount
+                            .FirstOrDefault(v => v.UserId == registerAccUser.Id); // Assuming UserId is the foreign key
+
+                        if (verifiedUser != null)
+                        {
+                            // Set session for verified user (complete profile)
+                            HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
+                            HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
+                            HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
+                            HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
+                            HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
+                            HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
+                            HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
+                            HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
+                            HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
+                            HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
+                            HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
+                            HttpContext.Session.SetString("District", verifiedUser.District ?? "");
+                            HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
+          
+                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? ""); // From RegisterAcc
+         
+                            HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
+                            HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
+                            HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
+                            HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
+                  
+                            HttpContext.Session.SetString("IsVerifiedUser", "true");
+                            HttpContext.Session.SetString("IsRegisteredUser", "true");
+                        }
+                        else
+                        {
+                            // Set session for basic RegisterAcc user only
+                            HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
+                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
+                            HttpContext.Session.SetString("Username", registerAccUser.Username ?? "");
+                            HttpContext.Session.SetString("IsRegisteredUser", "true");
+                            HttpContext.Session.SetString("IsVerifiedUser", "false");
+                        }
+
+                        return Redirect("/Homepage");
+                    }
+                }
+
+                // If none of the above worked, increment failed attempts
+                int failedAttempts = Request.Cookies.TryGetValue("FailedAttempts", out var attempts) ?
+                    int.Parse(attempts) + 1 : 1;
+
+                Response.Cookies.Append("FailedAttempts", failedAttempts.ToString(), new CookieOptions
+                {
+                    Expires = DateTime.Now.AddMinutes(30),
+                    HttpOnly = true,
+                    Secure = true
+                });
+
+                if (failedAttempts >= 3)
+                {
+                    // Set cooldown cookie for 30 seconds
+                    Response.Cookies.Append("LoginCooldown", DateTime.Now.AddSeconds(30).ToString(), new CookieOptions
+                    {
+                        Expires = DateTime.Now.AddSeconds(30),
                         HttpOnly = true,
                         Secure = true
                     });
 
-                    if (failedAttempts >= 3)
-                    {
-                        // Set cooldown cookie for 30 seconds
-                        Response.Cookies.Append("LoginCooldown", DateTime.Now.AddSeconds(30).ToString(), new CookieOptions
-                        {
-                            Expires = DateTime.Now.AddSeconds(30),
-                            HttpOnly = true,
-                            Secure = true
-                        });
-
-                        ModelState.AddModelError("", "Too many failed attempts. Please try again after 30 seconds.");
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("Username", $"Invalid username or password. Attempts remaining: {3 - failedAttempts}");
-                    }
-
-                    return View(loginModel);
+                    ModelState.AddModelError("", "Too many failed attempts. Please try again after 30 seconds.");
                 }
-
-                // Check if user is inactive
-                if (user.Status == "Removed")
+                else
                 {
-                    ModelState.AddModelError("Username", "Your account is Removed. Please contact support.");
-                    return View(loginModel);
+                    ModelState.AddModelError("Username", $"Invalid username or password. Attempts remaining: {3 - failedAttempts}");
                 }
 
-                // Reset failed attempts on successful login
-                Response.Cookies.Delete("FailedAttempts");
-                Response.Cookies.Delete("LoginCooldown");
-
-                // Set session for user
-                HttpContext.Session.SetString("UserId", user.Id.ToString());
-                HttpContext.Session.SetString("IDtype", user.IDtype);
-                HttpContext.Session.SetString("IDnumber", user.IDnumber);
-                HttpContext.Session.SetString("Firstname", user.Firstname);
-                HttpContext.Session.SetString("Middlename", user.Middlename);
-                HttpContext.Session.SetString("Lastname", user.Lastname);
-                HttpContext.Session.SetString("Gender", user.Gender);
-                HttpContext.Session.SetString("Suffix", user.Suffix);
-                HttpContext.Session.SetString("Dateofbirth", user.Dateofbirth);
-                HttpContext.Session.SetString("BlkLotStreet", user.BlkLotStreet);
-                HttpContext.Session.SetString("SubVill", user.SubVill);
-                HttpContext.Session.SetString("District", user.District);
-                HttpContext.Session.SetString("Barangay", user.Barangay);
-                HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("Email", user.Email);
-                HttpContext.Session.SetString("Phonenumber", user.Phonenumber);
-                HttpContext.Session.SetString("SecurityQuestions", user.SecurityQuestions);
-                HttpContext.Session.SetString("Securityanswer", user.Securityanswer);
-                HttpContext.Session.SetString("FrontID", user.FrontID);
-                HttpContext.Session.SetString("BackID", user.BackID);
-                HttpContext.Session.SetString("Profilepicture", user.Profilepicture);
-
-                return RedirectToAction("Homepage", "Dashboard");
+                return View(loginModel);
             }
             catch (Exception)
             {
@@ -325,7 +374,6 @@ namespace LingapDVO.Controllers
                 return View(loginModel);
             }
         }
-
 
         public async Task<IActionResult> Logout()
         {
@@ -349,180 +397,238 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-
         [HttpPost]
-        public IActionResult Register(UseraccountDto useraccountdto)
+        public IActionResult Register(RegisterAccDto registerAccDto)
         {
-            if (useraccountdto.ValidProfilepicture == null)
-            {
-                ModelState.AddModelError("ImageFile", "The image file is required");
-            }
-
-            if (useraccountdto.ValidFrontID == null)
-            {
-                ModelState.AddModelError("ImageFile", "The image file is required");
-            }
-
-            if (useraccountdto.ValidBackID == null)
-            {
-                ModelState.AddModelError("ImageFile", "The image file is required");
-            }
-
             if (!ModelState.IsValid)
-            {
-                return View(useraccountdto);
-            }
+                return View(registerAccDto);
 
             try
             {
-                // AES Configuration
-                string base64Key = "Jy4jDX7wGqiTD5OkkCnlH8/J9VPVfJr6ex609jvV8NU=";
-                string base64IV = "kOc2fXLswoq8Bp69GCGZSQ==";
-                byte[] key = Convert.FromBase64String(base64Key);
-                byte[] iv = Convert.FromBase64String(base64IV);
-
-                // Function to encrypt timestamp
-                string EncryptTimestamp(string timestamp)
+                // 🔎 Check for existing email or username before saving
+                if (context.RegisterAcc.Any(u => u.Email == registerAccDto.Email))
                 {
-                    using (var aes = Aes.Create())
-                    {
-                        aes.Key = key;
-                        aes.IV = iv;
-                        aes.Mode = CipherMode.CBC;
-                        aes.Padding = PaddingMode.PKCS7;
-
-                        using (var encryptor = aes.CreateEncryptor())
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                            using (var streamWriter = new StreamWriter(cryptoStream))
-                            {
-                                streamWriter.Write(timestamp);
-                            }
-                            return Convert.ToBase64String(memoryStream.ToArray());
-                        }
-                    }
+                    ModelState.AddModelError("Email", "This email is already registered.");
+                    return View(registerAccDto);
                 }
 
-                // Get current timestamp and encrypt it
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = EncryptTimestamp(timestamp);
-
-                // Remove special characters from encrypted string to make it filename-safe
-                string safeEncryptedTimestamp = new string(encryptedTimestamp
-                    .Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
-
-                // Profile picture (not encrypted)
-                string newFileName = safeEncryptedTimestamp + Path.GetExtension(useraccountdto.ValidProfilepicture!.FileName);
-                string uploadsFolder = Path.Combine(environment.WebRootPath, "UsersImg");
-                Directory.CreateDirectory(uploadsFolder);
-                string filePath = Path.Combine(uploadsFolder, newFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                if (context.RegisterAcc.Any(u => u.Username == registerAccDto.Username))
                 {
-                    useraccountdto.ValidProfilepicture.CopyTo(stream);
+                    ModelState.AddModelError("Username", "This username is already taken.");
+                    return View(registerAccDto);
                 }
 
-                // Front ID (encrypted)
-                string newFileName1 = safeEncryptedTimestamp + "_front" + Path.GetExtension(useraccountdto.ValidFrontID!.FileName);
-                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "Validimg");
-                Directory.CreateDirectory(uploadsFolder1);
-                string filePath1 = Path.Combine(uploadsFolder1, newFileName1);
+                // ==========================
+                // 🔑 MASTER PASSWORD SECTION
+                // ==========================
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
+                byte[] iv = RandomNumberGenerator.GetBytes(16);
 
-                using (var aes = Aes.Create())
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32);
+
+                string EncryptPassword(string password)
                 {
+                    using var aes = Aes.Create();
                     aes.Key = key;
                     aes.IV = iv;
                     aes.Mode = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;
 
-                    using (var encryptor = aes.CreateEncryptor())
-                    using (var fileStream = new FileStream(filePath1, FileMode.Create))
-                    using (var cryptoStream = new CryptoStream(fileStream, encryptor, CryptoStreamMode.Write))
+                    using var encryptor = aes.CreateEncryptor();
+                    using var memoryStream = new MemoryStream();
+
+                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                    using (var writer = new StreamWriter(cryptoStream))
                     {
-                        useraccountdto.ValidFrontID.CopyTo(cryptoStream);
+                        writer.Write(password);
                     }
+
+                    byte[] encryptedData = memoryStream.ToArray();
+                    byte[] combinedData = new byte[salt.Length + iv.Length + encryptedData.Length];
+
+                    Buffer.BlockCopy(salt, 0, combinedData, 0, salt.Length);
+                    Buffer.BlockCopy(iv, 0, combinedData, salt.Length, iv.Length);
+                    Buffer.BlockCopy(encryptedData, 0, combinedData, salt.Length + iv.Length, encryptedData.Length);
+
+                    return Convert.ToBase64String(combinedData);
                 }
 
-                // Back ID (encrypted)
-                string newFileName2 = safeEncryptedTimestamp + "_back" + Path.GetExtension(useraccountdto.ValidBackID!.FileName);
-                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Validimg");
-                string filePath2 = Path.Combine(uploadsFolder2, newFileName2);
+                string encryptedPassword = EncryptPassword(registerAccDto.Password);
 
-                using (var aes = Aes.Create())
+                var registercacc = new RegisterAcc
                 {
-                    aes.Key = key;
-                    aes.IV = iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using (var encryptor = aes.CreateEncryptor())
-                    using (var fileStream = new FileStream(filePath2, FileMode.Create))
-                    using (var cryptoStream = new CryptoStream(fileStream, encryptor, CryptoStreamMode.Write))
-                    {
-                        useraccountdto.ValidBackID.CopyTo(cryptoStream);
-                    }
-                }
-
-                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(useraccountdto.Password);
-
-                Useraccount useraccount = new Useraccount()
-                {
-                    Profilepicture = newFileName,
-                    FrontID = newFileName1,
-                    BackID = newFileName2,
-                    IDtype = useraccountdto.IDtype,
-                    IDnumber = useraccountdto.IDnumber,
-                    Lastname = useraccountdto.Lastname,
-                    Firstname = useraccountdto.Firstname,
-                    Middlename = useraccountdto.Middlename,
-                    Suffix = useraccountdto.Suffix,
-                    Gender = useraccountdto.Gender,
-                    Dateofbirth = useraccountdto.Dateofbirth,
-                    BlkLotStreet = useraccountdto.BlkLotStreet,
-                    SubVill = useraccountdto.SubVill,
-                    Barangay = useraccountdto.Barangay,
-                    District = useraccountdto.District,
-                    Username = useraccountdto.Username,
-                    Email = useraccountdto.Email,
-                    Phonenumber = useraccountdto.Phonenumber,
-                    Password = hashedPassword,
-                    SecurityQuestions = useraccountdto.SecurityQuestions,
-                    Securityanswer = useraccountdto.Securityanswer,
-                    Status = "Active"
+                    Email = registerAccDto.Email,
+                    Username = registerAccDto.Username,
+                    Password = encryptedPassword,
                 };
 
-                context.Useraccount.Add(useraccount);
+                context.RegisterAcc.Add(registercacc);
                 context.SaveChanges();
 
+                TempData["SuccessMessage"] = "Registration successful! You can now log in.";
                 return RedirectToAction("Login", "Login");
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException dbEx)
             {
-                if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+                // 🧱 Handle SQL unique constraint error
+                if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Email"))
+                    ModelState.AddModelError("Email", "This email is already registered.");
+                else if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Username"))
+                    ModelState.AddModelError("Username", "This username is already taken.");
+                else
+                    ModelState.AddModelError("", "A database error occurred while saving. Please try again.");
+
+                return View(registerAccDto);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                return View(registerAccDto);
+            }
+        }
+
+
+        public IActionResult Accountverification()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
+        {
+
+            // Get the current user's ID from the session
+            if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
+            {
+                // If user is not logged in, redirect to login page
+                return RedirectToAction("Login", "Login");
+            }
+
+            if (VerifyaccountDto.ValidFrontID == null)
+                ModelState.AddModelError("ValidFrontID", "Front ID image is required");
+            if (VerifyaccountDto.ValidBackID == null)
+                ModelState.AddModelError("ValidBackID", "Back ID image is required");
+
+            if (!ModelState.IsValid)
+                return View(VerifyaccountDto);
+
+            try
+            {
+                // ==========================
+                // 🔑 MASTER PASSWORD SECTION
+                // ==========================
+                // This can be stored securely (e.g., environment variable)
+                string masterPassword = "SuperAdminMasterKey123!"; // <-- Change this to a secret stored securely
+                byte[] salt = RandomNumberGenerator.GetBytes(16);  // Unique salt per session
+
+                // Derive AES key from master password using PBKDF2
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32); // 256-bit key
+
+                // ==========================
+                // 🔒 ENCRYPTION FUNCTION
+                // ==========================
+                byte[] EncryptFile(Stream inputStream)
                 {
-                    string message = sqlEx.Message.ToLower();
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.GenerateIV(); // Random IV per encryption
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
 
-                    if (message.Contains("fullname"))
-                        ModelState.AddModelError("Fullname", "This full name is already in use.");
-                    else if (message.Contains("username"))
-                        ModelState.AddModelError("Username", "This username is already taken.");
-                    else if (message.Contains("email"))
-                        ModelState.AddModelError("Email", "This email is already registered.");
-                    else if (message.Contains("phonenumber"))
-                        ModelState.AddModelError("Phonenumber", "This phone number is already in use.");
-                    else
-                        ModelState.AddModelError("", "A record with one of your inputs already exists.");
+                    using var memoryStream = new MemoryStream();
+                    memoryStream.Write(salt, 0, salt.Length); // Store salt at beginning
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length); // Store IV next
 
-                    return View(useraccountdto);
+                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        inputStream.CopyTo(cryptoStream);
+                    }
+
+                    return memoryStream.ToArray();
                 }
 
-                ModelState.AddModelError("", "A database error occurred while saving your data.");
-                return View(useraccountdto);
+                // ==========================
+                // 📅 Encrypted Timestamp for Filenames
+                // ==========================
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string encryptedTimestamp;
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
+                }
+
+                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+
+                // ==========================
+                // 🪪 Encrypt Front ID
+                // ==========================
+                string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+                Directory.CreateDirectory(validFolder);
+                string frontFileName = safeEncryptedTimestamp + "_front.enc";
+                string frontPath = Path.Combine(validFolder, frontFileName);
+                using (var fileStream = new FileStream(frontPath, FileMode.Create))
+                {
+                    byte[] encryptedData = EncryptFile(VerifyaccountDto.ValidFrontID!.OpenReadStream());
+                    fileStream.Write(encryptedData, 0, encryptedData.Length);
+                }
+
+                // ==========================
+                // 🔙 Encrypt Back ID
+                // ==========================
+                string backFileName = safeEncryptedTimestamp + "_back.enc";
+                string backPath = Path.Combine(validFolder, backFileName);
+                using (var fileStream = new FileStream(backPath, FileMode.Create))
+                {
+                    byte[] encryptedData = EncryptFile(VerifyaccountDto.ValidBackID!.OpenReadStream());
+                    fileStream.Write(encryptedData, 0, encryptedData.Length);
+                }
+
+                // ==========================
+                // 🗃 Save to Database
+                // ==========================
+                Verifyaccount verifyaccount = new Verifyaccount()
+                {
+                    UserId = userId,
+                    FrontID = frontFileName,
+                    BackID = backFileName,
+                    IDtype = VerifyaccountDto.IDtype,
+                    IDnumber = VerifyaccountDto.IDnumber,
+                    Lastname = VerifyaccountDto.Lastname,
+                    Firstname = VerifyaccountDto.Firstname,
+                    Middlename = VerifyaccountDto.Middlename,
+                    Suffix = VerifyaccountDto.Suffix,
+                    Gender = VerifyaccountDto.Gender,
+                    Dateofbirth = VerifyaccountDto.Dateofbirth,
+                    BlkLotStreet = VerifyaccountDto.BlkLotStreet,
+                    SubVill = VerifyaccountDto.SubVill,
+                    Barangay = VerifyaccountDto.Barangay,
+                    District = VerifyaccountDto.District,
+                    SecurityQuestions = VerifyaccountDto.SecurityQuestions,
+                    Securityanswer = VerifyaccountDto.Securityanswer,
+                    Phonenumber = VerifyaccountDto.Phonenumber,
+                };
+
+                context.Verifyaccount.Add(verifyaccount);
+                context.SaveChanges();
+
+                return Redirect("/Homepage");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
-                return View(useraccountdto);
+                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                return View(VerifyaccountDto);
             }
         }
 

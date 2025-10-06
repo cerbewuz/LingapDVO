@@ -116,5 +116,11 @@ namespace LingapDVO.Models
 
         public string? Comments { get; set; } = "";
 
+        public DateTime Result { get; set; }
+
+
+        [MaxLength(100)]
+        public string Status2 { get; set; } = "";
+
     }
 }

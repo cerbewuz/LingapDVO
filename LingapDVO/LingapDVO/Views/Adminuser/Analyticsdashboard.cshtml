@@ -1,6 +1,75 @@
 ﻿@model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
+
+    // Prepare detailed data for Barangay with Specific Assistance Types
+    var barangayDetailedData = new Dictionary<string, Dictionary<string, int>>();
+
+    // Process Hospital Bills - they have TypeAssistance field
+    foreach (var bill in Model.HospitalBills)
+    {
+        if (!string.IsNullOrEmpty(bill.Brgy) && !string.IsNullOrEmpty(bill.Typeassistance))
+        {
+            if (!barangayDetailedData.ContainsKey(bill.Brgy))
+                barangayDetailedData[bill.Brgy] = new Dictionary<string, int>();
+
+            var assistanceType = bill.Typeassistance?.Trim();
+            barangayDetailedData[bill.Brgy][assistanceType] =
+                barangayDetailedData[bill.Brgy].GetValueOrDefault(assistanceType, 0) + 1;
+        }
+    }
+
+    // Process Medical Lab Forms - they have TypeAssistance field
+    foreach (var form in Model.MedicalLabForms)
+    {
+        if (!string.IsNullOrEmpty(form.Brgy) && !string.IsNullOrEmpty(form.Typeassistance))
+        {
+            if (!barangayDetailedData.ContainsKey(form.Brgy))
+                barangayDetailedData[form.Brgy] = new Dictionary<string, int>();
+
+            var assistanceType = form.Typeassistance?.Trim();
+            barangayDetailedData[form.Brgy][assistanceType] =
+                barangayDetailedData[form.Brgy].GetValueOrDefault(assistanceType, 0) + 1;
+        }
+    }
+
+    // Process Funeral Forms - they are all "Funeral and Burial Assistance"
+    foreach (var form in Model.Funeralburialform)
+    {
+        if (!string.IsNullOrEmpty(form.Brgy))
+        {
+            if (!barangayDetailedData.ContainsKey(form.Brgy))
+                barangayDetailedData[form.Brgy] = new Dictionary<string, int>();
+
+            barangayDetailedData[form.Brgy]["Funeral and Burial Assistance"] =
+                barangayDetailedData[form.Brgy].GetValueOrDefault("Funeral and Burial Assistance", 0) + 1;
+        }
+    }
+
+    // Get ALL barangays ordered by total applications
+    var allBarangaysDetailed = barangayDetailedData
+        .OrderByDescending(b => b.Value.Values.Sum())
+        .ToList();
+
+    var barangayLabelsDetailed = allBarangaysDetailed.Select(b => b.Key).ToList();
+
+    // Get all unique assistance types across all barangays
+    var allAssistanceTypes = barangayDetailedData
+        .SelectMany(b => b.Value.Keys)
+        .Distinct()
+        .OrderBy(type => type)
+        .ToList();
+
+    // Prepare data for each assistance type
+    var assistanceTypeData = new Dictionary<string, List<int>>();
+    foreach (var assistanceType in allAssistanceTypes)
+    {
+        assistanceTypeData[assistanceType] = allBarangaysDetailed
+            .Select(b => b.Value.GetValueOrDefault(assistanceType, 0))
+            .ToList();
+    }
+
+    var barangayTotalsDetailed = allBarangaysDetailed.Select(b => b.Value.Values.Sum()).ToList();
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -14,92 +83,131 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-color: #4361ee;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --info-color: #3498db;
+            --primary: #4361ee;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --processing: #9b59b6;
             --lingap-red: #dc143c;
+            --dark: #1e1e2c;
+            --light: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-800: #343a40;
         }
 
         body {
-            padding: 20px;
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #f5f7fb;
+            color: var(--gray-800);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
 
-        .card-box {
-            border-radius: 1rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: none;
-            margin-bottom: 20px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            padding: 15px;
-        }
-
-        .chart-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
+        .dashboard-container {
             display: flex;
-            justify-content: space-between;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--dark) 0%, #2d2d44 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-title {
+            display: flex;
             align-items: center;
-        }
-
-        .chart-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .chart-select {
-            font-size: 0.8rem;
-            padding: 5px 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .badge-approved {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--success-color);
-        }
-
-        .badge-pending {
-            background-color: rgba(243, 156, 18, 0.1);
-            color: var(--warning-color);
-        }
-
-        .badge-unapproved {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--danger-color);
-        }
-
-        .badge-claimed {
-            background-color: rgba(52, 152, 219, 0.1);
-            color: var(--info-color);
-        }
-
-        .analytics-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .analytics-title {
-            color: var(--lingap-red);
             font-weight: 700;
+            font-size: 1.4rem;
+            color: white;
+        }
+
+            .sidebar-title i {
+                color: var(--lingap-red);
+                margin-right: 0.75rem;
+                font-size: 1.6rem;
+            }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+        }
+
+            .sidebar-nav li {
+                margin-bottom: 0.5rem;
+            }
+
+            .sidebar-nav a {
+                display: flex;
+                align-items: center;
+                color: rgba(255, 255, 255, 0.8);
+                text-decoration: none;
+                padding: 0.85rem 1.5rem;
+                border-radius: 0.5rem;
+                transition: all 0.2s ease;
+                font-weight: 500;
+            }
+
+                .sidebar-nav a:hover, .sidebar-nav a.active {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
+                }
+
+            .sidebar-nav i {
+                margin-right: 0.75rem;
+                font-size: 1.2rem;
+            }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin-left: 260px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .dashboard-header {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            color: var(--dark);
+            font-weight: 700;
+            margin: 0;
             font-size: 1.8rem;
+        }
+
+        .header-title p {
+            color: var(--gray-600);
+            margin: 0;
         }
 
         .date-filter {
@@ -110,786 +218,1081 @@
 
         .date-input {
             padding: 8px 12px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6c757d;
+        .card-analytics {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: none;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-            .empty-state i {
-                font-size: 3rem;
-                margin-bottom: 15px;
-                color: #dee2e6;
+            .card-analytics:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
             }
 
-        .card-footer {
-            background-color: #f8f9fa;
-            border-top: 1px solid #eee;
-            padding: 15px;
-            font-size: 0.85rem;
-            color: #6c757d;
+        .card-header-custom {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.25rem 1.5rem;
+            border-radius: 1rem 1rem 0 0 !important;
         }
-    </style>
-</head>
-<body>
-    <!-- Add this at the beginning of your body (right after the opening <body> tag) -->
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay"></div>
 
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <i class="bi bi-speedometer2 me-2"></i>LingapDVO
-            </div>
-            <button class="close-btn">&times;</button>
-        </div>
-        <ul class="sidebar-nav">
+        .card-title-custom {
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+            font-size: 1.1rem;
+        }
 
-            <li>
-                <a asp-controller="Adminuser" asp-action="Analyticsdashboard">
-                    <i class="bi bi-house-door"></i>
-                    <span>Home</span>
-                </a>
-            </li>
+        .chart-container {
+            position: relative;
+            height: 400px;
+            padding: 1rem;
+        }
 
-            <li>
-                <a asp-controller="Adminuser" asp-action="Analyticsdashboard">
-                    <i class="bi bi-bar-chart"></i>
-                    <span>Analytics Dashboard</span>
-                </a>
-            </li>
+        .summary-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
 
-            <li>
-                <a asp-controller="Adminuser" asp-action="Admin">
-                    <i class="bi bi-person-gear me-2"></i>
-                    <span>Update Status</span>
-                </a>
-            </li>
-
-            <li>
-                <a asp-controller="Login" asp-action="Logout">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Add this burger menu button in your container-fluid div (right after opening tag) -->
-    <div class="burger-menu">
-        <div class="burger-line"></div>
-        <div class="burger-line"></div>
-        <div class="burger-line"></div>
-    </div>
-
-    <!-- Add this CSS to your style section (merge with existing styles) -->
-    <style>
-        /* Burger menu styles */
-        .burger-menu {
+        .summary-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 30px;
-            height: 24px;
-            cursor: pointer;
-            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
         }
 
-        .burger-line {
-            width: 100%;
-            height: 3px;
-            background-color: var(--lingap-red);
+        .summary-total .summary-icon {
+            background: rgba(67, 97, 238, 0.15);
+            color: var(--primary);
+        }
+
+        .summary-approved .summary-icon {
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+        }
+
+        .summary-pending .summary-icon {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+        }
+
+        .summary-processing .summary-icon {
+            background: rgba(155, 89, 182, 0.15);
+            color: var(--processing);
+        }
+
+        .summary-unapproved .summary-icon {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+
+        .summary-claimed .summary-icon {
+            background: rgba(52, 152, 219, 0.15);
+            color: var(--info);
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .chart-select {
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            font-size: 0.85rem;
+        }
+
+        .btn-custom {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            border: none;
             transition: all 0.3s ease;
         }
 
-        .burger-menu.active .burger-line:nth-child(1) {
-            transform: translateY(10px) rotate(45deg);
+        .btn-primary-custom {
+            background: var(--primary);
+            color: white;
         }
 
-        .burger-menu.active .burger-line:nth-child(2) {
-            opacity: 0;
+        .btn-outline-custom {
+            background: white;
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
         }
 
-        .burger-menu.active .burger-line:nth-child(3) {
-            transform: translateY(-10px) rotate(-45deg);
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        /* Sidebar styles */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 280px;
-            height: 100%;
-            background-color: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            transition: left 0.3s ease;
-            padding: 20px;
+        .barangay-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            padding: 0 1rem 1rem 1rem;
         }
 
-            .sidebar.active {
-                left: 0;
+        .barangay-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .barangay-name {
+            font-weight: 500;
+        }
+
+        .barangay-count {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .assistance-details {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+        }
+
+        .assistance-type-badge {
+            background: var(--gray-200);
+            color: var(--gray-700);
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-right: 0.3rem;
+            margin-bottom: 0.2rem;
+            display: inline-block;
+        }
+
+        /* Menu Toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 1rem;
+        }
+
+        /* Sidebar collapsed state */
+        .sidebar-collapsed {
+            width: 70px;
+        }
+
+            .sidebar-collapsed .sidebar-header {
+                padding: 0 1rem 1rem;
             }
 
-        .sidebar-overlay {
+            .sidebar-collapsed .sidebar-title span {
+                display: none;
+            }
+
+            .sidebar-collapsed .sidebar-nav a span {
+                display: none;
+            }
+
+            .sidebar-collapsed .sidebar-nav a {
+                padding: 0.85rem 1rem;
+                justify-content: center;
+            }
+
+            .sidebar-collapsed .sidebar-nav i {
+                margin-right: 0;
+            }
+
+        .main-content-expanded {
+            margin-left: 70px;
+        }
+
+        .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-            .sidebar-overlay.active {
-                opacity: 1;
-                visibility: visible;
-            }
-
-        .sidebar-header {
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 30px;
+            z-index: 9999;
+            display: none;
         }
 
-        .sidebar-title {
-            font-weight: bold;
-            color: var(--lingap-red);
-            font-size: 1.2rem;
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
         }
 
-        .sidebar-nav {
-            list-style: none;
-            padding: 0;
+        .status-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 1rem;
         }
 
-            .sidebar-nav li {
-                margin-bottom: 15px;
-            }
-
-            .sidebar-nav a {
-                display: flex;
-                align-items: center;
-                color: #333;
-                text-decoration: none;
-                padding: 10px;
-                border-radius: 8px;
-                transition: all 0.3s ease;
-            }
-
-                .sidebar-nav a:hover {
-                    background-color: #f0f0f0;
-                    color: var(--lingap-red);
-                }
-
-            .sidebar-nav i {
-                margin-right: 10px;
-                font-size: 1.1rem;
-            }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #666;
+        .status-select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            min-width: 150px;
         }
     </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 
-    <!-- Add this JavaScript at the end of your file (before closing body tag) -->
-    <script>
-        // Burger menu functionality
-        const burgerMenu = document.querySelector('.burger-menu');
-        const sidebar = document.querySelector('.sidebar');
-        const sidebarOverlay = document.querySelector('.sidebar-overlay');
-        const closeBtn = document.querySelector('.close-btn');
-
-        burgerMenu.addEventListener('click', () => {
-            burgerMenu.classList.toggle('active');
-            sidebar.classList.toggle('active');
-            sidebarOverlay.classList.toggle('active');
-        });
-
-        closeBtn.addEventListener('click', () => {
-            burgerMenu.classList.remove('active');
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            burgerMenu.classList.remove('active');
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        });
-    </script>
-    <div class="container-fluid">
-        <div class="analytics-header">
-            <h1 class="analytics-title">Analytics Dashboard</h1>
-            <div class="date-filter">
-                <input type="date" id="startDate" class="date-input">
-                <span>to</span>
-                <input type="date" id="endDate" class="date-input">
-                <button class="btn btn-primary btn-sm" onclick="applyDateFilter()">Apply</button>
-                <button class="btn btn-outline-secondary btn-sm" onclick="resetDateFilter()">Reset</button>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="bi bi-heart-pulse"></i>
+                    <span>LingapDVO</span>
+                </div>
             </div>
+            <ul class="sidebar-nav">
+                <li>
+                    <a asp-route="Analyticsdashboard" class="active">
+                        <i class="bi bi-bar-chart"></i>
+                        <span>Analytics Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-route="Admin">
+                        <i class="bi bi-house-door"></i>
+                        <span>Application Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Login" asp-action="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
         </div>
 
-        <!-- First Row: Summary Cards -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">Total Applications</h6>
-                        <h2 class="card-title" id="total-count">
-                            @{
-                                var totalCount = Model.HospitalBills.Count + Model.MedicalLabForms.Count + Model.Funeralburialform.Count;
-                                @totalCount
-                            }
-                        </h2>
-                        <div class="mt-3">
-                            <span class="badge status-badge badge-approved me-2">
-                                <i class="bi bi-check-circle"></i> Approved:
-                                <span id="approved-count">
-                                    @{
-                                        var approvedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved");
-                                        @approvedCount
-                                    }
-                                </span>
-                            </span>
-                            <span class="badge status-badge badge-pending me-2">
-                                <i class="bi bi-hourglass-split"></i> Pending:
-                                <span id="pending-count">
-                                    @{
-                                        var pendingCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending");
-                                        @pendingCount
-                                    }
-                                </span>
-                            </span>
-                            <span class="badge status-badge badge-unapproved me-2">
-                                <i class="bi bi-x-circle"></i> Unapproved:
-                                <span id="unapproved-count">
-                                    @{
-                                        var unapprovedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved");
-                                        @unapprovedCount
-                                    }
-                                </span>
-                            </span>
-                            <span class="badge status-badge badge-claimed">
-                                <i class="bi bi-cloud-arrow-up"></i> Claimed:
-                                <span id="claimed-count">
-                                    @{
-                                        var claimedCount = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
-                                        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
-                                        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed");
-                                        @claimedCount
-                                    }
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Shows all application statuses across all types
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div style="display: flex; align-items: center;">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="header-title">
+                        <h1>Analytics Dashboard</h1>
                     </div>
                 </div>
+                <div class="date-filter">
+                    <input type="date" id="startDate" class="date-input">
+                    <span class="text-muted">to</span>
+                    <input type="date" id="endDate" class="date-input">
+                    <button class="btn-custom btn-primary-custom" onclick="applyDateFilter()">Apply</button>
+                    <button class="btn-custom btn-outline-custom" onclick="resetDateFilter()">Reset</button>
+                </div>
             </div>
-
-            <div class="col-md-4">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">Application Types</h6>
+            <div class="row g-3 mb-4" id="summaryCards">
+            </div>
+            <div class="row g-3">
+                <!-- Application Types -->
+                <div class="col-md-6">
+                    <div class="card-analytics">
+                        <div class="card-header-custom d-flex justify-content-between align-items-center">
+                            <h5 class="card-title-custom">Application Types</h5>
+                            <select class="chart-select" onchange="updateTypeChart(this.value)">
+                                <option value="doughnut">Doughnut</option>
+                                <option value="pie">Pie</option>
+                                <option value="bar">Bar</option>
+                            </select>
+                        </div>
                         <div class="chart-container">
-                            <canvas id="typeDistributionChart"></canvas>
+                            <canvas id="typeChart"></canvas>
                         </div>
                     </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Distribution of different application types
-                    </div>
                 </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">Status Trend</h6>
+                <!-- Status Distribution -->
+                <div class="col-md-6">
+                    <div class="card-analytics">
+                        <div class="card-header-custom d-flex justify-content-between align-items-center">
+                            <h5 class="card-title-custom">Status Distribution</h5>
+                            <select class="chart-select" onchange="updateStatusChart(this.value)">
+                                <option value="doughnut">Doughnut</option>
+                                <option value="pie">Pie</option>
+                                <option value="bar">Bar</option>
+                            </select>
+                        </div>
                         <div class="chart-container">
-                            <canvas id="statusTrendChart"></canvas>
+                            <canvas id="statusChart"></canvas>
                         </div>
-                    </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Monthly trend of application statuses
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Second Row: Barangay Chart -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <div class="chart-title">
-                            <span>Barangay Distribution</span>
+            <!-- Barangay Distribution by Specific Assistance Types -->
+            <div class="row g-3 mt-3">
+                <div class="col-12">
+                    <div class="card-analytics">
+                        <div class="card-header-custom d-flex justify-content-between align-items-center">
+                            <h5 class="card-title-custom">Barangay Distribution by Specific Assistance Types</h5>
                             <div class="chart-controls">
                                 <select class="chart-select" id="barangayChartType" onchange="updateBarangayChart()">
                                     <option value="bar">Bar Chart</option>
+                                    <option value="stackedBar">Stacked Bar</option>
                                     <option value="pie">Pie Chart</option>
-                                    <option value="doughnut">Doughnut</option>
+                                    <option value="doughnut">Doughnut Chart</option>
                                 </select>
-                                <select class="chart-select" id="barangaySort" onchange="updateBarangayChart()">
-                                    <option value="count-desc">Sort by Count (High-Low)</option>
-                                    <option value="count-asc">Sort by Count (Low-High)</option>
-                                    <option value="name-asc">Sort by Name (A-Z)</option>
-                                    <option value="name-desc">Sort by Name (Z-A)</option>
-                                </select>
-                                <select class="chart-select" id="barangayLimit" onchange="updateBarangayChart()">
-                                    <option value="10">Top 10</option>
-                                    <option value="15">Top 15</option>
-                                    <option value="20">Top 20</option>
-                                    <option value="0">Show All</option>
+                                <select class="chart-select" id="barangayView" onchange="updateBarangayChart()">
+                                    <option value="all">All Barangays</option>
+                                    <option value="top10">Top 10 Barangays</option>
+                                    <option value="top20">Top 20 Barangays</option>
                                 </select>
                             </div>
                         </div>
                         <div class="chart-container">
                             <canvas id="barangayChart"></canvas>
                         </div>
-                    </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Distribution of applications by barangay
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Third Row: Status Chart -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card card-box">
-                    <div class="card-body">
-                        <div class="chart-title">
-                            <span>Status Distribution</span>
-                            <div class="chart-controls">
-                                <select class="chart-select" id="statusChartType" onchange="updateStatusChart()">
-                                    <option value="doughnut">Doughnut</option>
-                                    <option value="pie">Pie</option>
-                                    <option value="bar">Bar</option>
-                                </select>
-                                <select class="chart-select" id="statusTypeFilter" onchange="updateStatusChart()">
-                                    <option value="all">All Types</option>
-                                    <option value="Hospital Bill Assistance">Hospital Bills</option>
-                                    <option value="Medical and laboratory Procedure">Medical/Lab</option>
-                                    <option value="Funeral and burial assistance">Funeral/Burial</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <i class="bi bi-info-circle"></i> Breakdown of application statuses
+                        <div id="barangayListContainer" class="barangay-list" style="display: none;"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    @{
-        // Prepare data for all charts
-        var allBarangays = new List<string>();
-        allBarangays.AddRange(Model.HospitalBills.Select(f => f.Brgy));
-        allBarangays.AddRange(Model.MedicalLabForms.Select(f => f.Brgy));
-        allBarangays.AddRange(Model.Funeralburialform.Select(f => f.Brgy));
-
-        var barangayGroups = allBarangays
-        .Where(b => !string.IsNullOrEmpty(b))
-        .GroupBy(b => b)
-        .Select(g => new { Barangay = g.Key, Count = g.Count() })
-        .OrderByDescending(x => x.Count)
-        .ToList();
-
-        var barangaysJson = Json.Serialize(barangayGroups.Select(b => b.Barangay).ToList());
-        var barangayCountsJson = Json.Serialize(barangayGroups.Select(b => b.Count).ToList());
-
-        // Status counts
-        var statusCounts = new
-        {
-            Approved = Model.HospitalBills.Count(f => f.Status?.ToLower() == "approved") +
-        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "approved") +
-        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "approved"),
-            Pending = Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending") +
-        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "pending") +
-        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "pending"),
-            Unapproved = Model.HospitalBills.Count(f => f.Status?.ToLower() == "unapproved") +
-        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "unapproved") +
-        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "unapproved"),
-            Claimed = Model.HospitalBills.Count(f => f.Status?.ToLower() == "claimed") +
-        Model.MedicalLabForms.Count(f => f.Status?.ToLower() == "claimed") +
-        Model.Funeralburialform.Count(f => f.Status?.ToLower() == "claimed")
-        };
-
-        var statusLabelsJson = Json.Serialize(new[] { "Approved", "Pending", "Unapproved", "Claimed" });
-        var statusDataJson = Json.Serialize(new[] { statusCounts.Approved, statusCounts.Pending, statusCounts.Unapproved, statusCounts.Claimed });
-
-        // Type distribution
-        var typeCounts = new
-        {
-            Hospital = Model.HospitalBills.Count,
-            MedicalLab = Model.MedicalLabForms.Count,
-            Funeral = Model.Funeralburialform.Count
-        };
-
-        var typeLabelsJson = Json.Serialize(new[] { "Hospital Bill", "Medical/Lab", "Funeral/Burial" });
-        var typeDataJson = Json.Serialize(new[] { typeCounts.Hospital, typeCounts.MedicalLab, typeCounts.Funeral });
-
-        // Monthly data (simplified for example)
-        var monthlyLabels = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-        var monthlyData = new[] { 120, 150, 180, 200, 220, 250, 280, 300, 270, 230, 190, 160 };
-        var monthlyLabelsJson = Json.Serialize(monthlyLabels);
-        var monthlyDataJson = Json.Serialize(monthlyData);
-    }
-
     <script>
-        // Global variables for chart data
-        const barangays = @Html.Raw(barangaysJson);
-        const barangayCounts = @Html.Raw(barangayCountsJson);
-        const statusLabels = @Html.Raw(statusLabelsJson);
-        const statusData = @Html.Raw(statusDataJson);
-        const typeLabels = @Html.Raw(typeLabelsJson);
-        const typeData = @Html.Raw(typeDataJson);
-        const monthlyLabels = @Html.Raw(monthlyLabelsJson);
-        const monthlyData = @Html.Raw(monthlyDataJson);
+        // Global variables to store chart instances and data
+        let typeChart, statusChart, barangayChart;
+        let originalData = null;
+        let filteredData = null;
+        let currentStatusFilter = 'all';
 
-        // Chart instances
-        let barangayChart, statusChart, typeDistributionChart, statusTrendChart;
-
-        // Colors
-        const chartColors = {
-            approved: '#2ecc71',
-            pending: '#f39c12',
-            unapproved: '#e74c3c',
-            claimed: '#3498db',
+        // Colors for different assistance types and statuses
+        const colors = {
+            primary: '#4361ee',
+            success: '#2ecc71',
+            danger: '#e74c3c',
+            warning: '#f39c12',
+            info: '#3498db',
+            processing: '#9b59b6',
             hospital: '#4361ee',
             medical: '#9b59b6',
-            funeral: '#e74c3c',
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: 'rgba(255, 255, 255, 0.2)'
+            funeral: '#e74c3c'
         };
 
-        // Initialize all charts
+        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            // Type Distribution Chart
-            typeDistributionChart = new Chart(
-                document.getElementById('typeDistributionChart').getContext('2d'),
-                {
-                    type: 'doughnut',
-                    data: {
-                        labels: typeLabels,
-                        datasets: [{
-                            data: typeData,
-                            backgroundColor: [chartColors.hospital, chartColors.medical, chartColors.funeral],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: getPieChartOptions('Application Types')
-                }
-            );
-
-            // Status Trend Chart (line chart)
-            statusTrendChart = new Chart(
-                document.getElementById('statusTrendChart').getContext('2d'),
-                {
-                    type: 'line',
-                    data: {
-                        labels: monthlyLabels,
-                        datasets: [
-                            {
-                                label: 'Approved',
-                                data: monthlyData.map(d => Math.round(d * 0.6)),
-                                borderColor: chartColors.approved,
-                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                                tension: 0.3,
-                                fill: true
-                            },
-                            {
-                                label: 'Pending',
-                                data: monthlyData.map(d => Math.round(d * 0.2)),
-                                borderColor: chartColors.pending,
-                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
-                                tension: 0.3,
-                                fill: true
-                            },
-                            {
-                                label: 'Unapproved',
-                                data: monthlyData.map(d => Math.round(d * 0.1)),
-                                borderColor: chartColors.unapproved,
-                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                                tension: 0.3,
-                                fill: true
-                            },
-                            {
-                                label: 'Claimed',
-                                data: monthlyData.map(d => Math.round(d * 0.5)),
-                                borderColor: chartColors.claimed,
-                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                                tension: 0.3,
-                                fill: true
-                            }
-                        ]
-                    },
-                    options: getLineChartOptions('Monthly Status Trend')
-                }
-            );
-
-            // Initialize other charts
-            updateBarangayChart();
-            updateStatusChart();
-
-            // Set default dates
+            // Set default dates (last 3 months)
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-            document.getElementById('endDate').valueAsDate = today;
-            document.getElementById('startDate').valueAsDate = firstDay;
+
+            // Format dates for input fields (YYYY-MM-DD)
+            const formatDateForInput = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+
+            document.getElementById('endDate').value = formatDateForInput(today);
+            document.getElementById('startDate').value = formatDateForInput(firstDay);
+
+            // Initialize dashboard with all data
+            initializeDashboard();
+
+            // Sidebar toggle functionality
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            if (menuToggle && sidebar && mainContent) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('sidebar-collapsed');
+                    mainContent.classList.toggle('main-content-expanded');
+
+                    // Change icon based on state
+                    const icon = menuToggle.querySelector('i');
+                    if (sidebar.classList.contains('sidebar-collapsed')) {
+                        icon.className = 'bi bi-justify-left';
+                    } else {
+                        icon.className = 'bi bi-list';
+                    }
+                });
+            }
         });
 
-        // Barangay Chart
-        function updateBarangayChart() {
-            const chartType = document.getElementById('barangayChartType').value;
-            const sortBy = document.getElementById('barangaySort').value;
-            const limit = parseInt(document.getElementById('barangayLimit').value);
+        // Initialize dashboard with data - FOLLOWING ADMIN.CSHTML PATTERN
+        function initializeDashboard() {
+            // Create combined applications array following Admin.cshtml pattern
+            const allApplications = [];
 
-            // Sort data
-            let sortedBarangays = [...barangays];
-            let sortedCounts = [...barangayCounts];
-
-            if (sortBy === 'count-desc') {
-                // Already sorted by count descending
-            } else if (sortBy === 'count-asc') {
-                sortedBarangays = [...barangays].reverse();
-                sortedCounts = [...barangayCounts].reverse();
-            } else if (sortBy === 'name-asc') {
-                const combined = sortedBarangays.map((b, i) => ({ barangay: b, count: sortedCounts[i] }))
-                    .sort((a, b) => a.barangay.localeCompare(b.barangay));
-                sortedBarangays = combined.map(item => item.barangay);
-                sortedCounts = combined.map(item => item.count);
-            } else if (sortBy === 'name-desc') {
-                const combined = sortedBarangays.map((b, i) => ({ barangay: b, count: sortedCounts[i] }))
-                    .sort((a, b) => b.barangay.localeCompare(a.barangay));
-                sortedBarangays = combined.map(item => item.barangay);
-                sortedCounts = combined.map(item => item.count);
+            // Add Hospital Bills following Admin.cshtml pattern
+            @foreach (var f in Model.HospitalBills)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Hospital Bill Assistance",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
-            // Apply limit
-            if (limit > 0 && limit < sortedBarangays.length) {
-                sortedBarangays = sortedBarangays.slice(0, limit);
-                sortedCounts = sortedCounts.slice(0, limit);
+            // Add Medical Lab Forms following Admin.cshtml pattern
+            @foreach (var f in Model.MedicalLabForms)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Medical and laboratory Procedure",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
-            // Create or update chart
-            const ctx = document.getElementById('barangayChart').getContext('2d');
-
-            if (barangayChart) {
-                barangayChart.destroy();
+            // Add Funeral Forms following Admin.cshtml pattern
+            @foreach (var f in Model.Funeralburialform)
+            {
+                    <text>
+                    allApplications.push({
+                        type: "Funeral and burial assistance",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
-            barangayChart = new Chart(ctx, {
-                type: chartType,
+            originalData = {
+                allApplications: allApplications,
+                hospitalBills: @Html.Raw(Json.Serialize(Model.HospitalBills)),
+                medicalLabForms: @Html.Raw(Json.Serialize(Model.MedicalLabForms)),
+                funeralForms: @Html.Raw(Json.Serialize(Model.Funeralburialform))
+            };
+
+            console.log('Initial data loaded following Admin.cshtml pattern:', originalData);
+
+            // Process data for the initial view
+            processDataAndUpdateCharts();
+        }
+
+        // Process data and update all charts
+        function processDataAndUpdateCharts() {
+            showLoading(true);
+
+            // Use setTimeout to simulate processing time
+            setTimeout(() => {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                // Filter data based on date range and status
+                filteredData = filterDataByDateRange(originalData, startDate, endDate);
+                filteredData = filterDataByStatus(filteredData, currentStatusFilter);
+
+                console.log('Filtered data:', filteredData);
+
+                // Update summary cards
+                updateSummaryCards(filteredData);
+
+                // Update charts
+                updateTypeChart('doughnut');
+                updateStatusChart('doughnut');
+                updateBarangayChart();
+
+                showLoading(false);
+            }, 500);
+        }
+
+        // Filter data by date range using createdAt field
+        function filterDataByDateRange(data, startDate, endDate) {
+            // If no dates selected, return all data
+            if (!startDate || !endDate) return data;
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // Include the entire end date
+
+            const filtered = {
+                allApplications: [],
+                hospitalBills: [],
+                medicalLabForms: [],
+                funeralForms: []
+            };
+
+            // Filter all applications using createdAt
+            if (data.allApplications) {
+                filtered.allApplications = data.allApplications.filter(item => {
+                    if (!item.createdAt) return true; // Keep items without createdAt
+
+                    // Check if the date is valid
+                    if (isNaN(item.createdAt.getTime())) {
+                        return true; // Keep items with invalid dates
+                    }
+
+                    return item.createdAt >= start && item.createdAt <= end;
+                });
+            }
+
+            return filtered;
+        }
+
+        // Filter data by status - FOLLOWING ADMIN.CSHTML PATTERN
+        function filterDataByStatus(data, status) {
+            // If "all" status is selected, return all data
+            if (status === 'all') return data;
+
+            const filtered = {
+                allApplications: [],
+                hospitalBills: [],
+                medicalLabForms: [],
+                funeralForms: []
+            };
+
+            // Filter applications by status following Admin.cshtml pattern
+            if (data.allApplications) {
+                filtered.allApplications = data.allApplications.filter(app => {
+                    // For approved/unapproved statuses, ONLY check Status2 field
+                    if (status === 'approved' || status === 'unapproved') {
+                        return app.status2 && app.status2.trim() !== '' && app.status2 === status;
+                    }
+
+                    // For other statuses (pending, processing, claimed), use the original Status field
+                    // But exclude applications that have Status2 with approved/unapproved values
+                    return app.status === status &&
+                           (!app.status2 || app.status2.trim() === '' ||
+                            (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
+                });
+            }
+
+            return filtered;
+        }
+
+        // Apply status filter
+        function applyStatusFilter() {
+            currentStatusFilter = document.getElementById('statusFilter').value;
+            processDataAndUpdateCharts();
+        }
+
+        // Update summary cards with filtered data - FOLLOWING ADMIN.CSHTML STATUS COUNTING PATTERN
+        function updateSummaryCards(data) {
+            const applications = data.allApplications || [];
+
+            const statusCounts = {
+                approved: 0,
+                unapproved: 0,
+                pending: 0,
+                processing: 0,
+                claimed: 0,
+                total: 0
+            };
+
+            // Count applications by status following Admin.cshtml pattern
+            applications.forEach(app => {
+                // If Status2 has approved/unapproved, count ONLY in those categories
+                if (app.status2 && app.status2.trim() !== '') {
+                    if (app.status2 === 'approved') {
+                        statusCounts.approved++;
+                    } else if (app.status2 === 'unapproved') {
+                        statusCounts.unapproved++;
+                    }
+                    // DO NOT count in processing/pending/claimed if Status2 is approved/unapproved
+                } else {
+                    // No Status2 or Status2 is empty, use original status
+                    if (statusCounts.hasOwnProperty(app.status)) {
+                        statusCounts[app.status]++;
+                    }
+                }
+            });
+
+            // Calculate total
+            statusCounts.total = applications.length;
+
+            const summaryCards = document.getElementById('summaryCards');
+            summaryCards.innerHTML = `
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-total">
+                        <div class="summary-icon">
+                            <i class="bi bi-files"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.total}</div>
+                        <div class="summary-label">Total Applications</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-approved">
+                        <div class="summary-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.approved}</div>
+                        <div class="summary-label">Approved</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-pending">
+                        <div class="summary-icon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.pending}</div>
+                        <div class="summary-label">Pending</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-processing">
+                        <div class="summary-icon">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.processing}</div>
+                        <div class="summary-label">Processing</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-unapproved">
+                        <div class="summary-icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.unapproved}</div>
+                        <div class="summary-label">Unapproved</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card-analytics summary-card summary-claimed">
+                        <div class="summary-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div class="summary-number">${statusCounts.claimed}</div>
+                        <div class="summary-label">Claimed</div>
+                    </div>
+                </div>
+            `;
+
+            // Update global chart data
+            window.chartData = {
+                statusData: [statusCounts.approved, statusCounts.pending, statusCounts.processing, statusCounts.unapproved, statusCounts.claimed],
+                typeData: countApplicationTypes(applications),
+                statusLabels: ['Approved', 'Pending', 'Processing', 'Unapproved', 'Claimed'],
+                typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                // Barangay data will be processed separately
+                ...processBarangayData(applications)
+            };
+        }
+
+        // Count application types
+        function countApplicationTypes(applications) {
+            const counts = {
+                hospital: 0,
+                medical: 0,
+                funeral: 0
+            };
+
+            applications.forEach(app => {
+                if (app.type === "Hospital Bill Assistance") counts.hospital++;
+                else if (app.type === "Medical and laboratory Procedure") counts.medical++;
+                else if (app.type === "Funeral and burial assistance") counts.funeral++;
+            });
+
+            return [counts.hospital, counts.medical, counts.funeral];
+        }
+
+        // Process barangay data for charts - UPDATED TO USE COMBINED APPLICATIONS
+        function processBarangayData(applications) {
+            const barangayDetailedData = {};
+
+            // Process all applications following the same pattern
+            applications.forEach(app => {
+                if (!app.brgy) return;
+
+                const barangay = app.brgy;
+                if (!barangayDetailedData[barangay]) {
+                    barangayDetailedData[barangay] = {};
+                }
+
+                // Use typeassistance if available, otherwise use type
+                const assistanceType = app.typeassistance ? app.typeassistance.trim() : app.type;
+                barangayDetailedData[barangay][assistanceType] =
+                    (barangayDetailedData[barangay][assistanceType] || 0) + 1;
+            });
+
+            // Sort barangays by total applications
+            const allBarangaysDetailed = Object.entries(barangayDetailedData)
+                .sort((a, b) => {
+                    const totalA = Object.values(a[1]).reduce((sum, count) => sum + count, 0);
+                    const totalB = Object.values(b[1]).reduce((sum, count) => sum + count, 0);
+                    return totalB - totalA;
+                });
+
+            const barangayLabelsDetailed = allBarangaysDetailed.map(b => b[0]);
+            const barangayTotalsDetailed = allBarangaysDetailed.map(b =>
+                Object.values(b[1]).reduce((sum, count) => sum + count, 0));
+
+            // Get all unique assistance types
+            const allAssistanceTypes = [...new Set(
+                allBarangaysDetailed.flatMap(b => Object.keys(b[1]))
+            )].sort();
+
+            // Prepare data for each assistance type
+            const assistanceTypeData = {};
+            allAssistanceTypes.forEach(type => {
+                assistanceTypeData[type] = allBarangaysDetailed.map(b => b[1][type] || 0);
+            });
+
+            return {
+                barangayLabels: barangayLabelsDetailed,
+                barangayTotals: barangayTotalsDetailed,
+                assistanceTypes: allAssistanceTypes,
+                assistanceTypeData: assistanceTypeData
+            };
+        }
+
+        // Type Chart functions
+        function updateTypeChart(type) {
+            const ctx = document.getElementById('typeChart');
+            if (!ctx || !window.chartData) return;
+
+            const context = ctx.getContext('2d');
+            if (typeChart) typeChart.destroy();
+
+            typeChart = new Chart(context, {
+                type: type,
                 data: {
-                    labels: sortedBarangays,
+                    labels: window.chartData.typeLabels,
                     datasets: [{
-                        data: sortedCounts,
-                        backgroundColor: getChartColors(sortedBarangays.length),
-                        borderWidth: 1
+                        data: window.chartData.typeData,
+                        backgroundColor: [colors.hospital, colors.medical, colors.funeral],
+                        borderWidth: 0
                     }]
                 },
-                options: chartType === 'bar' ? getBarChartOptions('Applications by Barangay') :
-                       getPieChartOptions('Applications by Barangay')
+                options: getChartOptions('Application Types', type)
             });
         }
 
-        // Status Chart
-        function updateStatusChart() {
-            const chartType = document.getElementById('statusChartType').value;
-            const typeFilter = document.getElementById('statusTypeFilter').value;
+        // Status Chart functions
+        function updateStatusChart(type) {
+            const ctx = document.getElementById('statusChart');
+            if (!ctx || !window.chartData) return;
 
-            // In a real app, you would filter data by type from your model
-            // For this example, we'll use the same data for all types
-            let filteredLabels = [...statusLabels];
-            let filteredData = [...statusData];
+            const context = ctx.getContext('2d');
+            if (statusChart) statusChart.destroy();
 
-            let chartTitle = 'Application Status Distribution';
-            if (typeFilter !== 'all') {
-                chartTitle = `Status Distribution for ${typeFilter}`;
-            }
-
-            // Create or update chart
-            const ctx = document.getElementById('statusChart').getContext('2d');
-
-            if (statusChart) {
-                statusChart.destroy();
-            }
-
-            statusChart = new Chart(ctx, {
-                type: chartType,
+            statusChart = new Chart(context, {
+                type: type,
                 data: {
-                    labels: filteredLabels,
+                    labels: window.chartData.statusLabels,
                     datasets: [{
-                        data: filteredData,
-                        backgroundColor: [chartColors.approved, chartColors.pending, chartColors.unapproved, chartColors.claimed],
-                        borderWidth: 1
+                        data: window.chartData.statusData,
+                        backgroundColor: [colors.success, colors.warning, colors.processing, colors.danger, colors.info],
+                        borderWidth: 0
                     }]
                 },
-                options: chartType === 'bar' ? getBarChartOptions(chartTitle) :
-                       getPieChartOptions(chartTitle)
+                options: getChartOptions('Status Distribution', type)
             });
+        }
+
+        // Barangay Chart functions
+        function updateBarangayChart() {
+            if (!window.chartData) return;
+
+            const chartType = document.getElementById('barangayChartType').value;
+            const viewType = document.getElementById('barangayView').value;
+
+            // Get data based on view type
+            let labels, totals;
+            let assistanceData = {};
+
+            if (viewType === 'all') {
+                labels = [...window.chartData.barangayLabels];
+                totals = [...window.chartData.barangayTotals];
+                window.chartData.assistanceTypes.forEach(type => {
+                    assistanceData[type] = [...window.chartData.assistanceTypeData[type]];
+                });
+            } else {
+                const limit = viewType === 'top10' ? 10 : 20;
+                labels = window.chartData.barangayLabels.slice(0, limit);
+                totals = window.chartData.barangayTotals.slice(0, limit);
+                window.chartData.assistanceTypes.forEach(type => {
+                    assistanceData[type] = window.chartData.assistanceTypeData[type].slice(0, limit);
+                });
+            }
+
+            const ctx = document.getElementById('barangayChart');
+            if (!ctx) return;
+
+            const context = ctx.getContext('2d');
+            if (barangayChart) barangayChart.destroy();
+
+            // Show/hide barangay list
+            const listContainer = document.getElementById('barangayListContainer');
+            if (listContainer) {
+                if (chartType === 'pie' || chartType === 'doughnut') {
+                    listContainer.style.display = 'block';
+                    updateBarangayList(labels, totals, assistanceData);
+                } else {
+                    listContainer.style.display = 'none';
+                }
+            }
+
+            // Create chart based on type
+            if (chartType === 'bar' || chartType === 'stackedBar') {
+                createBarChart(context, labels, assistanceData, chartType);
+            } else {
+                createPieChart(context, labels, totals, chartType);
+            }
+        }
+
+        function createBarChart(ctx, labels, assistanceData, chartType) {
+            const isStacked = chartType === 'stackedBar';
+            const assistanceTypes = Object.keys(assistanceData);
+            const assistanceColors = generateAssistanceTypeColors(assistanceTypes.length);
+
+            const datasets = assistanceTypes.map((type, index) => ({
+                label: type,
+                data: assistanceData[type],
+                backgroundColor: assistanceColors[index],
+                borderWidth: 0
+            }));
+
+            barangayChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Applications by Barangay and Specific Assistance Type',
+                            font: { size: 14 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: isStacked,
+                        },
+                        y: {
+                            stacked: isStacked,
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Applications'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPieChart(ctx, labels, totals, chartType) {
+            barangayChart = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: totals,
+                        backgroundColor: generateAssistanceTypeColors(labels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Total Applications by Barangay',
+                            font: { size: 14 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((context.raw / total) * 100);
+                                    return `${context.label}: ${context.raw} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateBarangayList(labels, totals, assistanceData) {
+            const container = document.getElementById('barangayListContainer');
+            if (!container) return;
+
+            let html = '';
+            labels.forEach((label, index) => {
+                const barangayAssistance = [];
+                Object.keys(assistanceData).forEach(type => {
+                    const count = assistanceData[type][index];
+                    if (count > 0) {
+                        barangayAssistance.push(`${type}: ${count}`);
+                    }
+                });
+
+                html += `
+                    <div class="barangay-item">
+                        <div class="barangay-name">
+                            ${label}
+                            <div class="assistance-details">
+                                ${barangayAssistance.map(item =>
+                                    `<span class="assistance-type-badge">${item}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <span class="barangay-count">${totals[index]}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Helper functions
+        function getChartOptions(title, type) {
+            const isPie = type === 'pie' || type === 'doughnut';
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: isPie ? 'right' : 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 14 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (isPie) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((context.raw / total) * 100);
+                                    return `${context.label}: ${context.raw} (${percentage}%)`;
+                                }
+                                return `${context.label}: ${context.raw}`;
+                            }
+                        }
+                    }
+                },
+                scales: isPie ? {} : {
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            };
+        }
+
+        function generateAssistanceTypeColors(count) {
+            const colorPalette = [
+                '#4361ee', '#3a0ca3', '#4cc9f0', '#f72585', '#7209b7',
+                '#3f37c9', '#560bad', '#b5179e', '#4895ef', '#480ca8',
+                '#f15bb5', '#00bbf9', '#00f5d4', '#00bbf9', '#fee440',
+                '#f96167', '#f9c74f', '#90be6d', '#43aa8b', '#577590',
+                '#4d908e', '#277da1', '#577590', '#43aa8b', '#90be6d',
+                '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
+                '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
+            ];
+
+            const generatedColors = [];
+            for (let i = 0; i < count; i++) {
+                generatedColors.push(colorPalette[i % colorPalette.length]);
+            }
+            return generatedColors;
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
         }
 
         // Date filter functions
         function applyDateFilter() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
 
-            if (!startDate || !endDate) {
+            if (!start || !end) {
                 alert('Please select both start and end dates');
                 return;
             }
 
-            // In a real app, you would filter your data based on these dates
-            // For this example, we'll just log them
-            console.log(`Filtering from ${startDate} to ${endDate}`);
+            if (new Date(start) > new Date(end)) {
+                alert('Start date cannot be after end date');
+                return;
+            }
 
-            // Update all charts with filtered data
-            updateBarangayChart();
-            updateStatusChart();
+            processDataAndUpdateCharts();
         }
 
         function resetDateFilter() {
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
-
-            // Reset all charts to show all data
-            updateBarangayChart();
-            updateStatusChart();
-        }
-
-        // Helper functions for chart options
-        function getPieChartOptions(title) {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    },
-                    title: {
-                        display: true,
-                        text: title,
-                        font: {
-                            size: 14
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
-                        }
-                    }
-                }
-            };
-        }
-
-        function getBarChartOptions(title) {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: title,
-                        font: {
-                            size: 14
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label || ''}: ${context.raw}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                }
-            };
-        }
-
-        function getLineChartOptions(title) {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: title,
-                        font: {
-                            size: 14
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                }
-            };
-        }
-
-        // Helper function to generate chart colors
-        function getChartColors(count) {
-            const colors = [
-                '#4361ee', '#3f37c9', '#4895ef', '#4cc9f0',
-                '#560bad', '#7209b7', '#b5179e', '#f72585',
-                '#480ca8', '#3a0ca3', '#3f37c9', '#4361ee',
-                '#4cc9f0', '#4895ef', '#3f37c9', '#4361ee',
-                '#560bad', '#7209b7', '#b5179e', '#f72585'
-            ];
-            return colors.slice(0, count);
+            processDataAndUpdateCharts();
         }
     </script>
 </body>
 </html>
+}

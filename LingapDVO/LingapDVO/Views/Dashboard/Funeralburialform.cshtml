@@ -1,4 +1,4 @@
-﻿@model FuneralburialformDto
+﻿@model FillupformHospitalBillDto
 @{
     Layout = null;
 }
@@ -8,19 +8,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Request Assistance Form</title>
+    <title>RAF - Funeral/ Burial Assistance</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #DC143C;
+            --primary-color: #2c3e50;
             --primary-light: #FFE6EA;
-            --primary-dark: #B01030;
+            --primary-dark: #262626;
         }
 
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
+        /* Go Back button styling for upper left */
+        .go-back-top {
+            position: fixed;
+            left: 30px;
+            top: 30px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #DC143C;
+            color: #DC143C;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            .go-back-top:hover, .go-back-top:focus {
+                background: #DC143C;
+                color: #fff !important;
+                box-shadow: 0 4px 16px rgba(220, 20, 60, 0.15);
+                transform: translateY(-2px);
+                text-decoration: none;
+            }
 
         .form-container {
             background-color: white;
@@ -65,18 +94,22 @@
                 box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
             }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            padding: 0.5rem 2rem;
-            font-weight: 500;
-            border-radius: 5px;
+        .btn-submit {
+            background-color: #28a745; /* Green */
+            color: white;
+            font-weight: 600;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-            .btn-primary:hover {
-                background-color: var(--primary-dark);
-                border-color: var(--primary-dark);
+            .btn-submit:hover {
+                background-color: #20c997; /* Green-blue hover */
+                transform: scale(1.05);
             }
+
 
         .form-check-input:checked {
             background-color: var(--primary-color);
@@ -140,46 +173,56 @@
 </head>
 
 <body>
+    <!-- Go Back Button -->
+    <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
+        <i class="fas"></i> Go Back
+    </a>
+
     <div class="container form-container">
         <div class="form-header">
             <h3>Request Assistance Form</h3>
             <p class="text-muted">Please fill out all required fields to process your request</p>
         </div>
 
-        <form asp-action="Funeralburialform" enctype="multipart/form-data" method="post">
+        <form asp-action="FillupformHospitalBill" enctype="multipart/form-data" method="post">
+
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-  
+
+
+
             <!-- Patient Details -->
             <h5 class="section-header">Patient's Details</h5>
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label required-field">Last Name</label>
-                    <input asp-for="Lastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
+                    <input asp-for="Lastname" type="text" class="form-control"
+                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                           value="@ViewBag.Lastname" required>
                     <span asp-validation-for="Lastname" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label required-field">First Name</label>
-                    <input asp-for="Firstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
+                    <input asp-for="Firstname" type="text" class="form-control" value="@ViewBag.Firstname" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
                     <span asp-validation-for="Firstname" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Middle Name</label>
-                    <input asp-for="Middlename" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+                    <input asp-for="Middlename" type="text" value="@ViewBag.Middlename" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
                     <span asp-validation-for="Middlename" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Suffix</label>
                     <select class="form-select" asp-for="Suffix">
-                        <option value="None">None</option>
-                        <option value="Jr.">Jr.</option>
-                        <option value="Sr.">Sr.</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
+                        <option value="None" selected="@(ViewBag.Suffix == "None")">None</option>
+                        <option value="Jr." selected="@(ViewBag.Suffix == "Jr.")">Jr.</option>
+                        <option value="Sr." selected="@(ViewBag.Suffix == "Sr.")">Sr.</option>
+                        <option value="II" selected="@(ViewBag.Suffix == "II")">II</option>
+                        <option value="III" selected="@(ViewBag.Suffix == "III")">III</option>
+                        <option value="IV" selected="@(ViewBag.Suffix == "IV")">IV</option>
+                        <option value="V" selected="@(ViewBag.Suffix == "V")">V</option>
                     </select>
                     <span asp-validation-for="Suffix" class="text-danger"></span>
                 </div>
@@ -190,25 +233,25 @@
 
                 <div class="col-md-3">
                     <label class="form-label required-field">Blk / Lot / Street</label>
-                    <input asp-for="BlkLotStreet" type="text" class="form-control" required>
+                    <input asp-for="BlkLotStreet" type="text" value="@ViewBag.BlkLotStreet" class="form-control" required>
                     <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Sub / Vill.</label>
-                    <input asp-for="SubVill" type="text" class="form-control">
+                    <input asp-for="SubVill" type="text" value="@ViewBag.SubVill" class="form-control">
                     <span asp-validation-for="SubVill" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label required-field">Brgy.</label>
-                    <input asp-for="Brgy" type="text" class="form-control" required>
+                    <input asp-for="Brgy" type="text" value="@ViewBag.Barangay" class="form-control" required>
                     <span asp-validation-for="Brgy" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label required-field">District</label>
-                    <input asp-for="District" type="text" class="form-control" required>
+                    <input asp-for="District" type="text" value="@ViewBag.District" class="form-control" required>
                     <span asp-validation-for="District" class="text-danger"></span>
                 </div>
             </div>
@@ -218,16 +261,18 @@
                 <div class="col-md-2">
                     <label class="form-label required-field d-block">Sex</label>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" asp-for="Sex" name="sex" id="male" value="Male" required>
+                        <input class="form-check-input" type="radio" name="Sex" id="male" value="Male"
+                               @(ViewBag.Gender == "Male" ? "checked" : "") required>
                         <label class="form-check-label" for="male">Male</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" asp-for="Sex" name="sex" id="female" value="Female">
+                        <input class="form-check-input" type="radio" name="Sex" id="female" value="Female"
+                               @(ViewBag.Gender == "Female" ? "checked" : "")>
                         <label class="form-check-label" for="female">Female</label>
                     </div>
-
                     <span asp-validation-for="Sex" class="text-danger"></span>
                 </div>
+
 
                 <div class="col-md-3">
                     <label class="form-label required-field">PhilHealth</label>
@@ -271,7 +316,7 @@
 
                 <div class="col-md-2">
                     <label class="form-label required-field">Date of Birth</label>
-                    <input asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" required>
+                    <input value="@ViewBag.Dateofbirth" asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" required>
                     <span asp-validation-for="Dateofbirth" class="text-danger"></span>
                 </div>
 
@@ -285,151 +330,194 @@
                     const dateOfBirth = document.getElementById('dateOfBirth');
                     const ageInput = document.getElementById('ageInput');
 
-                    dateOfBirth.addEventListener('change', function() {
-                        if (this.value) {
-                            const birthDate = new Date(this.value);
-                            const today = new Date();
+                    function calculateAge(dob) {
+                        if (!dob) return "";
+                        const birthDate = new Date(dob);
+                        const today = new Date();
 
-                            let age = today.getFullYear() - birthDate.getFullYear();
-                            const monthDiff = today.getMonth() - birthDate.getMonth();
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const monthDiff = today.getMonth() - birthDate.getMonth();
 
-                            // Adjust age if birthday hasn't occurred yet this year
-                            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                                age--;
-                            }
-
-                            ageInput.value = age;
-                        } else {
-                            ageInput.value = "";
+                        // Adjust if birthday hasn't happened yet this year
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
                         }
+                        return age;
+                    }
+
+                    // Auto-calc on page load if DOB has a value
+                    if (dateOfBirth.value) {
+                        ageInput.value = calculateAge(dateOfBirth.value);
+                    }
+
+                    // Recalc whenever DOB changes
+                    dateOfBirth.addEventListener('change', function () {
+                        ageInput.value = calculateAge(this.value);
                     });
                 </script>
+
             </div>
+            <br />
+            <!-- Applying for self button -->
+            <div class="mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button"
+                            class="btn btn-outline-success transition-all duration-300 ease-in-out font-medium
+                       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-green-500/30
+                       focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
+                       active:scale-95"
+                            id="sameAsPatientBtn">
+                        <i class="bi bi-person-check"></i> I am the patient
+                    </button>
 
-            <!-- Requestor Details -->
-            <h5 class="section-header">Requestor's Details</h5>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label required-field">Last Name</label>
-                    <input asp-for="RLastname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                    <span asp-validation-for="RLastname"></span>
-                </div>
+                    <button type="button"
+                            class="btn btn-outline-warning transition-all duration-300 ease-in-out font-medium
+                       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-yellow-500/30
+                       focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50
+                       active:scale-95"
+                            id="clearAutoFillBtn"
+                            style="display: none;">
+                        <i class="bi bi-eraser"></i> Clear Auto-Fill
+                    </button>
 
-                <div class="col-md-3">
-                    <label class="form-label required-field">First Name</label>
-                    <input asp-for="RFirstname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                    <span asp-validation-for="RFirstname"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Middle Name</label>
-                    <input asp-for="RMiddlename" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                    <span asp-validation-for="RMiddlename"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Suffix</label>
-                    <select class="form-select" asp-for="RSuffix">
-                        <option value="None">None</option>
-                        <option value="Jr.">Jr.</option>
-                        <option value="Sr.">Sr.</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                    </select>
-                    <span asp-validation-for="RSuffix"></span>
+                    <small class="text-muted ms-2">Click if you are applying for yourself</small>
                 </div>
             </div>
 
-            <!-- Requestor Address -->
-            <div class="row g-3 mt-2">
-                <div class="col-md-3">
-                    <label>Blk / Lot / Street</label>
-                    <input asp-for="RBlkLotStreet" type="text" class="form-control">
-                    <span asp-validation-for="RBlkLotStreet"></span>
+            <!-- Show requestor details -->
+            <button type="button" class="btn btn-outline-primary mb-3" id="toggleRequestorBtn">
+                Show Requestor Details
+            </button>
+
+            <!-- Wrap the Requestor Details section in a div with a unique ID -->
+            <div id="requestorDetailsSection" style="display: none;">
+
+
+                <!-- Requestor Details -->
+                <h5 class="section-header">Requestor's Details</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label required-field">Last Name</label>
+                        <input asp-for="RLastname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+                        <span asp-validation-for="RLastname"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label required-field">First Name</label>
+                        <input asp-for="RFirstname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+                        <span asp-validation-for="RFirstname"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Middle Name</label>
+                        <input asp-for="RMiddlename" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+                        <span asp-validation-for="RMiddlename"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Suffix</label>
+                        <select class="form-select" asp-for="RSuffix">
+                            <option value="None">None</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                            <option value="IV">IV</option>
+                            <option value="V">V</option>
+                        </select>
+                        <span asp-validation-for="RSuffix"></span>
+                    </div>
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Sub / Vill.</label>
-                    <input asp-for="RSubVill" type="text" class="form-control">
-                    <span asp-validation-for="RSubVill"></span>
+                <!-- Requestor Address -->
+                <div class="row g-3 mt-2">
+                    <div class="col-md-3">
+                        <label>Blk / Lot / Street</label>
+                        <input asp-for="RBlkLotStreet" type="text" class="form-control">
+                        <span asp-validation-for="RBlkLotStreet"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Sub / Vill.</label>
+                        <input asp-for="RSubVill" type="text" class="form-control">
+                        <span asp-validation-for="RSubVill"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Brgy.</label>
+                        <input asp-for="RBrgy" type="text" class="form-control">
+                        <span asp-validation-for="RBrgy"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>District</label>
+                        <input asp-for="RDistrict" type="text" class="form-control">
+                        <span asp-validation-for="RDistrict"></span>
+                    </div>
+
                 </div>
 
-                <div class="col-md-3">
-                    <label>Brgy.</label>
-                    <input asp-for="RBrgy" type="text" class="form-control">
-                    <span asp-validation-for="RBrgy"></span>
-                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label>Relationship to Patient</label>
+                        <input asp-for="RelationshipPatient" type="text" class="form-control">
+                        <span asp-validation-for="RelationshipPatient"></span>
+                    </div>
 
-                <div class="col-md-3">
-                    <label>District</label>
-                    <input asp-for="RDistrict" type="text" class="form-control">
-                    <span asp-validation-for="RDistrict"></span>
-                </div>
+                    <div class="col-md-6">
+                        <label>Contact No.</label>
+                        <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
+                               placeholder="0912-345-6789 or 02-123-4567"
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57"> <!-- Blocks letters -->
+                        <span asp-validation-for="ContactNo"></span>
+                        <small class="text-muted">Format: 0912-345-6789 (mobile) or 02-123-4567 (landline)</small>
+                    </div>
 
-            </div>
+                    <script>
+                        const contactNoInput = document.getElementById('contactNoInput');
 
-            <div class="row g-3 mt-2">
-                <div class="col-md-6">
-                    <label>Relationship to Patient</label>
-                    <input asp-for="RelationshipPatient" type="text" class="form-control">
-                    <span asp-validation-for="RelationshipPatient"></span>
-                </div>
+                        contactNoInput.addEventListener('input', function(e) {
+                            // Remove all non-digit characters (extra safety)
+                            let value = this.value.replace(/\D/g, '');
 
-                <div class="col-md-6">
-                    <label>Contact No.</label>
-                    <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
-                           placeholder="0912-345-6789 or 02-123-4567"
-                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"> <!-- Blocks letters -->
-                    <span asp-validation-for="ContactNo"></span>
-                    <small class="text-muted">Format: 0912-345-6789 (mobile) or 02-123-4567 (landline)</small>
-                </div>
-
-                <script>
-                    const contactNoInput = document.getElementById('contactNoInput');
-
-                    contactNoInput.addEventListener('input', function(e) {
-                        // Remove all non-digit characters (extra safety)
-                        let value = this.value.replace(/\D/g, '');
-
-                        // Mobile number (09XXXXXXXXX)
-                        if (value.startsWith('09') && value.length <= 11) {
-                            if (value.length > 4) {
-                                value = value.substring(0, 4) + '-' + value.substring(4);
+                            // Mobile number (09XXXXXXXXX)
+                            if (value.startsWith('09') && value.length <= 11) {
+                                if (value.length > 4) {
+                                    value = value.substring(0, 4) + '-' + value.substring(4);
+                                }
+                                if (value.length > 8) {
+                                    value = value.substring(0, 8) + '-' + value.substring(8);
+                                }
                             }
-                            if (value.length > 8) {
-                                value = value.substring(0, 8) + '-' + value.substring(8);
+                            // Landline (02XXXXXXXX or area code)
+                            else if ((value.startsWith('02') || /^[1-9]\d{1}$/.test(value.substring(0,2)))) {
+                                if (value.length > 2) {
+                                    value = value.substring(0, 2) + '-' + value.substring(2);
+                                }
+                                if (value.length > 6) {
+                                    value = value.substring(0, 6) + '-' + value.substring(6);
+                                }
                             }
-                        }
-                        // Landline (02XXXXXXXX or area code)
-                        else if ((value.startsWith('02') || /^[1-9]\d{1}$/.test(value.substring(0,2)))) {
-                            if (value.length > 2) {
-                                value = value.substring(0, 2) + '-' + value.substring(2);
+
+                            // Limit length (11 digits for mobile, 10 for landline)
+                            const maxLength = value.startsWith('09') ? 13 : 11; // Includes hyphens
+                            if (value.length > maxLength) {
+                                value = value.substring(0, maxLength);
                             }
-                            if (value.length > 6) {
-                                value = value.substring(0, 6) + '-' + value.substring(6);
+
+                            this.value = value;
+                        });
+
+                        // Strict validation on blur (optional)
+                        contactNoInput.addEventListener('blur', function() {
+                            const regex = /^(09\d{2}-\d{3}-\d{4}|0[2-9]\d-\d{3}-\d{4})$/;
+                            if (this.value && !regex.test(this.value)) {
+                                alert("Please enter a valid Philippine number (e.g., 0912-345-6789 or 02-123-4567)");
+                                this.focus();
                             }
-                        }
-
-                        // Limit length (11 digits for mobile, 10 for landline)
-                        const maxLength = value.startsWith('09') ? 13 : 11; // Includes hyphens
-                        if (value.length > maxLength) {
-                            value = value.substring(0, maxLength);
-                        }
-
-                        this.value = value;
-                    });
-
-                    // Strict validation on blur (optional)
-                    contactNoInput.addEventListener('blur', function() {
-                        const regex = /^(09\d{2}-\d{3}-\d{4}|0[2-9]\d-\d{3}-\d{4})$/;
-                        if (this.value && !regex.test(this.value)) {
-                            alert("Please enter a valid Philippine number (e.g., 0912-345-6789 or 02-123-4567)");
-                            this.focus();
-                        }
-                    });
-                </script>
+                        });
+                    </script>
+                </div>
             </div>
 
             <!-- Type of Assistance Requested Section -->
@@ -437,13 +525,11 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <!-- Column 1 -->
-                    <div class="form-check">
+                    <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="checkbox"
-                               id="funeralAssistance" name="TypeassistanceOptions" value="Funeral Assistance">
-                        <label class="form-check-label" for="funeralAssistance">Funeral Assistance</label>
+                               id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
+                        <label class="form-check-label" for="hospitalAssistance">Funeral/ Burial Assistance</label>
                     </div>
-
- 
 
                     <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="checkbox"
@@ -472,7 +558,8 @@
 
                 <div class="col-md-6">
                     <!-- Column 2 -->
-      
+
+
                     <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="checkbox"
                                id="procedure" name="TypeassistanceOptions" value="Procedure">
@@ -480,6 +567,17 @@
                         <input type="text" class="form-control mt-1 assistance-spec"
                                name="ProcedureDetails" placeholder="Specify" style="display: none;">
                     </div>
+
+
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="dialysis" name="TypeassistanceOptions" value="Dialysis">
+                        <label class="form-check-label" for="dialysis">Dialysis</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="DialysisDetails" placeholder="Specify" style="display: none;">
+                    </div>
+
 
 
                     <div class="form-check mt-2">
@@ -492,105 +590,17 @@
                 </div>
             </div>
 
-            <div class="form-group mt-3">
-                <label for="assistanceReflection" class="form-label">Reflection info:</label>
+            <div class="form-group mt-3" style="display: none">
                 <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
                        name="Typeassistance" placeholder="Auto-generated info..." readonly>
                 <span asp-validation-for="Typeassistance" class="text-danger"></span>
             </div>
 
-            <!-- FOR CMO PERSONNEL USE ONLY Section -->
-            <div class="mt-5">
-                <h5 class="section-header">FOR CMO PERSONNEL USE ONLY</h5>
-
-                <div class="row g-3 mt-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Bill Amount:</label>
-                        <input type="text" class="form-control" id="billAmountInput" name="BillAmount">
-                    </div>
-                </div>
-
-                <div class="mt-3">
-                    <label class="form-label">Supporting Documents Attached:</label>
-                    <div class="row g-3 mt-1">
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance">
-                                <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
-                            </div>
-     
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="funeralBill" name="SupportingDocs" value="Funeral Bill">
-                                <label class="form-check-label" for="funeralBill">Funeral Bill</label>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="deathCertificate" name="SupportingDocs" value="Death Certificate">
-                                <label class="form-check-label" for="deathCertificate">Death Certificate</label>
-                            </div>
-       
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">Others:</label>
-                            <input type="text" class="form-control" id="cmoNotesInput" placeholder="Enter notes...">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <div class="border rounded p-3 mb-3" style="height: 100px;"></div>
-                            <label class="form-label text-center w-100">Processed by:</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="ForCMOPERSONNEL" class="form-label">CMO Reflection info:</label>
-                    <input asp-for="ForCMOPERSONNEL" type="text" class="form-control" id="cmoReflectionField"
-                           name="ForCMOPERSONNEL" placeholder="Auto-generated info..." readonly>
-                    <span asp-validation-for="ForCMOPERSONNEL"></span>
-                </div>
-            </div>
 
 
             <!-- Upload Section -->
             <h5 class="section-header">Upload Required Documents</h5>
 
-            <div class="mb-3">
-                <label class="form-label required-field">Valid ID (Front)</label>
-                <div class="upload-box" onclick="document.getElementById('idFront').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload ID Front</p>
-                    <p class="form-note">Accepted formats: JPG, PNG (Max 5MB)</p>
-                </div>
-                <input asp-for="IdFrontimage" type="file" id="idFront" class="d-none" accept="image/*" onchange="previewImage(this, 'idFrontPreview')">
-                <span asp-validation-for="IdFrontimage" class="text-danger"></span>
-
-                <img id="idFrontPreview" class="img-preview mt-2" alt="Front ID Preview">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label required-field">Valid ID (Back)</label>
-                <div class="upload-box" onclick="document.getElementById('idBack').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload ID Back</p>
-                    <p class="form-note">Accepted formats: JPG, PNG (Max 5MB)</p>
-                </div>
-                <input asp-for="IdBackimage" type="file" id="idBack" class="d-none" accept="image/*" onchange="previewImage(this, 'idBackPreview')">
-                <span asp-validation-for="IdBackimage" class="text-danger"></span>
-
-                <img id="idBackPreview" class="img-preview mt-2" alt="Back ID Preview">
-            </div>
 
             <div class="mb-3">
                 <label class="form-label required-field">Doctor's Prescription/Receipt</label>
@@ -608,26 +618,6 @@
                 <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
             </div>
 
-
-
-            <!-- Funeral Contract/Receipt Upload Section -->
-            <div class="mb-3">
-                <label class="form-label required-field">Funeral Contract/Receipt</label>
-                <div class="upload-box" onclick="document.getElementById('funeralReceipt').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload funeral receipt</p>
-                    <p class="form-note">Accepted formats: JPG, PNG, Etc.. (Max 10MB)</p>
-                </div>
-                <input asp-for="DeathCertificateimage" type="file" id="funeralReceipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'funeralReceiptPreview')">
-                <span asp-validation-for="DeathCertificateimage" class="text-danger"></span>
-
-                <img id="funeralReceiptPreview" class="img-preview mt-2" alt="Funeral Receipt Preview">
-                <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
-            </div>
-
-
             <!-- Terms and Conditions -->
             <div class="mb-4 form-check">
                 <input class="form-check-input" type="checkbox" id="termsCheck" required>
@@ -636,11 +626,10 @@
 
             <!-- Submit Button -->
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary">Submit Request</button>
+                <button type="submit" class="btn-submit">Submit Request</button>
             </div>
             <br />
             <br />
-            <a href="javascript:history.back()" class="btn btn-primary">Go Back</a>
         </form>
     </div>
 
@@ -792,8 +781,207 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
+            const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
+            const toggleBtn = document.getElementById('toggleRequestorBtn');
+            const requestorSection = document.getElementById('requestorDetailsSection');
 
-    <!-- Add these styles to your existing style section -->
+            // Patient form fields
+            const patientLastname = document.getElementById('Lastname');
+            const patientFirstname = document.getElementById('Firstname');
+            const patientMiddlename = document.getElementById('Middlename');
+            const patientSuffix = document.getElementById('Suffix');
+            const patientBlkLotStreet = document.getElementById('BlkLotStreet');
+            const patientSubVill = document.getElementById('SubVill');
+            const patientBrgy = document.getElementById('Brgy');
+            const patientDistrict = document.getElementById('District');
+
+            // Requestor form fields
+            const requestorLastname = document.getElementById('RLastname');
+            const requestorFirstname = document.getElementById('RFirstname');
+            const requestorMiddlename = document.getElementById('RMiddlename');
+            const requestorSuffix = document.getElementById('RSuffix');
+            const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
+            const requestorSubVill = document.getElementById('RSubVill');
+            const requestorBrgy = document.getElementById('RBrgy');
+            const requestorDistrict = document.getElementById('RDistrict');
+            const relationshipPatient = document.getElementById('RelationshipPatient');
+
+            // Store original values to restore on clear
+            let originalRequestorValues = {};
+            let autoFillUsed = false;
+
+            // IMPROVED SHOW/HIDE TOGGLE FUNCTIONALITY
+            if (toggleBtn && requestorSection) {
+                toggleBtn.addEventListener('click', function() {
+                    // Use getComputedStyle for reliable display detection
+                    const isHidden = window.getComputedStyle(requestorSection).display === 'none';
+
+                    if (isHidden) {
+                        requestorSection.style.display = 'block';
+                        toggleBtn.textContent = 'Hide Requestor Details';
+                        toggleBtn.classList.remove('btn-outline-primary');
+                        toggleBtn.classList.add('btn-primary');
+                    } else {
+                        requestorSection.style.display = 'none';
+                        toggleBtn.textContent = 'Show Requestor Details';
+                        toggleBtn.classList.remove('btn-primary');
+                        toggleBtn.classList.add('btn-outline-primary');
+                    }
+                });
+            }
+
+            // "I am the patient" button functionality
+            sameAsPatientBtn.addEventListener('click', function() {
+                // Store original values before auto-filling
+                storeOriginalValues();
+                autoFillUsed = true;
+
+                // Auto-fill requestor details with patient information
+                if (patientLastname && patientLastname.value) requestorLastname.value = patientLastname.value;
+                if (patientFirstname && patientFirstname.value) requestorFirstname.value = patientFirstname.value;
+                if (patientMiddlename && patientMiddlename.value) requestorMiddlename.value = patientMiddlename.value;
+                if (patientSuffix && patientSuffix.value) requestorSuffix.value = patientSuffix.value;
+                if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
+                if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
+                if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
+                if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
+
+                // Set relationship to "Self"
+                if (relationshipPatient) relationshipPatient.value = "Self";
+
+                // Visual feedback with Tailwind
+                sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
+                sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
+                sameAsPatientBtn.classList.add('btn-success', 'ring-2', 'ring-green-500');
+
+                // Show clear button PERMANENTLY (never auto-hides)
+                if (clearAutoFillBtn) {
+                    clearAutoFillBtn.style.display = 'block';
+                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
+                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
+                    clearAutoFillBtn.classList.add('btn-outline-warning');
+                }
+
+                // Auto-show requestor section
+                if (requestorSection) {
+                    requestorSection.style.display = 'block';
+                    if (toggleBtn) {
+                        toggleBtn.textContent = 'Hide Requestor Details';
+                        toggleBtn.classList.remove('btn-outline-primary');
+                        toggleBtn.classList.add('btn-primary');
+                    }
+                }
+
+                // Reset main button after 2 seconds
+                setTimeout(() => {
+                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> I am the patient';
+                    sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
+                    sameAsPatientBtn.classList.add('btn-outline-success');
+                }, 2000);
+            });
+
+            // Clear button functionality - PERMANENT until manually clicked
+            clearAutoFillBtn.addEventListener('click', function() {
+                // Restore original values (clear all auto-filled data)
+                restoreOriginalValues();
+
+                // Reset the auto-fill flag
+                autoFillUsed = false;
+
+                // Visual feedback for clear
+                clearAutoFillBtn.innerHTML = '<i class="bi bi-check-circle"></i> Cleared!';
+                clearAutoFillBtn.classList.remove('btn-outline-warning');
+                clearAutoFillBtn.classList.add('btn-warning', 'ring-2', 'ring-yellow-500');
+
+                // Reset clear button after 1.5 seconds (but keep it visible)
+                setTimeout(() => {
+                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
+                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
+                    clearAutoFillBtn.classList.add('btn-outline-warning');
+
+                    // Only hide if ALL fields are empty after clearing
+                    const allFieldsEmpty = checkIfAllRequestorFieldsEmpty();
+                    if (allFieldsEmpty) {
+                        clearAutoFillBtn.style.display = 'none';
+                    }
+                    // Otherwise, keep it visible so user can clear again if needed
+                }, 1500);
+            });
+
+            // Store original values function
+            function storeOriginalValues() {
+                const fields = [
+                    'RLastname', 'RFirstname', 'RMiddlename', 'RSuffix',
+                    'RBlkLotStreet', 'RSubVill', 'RBrgy', 'RDistrict', 'RelationshipPatient'
+                ];
+
+                originalRequestorValues = {}; // Reset storage
+                fields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) {
+                        originalRequestorValues[field] = element.value;
+                    }
+                });
+            }
+
+            // Restore original values function
+            function restoreOriginalValues() {
+                Object.keys(originalRequestorValues).forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) {
+                        element.value = originalRequestorValues[field];
+                    }
+                });
+            }
+
+            // Check if all requestor fields are empty
+            function checkIfAllRequestorFieldsEmpty() {
+                const requestorFields = [
+                    requestorLastname, requestorFirstname, requestorMiddlename,
+                    requestorSuffix, requestorBlkLotStreet, requestorSubVill,
+                    requestorBrgy, requestorDistrict, relationshipPatient
+                ];
+
+                return requestorFields.every(field => !field || !field.value.trim());
+            }
+
+            // Smart hint with Tailwind (optional - can remove if not needed)
+            const patientFields = [patientLastname, patientFirstname, patientMiddlename];
+            patientFields.forEach(field => {
+                if (field) {
+                    field.addEventListener('input', function() {
+                        if (this.value &&
+                            requestorLastname && !requestorLastname.value &&
+                            requestorFirstname && !requestorFirstname.value &&
+                            !autoFillUsed) {
+                            sameAsPatientBtn.classList.add('ring-2', 'ring-green-500', 'animate-bounce');
+
+                            setTimeout(() => {
+                                sameAsPatientBtn.classList.remove('animate-bounce', 'ring-2', 'ring-green-500');
+                            }, 3000);
+                        }
+                    });
+                }
+            });
+
+            // Show clear button if page loads with pre-filled data
+            function checkInitialState() {
+                const anyFieldHasContent = !checkIfAllRequestorFieldsEmpty();
+                if (anyFieldHasContent) {
+                    storeOriginalValues();
+                    autoFillUsed = true;
+                    clearAutoFillBtn.style.display = 'block';
+                }
+            }
+
+            // Run initial state check
+            checkInitialState();
+        });
+    </script>
+
     <style>
         .img-preview {
             cursor: pointer;
@@ -961,6 +1149,13 @@
         });
     </script>
 
+    <script>
+                // Go Back button functionality
+        goBackBtn.addEventListener('click', function() {
+            window.history.back();
+        });
+    </script>
+
 
     <script>
 
@@ -1027,8 +1222,6 @@
             updateReflection();
         });
     </script>
-
-
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">

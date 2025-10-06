@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Type of Assistance</title>
+    <title>Application Tracking</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -26,6 +26,35 @@
             background-color: #f5f5f5;
             color: #333;
         }
+
+        /* Go Back button styling for upper left */
+        .go-back-top {
+            position: fixed;
+            left: 30px;
+            top: 30px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #DC143C;
+            color: #DC143C;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            .go-back-top:hover, .go-back-top:focus {
+                background: #DC143C;
+                color: #fff !important;
+                box-shadow: 0 4px 16px rgba(220, 20, 60, 0.15);
+                transform: translateY(-2px);
+                text-decoration: none;
+            }
 
         .container {
             padding: 1rem;
@@ -154,6 +183,16 @@
         .status-processing {
             background-color: #CCE5FF;
             color: #004085;
+        }
+
+        .status-approved {
+            background-color: #D1E7DD;
+            color: #0F5132;
+        }
+
+        .status-unapproved {
+            background-color: #F8D7DA;
+            color: #721C24;
         }
 
         .dropdown-toggle {
@@ -285,7 +324,6 @@
             margin-bottom: 0;
         }
 
-
         .file-info-wrapper {
             grid-area: info;
             display: flex;
@@ -297,308 +335,557 @@
             justify-content: flex-end;
         }
 
+        /* Tracking Status Styles */
+        .tracking-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+            .timeline::before {
+                content: '';
+                position: absolute;
+                left: 15px;
+                top: 0;
+                bottom: 0;
+                width: 2px;
+                background: #e2e8f0;
+            }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+            .timeline-item:last-child {
+                margin-bottom: 0;
+            }
+
+        .timeline-marker {
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            z-index: 1;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .timeline-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+            .timeline-title h6 {
+                font-weight: 600;
+                margin-bottom: 0;
+            }
+
+        .timeline-date {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-description {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        .timeline-marker.submitted {
+            background: #28a745;
+        }
+
+        .timeline-marker.processing {
+            background: #ffc107;
+        }
+
+        .timeline-marker.approved {
+            background: #28a745;
+        }
+
+        .timeline-marker.unapproved {
+            background: #dc3545;
+        }
+
+        .timeline-marker.completed {
+            background: #17a2b8;
+        }
+
+        .waiting-text {
+            color: #6c757d;
+            font-style: italic;
+            margin-bottom: 0;
+        }
+
+        /* Status Card Styles */
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .status-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+        }
+
+            .status-header h3 {
+                margin-bottom: 0.5rem;
+                font-weight: 700;
+            }
+
+            .status-header p {
+                margin-bottom: 0;
+                opacity: 0.9;
+            }
+
+        .status-body {
+            padding: 1.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .individual-tracking {
+            margin-bottom: 2rem;
+        }
+
+        /* Two-column layout */
+        .main-content-wrapper {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .requests-column {
+            flex: 1;
+        }
+
+        .tracking-column {
+            width: 400px;
+            flex-shrink: 0;
+        }
+
+        .tracking-card {
+            position: sticky;
+            top: 2rem;
+        }
+
+        @@media (max-width: 1200px) {
+            .main-content-wrapper {
+                flex-direction: column;
+            }
+
+            .tracking-column {
+                width: 100%;
+            }
+        }
+
+        .tracking-empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            text-align: center;
+        }
+
+        /* Dropdown fix for file-item layout */
+        .file-item {
+            position: relative;
+            overflow: visible !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dropdown-menu {
+            position: absolute !important;
+            z-index: 5000 !important;
+            inset: auto auto 0 0;
+            transform: translate3d(0, 40px, 0) !important;
+            min-width: 150px;
+            overflow: visible !important;
+        }
+
+        /* Prevent parent containers from clipping the dropdown */
+        .tab-content,
+        .card-container,
+        .row {
+            overflow: visible !important;
+        }
     </style>
 </head>
 <body>
+    <div>
+        <!-- Go Back Button -->
+        <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
+            <i class="fas fa-arrow-left"></i> Go Back
+        </a>
+    </div>
     <div class="container">
         <div class="header">
             <h2>Pending & Processing Requests</h2>
-           <button class="btn btn-primary-custom" onclick="history.back()">
-                  <i class="fas fa-arrow-left me-2"></i>Back
-                </button>
-
         </div>
 
-        <!-- Tab Navigation -->
-        <div class="tab-container">
-            <ul class="nav nav-tabs" id="assistanceTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="hospital-tab" data-bs-toggle="tab" data-bs-target="#hospital" type="button" role="tab" aria-controls="hospital" aria-selected="true">
-                        <i class="fas fa-hospital me-2"></i>Hospital Bills
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="medical-tab" data-bs-toggle="tab" data-bs-target="#medical" type="button" role="tab" aria-controls="medical" aria-selected="false">
-                        <i class="fas fa-microscope me-2"></i>Medical/Lab
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="funeral-tab" data-bs-toggle="tab" data-bs-target="#funeral" type="button" role="tab" aria-controls="funeral" aria-selected="false">
-                        <i class="fas fa-cross me-2"></i>Funeral
-                    </button>
-                </li>
-            </ul>
-        </div>
+        <div class="main-content-wrapper">
+            <!-- Left Column - Requests -->
+            <div class="requests-column">
+                <!-- Tab Navigation -->
+                <div class="tab-container">
+                    <ul class="nav nav-tabs" id="assistanceTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="hospital-tab" data-bs-toggle="tab" data-bs-target="#hospital" type="button" role="tab" aria-controls="hospital" aria-selected="true">
+                                <i class="fas fa-hospital me-2"></i>Hospital Bills
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="medical-tab" data-bs-toggle="tab" data-bs-target="#medical" type="button" role="tab" aria-controls="medical" aria-selected="false">
+                                <i class="fas fa-microscope me-2"></i>Medical/Lab
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="funeral-tab" data-bs-toggle="tab" data-bs-target="#funeral" type="button" role="tab" aria-controls="funeral" aria-selected="false">
+                                <i class="fas fa-cross me-2"></i>Funeral
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
-        <div class="tab-content" id="assistanceTabsContent">
-            <!-- Hospital Bills Section -->
-            <div class="tab-pane fade show active" id="hospital" role="tabpanel" aria-labelledby="hospital-tab">
-                <div class="card-container">
-                    <h3 class="section-title">Hospital Bill Assistance (Private Hospital)</h3>
+                <div class="tab-content" id="assistanceTabsContent">
+                    <!-- Hospital Bills Section -->
+                    <div class="tab-pane fade show active" id="hospital" role="tabpanel" aria-labelledby="hospital-tab">
+                        <div class="card-container">
+                            <h3 class="section-title">Hospital Bill Assistance (Private Hospital)</h3>
 
-                    @{
-                        var pendingHospitalBills = Model.HospitalBills
-                        .Where(f =>
-                        f.Status != null && (
-                        f.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) ||
-                        f.Status.Equals("unapproved", StringComparison.OrdinalIgnoreCase) ||
-                        f.Status.Equals("processing", StringComparison.OrdinalIgnoreCase)
-                        )
-                        )
-                        .ToList();
-
-                    }
-                    @if (pendingHospitalBills.Any())
-                    {
-                        @foreach (var file in pendingHospitalBills)
-                        {
-                            <div class="file-item">
-                                <div class="file-info-wrapper">
-                                    <div class="file-icon">
-                                        <i class="fas fa-file-medical-alt"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
-                                        <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
-                                    </div>
-                                </div>
-                                <div class="file-actions">
-                                    @{
-                                        var statusClass = "status-badge ";
-                                        switch (file.Status?.ToLower())
-                                        {
-                                            case "pending":
-                                                statusClass += "status-pending";
-                                                break;
-                                            case "processing":
-                                                statusClass += "status-processing";
-                                                break;
-                                            default:
-                                                statusClass += "status-pending";
-                                                break;
-                                        }
-                                    }
-                                    <span class="@statusClass">
-                                        <i class="fas fa-circle"></i>@file.Status
-                                    </span>
-                                    <!-- Dropdown -->
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-toggle ellipsis-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            @if (file.Status?.ToLower() != "processing" && file.Status?.ToLower() != "unapproved")
-                                            {
-                                                <li>
-                                                    <a class="dropdown-item" asp-controller="Dashboard" asp-action="FillupformHospitalBilledit" asp-route-id="@file.Id">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                </li>
-
-                                                <li>
-                                                    <a class="dropdown-item" asp-controller="Dashboard" asp-action="FillupformHospitalBilldelete" asp-route-id="@file.Id">
-                                                        <i class="fas fa-trash-alt"></i> Remove
-                                                    </a>
-                                                </li>
+                            @{
+                                var pendingHospitalBills = Model.HospitalBills
+                                .Where(f =>
+                                f.Status != null && (
+                                f.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) ||
+                                f.Status.Equals("unapproved", StringComparison.OrdinalIgnoreCase) ||
+                                f.Status.Equals("processing", StringComparison.OrdinalIgnoreCase)
+                                )
+                                )
+                                .ToList();
+                            }
+                            @if (pendingHospitalBills.Any())
+                            {
+                                @foreach (var file in pendingHospitalBills)
+                                {
+                                    <div class="file-item">
+                                        <div class="file-info-wrapper">
+                                            <div class="file-icon">
+                                                <i class="fas fa-file-medical-alt"></i>
+                                            </div>
+                                            <div class="file-info">
+                                                <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
+                                                <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                            </div>
+                                        </div>
+                                        <div class="file-actions">
+                                            @{
+                                                var statusClass = "status-badge ";
+                                                switch (file.Status?.ToLower())
+                                                {
+                                                    case "pending":
+                                                        statusClass += "status-pending";
+                                                        break;
+                                                    case "processing":
+                                                        statusClass += "status-processing";
+                                                        break;
+                                                    case "approved":
+                                                        statusClass += "status-approved";
+                                                        break;
+                                                    case "unapproved":
+                                                        statusClass += "status-unapproved";
+                                                        break;
+                                                    default:
+                                                        statusClass += "status-pending";
+                                                        break;
+                                                }
                                             }
-                                            <li>
-                                                <a class="dropdown-item" asp-controller="Dashboard" asp-action="Fillupformhospitalbillview" asp-route-id="@file.Id">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
-                                            </li>
-                                        </ul>
+                                            <span class="@statusClass">
+                                                <i class="fas fa-circle"></i>@file.Status
+                                            </span>
+                                            <!-- Dropdown -->
+                                            <div class="dropdown" data-bs-display="static" style="position: relative; overflow: visible;">
+                                                <button class="btn btn-sm dropdown-toggle ellipsis-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-h"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end" style="z-index: 5000 !important; position: absolute !important; inset: auto auto 0 0; transform: translate3d(0, 40px, 0) !important; min-width: 150px;">
+                                                    @if (file.Status?.ToLower() != "processing" && file.Status?.ToLower() != "unapproved")
+                                                    {
+                                                        <li>
+                                                            <a class="dropdown-item" asp-controller="Dashboard" asp-action="FillupformHospitalBilledit" asp-route-id="@file.Id">
+                                                                <i class="fas fa-edit"></i> Edit
+                                                            </a>
+                                                        </li>
+
+                                                        <li>
+                                                            <a class="dropdown-item text-danger" asp-controller="Dashboard" asp-action="FillupformHospitalBilldelete" asp-route-id="@file.Id">
+                                                                <i class="fas fa-trash-alt"></i> Remove
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    <li>
+                                                        <a class="dropdown-item" asp-controller="Dashboard" asp-action="Fillupformhospitalbillview" asp-route-id="@file.Id">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
                                     </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-folder-open"></i>
+                                    <p>No pending or processing hospital bill forms found.</p>
                                 </div>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i>
-                            <p>No pending or processing hospital bill forms found.</p>
+                            }
                         </div>
-                    }
+                    </div>
+
+                    <!-- Medical and Lab Forms Section -->
+                    <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-tab">
+                        <div class="card-container">
+                            <h3 class="section-title">Medical and laboratory Procedure(Private Hospital)</h3>
+
+                            @{
+                                var pendingMedicalForms = Model.MedicalLabForms
+                                .Where(f =>
+                                f.Status != null && (
+                                f.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) ||
+                                f.Status.Equals("unapproved", StringComparison.OrdinalIgnoreCase) ||
+                                f.Status.Equals("processing", StringComparison.OrdinalIgnoreCase)
+                                )
+                                )
+                                .ToList();
+                            }
+                            @if (pendingMedicalForms.Any())
+                            {
+                                @foreach (var file in pendingMedicalForms)
+                                {
+                                    <div class="file-item">
+                                        <div class="file-info-wrapper">
+                                            <div class="file-icon">
+                                                <i class="fas fa-microscope"></i>
+                                            </div>
+                                            <div class="file-info">
+                                                <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
+                                                <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                            </div>
+                                        </div>
+                                        <div class="file-actions">
+                                            @{
+                                                var statusClass = "status-badge ";
+                                                switch (file.Status?.ToLower())
+                                                {
+                                                    case "pending":
+                                                        statusClass += "status-pending";
+                                                        break;
+                                                    case "processing":
+                                                        statusClass += "status-processing";
+                                                        break;
+                                                    case "approved":
+                                                        statusClass += "status-approved";
+                                                        break;
+                                                    case "unapproved":
+                                                        statusClass += "status-unapproved";
+                                                        break;
+                                                    default:
+                                                        statusClass += "status-pending";
+                                                        break;
+                                                }
+                                            }
+                                            <span class="@statusClass">
+                                                <i class="fas fa-circle"></i>@file.Status
+                                            </span>
+                                            <div class="dropdown">
+                                                <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-h"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    @if (file.Status?.ToLower() != "processing" && file.Status?.ToLower() != "unapproved")
+                                                    {
+                                                        <li>
+                                                            <a class="dropdown-item" asp-controller="Dashboard" asp-action="Medicalandlabformedit" asp-route-id="@file.Id">
+                                                                <i class="fas fa-edit"></i> Edit
+                                                            </a>
+                                                        </li>
+
+                                                        <li>
+                                                            <a class="dropdown-item" asp-controller="Dashboard" asp-action="Medicalandlabformedelete" asp-route-id="@file.Id">
+                                                                <i class="fas fa-trash-alt"></i> Remove
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                    <li>
+                                                        <a class="dropdown-item" asp-controller="Dashboard" asp-action="Medicalandlabformview" asp-route-id="@file.Id">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-folder-open"></i>
+                                    <p>No pending or processing medical and lab forms found.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Funeralform Section -->
+                    <div class="tab-pane fade" id="funeral" role="tabpanel" aria-labelledby="funeral-tab">
+                        <div class="card-container">
+                            <h3 class="section-title">Funeral and burial assistance</h3>
+
+                            @{
+                                var pendingFuneralForms = Model.Funeralburialform
+                                .Where(f =>
+                                f.Status != null && (
+                                f.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) ||
+                                f.Status.Equals("unapproved", StringComparison.OrdinalIgnoreCase) ||
+                                f.Status.Equals("processing", StringComparison.OrdinalIgnoreCase)
+                                )
+                                )
+                                .ToList();
+                            }
+                            @if (pendingFuneralForms.Any())
+                            {
+                                @foreach (var file in pendingFuneralForms)
+                                {
+                                    <div class="file-item">
+                                        <div class="file-info-wrapper">
+                                            <div class="file-icon">
+                                                <i class="fas fa-cross"></i>
+                                            </div>
+                                            <div class="file-info">
+                                                <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
+                                                <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                            </div>
+                                        </div>
+                                        <div class="file-actions">
+                                            @{
+                                                var statusClass = "status-badge ";
+                                                switch (file.Status?.ToLower())
+                                                {
+                                                    case "pending":
+                                                        statusClass += "status-pending";
+                                                        break;
+                                                    case "processing":
+                                                        statusClass += "status-processing";
+                                                        break;
+                                                    case "approved":
+                                                        statusClass += "status-approved";
+                                                        break;
+                                                    case "unapproved":
+                                                        statusClass += "status-unapproved";
+                                                        break;
+                                                    default:
+                                                        statusClass += "status-pending";
+                                                        break;
+                                                }
+                                            }
+                                            <span class="@statusClass">
+                                                <i class="fas fa-circle"></i>@file.Status
+                                            </span>
+                                            <div class="dropdown">
+                                                <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-h"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    @if (file.Status?.ToLower() != "processing" && file.Status?.ToLower() != "unapproved")
+                                                    {
+                                                        <li>
+                                                            <a class="dropdown-item" asp-controller="Dashboard" asp-action="Funeralburialformedit" asp-route-id="@file.Id">
+                                                                <i class="fas fa-edit"></i> Edit
+                                                            </a>
+                                                        </li>
+
+                                                        <li>
+                                                            <a class="dropdown-item" asp-controller="Dashboard" asp-action="Funeralburialformedelete" asp-route-id="@file.Id">
+                                                                <i class="fas fa-trash-alt"></i> Remove
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                    <li>
+                                                        <a class="dropdown-item" asp-controller="Dashboard" asp-action="Funeralburialformview" asp-route-id="@file.Id">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-folder-open"></i>
+                                    <p>No pending or processing funeral forms found.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Medical and Lab Forms Section -->
-            <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-tab">
-                <div class="card-container">
-                    <h3 class="section-title">Medical and laboratory Procedure(Private Hospital)</h3>
+            <!-- Right Column - Tracking -->
+            <div class="tracking-column">
+                <div class="tracking-card">
+                    <!-- Dynamic Progress Tracking Section -->
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h3><i class="fas fa-file-alt me-2"></i>Application Progress</h3>
+                            <p id="tracking-subtitle">Track your applications</p>
+                        </div>
 
-                    @{
-                        var pendingMedicalForms = Model.MedicalLabForms
-                        .Where(f =>
-                        f.Status != null && (
-                        f.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) ||
-                        f.Status.Equals("unapproved", StringComparison.OrdinalIgnoreCase) ||
-                        f.Status.Equals("processing", StringComparison.OrdinalIgnoreCase)
-                        )
-                        )
-                        .ToList();
-
-                    }
-                    @if (pendingMedicalForms.Any())
-                    {
-                        @foreach (var file in pendingMedicalForms)
-                        {
-                            <div class="file-item">
-                                <div class="file-info-wrapper">
-                                    <div class="file-icon">
-                                        <i class="fas fa-microscope"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
-                                        <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
-                                    </div>
-                                </div>
-                                <div class="file-actions">
-                                    @{
-                                        var statusClass = "status-badge ";
-                                        switch (file.Status?.ToLower())
-                                        {
-                                            case "pending":
-                                                statusClass += "status-pending";
-                                                break;
-                                            case "processing":
-                                                statusClass += "status-processing";
-                                                break;
-                                            default:
-                                                statusClass += "status-pending";
-                                                break;
-                                        }
-                                    }
-                                    <span class="@statusClass">
-                                        <i class="fas fa-circle"></i>@file.Status
-                                    </span>
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            @if (file.Status?.ToLower() != "processing" && file.Status?.ToLower() != "unapproved")
-                                            {
-                                                <li>
-                                                    <a class="dropdown-item" asp-controller="Dashboard" asp-action="Medicalandlabformedit" asp-route-id="@file.Id">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                </li>
-
-                                                <li>
-                                                    <a class="dropdown-item" asp-controller="Dashboard" asp-action="Medicalandlabformedelete" asp-route-id="@file.Id">
-                                                        <i class="fas fa-trash-alt"></i> Remove
-                                                    </a>
-                                                </li>
-                                            }
-                                            <li>
-                                                <a class="dropdown-item" asp-controller="Dashboard" asp-action="Medicalandlabformview" asp-route-id="@file.Id">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
+                        <div class="status-body" id="tracking-content">
+                            <!-- Default content - will be replaced by JavaScript -->
+                            <div class="tracking-empty-state">
+                                <div class="text-center text-muted">
+                                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                                    <h5>Select a tab to view tracking</h5>
+                                    <p class="mb-0">Click on a tab above to see application progress</p>
                                 </div>
                             </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i>
-                            <p>No pending or processing medical and lab forms found.</p>
                         </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Funeralform Section -->
-            <div class="tab-pane fade" id="funeral" role="tabpanel" aria-labelledby="funeral-tab">
-                <div class="card-container">
-                    <h3 class="section-title">Funeral and burial assistance</h3>
-
-                    @{
-                        var pendingFuneralForms = Model.Funeralburialform
-                        .Where(f =>
-                        f.Status != null && (
-                        f.Status.Equals("pending", StringComparison.OrdinalIgnoreCase) ||
-                        f.Status.Equals("unapproved", StringComparison.OrdinalIgnoreCase) ||
-                        f.Status.Equals("processing", StringComparison.OrdinalIgnoreCase)
-                        )
-                        )
-                        .ToList();
-
-                    }
-                    @if (pendingFuneralForms.Any())
-                    {
-                        @foreach (var file in pendingFuneralForms)
-                        {
-                            <div class="file-item">
-                                <div class="file-info-wrapper">
-                                    <div class="file-icon">
-                                        <i class="fas fa-cross"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
-                                        <span class="file-size">Uploaded: @file.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
-                                    </div>
-                                </div>
-                                <div class="file-actions">
-                                    @{
-                                        var statusClass = "status-badge ";
-                                        switch (file.Status?.ToLower())
-                                        {
-                                            case "pending":
-                                                statusClass += "status-pending";
-                                                break;
-                                            case "processing":
-                                                statusClass += "status-processing";
-                                                break;
-                                            default:
-                                                statusClass += "status-pending";
-                                                break;
-                                        }
-                                    }
-                                    <span class="@statusClass">
-                                        <i class="fas fa-circle"></i>@file.Status
-                                    </span>
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            @if (file.Status?.ToLower() != "processing" && file.Status?.ToLower() != "unapproved")
-                                            {
-                                                <li>
-                                                    <a class="dropdown-item" asp-controller="Dashboard" asp-action="Funeralburialformedit" asp-route-id="@file.Id">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                </li>
-
-                                                <li>
-                                                    <a class="dropdown-item" asp-controller="Dashboard" asp-action="Funeralburialformedelete" asp-route-id="@file.Id">
-                                                        <i class="fas fa-trash-alt"></i> Remove
-                                                    </a>
-                                                </li>
-                                            }
-                                            <li>
-                                                <a class="dropdown-item" asp-controller="Dashboard" asp-action="Funeralburialformview" asp-route-id="@file.Id">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i>
-                            <p>No pending or processing funeral forms found.</p>
-                        </div>
-                    }
+                    </div>
                 </div>
             </div>
         </div>
@@ -624,6 +911,195 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Tracking data for different form types - INCLUDES ALL FORMS (not just pending/processing)
+        const trackingData = {
+            hospital: {
+                title: "Hospital Bill Applications",
+                subtitle: "Track your hospital bill assistance applications",
+                forms: [
+                    @foreach (var doc in Model.HospitalBills.Where(f => f.Status != null).OrderByDescending(f => f.CreatedAt))
+                    {
+                            <text>
+                            {
+                                id: @doc.Id,
+                                name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
+                                type: "Hospital Bill Assistance",
+                                createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
+                                processAt: @(doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 ? $"\"{doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                                processBy: "@doc.Processby",
+                                result: @(doc.Result > DateTime.MinValue && doc.Result.Year > 1 ? $"\"{doc.Result.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                                status: "@doc.Status",
+                                status2: "@doc.Status2",
+                                comments: "@doc.Comments"
+                            },
+                            </text>
+                    }
+                ]
+            },
+            medical: {
+                title: "Medical & Lab Applications",
+                subtitle: "Track your medical and laboratory procedure applications",
+                forms: [
+                    @foreach (var doc in Model.MedicalLabForms.Where(f => f.Status != null).OrderByDescending(f => f.CreatedAt))
+                    {
+                            <text>
+                            {
+                                id: @doc.Id,
+                                name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
+                                type: "Medical and Laboratory Procedure",
+                                createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
+                                processAt: @(doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 ? $"\"{doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                                processBy: "@doc.Processby",
+                                result: @(doc.Result > DateTime.MinValue && doc.Result.Year > 1 ? $"\"{doc.Result.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                                status: "@doc.Status",
+                                status2: "@doc.Status2",
+                                comments: "@doc.Comments"
+                            },
+                            </text>
+                    }
+                ]
+            },
+            funeral: {
+                title: "Funeral Applications",
+                subtitle: "Track your funeral and burial assistance applications",
+                forms: [
+                    @foreach (var doc in Model.Funeralburialform.Where(f => f.Status != null).OrderByDescending(f => f.CreatedAt))
+                    {
+                            <text>
+                            {
+                                id: @doc.Id,
+                                name: "@doc.Lastname, @doc.Firstname @doc.Middlename",
+                                type: "Funeral and Burial Assistance",
+                                createdAt: "@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")",
+                                processAt: @(doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 ? $"\"{doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                                processBy: "@doc.Processby",
+                                result: @(doc.Result > DateTime.MinValue && doc.Result.Year > 1 ? $"\"{doc.Result.ToString("dd MMM yyyy, hh:mm tt")}\"" : "null"),
+                                status: "@doc.Status",
+                                status2: "@doc.Status2",
+                                comments: "@doc.Comments"
+                            },
+                            </text>
+                    }
+                ]
+            }
+        };
+
+        // Function to update tracking display
+        function updateTracking(tabType) {
+            const data = trackingData[tabType];
+            const trackingContent = document.getElementById('tracking-content');
+            const trackingSubtitle = document.getElementById('tracking-subtitle');
+
+            // Check if data exists and has forms
+            if (!data) {
+                trackingSubtitle.textContent = "Track your applications";
+                trackingContent.innerHTML = `
+                    <div class="tracking-empty-state">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                            <h5>Data Not Available</h5>
+                            <p class="mb-0">Unable to load tracking data</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            trackingSubtitle.textContent = data.subtitle;
+
+            // Check if forms array exists and has items
+            if (!data.forms || data.forms.length === 0) {
+                trackingContent.innerHTML = `
+                    <div class="tracking-empty-state">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-folder-open fa-3x mb-3"></i>
+                            <h5>No Applications Found</h5>
+                            <p class="mb-0">No ${data.title.toLowerCase()} found for tracking</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            data.forms.forEach((doc, index) => {
+                html += `
+                    <div class="individual-tracking" style="margin-bottom: ${index < data.forms.length - 1 ? '2rem' : '0'}; padding: 1rem; border: 1px solid #e9ecef; border-radius: 8px;">
+                        <h5 class="mb-3" style="color: var(--primary-color);">${doc.name}</h5>
+                        <div class="timeline">
+                            <!-- Step A: Document Submitted -->
+                            <div class="timeline-item">
+                                <div class="timeline-marker submitted">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Document Submitted</h6>
+                                    <span class="small text-muted">${doc.createdAt}</span>
+                                    <p>${doc.type} form was successfully submitted.</p>
+                                </div>
+                            </div>
+
+                            <!-- Step B: Processing -->
+                            ${doc.processAt && doc.processBy ? `
+                                <div class="timeline-item">
+                                    <div class="timeline-marker processing">
+                                        <i class="fas fa-cog"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>Processing</h6>
+                                        <span class="small text-muted">${doc.processAt}</span>
+                                        <p>Processed by: <strong>${doc.processBy}</strong></p>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="timeline-item">
+                                    <div class="timeline-marker" style="background: #6c757d; color: white;">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>Processing</h6>
+                                        <p class="waiting-text">Waiting for staff to process...</p>
+                                    </div>
+                                </div>
+                            `}
+
+                            <!-- Step C: Result -->
+                            ${doc.result ? `
+                                <div class="timeline-item">
+                                    <div class="timeline-marker ${doc.status2 && doc.status2.toLowerCase() === 'approved' ? 'approved' : 'unapproved'}">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>${doc.status || 'Completed'}</h6>
+                                        <span class="small text-muted">${doc.result}</span>
+                                        <p>Result: <strong>${doc.status2 || 'Completed'}</strong></p>
+                                        ${doc.comments && doc.comments.trim() !== '' ? `<p class="mt-2"><strong>Comments:</strong> ${doc.comments}</p>` : ''}
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="timeline-item">
+                                    <div class="timeline-marker" style="background: #6c757d; color: white;">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>Result</h6>
+                                        <p class="waiting-text">Waiting for result...</p>
+                                    </div>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            });
+
+            trackingContent.innerHTML = html;
+        }
+
+        // Go Back button functionality
+        document.getElementById('goBackBtn').addEventListener('click', function() {
+            window.history.back();
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize the modal
             var commentsModal = new bootstrap.Modal(document.getElementById('commentsModal'));
@@ -644,13 +1120,17 @@
                 });
             });
 
-            // Initialize tabs
+            // Initialize tabs and set up tracking
             var tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
             tabEls.forEach(function(tabEl) {
                 tabEl.addEventListener('shown.bs.tab', function (event) {
-                    // You can add additional logic here when a tab is shown
+                    const tabType = event.target.id.replace('-tab', '');
+                    updateTracking(tabType);
                 });
             });
+
+            // Initialize with hospital tab data
+            updateTracking('hospital');
         });
     </script>
 </body>

@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
 }
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -16,18 +16,95 @@
     <link rel="stylesheet" href="css/jquery-ui.css">
     <link rel="stylesheet" href="css/owl.carousel.min.css">
     <link rel="stylesheet" href="css/owl.theme.default.min.css">
-    <link rel="stylesheet" href="css/owl.theme.default.min.css">
-
     <link rel="stylesheet" href="css/jquery.fancybox.min.css">
-
     <link rel="stylesheet" href="css/bootstrap-datepicker.css">
-
     <link rel="stylesheet" href="fonts/flaticon/font/flaticon.css">
-
     <link rel="stylesheet" href="css/aos.css">
-
     <link rel="stylesheet" href="css/style.css">
 
+    <style>
+        h1 {
+            color: antiquewhite;
+            transition: color 0.3s ease;
+        }
+
+        .site-navbar.is-sticky h1 {
+            color: #DC143C; /* red on scroll */
+        }
+
+        /* Optional - make buttons readable when navbar turns white */
+        .site-navbar.is-sticky .nav-btn {
+            color: black;
+            mix-blend-mode: normal; /* reset blend so text stays visible */
+        }
+
+        /* Transparent navbar with spacing */
+        .site-navbar {
+            background: transparent;
+            height: 80px;
+            padding-top: 14px;
+            padding-bottom: 20px;
+        }
+
+        /* Navbar button style */
+        .nav-btn {
+            background: none;
+            border: none;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--nav-text, #ffff); /* Use variable color for flexibility */
+        }
+
+        /* Use mix-blend-mode for adaptive visibility */
+        .site-navbar .nav-btn {
+            mix-blend-mode: difference; /* Makes text invert depending on background brightness */
+        }
+
+        /* Hover effect */
+        .nav-btn:hover {
+            color: #DC143C; /* Bright hover color (crimson red) */
+            transform: scale(1.05);
+        }
+
+        /* Adjust text visibility when background is bright (auto handled by blend mode) */
+        .site-navbar,
+        .nav-btn {
+            isolation: isolate;
+        }
+
+        .site-mobile-menu {
+            background-color: rgba(0, 0, 0, 1); /* semi-transparent black */
+            color: white; /* text inside the menu */
+        }
+
+            /* Optional: style mobile links for readability */
+            .site-mobile-menu a,
+            .site-mobile-menu .nav-btn {
+                color: white;
+                font-weight: bold;
+            }
+
+                .site-mobile-menu a:hover,
+                .site-mobile-menu .nav-btn:hover {
+                    color: #DC143C; /* bright red hover for visibility */
+                }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const navbar = document.querySelector(".site-navbar");
+
+          window.addEventListener("scroll", function() {
+            if (window.scrollY > 50) {
+              navbar.classList.add("is-sticky");
+            } else {
+              navbar.classList.remove("is-sticky");
+            }
+          });
+        });
+    </script>
 </head>
 
 <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
@@ -58,59 +135,31 @@
                 <div class="row align-items-center">
 
                     <div class="col-6 col-xl-2">
-                        <h1 class="mb-0 site-logo">
-                            <a href="index.html" class="h2 mb-0">
-                                LingapDVO<span class="text-primary"></span>
-                            </a>
+                        <h1>                          
+                                LingapDVO                         
                         </h1>
                     </div>
 
                     <div class="col-12 col-md-10 d-none d-xl-block">
                         <nav class="site-navigation position-relative text-right" role="navigation">
-
                             <ul class="site-menu main-menu js-clone-nav mr-auto d-none d-lg-block">
-                                <li><a href="#home-section" class="nav-link">Home</a></li>
                                 <li>
-                                    <a href="#about-section" class="nav-link">About Us</a>
-                                
+                                    <button type="button" class="nav-btn" onclick="location.href='#home-section'">Home</button>
                                 </li>
-                                <li><a href="#contact-section" class="nav-link">Contact</a></li>
-
-
-                                <a href="#"
-                                   class="nav-link login-link"
-                                   style="
-                                          display: inline-flex;
-                                          align-items: center;
-                                          justify-content: center;
-                                          padding: 12px 32px;
-                                          font-size: 16px;
-                                          font-weight: 500;
-                                          font-family: 'Inter', 'Helvetica Neue', sans-serif;
-                                          color: #dc143c;
-                                          background-color: transparent;
-                                          border: 1.5px solid #dc143c;
-                                          border-radius: 8px;
-                                          text-decoration: none;
-                                          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                                          backdrop-filter: blur(4px);
-                                          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-                                          height: 48px;
-                                        "
-                                   onmouseover="this.style.backgroundColor='rgba(220, 20, 60, 0.08)'; this.style.transform='translateY(-1px)'"
-                                   onmouseout="this.style.backgroundColor='transparent'; this.style.transform='translateY(0)'"
-                                   onclick="window.location.replace('/Login'); return false;">
-                                    Login
-                                </a>
-                                <li class="social">
-                                    <a href="#contact-section" class="nav-link"><span class="icon-facebook"></span></a>
+                                <li>
+                                    <button type="button" class="nav-btn" onclick="location.href='#about-section'">About Us</button>
                                 </li>
-                                <li class="social">
-                                    <a href="#contact-section" class="nav-link"><span class="icon-twitter"></span></a>
+                                <li>
+                                    <button type="button" class="nav-btn" onclick="location.href='#contact-section'">Contact</button>
+                                </li>
+                                <li>
+                                    <button type="button" class="nav-btn" onclick="location.href='/Login'">Login</button>
                                 </li>
                             </ul>
                         </nav>
                     </div>
+
+
 
 
                     <div class="col-6 d-inline-block d-xl-none ml-md-0 py-3" style="position: relative; top: 3px;">
@@ -140,9 +189,6 @@
                                     ​"Nagbibigay ng pag-asa at tulong sa bawat Dabawenyong nangangailangan—accessible, may malasakit,
                                     at nakatuon sa iyong kapakanan. Danasin ang tunay na serbisyo publiko sa Lingap para sa Mahirap!"
                                 </p>
-                                <div data-aos="fade-up" data-aos-delay="100">
-                                    <a href="https://www.facebook.com/lingapparasamahirap" target="_blank" class="btn  btn-primary mr-2 mb-2">Get In Touch</a>
-                                </div>
                             </div>
 
                             <div class="slide">
@@ -152,20 +198,14 @@
                                     Mula sa medikal na tulong hanggang sa pangangailangang pinansyal, nandito kami upang suportahan ka.
                                     Walang maiiwan sa tunay na malasakit!"
                                 </p>
-                                <div data-aos="fade-up" data-aos-delay="100">
-                                    <a href="https://www.facebook.com/lingapparasamahirap" target="_blank" class="btn  btn-primary mr-2 mb-2">Get In Touch</a>
-                                </div>
                             </div>
 
                             <div class="slide">
-                                <h1 class="text-uppercase" data-aos="fade-up">Serbisyong May Malasaki</h1>
+                                <h1 class="text-uppercase" data-aos="fade-up">Serbisyong May Malasakit</h1>
                                 <p class="mb-5 desc" data-aos="fade-up" data-aos-delay="100">
                                     "Sa Lingap para sa Mahirap, inuuna namin ang inyong kapakanan sa pamamagitan ng mabilis at maaasahang tulong
                                     medikal at pinansyal. Nandito kami upang magbigay ng suporta at malasakit sa bawat Dabawenyong nangangailangan."
                                 </p>
-                                <div data-aos="fade-up" data-aos-delay="100">
-                                    <a href="https://www.facebook.com/lingapparasamahirap" target="_blank" class="btn  btn-primary mr-2 mb-2">Get In Touch</a>
-                                </div>
                             </div>
 
                         </div>
@@ -419,10 +459,9 @@
                             </div>
                             <div class="col-md-3 footer-social">
                                 <h2 class="footer-heading mb-4">Follow Us</h2>
-                                <a href="#" class="pl-0 pr-3"><span class="icon-facebook"></span></a>
-                                <a href="#" class="pl-3 pr-3"><span class="icon-twitter"></span></a>
-                                <a href="#" class="pl-3 pr-3"><span class="icon-instagram"></span></a>
-                                <a href="#" class="pl-3 pr-3"><span class="icon-linkedin"></span></a>
+                                <a href="https://www.facebook.com/lingapparasamahirap" class="pl-0 pr-3">
+                                    <span class="icon-facebook" style="font-size: 2.5rem;"></span>
+                                </a>
                             </div>
                         </div>
                     </div>

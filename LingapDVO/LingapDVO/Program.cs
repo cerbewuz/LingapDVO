@@ -119,4 +119,79 @@ app.MapControllerRoute(
     pattern: "Register",
     defaults: new { controller = "Login", action = "Register" });
 
+app.MapControllerRoute(
+    name: "Homepage",
+    pattern: "Homepage",
+    defaults: new { controller = "Dashboard", action = "Homepage" });
+
+app.MapControllerRoute(
+    name: "Superadmin",
+    pattern: "Superadmin",
+    defaults: new { controller = "Superadmin", action = "Superadmin" });
+
+app.MapControllerRoute(
+    name: "Analyticsdashboard",
+    pattern: "Analyticsdashboard",
+    defaults: new { controller = "Adminuser", action = "Analyticsdashboard" });
+
+app.MapControllerRoute(
+    name: "Admin",
+    pattern: "Admin",
+    defaults: new { controller = "Adminuser", action = "Admin" });
+
+
+app.MapControllerRoute(
+    name: "Accountverification",
+    pattern: "Accountverification",
+    defaults: new { controller = "Login", action = "Accountverification" });
+
+app.MapControllerRoute(
+    name: "Uploads",
+    pattern: "Uploads",
+    defaults: new { controller = "Dashboard", action = "Uploads" });
+
+app.MapControllerRoute(
+    name: "Userprofile",
+    pattern: "Userprofile",
+    defaults: new { controller = "Dashboard", action = "Userprofile" });
+
+
+app.MapControllerRoute(
+    name: "FillupformHospitalBill",
+    pattern: "FillupformHospitalBill",
+    defaults: new { controller = "Dashboard", action = "FillupformHospitalBill" });
+
+
+app.MapControllerRoute(
+    name: "Medicalandlabform",
+    pattern: "Medicalandlabform",
+    defaults: new { controller = "Dashboard", action = "Medicalandlabform" });
+
+app.MapControllerRoute(
+    name: "Funeralburialform",
+    pattern: "Funeralburialform",
+    defaults: new { controller = "Dashboard", action = "Funeralburialform" });
+
+app.MapControllerRoute(
+    name: "Eligibilitychecking",
+    pattern: "Eligibilitychecking",
+    defaults: new { controller = "Dashboard", action = "Eligibilitychecking" });
+
+
+app.MapControllerRoute(
+    name: "Maps",
+    pattern: "Maps",
+    defaults: new { controller = "Dashboard", action = "Maps" });
+
+app.MapControllerRoute(
+    name: "Listofpartners",
+    pattern: "Listofpartners",
+    defaults: new { controller = "Dashboard", action = "Listofpartners" });
+
+
+
+
+
+
+
 app.Run();

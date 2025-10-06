@@ -8,6 +8,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace LingapDVO.Controllers
@@ -46,30 +48,76 @@ namespace LingapDVO.Controllers
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "0";
 
-            // Case 1: User logged in with normal login (session UserId)
-            var userId = HttpContext.Session.GetString("UserId");
-            if (!string.IsNullOrEmpty(userId))
+            var userIdString = HttpContext.Session.GetString("UserId");
+            bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+
+            if (string.IsNullOrEmpty(userIdString) && !isAuthenticated)
             {
-                ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
-                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
-                return View();
+                return RedirectToAction("Landingpage", "Dashboard");
             }
 
-            // Case 2: User logged in with Google (claims available)
-            if (User.Identity?.IsAuthenticated ?? false)
+            int userId = 0; // default
+            if (!string.IsNullOrEmpty(userIdString))
             {
-                string firstname = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
+                // ✅ Convert session UserId (string) → int
+                int.TryParse(userIdString, out userId);
+                ViewBag.Username = HttpContext.Session.GetString("Username");
+                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
+            }
+            else if (isAuthenticated)
+            {
+                string username = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
                                    ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
                                    ?? "User";
-
-                ViewBag.Firstname = firstname;
-                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture"); // optional
-
-                return View();
+                ViewBag.Username = username; 
+                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
             }
 
-            // Case 3: No session and not authenticated → force back to Landing
-            return RedirectToAction("Landingpage", "Dashboard");
+            // ✅ Check if user has completed verification
+            var verification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            bool isVerified = verification != null;
+            ViewBag.IsVerified = isVerified;
+
+            // ✅ Now you can safely filter only the logged-in user's data
+            var hospitalBills = context.FillupformHospitalBill
+                .Where(f => f.UserId == userId)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            var medicalLabForms = context.Medicalandlabform
+                .Where(f => f.UserId == userId)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            var funeralburialform = context.Funeralburialform
+                .Where(f => f.UserId == userId)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            // Find the latest document overall
+            var allDocs = new List<dynamic>();
+
+            if (hospitalBills.Any())
+                allDocs.Add(new { Type = "Hospital Bill", Data = hospitalBills.First() });
+            if (medicalLabForms.Any())
+                allDocs.Add(new { Type = "Medical/Lab Form", Data = medicalLabForms.First() });
+            if (funeralburialform.Any())
+                allDocs.Add(new { Type = "Funeral/Burial Form", Data = funeralburialform.First() });
+
+            var latestDoc = allDocs
+                .OrderByDescending(d => d.Data.CreatedAt)
+                .FirstOrDefault();
+
+            var viewModel = new CombinedFormsViewModel
+            {
+                HospitalBills = hospitalBills,
+                MedicalLabForms = medicalLabForms,
+                Funeralburialform = funeralburialform
+            };
+
+            ViewBag.LatestDoc = latestDoc;
+
+            return View(viewModel);
         }
 
 
@@ -137,6 +185,11 @@ namespace LingapDVO.Controllers
             ViewBag.Gender = HttpContext.Session.GetString("Gender");
             ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
 
+            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+            ViewBag.BackID = HttpContext.Session.GetString("BackID");
+
+
+
 
             return View();
         }
@@ -151,28 +204,57 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // Check for recently approved forms
+            // Get the user's ID filenames from session
+            string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
+            string userBackID = HttpContext.Session.GetString("BackID") ?? "";
+
+            // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            var hasRecentApproval = context.FillupformHospitalBill.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo) ||
-                                   context.Funeralburialform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo) ||
-                                   context.Medicalandlabform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
+            // Check for forms with Status = "Approved" within the last month
+            var hasRecentApproval = context.FillupformHospitalBill
+                .Any(f => f.UserId == userId && f.Status2 == "Approved" && f.CreatedAt >= oneMonthAgo);
 
             if (hasRecentApproval)
             {
-                ModelState.AddModelError("", "You cannot submit a new form because you have an approved form within the last month. Please wait until one month has passed since your last approval.");
+                // Get the most recent approved form to show the exact date
+                var recentApprovedForm = context.FillupformHospitalBill
+                    .Where(f => f.UserId == userId && f.Status2 == "Approved")
+                    .OrderByDescending(f => f.CreatedAt)
+                    .FirstOrDefault();
+
+                string approvedDate = recentApprovedForm?.CreatedAt.ToString("MMMM dd, yyyy") ?? "recently";
+
+                ModelState.AddModelError("", $"You cannot submit a new form because you already have an approved request dated {approvedDate}. Please wait one month from {approvedDate} before submitting another application.");
                 return View(fillupformHospitalbilldto);
             }
 
+            // SECOND: Check for any pending or processing forms (user can only have one form at a time)
+            var hasPendingForm = context.FillupformHospitalBill
+                .Any(f => f.UserId == userId && (f.Status == "Pending" || f.Status == "Processing"));
+
+            if (hasPendingForm)
+            {
+                ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it's approved before submitting a new one.");
+                return View(fillupformHospitalbilldto);
+            }
+
+            // If neither condition above is met, proceed with form submission
+
+            // Optional field handling
             if (string.IsNullOrEmpty(fillupformHospitalbilldto.PhilHealthNo))
             {
                 ModelState.Remove("PhilHealthNo");
             }
 
-            if (fillupformHospitalbilldto.IdBackimage == null && fillupformHospitalbilldto.IdFrontimage == null &&
-                fillupformHospitalbilldto.DoctorPrescriptionimage == null && fillupformHospitalbilldto.DeathCertificateimage == null)
+            // MODIFIED: Image validation - Only check for prescription and death certificate images
+            // Remove ID image validation since we'll use the existing ones from user account
+            ModelState.Remove("IdFrontimage");
+            ModelState.Remove("IdBackimage");
+
+            if (fillupformHospitalbilldto.DoctorPrescriptionimage == null && fillupformHospitalbilldto.DeathCertificateimage == null)
             {
-                ModelState.AddModelError("ImageFile", "The image file is required");
+                ModelState.AddModelError("DoctorPrescriptionimage", "At least one image file (Doctor Prescription or Death Certificate) is required");
             }
 
             if (!ModelState.IsValid)
@@ -182,55 +264,88 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Generate unique filenames
-                string newFileNameFront = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                        Path.GetExtension(fillupformHospitalbilldto.IdFrontimage!.FileName);
+                // 🔑 MASTER PASSWORD - Use the same as in Accountverification
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
 
-                string newFileNameBack = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                     Path.GetExtension(fillupformHospitalbilldto.IdBackimage!.FileName);
+                // Derive AES key from master password
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32);
 
-                string newFileNamePrescription = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                     Path.GetExtension(fillupformHospitalbilldto.DoctorPrescriptionimage!.FileName);
+                // 🔒 ENCRYPTION FUNCTION
+                byte[] EncryptFile(Stream inputStream)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
 
+                    using var memoryStream = new MemoryStream();
+                    memoryStream.Write(salt, 0, salt.Length);
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        inputStream.CopyTo(cryptoStream);
+                    }
+
+                    return memoryStream.ToArray();
+                }
+
+                // 📅 Encrypted Timestamp for unique filenames
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string encryptedTimestamp;
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
+                }
+
+                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+
+                // Generate encrypted filenames
+                string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
 
-                // Save image to wwwroot/UsersImg
-                string uploadsFolder = Path.Combine(environment.WebRootPath, "Validimg");
                 string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
                 string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
 
-                // Save Front Image
-                string filePathFront = Path.Combine(uploadsFolder, newFileNameFront);
-                using (var stream = new FileStream(filePathFront, FileMode.Create))
-                {
-                    fillupformHospitalbilldto.IdFrontimage.CopyTo(stream);
-                }
+                // Ensure directories exist
+                Directory.CreateDirectory(uploadsFolder1);
+                Directory.CreateDirectory(uploadsFolder2);
 
-                // Save Back Image
-                string filePathBack = Path.Combine(uploadsFolder, newFileNameBack);
-                using (var stream = new FileStream(filePathBack, FileMode.Create))
+                // Encrypt and Save Prescription Image if provided
+                if (fillupformHospitalbilldto.DoctorPrescriptionimage != null)
                 {
-                    fillupformHospitalbilldto.IdBackimage.CopyTo(stream);
-                }
-
-                // Save Prescription Image
-                string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
-                using (var stream = new FileStream(filePathPrescription, FileMode.Create))
-                {
-                    fillupformHospitalbilldto.DoctorPrescriptionimage.CopyTo(stream);
-                }
-
-                if (fillupformHospitalbilldto.DeathCertificateimage != null)
-                {
-                    newFileNameDeathCertificate = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                        Path.GetExtension(fillupformHospitalbilldto.DeathCertificateimage.FileName);
-
-                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
-                    using (var stream = new FileStream(filePathDeathCertificate, FileMode.Create))
+                    newFileNamePrescription = safeEncryptedTimestamp + "_prescription.enc";
+                    string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
+                    using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        fillupformHospitalbilldto.DeathCertificateimage.CopyTo(stream);
+                        byte[] encryptedData = EncryptFile(fillupformHospitalbilldto.DoctorPrescriptionimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
+
+                // Encrypt and Save Death Certificate Image if provided
+                if (fillupformHospitalbilldto.DeathCertificateimage != null)
+                {
+                    newFileNameDeathCertificate = safeEncryptedTimestamp + "_deathcert.enc";
+                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
+                    using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
+                    {
+                        byte[] encryptedData = EncryptFile(fillupformHospitalbilldto.DeathCertificateimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
+                    }
+                }
+
                 // Map data to entity
                 FillupformHospitalBill fillupformHospitalBill = new FillupformHospitalBill()
                 {
@@ -266,10 +381,10 @@ namespace LingapDVO.Controllers
                     Typeassistance = fillupformHospitalbilldto.Typeassistance,
                     ForCMOPERSONNEL = fillupformHospitalbilldto.ForCMOPERSONNEL,
 
-                    // Image Paths
-                    Validfrontimage = newFileNameFront,
-                    ValidBackimage = newFileNameBack,
-                    DoctorPrescription = newFileNamePrescription,
+                    // MODIFIED: Use existing ID images from user account instead of new uploads
+                    Validfrontimage = userFrontID,
+                    ValidBackimage = userBackID,
+                    DoctorPrescription = newFileNamePrescription ?? string.Empty,
                     DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
                     Status = "Pending",
 

@@ -211,11 +211,7 @@
                 <div class="edit-field mt-2" style="display: none;">
                     <label class="form-label">Update Status:</label>
                     <select class="form-select" id="statusDropdown" name="status" value="@ViewData["Status"]">
-                        <option value="Pending" selected="@(ViewData["Status"]?.ToString() == "Pending")">Pending</option>
-                        <option value="Approved" selected="@(ViewData["Status"]?.ToString() == "Approved")">Approved</option>
-                        <option value="Unapproved" selected="@(ViewData["Status"]?.ToString() == "Unapproved")">Unapproved</option>
                         <option value="Processing" selected="@(ViewData["Status"]?.ToString() == "Processing")">Processing</option>
-                        <option value="Claimed" selected="@(ViewData["Status"]?.ToString() == "Claimed")">Claimed</option>
                     </select>
                 </div>
             </div>
