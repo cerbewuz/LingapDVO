@@ -188,6 +188,11 @@ app.MapControllerRoute(
     pattern: "Listofpartners",
     defaults: new { controller = "Dashboard", action = "Listofpartners" });
 
+app.MapControllerRoute(
+    name: "History",
+    pattern: "history",
+    defaults: new { controller = "Dashboard", action = "History" });
+
 
 
 
