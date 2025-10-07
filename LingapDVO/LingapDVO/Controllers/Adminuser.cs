@@ -164,7 +164,7 @@ namespace LingapDVO.Controllers
             if (fillupformhospitalBill == null)
             {
                 TempData["ErrorMessage"] = "Hospital bill record not found.";
-                return RedirectToAction();
+                return Redirect("/Admin");
             }
 
             try
@@ -220,7 +220,7 @@ namespace LingapDVO.Controllers
                 };
 
                 TempData["ErrorMessage"] = "Hospital bill record not found.";
-                return RedirectToAction();
+                return Redirect("/Admin");
             }
             catch (Exception ex)
             {
@@ -1003,7 +1003,7 @@ namespace LingapDVO.Controllers
             if (fillupformhospitalBill == null)
             {
                 TempData["ErrorMessage"] = "Hospital bill record not found.";
-                return RedirectToAction();
+                return Redirect("/Admin");
             }
 
             try
@@ -1060,7 +1060,7 @@ namespace LingapDVO.Controllers
                 ;
 
                 TempData["ErrorMessage"] = "Hospital bill record not found.";
-                return RedirectToAction();
+                return Redirect("/Admin");
             }
             catch (Exception ex)
             {
