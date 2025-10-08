@@ -103,6 +103,8 @@ namespace LingapDVO.Models
 
         public IFormFile? DeathCertificateimage { get; set; }
 
+        public IFormFile? MedCertificateimage { get; set; }
+
 
         public DateTime CreatedAt { get; set; }
 

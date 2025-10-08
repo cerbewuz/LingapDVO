@@ -112,6 +112,9 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string DeathCertificate { get; set; } = "";
 
+        [MaxLength(100)]
+        public string MedCertificate { get; set; } = "";
+
 
         public DateTime CreatedAt { get; set; }
 

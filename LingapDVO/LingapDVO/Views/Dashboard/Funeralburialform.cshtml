@@ -1,4 +1,4 @@
-﻿@model FillupformHospitalBillDto
+﻿@model FuneralburialformDto
 @{
     Layout = null;
 }
@@ -185,7 +185,7 @@
             <p class="text-muted">Please fill out all required fields to process your request</p>
         </div>
 
-        <form asp-action="FillupformHospitalBill" enctype="multipart/form-data" method="post">
+        <form asp-action="Funeralburialform" enctype="multipart/form-data" method="post">
 
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -602,20 +602,20 @@
             <!-- Upload Section -->
             <h5 class="section-header">Upload Required Documents</h5>
 
-
+            <!-- Funeral Contract/Receipt Upload Section -->
             <div class="mb-3">
-                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
-                <div class="upload-box" onclick="document.getElementById('receipt').click()">
+                <label class="form-label required-field">Funeral Contract/Receipt</label>
+                <div class="upload-box" onclick="document.getElementById('funeralReceipt').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>
                     </div>
-                    <p>Click to upload document</p>
-                    <p class="form-note">Accepted formats: JPG, PNGE, etc..(Max 10MB)</p>
+                    <p>Click to upload funeral receipt</p>
+                    <p class="form-note">Accepted formats: JPG, PNG, Etc.. (Max 10MB)</p>
                 </div>
-                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')">
-                <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
+                <input asp-for="DeathCertificateimage" type="file" id="funeralReceipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'funeralReceiptPreview')">
+                <span asp-validation-for="DeathCertificateimage" class="text-danger"></span>
 
-                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
+                <img id="funeralReceiptPreview" class="img-preview mt-2" alt="Funeral Receipt Preview">
                 <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
             </div>
 

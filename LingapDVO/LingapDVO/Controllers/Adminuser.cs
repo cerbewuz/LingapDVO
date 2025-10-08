@@ -169,16 +169,17 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Update status and comments
-                fillupformhospitalBill.Status = fillupformHospitalbilldto.Status;
+                // Automatically set status to "Processing"
+                fillupformhospitalBill.Status = "Processing";
                 fillupformhospitalBill.ForCMOPERSONNEL = fillupformHospitalbilldto.ForCMOPERSONNEL;
                 fillupformhospitalBill.Comments = fillupformHospitalbilldto.Comments;
                 fillupformhospitalBill.Processby = fillupformHospitalbilldto.Processby;
                 fillupformhospitalBill.ProcessAt = DateTime.Now;
+
                 context.SaveChanges();
 
                 // Get the user's email using UserId
-                var user = context.Useraccount.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
                     // Get email settings from configuration
@@ -186,7 +187,6 @@ namespace LingapDVO.Controllers
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
 
-                    // Null check for email settings
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
                     {
                         throw new ArgumentException("Email address or display name is missing.");
@@ -194,21 +194,31 @@ namespace LingapDVO.Controllers
 
                     // Compose and send the email
                     var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, "User");
+                    var toAddress = new MailAddress(user.Email, user.Email?? "User");
 
                     string subject = "Hospital Bill Assistance Update";
-                    string body = $"Your hospital bill status has been updated.\n\nStatus: {fillupformHospitalbilldto.Status}\nComments: {fillupformHospitalbilldto.Comments}";
+                    string body = $@"
+                                    Dear {user.Email ?? "User"},
 
-                    var smtp = new SmtpClient
+                                    Your hospital bill request is now being processed.
+
+                                    Status: Processing  
+                                    Comments: {fillupformHospitalbilldto.Comments ?? "N/A"}  
+
+                                    Thank you for your patience.
+
+                                    Best regards,  
+                                    {fromName}  
+                                    {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                                    ";
+
+                    using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
-                        Host = "smtp.gmail.com",
-                        Port = 587,
                         EnableSsl = true,
                         DeliveryMethod = SmtpDeliveryMethod.Network,
                         UseDefaultCredentials = false,
                         Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                    };
-
+                    })
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
@@ -217,9 +227,9 @@ namespace LingapDVO.Controllers
                     {
                         smtp.Send(message);
                     }
-                };
+                }
 
-                TempData["ErrorMessage"] = "Hospital bill record not found.";
+                TempData["SuccessMessage"] = "Hospital bill status set to 'Processing' and email sent successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
@@ -228,6 +238,7 @@ namespace LingapDVO.Controllers
                 return View(fillupformHospitalbilldto);
             }
         }
+
 
         public IActionResult Medicalandlabformstatus(int id)
         {
@@ -977,6 +988,10 @@ namespace LingapDVO.Controllers
                 return Json(new { exists = true, isPdf = false, error = ex.Message });
             }
         }
+
+
+
+        //diri edit pre  
         [HttpPost]
         public IActionResult FillupformHospitalBillUpdateprocessingstatus(int id, FillupformHospitalBillDto fillupformHospitalbilldto)
         {
@@ -990,7 +1005,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Update status and comments
+                // Update record
                 fillupformhospitalBill.Status2 = fillupformHospitalbilldto.Status2;
                 fillupformhospitalBill.ForCMOPERSONNEL = fillupformHospitalbilldto.ForCMOPERSONNEL;
                 fillupformhospitalBill.Comments = fillupformHospitalbilldto.Comments;
@@ -998,28 +1013,39 @@ namespace LingapDVO.Controllers
                 fillupformhospitalBill.Result = DateTime.Now;
                 context.SaveChanges();
 
-                // Get the user's email using UserId
-                var user = context.Useraccount.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
-                if (user != null && !string.IsNullOrEmpty(user.Email))
+                // Get user info
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
+
+                // ✅ Send automatic email only if Approved
+                if (fillupformHospitalbilldto.Status2?.Equals("Approved", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get email settings from configuration
+                    // Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
 
-                    // Null check for email settings
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                    {
-                        throw new ArgumentException("Email address or display name is missing.");
-                    }
+                        throw new ArgumentException("Email settings are missing.");
 
-                    // Compose and send the email
+                    // Compose email
                     var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, "User");
+                    var toAddress = new MailAddress(user.Email, user.Username ?? "User");
 
-                    string subject = "Hospital Bill Assistance Update";
-                    string body = $"Your hospital bill status has been updated.\n\nStatus: {fillupformHospitalbilldto.Status}\nComments: {fillupformHospitalbilldto.Comments}";
+                    string subject = "✅ Hospital Bill Assistance Approved";
+                                                        string body = $@"
+                                    Dear {user.Username ?? "User"},
 
+                                    Good news! Your Hospital Bill Assistance request has been **APPROVED**.
+
+                                    🗓 Date Approved: {DateTime.Now:MMMM dd, yyyy}
+                                    💬 Remarks: {fillupformHospitalbilldto.Comments}
+
+                                    Thank you for your patience.
+
+                                    Best regards,
+                                    {fromName}";
+
+                    // Send email
                     var smtp = new SmtpClient
                     {
                         Host = "smtp.gmail.com",
@@ -1039,9 +1065,8 @@ namespace LingapDVO.Controllers
                         smtp.Send(message);
                     }
                 }
-                ;
 
-                TempData["ErrorMessage"] = "Hospital bill record not found.";
+                TempData["SuccessMessage"] = "Hospital bill status updated successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
@@ -1050,6 +1075,7 @@ namespace LingapDVO.Controllers
                 return View(fillupformHospitalbilldto);
             }
         }
+
 
 
     }

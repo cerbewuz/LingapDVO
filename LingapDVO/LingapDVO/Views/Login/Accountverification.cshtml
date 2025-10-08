@@ -274,6 +274,39 @@
             background: #dc3545;
             color: white;
         }
+
+        #wrong-id-warning {
+            border-left: 4px solid #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .disabled-field {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+            opacity: 0.6;
+            border-color: #dee2e6;
+        }
+
+            .disabled-field:focus {
+                outline: none;
+                box-shadow: none;
+                border-color: #dee2e6;
+            }
+
+        #wrong-id-warning i {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+
+        #wrong-id-message {
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -729,6 +762,9 @@
             const davaoResultMessage = document.getElementById('davao-result-message');
             const davaoStatusBadge = document.getElementById('davao-status-badge');
 
+            // Wrong ID Type Warning Element (we'll create this dynamically)
+            let wrongIdTypeWarning = null;
+
             // Form fields to disable when license is invalid
             const formFields = [
                 'idnumber', 'phonenumber', 'lastname', 'firstname', 'middlename',
@@ -739,9 +775,53 @@
             // Track if OCR is enabled
             let ocrEnabled = false;
 
+            // Create wrong ID type warning element
+            function createWrongIdTypeWarning() {
+                if (wrongIdTypeWarning) return;
+
+                wrongIdTypeWarning = document.createElement('div');
+                wrongIdTypeWarning.id = 'wrong-id-warning';
+                wrongIdTypeWarning.className = 'alert alert-danger mt-3';
+                wrongIdTypeWarning.style.display = 'none';
+                wrongIdTypeWarning.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span id="wrong-id-message"></span>
+                `;
+
+                // Insert after the upload sections
+                const uploadContainer = document.querySelector('.upload-container');
+                if (uploadContainer) {
+                    uploadContainer.parentNode.insertBefore(wrongIdTypeWarning, uploadContainer.nextSibling);
+                }
+            }
+
+            // Show wrong ID type warning
+            function showWrongIdTypeWarning(expectedType, detectedType) {
+                createWrongIdTypeWarning();
+                const message = document.getElementById('wrong-id-message');
+                message.textContent = `You selected ${expectedType} but uploaded a ${detectedType}. Please upload the correct document type.`;
+                wrongIdTypeWarning.style.display = 'block';
+
+                // Clear uploaded files and reset
+                clearUploadedFiles();
+                resultBox.style.display = 'none';
+                davaoVerification.style.display = 'none';
+                status.textContent = 'Wrong document type detected. Please upload the correct document.';
+            }
+
+            // Hide wrong ID type warning
+            function hideWrongIdTypeWarning() {
+                if (wrongIdTypeWarning) {
+                    wrongIdTypeWarning.style.display = 'none';
+                }
+            }
+
             // Handle document type selection
             documentType.addEventListener('change', function() {
                 const selectedValue = this.value;
+
+                // Hide any existing wrong ID warning when changing document type
+                hideWrongIdTypeWarning();
 
                 if (selectedValue === 'phil-id' || selectedValue === 'driver-license') {
                     ocrEnabled = true;
@@ -844,6 +924,9 @@
                 progressBar.style.display = 'block';
                 progress.style.width = '0%';
 
+                // Hide any previous wrong ID warning
+                hideWrongIdTypeWarning();
+
                 Tesseract.recognize(preview.src, 'eng', {
                     logger: m => {
                         if (m.status === 'recognizing text') {
@@ -854,12 +937,24 @@
                     status.textContent = "OCR completed!";
                     progressBar.style.display = 'none';
 
-                    // Parse information based on document type
-                    if (documentType.value === "driver-license") {
+                    // First, detect what type of ID was actually uploaded
+                    const detectedIdType = detectIdType(text);
+                    const selectedIdType = documentType.value;
+
+                    // Check if the uploaded ID matches the selected type
+                    if (detectedIdType && detectedIdType !== selectedIdType) {
+                        const expectedName = selectedIdType === 'driver-license' ? 'Driver\'s License' : 'National ID';
+                        const detectedName = detectedIdType === 'driver-license' ? 'Driver\'s License' : 'National ID';
+                        showWrongIdTypeWarning(expectedName, detectedName);
+                        return;
+                    }
+
+                    // If ID type matches or couldn't be detected, proceed with parsing
+                    if (selectedIdType === "driver-license") {
                         if (!isBack) {
                             parseDriverLicenseFront(text);
                         }
-                    } else if (documentType.value === "phil-id") {
+                    } else if (selectedIdType === "phil-id") {
                         if (isBack) {
                             parsePhilSysBack(text);
                         } else {
@@ -872,6 +967,73 @@
                     progressBar.style.display = 'none';
                     console.error('OCR Error:', err);
                 });
+            }
+
+            // Detect what type of ID was uploaded based on text content
+            function detectIdType(text) {
+                const upperText = text.toUpperCase();
+
+                // Driver's License indicators
+                const driverLicenseIndicators = [
+                    'DRIVER\'S LICENSE',
+                    'DRIVER LICENSE',
+                    'LICENSE TO DRIVE',
+                    'NON-PROFESSIONAL',
+                    'PROFESSIONAL',
+                    'LAND TRANSPORTATION OFFICE',
+                    'LTO',
+                    'RESTRICTION',
+                    'CONDITIONS'
+                ];
+
+                // National ID indicators
+                const nationalIdIndicators = [
+                    'PHILSYS',
+                    'PHILIPPINE IDENTIFICATION',
+                    'NATIONAL ID',
+                    'PAG-ASA',
+                    'PHILIPPINE ID',
+                    'PSA',
+                    'PHILSYS NUMBER',
+                    'UNIQUE REFERENCE NUMBER'
+                ];
+
+                let driverLicenseScore = 0;
+                let nationalIdScore = 0;
+
+                // Score for Driver's License
+                driverLicenseIndicators.forEach(indicator => {
+                    if (upperText.includes(indicator)) {
+                        driverLicenseScore++;
+                    }
+                });
+
+                // Score for National ID
+                nationalIdIndicators.forEach(indicator => {
+                    if (upperText.includes(indicator)) {
+                        nationalIdScore++;
+                    }
+                });
+
+                // Determine the type based on scores
+                if (driverLicenseScore > nationalIdScore && driverLicenseScore >= 2) {
+                    return 'driver-license';
+                } else if (nationalIdScore > driverLicenseScore && nationalIdScore >= 2) {
+                    return 'phil-id';
+                }
+
+                // If scores are equal or unclear, try additional heuristics
+                if (driverLicenseScore === nationalIdScore) {
+                    // Check for specific patterns unique to each type
+                    if (upperText.includes('LICENSE NO') || upperText.includes('EXPIRY') || upperText.includes('RESTRICTION')) {
+                        return 'driver-license';
+                    } else if (upperText.includes('PHILSYS') || upperText.includes('UNIQUE REFERENCE') || upperText.includes('PSA')) {
+                        return 'phil-id';
+                    }
+                }
+
+                // If still unclear, return null
+                return null;
             }
 
             // Parse Driver's License Front

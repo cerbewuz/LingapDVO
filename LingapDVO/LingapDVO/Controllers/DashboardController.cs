@@ -700,6 +700,19 @@ namespace LingapDVO.Controllers
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
+            ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+            ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+            ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+            ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+            ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+            ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+            ViewBag.District = HttpContext.Session.GetString("District");
+            ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+            ViewBag.Gender = HttpContext.Session.GetString("Gender");
+            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+
+            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+            ViewBag.BackID = HttpContext.Session.GetString("BackID");
 
             return View();
         }
@@ -707,11 +720,6 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public IActionResult Medicalandlabform(MedicalandlabformDto medicalandlabformdto)
         {
-            if (string.IsNullOrEmpty(medicalandlabformdto.PhilHealthNo))
-            {
-                ModelState.Remove("PhilHealthNo");
-            }
-
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
@@ -719,12 +727,15 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // Check for recently approved forms (1-month cooldown)
+            // Get the user's ID filenames from session (if available)
+            string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
+            string userBackID = HttpContext.Session.GetString("BackID") ?? "";
+
+            // FIRST: Check for recently approved forms (1-month cooldown)
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            var hasRecentApproval = context.FillupformHospitalBill.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo) ||
-                                   context.Funeralburialform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo) ||
-                                   context.Medicalandlabform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
+            var hasRecentApproval = context.Medicalandlabform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
+
 
             if (hasRecentApproval)
             {
@@ -732,10 +743,44 @@ namespace LingapDVO.Controllers
                 return View(medicalandlabformdto);
             }
 
-            if (medicalandlabformdto.IdBackimage == null && medicalandlabformdto.IdFrontimage == null &&
-                medicalandlabformdto.DoctorPrescriptionimage == null && medicalandlabformdto.DeathCertificateimage == null)
+            // SECOND: Check for any pending or processing forms (user can only have one form at a time)
+            var hasPendingForm = context.Medicalandlabform
+                .Any(f => f.UserId == userId && (f.Status == "Pending" || f.Status == "Processing"));
+ 
+
+            if (hasPendingForm)
             {
-                ModelState.AddModelError("ImageFile", "The image file is required");
+                ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it's approved before submitting a new one.");
+                return View(medicalandlabformdto);
+            }
+
+            // Optional field handling
+            if (string.IsNullOrEmpty(medicalandlabformdto.PhilHealthNo))
+            {
+                ModelState.Remove("PhilHealthNo");
+            }
+
+            // MODIFIED: Image validation - Make all image fields optional but require at least one document
+            ModelState.Remove("IdFrontimage");
+            ModelState.Remove("IdBackimage");
+            ModelState.Remove("DoctorPrescriptionimage");
+            ModelState.Remove("DeathCertificateimage");
+            ModelState.Remove("MedCertificateimage"); // Added Medical Certificate as optional
+
+            // NEW VALIDATION: Check if user has existing ID images in session, otherwise require ID upload
+            bool hasExistingIDs = !string.IsNullOrEmpty(userFrontID) && !string.IsNullOrEmpty(userBackID);
+
+            if (!hasExistingIDs && (medicalandlabformdto.IdFrontimage == null || medicalandlabformdto.IdBackimage == null))
+            {
+                ModelState.AddModelError("IdFrontimage", "ID images are required when no existing IDs are found in your account.");
+            }
+
+            // NEW VALIDATION: At least one of the medical documents must be provided
+            if (medicalandlabformdto.DoctorPrescriptionimage == null &&
+                medicalandlabformdto.DeathCertificateimage == null &&
+                medicalandlabformdto.MedCertificateimage == null)
+            {
+                ModelState.AddModelError("", "At least one medical document (Doctor Prescription, Death Certificate, or Medical Certificate) is required");
             }
 
             if (!ModelState.IsValid)
@@ -745,55 +790,131 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Generate unique filenames
-                string newFileNameFront = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                          Path.GetExtension(medicalandlabformdto.IdFrontimage!.FileName);
+                // 🔑 MASTER PASSWORD - Use the same as in other forms
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
 
-                string newFileNameBack = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                       Path.GetExtension(medicalandlabformdto.IdBackimage!.FileName);
+                // Derive AES key from master password
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32);
 
-                string newFileNamePrescription = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                       Path.GetExtension(medicalandlabformdto.DoctorPrescriptionimage!.FileName);
+                // 🔒 ENCRYPTION FUNCTION
+                byte[] EncryptFile(Stream inputStream)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
 
+                    using var memoryStream = new MemoryStream();
+                    memoryStream.Write(salt, 0, salt.Length);
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        inputStream.CopyTo(cryptoStream);
+                    }
+
+                    return memoryStream.ToArray();
+                }
+
+                // 📅 Encrypted Timestamp for unique filenames
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string encryptedTimestamp;
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
+                }
+
+                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+
+                // Generate encrypted filenames
+                string? newFileNameFront = null;
+                string? newFileNameBack = null;
+                string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
+                string? newFileNameMedCertificate = null; // Added for Medical Certificate
 
-                // Save image to wwwroot/UsersImg
                 string uploadsFolder = Path.Combine(environment.WebRootPath, "Validimg");
                 string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
                 string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
+                string uploadsFolder3 = Path.Combine(environment.WebRootPath, "MedCertificateimage"); // Added folder for Medical Certificate
 
-                // Save Front Image
-                string filePathFront = Path.Combine(uploadsFolder, newFileNameFront);
-                using (var stream = new FileStream(filePathFront, FileMode.Create))
+                // Ensure directories exist
+                Directory.CreateDirectory(uploadsFolder);
+                Directory.CreateDirectory(uploadsFolder1);
+                Directory.CreateDirectory(uploadsFolder2);
+                Directory.CreateDirectory(uploadsFolder3); // Ensure Medical Certificate directory exists
+
+                // Encrypt and Save Front ID Image if provided and no existing ID
+                if (!hasExistingIDs && medicalandlabformdto.IdFrontimage != null)
                 {
-                    medicalandlabformdto.IdFrontimage.CopyTo(stream);
-                }
-
-                // Save Back Image
-                string filePathBack = Path.Combine(uploadsFolder, newFileNameBack);
-                using (var stream = new FileStream(filePathBack, FileMode.Create))
-                {
-                    medicalandlabformdto.IdBackimage.CopyTo(stream);
-                }
-
-                // Save Prescription Image
-                string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
-                using (var stream = new FileStream(filePathPrescription, FileMode.Create))
-                {
-                    medicalandlabformdto.DoctorPrescriptionimage.CopyTo(stream);
-                }
-
-                if (medicalandlabformdto.DeathCertificateimage != null)
-                {
-                    newFileNameDeathCertificate = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                        Path.GetExtension(medicalandlabformdto.DeathCertificateimage.FileName);
-
-                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
-                    using (var stream = new FileStream(filePathDeathCertificate, FileMode.Create))
+                    newFileNameFront = safeEncryptedTimestamp + "_frontid.enc";
+                    string filePathFront = Path.Combine(uploadsFolder, newFileNameFront);
+                    using (var fileStream = new FileStream(filePathFront, FileMode.Create))
                     {
-                        medicalandlabformdto.DeathCertificateimage.CopyTo(stream);
+                        byte[] encryptedData = EncryptFile(medicalandlabformdto.IdFrontimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
+
+                // Encrypt and Save Back ID Image if provided and no existing ID
+                if (!hasExistingIDs && medicalandlabformdto.IdBackimage != null)
+                {
+                    newFileNameBack = safeEncryptedTimestamp + "_backid.enc";
+                    string filePathBack = Path.Combine(uploadsFolder, newFileNameBack);
+                    using (var fileStream = new FileStream(filePathBack, FileMode.Create))
+                    {
+                        byte[] encryptedData = EncryptFile(medicalandlabformdto.IdBackimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
+                    }
+                }
+
+                // Encrypt and Save Prescription Image if provided
+                if (medicalandlabformdto.DoctorPrescriptionimage != null)
+                {
+                    newFileNamePrescription = safeEncryptedTimestamp + "_prescription.enc";
+                    string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
+                    using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
+                    {
+                        byte[] encryptedData = EncryptFile(medicalandlabformdto.DoctorPrescriptionimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
+                    }
+                }
+
+                // Encrypt and Save Death Certificate Image if provided
+                if (medicalandlabformdto.DeathCertificateimage != null)
+                {
+                    newFileNameDeathCertificate = safeEncryptedTimestamp + "_deathcert.enc";
+                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
+                    using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
+                    {
+                        byte[] encryptedData = EncryptFile(medicalandlabformdto.DeathCertificateimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
+                    }
+                }
+
+                // NEW: Encrypt and Save Medical Certificate Image if provided
+                if (medicalandlabformdto.MedCertificateimage != null)
+                {
+                    newFileNameMedCertificate = safeEncryptedTimestamp + "_medcert.enc";
+                    string filePathMedCertificate = Path.Combine(uploadsFolder3, newFileNameMedCertificate);
+                    using (var fileStream = new FileStream(filePathMedCertificate, FileMode.Create))
+                    {
+                        byte[] encryptedData = EncryptFile(medicalandlabformdto.MedCertificateimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
+                    }
+                }
+
                 // Map data to entity
                 Medicalandlabform medicalandlabform = new Medicalandlabform()
                 {
@@ -829,11 +950,12 @@ namespace LingapDVO.Controllers
                     Typeassistance = medicalandlabformdto.Typeassistance,
                     ForCMOPERSONNEL = medicalandlabformdto.ForCMOPERSONNEL,
 
-                    // Image Paths
-                    Validfrontimage = newFileNameFront,
-                    ValidBackimage = newFileNameBack,
-                    DoctorPrescription = newFileNamePrescription,
+                    // MODIFIED: Use existing ID images from user account if available, otherwise use new uploads
+                    Validfrontimage = hasExistingIDs ? userFrontID : newFileNameFront ?? string.Empty,
+                    ValidBackimage = hasExistingIDs ? userBackID : newFileNameBack ?? string.Empty,
+                    DoctorPrescription = newFileNamePrescription ?? string.Empty,
                     DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
+                    MedCertificate = newFileNameMedCertificate ?? string.Empty, // Added Medical Certificate
                     Status = "Pending",
 
                     // Created Timestamp
@@ -874,7 +996,6 @@ namespace LingapDVO.Controllers
                 return View(medicalandlabformdto);
             }
         }
-
         public IActionResult Medicalandlabformedit(int id)
         {
             var medicalandlabform = context.Medicalandlabform.Find(id);
@@ -1148,6 +1269,20 @@ namespace LingapDVO.Controllers
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
+
+            ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+            ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+            ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+            ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+            ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+            ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+            ViewBag.District = HttpContext.Session.GetString("District");
+            ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+            ViewBag.Gender = HttpContext.Session.GetString("Gender");
+            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+
+            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+            ViewBag.BackID = HttpContext.Session.GetString("BackID");
             return View();
         }
 
@@ -1156,10 +1291,6 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public IActionResult Funeralburialform(FuneralburialformDto funeralburialformdto)
         {
-            if (string.IsNullOrEmpty(funeralburialformdto.PhilHealthNo))
-            {
-                ModelState.Remove("PhilHealthNo");
-            }
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
@@ -1167,23 +1298,58 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // Check for recently approved forms (1-month cooldown)
+            // Get the user's ID filenames from session
+            string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
+            string userBackID = HttpContext.Session.GetString("BackID") ?? "";
+
+            // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            var hasRecentApproval = context.FillupformHospitalBill.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo) ||
-                                   context.Funeralburialform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo) ||
-                                   context.Medicalandlabform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
+            // Check for forms with Status = "Approved" within the last month across all form types
+            var hasRecentApproval = context.Funeralburialform
+                .Any(f => f.UserId == userId && f.Status2 == "Approved" && f.CreatedAt >= oneMonthAgo);
 
             if (hasRecentApproval)
             {
-                ModelState.AddModelError("", "You cannot submit a new form because you have an approved form within the last month. Please wait until one month has passed since your last approval.");
+                // Get the most recent approved form to show the exact date
+                var recentApprovedForm = context.Funeralburialform
+                    .Where(f => f.UserId == userId && f.Status2 == "Approved")
+                    .OrderByDescending(f => f.CreatedAt)
+                    .FirstOrDefault();
+
+                string approvedDate = recentApprovedForm?.CreatedAt.ToString("MMMM dd, yyyy") ?? "recently";
+
+                ModelState.AddModelError("", $"You cannot submit a new form because you already have an approved request dated {approvedDate}. Please wait one month from {approvedDate} before submitting another application.");
                 return View(funeralburialformdto);
             }
 
-            if (funeralburialformdto.IdBackimage == null && funeralburialformdto.IdFrontimage == null &&
-              funeralburialformdto.DoctorPrescriptionimage == null && funeralburialformdto.DeathCertificateimage == null)
+            // SECOND: Check for any pending or processing forms (user can only have one form at a time)
+            var hasPendingForm = context.Funeralburialform
+                .Any(f => f.UserId == userId && (f.Status == "Pending" || f.Status == "Processing"));
+
+            if (hasPendingForm)
             {
-                ModelState.AddModelError("ImageFile", "The image file is required");
+                ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it's approved before submitting a new one.");
+                return View(funeralburialformdto);
+            }
+
+            // Optional field handling
+            if (string.IsNullOrEmpty(funeralburialformdto.PhilHealthNo))
+            {
+                ModelState.Remove("PhilHealthNo");
+            }
+
+            // MODIFIED: Image validation - Remove ID image validation and make both prescription and death certificate optional
+            ModelState.Remove("IdFrontimage");
+            ModelState.Remove("IdBackimage");
+            ModelState.Remove("DoctorPrescriptionimage"); // Make doctor prescription optional
+            ModelState.Remove("DeathCertificateimage");   // Death certificate is already optional
+
+            // NEW VALIDATION: At least one of the documents must be provided
+            if (funeralburialformdto.DoctorPrescriptionimage == null && funeralburialformdto.DeathCertificateimage == null)
+            {
+                ModelState.AddModelError("", "At least one document (Doctor Prescription or Death Certificate) is required");
+                return View(funeralburialformdto);
             }
 
             if (!ModelState.IsValid)
@@ -1193,55 +1359,88 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Generate unique filenames
-                string newFileNameFront = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                          Path.GetExtension(funeralburialformdto.IdFrontimage!.FileName);
+                // 🔑 MASTER PASSWORD - Use the same as in Accountverification
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
 
-                string newFileNameBack = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                       Path.GetExtension(funeralburialformdto.IdBackimage!.FileName);
+                // Derive AES key from master password
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32);
 
-                string newFileNamePrescription = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                                       Path.GetExtension(funeralburialformdto.DoctorPrescriptionimage!.FileName);
+                // 🔒 ENCRYPTION FUNCTION
+                byte[] EncryptFile(Stream inputStream)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
 
+                    using var memoryStream = new MemoryStream();
+                    memoryStream.Write(salt, 0, salt.Length);
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        inputStream.CopyTo(cryptoStream);
+                    }
+
+                    return memoryStream.ToArray();
+                }
+
+                // 📅 Encrypted Timestamp for unique filenames
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string encryptedTimestamp;
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
+                }
+
+                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+
+                // Generate encrypted filenames
+                string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
 
-                // Save image to wwwroot/UsersImg
-                string uploadsFolder = Path.Combine(environment.WebRootPath, "Validimg");
                 string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
                 string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
 
-                // Save Front Image
-                string filePathFront = Path.Combine(uploadsFolder, newFileNameFront);
-                using (var stream = new FileStream(filePathFront, FileMode.Create))
-                {
-                    funeralburialformdto.IdFrontimage.CopyTo(stream);
-                }
+                // Ensure directories exist
+                Directory.CreateDirectory(uploadsFolder1);
+                Directory.CreateDirectory(uploadsFolder2);
 
-                // Save Back Image
-                string filePathBack = Path.Combine(uploadsFolder, newFileNameBack);
-                using (var stream = new FileStream(filePathBack, FileMode.Create))
+                // Encrypt and Save Prescription Image if provided
+                if (funeralburialformdto.DoctorPrescriptionimage != null)
                 {
-                    funeralburialformdto.IdBackimage.CopyTo(stream);
-                }
-
-                // Save Prescription Image
-                string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
-                using (var stream = new FileStream(filePathPrescription, FileMode.Create))
-                {
-                    funeralburialformdto.DoctorPrescriptionimage.CopyTo(stream);
-                }
-
-                if (funeralburialformdto.DeathCertificateimage != null)
-                {
-                    newFileNameDeathCertificate = DateTime.Now.ToString("yyyyMMddHHmmssfff") +
-                        Path.GetExtension(funeralburialformdto.DeathCertificateimage.FileName);
-
-                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
-                    using (var stream = new FileStream(filePathDeathCertificate, FileMode.Create))
+                    newFileNamePrescription = safeEncryptedTimestamp + "_prescription.enc";
+                    string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
+                    using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        funeralburialformdto.DeathCertificateimage.CopyTo(stream);
+                        byte[] encryptedData = EncryptFile(funeralburialformdto.DoctorPrescriptionimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
+
+                // Encrypt and Save Death Certificate Image if provided
+                if (funeralburialformdto.DeathCertificateimage != null)
+                {
+                    newFileNameDeathCertificate = safeEncryptedTimestamp + "_deathcert.enc";
+                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
+                    using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
+                    {
+                        byte[] encryptedData = EncryptFile(funeralburialformdto.DeathCertificateimage.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
+                    }
+                }
+
                 // Map data to entity
                 Funeralburialform funeralburialform = new Funeralburialform()
                 {
@@ -1268,8 +1467,8 @@ namespace LingapDVO.Controllers
                     RSuffix = funeralburialformdto.RSuffix,
                     RBlkLotStreet = funeralburialformdto.RBlkLotStreet,
                     RSubVill = funeralburialformdto.RSubVill,
-                    RDistrict = funeralburialformdto.RDistrict,
                     RBrgy = funeralburialformdto.RBrgy,
+                    RDistrict = funeralburialformdto.RDistrict,
                     RelationshipPatient = funeralburialformdto.RelationshipPatient,
                     ContactNo = funeralburialformdto.ContactNo,
 
@@ -1277,13 +1476,12 @@ namespace LingapDVO.Controllers
                     Typeassistance = funeralburialformdto.Typeassistance,
                     ForCMOPERSONNEL = funeralburialformdto.ForCMOPERSONNEL,
 
-                    // Image Paths
-                    Validfrontimage = newFileNameFront,
-                    ValidBackimage = newFileNameBack,
-                    DoctorPrescription = newFileNamePrescription,
+                    // MODIFIED: Use existing ID images from user account instead of new uploads
+                    Validfrontimage = userFrontID,
+                    ValidBackimage = userBackID,
+                    DoctorPrescription = newFileNamePrescription ?? string.Empty,
                     DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
                     Status = "Pending",
-
 
                     // Created Timestamp
                     CreatedAt = DateTime.Now
@@ -1296,7 +1494,6 @@ namespace LingapDVO.Controllers
             }
             catch (DbUpdateException ex)
             {
-                // Exception handling remains the same
                 if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
                 {
                     string message = sqlEx.Message.ToLower();
@@ -1729,74 +1926,19 @@ namespace LingapDVO.Controllers
             }
 
 
-            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
+            ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+            ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+            ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+            ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+            ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+            ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+            ViewBag.District = HttpContext.Session.GetString("District");
+            ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+            ViewBag.Gender = HttpContext.Session.GetString("Gender");
+            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
 
-
-            if (fillupformhospitalBill == null)
-            {
-                return NotFound();
-            }
-
-            // Add all form field values to ViewData
-            ViewData["Status"] = fillupformhospitalBill.Status;
-            ViewData["Id"] = fillupformhospitalBill.Id;
-            ViewData["Lastname"] = fillupformhospitalBill.Lastname;
-            ViewData["Firstname"] = fillupformhospitalBill.Firstname;
-            ViewData["Middlename"] = fillupformhospitalBill.Middlename;
-            ViewData["Suffix"] = fillupformhospitalBill.Suffix;
-            ViewData["BlkLotStreet"] = fillupformhospitalBill.BlkLotStreet;
-            ViewData["SubVill"] = fillupformhospitalBill.SubVill;
-            ViewData["Brgy"] = fillupformhospitalBill.Brgy;
-            ViewData["District"] = fillupformhospitalBill.District;
-            ViewData["Sex"] = fillupformhospitalBill.Sex;
-            ViewData["PhilHealth"] = fillupformhospitalBill.PhilHealth;
-            ViewData["PhilHealthNo"] = fillupformhospitalBill.PhilHealthNo;
-            ViewData["Dateofbirth"] = fillupformhospitalBill.Dateofbirth;
-            ViewData["Age"] = fillupformhospitalBill.Age;
-
-            // Requestor details
-            ViewData["RLastname"] = fillupformhospitalBill.RLastname;
-            ViewData["RFirstname"] = fillupformhospitalBill.RFirstname;
-            ViewData["RMiddlename"] = fillupformhospitalBill.RMiddlename;
-            ViewData["RSuffix"] = fillupformhospitalBill.RSuffix;
-            ViewData["RBlkLotStreet"] = fillupformhospitalBill.RBlkLotStreet;
-            ViewData["RSubVill"] = fillupformhospitalBill.RSubVill;
-            ViewData["RBrgy"] = fillupformhospitalBill.RBrgy;
-            ViewData["RDistrict"] = fillupformhospitalBill.RDistrict;
-            ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
-            ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
-
-            // Type of assistance and CMO details
-            var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
-            ViewData["Typeassistance"] = typeAssistanceRaw;
-
-            // Parse checkbox values into a Dictionary<string, string>
-            var parsed = typeAssistanceRaw
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Split(':', 2))
-                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
-
-            ViewData["CheckedAssistance"] = parsed; // Pass dictionary to the view
-
-
-            // ForCMOPERSONNEL handling
-            var cmoPersonnelRaw = fillupformhospitalBill.ForCMOPERSONNEL ?? "";
-            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
-
-            var parsedCMO = cmoPersonnelRaw
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Split(':', 2))
-                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
-
-            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
-
-            ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
-            ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
-
-            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
-            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
-            ViewData["Comments"] = fillupformhospitalBill.Comments;
-            ViewData["Processby"] = fillupformhospitalBill.Processby;
+            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+            ViewBag.BackID = HttpContext.Session.GetString("BackID");
 
 
             return View();

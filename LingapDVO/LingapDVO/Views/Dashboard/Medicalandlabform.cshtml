@@ -1,4 +1,4 @@
-﻿@model FillupformHospitalBillDto
+﻿@model MedicalandlabformDto
 @{
     Layout = null;
 }
@@ -184,7 +184,7 @@
             <p class="text-muted">Please fill out all required fields to process your request</p>
         </div>
 
-        <form asp-action="FillupformHospitalBill" enctype="multipart/form-data" method="post">
+        <form asp-action="Medicalandlabform" enctype="multipart/form-data" method="post">
 
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -621,7 +621,7 @@
 
 
             <div class="mb-3">
-                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
+                <label class="form-label required-field">Medical Ceritificate</label>
                 <div class="upload-box" onclick="document.getElementById('receipt').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>
@@ -629,10 +629,10 @@
                     <p>Click to upload document</p>
                     <p class="form-note">Accepted formats: JPG, PNGE, etc..(Max 10MB)</p>
                 </div>
-                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')">
-                <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
+                <input asp-for="MedCertificateimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')">
+                <span asp-validation-for="MedCertificateimage" class="text-danger"></span>
 
-                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
+                <img id="receiptPreview" class="img-preview mt-2" alt="MedCertificate Preview">
                 <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
             </div>
 
