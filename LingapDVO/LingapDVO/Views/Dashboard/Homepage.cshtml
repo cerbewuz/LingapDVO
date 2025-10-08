@@ -400,19 +400,7 @@
                                     </a>
                                 }
 
-                                @if (isVerified)
-                                {
-                                    <a asp-route="Uploads" class="btn btn-sm btn-link text-muted">
-                                        <i class="fas fa-upload" title="Uploads"></i>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="btn btn-sm btn-link text-muted" style="cursor: not-allowed; opacity: 0.6;">
-                                        <i class="fas fa-upload" title="Uploads - Verification Required"></i>
-                                    </span>
-                                }
-
+ 
                                 @if (isVerified)
                                 {
                                     <a asp-route="Userprofile" class="btn btn-sm btn-link text-muted">
@@ -541,13 +529,13 @@
 
                                 @if (isVerified)
                                 {
-                                    <a asp-route="Eligibilitychecking" class="text-decoration-none">
-                                        <div class="service-card">
-                                            <div class="service-icon">
-                                                <i class="fas fa-check-circle"></i>
-                                            </div>
-                                            <h5 class="service-title">Eligibility Checking</h5>
-                                            <p class="service-description">Verify your eligibility for assistance programs</p>
+                                    <a asp-route="Uploads" class="text-decoration-none">
+                                        <div class="service-card">                   
+                                                <div class="service-icon">
+                                                    <i class="fas fa-history"></i>
+                                                </div>
+                                                <h5 class="service-title">Application History</h5>
+                                                <p class="service-description">View your previous applications and status</p>
                                         </div>
                                     </a>
 
@@ -555,11 +543,11 @@
                                 else
                                 {
                                     <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
-                                        <div class="service-icon">
-                                            <i class="fas fa-monument"></i>
+                                        <div class="fas fa-history">
+                                            <i class="fas fa-history"></i>
                                         </div>
-                                        <h5 class="service-title">Eligibility Checking</h5>
-                                        <p class="service-description">Verify your eligibility for assistance programs</p>
+                                        <h5 class="service-title">Application History</h5>
+                                        <p class="service-description">View your previous applications and status</p>
                                     </div>
                                 }
                             </div>
@@ -590,18 +578,6 @@
                                 </a>
                             </div>
 
-                            <!-- Service 7 - Application History (Always Available) -->
-                            <div class="col-md-6 col-lg-4">
-                                <a asp-route="History" class="text-decoration-none">
-                                    <div class="service-card">
-                                        <div class="service-icon">
-                                            <i class="fas fa-history"></i>
-                                        </div>
-                                        <h5 class="service-title">Application History</h5>
-                                        <p class="service-description">View your previous applications and status</p>
-                                    </div>
-                                </a>
-                            </div>
                         </div>
                     </div>
                 </div>

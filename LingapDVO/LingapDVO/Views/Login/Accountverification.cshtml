@@ -2,6 +2,8 @@
 @{
     Layout = null;
 }
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -236,14 +238,50 @@
             font-size: 0.9rem;
             margin-top: 5px;
         }
+
+        /* Davao City Verification Styles */
+        .davao-verification-container {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .davao-valid {
+            background-color: #d4edda;
+            border-left: 5px solid #28a745;
+        }
+
+        .davao-invalid {
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .badge-valid {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-invalid {
+            background: #dc3545;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div>
-    <!-- Go Back Button -->
-    <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
-        <i class="fas"></i> Go Back
-    </a>
+        <!-- Go Back Button -->
+        <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
+            <i class="fas"></i> Go Back
+        </a>
     </div>
 
     <section class="register container-fluid">
@@ -252,7 +290,6 @@
                 <div class="register-form text-center text-dark">
                     <article class="mb-4">
                         <h1 class="cobalt-text fw-bold">Verify Your Account</h1>
-           
                     </article>
 
                     <form asp-action="Accountverification" method="post" enctype="multipart/form-data" id="registrationForm">
@@ -275,7 +312,7 @@
 
                         <div class="id-upload-container">
                             <div class="id-upload-section" id="upload-area-front">
-                                <label class="id-upload-label">
+                                <div class="id-upload-content">
                                     <div class="id-upload-icon">
                                         <i class="fas fa-id-card"></i>
                                     </div>
@@ -284,11 +321,11 @@
                                     <input asp-for="ValidFrontID" type="file" id="file-input-front" class="d-none" accept="image/*">
                                     <img id="image-preview" class="id-preview" alt="Front ID Preview">
                                     <span asp-validation-for="ValidFrontID" class="text-danger"></span>
-                                </label>
+                                </div>
                             </div>
 
                             <div class="id-upload-section" id="upload-area-back">
-                                <label class="id-upload-label">
+                                <div class="id-upload-content">
                                     <div class="id-upload-icon">
                                         <i class="fas fa-id-card"></i>
                                     </div>
@@ -297,8 +334,18 @@
                                     <input asp-for="ValidBackID" type="file" id="file-input-back" class="d-none" accept="image/*">
                                     <img id="image-preview-back" class="id-preview" alt="Back ID Preview">
                                     <span asp-validation-for="ValidBackID" class="text-danger"></span>
-                                </label>
+                                </div>
                             </div>
+                        </div>
+
+                        <!-- Davao City Verification Result -->
+                        <div id="davao-verification" class="davao-verification-container">
+                            <div class="d-flex align-items-center mb-2">
+                                <i id="davao-result-icon" class="fas fa-check-circle me-2"></i>
+                                <h5 class="mb-0" id="davao-result-title">Davao City Verification</h5>
+                                <span id="davao-status-badge" class="status-badge badge-valid ms-auto">Valid</span>
+                            </div>
+                            <p id="davao-result-message" class="mb-0">Your driver's license has been verified as issued in Davao City.</p>
                         </div>
 
                         <!-- OCR Status -->
@@ -675,6 +722,20 @@
             const progress = document.getElementById('progress');
             const terms = document.getElementById('terms');
 
+            // Davao City Verification Elements
+            const davaoVerification = document.getElementById('davao-verification');
+            const davaoResultIcon = document.getElementById('davao-result-icon');
+            const davaoResultTitle = document.getElementById('davao-result-title');
+            const davaoResultMessage = document.getElementById('davao-result-message');
+            const davaoStatusBadge = document.getElementById('davao-status-badge');
+
+            // Form fields to disable when license is invalid
+            const formFields = [
+                'idnumber', 'phonenumber', 'lastname', 'firstname', 'middlename',
+                'sex', 'birthdate', 'BlkLotStreet', 'SubVill', 'Barangay', 'District',
+                'SecurityQuestions', 'Securityanswer'
+            ];
+
             // Track if OCR is enabled
             let ocrEnabled = false;
 
@@ -688,6 +749,10 @@
                     uploadBack.classList.remove('disabled');
                     documentWarning.style.display = 'none';
                     status.textContent = 'You can now upload ID images';
+
+                    // Show Davao verification for both driver's license and national ID
+                    davaoVerification.style.display = 'none'; // Hide initially, will show after upload
+                    enableFormFields(); // Enable form fields initially
                 } else {
                     ocrEnabled = false;
                     uploadFront.classList.add('disabled');
@@ -700,6 +765,8 @@
                         status.textContent = 'Select a document to begin';
                     }
                     resultBox.style.display = 'none';
+                    davaoVerification.style.display = 'none';
+                    enableFormFields(); // Enable form fields for other ID types
                 }
             });
 
@@ -765,10 +832,11 @@
                 reader.readAsDataURL(file);
             }
 
-                    // Go Back button functionality
-        goBackBtn.addEventListener('click', function() {
-            window.history.back();
-        });
+            // Go Back button functionality
+            const goBackBtn = document.getElementById('goBackBtn');
+            goBackBtn.addEventListener('click', function() {
+                window.history.back();
+            });
 
             // Process image with OCR
             function processImageWithOCR(preview, isBack) {
@@ -810,7 +878,7 @@
             function parseDriverLicenseFront(text) {
                 const lines = text.split('\n').map(line => line.trim()).filter(line => line);
 
-                let idNumber = "", lastName = "", firstName = "", middleName = "", birthdate = "", sex = "";
+                let idNumber = "", lastName = "", firstName = "", middleName = "", birthdate = "", sex = "", city = "";
 
                 // Find license number (format: X00-00-000000)
                 for (const line of lines) {
@@ -854,15 +922,24 @@
                     }
                 }
 
+                // Find city for Davao verification
+                city = extractCity(lines);
+
                 updateFormFields(idNumber, firstName, middleName, lastName, birthdate, sex);
+
+                // Check if it's Davao City
+                const isDavaoCity = checkIfDavaoCity(city);
+
+                // Show Davao verification result
+                showDavaoVerificationResult(isDavaoCity, city, 'driver-license');
             }
 
-            // Parse PhilSys ID Front
+            // Parse PhilSys ID Front - Extract everything EXCEPT gender
             function parsePhilSysFront(text) {
                 const lines = text.split('\n').map(line => line.trim()).filter(line => line);
                 const linesUpper = lines.map(line => line.toUpperCase());
 
-                let idNumber = "", lastName = "", firstName = "", middleName = "", birthdate = "";
+                let idNumber = "", lastName = "", firstName = "", middleName = "", birthdate = "", city = "";
 
                 // Find ID number (format: 1234-5678-9012-3456)
                 for (const line of lines) {
@@ -885,26 +962,41 @@
                     if (line.includes("GITNANG") || line.includes("MIDDLE NAME")) {
                         middleName = cleanName(lines[i + 1] || "");
                     }
-                    if (line.includes("KAPANGANAKAN") || line.includes("PETSA") || line.includes("BIRTHDATE")) {
-                        birthdate = cleanBirthdate(lines[i + 1] || "");
+                    // Look for birthdate in various formats
+                    if (line.includes("KAPANGANAKAN") || line.includes("PETSA") || line.includes("BIRTHDATE") || line.includes("DATE OF BIRTH")) {
+                        // Try to extract birthdate from current line or next line
+                        let dateText = line;
+                        if (!containsDate(line) && i + 1 < lines.length) {
+                            dateText = lines[i + 1];
+                        }
+                        birthdate = extractBirthdateFromText(dateText);
                     }
                 }
 
+                // If birthdate not found with indicators, search all lines for date patterns
+                if (!birthdate) {
+                    birthdate = findBirthdateInText(lines);
+                }
+
+                // Extract city from address for National ID Davao verification
+                city = extractCityFromAddress(lines);
+
                 updateFormFields(idNumber, firstName, middleName, lastName, birthdate, "");
+
+                // Check if it's Davao City for National ID
+                const isDavaoCity = checkIfDavaoCity(city);
+
+                // Show Davao verification result for National ID
+                showDavaoVerificationResult(isDavaoCity, city, 'national-id');
             }
 
-            // Parse PhilSys ID Back (for gender)
+            // Parse PhilSys ID Back - Extract gender ONLY
             function parsePhilSysBack(text) {
                 const lines = text.split('\n').map(line => line.trim()).filter(line => line);
                 let sex = "";
 
-                for (const line of lines) {
-                    const candidate = cleanSex(line);
-                    if (candidate) {
-                        sex = candidate;
-                        break;
-                    }
-                }
+                // Look for gender indicators on the back only
+                sex = findGenderInText(lines);
 
                 if (sex) {
                     document.getElementById('sex').value = sex;
@@ -913,18 +1005,314 @@
                 }
             }
 
-            // Helper functions
-                 function cleanName(text) {
-          if (!text) return "";
-          return text
-            .replace(/[^a-z\s]/gi, "")   // keep only letters + spaces
-            .replace(/\s+/g, " ")        // normalize spaces
-            .trim()
-            .replace(/^[a-z]\s+/, "")    // remove stray single letter at start
-            .replace(/\s+[a-z]$/, "")    // remove stray single letter at end
-            .replace(/^\s*[a-z]\s*$/, ""); // if only a single letter, remove it
-        }
+            // Extract city from address for National ID
+            function extractCityFromAddress(lines) {
+                // Look for address patterns and extract city
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].toUpperCase();
 
+                    // Look for address indicators
+                    if (line.includes('TIRAHAN') || line.includes('ADDRESS') || line.includes('MANILA') ||
+                        line.includes('DAVAO') || line.includes('CEBU') || line.includes('QUEZON')) {
+
+                        // Check current line and next few lines for city information
+                        for (let j = i; j < Math.min(i + 3, lines.length); j++) {
+                            const addressLine = lines[j].toUpperCase();
+
+                            // Look for city patterns in the address
+                            if (addressLine.includes('DAVAO CITY') || addressLine.includes('CITY OF DAVAO')) {
+                                return "Davao City";
+                            } else if (addressLine.includes('DAVAO')) {
+                                return "Davao";
+                            } else if (addressLine.includes('MANILA')) {
+                                return "Manila";
+                            } else if (addressLine.includes('CEBU')) {
+                                return "Cebu";
+                            } else if (addressLine.includes('QUEZON')) {
+                                return "Quezon";
+                            } else if (addressLine.includes('METRO MANILA')) {
+                                return "Metro Manila";
+                            }
+                        }
+                    }
+                }
+
+                // Alternative: Look for city patterns in any line
+                return extractCity(lines);
+            }
+
+            // Enhanced birthdate extraction for PhilSys
+            function extractBirthdateFromText(text) {
+                if (!text) return "";
+
+                // Try various date formats commonly found in PhilSys
+                const datePatterns = [
+                    /\b(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})\b/, // DD/MM/YYYY or DD-MM-YYYY
+                    /\b(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})\b/, // YYYY/MM/DD or YYYY-MM-DD
+                    /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b/i, // DD Month YYYY
+                    /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})\b/i // Month DD, YYYY
+                ];
+
+                for (const pattern of datePatterns) {
+                    const match = text.match(pattern);
+                    if (match) {
+                        if (pattern === datePatterns[0]) {
+                            // DD/MM/YYYY format
+                            const [, day, month, year] = match;
+                            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                        } else if (pattern === datePatterns[1]) {
+                            // YYYY/MM/DD format
+                            const [, year, month, day] = match;
+                            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                        } else if (pattern === datePatterns[2] || pattern === datePatterns[3]) {
+                            // Text month format
+                            const monthNames = {
+                                'january': '01', 'february': '02', 'march': '03', 'april': '04',
+                                'may': '05', 'june': '06', 'july': '07', 'august': '08',
+                                'september': '09', 'october': '10', 'november': '11', 'december': '12'
+                            };
+                            const month = match[1] || match[2];
+                            const day = match[2] || match[3];
+                            const year = match[3] || match[4];
+                            const monthNum = monthNames[month.toLowerCase()];
+                            if (monthNum) {
+                                return `${year}-${monthNum}-${day.padStart(2, '0')}`;
+                            }
+                        }
+                    }
+                }
+
+                return "";
+            }
+
+            // Search all lines for birthdate patterns
+            function findBirthdateInText(lines) {
+                for (const line of lines) {
+                    const birthdate = extractBirthdateFromText(line);
+                    if (birthdate) {
+                        return birthdate;
+                    }
+                }
+                return "";
+            }
+
+            // Check if text contains a date pattern
+            function containsDate(text) {
+                const datePatterns = [
+                    /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{4}\b/,
+                    /\b\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2}\b/,
+                    /\b\d{1,2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/i,
+                    /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b/i
+                ];
+
+                return datePatterns.some(pattern => pattern.test(text));
+            }
+
+            // Enhanced gender detection for PhilSys (back only)
+            function findGenderInText(lines) {
+                for (const line of lines) {
+                    const upper = line.toUpperCase();
+
+                    // PhilSys specific gender indicators (back of ID)
+                    if (upper.includes('MALE') || upper.includes('M') || upper.includes('LALAKI')) {
+                        return "Male";
+                    }
+                    if (upper.includes('FEMALE') || upper.includes('F') || upper.includes('BABAE')) {
+                        return "Female";
+                    }
+
+                    // Look for gender markers near labels (back of ID)
+                    if (upper.includes('KASARIAN') || upper.includes('SEX') || upper.includes('GENDER')) {
+                        const nextLine = lines[lines.indexOf(line) + 1];
+                        if (nextLine) {
+                            const nextUpper = nextLine.toUpperCase();
+                            if (nextUpper.includes('MALE') || nextUpper.includes('M') || nextUpper.includes('LALAKI')) {
+                                return "Male";
+                            }
+                            if (nextUpper.includes('FEMALE') || nextUpper.includes('F') || nextUpper.includes('BABAE')) {
+                                return "Female";
+                            }
+                        }
+                        // Also check current line for gender markers
+                        if (upper.includes('MALE') || upper.includes('M') || upper.includes('LALAKI')) {
+                            return "Male";
+                        }
+                        if (upper.includes('FEMALE') || upper.includes('F') || upper.includes('BABAE')) {
+                            return "Female";
+                        }
+                    }
+                }
+                return "";
+            }
+
+            // Extract city from driver's license text
+            function extractCity(lines) {
+                // Look for city patterns
+                const cityIndicators = ['DAVAO', 'CAGAYAN', 'CEBU', 'MANILA', 'QUEZON', 'MAKATI', 'TAGUM', 'DIGOS', 'PANABO'];
+
+                for (const line of lines) {
+                    for (const indicator of cityIndicators) {
+                        if (line.toUpperCase().includes(indicator)) {
+                            // Check if it's specifically Davao City
+                            if (line.toUpperCase().includes('DAVAO')) {
+                                if (line.toUpperCase().includes('CITY') || line.toUpperCase().includes('DAVAO CITY')) {
+                                    return "Davao City";
+                                }
+                            }
+                            return cleanText(line);
+                        }
+                    }
+                }
+
+                // Alternative: Look for text that might be a city
+                for (const line of lines) {
+                    if (line.length > 3 && line.length < 30 &&
+                        /^[A-Z][a-zA-Z\s]+$/.test(line) &&
+                        !line.includes('REPUBLIC') && !line.includes('PHILIPPINES') &&
+                        !line.includes('LICENSE') && !line.includes('DRIVER')) {
+                        return cleanText(line);
+                    }
+                }
+
+                return "Not detected";
+            }
+
+            // Check if city is Davao City
+            function checkIfDavaoCity(city) {
+                if (!city || city === "Not detected") return false;
+
+                const davaoPatterns = [
+                    'DAVAO CITY',
+                    'CITY OF DAVAO',
+                    'DAVAO',
+                    'DVO CITY',
+                    'D.C.'
+                ];
+
+                const normalizedCity = city.toUpperCase().trim();
+
+                for (const pattern of davaoPatterns) {
+                    if (normalizedCity.includes(pattern) || pattern.includes(normalizedCity)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            // Show Davao City verification result
+            function showDavaoVerificationResult(isDavaoCity, detectedCity, idType) {
+                // Show for both driver's license and national ID
+                davaoVerification.style.display = 'block';
+
+                if (isDavaoCity) {
+                    // Valid Davao City ID
+                    davaoVerification.className = 'davao-verification-container davao-valid';
+                    davaoResultIcon.className = 'fas fa-check-circle me-2';
+                    davaoResultIcon.style.color = '#28a745';
+                    davaoResultTitle.textContent = idType === 'driver-license' ? 'Valid Davao City License' : 'Valid Davao City National ID';
+                    davaoResultMessage.textContent = idType === 'driver-license'
+                        ? 'Your driver\'s license has been verified as issued in Davao City.'
+                        : 'Your National ID has been verified as registered in Davao City.';
+                    davaoStatusBadge.className = 'status-badge badge-valid';
+                    davaoStatusBadge.textContent = 'Valid';
+
+                    // Enable form fields for valid ID
+                    enableFormFields();
+                } else {
+                    // Invalid (not Davao City) ID
+                    davaoVerification.className = 'davao-verification-container davao-invalid';
+                    davaoResultIcon.className = 'fas fa-times-circle me-2';
+                    davaoResultIcon.style.color = '#dc3545';
+                    davaoResultTitle.textContent = idType === 'driver-license' ? 'License Not From Davao City' : 'National ID Not From Davao City';
+                    davaoResultMessage.textContent = `This service is only available for Davao City residents. Detected city: ${detectedCity}`;
+                    davaoStatusBadge.className = 'status-badge badge-invalid';
+                    davaoStatusBadge.textContent = 'Invalid';
+
+                    // Disable form fields and clear uploaded files for invalid ID
+                    disableFormFields();
+                    clearUploadedFiles();
+                }
+            }
+
+            // Disable all form fields
+            function disableFormFields() {
+                formFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.disabled = true;
+                        field.classList.add('disabled-field');
+                    }
+                });
+
+                // Also disable the submit button
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.classList.add('disabled');
+                }
+            }
+
+            // Enable all form fields
+            function enableFormFields() {
+                formFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.disabled = false;
+                        field.classList.remove('disabled-field');
+                    }
+                });
+
+                // Also enable the submit button
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('disabled');
+                }
+            }
+
+            // Clear uploaded files and reset upload areas
+            function clearUploadedFiles() {
+                // Clear file inputs
+                fileFront.value = '';
+                fileBack.value = '';
+
+                // Hide preview images
+                imagePreview.style.display = 'none';
+                imagePreviewBack.style.display = 'none';
+
+                // Remove active class from upload areas
+                uploadFront.classList.remove('active');
+                uploadBack.classList.remove('active');
+
+                // Clear any extracted data from form fields
+                document.getElementById('idnumber').value = '';
+                document.getElementById('firstname').value = '';
+                document.getElementById('middlename').value = '';
+                document.getElementById('lastname').value = '';
+                document.getElementById('birthdate').value = '';
+                document.getElementById('sex').value = '';
+            }
+
+            // Helper functions
+            function cleanName(text) {
+                if (!text) return "";
+                return text
+                    .replace(/[^a-z\s]/gi, "")   // keep only letters + spaces
+                    .replace(/\s+/g, " ")        // normalize spaces
+                    .trim()
+                    .replace(/^[a-z]\s+/, "")    // remove stray single letter at start
+                    .replace(/^[a-z]\s+/, "")    // remove stray single letter at start
+                    .replace(/\s+[a-z]$/, "")    // remove stray single letter at end
+                    .replace(/^\s*[a-z]\s*$/, ""); // if only a single letter, remove it
+            }
+
+            function cleanText(text) {
+                return text
+                    .replace(/[^a-zA-Z0-9\s\-,\.]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
 
             function cleanBirthdate(text) {
                 if (!text) return "";
@@ -984,120 +1372,6 @@
                     return;
                 }
             });
-        });
-    </script>
-
-    <script>
-        // Profile picture preview
-        document.getElementById('imageUpload').addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('imagePreview').src = e.target.result;
-                    document.getElementById('imagePreview').style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-
-
-        // ID Upload functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const frontIdUpload = document.getElementById('file-input-front');
-            const backIdUpload = document.getElementById('file-input-back');
-            const frontIdPreview = document.getElementById('image-preview');
-            const backIdPreview = document.getElementById('image-preview-back');
-            const frontIdSection = document.getElementById('upload-area-front');
-            const backIdSection = document.getElementById('upload-area-back');
-
-            // Front ID upload
-            frontIdUpload.addEventListener('change', function(event) {
-                handleFileUpload(event.target.files[0], frontIdPreview, frontIdSection);
-            });
-
-            // Back ID upload
-            backIdUpload.addEventListener('change', function(event) {
-                handleFileUpload(event.target.files[0], backIdPreview, backIdSection);
-            });
-
-            // Drag and drop functionality
-            setupDragAndDrop(frontIdSection, frontIdUpload, frontIdPreview);
-            setupDragAndDrop(backIdSection, backIdUpload, backIdPreview);
-
-            function handleFileUpload(file, previewElement, section) {
-                if (file) {
-                    if (!validateFile(file)) return;
-
-                    section.classList.add('active');
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        previewElement.src = e.target.result;
-                        previewElement.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            }
-
-            function setupDragAndDrop(section, fileInput, preview) {
-                section.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    section.classList.add('active');
-                });
-
-                section.addEventListener('dragleave', () => {
-                    section.classList.remove('active');
-                });
-
-                section.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    section.classList.remove('active');
-
-                    if (e.dataTransfer.files.length) {
-                        fileInput.files = e.dataTransfer.files;
-                        handleFileUpload(e.dataTransfer.files[0], preview, section);
-                    }
-                });
-            }
-
-            function validateFile(file) {
-                const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-                const maxSize = 5 * 1024 * 1024; // 5MB
-
-                if (!validTypes.includes(file.type)) {
-                    alert('Please upload a valid image file (JPEG or PNG).');
-                    return false;
-                }
-
-                if (file.size > maxSize) {
-                    alert('File size exceeds 5MB limit.');
-                    return false;
-                }
-
-                return true;
-            }
-        });
-
-        // Form validation
-        document.getElementById('registrationForm').addEventListener('submit', function(e) {
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('confirmPassword');
-            const terms = document.getElementById('terms');
-
-            // Check password match
-            if (password.value !== confirmPassword.value) {
-                alert('Passwords do not match.');
-                e.preventDefault();
-                return;
-            }
-
-            // Check terms agreement
-            if (!terms.checked) {
-                alert('You must agree to the terms and conditions.');
-                e.preventDefault();
-                return;
-            }
         });
     </script>
 </body>
