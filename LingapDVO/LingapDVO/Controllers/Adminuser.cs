@@ -817,76 +817,20 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-        // 3. DOWNLOAD METHOD - IMPROVED CONTENT TYPE DETECTION
-        [HttpGet]
-        public IActionResult DownloadDecryptedImage(string fileName, string fileType = "validid")
-        {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
-            {
-                return RedirectToAction("Landingpage", "Dashboard");
-            }
-
-            string masterPassword = "SuperAdminMasterKey123!";
-            string folder;
-
-            switch (fileType.ToLower())
-            {
-                case "doctorprescription":
-                    folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-                    break;
-                case "deathcertificate":
-                    folder = Path.Combine(environment.WebRootPath, "Funeralimg");
-                    break;
-                default:
-                    folder = Path.Combine(environment.WebRootPath, "Validimg");
-                    break;
-            }
-
-            string filePath = Path.Combine(folder, fileName);
-
-            if (!System.IO.File.Exists(filePath))
-            {
-                return NotFound();
-            }
-
-            try
-            {
-                byte[] decryptedData = DecryptFile(filePath, masterPassword);
-                string downloadName = fileName.Replace(".enc", "");
-
-                // ⭐ IMPROVED CONTENT TYPE DETECTION
-                string contentType;
-                if (IsPdfFile(decryptedData))
-                {
-                    contentType = "application/pdf";
-                    // Ensure download name has .pdf extension
-                    if (!downloadName.ToLower().EndsWith(".pdf"))
-                        downloadName += ".pdf";
-                }
-                else
-                {
-                    // Fallback to file extension detection for images
-                    contentType = fileName.ToLower().Contains(".png") ? "image/png" :
-                                 fileName.ToLower().Contains(".jpg") || fileName.ToLower().Contains(".jpeg") ? "image/jpeg" :
-                                 "application/octet-stream";
-                }
-
-                return File(decryptedData, contentType, downloadName);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Decryption failed: " + ex.Message);
-            }
-        }
-
-        // 4. VIEW PDF METHOD - FIXED PATH ISSUE
         [HttpGet]
         public IActionResult ViewPDF(string fileName, string fileType)
         {
             try
             {
+                // Authentication check
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+                {
+                    return Unauthorized("Please log in to view documents");
+                }
+
                 Console.WriteLine($"🔍 ViewPDF called - FileName: {fileName}, FileType: {fileType}");
 
+                // Validate inputs
                 if (string.IsNullOrEmpty(fileName))
                 {
                     Console.WriteLine("❌ FileName is null or empty");
@@ -899,6 +843,9 @@ namespace LingapDVO.Controllers
                     return BadRequest("FileType is required");
                 }
 
+                // Security: Prevent directory traversal
+                string safeFileName = Path.GetFileName(fileName);
+
                 // Define the directory based on file type
                 string folderPath = fileType.ToLower() switch
                 {
@@ -909,8 +856,17 @@ namespace LingapDVO.Controllers
 
                 Console.WriteLine($"📁 Folder path: {folderPath}");
 
-                string encryptedFilePath = Path.Combine(folderPath, fileName);
+                string encryptedFilePath = Path.Combine(folderPath, safeFileName);
                 Console.WriteLine($"📄 Full file path: {encryptedFilePath}");
+
+                // Additional security: Verify the resolved path is within the expected directory
+                string resolvedPath = Path.GetFullPath(encryptedFilePath);
+                string resolvedFolder = Path.GetFullPath(folderPath);
+                if (!resolvedPath.StartsWith(resolvedFolder))
+                {
+                    Console.WriteLine("❌ Security: Path traversal attempt detected");
+                    return BadRequest("Invalid file path");
+                }
 
                 // Check if file exists
                 if (!System.IO.File.Exists(encryptedFilePath))
@@ -926,27 +882,52 @@ namespace LingapDVO.Controllers
                 byte[] decryptedBytes = DecryptFile(encryptedFilePath, masterPassword);
                 Console.WriteLine($"✅ File decrypted. Decrypted size: {decryptedBytes.Length} bytes");
 
-                // Check if it's a PDF
+                // Verify it's actually a PDF
                 bool isPdf = IsPdfFile(decryptedBytes);
                 Console.WriteLine($"📊 Is PDF: {isPdf}");
 
-                // Always return as PDF for now
-                string downloadName = Path.GetFileNameWithoutExtension(fileName) + ".pdf";
-                Console.WriteLine($"📤 Returning file as: {downloadName}");
+                if (!isPdf)
+                {
+                    Console.WriteLine("❌ File is not a valid PDF");
+                    return BadRequest("Only PDF files can be viewed");
+                }
 
-                return File(decryptedBytes, "application/pdf", downloadName);
+                // ⭐ CRITICAL: Set headers to FORCE inline viewing and PREVENT download
+                // Remove any filename reference to avoid browser download prompts
+                Response.Headers["Content-Disposition"] = "inline";
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
+                Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+
+                // Additional security headers to prevent download
+                Response.Headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'self'";
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
+
+                // Cache control to prevent caching of sensitive documents
+                Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private";
+                Response.Headers["Pragma"] = "no-cache";
+                Response.Headers["Expires"] = "0";
+
+                Console.WriteLine($"📤 Returning PDF for INLINE VIEWING ONLY (download disabled)");
+
+                // Return as PDF without any filename parameter
+                return File(decryptedBytes, "application/pdf");
+            }
+            catch (CryptographicException ex)
+            {
+                Console.WriteLine($"💥 DECRYPTION ERROR: {ex.Message}");
+                return BadRequest("Failed to decrypt file. Invalid encryption or corrupted file.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"💥 ERROR in ViewPDF: {ex.Message}");
                 Console.WriteLine($"💥 Stack Trace: {ex.StackTrace}");
-                return BadRequest($"Error: {ex.Message}");
+                return StatusCode(500, $"Error viewing PDF: {ex.Message}");
             }
         }
 
+       
 
-
-        // 5. QUICK PDF CHECK METHOD (Optional helper)
+        // Keep the CheckFileType helper method as-is
         [HttpGet]
         public IActionResult CheckFileType(string fileName, string fileType = "validid")
         {
@@ -971,7 +952,8 @@ namespace LingapDVO.Controllers
                     break;
             }
 
-            string filePath = Path.Combine(folder, fileName);
+            string safeFileName = Path.GetFileName(fileName);
+            string filePath = Path.Combine(folder, safeFileName);
 
             if (!System.IO.File.Exists(filePath))
             {

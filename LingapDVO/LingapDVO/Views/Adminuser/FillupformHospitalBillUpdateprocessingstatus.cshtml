@@ -10,6 +10,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <title>Hospital Bill Application - Receipt View</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -256,12 +258,186 @@
             font-size: 0.9rem;
             color: #6c757d;
         }
+
+        /* PDF Viewer Modal Styles */
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+        }
+
+        .pdf-viewer-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-viewer-header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pdf-viewer-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .pdf-viewer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            line-height: 1;
+        }
+
+            .pdf-viewer-close:hover {
+                color: var(--primary-color);
+            }
+
+        .pdf-viewer-body {
+            flex: 1;
+            background-color: #525659;
+            position: relative;
+            overflow: auto;
+        }
+
+        .pdf-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        #pdfCanvas {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            background-color: white;
+        }
+
+        .pdf-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .page-info {
+            color: white;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        .zoom-level {
+            color: white;
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pdf-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pdf-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            display: none;
+        }
+
+            .pdf-error i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+        .btn-light {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+        }
+
+            .btn-light:hover {
+                background-color: white;
+            }
+
+            .btn-light:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
     </style>
 </head>
 <body>
+    <!-- Image Zoom Modal -->
     <div id="zoomModal" class="zoom-modal">
         <span class="close-zoom">&times;</span>
         <img class="zoom-modal-content" id="zoomedImage">
+    </div>
+
+    <!-- PDF Viewer Modal -->
+    <div id="pdfViewerModal" class="pdf-viewer-modal">
+        <div class="pdf-viewer-content">
+            <div class="pdf-viewer-header">
+                <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+                <div class="pdf-controls">
+                    <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                    <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                        <i class="bi bi-zoom-out"></i>
+                    </button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                        <i class="bi bi-zoom-in"></i>
+                    </button>
+                </div>
+                <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+            </div>
+            <div class="pdf-viewer-body">
+                <div id="pdfLoading" class="pdf-loading">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading PDF document...</p>
+                </div>
+                <div id="pdfError" class="pdf-error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <p>Error loading PDF. Please try again.</p>
+                </div>
+                <div class="pdf-container">
+                    <canvas id="pdfCanvas"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="receipt-container">
@@ -279,7 +455,6 @@
                     </div>
                 }
 
-                <!-- DEBUG SECTION - Remove this after testing -->
                 @if (ViewData["DebugMessages"] != null)
                 {
                     <div class="alert alert-info">
@@ -397,11 +572,11 @@
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
                             <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDF('@ViewData["DoctorPrescription"]', 'doctorprescription')">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
                                     <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
                                     <div class="pdf-info">
                                         <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                        <span class="pdf-label">Click to view PDF in new tab</span>
+                                        <span class="pdf-label">Click to view PDF</span>
                                     </div>
                                 </div>
                             </div>
@@ -415,7 +590,7 @@
                     </div>
                 }
 
-                <!-- Death Certificate - Single Section -->
+                <!-- Death Certificate -->
                 @if (ViewData["DeathCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
@@ -423,11 +598,11 @@
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
                             <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDF('@ViewData["DeathCertificate"]', 'deathcertificate')">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
                                     <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
                                     <div class="pdf-info">
                                         <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                        <span class="pdf-label">Click to view PDF in new tab</span>
+                                        <span class="pdf-label">Click to view PDF</span>
                                     </div>
                                 </div>
                             </div>
@@ -561,6 +736,12 @@
     </div>
 
     <script>
+        // PDF Viewer Variables
+        let currentPDF = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScale = 1.2;
+
         // Image Zoom Functionality
         function zoomImage(src) {
             const modal = document.getElementById("zoomModal");
@@ -574,19 +755,163 @@
             document.getElementById("zoomModal").style.display = "none";
         }
 
-        // PDF Viewing Function
-        function viewPDF(fileName, fileType) {
-            // Properly encode the filename for URL
-            const encodedFileName = encodeURIComponent(fileName);
-            const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType;
-            console.log('Opening PDF URL:', url); // For debugging
-            window.open(url, '_blank');
+        // PDF Viewer Function
+        async function viewPDFInModal(fileName, fileType, displayName) {
+            const modal = document.getElementById('pdfViewerModal');
+            const title = document.getElementById('pdfViewerTitle');
+            const loading = document.getElementById('pdfLoading');
+            const errorDiv = document.getElementById('pdfError');
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            // Reset state
+            title.textContent = displayName || 'PDF Document';
+            modal.style.display = 'block';
+            loading.style.display = 'flex';
+            errorDiv.style.display = 'none';
+            canvas.style.display = 'none';
+
+            currentPDF = null;
+            currentPage = 1;
+            currentScale = 1.2;
+
+            try {
+                // Encode filename and build URL
+                const encodedFileName = encodeURIComponent(fileName);
+                const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+
+                console.log('Fetching PDF from:', url);
+
+                // Fetch PDF
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const pdfData = await response.arrayBuffer();
+
+                if (!pdfData || pdfData.byteLength === 0) {
+                    throw new Error('PDF data is empty');
+                }
+
+                console.log('PDF data received, length:', pdfData.byteLength);
+
+                // Load PDF using PDF.js
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                totalPagesSpan.textContent = totalPages;
+                currentPageSpan.textContent = currentPage;
+
+                console.log('PDF loaded successfully, pages:', totalPages);
+
+                // Update control buttons
+                updateNavigationButtons();
+
+                // Render first page
+                await renderPage(currentPage);
+
+                // Hide loading, show canvas
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+            }
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById("zoomModal");
-            if (event.target == modal) modal.style.display = "none";
+        // Render specific page
+        async function renderPage(pageNum) {
+            if (!currentPDF) return;
+
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+
+            try {
+                const page = await currentPDF.getPage(pageNum);
+                const viewport = page.getViewport({ scale: currentScale });
+
+                // Set canvas dimensions
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                currentPageSpan.textContent = pageNum;
+
+                console.log(`Rendered page ${pageNum} at scale ${currentScale}`);
+
+            } catch (error) {
+                console.error('Error rendering page:', error);
+            }
+        }
+
+        // Navigation functions
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function zoomIn() {
+            currentScale += 0.2;
+            renderPage(currentPage);
+            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.2;
+                renderPage(currentPage);
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        // Close PDF Viewer
+        function closePDFViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'none';
+
+            // Clean up
+            if (currentPDF) {
+                currentPDF.destroy();
+                currentPDF = null;
+            }
         }
 
         // Edit Mode Toggle
@@ -648,6 +973,52 @@
             if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
             updateReflection();
         });
+
+        // Keyboard shortcuts and navigation
+        document.addEventListener('keydown', function(e) {
+            // ESC key closes modals
+            if (e.key === 'Escape') {
+                document.getElementById("zoomModal").style.display = "none";
+                closePDFViewer();
+            }
+
+            // PDF navigation when PDF viewer is open
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+
+            if (event.target == zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal) {
+                closePDFViewer();
+            }
+        }
     </script>
 </body>
 </html>
