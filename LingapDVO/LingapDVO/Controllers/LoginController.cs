@@ -17,7 +17,6 @@ using System.Security.Cryptography;
 using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
-
 namespace LingapDVO.Controllers
 {
     public class LoginController : Controller
@@ -31,8 +30,8 @@ namespace LingapDVO.Controllers
             this.context = context;
             this.environment = environment;
             _smsService = smsService;
-
         }
+
         public IActionResult Index()
         {
             return View();
@@ -43,30 +42,27 @@ namespace LingapDVO.Controllers
         {
             var properties = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("FacebookCallback", "Login") // Change this
+                RedirectUri = Url.Action("FacebookCallback", "Login")
             };
             return Challenge(properties, FacebookDefaults.AuthenticationScheme);
         }
 
         [HttpGet]
-        public async Task<IActionResult> FacebookCallback() // Remove the Route attribute
+        public async Task<IActionResult> FacebookCallback()
         {
             var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             if (!result.Succeeded)
             {
-                // Handle failure - check result properties for error details
                 var error = result.Properties?.GetString(".error");
                 var errorDescription = result.Properties?.GetString(".error.description");
                 return RedirectToAction("Login", "Login");
             }
 
-            // Extract claims
             var claims = result.Principal.Claims.ToList();
             var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var name = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
-            // Store in session
             HttpContext.Session.SetString("FacebookEmail", email ?? "");
             HttpContext.Session.SetString("FacebookName", name ?? "");
             HttpContext.Session.SetString("Username", name ?? "Facebook User");
@@ -74,19 +70,16 @@ namespace LingapDVO.Controllers
             return RedirectToAction("Homepage", "Dashboard");
         }
 
-
         [HttpGet]
         public IActionResult GoogleLogin()
         {
             var properties = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("Homepage", "Dashboard") // always redirect here
+                RedirectUri = Url.Action("GoogleResponse", "Login")
             };
 
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
-
-
 
         [HttpGet]
         [Route("/signin-google")]
@@ -99,39 +92,38 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // Extract Google claims
             var claims = result.Principal?.Identities.FirstOrDefault()?.Claims;
             var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var name = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
-            // Store into session
             HttpContext.Session.SetString("GoogleEmail", email ?? "");
             HttpContext.Session.SetString("GoogleName", name ?? "");
             HttpContext.Session.SetString("Username", name ?? "Google User");
 
-            // Redirect to Homepage/Dashboard
             return RedirectToAction("Homepage", "Dashboard");
         }
 
         public IActionResult Login()
         {
-            // Prevent browser from caching the login page
+            if (TempData["SuccessMessage"] != null)
+            {
+                ViewBag.SuccessMessage = TempData["SuccessMessage"];
+            }
+
             Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "0";
 
-            // Check if a superadmin or admin session exists
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            // Check for superadmin session
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("IsSuperadmin")))
             {
-                // Check if it's a superadmin session
                 return RedirectToAction("Superadmin", "Superadmin");
             }
 
-            // Check if a superadmin or admin session exists
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            // Check for admin session
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("IsAdmin")))
             {
-                // Check if it's a superadmin session
-                return RedirectToAction("Admin", "Adminuser");
+                return RedirectToAction("Analyticsdashboard", "Adminuser");
             }
 
             // If a regular user is logged in, redirect to the homepage
@@ -140,13 +132,12 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
-
             return View();
         }
+
         [HttpPost]
-        public IActionResult Login(LoginDto loginModel)
+        public async Task<IActionResult> Login(LoginDto loginModel)
         {
-            // Prevent browser from caching the login page
             Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "0";
@@ -170,13 +161,12 @@ namespace LingapDVO.Controllers
                 return View(loginModel);
             }
 
-            // Verify with Google reCAPTCHA API using HttpClient instead of WebClient
             try
             {
                 using (var httpClient = new System.Net.Http.HttpClient())
                 {
                     string secretKey = "6Lfdj1orAAAAAKINUvegNElqk5Fld8S9qASq8jtP";
-                    var response = httpClient.GetStringAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={recaptchaResponse}").Result;
+                    var response = await httpClient.GetStringAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={recaptchaResponse}");
                     var captchaResult = System.Text.Json.JsonDocument.Parse(response);
                     bool isSuccess = captchaResult.RootElement.GetProperty("success").GetBoolean();
 
@@ -208,7 +198,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Check if the login is an Admin first
+                // Check if the login is a Superadmin first
                 var superadmin = context.Superadminaccount.FirstOrDefault(a =>
                     a.Username == loginModel.Username);
                 if (superadmin != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, superadmin.Password))
@@ -224,10 +214,16 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("Email", superadmin.Email);
                     HttpContext.Session.SetString("IsSuperadmin", "true");
 
-                    return Redirect("/Superadmin");
+                    // Return JSON for AJAX requests
+                    if (IsAjaxRequest())
+                    {
+                        return Json(new { success = true, redirectUrl = Url.Action("Superadmin", "Superadmin") });
+                    }
+
+                    return RedirectToAction("Superadmin", "Superadmin");
                 }
 
-                // Check if the login is an Admin first
+                // Check if the login is an Admin
                 var admin = context.Adminaccount.FirstOrDefault(a =>
                     a.Username == loginModel.Username);
                 if (admin != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, admin.Password))
@@ -245,7 +241,14 @@ namespace LingapDVO.Controllers
 
                     HttpContext.Session.SetString("IsAdmin", "true");
                     HttpContext.Session.SetString("AdminFullname", admin.Fullname);
-                    return Redirect("/Analyticsdashboard");
+
+                    // Return JSON for AJAX requests
+                    if (IsAjaxRequest())
+                    {
+                        return Json(new { success = true, redirectUrl = Url.Action("Analyticsdashboard", "Adminuser") });
+                    }
+
+                    return RedirectToAction("Analyticsdashboard", "Adminuser");
                 }
 
                 // Check if it's a RegisterAcc user (new registration)
@@ -254,20 +257,16 @@ namespace LingapDVO.Controllers
 
                 if (registerAccUser != null)
                 {
-                    // Decrypt and verify password for RegisterAcc user
                     string DecryptPassword(string encryptedPassword)
                     {
                         byte[] encryptedBytes = Convert.FromBase64String(encryptedPassword);
 
                         using var memoryStream = new MemoryStream(encryptedBytes);
-
-                        // Read salt and IV
                         byte[] salt = new byte[16];
                         byte[] iv = new byte[16];
                         memoryStream.Read(salt, 0, salt.Length);
                         memoryStream.Read(iv, 0, iv.Length);
 
-                        // Derive key using same master password and salt
                         string masterPassword = "SuperAdminMasterKey123!";
                         using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
                         byte[] key = pbkdf2.GetBytes(32);
@@ -295,7 +294,7 @@ namespace LingapDVO.Controllers
 
                         // Check if user has verified account data using RegisterAcc ID
                         var verifiedUser = context.Verifyaccount
-                            .FirstOrDefault(v => v.UserId == registerAccUser.Id); // Assuming UserId is the foreign key
+                            .FirstOrDefault(v => v.UserId == registerAccUser.Id);
 
                         if (verifiedUser != null)
                         {
@@ -313,14 +312,11 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
                             HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                             HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
-          
-                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? ""); // From RegisterAcc
-         
+                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
                             HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
                             HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
                             HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
                             HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
-                  
                             HttpContext.Session.SetString("IsVerifiedUser", "true");
                             HttpContext.Session.SetString("IsRegisteredUser", "true");
                         }
@@ -334,7 +330,13 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("IsVerifiedUser", "false");
                         }
 
-                        return Redirect("/Homepage");
+                        // Return JSON for AJAX requests
+                        if (IsAjaxRequest())
+                        {
+                            return Json(new { success = true, redirectUrl = Url.Action("Homepage", "Dashboard") });
+                        }
+
+                        return RedirectToAction("Homepage", "Dashboard");
                     }
                 }
 
@@ -366,34 +368,53 @@ namespace LingapDVO.Controllers
                     ModelState.AddModelError("Username", $"Invalid username or password. Attempts remaining: {3 - failedAttempts}");
                 }
 
+                // Return JSON for AJAX requests
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+                }
+
                 return View(loginModel);
             }
             catch (Exception)
             {
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+
+                // Return JSON for AJAX requests
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = new[] { "An unexpected error occurred. Please try again." } });
+                }
+
                 return View(loginModel);
             }
+        }
+
+        // Helper method to check if request is AJAX
+        private bool IsAjaxRequest()
+        {
+            return Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                   Request.Headers["Content-Type"] == "application/json";
         }
 
         public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Clear();
-            // Sign out of the local authentication cookie (this is what keeps the user "logged in")
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Login");
         }
-
-
 
         public IActionResult VerifyOTP()
         {
             return View();
         }
 
-
-
         public IActionResult Register()
         {
+            if (TempData["SuccessMessage"] != null)
+            {
+                ViewBag.SuccessMessage = TempData["SuccessMessage"];
+            }
             return View();
         }
 
@@ -405,7 +426,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // 🔎 Check for existing email or username before saving
+                // Check for existing email or username before saving
                 if (context.RegisterAcc.Any(u => u.Email == registerAccDto.Email))
                 {
                     ModelState.AddModelError("Email", "This email is already registered.");
@@ -418,9 +439,6 @@ namespace LingapDVO.Controllers
                     return View(registerAccDto);
                 }
 
-                // ==========================
-                // 🔑 MASTER PASSWORD SECTION
-                // ==========================
                 string masterPassword = "SuperAdminMasterKey123!";
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
                 byte[] iv = RandomNumberGenerator.GetBytes(16);
@@ -468,11 +486,13 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 TempData["SuccessMessage"] = "Registration successful! You can now log in.";
-                return RedirectToAction("Login", "Login");
+
+                // Return the view with success message
+                ViewBag.SuccessMessage = "Registration successful! You can now log in.";
+                return View(registerAccDto);
             }
             catch (DbUpdateException dbEx)
             {
-                // 🧱 Handle SQL unique constraint error
                 if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Email"))
                     ModelState.AddModelError("Email", "This email is already registered.");
                 else if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Username"))
@@ -489,17 +509,14 @@ namespace LingapDVO.Controllers
             }
         }
 
-
         public IActionResult Accountverification()
         {
             return View();
         }
 
-
         [HttpPost]
         public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
         {
-
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
@@ -517,31 +534,23 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // ==========================
-                // 🔑 MASTER PASSWORD SECTION
-                // ==========================
-                // This can be stored securely (e.g., environment variable)
-                string masterPassword = "SuperAdminMasterKey123!"; // <-- Change this to a secret stored securely
-                byte[] salt = RandomNumberGenerator.GetBytes(16);  // Unique salt per session
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
 
-                // Derive AES key from master password using PBKDF2
                 using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32); // 256-bit key
+                byte[] key = pbkdf2.GetBytes(32);
 
-                // ==========================
-                // 🔒 ENCRYPTION FUNCTION
-                // ==========================
                 byte[] EncryptFile(Stream inputStream)
                 {
                     using var aes = Aes.Create();
                     aes.Key = key;
-                    aes.GenerateIV(); // Random IV per encryption
+                    aes.GenerateIV();
                     aes.Mode = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;
 
                     using var memoryStream = new MemoryStream();
-                    memoryStream.Write(salt, 0, salt.Length); // Store salt at beginning
-                    memoryStream.Write(aes.IV, 0, aes.IV.Length); // Store IV next
+                    memoryStream.Write(salt, 0, salt.Length);
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
 
                     using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
                     {
@@ -551,9 +560,6 @@ namespace LingapDVO.Controllers
                     return memoryStream.ToArray();
                 }
 
-                // ==========================
-                // 📅 Encrypted Timestamp for Filenames
-                // ==========================
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp;
                 using (var aes = Aes.Create())
@@ -571,9 +577,7 @@ namespace LingapDVO.Controllers
 
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
-                // ==========================
-                // 🪪 Encrypt Front ID
-                // ==========================
+                // Encrypt Front ID
                 string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
                 Directory.CreateDirectory(validFolder);
                 string frontFileName = safeEncryptedTimestamp + "_front.enc";
@@ -584,9 +588,7 @@ namespace LingapDVO.Controllers
                     fileStream.Write(encryptedData, 0, encryptedData.Length);
                 }
 
-                // ==========================
-                // 🔙 Encrypt Back ID
-                // ==========================
+                // Encrypt Back ID
                 string backFileName = safeEncryptedTimestamp + "_back.enc";
                 string backPath = Path.Combine(validFolder, backFileName);
                 using (var fileStream = new FileStream(backPath, FileMode.Create))
@@ -595,9 +597,7 @@ namespace LingapDVO.Controllers
                     fileStream.Write(encryptedData, 0, encryptedData.Length);
                 }
 
-                // ==========================
-                // 🗃 Save to Database
-                // ==========================
+                // Save to Database
                 Verifyaccount verifyaccount = new Verifyaccount()
                 {
                     UserId = userId,
@@ -623,7 +623,7 @@ namespace LingapDVO.Controllers
                 context.Verifyaccount.Add(verifyaccount);
                 context.SaveChanges();
 
-                return Redirect("/Homepage");
+                return RedirectToAction("Homepage", "Dashboard");
             }
             catch (Exception ex)
             {
@@ -631,9 +631,6 @@ namespace LingapDVO.Controllers
                 return View(VerifyaccountDto);
             }
         }
-
-
-
 
         public IActionResult Registeredit(int id)
         {
@@ -677,7 +674,6 @@ namespace LingapDVO.Controllers
                 TempData["ErrorMessage"] = "User not found.";
                 return RedirectToAction("Homepage", "Dashboard");
             }
-
 
             // Skip validation for image if not provided
             if (registerDto.ImageFile == null)
@@ -786,9 +782,5 @@ namespace LingapDVO.Controllers
                 return View(registerDto);
             }
         }
-
-
-
-
     }
 }
