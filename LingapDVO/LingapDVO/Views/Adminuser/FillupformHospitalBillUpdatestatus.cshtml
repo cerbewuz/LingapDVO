@@ -14,6 +14,7 @@
     <!-- PDF.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <title>Hospital Bill Application - Receipt View</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -26,10 +27,96 @@
             --border-color: #dee2e6;
         }
 
+        
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #333;
+        }
+
+        /* Go Back button */
+        .go-back-top {
+            position: fixed;
+            left: clamp(12px, 3vw, 30px);
+            top: clamp(12px, 3vh, 30px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(4px, 1vw, 8px);
+            padding: clamp(12px, 2.5vh, 16px) clamp(16px, 3.5vw, 24px);
+            border-radius: clamp(20px, 5vw, 35px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1.5px solid rgba(220, 20, 60, 0.2);
+            color: #333333;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: clamp(14px, 2.5vw, 17px);
+            white-space: nowrap;
+            /* Universal touch targets - always accessible */
+            min-height: 44px;
+            min-width: 44px;
+            /* Responsive scaling */
+            transform: scale(1);
+            transform-origin: left top;
+            /* Touch device optimizations */
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            /* Visibility enhancement */
+            mix-blend-mode: difference;
+        }
+
+            /* Hover states */
+            .go-back-top:hover,
+            .go-back-top:focus {
+                background: #DC143C;
+                color: #ffffff;
+                box-shadow: 0 6px 25px rgba(220, 20, 60, 0.4);
+                transform: translate(-2px, -2px) scale(1.05);
+                border-color: #DC143C;
+                mix-blend-mode: normal;
+            }
+
+            /* Icon styling with responsive size */
+            .go-back-top i {
+                font-size: 0.9em;
+                transition: transform 0.3s ease;
+                margin-right: 2px;
+            }
+
+            .go-back-top:hover i {
+                transform: translateX(-3px);
+            }
+
+            /* Active state for all devices - touch and mouse */
+            .go-back-top:active {
+                transform: scale(0.92);
+                background: #b01030;
+                transition: transform 0.1s ease;
+            }
+
+            /* Focus state for keyboard navigation */
+            .go-back-top:focus-visible {
+                outline: 3px solid #DC143C;
+                outline-offset: 3px;
+            }
+
+        /* Responsive letter spacing for better readability */
+        .go-back-top {
+            letter-spacing: clamp(0.2px, 0.1vw, 0.5px);
+        }
+
+        /* Responsive border width */
+        .go-back-top {
+            border-width: clamp(1px, 0.3vw, 2px);
         }
 
         .receipt-container {
