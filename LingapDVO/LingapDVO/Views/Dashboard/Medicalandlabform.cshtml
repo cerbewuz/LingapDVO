@@ -1215,57 +1215,57 @@
     </script>
 
     <script>
-        // Go Back Button Script
-document.addEventListener('DOMContentLoaded', function() {
-    const goBackBtn = document.getElementById('goBackBtn');
-    
-    if (goBackBtn) {
-        // Responsive compact mode
-        function updateButton() {
-            const viewportWidth = window.innerWidth;
-            
-            // Switch to compact mode on smaller screens
-            if (viewportWidth < 480) {
-                goBackBtn.classList.add('compact');
-            } else {
-                goBackBtn.classList.remove('compact');
-            }
-        }
-        
-        // Update on viewport changes
-        function handleViewportChange() {
-            updateButton();
-        }
-        
-        // Initial setup
-        updateButton();
-        
-        // Listen to viewport changes
-        window.addEventListener('resize', handleViewportChange);
-        window.addEventListener('orientationchange', handleViewportChange);
-        
-        // Click functionality
-        goBackBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Add press animation
-            this.style.transition = 'transform 0.1s ease';
-            this.style.transform = 'scale(0.95)';
-            
-            setTimeout(() => {
-                this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                this.style.transform = '';
-                
-                // Navigate back or to home page
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = '/';
+                // Go Back Button Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const goBackBtn = document.getElementById('goBackBtn');
+
+            if (goBackBtn) {
+                // Responsive compact mode
+                function updateButton() {
+                    const viewportWidth = window.innerWidth;
+
+                    // Switch to compact mode on smaller screens
+                    if (viewportWidth < 480) {
+                        goBackBtn.classList.add('compact');
+                    } else {
+                        goBackBtn.classList.remove('compact');
+                    }
                 }
-            }, 100);
+
+                // Update on viewport changes
+                function handleViewportChange() {
+                    updateButton();
+                }
+
+                // Initial setup
+                updateButton();
+
+                // Listen to viewport changes
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', handleViewportChange);
+
+                // Click functionality
+                goBackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Add press animation
+                    this.style.transition = 'transform 0.1s ease';
+                    this.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        this.style.transform = '';
+
+                        // Navigate back or to home page
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 100);
+                });
+            }
         });
-    }
-});
 
 
     </script>
