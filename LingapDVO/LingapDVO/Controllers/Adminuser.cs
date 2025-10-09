@@ -989,9 +989,6 @@ namespace LingapDVO.Controllers
             }
         }
 
-
-
-        //diri edit pre  
         [HttpPost]
         public IActionResult FillupformHospitalBillUpdateprocessingstatus(int id, FillupformHospitalBillDto fillupformHospitalbilldto)
         {
@@ -1027,23 +1024,34 @@ namespace LingapDVO.Controllers
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
                         throw new ArgumentException("Email settings are missing.");
 
-                    // Compose email
+                    // Compose auto-generated email
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, user.Username ?? "User");
 
-                    string subject = "✅ Hospital Bill Assistance Approved";
-                                                        string body = $@"
-                                    Dear {user.Username ?? "User"},
+                    string subject = "Medical Assistance Application Approved - LINGAP DVO";
+                    string body = $@"
+                            Dear {user.Username ?? "Valued Applicant"},
 
-                                    Good news! Your Hospital Bill Assistance request has been **APPROVED**.
+                            We are pleased to inform you that your Medical Assistance Application has been successfully approved.
 
-                                    🗓 Date Approved: {DateTime.Now:MMMM dd, yyyy}
-                                    💬 Remarks: {fillupformHospitalbilldto.Comments}
+                            APPLICATION DETAILS:
+                            • Application Type: Hospital Bill Assistance
+                            • Date Approved: {DateTime.Now:MMMM dd, yyyy}
 
-                                    Thank you for your patience.
+                            REMARKS:
+                            {fillupformHospitalbilldto.Comments ?? "Your application has met all the necessary requirements and has been processed accordingly."}
 
-                                    Best regards,
-                                    {fromName}";
+                            NEXT STEPS:
+                            Our team will coordinate with the concerned healthcare facility regarding the financial assistance. You may expect further communication from either our office or the hospital administration within the next 3-5 working days.
+
+                            Should you require any clarification or have additional inquiries, please do not hesitate to contact our support team at [Support Email/Phone Number].
+
+                            We are committed to supporting you through this process and hope this assistance provides you with the relief needed during this time.
+
+                            Sincerely,
+
+                            {fromName}
+                            LINGAP DVO Medical Assistance Program";
 
                     // Send email
                     var smtp = new SmtpClient
