@@ -734,7 +734,8 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Add this to your head section -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://unpkg.com/tesseract.js@2.1.4/dist/tesseract.min.js"></script>
+
     <script>
         // Combined OCR and File Upload Functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -1385,7 +1386,7 @@
                     davaoResultIcon.className = 'fas fa-times-circle me-2';
                     davaoResultIcon.style.color = '#dc3545';
                     davaoResultTitle.textContent = idType === 'driver-license' ? 'License Not From Davao City' : 'National ID Not From Davao City';
-                    davaoResultMessage.textContent = `This service is only available for Davao City residents. Detected city: ${detectedCity}`;
+                    davaoResultMessage.textContent = `This service is only available for Davao City residents, or your picture may be blurry. Please try again.`;
                     davaoStatusBadge.className = 'status-badge badge-invalid';
                     davaoStatusBadge.textContent = 'Invalid';
 

@@ -445,6 +445,27 @@
                 opacity: 0.5;
                 cursor: not-allowed;
             }
+
+
+
+
+        .status-radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+            .status-radio-group .form-check {
+                margin-bottom: 0;
+            }
+
+            .status-radio-group .form-check-input {
+                margin-top: 0.3rem;
+            }
+
+            .status-radio-group .form-check-label {
+                padding-left: 0.5rem;
+            }
     </style>
 </head>
 <body>
@@ -760,11 +781,22 @@
                     </div>
                     <div class="edit-field mt-2" style="display: none;">
                         <label class="form-label">Update Status:</label>
-                        <select class="form-select" id="statusDropdown" name="status2" value="@ViewData["Status"]">
-                            <option value="Processing" selected="@(ViewData["Status"]?.ToString() == "Processing")">Processing</option>
-                            <option value="Approved" selected="@(ViewData["Status"]?.ToString() == "Approved")">Approved</option>
-                            <option value="Unapproved" selected="@(ViewData["Status"]?.ToString() == "Unapproved")">Unapproved</option>
-                        </select>
+                        <div class="status-radio-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="status2" id="statusApproved"
+                                       value="Approved" @(ViewData["Status"]?.ToString() == "Approved" ? "checked" : "")>
+                                <label class="form-check-label" for="statusApproved">
+                                    Approved
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="status2" id="statusUnapproved"
+                                       value="Unapproved" @(ViewData["Status"]?.ToString() == "Unapproved" ? "checked" : "")>
+                                <label class="form-check-label" for="statusUnapproved">
+                                    Unapproved
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -367,22 +367,25 @@
                                         <img src="~/UsersImg/@ViewBag.Profilepicture" alt="Profile" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
                                     }
                                     <div>
-                                        <h1 class="lead mb-0">Hello, @ViewBag.Username!</h1>
+                                        <h1 class="lead mb-0">
+                                            Hello, @(string.IsNullOrEmpty(ViewBag.Firstname) ? ViewBag.Username : ViewBag.Firstname)!
+                                        </h1>
                                         <div class="mt-1">
                                             @if (isVerified)
                                             {
                                                 <span class="verification-badge">
-                                                    <i class="fas fa-check-circle"></i>Verified Account
+                                                    <i class="fas fa-check-circle"></i> Verified Account
                                                 </span>
                                             }
                                             else
                                             {
                                                 <span class="verification-required">
-                                                    <i class="fas fa-exclamation-triangle"></i>Verification Required
+                                                    <i class="fas fa-exclamation-triangle"></i> Verification Required
                                                 </span>
                                             }
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                             <div class="user-actions">

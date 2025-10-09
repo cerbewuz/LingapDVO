@@ -105,7 +105,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Dashboard}/{action=Landingpage}/{id?}")
+    pattern: "{controller=Login}/{action=Accountverification}/{id?}")
     .WithStaticAssets();
 
 

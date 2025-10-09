@@ -117,6 +117,9 @@ namespace LingapDVO.Controllers
 
             ViewBag.LatestDoc = latestDoc;
 
+            ViewBag.Firstname = HttpContext.Session.GetString("Firstname") ?? "";
+       
+
             return View(viewModel);
         }
 
