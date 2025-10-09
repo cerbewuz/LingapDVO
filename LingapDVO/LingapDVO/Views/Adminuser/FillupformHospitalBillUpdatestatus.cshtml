@@ -609,8 +609,6 @@
                         <label class="form-label">Update Status:</label>
                         <select class="form-select" id="statusDropdown" name="status2" value="@ViewData["Status"]">
                             <option value="Processing" selected="@(ViewData["Status"]?.ToString() == "Processing")">Processing</option>
-                            <option value="Approved" selected="@(ViewData["Status"]?.ToString() == "Approved")">Approved</option>
-                            <option value="Unapproved" selected="@(ViewData["Status"]?.ToString() == "Unapproved")">Unapproved</option>
                         </select>
                     </div>
                 </div>
