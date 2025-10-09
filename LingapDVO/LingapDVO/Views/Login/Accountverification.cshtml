@@ -961,11 +961,18 @@
                         }
                     }
 
-                }).catch(err => {
-                    status.textContent = "Error: " + err.message;
-                    progressBar.style.display = 'none';
-                    console.error('OCR Error:', err);
-                });
+                       }).catch(err => {
+            console.error('OCR Error:', err);
+            progressBar.style.display = 'none';
+
+            // Handle specific "Cannot set properties of null" error
+            if (err.message.includes("Cannot set properties of null")) {
+                status.textContent = "Your selected ID type and the uploaded ID do not match. Please upload the correct ID.";
+            } else {
+                status.textContent = "An error occurred while processing the ID. Please try again.";
+            }
+        });
+
             }
 
             // Detect what type of ID was uploaded based on text content
