@@ -599,7 +599,6 @@
             </div>
         </div>
     </div>
-
     <script>
         // Global variables to store chart instances and data
         let typeChart, statusChart, barangayChart;
@@ -666,55 +665,58 @@
             // Add Hospital Bills following Admin.cshtml pattern
             @foreach (var f in Model.HospitalBills)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Hospital Bill Assistance",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "@f.Typeassistance",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Hospital Bill Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()", // ADDED status3
+                            brgy: "@f.Brgy",
+                            typeassistance: "@f.Typeassistance",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // Add Medical Lab Forms following Admin.cshtml pattern
             @foreach (var f in Model.MedicalLabForms)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Medical and laboratory Procedure",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "@f.Typeassistance",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Medical and laboratory Procedure",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            // ADDED status3
+                            brgy: "@f.Brgy",
+                            typeassistance: "@f.Typeassistance",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // Add Funeral Forms following Admin.cshtml pattern
             @foreach (var f in Model.Funeralburialform)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Funeral and burial assistance",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Funeral and burial assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                             // ADDED status3
+                            brgy: "@f.Brgy",
+                            typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             originalData = {
@@ -790,7 +792,7 @@
             return filtered;
         }
 
-        // Filter data by status - FOLLOWING ADMIN.CSHTML PATTERN
+        // Filter data by status - UPDATED VERSION
         function filterDataByStatus(data, status) {
             // If "all" status is selected, return all data
             if (status === 'all') return data;
@@ -802,17 +804,25 @@
                 funeralForms: []
             };
 
-            // Filter applications by status following Admin.cshtml pattern
+            // Filter applications by status following updated pattern
             if (data.allApplications) {
                 filtered.allApplications = data.allApplications.filter(app => {
-                    // For approved/unapproved statuses, ONLY check Status2 field
-                    if (status === 'approved' || status === 'unapproved') {
-                        return app.status2 && app.status2.trim() !== '' && app.status2 === status;
+                    // For claimed status, check ONLY status3 field
+                    if (status === 'claimed') {
+                        return app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed';
                     }
 
-                    // For other statuses (pending, processing, claimed), use the original Status field
-                    // But exclude applications that have Status2 with approved/unapproved values
+                    // For other statuses, EXCLUDE applications that have status3 = claimed
+                    // Then check status2 for approved/unapproved
+                    if (status === 'approved' || status === 'unapproved') {
+                        return app.status2 && app.status2.trim() !== '' &&
+                               app.status2 === status &&
+                               (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
+                    }
+
+                    // For pending/processing, use original status but exclude claimed status3
                     return app.status === status &&
+                           (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
                            (!app.status2 || app.status2.trim() === '' ||
                             (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
                 });
@@ -827,7 +837,7 @@
             processDataAndUpdateCharts();
         }
 
-        // Update summary cards with filtered data - FOLLOWING ADMIN.CSHTML STATUS COUNTING PATTERN
+        // Update summary cards with filtered data - UPDATED VERSION
         function updateSummaryCards(data) {
             const applications = data.allApplications || [];
 
@@ -840,18 +850,22 @@
                 total: 0
             };
 
-            // Count applications by status following Admin.cshtml pattern
+            // Count applications by status following updated pattern
             applications.forEach(app => {
-                // If Status2 has approved/unapproved, count ONLY in those categories
-                if (app.status2 && app.status2.trim() !== '') {
+                // Check status3 FIRST for "claimed" status - if claimed, count ONLY in claimed
+                if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                    statusCounts.claimed++;
+                }
+                // If NOT claimed, then check status2 for approved/unapproved
+                else if (app.status2 && app.status2.trim() !== '') {
                     if (app.status2 === 'approved') {
                         statusCounts.approved++;
                     } else if (app.status2 === 'unapproved') {
                         statusCounts.unapproved++;
                     }
-                    // DO NOT count in processing/pending/claimed if Status2 is approved/unapproved
+                    // DO NOT count in processing/pending if Status2 is approved/unapproved
                 } else {
-                    // No Status2 or Status2 is empty, use original status
+                    // No Status2 or Status2 is empty, and no claimed status3, use original status
                     if (statusCounts.hasOwnProperty(app.status)) {
                         statusCounts[app.status]++;
                     }

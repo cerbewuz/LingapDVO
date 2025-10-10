@@ -590,359 +590,413 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Combine all applications from the model
-            const allApplications = [];
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Combine all applications from the model
+                const allApplications = [];
 
-            // Add Hospital Bills
-            @foreach (var f in Model.HospitalBills)
-            {
-                    <text>
-                    allApplications.push({
-                        type: "Hospital Bill Assistance",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
-            }
-
-            // Add Medical Lab Forms
-            @foreach (var f in Model.MedicalLabForms)
-            {
-                    <text>
-                    allApplications.push({
-                        type: "Medical and laboratory Procedure",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
-            }
-
-            // Add Funeral Forms
-            @foreach (var f in Model.Funeralburialform)
-            {
-                    <text>
-                    allApplications.push({
-                        type: "Funeral and burial assistance",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
-            }
-
-            // DOM elements
-            const applicationsTable = document.getElementById('applicationsTable');
-            const searchInput = document.getElementById('searchInput');
-            const typeFilter = document.getElementById('typeFilter');
-            const timeFilterButtons = document.querySelectorAll('.time-filter-btn');
-            const statCards = document.querySelectorAll('.stat-card');
-
-            // Status count elements
-            const approvedCount = document.getElementById('approved-count');
-            const unapprovedCount = document.getElementById('unapproved-count');
-            const pendingCount = document.getElementById('pending-count');
-            const processingCount = document.getElementById('processing-count');
-            const claimedCount = document.getElementById('claimed-count');
-
-            // Current filter state
-            let currentStatusFilter = 'approved';
-            let currentTimeFilter = 'currentMonth';
-            let currentTypeFilter = 'all';
-            let currentSearchTerm = '';
-
-            // Function to filter applications by time period
-            function filterByTimePeriod(applications, period) {
-                if (period === 'all') return applications;
-
-                const now = new Date();
-                let startDate;
-
-                switch (period) {
-                    case '1year':
-                        startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-                        break;
-                    case '1week':
-                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-                        break;
-                    case 'currentMonth':
-                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                        break;
-                    default:
-                        return applications;
+                // Add Hospital Bills
+                @foreach (var f in Model.HospitalBills)
+                {
+                        <text>
+                        allApplications.push({
+                            type: "Hospital Bill Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
                 }
 
-                return applications.filter(app => app.createdAt >= startDate);
-            }
+                // Add Medical Lab Forms
+                @foreach (var f in Model.MedicalLabForms)
+                {
+                        <text>
+                        allApplications.push({
+                            type: "Medical and laboratory Procedure",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
+                }
 
-            // Function to filter applications by status - FIXED VERSION
-            function filterByStatus(applications, status) {
-                if (status === 'all') return applications;
+                // Add Funeral Forms
+                @foreach (var f in Model.Funeralburialform)
+                {
+                        <text>
+                        allApplications.push({
+                            type: "Funeral and burial assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
+                }
 
-                return applications.filter(app => {
-                    // For approved/unapproved statuses, ONLY check Status2 field
-                    if (status === 'approved' || status === 'unapproved') {
-                        return app.status2 && app.status2.trim() !== '' && app.status2 === status;
+                // DOM elements
+                const applicationsTable = document.getElementById('applicationsTable');
+                const searchInput = document.getElementById('searchInput');
+                const typeFilter = document.getElementById('typeFilter');
+                const timeFilterButtons = document.querySelectorAll('.time-filter-btn');
+                const statCards = document.querySelectorAll('.stat-card');
+
+                // Status count elements
+                const approvedCount = document.getElementById('approved-count');
+                const unapprovedCount = document.getElementById('unapproved-count');
+                const pendingCount = document.getElementById('pending-count');
+                const processingCount = document.getElementById('processing-count');
+                const claimedCount = document.getElementById('claimed-count');
+
+                // Current filter state
+                let currentStatusFilter = 'approved';
+                let currentTimeFilter = 'currentMonth';
+                let currentTypeFilter = 'all';
+                let currentSearchTerm = '';
+
+                // Function to filter applications by time period
+                function filterByTimePeriod(applications, period) {
+                    if (period === 'all') return applications;
+
+                    const now = new Date();
+                    let startDate;
+
+                    switch (period) {
+                        case '1year':
+                            startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                            break;
+                        case '1week':
+                            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                            break;
+                        case 'currentMonth':
+                            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                            break;
+                        default:
+                            return applications;
                     }
 
-                    // For other statuses (pending, processing, claimed), use the original Status field
-                    // But exclude applications that have Status2 with approved/unapproved values
-                    return app.status === status &&
-                           (!app.status2 || app.status2.trim() === '' ||
-                            (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
-                });
-            }
+                    return applications.filter(app => app.createdAt >= startDate);
+                }
 
-            // Function to filter applications by type
-            function filterByType(applications, type) {
-                if (type === 'all') return applications;
-                return applications.filter(app => app.type === type);
-            }
+                // Function to filter applications by status - UPDATED VERSION
+                function filterByStatus(applications, status) {
+                    if (status === 'all') return applications;
 
-            // Function to filter applications by search term
-            function filterBySearch(applications, searchTerm) {
-                if (!searchTerm) return applications;
-
-                const term = searchTerm.toLowerCase();
-                return applications.filter(app =>
-                    app.name.toLowerCase().includes(term) ||
-                    app.type.toLowerCase().includes(term)
-                );
-            }
-
-            // Function to update status counts based on time filter - COMPLETELY FIXED VERSION
-            function updateStatusCounts(timePeriod) {
-                // Filter applications by time period first
-                const timeFilteredApplications = filterByTimePeriod(allApplications, timePeriod);
-
-                const statusCounts = {
-                    approved: 0,
-                    unapproved: 0,
-                    pending: 0,
-                    processing: 0,
-                    claimed: 0
-                };
-
-                timeFilteredApplications.forEach(app => {
-                    // If Status2 has approved/unapproved, count ONLY in those categories
-                    if (app.status2 && app.status2.trim() !== '') {
-                        if (app.status2 === 'approved') {
-                            statusCounts.approved++;
-                        } else if (app.status2 === 'unapproved') {
-                            statusCounts.unapproved++;
+                    return applications.filter(app => {
+                        // For claimed status, check ONLY status3 field
+                        if (status === 'claimed') {
+                            return app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed';
                         }
-                        // DO NOT count in processing/pending/claimed if Status2 is approved/unapproved
-                    } else {
-                        // No Status2 or Status2 is empty, use original status
-                        if (statusCounts.hasOwnProperty(app.status)) {
-                            statusCounts[app.status]++;
+
+                        // For other statuses, EXCLUDE applications that have status3 = claimed
+                        // Then check status2 for approved/unapproved
+                        if (status === 'approved' || status === 'unapproved') {
+                            return app.status2 && app.status2.trim() !== '' &&
+                                   app.status2 === status &&
+                                   (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
+                        }
+
+                        // For pending/processing, use original status but exclude claimed status3
+                        return app.status === status &&
+                               (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
+                               (!app.status2 || app.status2.trim() === '' ||
+                                (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
+                    });
+                }
+
+                // Function to filter applications by type
+                function filterByType(applications, type) {
+                    if (type === 'all') return applications;
+                    return applications.filter(app => app.type === type);
+                }
+
+                // Function to filter applications by search term
+                function filterBySearch(applications, searchTerm) {
+                    if (!searchTerm) return applications;
+
+                    const term = searchTerm.toLowerCase();
+                    return applications.filter(app =>
+                        app.name.toLowerCase().includes(term) ||
+                        app.type.toLowerCase().includes(term)
+                    );
+                }
+
+                // Function to update status counts based on time filter - UPDATED VERSION
+                function updateStatusCounts(timePeriod) {
+                    // Filter applications by time period first
+                    const timeFilteredApplications = filterByTimePeriod(allApplications, timePeriod);
+
+                    const statusCounts = {
+                        approved: 0,
+                        unapproved: 0,
+                        pending: 0,
+                        processing: 0,
+                        claimed: 0
+                    };
+
+                    timeFilteredApplications.forEach(app => {
+                        // Check status3 FIRST for "claimed" status - if claimed, count ONLY in claimed
+                        if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                            statusCounts.claimed++;
+                        }
+                        // If NOT claimed, then check status2 for approved/unapproved
+                        else if (app.status2 && app.status2.trim() !== '') {
+                            if (app.status2 === 'approved') {
+                                statusCounts.approved++;
+                            } else if (app.status2 === 'unapproved') {
+                                statusCounts.unapproved++;
+                            }
+                            // DO NOT count in processing/pending if Status2 is approved/unapproved
+                        } else {
+                            // No Status2 or Status2 is empty, and no claimed status3, use original status
+                            if (statusCounts.hasOwnProperty(app.status)) {
+                                statusCounts[app.status]++;
+                            }
+                        }
+                    });
+
+                    // Update the count displays
+                    approvedCount.textContent = statusCounts.approved;
+                    unapprovedCount.textContent = statusCounts.unapproved;
+                    pendingCount.textContent = statusCounts.pending;
+                    processingCount.textContent = statusCounts.processing;
+                    claimedCount.textContent = statusCounts.claimed;
+                }
+
+                // Function to render applications table
+                function renderApplicationsTable(applications) {
+                    applicationsTable.innerHTML = '';
+
+                    if (applications.length === 0) {
+                        applicationsTable.innerHTML = `
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <h4>No applications found</h4>
+                                    <p>There are currently no applications to display.</p>
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    applications.forEach(app => {
+                        const statusBadge = getStatusBadge(app);
+                        const actionButtons = getActionButtons(app);
+
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-status', app.status);
+                        row.setAttribute('data-type', app.type);
+
+                        row.innerHTML = `
+                            <td>${app.name}</td>
+                            <td>${app.type}</td>
+                            <td>${statusBadge}</td>
+                            <td>${formatDate(app.createdAt)}</td>
+                            <td>${actionButtons}</td>
+                        `;
+
+                        applicationsTable.appendChild(row);
+                    });
+                }
+
+                // Helper function to get status badge HTML - UPDATED VERSION
+                function getStatusBadge(app) {
+                    let displayStatus = app.status;
+                    let displayText = app.status.charAt(0).toUpperCase() + app.status.slice(1);
+
+                    // Priority 1: Check status3 for "claimed" status (highest priority)
+                    if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                        displayStatus = 'claimed';
+                        displayText = 'Claimed';
+                    }
+                    // Priority 2: Check status2 for approved/unapproved (only if NOT claimed)
+                    else if (app.status2 && app.status2.trim() !== '') {
+                        const status2 = app.status2.trim().toLowerCase();
+                        if (status2 === 'approved' || status2 === 'unapproved') {
+                            displayStatus = status2;
+                            displayText = status2.charAt(0).toUpperCase() + status2.slice(1);
+                        }
+                        // If status2 has any other value, ignore it and use the original status
+                    }
+
+                    const statusMap = {
+                        'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approved' },
+                        'unapproved': { class: 'status-unapproved', icon: 'bi-x-circle', text: 'Unapproved' },
+                        'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
+                        'processing': { class: 'status-processing', icon: 'bi-gear', text: 'Processing' },
+                        'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
+                    };
+
+                    const statusInfo = statusMap[displayStatus] || { class: '', icon: 'bi-question-circle', text: displayText };
+
+                    return `
+                        <span class="status-badge ${statusInfo.class}">
+                            <i class="bi ${statusInfo.icon}"></i> ${statusInfo.text}
+                        </span>
+                    `;
+                }
+
+                // Helper function to get action buttons HTML - UPDATED VERSION
+                function getActionButtons(app) {
+                    let viewUrl = '';
+                    let editUrl = '';
+
+                    if (app.type === "Hospital Bill Assistance") {
+                        viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
+
+                        // Check status3 FIRST for claimed (highest priority)
+                        if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                            editUrl = `/Adminuser/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
+                        }
+                        // Then check status2 for approved/unapproved
+                        else if (app.status2 === "approved") {
+                            editUrl = `/Adminuser/FillupformHospitalBillapprovedstatus/${app.formId}`;
+                        } else if (app.status2 === "unapproved") {
+                            editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                        }
+                        // Then check original status
+                        else if (app.status === "processing") {
+                            editUrl = `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
+                        } else {
+                            editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                        }
+
+                    } else if (app.type === "Medical and laboratory Procedure") {
+                        viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
+
+                        // Apply the same logic for Medical forms
+                        if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                            editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
+                        }
+                        else if (app.status2 === "approved") {
+                            editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
+                        } else if (app.status2 === "unapproved") {
+                            editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                        } else if (app.status === "processing") {
+                            editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
+                        } else {
+                            editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                        }
+
+                    } else if (app.type === "Funeral and burial assistance") {
+                        viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
+
+                        // Apply the same logic for Funeral forms
+                        if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                            editUrl = `/Adminuser/FuneralburialformUpdateprocessingstatus/${app.formId}`;
+                        }
+                        else if (app.status2 === "approved") {
+                            editUrl = `/Adminuser/Funeralburialapprovedstatus/${app.formId}`;
+                        } else if (app.status2 === "unapproved") {
+                            editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                        } else if (app.status === "processing") {
+                            editUrl = `/Adminuser/FuneralburialformUpdateprocessingstatus/${app.formId}`;
+                        } else {
+                            editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
                         }
                     }
-                });
 
-                // Update the count displays
-                approvedCount.textContent = statusCounts.approved;
-                unapprovedCount.textContent = statusCounts.unapproved;
-                pendingCount.textContent = statusCounts.pending;
-                processingCount.textContent = statusCounts.processing;
-                claimedCount.textContent = statusCounts.claimed;
-            }
-
-            // Function to render applications table
-            function renderApplicationsTable(applications) {
-                applicationsTable.innerHTML = '';
-
-                if (applications.length === 0) {
-                    applicationsTable.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="empty-state">
-                                <i class="bi bi-inbox"></i>
-                                <h4>No applications found</h4>
-                                <p>There are currently no applications to display.</p>
-                            </td>
-                        </tr>
+                    return `
+                        <div class="action-buttons">
+                            <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
                     `;
-                    return;
                 }
 
-                applications.forEach(app => {
-                    const statusBadge = getStatusBadge(app);
-                    const actionButtons = getActionButtons(app);
+                // Helper function to format date
+                function formatDate(date) {
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                }
 
-                    const row = document.createElement('tr');
-                    row.setAttribute('data-status', app.status);
-                    row.setAttribute('data-type', app.type);
+                // Function to apply all filters
+                function applyFilters() {
+                    let filteredApplications = [...allApplications];
 
-                    row.innerHTML = `
-                        <td>${app.name}</td>
-                        <td>${app.type}</td>
-                        <td>${statusBadge}</td>
-                        <td>${formatDate(app.createdAt)}</td>
-                        <td>${actionButtons}</td>
-                    `;
+                    // Apply time filter
+                    filteredApplications = filterByTimePeriod(filteredApplications, currentTimeFilter);
 
-                    applicationsTable.appendChild(row);
+                    // Apply status filter
+                    filteredApplications = filterByStatus(filteredApplications, currentStatusFilter);
+
+                    // Apply type filter
+                    filteredApplications = filterByType(filteredApplications, currentTypeFilter);
+
+                    // Apply search filter
+                    filteredApplications = filterBySearch(filteredApplications, currentSearchTerm);
+
+                    // Update table
+                    renderApplicationsTable(filteredApplications);
+                }
+
+                // Event listeners for status cards
+                statCards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        currentStatusFilter = this.dataset.status;
+
+                        // Update active card
+                        statCards.forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+
+                        applyFilters();
+                    });
                 });
-            }
 
-            // Helper function to get status badge HTML - FIXED VERSION
-            function getStatusBadge(app) {
-                let displayStatus = app.status;
-                let displayText = app.status.charAt(0).toUpperCase() + app.status.slice(1);
+                // Event listeners for time filter buttons
+                timeFilterButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        currentTimeFilter = this.dataset.period;
 
-                // Only use Status2 if it has approved or unapproved value
-                // Do NOT display Status2 if it contains "processing" or any other value
-                if (app.status2 && app.status2.trim() !== '') {
-                    const status2 = app.status2.trim().toLowerCase();
-                    if (status2 === 'approved' || status2 === 'unapproved') {
-                        displayStatus = status2;
-                        displayText = status2.charAt(0).toUpperCase() + status2.slice(1);
-                    }
-                    // If status2 has any other value (like "processing"), ignore it and use the original status
-                }
+                        // Update active button
+                        timeFilterButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
 
-                const statusMap = {
-                    'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approved' },
-                    'unapproved': { class: 'status-unapproved', icon: 'bi-x-circle', text: 'Unapproved' },
-                    'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
-                    'processing': { class: 'status-processing', icon: 'bi-gear', text: 'Processing' },
-                    'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
-                };
+                        // Update status counts based on the selected time period
+                        updateStatusCounts(currentTimeFilter);
 
-                const statusInfo = statusMap[displayStatus] || { class: '', icon: 'bi-question-circle', text: displayText };
-
-                return `
-                    <span class="status-badge ${statusInfo.class}">
-                        <i class="bi ${statusInfo.icon}"></i> ${statusInfo.text}
-                    </span>
-                `;
-            }
-
-            // Helper function to get action buttons HTML
-            function getActionButtons(app) {
-                let viewUrl = '';
-                let editUrl = '';
-
-                if (app.type === "Hospital Bill Assistance") {
-                    viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
-
-                    // Check if status is processing
-                    if (app.status === "processing") {
-                        editUrl = `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
-                    } else {
-                        editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
-                    }
-
-                } else if (app.type === "Medical and laboratory Procedure") {
-                    viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
-                    editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
-                } else {
-                    viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
-                    editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
-                }
-
-                return `
-                    <div class="action-buttons">
-                        <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                    </div>
-                `;
-            }
-
-            // Helper function to format date
-            function formatDate(date) {
-                return date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
+                        // Apply all filters to the table
+                        applyFilters();
+                    });
                 });
-            }
 
-            // Function to apply all filters
-            function applyFilters() {
-                let filteredApplications = [...allApplications];
-
-                // Apply time filter
-                filteredApplications = filterByTimePeriod(filteredApplications, currentTimeFilter);
-
-                // Apply status filter
-                filteredApplications = filterByStatus(filteredApplications, currentStatusFilter);
-
-                // Apply type filter
-                filteredApplications = filterByType(filteredApplications, currentTypeFilter);
-
-                // Apply search filter
-                filteredApplications = filterBySearch(filteredApplications, currentSearchTerm);
-
-                // Update table
-                renderApplicationsTable(filteredApplications);
-            }
-
-            // Event listeners for status cards
-            statCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    currentStatusFilter = this.dataset.status;
-
-                    // Update active card
-                    statCards.forEach(c => c.classList.remove('active'));
-                    this.classList.add('active');
-
+                // Event listeners for search and type filter
+                searchInput.addEventListener('input', function() {
+                    currentSearchTerm = this.value;
                     applyFilters();
                 });
-            });
 
-            // Event listeners for time filter buttons
-            timeFilterButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    currentTimeFilter = this.dataset.period;
-
-                    // Update active button
-                    timeFilterButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // Update status counts based on the selected time period
-                    updateStatusCounts(currentTimeFilter);
-
-                    // Apply all filters to the table
+                typeFilter.addEventListener('change', function() {
+                    currentTypeFilter = this.value;
                     applyFilters();
                 });
-            });
 
-            // Event listeners for search and type filter
-            searchInput.addEventListener('input', function() {
-                currentSearchTerm = this.value;
+                // Initialize the dashboard
+                updateStatusCounts(currentTimeFilter);
                 applyFilters();
             });
-
-            typeFilter.addEventListener('change', function() {
-                currentTypeFilter = this.value;
-                applyFilters();
-            });
-
-            // Initialize the dashboard
-            updateStatusCounts(currentTimeFilter);
-            applyFilters();
-        });
-    </script>
+        </script>
 </body>
 </html>
 }

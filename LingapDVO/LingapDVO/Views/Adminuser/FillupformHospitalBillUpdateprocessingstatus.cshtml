@@ -765,40 +765,40 @@
                 }
 
 
-                <!-- Status Section -->
                 <div class="receipt-section">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="section-title mb-0">Request Status</h5>
                         <span class="edit-toggle" onclick="toggleEditMode()"><i class="bi bi-pencil-square"></i></span>
                     </div>
-                    <div class="info-row">
-                        <div class="info-label">Current Status:</div>
-                        <div class="info-value">
-                            <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
-                                @ViewData["Status"]
-                            </span>
-                        </div>
-                    </div>
-                    <div class="edit-field mt-2" style="display: none;">
-                        <label class="form-label">Update Status:</label>
-                        <div class="status-radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status2" id="statusApproved"
-                                       value="Approved" @(ViewData["Status"]?.ToString() == "Approved" ? "checked" : "")>
-                                <label class="form-check-label" for="statusApproved">
-                                    Approved
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status2" id="statusUnapproved"
-                                       value="Unapproved" @(ViewData["Status"]?.ToString() == "Unapproved" ? "checked" : "")>
-                                <label class="form-check-label" for="statusUnapproved">
-                                    Unapproved
-                                </label>
+
+                    <form asp-action="FillupformHospitalBillapprovedstatus" asp-controller="Adminuser" method="post">
+                        <input type="hidden" name="id" value="@ViewData["FormId"]" />
+
+                        <div class="info-row">
+                            <div class="info-label">Current Status:</div>
+                            <div class="info-value">
+                                <span class="status-badge status-@(ViewData["Status2"]?.ToString()?.ToLower())">
+                                    @ViewData["Status2"]
+                                </span>
                             </div>
                         </div>
-                    </div>
+
+                        <div class="edit-field mt-2" id="editField" style="display: none;">
+                            <label class="form-label">Update Status:</label>
+                            <div class="status-radio-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="Status3" id="statusClaimed"
+                                           value="Claimed" @(ViewData["Status3"]?.ToString() == "Claimed" ? "checked" : "")>
+                                    <label class="form-check-label" for="statusClaimed">
+                                        Claimed
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">Save</button>
+                        </div>
+                    </form>
                 </div>
+
             </div>
 
 

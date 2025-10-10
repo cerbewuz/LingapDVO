@@ -1,4 +1,4 @@
-﻿@model MedicalandlabformDto
+﻿@model FuneralburialformDto
 @{
     Layout = null;
     var selectedSex = ViewData["Sex"]?.ToString();
@@ -34,90 +34,77 @@
             color: #333;
         }
 
-        /* Go Back button */
-        .go-back-top {
+        /* Go Back Button */
+        .go-back-btn {
             position: fixed;
-            left: clamp(12px, 3vw, 30px);
-            top: clamp(12px, 3vh, 30px);
+            left: 16px;
+            top: 16px;
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(4px, 1vw, 8px);
-            padding: clamp(12px, 2.5vh, 16px) clamp(16px, 3.5vw, 24px);
-            border-radius: clamp(20px, 5vw, 35px);
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            border: 1.5px solid rgba(220, 20, 60, 0.2);
+            border: 1px solid rgba(220, 20, 60, 0.15);
             color: #333333;
             text-decoration: none;
-            font-weight: 700;
-            font-size: clamp(14px, 2.5vw, 17px);
+            font-weight: 600;
+            font-size: 14px;
             white-space: nowrap;
-            /* Universal touch targets - always accessible */
-            min-height: 44px;
-            min-width: 44px;
-            /* Responsive scaling */
-            transform: scale(1);
+            min-height: 36px;
+            min-width: 36px;
+            transform: scale(var(--btn-scale, 1));
             transform-origin: left top;
-            /* Touch device optimizations */
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
-            /* Visibility enhancement */
-            mix-blend-mode: difference;
         }
 
-            /* Hover states */
-            .go-back-top:hover,
-            .go-back-top:focus {
+            .go-back-btn:hover,
+            .go-back-btn:focus {
                 background: #DC143C;
                 color: #ffffff;
-                box-shadow: 0 6px 25px rgba(220, 20, 60, 0.4);
-                transform: translate(-2px, -2px) scale(1.05);
+                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
                 border-color: #DC143C;
-                mix-blend-mode: normal;
             }
 
-            /* Icon styling with responsive size */
-            .go-back-top i {
-                font-size: 0.9em;
+            .go-back-btn i {
+                font-size: 13px;
                 transition: transform 0.3s ease;
-                margin-right: 2px;
+                width: 14px;
+                text-align: center;
             }
 
-            .go-back-top:hover i {
-                transform: translateX(-3px);
+            .go-back-btn:hover i {
+                transform: translateX(-2px);
             }
 
-            /* Active state for all devices - touch and mouse */
-            .go-back-top:active {
-                transform: scale(0.92);
+            .go-back-btn:active {
+                transform: scale(calc(var(--btn-scale, 1) * 0.96));
                 background: #b01030;
                 transition: transform 0.1s ease;
             }
 
-            /* Focus state for keyboard navigation */
-            .go-back-top:focus-visible {
-                outline: 3px solid #DC143C;
-                outline-offset: 3px;
+            .go-back-btn:focus-visible {
+                outline: 2px solid #DC143C;
+                outline-offset: 2px;
             }
 
-        /* Responsive letter spacing for better readability */
-        .go-back-top {
-            letter-spacing: clamp(0.2px, 0.1vw, 0.5px);
-        }
+            .go-back-btn.compact span {
+                display: none;
+            }
 
-        /* Responsive border width */
-        .go-back-top {
-            border-width: clamp(1px, 0.3vw, 2px);
-        }
+            .go-back-btn.compact {
+                padding: 8px;
+                border-radius: 50%;
+            }
 
         .receipt-container {
             max-width: 800px;
@@ -458,9 +445,36 @@
                 opacity: 0.5;
                 cursor: not-allowed;
             }
+
+
+
+
+        .status-radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+            .status-radio-group .form-check {
+                margin-bottom: 0;
+            }
+
+            .status-radio-group .form-check-input {
+                margin-top: 0.3rem;
+            }
+
+            .status-radio-group .form-check-label {
+                padding-left: 0.5rem;
+            }
     </style>
 </head>
 <body>
+    <!-- Go Back Button -->
+    <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>Back</span>
+    </a>
+
     <!-- Image Zoom Modal -->
     <div id="zoomModal" class="zoom-modal">
         <span class="close-zoom">&times;</span>
@@ -509,7 +523,7 @@
     </div>
 
     <div class="receipt-container">
-        <form asp-action="Medicalandlabformstatus" enctype="multipart/form-data" method="post">
+        <form asp-action="FuneralburialformUpdateprocessingstatus" enctype="multipart/form-data" method="post">
             <div class="receipt-header">
                 <h3>Hospital Bill Application Details</h3>
 
@@ -591,6 +605,193 @@
                     <div class="info-value">@ViewData["Typeassistance"]</div>
                 </div>
 
+                <!-- CMO Section -->
+                <div class="receipt-section">
+                    <h5 class="section-title">CMO Details</h5>
+                    <div class="mt-3">
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Bill Amount:</label>
+                                <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">Supporting Documents Attached:</label>
+                            <div class="row g-3 mt-1">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
+                                        <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="hospitalBill" name="SupportingDocs" value="Hospital Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
+                                        <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="medicalCertificate" name="SupportingDocs" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
+                                        <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="funeralBill" name="SupportingDocs" value="Funeral Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "")>
+                                        <label class="form-check-label" for="funeralBill">Funeral Bill</label>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="deathCertificate" name="SupportingDocs" value="Death Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "")>
+                                        <label class="form-check-label" for="deathCertificate">Death Certificate</label>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
+                                        <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Others:</label>
+                                    <input type="text" class="form-control" id="cmoNotesInput" placeholder="Enter notes..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating position-relative" style="height: 100px;">
+                                    <input asp-for="Processby" type="text" class="form-control border rounded p-3 h-100 d-flex align-items-center justify-content-center text-center" id="processedBy" value="@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")" readonly style="font-size: 1.2rem;">
+                                    <span asp-validation-for="Processby" class="text-danger"></span>
+                                    <label class="form-label text-center w-100 position-absolute bottom-0 start-0">Processed by:</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="ForCMOPERSONNEL" class="form-label">CMO Reflection info:</label>
+                            <input asp-for="ForCMOPERSONNEL" type="text" class="form-control" id="cmoReflectionField" name="ForCMOPERSONNEL" placeholder="Auto-generated info..." value="@ViewData["ForCMOPERSONNEL"]">
+                            <span asp-validation-for="ForCMOPERSONNEL" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="receipt-section">
+                    <label for="idFrontDescription" class="form-label">Description / Comments</label>
+                    <textarea asp-for="Comments" class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
+                    <span asp-validation-for="Comments" class="text-danger"></span>
+                </div>
+
+
+                <!-- Valid ID Section -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Valid ID</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Front ID</h6>
+                            @if (ViewData["ValidfrontimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No front ID image available</p>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Back ID</h6>
+                            @if (ViewData["ValidBackimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No back ID image available</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Prescription -->
+                @if (ViewData["DoctorPrescriptionBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Doctor Prescription</h5>
+                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Medical Certificate -->
+                @if (ViewData["MedicalCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Medical Certificate</h5>
+                        @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+
+                <!-- Death Certificate -->
+                @if (ViewData["DeathCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Death Certificate</h5>
+                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+
                 <!-- Status Section -->
                 <div class="receipt-section">
                     <div class="d-flex justify-content-between align-items-center">
@@ -607,9 +808,22 @@
                     </div>
                     <div class="edit-field mt-2" style="display: none;">
                         <label class="form-label">Update Status:</label>
-                        <select class="form-select" id="statusDropdown" name="status2" value="@ViewData["Status"]">
-                            <option value="Processing" selected="@(ViewData["Status"]?.ToString() == "Processing")">Processing</option>
-                        </select>
+                        <div class="status-radio-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="status2" id="statusApproved"
+                                       value="Approved" @(ViewData["Status"]?.ToString() == "Approved" ? "checked" : "")>
+                                <label class="form-check-label" for="statusApproved">
+                                    Approved
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="status2" id="statusUnapproved"
+                                       value="Unapproved" @(ViewData["Status"]?.ToString() == "Unapproved" ? "checked" : "")>
+                                <label class="form-check-label" for="statusUnapproved">
+                                    Unapproved
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -630,6 +844,58 @@
     </div>
 
     <script>
+          // Go Back Button Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const goBackBtn = document.getElementById('goBackBtn');
+
+            if (goBackBtn) {
+                // Responsive compact mode
+                function updateButton() {
+                    const viewportWidth = window.innerWidth;
+
+                    // Switch to compact mode on smaller screens
+                    if (viewportWidth < 480) {
+                        goBackBtn.classList.add('compact');
+                    } else {
+                        goBackBtn.classList.remove('compact');
+                    }
+                }
+
+                // Update on viewport changes
+                function handleViewportChange() {
+                    updateButton();
+                }
+
+                // Initial setup
+                updateButton();
+
+                // Listen to viewport changes
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', handleViewportChange);
+
+                // Click functionality
+                goBackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Add press animation
+                    this.style.transition = 'transform 0.1s ease';
+                    this.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        this.style.transform = '';
+
+                        // Navigate back or to home page
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 100);
+                });
+            }
+        });
+
         // PDF Viewer Variables
         let currentPDF = null;
         let currentPage = 1;
