@@ -25,91 +25,77 @@
         }
 
         /* Go Back Button */
-
         .go-back-btn {
-              position: fixed;
-              left: 16px;
-              top: 16px;
-              z-index: 1000;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 6px;
-              padding: 8px 14px;
-              border-radius: 20px;
-              background: rgba(255, 255, 255, 0.95);
-              backdrop-filter: blur(12px);
-              box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-              cursor: pointer;
-              border: 1px solid rgba(220, 20, 60, 0.15);
-              color: #333333;
-              text-decoration: none;
-              font-weight: 600;
-              font-size: 14px;
-              white-space: nowrap;
-              min-height: 36px;
-              min-width: 36px;
-              transform: scale(var(--btn-scale, 1));
-              transform-origin: left top;
-              -webkit-tap-highlight-color: transparent;
-              touch-action: manipulation;
-              user-select: none;
+            position: fixed;
+            left: 16px;
+            top: 16px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid rgba(220, 20, 60, 0.15);
+            color: #333333;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            min-height: 36px;
+            min-width: 36px;
+            transform: scale(var(--btn-scale, 1));
+            transform-origin: left top;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
         }
 
+            .go-back-btn:hover,
+            .go-back-btn:focus {
+                background: #DC143C;
+                color: #ffffff;
+                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
+                border-color: #DC143C;
+            }
 
+            .go-back-btn i {
+                font-size: 13px;
+                transition: transform 0.3s ease;
+                width: 14px;
+                text-align: center;
+            }
 
-        .go-back-btn:hover,
-        .go-back-btn:focus {
-              background: #DC143C;
-              color: #ffffff;
-              box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
-              transform: translateY(-1px) scale(calc(var(--btn-scale, 1) \* 1.02));
-              border-color: #DC143C;
-        }
+            .go-back-btn:hover i {
+                transform: translateX(-2px);
+            }
 
+            .go-back-btn:active {
+                transform: scale(calc(var(--btn-scale, 1) * 0.96));
+                background: #b01030;
+                transition: transform 0.1s ease;
+            }
 
+            .go-back-btn:focus-visible {
+                outline: 2px solid #DC143C;
+                outline-offset: 2px;
+            }
 
-        .go-back-btn i {
-              font-size: 13px;
-              transition: transform 0.3s ease;
-              width: 14px;
-              text-align: center;
-        }
+            .go-back-btn.compact span {
+                display: none;
+            }
 
+            .go-back-btn.compact {
+                padding: 8px;
+                border-radius: 50%;
+            }
 
-
-        .go-back-btn:hover i {
-              transform: translateX(-2px);
-        }
-
-
-
-        .go-back-btn:active {
-              transform: scale(calc(var(--btn-scale, 1) \* 0.96));
-              background: #b01030;
-              transition: transform 0.1s ease;
-        }
-
-
-
-        .go-back-btn:focus-visible {
-              outline: 2px solid #DC143C;
-              outline-offset: 2px;
-        }
-
-
-
-        .go-back-btn.compact span {
-              display: none;
-        }
-
-
-
-        .go-back-btn.compact {
-              padding: 8px;
-              border-radius: 50%;
-        }
 
         .form-container {
             background-color: white;
@@ -229,16 +215,30 @@
             border: 1px solid transparent;
             border-radius: 0.25rem;
         }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+            .alert-danger i {
+                margin-right: 0.5rem;
+            }
     </style>
 </head>
 
 <body>
     <!-- Go Back Button -->
     <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
-        <i class="fas fa-arrow-left" aria-hidden="true">
-            <span>Back</span>
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>Back</span>
     </a>
-
 
 
     <div class="container form-container">
@@ -454,140 +454,140 @@
 
             <!-- Wrap the Requestor Details section in a div with a unique ID -->
             <div id="requestorDetailsSection" style="display: none;">
-             
 
-            <!-- Requestor Details -->
-            <h5 class="section-header">Requestor's Details</h5>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label required-field">Last Name</label>
-                    <input asp-for="RLastname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                    <span asp-validation-for="RLastname" ></span>
+
+                <!-- Requestor Details -->
+                <h5 class="section-header">Requestor's Details</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label required-field">Last Name</label>
+                        <input asp-for="RLastname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+                        <span asp-validation-for="RLastname"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label required-field">First Name</label>
+                        <input asp-for="RFirstname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+                        <span asp-validation-for="RFirstname"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Middle Name</label>
+                        <input asp-for="RMiddlename" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+                        <span asp-validation-for="RMiddlename"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Suffix</label>
+                        <select class="form-select" asp-for="RSuffix">
+                            <option value="None">None</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                            <option value="IV">IV</option>
+                            <option value="V">V</option>
+                        </select>
+                        <span asp-validation-for="RSuffix"></span>
+                    </div>
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label required-field">First Name</label>
-                    <input asp-for="RFirstname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                    <span asp-validation-for="RFirstname"></span>
+                <!-- Requestor Address -->
+                <div class="row g-3 mt-2">
+                    <div class="col-md-3">
+                        <label>Blk / Lot / Street</label>
+                        <input asp-for="RBlkLotStreet" type="text" class="form-control">
+                        <span asp-validation-for="RBlkLotStreet"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Sub / Vill.</label>
+                        <input asp-for="RSubVill" type="text" class="form-control">
+                        <span asp-validation-for="RSubVill"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Brgy.</label>
+                        <input asp-for="RBrgy" type="text" class="form-control">
+                        <span asp-validation-for="RBrgy"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>District</label>
+                        <input asp-for="RDistrict" type="text" class="form-control">
+                        <span asp-validation-for="RDistrict"></span>
+                    </div>
+
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Middle Name</label>
-                    <input asp-for="RMiddlename" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                    <span asp-validation-for="RMiddlename" ></span>
-                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label>Relationship to Patient</label>
+                        <input asp-for="RelationshipPatient" type="text" class="form-control">
+                        <span asp-validation-for="RelationshipPatient"></span>
+                    </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Suffix</label>
-                    <select class="form-select" asp-for="RSuffix">
-                        <option value="None">None</option>
-                        <option value="Jr.">Jr.</option>
-                        <option value="Sr.">Sr.</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                    </select>
-                    <span asp-validation-for="RSuffix" ></span>
-                </div>
-            </div>
+                    <div class="col-md-6">
+                        <label>Contact No.</label>
+                        <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
+                               placeholder="0912-345-6789 or 02-123-4567"
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57"> <!-- Blocks letters -->
+                        <span asp-validation-for="ContactNo"></span>
+                        <small class="text-muted">Format: 0912-345-6789 (mobile) or 02-123-4567 (landline)</small>
+                    </div>
 
-            <!-- Requestor Address -->
-            <div class="row g-3 mt-2">
-                <div class="col-md-3">
-                    <label >Blk / Lot / Street</label>
-                    <input asp-for="RBlkLotStreet" type="text" class="form-control">
-                    <span asp-validation-for="RBlkLotStreet"></span>
-                </div>
+                    <script>
+                        const contactNoInput = document.getElementById('contactNoInput');
 
-                <div class="col-md-3">
-                    <label class="form-label">Sub / Vill.</label>
-                    <input asp-for="RSubVill" type="text" class="form-control">
-                    <span asp-validation-for="RSubVill" ></span>
-                </div>
+                        contactNoInput.addEventListener('input', function(e) {
+                            // Remove all non-digit characters (extra safety)
+                            let value = this.value.replace(/\D/g, '');
 
-                <div class="col-md-3">
-                    <label>Brgy.</label>
-                    <input asp-for="RBrgy" type="text" class="form-control">
-                    <span asp-validation-for="RBrgy" ></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label>District</label>
-                    <input asp-for="RDistrict" type="text" class="form-control">
-                    <span asp-validation-for="RDistrict" ></span>
-                </div>
-
-            </div>
-
-            <div class="row g-3 mt-2">
-                <div class="col-md-6">
-                    <label >Relationship to Patient</label>
-                    <input asp-for="RelationshipPatient" type="text" class="form-control">
-                    <span asp-validation-for="RelationshipPatient" ></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label>Contact No.</label>
-                    <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
-                           placeholder="0912-345-6789 or 02-123-4567"
-                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"> <!-- Blocks letters -->
-                    <span asp-validation-for="ContactNo"></span>
-                    <small class="text-muted">Format: 0912-345-6789 (mobile) or 02-123-4567 (landline)</small>
-                </div>
-
-                <script>
-                    const contactNoInput = document.getElementById('contactNoInput');
-
-                    contactNoInput.addEventListener('input', function(e) {
-                        // Remove all non-digit characters (extra safety)
-                        let value = this.value.replace(/\D/g, '');
-
-                        // Mobile number (09XXXXXXXXX)
-                        if (value.startsWith('09') && value.length <= 11) {
-                            if (value.length > 4) {
-                                value = value.substring(0, 4) + '-' + value.substring(4);
+                            // Mobile number (09XXXXXXXXX)
+                            if (value.startsWith('09') && value.length <= 11) {
+                                if (value.length > 4) {
+                                    value = value.substring(0, 4) + '-' + value.substring(4);
+                                }
+                                if (value.length > 8) {
+                                    value = value.substring(0, 8) + '-' + value.substring(8);
+                                }
                             }
-                            if (value.length > 8) {
-                                value = value.substring(0, 8) + '-' + value.substring(8);
+                            // Landline (02XXXXXXXX or area code)
+                            else if ((value.startsWith('02') || /^[1-9]\d{1}$/.test(value.substring(0,2)))) {
+                                if (value.length > 2) {
+                                    value = value.substring(0, 2) + '-' + value.substring(2);
+                                }
+                                if (value.length > 6) {
+                                    value = value.substring(0, 6) + '-' + value.substring(6);
+                                }
                             }
-                        }
-                        // Landline (02XXXXXXXX or area code)
-                        else if ((value.startsWith('02') || /^[1-9]\d{1}$/.test(value.substring(0,2)))) {
-                            if (value.length > 2) {
-                                value = value.substring(0, 2) + '-' + value.substring(2);
+
+                            // Limit length (11 digits for mobile, 10 for landline)
+                            const maxLength = value.startsWith('09') ? 13 : 11; // Includes hyphens
+                            if (value.length > maxLength) {
+                                value = value.substring(0, maxLength);
                             }
-                            if (value.length > 6) {
-                                value = value.substring(0, 6) + '-' + value.substring(6);
+
+                            this.value = value;
+                        });
+
+                        // Strict validation on blur (optional)
+                        contactNoInput.addEventListener('blur', function() {
+                            const regex = /^(09\d{2}-\d{3}-\d{4}|0[2-9]\d-\d{3}-\d{4})$/;
+                            if (this.value && !regex.test(this.value)) {
+                                alert("Please enter a valid Philippine number (e.g., 0912-345-6789 or 02-123-4567)");
+                                this.focus();
                             }
-                        }
-
-                        // Limit length (11 digits for mobile, 10 for landline)
-                        const maxLength = value.startsWith('09') ? 13 : 11; // Includes hyphens
-                        if (value.length > maxLength) {
-                            value = value.substring(0, maxLength);
-                        }
-
-                        this.value = value;
-                    });
-
-                    // Strict validation on blur (optional)
-                    contactNoInput.addEventListener('blur', function() {
-                        const regex = /^(09\d{2}-\d{3}-\d{4}|0[2-9]\d-\d{3}-\d{4})$/;
-                        if (this.value && !regex.test(this.value)) {
-                            alert("Please enter a valid Philippine number (e.g., 0912-345-6789 or 02-123-4567)");
-                            this.focus();
-                        }
-                    });
-                </script>
-            </div>
+                        });
+                    </script>
+                </div>
             </div>
 
             <!-- Type of Assistance Requested Section -->
             <h5 class="section-header">Type of Assistance Requested</h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <!-- Column 1 -->    
+                    <!-- Column 1 -->
                     <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="checkbox"
                                id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
@@ -659,7 +659,7 @@
                 <span asp-validation-for="Typeassistance" class="text-danger"></span>
             </div>
 
-         
+
 
             <!-- Upload Section -->
             <h5 class="section-header">Upload Required Documents</h5>
@@ -672,13 +672,14 @@
                         <i class="bi bi-card-image"></i>
                     </div>
                     <p>Click to upload document</p>
-                    <p class="form-note">Accepted formats: JPG, PNGE, etc..(Max 10MB)</p>
+                    <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p> <!-- Updated text -->
                 </div>
-                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')">
+                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none"
+                       accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'receiptPreview')"> <!-- Removed .doc,.docx -->
                 <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
 
                 <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
-                <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
+                <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p> <!-- Updated text -->
             </div>
 
             <!-- Terms and Conditions -->
@@ -1269,7 +1270,7 @@
 
     </script>
 
- 
+
     <script>
 
                 document.addEventListener('DOMContentLoaded', function() {
@@ -1288,7 +1289,7 @@
                 });
             });
         });
-        //1 box only 
+        //1 box only
 
         document.addEventListener('DOMContentLoaded', function() {
             // Get all elements
@@ -1333,6 +1334,133 @@
 
             // Initial update
             updateReflection();
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // File validation for all file inputs
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+
+            fileInputs.forEach(input => {
+                input.addEventListener('change', function(e) {
+                    validateFile(this);
+                });
+            });
+
+            function validateFile(input) {
+                const file = input.files[0];
+                const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
+                const uploadBox = input.previousElementSibling;
+
+                if (!file) return;
+
+                // File type validation
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+
+                // Check file type
+                if (!allowedTypes.includes(file.type)) {
+                    showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
+                    return;
+                }
+
+                // Check file size
+                if (file.size > maxSize) {
+                    showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
+                    return;
+                }
+
+                // If validation passes, proceed with preview
+                clearFileError(input);
+
+                if (file.type.startsWith("image/") && previewId) {
+                    const preview = document.getElementById(previewId);
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                } else if (previewId) {
+                    // For PDF files, hide the image preview
+                    const preview = document.getElementById(previewId);
+                    preview.style.display = "none";
+                }
+
+                // Update upload box text
+                if (uploadBox) {
+                    uploadBox.querySelector('p:first-of-type').textContent = file.name;
+                    uploadBox.style.borderColor = "var(--primary-color)";
+                    uploadBox.style.backgroundColor = "var(--primary-light)";
+                }
+            }
+
+            function showFileError(input, message) {
+                // Clear the file input
+                input.value = '';
+
+                // Remove any existing error message
+                clearFileError(input);
+
+                // Create error message element
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger mt-2';
+                errorDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ${message}
+                `;
+
+                // Insert after the upload box
+                const uploadBox = input.previousElementSibling;
+                uploadBox.parentNode.insertBefore(errorDiv, uploadBox.nextSibling);
+
+                // Reset upload box styling
+                uploadBox.querySelector('p:first-of-type').textContent = 'Click to upload document';
+                uploadBox.style.borderColor = "#ddd";
+                uploadBox.style.backgroundColor = "#fafafa";
+
+                // Hide any preview
+                const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
+                if (previewId) {
+                    const preview = document.getElementById(previewId);
+                    preview.style.display = "none";
+                }
+            }
+
+            function clearFileError(input) {
+                // Remove any existing error messages
+                const existingError = input.parentNode.querySelector('.alert-danger');
+                if (existingError) {
+                    existingError.remove();
+                }
+            }
+
+            // Enhance the existing previewImage function to include validation
+            const originalPreviewImage = window.previewImage;
+            window.previewImage = function(input, previewId) {
+                const file = input.files[0];
+                if (!file) return;
+
+                // Validate before preview
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const maxSize = 10 * 1024 * 1024;
+
+                if (!allowedTypes.includes(file.type)) {
+                    showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
+                    return;
+                }
+
+                if (file.size > maxSize) {
+                    showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
+                    return;
+                }
+
+                // If validation passes, call original function
+                if (originalPreviewImage) {
+                    originalPreviewImage(input, previewId);
+                }
+            }
         });
     </script>
 
