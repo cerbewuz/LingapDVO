@@ -1892,7 +1892,7 @@ namespace LingapDVO.Controllers
             ViewData["RDistrict"] = fillupformhospitalBill.RDistrict;
             ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
             ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
-
+            ViewData["Comments"] = fillupformhospitalBill.Comments;
             // Type of assistance
             var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;

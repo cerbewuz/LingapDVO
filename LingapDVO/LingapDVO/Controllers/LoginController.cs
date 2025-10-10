@@ -519,85 +519,26 @@ namespace LingapDVO.Controllers
         public IActionResult Register(RegisterAccDto registerAccDto)
         {
             if (!ModelState.IsValid)
-            {
-                // Return validation errors for AJAX
-                if (IsAjaxRequest())
-                {
-                    var errors = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
-
-                    return Json(new
-                    {
-                        success = false,
-                        errorType = "validation",
-                        title = "Validation Error",
-                        message = "Please fix the validation errors.",
-                        errors = errors
-                    });
-                }
                 return View(registerAccDto);
-            }
 
             try
             {
-                // Check for existing email or username before saving
+                // 🔎 Check for existing email or username before saving
                 if (context.RegisterAcc.Any(u => u.Email == registerAccDto.Email))
                 {
-                    if (IsAjaxRequest())
-                    {
-                        return Json(new
-                        {
-                            success = false,
-                            errorType = "duplicate",
-                            title = "Email Already Registered",
-                            message = "This email is already registered."
-                        });
-                    }
                     ModelState.AddModelError("Email", "This email is already registered.");
                     return View(registerAccDto);
                 }
 
                 if (context.RegisterAcc.Any(u => u.Username == registerAccDto.Username))
                 {
-                    if (IsAjaxRequest())
-                    {
-                        return Json(new
-                        {
-                            success = false,
-                            errorType = "duplicate",
-                            title = "Username Taken",
-                            message = "This username is already taken."
-                        });
-                    }
                     ModelState.AddModelError("Username", "This username is already taken.");
                     return View(registerAccDto);
                 }
 
-                // Validate password requirements
-                var passwordValidation = ValidatePassword(registerAccDto.Password);
-                if (!passwordValidation.IsValid)
-                {
-                    if (IsAjaxRequest())
-                    {
-                        return Json(new
-                        {
-                            success = false,
-                            errorType = "password",
-                            title = "Password Requirements Not Met",
-                            message = "Please check the password requirements.",
-                            passwordErrors = passwordValidation.Errors
-                        });
-                    }
-
-                    foreach (var error in passwordValidation.Errors)
-                    {
-                        ModelState.AddModelError("Password", error);
-                    }
-                    return View(registerAccDto);
-                }
-
+                // ==========================
+                // 🔑 MASTER PASSWORD SECTION
+                // ==========================
                 string masterPassword = "SuperAdminMasterKey123!";
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
                 byte[] iv = RandomNumberGenerator.GetBytes(16);
@@ -645,61 +586,27 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 TempData["SuccessMessage"] = "Registration successful! You can now log in.";
-
-                if (IsAjaxRequest())
-                {
-                    return Json(new
-                    {
-                        success = true,
-                        message = "Registration successful! You can now log in.",
-                        redirectUrl = Url.Action("Login", "Login")
-                    });
-                }
-
-                // Return the view with success message
-                ViewBag.SuccessMessage = "Registration successful! You can now log in.";
-                return View(registerAccDto);
+                return RedirectToAction("Login", "Login");
             }
             catch (DbUpdateException dbEx)
             {
-                string errorMessage;
+                // 🧱 Handle SQL unique constraint error
                 if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Email"))
-                    errorMessage = "This email is already registered.";
+                    ModelState.AddModelError("Email", "This email is already registered.");
                 else if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Username"))
-                    errorMessage = "This username is already taken.";
+                    ModelState.AddModelError("Username", "This username is already taken.");
                 else
-                    errorMessage = "A database error occurred while saving. Please try again.";
+                    ModelState.AddModelError("", "A database error occurred while saving. Please try again.");
 
-                if (IsAjaxRequest())
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        errorType = "database",
-                        title = "Database Error",
-                        message = errorMessage
-                    });
-                }
-
-                ModelState.AddModelError("", errorMessage);
                 return View(registerAccDto);
             }
             catch (Exception ex)
             {
-                if (IsAjaxRequest())
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        errorType = "system",
-                        title = "System Error",
-                        message = "An unexpected error occurred. Please try again."
-                    });
-                }
                 ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
                 return View(registerAccDto);
             }
         }
+
 
         // ... rest of your existing methods (Accountverification, Registeredit, etc.) remain the same
 

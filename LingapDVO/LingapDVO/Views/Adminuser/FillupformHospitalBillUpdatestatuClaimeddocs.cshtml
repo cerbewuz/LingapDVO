@@ -616,7 +616,7 @@
                 <!-- Comments Section -->
                 <div class="receipt-section">
                     <label for="idFrontDescription" class="form-label">Description / Comments</label>
-                    <textarea asp-for="Comments" class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
+                    <textarea class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
                     <span asp-validation-for="Comments" class="text-danger"></span>
                 </div>
 
