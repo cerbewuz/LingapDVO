@@ -1,4 +1,4 @@
-﻿@model FuneralburialformDto
+﻿@model MedicalandlabformDto
 @{
     Layout = null;
     var selectedSex = ViewData["Sex"]?.ToString();
@@ -523,7 +523,7 @@
     </div>
 
     <div class="receipt-container">
-        <form asp-action="FillupformHospitalBillUpdateprocessingstatus" enctype="multipart/form-data" method="post">
+        <form asp-action="MedicalandlabformstatusUpdateClaimeddocs" enctype="multipart/form-data" method="post">
             <div class="receipt-header">
                 <h3>Hospital Bill Application Details</h3>
 
@@ -796,48 +796,27 @@
                 <div class="receipt-section">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="section-title mb-0">Request Status</h5>
-                        <span class="edit-toggle" onclick="toggleEditMode()"><i class="bi bi-pencil-square"></i></span>
+                        <!-- Remove this entire line -->
                     </div>
                     <div class="info-row">
                         <div class="info-label">Current Status:</div>
                         <div class="info-value">
-                            <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
-                                @ViewData["Status"]
+                            <span class="status-badge status-@(ViewData["Status3"]?.ToString()?.ToLower())">
+                                @ViewData["Status3"]
                             </span>
                         </div>
                     </div>
-                    <div class="edit-field mt-2" style="display: none;">
-                        <label class="form-label">Update Status:</label>
-                        <div class="status-radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status2" id="statusApproved"
-                                       value="Approved" @(ViewData["Status"]?.ToString() == "Approved" ? "checked" : "")>
-                                <label class="form-check-label" for="statusApproved">
-                                    Approved
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status2" id="statusUnapproved"
-                                       value="Unapproved" @(ViewData["Status"]?.ToString() == "Unapproved" ? "checked" : "")>
-                                <label class="form-check-label" for="statusUnapproved">
-                                    Unapproved
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Remove the entire edit-field section -->
                 </div>
             </div>
 
 
 
+
             <div class="receipt-footer">
-                <div class="edit-field mb-3" style="display: none;">
-                    <button href="/Admin" type="submit" class="btn btn-receipt">Save Changes</button>
-                    <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
-                </div>
+
                 <div class="view-mode">
-                    <button type="button" class="btn btn-receipt" onclick="window.print()">Print Receipt</button>
-                    <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+                    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
                 </div>
             </div>
         </form>

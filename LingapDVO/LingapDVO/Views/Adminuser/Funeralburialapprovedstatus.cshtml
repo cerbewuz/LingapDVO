@@ -1,4 +1,4 @@
-﻿@model FuneralburialformDto
+﻿@model FillupformHospitalBillDto
 @{
     Layout = null;
     var selectedSex = ViewData["Sex"]?.ToString();
@@ -783,8 +783,8 @@
                         <label class="form-label">Update Status:</label>
                         <div class="status-radio-group">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status2" id="statusApproved"
-                                       value="Approved" @(ViewData["Status"]?.ToString() == "Claimed" ? "checked" : "")>
+                                <input class="form-check-input" type="radio" name="status3" id="statusClaimed"
+                                       value="Claimed" @(ViewData["Status3"]?.ToString() == "Claimed" ? "checked" : "")>
                                 <label class="form-check-label" for="statusApproved">
                                     Claimed
                                 </label>

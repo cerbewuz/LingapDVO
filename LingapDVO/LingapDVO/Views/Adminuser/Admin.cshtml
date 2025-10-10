@@ -622,6 +622,8 @@
                             createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                             status: "@f.Status?.ToLower()",
                             status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
                             formId: @f.Id,
                             controller: "Dashboard"
                         });
@@ -638,6 +640,8 @@
                             createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                             status: "@f.Status?.ToLower()",
                             status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
                             formId: @f.Id,
                             controller: "Dashboard"
                         });
@@ -877,7 +881,7 @@
 
                         // Apply the same logic for Medical forms
                         if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                            editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
+                            editUrl = `/Adminuser/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
                         }
                         else if (app.status2 === "approved") {
                             editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
