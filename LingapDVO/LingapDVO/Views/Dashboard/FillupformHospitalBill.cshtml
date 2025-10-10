@@ -25,77 +25,91 @@
         }
 
         /* Go Back Button */
+
         .go-back-btn {
-            position: fixed;
-            left: 16px;
-            top: 16px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 8px 14px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border: 1px solid rgba(220, 20, 60, 0.15);
-            color: #333333;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            white-space: nowrap;
-            min-height: 36px;
-            min-width: 36px;
-            transform: scale(var(--btn-scale, 1));
-            transform-origin: left top;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            user-select: none;
+              position: fixed;
+              left: 16px;
+              top: 16px;
+              z-index: 1000;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 6px;
+              padding: 8px 14px;
+              border-radius: 20px;
+              background: rgba(255, 255, 255, 0.95);
+              backdrop-filter: blur(12px);
+              box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              cursor: pointer;
+              border: 1px solid rgba(220, 20, 60, 0.15);
+              color: #333333;
+              text-decoration: none;
+              font-weight: 600;
+              font-size: 14px;
+              white-space: nowrap;
+              min-height: 36px;
+              min-width: 36px;
+              transform: scale(var(--btn-scale, 1));
+              transform-origin: left top;
+              -webkit-tap-highlight-color: transparent;
+              touch-action: manipulation;
+              user-select: none;
         }
 
-            .go-back-btn:hover,
-            .go-back-btn:focus {
-                background: #DC143C;
-                color: #ffffff;
-                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
-                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
-                border-color: #DC143C;
-            }
 
-            .go-back-btn i {
-                font-size: 13px;
-                transition: transform 0.3s ease;
-                width: 14px;
-                text-align: center;
-            }
 
-            .go-back-btn:hover i {
-                transform: translateX(-2px);
-            }
+        .go-back-btn:hover,
+        .go-back-btn:focus {
+              background: #DC143C;
+              color: #ffffff;
+              box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+              transform: translateY(-1px) scale(calc(var(--btn-scale, 1) \* 1.02));
+              border-color: #DC143C;
+        }
 
-            .go-back-btn:active {
-                transform: scale(calc(var(--btn-scale, 1) * 0.96));
-                background: #b01030;
-                transition: transform 0.1s ease;
-            }
 
-            .go-back-btn:focus-visible {
-                outline: 2px solid #DC143C;
-                outline-offset: 2px;
-            }
 
-            .go-back-btn.compact span {
-                display: none;
-            }
+        .go-back-btn i {
+              font-size: 13px;
+              transition: transform 0.3s ease;
+              width: 14px;
+              text-align: center;
+        }
 
-            .go-back-btn.compact {
-                padding: 8px;
-                border-radius: 50%;
-            }
 
+
+        .go-back-btn:hover i {
+              transform: translateX(-2px);
+        }
+
+
+
+        .go-back-btn:active {
+              transform: scale(calc(var(--btn-scale, 1) \* 0.96));
+              background: #b01030;
+              transition: transform 0.1s ease;
+        }
+
+
+
+        .go-back-btn:focus-visible {
+              outline: 2px solid #DC143C;
+              outline-offset: 2px;
+        }
+
+
+
+        .go-back-btn.compact span {
+              display: none;
+        }
+
+
+
+        .go-back-btn.compact {
+              padding: 8px;
+              border-radius: 50%;
+        }
 
         .form-container {
             background-color: white;
@@ -221,9 +235,10 @@
 <body>
     <!-- Go Back Button -->
     <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
-        <i class="fas fa-arrow-left" aria-hidden="true"></i>
-        <span>Back</span>
+        <i class="fas fa-arrow-left" aria-hidden="true">
+            <span>Back</span>
     </a>
+
 
 
     <div class="container form-container">

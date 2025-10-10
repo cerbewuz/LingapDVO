@@ -22,7 +22,7 @@
             <!-- Compact Header -->
             <div class="text-center mb-4">
                 <h1 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
-                    Create an Account
+                    Sign Up
                 </h1>
             </div>
 
@@ -222,6 +222,64 @@
         </div>
     </div>
 
+    <!-- Compact Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-red-50">
+                <div class="modal-body p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3" id="errorModalTitle">Error</h3>
+                    <p class="text-sm text-gray-600 mb-4" id="errorModalMessage">An error occurred.</p>
+                    <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200" data-bs-dismiss="modal">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compact Password Requirements Error Modal -->
+    <div class="modal fade" id="passwordErrorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-red-50">
+                <div class="modal-body p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Password Requirements</h3>
+                    <div class="bg-white rounded-lg p-3 border border-red-200 mb-4 text-left max-h-32 overflow-y-auto">
+                        <ul class="text-xs text-gray-600 space-y-1" id="passwordErrorList">
+                            <!-- Error list will be populated here -->
+                        </ul>
+                    </div>
+                    <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200" data-bs-dismiss="modal">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compact Password Mismatch Error Modal -->
+    <div class="modal fade" id="passwordMismatchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-red-50">
+                <div class="modal-body p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-circle text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Passwords Don't Match</h3>
+                    <p class="text-sm text-gray-600 mb-4">The passwords you entered do not match.</p>
+                    <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200" data-bs-dismiss="modal">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Terms Modal -->
     <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -390,9 +448,91 @@
             const strengthBar = document.getElementById('strengthBar');
             const strengthText = document.getElementById('strengthText');
             const termsCheckbox = document.getElementById('terms');
-            const termsError = document.getElementById('termsError');
             const recaptchaError = document.getElementById('recaptchaError');
             const registerButton = document.getElementById('registerButton');
+
+            // Server-side compatible password validation
+            function validatePasswordRequirementsServerSide(password) {
+                const errors = [];
+                
+                if (password.length < 8) {
+                    errors.push("At least 8 characters long");
+                }
+                if (!/[A-Z]/.test(password)) {
+                    errors.push("At least one uppercase letter (A-Z)");
+                }
+                if (!/[a-z]/.test(password)) {
+                    errors.push("At least one lowercase letter (a-z)");
+                }
+                if (!/[0-9]/.test(password)) {
+                    errors.push("At least one number (0-9)");
+                }
+                if (!/[^A-Za-z0-9]/.test(password)) {
+                    errors.push("At least one special character (!#$%^&* etc.)");
+                }
+                
+                return errors;
+            }
+
+            // Show general error modal
+            function showErrorModal(title, message) {
+                document.getElementById('errorModalTitle').textContent = title;
+                document.getElementById('errorModalMessage').textContent = message;
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                errorModal.show();
+            }
+
+            // Show password requirements error modal
+            function showPasswordErrorModal(passwordErrors) {
+                const errorList = document.getElementById('passwordErrorList');
+                errorList.innerHTML = '';
+                
+                passwordErrors.forEach(error => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'flex items-start gap-2';
+                    listItem.innerHTML = `
+                        <i class="fas fa-times text-red-500 text-xs mt-0.5"></i>
+                        <span class="text-xs">${error}</span>
+                    `;
+                    errorList.appendChild(listItem);
+                });
+                
+                const passwordErrorModal = new bootstrap.Modal(document.getElementById('passwordErrorModal'));
+                passwordErrorModal.show();
+            }
+
+            // Show password mismatch modal
+            function showPasswordMismatchModal() {
+                const passwordMismatchModal = new bootstrap.Modal(document.getElementById('passwordMismatchModal'));
+                passwordMismatchModal.show();
+            }
+
+            // Asynchronous password match validation
+            function validatePasswordMatchAsync() {
+                const password = passwordInput.value;
+                const confirmPassword = confirmInput.value;
+
+                if (confirmPassword === '') {
+                    matchIndicator.textContent = '';
+                    confirmInput.classList.remove('border-red-500', 'border-green-500');
+                    return true;
+                }
+
+                // Use setTimeout to make it asynchronous
+                setTimeout(() => {
+                    if (password === confirmPassword) {
+                        confirmInput.classList.remove('border-red-500');
+                        confirmInput.classList.add('border-green-500');
+                        matchIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> <span class="text-green-600 font-medium">Passwords match</span>';
+                    } else {
+                        confirmInput.classList.remove('border-green-500');
+                        confirmInput.classList.add('border-red-500');
+                        matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Passwords do not match</span>';
+                    }
+                }, 10);
+
+                return password === confirmPassword;
+            }
 
             // Floating label functionality for username and email
             function initializeFloatingLabel(inputId) {
@@ -517,64 +657,82 @@
                 }
             }
 
-            // Password match validation
-            function validatePasswordMatch() {
-                if (!matchIndicator || !passwordInput || !confirmInput) return true;
-
-                const password = passwordInput.value;
-                const confirmPassword = confirmInput.value;
-
-                if (confirmPassword === '') {
-                    matchIndicator.textContent = '';
-                    confirmInput.classList.remove('border-red-500', 'border-green-500');
-                    return true;
-                }
-
-                if (password === confirmPassword) {
-                    confirmInput.classList.remove('border-red-500');
-                    confirmInput.classList.add('border-green-500');
-                    matchIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> <span class="text-green-600 font-medium">Passwords match</span>';
-                    return true;
-                } else {
-                    confirmInput.classList.remove('border-green-500');
-                    confirmInput.classList.add('border-red-500');
-                    matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Passwords do not match</span>';
-                    return false;
-                }
-            }
-
             // Form validation
             function validateForm() {
                 let isValid = true;
 
                 // Validate terms
                 if (!termsCheckbox.checked) {
-                    termsError.classList.remove('hidden');
+                    showErrorModal('Terms Agreement Required', 'You must agree to the terms and conditions to continue.');
                     isValid = false;
-                } else {
-                    termsError.classList.add('hidden');
                 }
 
                 // Validate reCAPTCHA
                 const recaptchaResponse = grecaptcha.getResponse();
                 if (!recaptchaResponse) {
-                    recaptchaError.classList.remove('hidden');
+                    showErrorModal('reCAPTCHA Required', 'Please complete the reCAPTCHA verification to continue.');
                     isValid = false;
-                } else {
-                    recaptchaError.classList.add('hidden');
                 }
 
-                // Validate password match
-                if (!validatePasswordMatch()) {
+                // Validate password match asynchronously
+                if (!validatePasswordMatchAsync()) {
+                    showPasswordMismatchModal();
                     isValid = false;
                 }
 
                 return isValid;
             }
 
+            // Enhanced form submission handler with password validation
+            document.getElementById('registerForm').addEventListener('submit', function(event) {
+                // First, run the existing validation
+                if (!validateForm()) {
+                    event.preventDefault();
+                    return false;
+                }
+
+                // Additional password requirement validation
+                const password = document.getElementById('password').value;
+                const passwordErrors = validatePasswordRequirementsServerSide(password);
+                
+                if (passwordErrors.length > 0) {
+                    event.preventDefault();
+                    showPasswordErrorModal(passwordErrors);
+                    return false;
+                }
+
+                // Show loading state with manual spinner
+                if (registerButton) {
+                    registerButton.innerHTML = '<i class="fas fa-spinner"></i> Creating Account...';
+                    registerButton.disabled = true;
+                    rotateSpinner();
+                }
+
+                return true;
+            });
+
             // Event listeners
             if (passwordInput) {
-                passwordInput.addEventListener('input', validatePasswordRequirements);
+                passwordInput.addEventListener('input', function() {
+                    validatePasswordRequirements();
+                    
+                    // Additional server-side rule validation
+                    const password = this.value;
+                    const serverSideErrors = validatePasswordRequirementsServerSide(password);
+                    
+                    if (serverSideErrors.length > 0 && password.length > 0) {
+                        this.style.borderColor = '#ef4444'; // red
+                    } else if (password.length > 0) {
+                        this.style.borderColor = '#10b981'; // green
+                    } else {
+                        this.style.borderColor = ''; // default
+                    }
+
+                    // Trigger password match validation when password changes
+                    if (confirmInput.value) {
+                        validatePasswordMatchAsync();
+                    }
+                });
                 passwordInput.addEventListener('focus', () => {
                     if (passwordInput.value.length > 0) {
                         passwordTooltip?.classList.remove('hidden');
@@ -586,33 +744,20 @@
             }
 
             if (confirmInput) {
-                confirmInput.addEventListener('input', validatePasswordMatch);
+                confirmInput.addEventListener('input', validatePasswordMatchAsync);
             }
 
             if (termsCheckbox) {
                 termsCheckbox.addEventListener('change', () => {
-                    if (termsCheckbox.checked) {
+                    // Remove any inline error display since we're using modals
+                    const termsError = document.getElementById('termsError');
+                    if (termsError) {
                         termsError.classList.add('hidden');
                     }
                 });
             }
 
-            // Form submission handler
-            document.getElementById('registerForm').addEventListener('submit', function(event) {
-                if (!validateForm()) {
-                    event.preventDefault();
-                    return false;
-                }
-
-                // Show loading state with manual spinner
-                if (registerButton) {
-                    registerButton.innerHTML = '<i class="fas fa-spinner"></i> Creating Account...';
-                    registerButton.disabled = true;
-                    rotateSpinner();
-                }
-            });
-
-            // Auto-show success modal if we have success message
+            // Auto-show success modal 
             if (document.querySelector('.bg-green-50')) {
                 setTimeout(() => {
                     showSuccessModal();
@@ -672,7 +817,7 @@
 
         /* Custom scrollbar for modal */
         .modal-body::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
 
         .modal-body::-webkit-scrollbar-track {
@@ -685,9 +830,9 @@
             border-radius: 10px;
         }
 
-            .modal-body::-webkit-scrollbar-thumb:hover {
-                background: #a8a8a8;
-            }
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
 
         /* Password toggle button styles */
         #togglePassword, #toggleConfirmPassword {
@@ -702,9 +847,9 @@
             justify-content: center;
         }
 
-            #togglePassword:hover, #toggleConfirmPassword:hover {
-                color: #4b5563;
-            }
+        #togglePassword:hover, #toggleConfirmPassword:hover {
+            color: #4b5563;
+        }
 
         /* Form validation styles */
         .border-green-500 {
