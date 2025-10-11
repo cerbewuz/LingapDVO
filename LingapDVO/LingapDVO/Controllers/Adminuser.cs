@@ -2232,6 +2232,191 @@ namespace LingapDVO.Controllers
 
         public IActionResult FuneralburialapprovedstatusUpdateClaimeddocs(int id)
         {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+
+
+            var funeralform = context.Funeralburialform.Find(id);
+            if (funeralform == null)
+            {
+                return NotFound();
+            }
+
+            // Basic ViewData setup
+            ViewData["Status3"] = funeralform.Status3;
+            ViewData["Id"] = funeralform.Id;
+            ViewData["Lastname"] = funeralform.Lastname;
+            ViewData["Firstname"] = funeralform.Firstname;
+            ViewData["Middlename"] = funeralform.Middlename;
+            ViewData["Suffix"] = funeralform.Suffix;
+            ViewData["BlkLotStreet"] = funeralform.BlkLotStreet;
+            ViewData["SubVill"] = funeralform.SubVill;
+            ViewData["Brgy"] = funeralform.Brgy;
+            ViewData["District"] = funeralform.District;
+            ViewData["Sex"] = funeralform.Sex;
+            ViewData["PhilHealth"] = funeralform.PhilHealth;
+            ViewData["PhilHealthNo"] = funeralform.PhilHealthNo;
+            ViewData["Dateofbirth"] = funeralform.Dateofbirth;
+            ViewData["Age"] = funeralform.Age;
+
+            // Requestor details
+            ViewData["RLastname"] = funeralform.RLastname;
+            ViewData["RFirstname"] = funeralform.RFirstname;
+            ViewData["RMiddlename"] = funeralform.RMiddlename;
+            ViewData["RSuffix"] = funeralform.RSuffix;
+            ViewData["RBlkLotStreet"] = funeralform.RBlkLotStreet;
+            ViewData["RSubVill"] = funeralform.RSubVill;
+            ViewData["RBrgy"] = funeralform.RBrgy;
+            ViewData["RDistrict"] = funeralform.RDistrict;
+            ViewData["RelationshipPatient"] = funeralform.RelationshipPatient;
+            ViewData["ContactNo"] = funeralform.ContactNo;
+            ViewData["Comments"] = funeralform.Comments;
+            // Type of assistance
+            var typeAssistanceRaw = funeralform.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
+
+            // CMO Personnel
+            var cmoPersonnelRaw = funeralform.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            // ====================================
+            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // ====================================
+            string masterPassword = "SuperAdminMasterKey123!";
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(funeralform.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, funeralform.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(funeralform.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, funeralform.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(funeralform.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, funeralform.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {funeralform.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = funeralform.DoctorPrescription;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(funeralform.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, funeralform.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {funeralform.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = funeralform.DeathCertificate;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = funeralform.Validfrontimage;
+            ViewData["ValidBackimage"] = funeralform.ValidBackimage;
+            ViewData["Comments"] = funeralform.Comments;
+
             return View();
         }
 

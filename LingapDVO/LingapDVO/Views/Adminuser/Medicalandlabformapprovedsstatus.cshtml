@@ -765,6 +765,34 @@
                 }
 
 
+                <!-- Medical Certificate -->
+                @if (ViewData["MedicalCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Medical Certificate</h5>
+                        @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+
+
                 <!-- Status Section -->
                 <div class="receipt-section">
                     <div class="d-flex justify-content-between align-items-center">
