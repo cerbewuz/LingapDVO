@@ -11,7 +11,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- PDF.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <title>Hospital Bill Application - Receipt View</title>
     <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
@@ -27,14 +26,12 @@
             --border-color: #dee2e6;
         }
 
-
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #333;
         }
 
-        /* Go Back Button */
         .go-back-btn {
             position: fixed;
             left: 16px;
@@ -189,26 +186,6 @@
             color: #0c5460;
         }
 
-        .edit-toggle {
-            cursor: pointer;
-            color: var(--primary-color);
-            font-size: 1.1rem;
-            margin-left: 0.5rem;
-        }
-
-        .edit-mode .info-value {
-            padding: 0.25rem;
-            border: 1px dashed #ccc;
-            border-radius: 4px;
-        }
-
-        .receipt-footer {
-            background: var(--light-gray);
-            padding: 1.5rem;
-            text-align: center;
-            border-top: 1px solid var(--border-color);
-        }
-
         .btn-receipt {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
@@ -221,6 +198,38 @@
             .btn-receipt:hover {
                 background-color: var(--primary-dark);
                 border-color: var(--primary-dark);
+                color: white;
+            }
+
+        .btn-approved {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 0 0.5rem;
+        }
+
+            .btn-approved:hover {
+                background-color: #218838;
+                border-color: #1e7e34;
+                color: white;
+            }
+
+        .btn-unapproved {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 0 0.5rem;
+        }
+
+            .btn-unapproved:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
                 color: white;
             }
 
@@ -314,7 +323,6 @@
             color: #6c757d;
         }
 
-        /* PDF Viewer Modal Styles */
         .pdf-viewer-modal {
             display: none;
             position: fixed;
@@ -446,25 +454,65 @@
                 cursor: not-allowed;
             }
 
-
-
-
-        .status-radio-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .comments-required {
+            border: 2px solid #dc3545 !important;
+            background-color: #fff5f5;
         }
 
-            .status-radio-group .form-check {
-                margin-bottom: 0;
-            }
+        .status-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
 
-            .status-radio-group .form-check-input {
-                margin-top: 0.3rem;
-            }
+        .comments-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
 
-            .status-radio-group .form-check-label {
-                padding-left: 0.5rem;
+        .comments-modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .comments-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comments-modal-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .comments-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+            .comments-modal-close:hover {
+                color: var(--primary-color);
             }
     </style>
 </head>
@@ -522,19 +570,39 @@
         </div>
     </div>
 
+    <!-- Comments Modal -->
+    <div id="commentsModal" class="comments-modal">
+        <div class="comments-modal-content">
+            <div class="comments-modal-header">
+                <h5 class="comments-modal-title">Comments Required</h5>
+                <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
+            </div>
+            <div class="mb-3">
+                <label for="commentsTextarea" class="form-label">Please provide comments for unapproval:</label>
+                <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is unapproved..." required></textarea>
+                <div class="invalid-feedback">Comments are required when unapproving an application.</div>
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
+                <button type="button" class="btn btn-unapproved" onclick="submitUnapproved()">Submit Unapproved</button>
+            </div>
+        </div>
+    </div>
+
     <div class="receipt-container">
-        <form asp-action="FillupformHospitalBillUpdateprocessingstatus" enctype="multipart/form-data" method="post">
+        <form asp-action="FillupformHospitalBillUpdateprocessingstatus" enctype="multipart/form-data" method="post" id="statusForm">
+            <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
+            <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
+
             <div class="receipt-header">
                 <h3>Hospital Bill Application Details</h3>
-
             </div>
 
             <div class="receipt-body">
-
                 <!-- Patient Information -->
                 <div class="receipt-section">
                     <div class="info-row">
-                        <div class="info-label">Application ID:@ViewData["Id"]</div>
+                        <div class="info-label">Application ID: @ViewData["Id"]</div>
                     </div>
                     <br />
                     <h5 class="section-title">Patient Information</h5>
@@ -547,7 +615,6 @@
                                     @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
                                 </div>
                             </div>
-
                             <div class="info-row">
                                 <div class="info-label">Address:</div>
                                 <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
@@ -674,10 +741,8 @@
                 <!-- Comments Section -->
                 <div class="receipt-section">
                     <label for="idFrontDescription" class="form-label">Description / Comments</label>
-                    <textarea asp-for="Comments" class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
-                    <span asp-validation-for="Comments" class="text-danger"></span>
+                    <textarea class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application..." readonly>@ViewData["Comments"]</textarea>
                 </div>
-
 
                 <!-- Valid ID Section -->
                 <div class="receipt-section">
@@ -764,7 +829,6 @@
                     </div>
                 }
 
-
                 <!-- Death Certificate -->
                 @if (ViewData["DeathCertificateBase64"] != null)
                 {
@@ -791,13 +855,9 @@
                     </div>
                 }
 
-
                 <!-- Status Section -->
                 <div class="receipt-section">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="section-title mb-0">Request Status</h5>
-                        <span class="edit-toggle" onclick="toggleEditMode()"><i class="bi bi-pencil-square"></i></span>
-                    </div>
+                    <h5 class="section-title">Request Status</h5>
                     <div class="info-row">
                         <div class="info-label">Current Status:</div>
                         <div class="info-value">
@@ -806,54 +866,33 @@
                             </span>
                         </div>
                     </div>
-                    <div class="edit-field mt-2" style="display: none;">
-                        <label class="form-label">Update Status:</label>
-                        <div class="status-radio-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status2" id="statusApproved"
-                                       value="Approved" @(ViewData["Status"]?.ToString() == "Approved" ? "checked" : "")>
-                                <label class="form-check-label" for="statusApproved">
-                                    Approved
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status2" id="statusUnapproved"
-                                       value="Unapproved" @(ViewData["Status"]?.ToString() == "Unapproved" ? "checked" : "")>
-                                <label class="form-check-label" for="statusUnapproved">
-                                    Unapproved
-                                </label>
-                            </div>
-                        </div>
+
+                    <div class="status-buttons">
+                        <button type="button" class="btn btn-approved" onclick="submitApproved()">
+                            <i class="bi bi-check-circle"></i> Approved
+                        </button>
+                        <button type="button" class="btn btn-unapproved" onclick="showCommentsModal()">
+                            <i class="bi bi-x-circle"></i> Unapproved
+                        </button>
                     </div>
                 </div>
             </div>
 
-
-
             <div class="receipt-footer">
-                <div class="edit-field mb-3" style="display: none;">
-                    <button href="/Admin" type="submit" class="btn btn-receipt">Save Changes</button>
-                    <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
-                </div>
-                <div class="view-mode">
-                    <button type="button" class="btn btn-receipt" onclick="window.print()">Print Receipt</button>
-                    <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
-                </div>
+                <button type="button" class="btn btn-receipt" onclick="window.print()">Print Receipt</button>
+                <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
             </div>
         </form>
     </div>
 
     <script>
-          // Go Back Button Script
+        // Go Back Button Script
         document.addEventListener('DOMContentLoaded', function() {
             const goBackBtn = document.getElementById('goBackBtn');
 
             if (goBackBtn) {
-                // Responsive compact mode
                 function updateButton() {
                     const viewportWidth = window.innerWidth;
-
-                    // Switch to compact mode on smaller screens
                     if (viewportWidth < 480) {
                         goBackBtn.classList.add('compact');
                     } else {
@@ -861,31 +900,22 @@
                     }
                 }
 
-                // Update on viewport changes
                 function handleViewportChange() {
                     updateButton();
                 }
 
-                // Initial setup
                 updateButton();
-
-                // Listen to viewport changes
                 window.addEventListener('resize', handleViewportChange);
                 window.addEventListener('orientationchange', handleViewportChange);
 
-                // Click functionality
                 goBackBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-
-                    // Add press animation
                     this.style.transition = 'transform 0.1s ease';
                     this.style.transform = 'scale(0.95)';
 
                     setTimeout(() => {
                         this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
                         this.style.transform = '';
-
-                        // Navigate back or to home page
                         if (window.history.length > 1) {
                             window.history.back();
                         } else {
@@ -894,7 +924,82 @@
                     }, 100);
                 });
             }
+
+            // CMO Reflection Auto-generation
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+            cmoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        cmoCheckboxes.forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    }
+                    updateReflection();
+                });
+            });
+
+            function updateReflection() {
+                const billInput = document.getElementById('billAmountInput');
+                const cmoNotes = document.getElementById('cmoNotesInput');
+                const reflectionField = document.getElementById('cmoReflectionField');
+                const docCheckboxes = document.querySelectorAll('.supporting-doc');
+
+                let parts = [];
+                if (billInput.value.trim()) {
+                    parts.push(`Bill: ${billInput.value.trim()}`);
+                }
+                const checkedDocs = [];
+                docCheckboxes.forEach(cb => {
+                    if (cb.checked) checkedDocs.push(cb.value);
+                });
+                if (checkedDocs.length) {
+                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                }
+                if (cmoNotes.value.trim()) {
+                    parts.push(`Others: ${cmoNotes.value.trim()}`);
+                }
+                reflectionField.value = parts.join(' , ');
+            }
+
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+            updateReflection();
         });
+
+        // Status Submission Functions
+        function submitApproved() {
+            document.getElementById('statusInput').value = 'Approved';
+            document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
+            document.getElementById('statusForm').submit();
+        }
+
+        function showCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'block';
+            document.getElementById('commentsTextarea').focus();
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'none';
+            document.getElementById('commentsTextarea').value = '';
+            document.getElementById('commentsTextarea').classList.remove('is-invalid');
+        }
+
+        function submitUnapproved() {
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            const comments = commentsTextarea.value.trim();
+
+            if (comments === '') {
+                commentsTextarea.classList.add('is-invalid');
+                commentsTextarea.focus();
+                return;
+            }
+
+            document.getElementById('statusInput').value = 'Unapproved';
+            document.getElementById('commentsInput').value = comments;
+            document.getElementById('statusForm').submit();
+        }
 
         // PDF Viewer Variables
         let currentPDF = null;
@@ -929,7 +1034,6 @@
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
 
-            // Reset state
             title.textContent = displayName || 'PDF Document';
             modal.style.display = 'block';
             loading.style.display = 'flex';
@@ -941,24 +1045,19 @@
             currentScale = 1.2;
 
             try {
-                // Encode filename and build URL
                 const encodedFileName = encodeURIComponent(fileName);
                 const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
 
-                // Fetch PDF
                 const response = await fetch(url);
-
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const pdfData = await response.arrayBuffer();
-
                 if (!pdfData || pdfData.byteLength === 0) {
                     throw new Error('PDF data is empty');
                 }
 
-                // Load PDF using PDF.js
                 const loadingTask = pdfjsLib.getDocument({ data: pdfData });
                 currentPDF = await loadingTask.promise;
 
@@ -966,13 +1065,9 @@
                 totalPagesSpan.textContent = totalPages;
                 currentPageSpan.textContent = currentPage;
 
-                // Update control buttons
                 updateNavigationButtons();
-
-                // Render first page
                 await renderPage(currentPage);
 
-                // Hide loading, show canvas
                 loading.style.display = 'none';
                 canvas.style.display = 'block';
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
@@ -997,11 +1092,9 @@
                 const page = await currentPDF.getPage(pageNum);
                 const viewport = page.getViewport({ scale: currentScale });
 
-                // Set canvas dimensions
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
-                // Render PDF page
                 const renderContext = {
                     canvasContext: context,
                     viewport: viewport
@@ -1059,82 +1152,20 @@
             const modal = document.getElementById('pdfViewerModal');
             modal.style.display = 'none';
 
-            // Clean up
             if (currentPDF) {
                 currentPDF.destroy();
                 currentPDF = null;
             }
         }
 
-        // Edit Mode Toggle
-        function toggleEditMode() {
-            const receiptBody = document.querySelector('.receipt-body');
-            const editFields = document.querySelectorAll('.edit-field');
-            const viewMode = document.querySelector('.view-mode');
-            if (receiptBody.classList.contains('edit-mode')) {
-                receiptBody.classList.remove('edit-mode');
-                editFields.forEach(field => field.style.display = 'none');
-                viewMode.style.display = 'block';
-            } else {
-                receiptBody.classList.add('edit-mode');
-                editFields.forEach(field => field.style.display = 'block');
-                viewMode.style.display = 'none';
-            }
-        }
-
-        // CMO Reflection Auto-generation
-        document.addEventListener('DOMContentLoaded', function() {
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-            cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        cmoCheckboxes.forEach(cb => {
-                            if (cb !== this) cb.checked = false;
-                        });
-                    }
-                    updateReflection();
-                });
-            });
-
-            function updateReflection() {
-                const billInput = document.getElementById('billAmountInput');
-                const cmoNotes = document.getElementById('cmoNotesInput');
-                const reflectionField = document.getElementById('cmoReflectionField');
-                const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-                let parts = [];
-                if (billInput.value.trim()) {
-                    parts.push(`Bill: ${billInput.value.trim()}`);
-                }
-                const checkedDocs = [];
-                docCheckboxes.forEach(cb => {
-                    if (cb.checked) checkedDocs.push(cb.value);
-                });
-                if (checkedDocs.length) {
-                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                }
-                if (cmoNotes.value.trim()) {
-                    parts.push(`Others: ${cmoNotes.value.trim()}`);
-                }
-                reflectionField.value = parts.join(' , ');
-            }
-
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            if (billInput) billInput.addEventListener('input', updateReflection);
-            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
-            updateReflection();
-        });
-
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
-            // ESC key closes modals
             if (e.key === 'Escape') {
                 document.getElementById("zoomModal").style.display = "none";
                 closePDFViewer();
+                closeCommentsModal();
             }
 
-            // PDF navigation when PDF viewer is open
             const pdfModal = document.getElementById('pdfViewerModal');
             if (pdfModal.style.display === 'block') {
                 switch(e.key) {
@@ -1163,6 +1194,7 @@
         window.onclick = function(event) {
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
+            const commentsModal = document.getElementById("commentsModal");
 
             if (event.target == zoomModal) {
                 zoomModal.style.display = "none";
@@ -1170,69 +1202,10 @@
             if (event.target == pdfModal) {
                 closePDFViewer();
             }
+            if (event.target == commentsModal) {
+                closeCommentsModal();
+            }
         }
-    </script>
-    <script>
-        // Disable right-click context menu
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Disable text selection
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Disable drag and drop for images
-        document.addEventListener('dragstart', function(e) {
-            if (e.target.tagName === 'IMG') {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Disable keyboard shortcuts for saving, printing, etc.
-        document.addEventListener('keydown', function(e) {
-            // Disable F12 (Developer Tools)
-            if (e.key === 'F12') {
-                e.preventDefault();
-                return false;
-            }
-
-            // Disable Ctrl+S (Save)
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                return false;
-            }
-
-            // Disable Ctrl+P (Print)
-            if (e.ctrlKey && e.key === 'p') {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Add CSS to prevent text selection
-        const style = document.createElement('style');
-        style.textContent = `
-            body {
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
-
-            /* Allow selection in form fields for editing */
-            input, textarea, select {
-                -webkit-user-select: text;
-                -moz-user-select: text;
-                -ms-user-select: text;
-                user-select: text;
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
