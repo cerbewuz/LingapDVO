@@ -867,7 +867,7 @@
                         else if (app.status2 === "approved") {
                             editUrl = `/Adminuser/FillupformHospitalBillapprovedstatus/${app.formId}`;
                         } else if (app.status2 === "unapproved") {
-                            editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                            editUrl = `/Adminuser/FillupformHospitalBillUnapprovedstatus/${app.formId}`;
                         }
                         // Then check original status
                         else if (app.status === "processing") {
@@ -886,7 +886,7 @@
                         else if (app.status2 === "approved") {
                             editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
                         } else if (app.status2 === "unapproved") {
-                            editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                            editUrl = `/Adminuser/MedicalandlabformUnapprovedstatus/${app.formId}`;
                         } else if (app.status === "processing") {
                             editUrl = `/Adminuser/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
                         } else {
@@ -903,7 +903,7 @@
                         else if (app.status2 === "approved") {
                             editUrl = `/Adminuser/Funeralburialapprovedstatus/${app.formId}`;
                         } else if (app.status2 === "unapproved") {
-                            editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                            editUrl = `/Adminuser/FuneralburialUnapprovedstatus/${app.formId}`;
                         } else if (app.status === "processing") {
                             editUrl = `/Adminuser/FuneralburialformUpdateprocessingstatus/${app.formId}`;
                         } else {

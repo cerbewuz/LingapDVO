@@ -179,40 +179,48 @@ namespace LingapDVO.Controllers
 
                 context.SaveChanges();
 
-                // Get the user's email using UserId
+                // Get the user's info from RegisterAcc
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
+
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
+                    // Get user's first name from VerifyAccount
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
                     // Get email settings from configuration
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
 
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                    {
-                        throw new ArgumentException("Email address or display name is missing.");
-                    }
+                        throw new ArgumentException("Email settings are missing.");
 
-                    // Compose and send the email
+                    // Compose the email
                     var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, user.Email?? "User");
+                    var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Hospital Bill Assistance Update";
+                    string subject = "Hospital Bill Assistance Update - LINGAP DVO";
                     string body = $@"
-                                    Dear {user.Email ?? "User"},
+                Dear {firstName},
 
-                                    Your hospital bill request is now being processed.
+                Your Hospital Bill Assistance application is now being processed.
 
-                                    Status: Processing  
-                                    Comments: {fillupformHospitalbilldto.Comments ?? "N/A"}  
+                APPLICATION DETAILS:
+                • Application Type: Hospital Bill Assistance
+                • Status: Processing
+                • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                                    Thank you for your patience.
+                REMARKS:
+                {fillupformHospitalbilldto.Comments ?? "N/A"}
 
-                                    Best regards,  
-                                    {fromName}  
-                                    {DateTime.Now:MMMM dd, yyyy HH:mm tt}
-                                    ";
+                Thank you for your patience. We will notify you once your application status is updated.
 
+                Sincerely,
+                {fromName}
+                LINGAP DVO Medical Assistance Program";
+
+                    // Send the email safely
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -239,6 +247,7 @@ namespace LingapDVO.Controllers
                 return View(fillupformHospitalbilldto);
             }
         }
+
 
 
         public IActionResult Medicalandlabformstatus(int id)
@@ -323,7 +332,7 @@ namespace LingapDVO.Controllers
         }
 
 
-  
+
         [HttpPost]
         public IActionResult Medicalandlabformstatus(int id, MedicalandlabformDto medicalandlabformDto)
         {
@@ -350,40 +359,48 @@ namespace LingapDVO.Controllers
 
                 context.SaveChanges();
 
-                // Get the user's email using UserId
+                // Get user info
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == medicalandlabform.UserId);
+
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get email settings from configuration
+                    // ✅ Get user's first name from VerifyAccount table
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
+                    // ✅ Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
 
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                    {
-                        throw new ArgumentException("Email address or display name is missing.");
-                    }
+                        throw new ArgumentException("Email settings are missing.");
 
-                    // Compose and send the email
+                    // ✅ Prepare email content
                     var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, user.Email ?? "User");
+                    var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Medical and Laboratory Assistance Update";
+                    string subject = "Medical and Laboratory Assistance Update - LINGAP DVO";
                     string body = $@"
-                            Dear {user.Email ?? "User"},
+                    Dear {firstName},
 
-                            Your medical and laboratory request is now being processed.
+                    Your Medical and Laboratory Assistance application is now being processed.
 
-                            Status: Processing  
-                            Comments: {medicalandlabformDto.Comments ?? "N/A"}  
+                    APPLICATION DETAILS:
+                    • Application Type: Medical and Laboratory Assistance
+                    • Status: Processing
+                    • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                            Thank you for your patience.
+                    REMARKS:
+                    {medicalandlabformDto.Comments ?? "N/A"}
 
-                            Best regards,  
-                            {fromName}  
-                            {DateTime.Now:MMMM dd, yyyy HH:mm tt}
-                            ";
+                    Thank you for your patience. We will notify you once your application status has been updated.
 
+                    Sincerely,
+                    {fromName}
+                    LINGAP DVO Medical Assistance Program";
+
+                    // ✅ Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -410,6 +427,7 @@ namespace LingapDVO.Controllers
                 return View(medicalandlabformDto);
             }
         }
+
 
 
         public IActionResult Funeralburialformstatus(int id)
@@ -511,7 +529,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Automatically set status to "Processing"
+                // ✅ Automatically set status to "Processing"
                 funeralburialform.Status = "Processing";
                 funeralburialform.Comments = funeralburialformDto.Comments;
                 funeralburialform.Processby = funeralburialformDto.Processby;
@@ -519,40 +537,48 @@ namespace LingapDVO.Controllers
 
                 context.SaveChanges();
 
-                // Get the user's email using UserId
+                // ✅ Get user info
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == funeralburialform.UserId);
+
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get email settings from configuration
+                    // ✅ Get user's first name from VerifyAccount table
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
+                    // ✅ Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
 
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                    {
-                        throw new ArgumentException("Email address or display name is missing.");
-                    }
+                        throw new ArgumentException("Email settings are missing.");
 
-                    // Compose and send the email
+                    // ✅ Prepare email content
                     var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, user.Email ?? "User");
+                    var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Funeral and Burial Assistance Update";
+                    string subject = "Funeral and Burial Assistance Update - LINGAP DVO";
                     string body = $@"
-                            Dear {user.Email ?? "User"},
+                                Dear {firstName},
 
-                            Your funeral and burial assistance request is now being processed.
+                                Your Funeral and Burial Assistance application is now being processed.
 
-                            Status: Processing  
-                            Comments: {funeralburialformDto.Comments ?? "N/A"}  
+                                APPLICATION DETAILS:
+                                • Application Type: Funeral and Burial Assistance
+                                • Status: Processing
+                                • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                            Thank you for your patience.
+                                REMARKS:
+                                {funeralburialformDto.Comments ?? "N/A"}
 
-                            Best regards,  
-                            {fromName}  
-                            {DateTime.Now:MMMM dd, yyyy HH:mm tt}
-                            ";
+                                Thank you for your patience. We will notify you once your application status has been updated.
 
+                                Sincerely,
+                                {fromName}
+                                LINGAP DVO Funeral and Burial Assistance Program";
+
+                    // ✅ Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -579,6 +605,7 @@ namespace LingapDVO.Controllers
                 return View(funeralburialformDto);
             }
         }
+
 
         public IActionResult Analyticsdashboard()
         {
@@ -1665,45 +1692,43 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
-
-
-            var  medicalandlabform = context.Medicalandlabform.Find(id);
-            if ( medicalandlabform == null)
+            var medicallabform = context.Medicalandlabform.Find(id);
+            if (medicallabform == null)
             {
                 return NotFound();
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] =  medicalandlabform.Status2;
-            ViewData["Id"] =  medicalandlabform.Id;
-            ViewData["Lastname"] =  medicalandlabform.Lastname;
-            ViewData["Firstname"] =  medicalandlabform.Firstname;
-            ViewData["Middlename"] =  medicalandlabform.Middlename;
-            ViewData["Suffix"] =  medicalandlabform.Suffix;
-            ViewData["BlkLotStreet"] =  medicalandlabform.BlkLotStreet;
-            ViewData["SubVill"] =  medicalandlabform.SubVill;
-            ViewData["Brgy"] =  medicalandlabform.Brgy;
-            ViewData["District"] =  medicalandlabform.District;
-            ViewData["Sex"] =  medicalandlabform.Sex;
-            ViewData["PhilHealth"] =  medicalandlabform.PhilHealth;
-            ViewData["PhilHealthNo"] =  medicalandlabform.PhilHealthNo;
-            ViewData["Dateofbirth"] =  medicalandlabform.Dateofbirth;
-            ViewData["Age"] =  medicalandlabform.Age;
+            ViewData["Status2"] = medicallabform.Status2;
+            ViewData["Id"] = medicallabform.Id;
+            ViewData["Lastname"] = medicallabform.Lastname;
+            ViewData["Firstname"] = medicallabform.Firstname;
+            ViewData["Middlename"] = medicallabform.Middlename;
+            ViewData["Suffix"] = medicallabform.Suffix;
+            ViewData["BlkLotStreet"] = medicallabform.BlkLotStreet;
+            ViewData["SubVill"] = medicallabform.SubVill;
+            ViewData["Brgy"] = medicallabform.Brgy;
+            ViewData["District"] = medicallabform.District;
+            ViewData["Sex"] = medicallabform.Sex;
+            ViewData["PhilHealth"] = medicallabform.PhilHealth;
+            ViewData["PhilHealthNo"] = medicallabform.PhilHealthNo;
+            ViewData["Dateofbirth"] = medicallabform.Dateofbirth;
+            ViewData["Age"] = medicallabform.Age;
 
             // Requestor details
-            ViewData["RLastname"] =  medicalandlabform.RLastname;
-            ViewData["RFirstname"] =  medicalandlabform.RFirstname;
-            ViewData["RMiddlename"] =  medicalandlabform.RMiddlename;
-            ViewData["RSuffix"] =  medicalandlabform.RSuffix;
-            ViewData["RBlkLotStreet"] =  medicalandlabform.RBlkLotStreet;
-            ViewData["RSubVill"] =  medicalandlabform.RSubVill;
-            ViewData["RBrgy"] =  medicalandlabform.RBrgy;
-            ViewData["RDistrict"] =  medicalandlabform.RDistrict;
-            ViewData["RelationshipPatient"] =  medicalandlabform.RelationshipPatient;
-            ViewData["ContactNo"] =  medicalandlabform.ContactNo;
+            ViewData["RLastname"] = medicallabform.RLastname;
+            ViewData["RFirstname"] = medicallabform.RFirstname;
+            ViewData["RMiddlename"] = medicallabform.RMiddlename;
+            ViewData["RSuffix"] = medicallabform.RSuffix;
+            ViewData["RBlkLotStreet"] = medicallabform.RBlkLotStreet;
+            ViewData["RSubVill"] = medicallabform.RSubVill;
+            ViewData["RBrgy"] = medicallabform.RBrgy;
+            ViewData["RDistrict"] = medicallabform.RDistrict;
+            ViewData["RelationshipPatient"] = medicallabform.RelationshipPatient;
+            ViewData["ContactNo"] = medicallabform.ContactNo;
 
             // Type of assistance
-            var typeAssistanceRaw =  medicalandlabform.Typeassistance ?? "";
+            var typeAssistanceRaw = medicallabform.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
             var parsed = typeAssistanceRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -1712,7 +1737,7 @@ namespace LingapDVO.Controllers
             ViewData["CheckedAssistance"] = parsed;
 
             // CMO Personnel
-            var cmoPersonnelRaw =  medicalandlabform.ForCMOPERSONNEL ?? "";
+            var cmoPersonnelRaw = medicallabform.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
             var parsedCMO = cmoPersonnelRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -1727,15 +1752,16 @@ namespace LingapDVO.Controllers
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
 
             var debugMessages = new List<string>();
 
             try
             {
                 // Front ID
-                if (!string.IsNullOrEmpty( medicalandlabform.Validfrontimage))
+                if (!string.IsNullOrEmpty(medicallabform.Validfrontimage))
                 {
-                    string frontPath = Path.Combine(validFolder,  medicalandlabform.Validfrontimage);
+                    string frontPath = Path.Combine(validFolder, medicallabform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
                         byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
@@ -1745,9 +1771,9 @@ namespace LingapDVO.Controllers
                 }
 
                 // Back ID
-                if (!string.IsNullOrEmpty( medicalandlabform.ValidBackimage))
+                if (!string.IsNullOrEmpty(medicallabform.ValidBackimage))
                 {
-                    string backPath = Path.Combine(validFolder,  medicalandlabform.ValidBackimage);
+                    string backPath = Path.Combine(validFolder, medicallabform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
                         byte[] decryptedBack = DecryptFile(backPath, masterPassword);
@@ -1757,10 +1783,10 @@ namespace LingapDVO.Controllers
                 }
 
                 // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
-                if (!string.IsNullOrEmpty( medicalandlabform.DoctorPrescription))
+                if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
                 {
-                    string prescPath = Path.Combine(doctorPrescriptionFolder,  medicalandlabform.DoctorPrescription);
-                    debugMessages.Add($"📄 Doctor Prescription filename: { medicalandlabform.DoctorPrescription}");
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {medicallabform.DoctorPrescription}");
                     debugMessages.Add($"📂 Full path: {prescPath}");
                     debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
 
@@ -1770,7 +1796,7 @@ namespace LingapDVO.Controllers
                         {
                             byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
-                            ViewData["DoctorPrescription"] =  medicalandlabform.DoctorPrescription;
+                            ViewData["DoctorPrescription"] = medicallabform.DoctorPrescription;
 
                             // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
                             bool isPdf = IsPdfFile(decryptedPresc);
@@ -1795,11 +1821,50 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
-                if (!string.IsNullOrEmpty( medicalandlabform.DeathCertificate))
+                // ⭐ MEDICAL CERTIFICATE - SPECIFIC TO MEDICAL/LAB FORM
+                if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
                 {
-                    string deathPath = Path.Combine(deathCertificateFolder,  medicalandlabform.DeathCertificate);
-                    debugMessages.Add($"📄 Death Certificate filename: { medicalandlabform.DeathCertificate}");
+                    string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
+                    debugMessages.Add($"📄 Medical Certificate filename: {medicallabform.MedCertificate}");
+                    debugMessages.Add($"📂 Full path: {medicalPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(medicalPath)}");
+
+                    if (System.IO.File.Exists(medicalPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedMedical = DecryptFile(medicalPath, masterPassword);
+                            ViewData["MedicalCertificateBase64"] = Convert.ToBase64String(decryptedMedical);
+                            ViewData["MedicalCertificate"] = medicallabform.MedCertificate;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedMedical);
+                            ViewData["IsMedicalCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Medical Certificate decrypted - {decryptedMedical.Length} bytes");
+                            debugMessages.Add($"🔍 IsMedicalCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Medical Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Medical Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Medical Certificate in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {medicallabform.DeathCertificate}");
                     debugMessages.Add($"📂 Full path: {deathPath}");
                     debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
 
@@ -1809,7 +1874,7 @@ namespace LingapDVO.Controllers
                         {
                             byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
-                            ViewData["DeathCertificate"] =  medicalandlabform.DeathCertificate;
+                            ViewData["DeathCertificate"] = medicallabform.DeathCertificate;
 
                             // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
                             bool isPdf = IsPdfFile(decryptedDeath);
@@ -1841,11 +1906,624 @@ namespace LingapDVO.Controllers
             }
 
             ViewData["DebugMessages"] = debugMessages;
-            ViewData["Validfrontimage"] =  medicalandlabform.Validfrontimage;
-            ViewData["ValidBackimage"] =  medicalandlabform.ValidBackimage;
-            ViewData["Comments"] =  medicalandlabform.Comments;
+            ViewData["Validfrontimage"] = medicallabform.Validfrontimage;
+            ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
+            ViewData["Comments"] = medicallabform.Comments;
 
             return View();
+
+        }
+
+
+        //For not approved statuses
+        public IActionResult FillupformHospitalBillUnapprovedstatus(int id)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+
+
+            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
+            if (fillupformhospitalBill == null)
+            {
+                return NotFound();
+            }
+
+            // Basic ViewData setup
+            ViewData["Status2"] = fillupformhospitalBill.Status2;
+            ViewData["Id"] = fillupformhospitalBill.Id;
+            ViewData["Lastname"] = fillupformhospitalBill.Lastname;
+            ViewData["Firstname"] = fillupformhospitalBill.Firstname;
+            ViewData["Middlename"] = fillupformhospitalBill.Middlename;
+            ViewData["Suffix"] = fillupformhospitalBill.Suffix;
+            ViewData["BlkLotStreet"] = fillupformhospitalBill.BlkLotStreet;
+            ViewData["SubVill"] = fillupformhospitalBill.SubVill;
+            ViewData["Brgy"] = fillupformhospitalBill.Brgy;
+            ViewData["District"] = fillupformhospitalBill.District;
+            ViewData["Sex"] = fillupformhospitalBill.Sex;
+            ViewData["PhilHealth"] = fillupformhospitalBill.PhilHealth;
+            ViewData["PhilHealthNo"] = fillupformhospitalBill.PhilHealthNo;
+            ViewData["Dateofbirth"] = fillupformhospitalBill.Dateofbirth;
+            ViewData["Age"] = fillupformhospitalBill.Age;
+
+            // Requestor details
+            ViewData["RLastname"] = fillupformhospitalBill.RLastname;
+            ViewData["RFirstname"] = fillupformhospitalBill.RFirstname;
+            ViewData["RMiddlename"] = fillupformhospitalBill.RMiddlename;
+            ViewData["RSuffix"] = fillupformhospitalBill.RSuffix;
+            ViewData["RBlkLotStreet"] = fillupformhospitalBill.RBlkLotStreet;
+            ViewData["RSubVill"] = fillupformhospitalBill.RSubVill;
+            ViewData["RBrgy"] = fillupformhospitalBill.RBrgy;
+            ViewData["RDistrict"] = fillupformhospitalBill.RDistrict;
+            ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
+            ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
+
+            // Type of assistance
+            var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
+
+            // CMO Personnel
+            var cmoPersonnelRaw = fillupformhospitalBill.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            // ====================================
+            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // ====================================
+            string masterPassword = "SuperAdminMasterKey123!";
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, fillupformhospitalBill.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, fillupformhospitalBill.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, fillupformhospitalBill.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {fillupformhospitalBill.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, fillupformhospitalBill.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {fillupformhospitalBill.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
+            ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
+            ViewData["Comments"] = fillupformhospitalBill.Comments;
+
+            return View();
+
+        }
+
+        public IActionResult FuneralburialUnapprovedstatus(int id)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+
+
+            var funeralburialform = context.Funeralburialform.Find(id);
+            if (funeralburialform == null)
+            {
+                return NotFound();
+            }
+
+            // Basic ViewData setup
+            ViewData["Status2"] = funeralburialform.Status2;
+            ViewData["Id"] = funeralburialform.Id;
+            ViewData["Lastname"] = funeralburialform.Lastname;
+            ViewData["Firstname"] = funeralburialform.Firstname;
+            ViewData["Middlename"] = funeralburialform.Middlename;
+            ViewData["Suffix"] = funeralburialform.Suffix;
+            ViewData["BlkLotStreet"] = funeralburialform.BlkLotStreet;
+            ViewData["SubVill"] = funeralburialform.SubVill;
+            ViewData["Brgy"] = funeralburialform.Brgy;
+            ViewData["District"] = funeralburialform.District;
+            ViewData["Sex"] = funeralburialform.Sex;
+            ViewData["PhilHealth"] = funeralburialform.PhilHealth;
+            ViewData["PhilHealthNo"] = funeralburialform.PhilHealthNo;
+            ViewData["Dateofbirth"] = funeralburialform.Dateofbirth;
+            ViewData["Age"] = funeralburialform.Age;
+
+            // Requestor details
+            ViewData["RLastname"] = funeralburialform.RLastname;
+            ViewData["RFirstname"] = funeralburialform.RFirstname;
+            ViewData["RMiddlename"] = funeralburialform.RMiddlename;
+            ViewData["RSuffix"] = funeralburialform.RSuffix;
+            ViewData["RBlkLotStreet"] = funeralburialform.RBlkLotStreet;
+            ViewData["RSubVill"] = funeralburialform.RSubVill;
+            ViewData["RBrgy"] = funeralburialform.RBrgy;
+            ViewData["RDistrict"] = funeralburialform.RDistrict;
+            ViewData["RelationshipPatient"] = funeralburialform.RelationshipPatient;
+            ViewData["ContactNo"] = funeralburialform.ContactNo;
+
+            // Type of assistance
+            var typeAssistanceRaw = funeralburialform.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
+
+            // CMO Personnel
+            var cmoPersonnelRaw = funeralburialform.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            // ====================================
+            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // ====================================
+            string masterPassword = "SuperAdminMasterKey123!";
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(funeralburialform.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, funeralburialform.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(funeralburialform.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, funeralburialform.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(funeralburialform.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, funeralburialform.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {funeralburialform.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = funeralburialform.DoctorPrescription;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(funeralburialform.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, funeralburialform.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {funeralburialform.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = funeralburialform.DeathCertificate;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = funeralburialform.Validfrontimage;
+            ViewData["ValidBackimage"] = funeralburialform.ValidBackimage;
+            ViewData["Comments"] = funeralburialform.Comments;
+
+            return View();
+        }
+
+        public IActionResult MedicalandlabformUnapprovedstatus(int id)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            var medicallabform = context.Medicalandlabform.Find(id);
+            if (medicallabform == null)
+            {
+                return NotFound();
+            }
+
+            // Basic ViewData setup
+            ViewData["Status2"] = medicallabform.Status2;
+            ViewData["Id"] = medicallabform.Id;
+            ViewData["Lastname"] = medicallabform.Lastname;
+            ViewData["Firstname"] = medicallabform.Firstname;
+            ViewData["Middlename"] = medicallabform.Middlename;
+            ViewData["Suffix"] = medicallabform.Suffix;
+            ViewData["BlkLotStreet"] = medicallabform.BlkLotStreet;
+            ViewData["SubVill"] = medicallabform.SubVill;
+            ViewData["Brgy"] = medicallabform.Brgy;
+            ViewData["District"] = medicallabform.District;
+            ViewData["Sex"] = medicallabform.Sex;
+            ViewData["PhilHealth"] = medicallabform.PhilHealth;
+            ViewData["PhilHealthNo"] = medicallabform.PhilHealthNo;
+            ViewData["Dateofbirth"] = medicallabform.Dateofbirth;
+            ViewData["Age"] = medicallabform.Age;
+
+            // Requestor details
+            ViewData["RLastname"] = medicallabform.RLastname;
+            ViewData["RFirstname"] = medicallabform.RFirstname;
+            ViewData["RMiddlename"] = medicallabform.RMiddlename;
+            ViewData["RSuffix"] = medicallabform.RSuffix;
+            ViewData["RBlkLotStreet"] = medicallabform.RBlkLotStreet;
+            ViewData["RSubVill"] = medicallabform.RSubVill;
+            ViewData["RBrgy"] = medicallabform.RBrgy;
+            ViewData["RDistrict"] = medicallabform.RDistrict;
+            ViewData["RelationshipPatient"] = medicallabform.RelationshipPatient;
+            ViewData["ContactNo"] = medicallabform.ContactNo;
+
+            // Type of assistance
+            var typeAssistanceRaw = medicallabform.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
+
+            // CMO Personnel
+            var cmoPersonnelRaw = medicallabform.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            // ====================================
+            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // ====================================
+            string masterPassword = "SuperAdminMasterKey123!";
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(medicallabform.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, medicallabform.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(medicallabform.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, medicallabform.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {medicallabform.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = medicallabform.DoctorPrescription;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ MEDICAL CERTIFICATE - SPECIFIC TO MEDICAL/LAB FORM
+                if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
+                {
+                    string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
+                    debugMessages.Add($"📄 Medical Certificate filename: {medicallabform.MedCertificate}");
+                    debugMessages.Add($"📂 Full path: {medicalPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(medicalPath)}");
+
+                    if (System.IO.File.Exists(medicalPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedMedical = DecryptFile(medicalPath, masterPassword);
+                            ViewData["MedicalCertificateBase64"] = Convert.ToBase64String(decryptedMedical);
+                            ViewData["MedicalCertificate"] = medicallabform.MedCertificate;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedMedical);
+                            ViewData["IsMedicalCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Medical Certificate decrypted - {decryptedMedical.Length} bytes");
+                            debugMessages.Add($"🔍 IsMedicalCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Medical Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Medical Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Medical Certificate in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {medicallabform.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = medicallabform.DeathCertificate;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = medicallabform.Validfrontimage;
+            ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
+            ViewData["Comments"] = medicallabform.Comments;
+
+            return View();
+
         }
 
         //Claimed statuses
@@ -2458,7 +3136,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-
+        
 
         [HttpGet]
         public IActionResult ViewPDF(string fileName, string fileType)
@@ -3080,7 +3758,7 @@ namespace LingapDVO.Controllers
 
 
 
-        //For Approved Statuses to claimed 
+        // ✅ For Approved Statuses to Claimed
         [HttpPost]
         public IActionResult FillupformHospitalBillapprovedstatus(int id, FillupformHospitalBillDto fillupformHospitalBillDto)
         {
@@ -3094,21 +3772,26 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Update record
+                // ✅ Update record
                 fillupformhospitalBill.Status3 = fillupformHospitalBillDto.Status3;
                 fillupformhospitalBill.ForCMOPERSONNEL = fillupformHospitalBillDto.ForCMOPERSONNEL;
                 fillupformhospitalBill.Comments = fillupformHospitalBillDto.Comments;
                 fillupformhospitalBill.Processby = fillupformHospitalBillDto.Processby;
                 fillupformhospitalBill.ClaimedAt = DateTime.Now;
+
                 context.SaveChanges();
 
-                // Get user info
+                // ✅ Get user info
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
 
-                // ✅ Send automatic email only if Claimed
+                // ✅ Only send email if status is "Claimed"
                 if (fillupformHospitalBillDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get email settings
+                    // ✅ Get first name from VerifyAccount
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
+                    // ✅ Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
@@ -3116,43 +3799,41 @@ namespace LingapDVO.Controllers
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
                         throw new ArgumentException("Email settings are missing.");
 
-                    // Compose auto-generated email
+                    // ✅ Compose email
                     var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, user.Username ?? "User");
+                    var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Your LINGAP Assistance Has Been Claimed";
+                    string subject = "Hospital Bill Assistance Claimed - LINGAP DVO";
                     string body = $@"
-                                    Dear {user.Username ?? "Valued Applicant"},
+                        Dear {firstName},
 
-                                    We are glad to inform you that your LINGAP Hospital Bill Assistance has been successfully **claimed** as of {DateTime.Now:MMMM dd, yyyy}.
+                        We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
-                                    APPLICATION DETAILS:
-                                    • Application Type: Hospital Bill Assistance  
-                                    • Status: Claimed  
-                                    • Processed By: {fillupformHospitalBillDto.Processby ?? "LINGAP Personnel"}
+                        APPLICATION DETAILS:
+                        • Application Type: Hospital Bill Assistance
+                        • Status: Claimed
+                        • Processed By: {fillupformHospitalBillDto.Processby ?? "LINGAP Personnel"}
+                        • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                                    REMARKS:
-                                    {fillupformHospitalBillDto.Comments ?? "Your claim has been processed and recorded successfully."}
+                        REMARKS:
+                        {fillupformHospitalBillDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                                    Thank you for your patience and cooperation throughout the process.  
-                                    Should you have any further questions, feel free to contact our support team at [Support Email/Phone Number].
+                        Thank you for your patience and cooperation throughout the process.  
+                        Should you have any further questions, please contact our support team at [Support Email/Phone Number].
 
-                                    Best regards,  
-                                    {fromName}  
-                                    LINGAP DVO Medical Assistance Program
-                                    ";
+                        Sincerely,  
+                        {fromName}  
+                        LINGAP DVO Medical Assistance Program
+                        ";
 
-                    // Send email
-                    var smtp = new SmtpClient
+                    // ✅ Send email
+                    using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
-                        Host = "smtp.gmail.com",
-                        Port = 587,
                         EnableSsl = true,
                         DeliveryMethod = SmtpDeliveryMethod.Network,
                         UseDefaultCredentials = false,
                         Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                    };
-
+                    })
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
@@ -3163,7 +3844,7 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                TempData["SuccessMessage"] = "Hospital bill claimed successfully.";
+                TempData["SuccessMessage"] = "Hospital bill claimed successfully and email sent.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
@@ -3176,31 +3857,36 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public IActionResult Medicalandlabformapprovedsstatus(int id, MedicalandlabformDto medicalandlabformDto)
         {
-            var medicallabform  = context.Medicalandlabform.Find(id);
+            var medicallabform = context.Medicalandlabform.Find(id);
 
-            if (medicallabform  == null)
+            if (medicallabform == null)
             {
-                TempData["ErrorMessage"] = "Hospital bill record not found.";
+                TempData["ErrorMessage"] = "Medical and laboratory record not found.";
                 return Redirect("/Admin");
             }
 
             try
             {
-                // Update record
-                medicallabform .Status3 = medicalandlabformDto.Status3;
-                medicallabform .ForCMOPERSONNEL = medicalandlabformDto.ForCMOPERSONNEL;
-                medicallabform .Comments = medicalandlabformDto.Comments;
-                medicallabform .Processby = medicalandlabformDto.Processby;
-                medicallabform .ClaimedAt = DateTime.Now;
+                // ✅ Update record
+                medicallabform.Status3 = medicalandlabformDto.Status3;
+                medicallabform.ForCMOPERSONNEL = medicalandlabformDto.ForCMOPERSONNEL;
+                medicallabform.Comments = medicalandlabformDto.Comments;
+                medicallabform.Processby = medicalandlabformDto.Processby;
+                medicallabform.ClaimedAt = DateTime.Now;
                 context.SaveChanges();
 
-                // Get user info
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == medicallabform .UserId);
+                // ✅ Get user info
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == medicallabform.UserId);
 
-                // ✅ Send automatic email only if Claimed
-                if (medicalandlabformDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
+                // ✅ Only send email if status is "Claimed"
+                if (medicalandlabformDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true &&
+                    user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get email settings
+                    // ✅ Get user's first name from VerifyAccount
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
+                    // ✅ Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
@@ -3208,43 +3894,41 @@ namespace LingapDVO.Controllers
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
                         throw new ArgumentException("Email settings are missing.");
 
-                    // Compose auto-generated email
+                    // ✅ Compose email
                     var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, user.Username ?? "User");
+                    var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Your LINGAP Medical Assistance Has Been Claimed";
+                    string subject = "Medical and Laboratory Assistance Claimed - LINGAP DVO";
                     string body = $@"
-                                    Dear {user.Username ?? "Valued Applicant"},
+                            Dear {firstName},
 
-                                    We are glad to inform you that your LINGAP Medical Assistance has been successfully **claimed** as of {DateTime.Now:MMMM dd, yyyy}.
+                            We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
-                                    APPLICATION DETAILS:
-                                    • Application Type: Medical Assistance  
-                                    • Status: Claimed  
-                                    • Processed By: {medicalandlabformDto.Processby ?? "LINGAP Personnel"}
+                            APPLICATION DETAILS:
+                            • Application Type: Medical and Laboratory Assistance
+                            • Status: Claimed
+                            • Processed By: {medicalandlabformDto.Processby ?? "LINGAP Personnel"}
+                            • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                                    REMARKS:
-                                    {medicalandlabformDto.Comments ?? "Your claim has been processed and recorded successfully."}
+                            REMARKS:
+                            {medicalandlabformDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                                    Thank you for your patience and cooperation throughout the process.  
-                                    Should you have any further questions, feel free to contact our support team at [Support Email/Phone Number].
+                            Thank you for your patience and cooperation throughout the process.  
+                            Should you have any further questions, please contact our support team at [Support Email/Phone Number].
 
-                                    Best regards,  
-                                    {fromName}  
-                                    LINGAP DVO Medical Assistance Program
-                                    ";
+                            Sincerely,  
+                            {fromName}  
+                            LINGAP DVO Medical Assistance Program
+";
 
-                    // Send email
-                    var smtp = new SmtpClient
+                    // ✅ Send email
+                    using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
-                        Host = "smtp.gmail.com",
-                        Port = 587,
                         EnableSsl = true,
                         DeliveryMethod = SmtpDeliveryMethod.Network,
                         UseDefaultCredentials = false,
                         Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                    };
-
+                    })
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
@@ -3255,7 +3939,7 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                TempData["SuccessMessage"] = "Hospital bill claimed successfully.";
+                TempData["SuccessMessage"] = "Medical and laboratory claim processed successfully and email sent.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
@@ -3265,6 +3949,7 @@ namespace LingapDVO.Controllers
             }
         }
 
+
         [HttpPost]
         public IActionResult Funeralburialapprovedstatus(int id, FuneralburialformDto funeralburialformDto)
         {
@@ -3272,7 +3957,7 @@ namespace LingapDVO.Controllers
 
             if (funeralburialform == null)
             {
-                TempData["ErrorMessage"] = "Hospital bill record not found.";
+                TempData["ErrorMessage"] = "Funeral and burial record not found.";
                 return Redirect("/Admin");
             }
 
@@ -3292,51 +3977,50 @@ namespace LingapDVO.Controllers
                 // ✅ Send automatic email only if Claimed
                 if (funeralburialformDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get email settings
+                    // Get email settings from configuration
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
 
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
+                    {
                         throw new ArgumentException("Email settings are missing.");
+                    }
 
                     // Compose auto-generated email
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, user.Username ?? "User");
 
-                    string subject = "Your LINGAP Assistance Has Been Claimed";
+                    string subject = "Your LINGAP Funeral Assistance Has Been Claimed";
                     string body = $@"
-                                    Dear {user.Username ?? "Valued Applicant"},
+                            Dear {user.Username ?? "Valued Applicant"},
 
-                                    We are glad to inform you that your LINGAP  Funeral Assistance has been successfully **claimed** as of {DateTime.Now:MMMM dd, yyyy}.
+                            We are pleased to inform you that your LINGAP Funeral Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
-                                    APPLICATION DETAILS:
-                                    • Application Type: Funeral Assistance  
-                                    • Status: Claimed  
-                                    • Processed By: {funeralburialformDto.Processby ?? "LINGAP Personnel"}
+                            APPLICATION DETAILS:
+                            • Application Type: Funeral Assistance  
+                            • Status: Claimed  
+                            • Processed By: {funeralburialformDto.Processby ?? "LINGAP Personnel"}
 
-                                    REMARKS:
-                                    {funeralburialformDto.Comments ?? "Your claim has been processed and recorded successfully."}
+                            REMARKS:
+                            {funeralburialformDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                                    Thank you for your patience and cooperation throughout the process.  
-                                    Should you have any further questions, feel free to contact our support team at [Support Email/Phone Number].
+                            Thank you for your patience and cooperation throughout the process.  
+                            Should you have any further questions, feel free to contact our support team.
 
-                                    Best regards,  
-                                    {fromName}  
-                                    LINGAP DVO Medical Assistance Program
-                                    ";
+                            Best regards,  
+                            {fromName}  
+                            LINGAP DVO Medical Assistance Program
+                            ";
 
-                    // Send email
-                    var smtp = new SmtpClient
+                    // ✅ Send email with proper using blocks
+                    using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
-                        Host = "smtp.gmail.com",
-                        Port = 587,
                         EnableSsl = true,
                         DeliveryMethod = SmtpDeliveryMethod.Network,
                         UseDefaultCredentials = false,
                         Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                    };
-
+                    })
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
@@ -3347,7 +4031,7 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                TempData["SuccessMessage"] = "Hospital bill claimed successfully.";
+                TempData["SuccessMessage"] = "Funeral and burial assistance marked as 'Claimed' and email sent successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
@@ -3356,6 +4040,7 @@ namespace LingapDVO.Controllers
                 return View(funeralburialformDto);
             }
         }
+
 
 
 
