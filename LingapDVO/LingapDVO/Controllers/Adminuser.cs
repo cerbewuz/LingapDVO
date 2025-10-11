@@ -2047,45 +2047,43 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
-
-
-            var medicalandlabform = context.Medicalandlabform.Find(id);
-            if (medicalandlabform == null)
+            var medicallabform = context.Medicalandlabform.Find(id);
+            if (medicallabform == null)
             {
                 return NotFound();
             }
 
             // Basic ViewData setup
-            ViewData["Status3"] = medicalandlabform.Status3;
-            ViewData["Id"] = medicalandlabform.Id;
-            ViewData["Lastname"] = medicalandlabform.Lastname;
-            ViewData["Firstname"] = medicalandlabform.Firstname;
-            ViewData["Middlename"] = medicalandlabform.Middlename;
-            ViewData["Suffix"] = medicalandlabform.Suffix;
-            ViewData["BlkLotStreet"] = medicalandlabform.BlkLotStreet;
-            ViewData["SubVill"] = medicalandlabform.SubVill;
-            ViewData["Brgy"] = medicalandlabform.Brgy;
-            ViewData["District"] = medicalandlabform.District;
-            ViewData["Sex"] = medicalandlabform.Sex;
-            ViewData["PhilHealth"] = medicalandlabform.PhilHealth;
-            ViewData["PhilHealthNo"] = medicalandlabform.PhilHealthNo;
-            ViewData["Dateofbirth"] = medicalandlabform.Dateofbirth;
-            ViewData["Age"] = medicalandlabform.Age;
+            ViewData["Status3"] = medicallabform.Status3;
+            ViewData["Id"] = medicallabform.Id;
+            ViewData["Lastname"] = medicallabform.Lastname;
+            ViewData["Firstname"] = medicallabform.Firstname;
+            ViewData["Middlename"] = medicallabform.Middlename;
+            ViewData["Suffix"] = medicallabform.Suffix;
+            ViewData["BlkLotStreet"] = medicallabform.BlkLotStreet;
+            ViewData["SubVill"] = medicallabform.SubVill;
+            ViewData["Brgy"] = medicallabform.Brgy;
+            ViewData["District"] = medicallabform.District;
+            ViewData["Sex"] = medicallabform.Sex;
+            ViewData["PhilHealth"] = medicallabform.PhilHealth;
+            ViewData["PhilHealthNo"] = medicallabform.PhilHealthNo;
+            ViewData["Dateofbirth"] = medicallabform.Dateofbirth;
+            ViewData["Age"] = medicallabform.Age;
 
             // Requestor details
-            ViewData["RLastname"] = medicalandlabform.RLastname;
-            ViewData["RFirstname"] = medicalandlabform.RFirstname;
-            ViewData["RMiddlename"] = medicalandlabform.RMiddlename;
-            ViewData["RSuffix"] = medicalandlabform.RSuffix;
-            ViewData["RBlkLotStreet"] = medicalandlabform.RBlkLotStreet;
-            ViewData["RSubVill"] = medicalandlabform.RSubVill;
-            ViewData["RBrgy"] = medicalandlabform.RBrgy;
-            ViewData["RDistrict"] = medicalandlabform.RDistrict;
-            ViewData["RelationshipPatient"] = medicalandlabform.RelationshipPatient;
-            ViewData["ContactNo"] = medicalandlabform.ContactNo;
+            ViewData["RLastname"] = medicallabform.RLastname;
+            ViewData["RFirstname"] = medicallabform.RFirstname;
+            ViewData["RMiddlename"] = medicallabform.RMiddlename;
+            ViewData["RSuffix"] = medicallabform.RSuffix;
+            ViewData["RBlkLotStreet"] = medicallabform.RBlkLotStreet;
+            ViewData["RSubVill"] = medicallabform.RSubVill;
+            ViewData["RBrgy"] = medicallabform.RBrgy;
+            ViewData["RDistrict"] = medicallabform.RDistrict;
+            ViewData["RelationshipPatient"] = medicallabform.RelationshipPatient;
+            ViewData["ContactNo"] = medicallabform.ContactNo;
 
             // Type of assistance
-            var typeAssistanceRaw = medicalandlabform.Typeassistance ?? "";
+            var typeAssistanceRaw = medicallabform.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
             var parsed = typeAssistanceRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -2094,7 +2092,7 @@ namespace LingapDVO.Controllers
             ViewData["CheckedAssistance"] = parsed;
 
             // CMO Personnel
-            var cmoPersonnelRaw = medicalandlabform.ForCMOPERSONNEL ?? "";
+            var cmoPersonnelRaw = medicallabform.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
             var parsedCMO = cmoPersonnelRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -2109,15 +2107,16 @@ namespace LingapDVO.Controllers
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
 
             var debugMessages = new List<string>();
 
             try
             {
                 // Front ID
-                if (!string.IsNullOrEmpty(medicalandlabform.Validfrontimage))
+                if (!string.IsNullOrEmpty(medicallabform.Validfrontimage))
                 {
-                    string frontPath = Path.Combine(validFolder, medicalandlabform.Validfrontimage);
+                    string frontPath = Path.Combine(validFolder, medicallabform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
                         byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
@@ -2127,9 +2126,9 @@ namespace LingapDVO.Controllers
                 }
 
                 // Back ID
-                if (!string.IsNullOrEmpty(medicalandlabform.ValidBackimage))
+                if (!string.IsNullOrEmpty(medicallabform.ValidBackimage))
                 {
-                    string backPath = Path.Combine(validFolder, medicalandlabform.ValidBackimage);
+                    string backPath = Path.Combine(validFolder, medicallabform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
                         byte[] decryptedBack = DecryptFile(backPath, masterPassword);
@@ -2139,10 +2138,10 @@ namespace LingapDVO.Controllers
                 }
 
                 // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
-                if (!string.IsNullOrEmpty(medicalandlabform.DoctorPrescription))
+                if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
                 {
-                    string prescPath = Path.Combine(doctorPrescriptionFolder, medicalandlabform.DoctorPrescription);
-                    debugMessages.Add($"📄 Doctor Prescription filename: {medicalandlabform.DoctorPrescription}");
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {medicallabform.DoctorPrescription}");
                     debugMessages.Add($"📂 Full path: {prescPath}");
                     debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
 
@@ -2152,7 +2151,7 @@ namespace LingapDVO.Controllers
                         {
                             byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
-                            ViewData["DoctorPrescription"] = medicalandlabform.DoctorPrescription;
+                            ViewData["DoctorPrescription"] = medicallabform.DoctorPrescription;
 
                             // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
                             bool isPdf = IsPdfFile(decryptedPresc);
@@ -2177,11 +2176,50 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
-                if (!string.IsNullOrEmpty(medicalandlabform.DeathCertificate))
+                // ⭐ MEDICAL CERTIFICATE - SPECIFIC TO MEDICAL/LAB FORM
+                if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
                 {
-                    string deathPath = Path.Combine(deathCertificateFolder, medicalandlabform.DeathCertificate);
-                    debugMessages.Add($"📄 Death Certificate filename: {medicalandlabform.DeathCertificate}");
+                    string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
+                    debugMessages.Add($"📄 Medical Certificate filename: {medicallabform.MedCertificate}");
+                    debugMessages.Add($"📂 Full path: {medicalPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(medicalPath)}");
+
+                    if (System.IO.File.Exists(medicalPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedMedical = DecryptFile(medicalPath, masterPassword);
+                            ViewData["MedicalCertificateBase64"] = Convert.ToBase64String(decryptedMedical);
+                            ViewData["MedicalCertificate"] = medicallabform.MedCertificate;
+
+                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            bool isPdf = IsPdfFile(decryptedMedical);
+                            ViewData["IsMedicalCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Medical Certificate decrypted - {decryptedMedical.Length} bytes");
+                            debugMessages.Add($"🔍 IsMedicalCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Medical Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Medical Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Medical Certificate in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {medicallabform.DeathCertificate}");
                     debugMessages.Add($"📂 Full path: {deathPath}");
                     debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
 
@@ -2191,7 +2229,7 @@ namespace LingapDVO.Controllers
                         {
                             byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
-                            ViewData["DeathCertificate"] = medicalandlabform.DeathCertificate;
+                            ViewData["DeathCertificate"] = medicallabform.DeathCertificate;
 
                             // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
                             bool isPdf = IsPdfFile(decryptedDeath);
@@ -2223,9 +2261,9 @@ namespace LingapDVO.Controllers
             }
 
             ViewData["DebugMessages"] = debugMessages;
-            ViewData["Validfrontimage"] = medicalandlabform.Validfrontimage;
-            ViewData["ValidBackimage"] = medicalandlabform.ValidBackimage;
-            ViewData["Comments"] = medicalandlabform.Comments;
+            ViewData["Validfrontimage"] = medicallabform.Validfrontimage;
+            ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
+            ViewData["Comments"] = medicallabform.Comments;
 
             return View();
         }
