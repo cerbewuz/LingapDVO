@@ -27,5 +27,8 @@ namespace LingapDVO.Services
         public DbSet<RegisterAcc> RegisterAcc { get; set; }
 
         public DbSet<Verifyaccount> Verifyaccount { get; set; }
+
+        // newly added notifications
+        public DbSet<Notification> Notifications { get; set; }
     }
 }

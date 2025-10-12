@@ -190,9 +190,6 @@ namespace LingapDVO.Controllers
             }
         }
 
-
-
-
         [HttpGet]
         public IActionResult GoogleLogin()
         {
@@ -203,8 +200,6 @@ namespace LingapDVO.Controllers
 
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
-
-
 
         [HttpGet]
         [Route("/Auth/GoogleCallback")]
@@ -349,8 +344,6 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
         }
-
-
 
         public IActionResult Login()
         {
@@ -508,7 +501,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Check if the login is a Superadmin first0
+                // Check if the login is a Superadmin first
                 var superadmin = context.Superadminaccount.FirstOrDefault(a =>
                     a.Username == loginModel.Username);
                 if (superadmin != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, superadmin.Password))
@@ -517,20 +510,21 @@ namespace LingapDVO.Controllers
                     Response.Cookies.Delete("FailedAttempts");
                     Response.Cookies.Delete("LoginCooldown");
 
-                    // Set session for admin
+                    // Set session for superadmin
                     HttpContext.Session.SetString("UserId", superadmin.Id.ToString());
                     HttpContext.Session.SetString("AdminFullname", superadmin.Fullname);
                     HttpContext.Session.SetString("Username", superadmin.Username);
                     HttpContext.Session.SetString("Email", superadmin.Email);
                     HttpContext.Session.SetString("IsSuperadmin", "true");
 
-                    // Return JSON for AJAX requests
+                    // Return JSON for AJAX requests with userType
                     if (IsAjaxRequest())
                     {
                         return Json(new
                         {
                             success = true,
-                            redirectUrl = Url.Action("Superadmin", "Superadmin")
+                            redirectUrl = Url.Action("Superadmin", "Superadmin"),
+                            userType = "Superadmin" // Added userType
                         });
                     }
 
@@ -566,13 +560,14 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("IsAdmin", "true");
                     HttpContext.Session.SetString("AdminFullname", admin.Fullname);
 
-                    // Return JSON for AJAX requests
+                    // Return JSON for AJAX requests with userType
                     if (IsAjaxRequest())
                     {
                         return Json(new
                         {
                             success = true,
-                            redirectUrl = Url.Action("Analyticsdashboard", "Adminuser")
+                            redirectUrl = Url.Action("Analyticsdashboard", "Adminuser"),
+                            userType = "Admin" // Added userType
                         });
                     }
 
@@ -658,13 +653,14 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("IsVerifiedUser", "false");
                         }
 
-                        // Return JSON for AJAX requests
+                        // Return JSON for AJAX requests with userType
                         if (IsAjaxRequest())
                         {
                             return Json(new
                             {
                                 success = true,
-                                redirectUrl = Url.Action("Homepage", "Dashboard")
+                                redirectUrl = Url.Action("Homepage", "Dashboard"),
+                                userType = "User" // Added userType for regular users
                             });
                         }
 
@@ -857,17 +853,14 @@ namespace LingapDVO.Controllers
             }
         }
 
-
-           public IActionResult Accountverification()
+        public IActionResult Accountverification()
         {
             return View();
         }
 
-
         [HttpPost]
         public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
         {
-
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
@@ -898,7 +891,7 @@ namespace LingapDVO.Controllers
 
                 // ==========================
                 // 🔒 ENCRYPTION FUNCTION
-                // ==========================0
+                // ==========================
                 byte[] EncryptFile(Stream inputStream)
                 {
                     using var aes = Aes.Create();
@@ -1033,7 +1026,6 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-
         [HttpPost]
         public IActionResult Registeredit(int id, RegisterDto registerDto, string currentPassword)
         {
@@ -1043,7 +1035,6 @@ namespace LingapDVO.Controllers
                 TempData["ErrorMessage"] = "User not found.";
                 return RedirectToAction("Homepage", "Dashboard");
             }
-
 
             // Skip validation for image if not provided
             if (registerDto.ImageFile == null)
@@ -1089,7 +1080,6 @@ namespace LingapDVO.Controllers
                 registerDto.Address = existingUser.Address;
                 registerDto.SecurityQuestions = existingUser.SecurityQuestions;
                 registerDto.Securityanswer = existingUser.Securityanswer;
-
 
                 // Return to view with enhanced error information
                 return View(registerDto);
@@ -1153,10 +1143,6 @@ namespace LingapDVO.Controllers
                 return View(registerDto);
             }
         }
-
-
-
-        // ... rest of your existing methods (Accountverification, Registeredit, etc.) remain the same
 
         // Password validation helper method
         private PasswordValidationResult ValidatePassword(string password)

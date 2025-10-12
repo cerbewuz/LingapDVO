@@ -44,10 +44,10 @@
             border-color: #DC143C;
         }
 
-        .crimson-gradient {
-            background: linear-gradient(135deg, #DC143C 0%, #b01030 100%);
+        .submitbtn-color {
+            background: #32cd32;
         }
-
+      
         .glass-effect {
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.95);
@@ -190,7 +190,7 @@
 <body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
     <!-- Go Back Button -->
     <div class="fixed top-6 left-6 z-50 fade-in">
-        <button id="goBackBtn" class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg border border-gray-200 hover:border-crimson-500 hover:bg-crimson-500 hover:text-white transition-all duration-300 group">
+        <button id="goBackBtn" class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg border border-gray-200 hover:border-crimson-500 hover:bg-crimson-500 hover:text-black transition-all duration-300 group">
             <i class="fas fa-arrow-left group-hover:transform group-hover:-translate-x-1 transition-transform"></i>
             <span class="font-semibold">Go Back</span>
         </button>
@@ -508,12 +508,12 @@
                             <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
                                 <input type="checkbox" id="terms" required class="mt-1 w-4 h-4 text-crimson-500 border-gray-300 rounded focus:ring-crimson-500">
                                 <label for="terms" class="text-sm text-gray-700">
-                                    I agree to the <a href="#" class="text-crimson-500 font-semibold hover:underline" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                                    I agree to the <a href="#" class="text-blue-500 font-semibold hover:text-blue-800 hover:underline" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
                                 </label>
                             </div>
 
                             <button type="submit"
-                                    class="w-full crimson-gradient text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                                    class="w-full submitbtn-color text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                                 <i class="fas fa-check-circle mr-2"></i>Verify Account
                             </button>
                         </div>
@@ -540,48 +540,115 @@
     </div>
 
     <!-- Enhanced Terms Modal -->
-    <div class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable relative w-auto pointer-events-none">
-            <div class="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-md outline-none text-current">
-                <div class="modal-header crimson-gradient text-white flex flex-shrink-0 items-center justify-between p-4 rounded-t-md">
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-gray-50">
+                <!-- Header -->
+                <div class="modal-header bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 border-b-0">
                     <div class="flex items-center gap-3">
-                        <i class="fas fa-file-contract text-xl"></i>
-                        <h5 class="modal-title text-xl font-bold leading-normal" id="termsModalLabel">Lingap Terms & Privacy Policy</h5>
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-file-contract text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-lg tracking-wide" id="termsModalLabel">
+                                Terms & Privacy Policy
+                            </h5>
+                            <p class="text-green-100 text-sm font-normal">Last updated: 2024</p>
+                        </div>
                     </div>
-                    <button type="button" class="btn-close box-content w-4 h-4 p-1 text-white border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-white hover:opacity-75 hover:no-underline" data-bs-dismiss="modal" aria-label="Close">×</button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body relative p-6 space-y-4">
-                    <div class="terms-section">
-                        <h6 class="font-bold text-crimson-500 mb-2">1. Acceptance of Terms</h6>
-                        <p class="text-gray-700">By signing up for Lingap, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.</p>
+
+                <!-- Body -->
+                <div class="modal-body p-6 space-y-6 max-h-96 overflow-y-auto">
+                    <!-- Acceptance of Terms -->
+                    <div class="bg-white rounded-xl p-4 border border-green-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-handshake text-green-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-green-700 text-base">1. Acceptance of Terms</h6>
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            By signing up for our service, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.
+                        </p>
                     </div>
 
-                    <div class="terms-section">
-                        <h6 class="font-bold text-crimson-500 mb-2">2. Data Privacy & Protection</h6>
-                        <p class="text-gray-700">Lingap is committed to safeguarding your personal data. We comply with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your information will only be used to verify eligibility and for program coordination.</p>
+                    <!-- Data Privacy -->
+                    <div class="bg-white rounded-xl p-4 border border-blue-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-blue-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-blue-700 text-base">2. Data Privacy & Protection</h6>
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            We comply with the <strong class="text-blue-600">Data Privacy Act of 2012 (RA 10173)</strong> and ensure responsible handling of your personal data with the highest level of security and care.
+                        </p>
                     </div>
 
-                    <div class="terms-section">
-                        <h6 class="font-bold text-crimson-500 mb-2">3. Purpose of Data Collection</h6>
-                        <ul class="text-gray-700 list-disc list-inside space-y-1">
-                            <li>Eligibility verification for Lingap programs</li>
-                            <li>Contact and follow-up regarding assistance</li>
-                            <li>Government or partner validation (as needed)</li>
+                    <!-- Data Collection -->
+                    <div class="bg-white rounded-xl p-4 border border-purple-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-database text-purple-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-purple-700 text-base">3. Purpose of Data Collection</h6>
+                        </div>
+                        <ul class="text-gray-700 text-sm space-y-2 ps-4">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-500 text-xs mt-1"></i>
+                                <span>Eligibility verification for assistance programs</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-500 text-xs mt-1"></i>
+                                <span>Contact and follow-up regarding your application</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-500 text-xs mt-1"></i>
+                                <span>Partner validation as necessary for service delivery</span>
+                            </li>
                         </ul>
                     </div>
 
-                    <div class="terms-section">
-                        <h6 class="font-bold text-crimson-500 mb-2">4. Account Integrity</h6>
-                        <p class="text-gray-700">Each individual is allowed <strong>one account only</strong>. Creating multiple accounts or submitting false documents may result in permanent disqualification.</p>
+                    <!-- Account Integrity -->
+                    <div class="bg-white rounded-xl p-4 border border-orange-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-check text-orange-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-orange-700 text-base">4. Account Integrity</h6>
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            Each individual is allowed <strong class="text-orange-600">only one account</strong>. Creating multiple or falsified accounts may result in disqualification and suspension of access to our services.
+                        </p>
                     </div>
 
-                    <div class="terms-section">
-                        <h6 class="font-bold text-crimson-500 mb-2">5. Changes to Terms</h6>
-                        <p class="text-gray-700">Lingap reserves the right to update this policy at any time. All changes will be posted publicly, and continued use of the service implies agreement with updated terms.</p>
+                    <!-- Changes to Terms -->
+                    <div class="bg-white rounded-xl p-4 border border-red-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-sync text-red-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-red-700 text-base">5. Changes to Terms</h6>
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            We reserve the right to modify these Terms at any time. All updates will be posted publicly, and continued use of our services signifies acceptance of the latest terms.
+                        </p>
                     </div>
                 </div>
-                <div class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 rounded-b-md bg-gray-50">
-                    <button type="button" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors" data-bs-dismiss="modal">Close</button>
+
+                <!-- Footer -->
+                <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0">
+                    <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 text-gray-600 text-sm">
+                            <i class="fas fa-info-circle text-blue-500"></i>
+                            <span>Questions? Contact us at <a href="mailto:support@lingap.org" class="text-blue-600 font-semibold hover:underline">support@lingap.org</a></span>
+                        </div>
+                        <button type="button" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:shadow-md" data-bs-dismiss="modal">
+                            I Understand
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -67,6 +67,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Notifications
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddLogging();
 
 // MVC
 builder.Services.AddControllersWithViews();
@@ -201,7 +205,9 @@ app.MapControllerRoute(
     pattern: "history",
     defaults: new { controller = "Dashboard", action = "History" });
 
-
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
 
