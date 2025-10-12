@@ -75,11 +75,12 @@ namespace LingapDVO.Controllers
         {
             var properties = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("GoogleResponse", "Login")
+                RedirectUri = Url.Action("Homepage", "Dashboard") // always redirect here
             };
 
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
+
 
         [HttpGet]
         [Route("/signin-google")]
@@ -96,12 +97,49 @@ namespace LingapDVO.Controllers
             var email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var name = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
-            HttpContext.Session.SetString("GoogleEmail", email ?? "");
-            HttpContext.Session.SetString("GoogleName", name ?? "");
-            HttpContext.Session.SetString("Username", name ?? "Google User");
+            if (string.IsNullOrEmpty(email))
+            {
+                TempData["ErrorMessage"] = "Unable to retrieve your Google account details.";
+                return RedirectToAction("Login", "Login");
+            }
+
+            var existingUser = context.RegisterAcc.FirstOrDefault(u => u.Email == email);
+
+            if (existingUser == null)
+            {
+                var newUser = new RegisterAcc
+                {
+                    Email = email,
+                    Username = name ?? "Google User",
+                    Password = "GOOGLE_LOGIN",
+                    Status = "Active",
+ 
+                };
+
+                try
+                {
+                    context.RegisterAcc.Add(newUser);
+                    context.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error saving Google user: " + ex.Message);
+                    TempData["ErrorMessage"] = "Database error occurred while saving Google account.";
+                    return RedirectToAction("Login", "Login");
+                }
+
+                existingUser = newUser;
+            }
+
+            HttpContext.Session.SetString("UserId", existingUser.Id.ToString());
+            HttpContext.Session.SetString("UserEmail", existingUser.Email);
+            HttpContext.Session.SetString("Username", existingUser.Username);
+            HttpContext.Session.SetString("GoogleEmail", email);
+            HttpContext.Session.SetString("GoogleName", name ?? existingUser.Username);
 
             return RedirectToAction("Homepage", "Dashboard");
         }
+
 
         public IActionResult Login()
         {
@@ -259,7 +297,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Check if the login is a Superadmin first
+                // Check if the login is a Superadmin first0
                 var superadmin = context.Superadminaccount.FirstOrDefault(a =>
                     a.Username == loginModel.Username);
                 if (superadmin != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, superadmin.Password))
@@ -606,6 +644,303 @@ namespace LingapDVO.Controllers
                 return View(registerAccDto);
             }
         }
+
+
+           public IActionResult Accountverification()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
+        {
+
+            // Get the current user's ID from the session
+            if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
+            {
+                // If user is not logged in, redirect to login page
+                return RedirectToAction("Login", "Login");
+            }
+
+            if (VerifyaccountDto.ValidFrontID == null)
+                ModelState.AddModelError("ValidFrontID", "Front ID image is required");
+            if (VerifyaccountDto.ValidBackID == null)
+                ModelState.AddModelError("ValidBackID", "Back ID image is required");
+
+            if (!ModelState.IsValid)
+                return View(VerifyaccountDto);
+
+            try
+            {
+                // ==========================
+                // 🔑 MASTER PASSWORD SECTION
+                // ==========================
+                // This can be stored securely (e.g., environment variable)
+                string masterPassword = "SuperAdminMasterKey123!"; // <-- Change this to a secret stored securely
+                byte[] salt = RandomNumberGenerator.GetBytes(16);  // Unique salt per session
+
+                // Derive AES key from master password using PBKDF2
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32); // 256-bit key
+
+                // ==========================
+                // 🔒 ENCRYPTION FUNCTION
+                // ==========================0
+                byte[] EncryptFile(Stream inputStream)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.GenerateIV(); // Random IV per encryption
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var memoryStream = new MemoryStream();
+                    memoryStream.Write(salt, 0, salt.Length); // Store salt at beginning
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length); // Store IV next
+
+                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        inputStream.CopyTo(cryptoStream);
+                    }
+
+                    return memoryStream.ToArray();
+                }
+
+                // ==========================
+                // 📅 Encrypted Timestamp for Filenames
+                // ==========================
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string encryptedTimestamp;
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = key;
+                    aes.GenerateIV();
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
+                }
+
+                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
+
+                // ==========================
+                // 🪪 Encrypt Front ID
+                // ==========================
+                string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+                Directory.CreateDirectory(validFolder);
+                string frontFileName = safeEncryptedTimestamp + "_front.enc";
+                string frontPath = Path.Combine(validFolder, frontFileName);
+                using (var fileStream = new FileStream(frontPath, FileMode.Create))
+                {
+                    byte[] encryptedData = EncryptFile(VerifyaccountDto.ValidFrontID!.OpenReadStream());
+                    fileStream.Write(encryptedData, 0, encryptedData.Length);
+                }
+
+                // ==========================
+                // 🔙 Encrypt Back ID
+                // ==========================
+                string backFileName = safeEncryptedTimestamp + "_back.enc";
+                string backPath = Path.Combine(validFolder, backFileName);
+                using (var fileStream = new FileStream(backPath, FileMode.Create))
+                {
+                    byte[] encryptedData = EncryptFile(VerifyaccountDto.ValidBackID!.OpenReadStream());
+                    fileStream.Write(encryptedData, 0, encryptedData.Length);
+                }
+
+                // ==========================
+                // 🗃 Save to Database
+                // ==========================
+                Verifyaccount verifyaccount = new Verifyaccount()
+                {
+                    UserId = userId,
+                    FrontID = frontFileName,
+                    BackID = backFileName,
+                    IDtype = VerifyaccountDto.IDtype,
+                    IDnumber = VerifyaccountDto.IDnumber,
+                    Lastname = VerifyaccountDto.Lastname,
+                    Firstname = VerifyaccountDto.Firstname,
+                    Middlename = VerifyaccountDto.Middlename,
+                    Suffix = VerifyaccountDto.Suffix,
+                    Gender = VerifyaccountDto.Gender,
+                    Dateofbirth = VerifyaccountDto.Dateofbirth,
+                    BlkLotStreet = VerifyaccountDto.BlkLotStreet,
+                    SubVill = VerifyaccountDto.SubVill,
+                    Barangay = VerifyaccountDto.Barangay,
+                    District = VerifyaccountDto.District,
+                    SecurityQuestions = VerifyaccountDto.SecurityQuestions,
+                    Securityanswer = VerifyaccountDto.Securityanswer,
+                    Phonenumber = VerifyaccountDto.Phonenumber,
+                };
+
+                context.Verifyaccount.Add(verifyaccount);
+                context.SaveChanges();
+
+                return Redirect("/Homepage");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                return View(VerifyaccountDto);
+            }
+        }
+
+        public IActionResult Registeredit(int id)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            ViewBag.Id = HttpContext.Session.GetString("UserId");
+            ViewBag.ImageFilename = HttpContext.Session.GetString("ImageFilename");
+            ViewBag.Fullname = HttpContext.Session.GetString("Fullname");
+            ViewBag.Username = HttpContext.Session.GetString("Username");
+            ViewBag.Email = HttpContext.Session.GetString("Email");
+            ViewBag.Phonenumber = HttpContext.Session.GetString("Phonenumber");
+            ViewBag.Address = HttpContext.Session.GetString("Address");
+            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+            ViewBag.Gender = HttpContext.Session.GetString("Gender");
+            ViewBag.SecurityQuestions = HttpContext.Session.GetString("SecurityQuestions");
+
+            ViewBag.GenderList = new SelectList(new List<string> { "Male", "Female" }, ViewBag.Gender);
+            ViewBag.SecurityQuestionslist = new SelectList(
+                  new List<string> {
+                   "What is your first pet's name?",
+                  "What is your mother's maiden name?",
+                   "What was your first school?"
+                         },
+                          ViewBag.SecurityQuestions
+                      );
+
+            ViewBag.Securityanswer = HttpContext.Session.GetString("Securityanswer");
+
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult Registeredit(int id, RegisterDto registerDto, string currentPassword)
+        {
+            var existingUser = context.Register.FirstOrDefault(r => r.Id == id);
+            if (existingUser == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Homepage", "Dashboard");
+            }
+
+
+            // Skip validation for image if not provided
+            if (registerDto.ImageFile == null)
+            {
+                ModelState.Remove("ImageFile");
+            }
+
+            // Verify current password if user is trying to change password
+            if (!string.IsNullOrWhiteSpace(registerDto.Password))
+            {
+                // Enhanced current password validation
+                if (string.IsNullOrWhiteSpace(currentPassword))
+                {
+                    ModelState.AddModelError("CurrentPassword", "Current password is required to change your password.");
+                    TempData["PasswordError"] = "Current password is required.";
+                }
+                else if (!BCrypt.Net.BCrypt.Verify(currentPassword, existingUser.Password))
+                {
+                    ModelState.AddModelError("CurrentPassword", "The current password you entered is incorrect.");
+                    TempData["PasswordError"] = "Current password was wrong. Please try again.";
+
+                    // Add client-side validation trigger
+                    ViewBag.TriggerPasswordValidation = true;
+                }
+            }
+            else
+            {
+                // Skip password validation if empty (user is not changing password)
+                ModelState.Remove("Password");
+                ModelState.Remove("ConfirmPassword");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Repopulate form data with existing values
+                ViewData["ImageFileName"] = existingUser.ImageFilename;
+                registerDto.Fullname = existingUser.Fullname;
+                registerDto.Username = existingUser.Username;
+                registerDto.Email = existingUser.Email;
+                registerDto.Phonenumber = existingUser.Phonenumber;
+                registerDto.Dateofbirth = existingUser.Dateofbirth;
+                registerDto.Gender = existingUser.Gender;
+                registerDto.Address = existingUser.Address;
+                registerDto.SecurityQuestions = existingUser.SecurityQuestions;
+                registerDto.Securityanswer = existingUser.Securityanswer;
+
+                // Return to view with enhanced error information
+                return View(registerDto);
+            }
+
+            try
+            {
+                // Handle image upload
+                string uploadsFolder = Path.Combine(environment.WebRootPath, "UsersImg");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                if (registerDto.ImageFile != null)
+                {
+                    string newFileName = DateTime.Now.ToString("yyyyMMddHHmmssfff") + Path.GetExtension(registerDto.ImageFile.FileName);
+                    string newFilePath = Path.Combine(uploadsFolder, newFileName);
+                    using (var stream = new FileStream(newFilePath, FileMode.Create))
+                    {
+                        registerDto.ImageFile.CopyTo(stream);
+                    }
+
+                    // Delete old image
+                    if (!string.IsNullOrEmpty(existingUser.ImageFilename))
+                    {
+                        string oldImagePath = Path.Combine(uploadsFolder, existingUser.ImageFilename);
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+                    existingUser.ImageFilename = newFileName;
+                }
+
+                // Update user properties
+                existingUser.Fullname = registerDto.Fullname;
+                existingUser.Username = registerDto.Username;
+                existingUser.Email = registerDto.Email;
+                existingUser.Phonenumber = registerDto.Phonenumber;
+                existingUser.Dateofbirth = registerDto.Dateofbirth;
+                existingUser.Gender = registerDto.Gender;
+                existingUser.Address = registerDto.Address;
+                existingUser.SecurityQuestions = registerDto.SecurityQuestions;
+                existingUser.Securityanswer = registerDto.Securityanswer;
+
+                // Update password if provided
+                if (!string.IsNullOrWhiteSpace(registerDto.Password))
+                {
+                    string hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+                    existingUser.Password = hashedPassword;
+                    TempData["SuccessMessage"] = "Your password has been updated successfully.";
+                }
+
+                context.SaveChanges();
+                TempData["SuccessMessage"] = "Your profile has been updated successfully.";
+                return RedirectToAction("Homepage", "Dashboard");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred while saving changes: " + ex.Message);
+                ViewData["ImageFileName"] = existingUser.ImageFilename;
+                TempData["ErrorMessage"] = "An unexpected error occurred. Please try again.";
+                return View(registerDto);
+            }
+        }
+
 
 
         // ... rest of your existing methods (Accountverification, Registeredit, etc.) remain the same
