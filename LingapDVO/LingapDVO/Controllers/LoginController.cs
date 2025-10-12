@@ -1,21 +1,15 @@
 ﻿using BCrypt.Net;
-using iText.Commons.Actions.Contexts;
-using iText.Commons.Actions.Data;
 using LingapDVO.Models;
 using LingapDVO.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace LingapDVO.Controllers
 {
@@ -275,13 +269,14 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("Email", superadmin.Email);
                     HttpContext.Session.SetString("IsSuperadmin", "true");
 
-                    // Return JSON for AJAX requests
+                    // Return JSON for AJAX requests with user type
                     if (IsAjaxRequest())
                     {
                         return Json(new
                         {
                             success = true,
-                            redirectUrl = Url.Action("Superadmin", "Superadmin")
+                            redirectUrl = Url.Action("Superadmin", "Superadmin"),
+                            userType = "superadmin"
                         });
                     }
 
@@ -317,13 +312,14 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("IsAdmin", "true");
                     HttpContext.Session.SetString("AdminFullname", admin.Fullname);
 
-                    // Return JSON for AJAX requests
+                    // Return JSON for AJAX requests with user type
                     if (IsAjaxRequest())
                     {
                         return Json(new
                         {
                             success = true,
-                            redirectUrl = Url.Action("Analyticsdashboard", "Adminuser")
+                            redirectUrl = Url.Action("Analyticsdashboard", "Adminuser"),
+                            userType = "admin"
                         });
                     }
 
@@ -409,13 +405,14 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("IsVerifiedUser", "false");
                         }
 
-                        // Return JSON for AJAX requests
+                        // Return JSON for AJAX requests with user type
                         if (IsAjaxRequest())
                         {
                             return Json(new
                             {
                                 success = true,
-                                redirectUrl = Url.Action("Homepage", "Dashboard")
+                                redirectUrl = Url.Action("Homepage", "Dashboard"),
+                                userType = "user"
                             });
                         }
 
@@ -467,8 +464,9 @@ namespace LingapDVO.Controllers
                 ModelState.AddModelError("Username", errorMessage);
                 return View(loginModel);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Login error: {ex.Message}");
                 string errorMessage = "An unexpected error occurred. Please try again.";
 
                 if (IsAjaxRequest())
@@ -519,25 +517,81 @@ namespace LingapDVO.Controllers
         public IActionResult Register(RegisterAccDto registerAccDto)
         {
             if (!ModelState.IsValid)
+            {
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        errorType = "validation",
+                        title = "Validation Error",
+                        message = "Please check the form for errors.",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    });
+                }
                 return View(registerAccDto);
+            }
 
             try
             {
-                // 🔎 Check for existing email or username before saving
+                // Validate password requirements before proceeding
+                var passwordValidation = ValidatePassword(registerAccDto.Password);
+                if (!passwordValidation.IsValid)
+                {
+                    if (IsAjaxRequest())
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            errorType = "password",
+                            title = "Password Requirements Not Met",
+                            message = "Please check the password requirements.",
+                            errors = passwordValidation.Errors
+                        });
+                    }
+
+                    foreach (var error in passwordValidation.Errors)
+                    {
+                        ModelState.AddModelError("Password", error);
+                    }
+                    return View(registerAccDto);
+                }
+
+                // Check for existing email or username before saving
                 if (context.RegisterAcc.Any(u => u.Email == registerAccDto.Email))
                 {
+                    if (IsAjaxRequest())
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            errorType = "email",
+                            title = "Email Already Registered",
+                            message = "This email is already registered."
+                        });
+                    }
                     ModelState.AddModelError("Email", "This email is already registered.");
                     return View(registerAccDto);
                 }
 
                 if (context.RegisterAcc.Any(u => u.Username == registerAccDto.Username))
                 {
+                    if (IsAjaxRequest())
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            errorType = "username",
+                            title = "Username Taken",
+                            message = "This username is already taken."
+                        });
+                    }
                     ModelState.AddModelError("Username", "This username is already taken.");
                     return View(registerAccDto);
                 }
 
                 // ==========================
-                // 🔑 MASTER PASSWORD SECTION
+                // MASTER PASSWORD SECTION
                 // ==========================
                 string masterPassword = "SuperAdminMasterKey123!";
                 byte[] salt = RandomNumberGenerator.GetBytes(16);
@@ -585,30 +639,67 @@ namespace LingapDVO.Controllers
                 context.RegisterAcc.Add(registercacc);
                 context.SaveChanges();
 
-                TempData["SuccessMessage"] = "Registration successful! You can now log in.";
-                return RedirectToAction("Login", "Login");
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Registration successful!",
+                        showSuccessModal = true
+                    });
+                }
+
+                TempData["SuccessMessage"] = "Registration successful! Please login.";
+                return RedirectToAction("Register");
             }
             catch (DbUpdateException dbEx)
             {
-                // 🧱 Handle SQL unique constraint error
-                if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Email"))
-                    ModelState.AddModelError("Email", "This email is already registered.");
-                else if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Username"))
-                    ModelState.AddModelError("Username", "This username is already taken.");
-                else
-                    ModelState.AddModelError("", "A database error occurred while saving. Please try again.");
+                // Handle SQL unique constraint error
+                string errorMessage = "A database error occurred while saving. Please try again.";
+                string errorType = "database";
 
+                if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Email"))
+                {
+                    errorMessage = "This email is already registered.";
+                    errorType = "email";
+                }
+                else if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Username"))
+                {
+                    errorMessage = "This username is already taken.";
+                    errorType = "username";
+                }
+
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        errorType = errorType,
+                        title = "Registration Failed",
+                        message = errorMessage
+                    });
+                }
+
+                ModelState.AddModelError("", errorMessage);
                 return View(registerAccDto);
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine($"Registration error: {ex.Message}");
+                if (IsAjaxRequest())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        errorType = "system",
+                        title = "Registration Failed",
+                        message = "An unexpected error occurred. Please try again."
+                    });
+                }
+                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
                 return View(registerAccDto);
             }
         }
-
-
-        // ... rest of your existing methods (Accountverification, Registeredit, etc.) remain the same
 
         // Password validation helper method
         private PasswordValidationResult ValidatePassword(string password)
@@ -663,6 +754,20 @@ namespace LingapDVO.Controllers
         {
             public bool IsValid { get; set; }
             public List<string> Errors { get; set; } = new List<string>();
+        }
+
+        // Helper method to check password requirements
+        private bool MeetsPasswordRequirements(string password)
+        {
+            if (string.IsNullOrEmpty(password) || password.Length < 8)
+                return false;
+
+            var hasUpper = password.Any(char.IsUpper);
+            var hasLower = password.Any(char.IsLower);
+            var hasDigit = password.Any(char.IsDigit);
+            var hasSpecial = password.Any(ch => !char.IsLetterOrDigit(ch));
+
+            return hasUpper && hasLower && hasDigit && hasSpecial;
         }
     }
 }
