@@ -121,12 +121,29 @@
 
     <!-- Success Animation Modal -->
     <div id="successModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
-        <div class="bg-white rounded-2xl p-8 text-center shadow-2xl">
-            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div class="bg-white rounded-2xl p-8 text-center shadow-2xl max-w-sm mx-4">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4" id="successIcon">
                 <i class="fas fa-check text-green-600 text-2xl"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">Login Successful!</h3>
-            <p class="text-gray-600">Redirecting to homepage...</p>
+            <p class="text-gray-600 mb-4" id="redirectMessage">Redirecting...</p>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progressBar" class="h-2 rounded-full bg-green-500 transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 text-center shadow-2xl max-w-sm mx-4">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2" id="errorModalTitle">Login Failed</h3>
+            <p class="text-gray-600 mb-6" id="errorModalMessage">An error occurred during login.</p>
+            <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200" id="errorModalButton">
+                Try Again
+            </button>
         </div>
     </div>
 
@@ -155,13 +172,93 @@
                 }
             }
 
-            // Form submission handler
-            document.getElementById('loginForm').addEventListener('submit', function(event) {
-                const recaptchaResponse = grecaptcha.getResponse();
+            // Create pulsing animation using JavaScript
+            function startPulseAnimation() {
+                const successIcon = document.getElementById('successIcon');
+                let opacity = 1;
+                let direction = -1;
 
+                function pulse() {
+                    opacity += direction * 0.03;
+                    if (opacity <= 0.7 || opacity >= 1) {
+                        direction *= -1;
+                    }
+                    successIcon.style.opacity = opacity;
+                    requestAnimationFrame(pulse);
+                }
+                pulse();
+            }
+
+            // Show success modal and redirect
+            function showSuccessAndRedirect(redirectUrl, userType) {
+                const successModal = document.getElementById('successModal');
+                const redirectMessage = document.getElementById('redirectMessage');
+                const progressBar = document.getElementById('progressBar');
+
+                // Set appropriate message based on user type
+                let message = "Redirecting to homepage...";
+                if (userType === 'admin') {
+                    message = "Redirecting to admin dashboard...";
+                } else if (userType === 'superadmin') {
+                    message = "Redirecting to superadmin panel...";
+                }
+
+                redirectMessage.textContent = message;
+
+                // Show modal
+                successModal.classList.remove('hidden');
+
+                // Start pulsing animation
+                startPulseAnimation();
+
+                // Animate progress bar
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 20;
+                    progressBar.style.width = progress + '%';
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        window.location.href = redirectUrl;
+                    }
+                }, 100); // Total animation: 500ms
+            }
+
+            // Show error modal
+            function showErrorModal(title, message) {
+                const errorModal = document.getElementById('errorModal');
+                const errorModalTitle = document.getElementById('errorModalTitle');
+                const errorModalMessage = document.getElementById('errorModalMessage');
+
+                errorModalTitle.textContent = title;
+                errorModalMessage.textContent = message;
+
+                // Show modal
+                errorModal.classList.remove('hidden');
+
+                // Reset reCAPTCHA when error modal is shown
+                grecaptcha.reset();
+            }
+
+            // Close error modal when button is clicked
+            document.getElementById('errorModalButton').addEventListener('click', function() {
+                document.getElementById('errorModal').classList.add('hidden');
+            });
+
+            // Close error modal when clicking outside
+            document.getElementById('errorModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+
+            // Form submission handler with AJAX
+            document.getElementById('loginForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const recaptchaResponse = grecaptcha.getResponse();
                 if (!recaptchaResponse) {
-                    event.preventDefault();
-                    alert('Please complete the reCAPTCHA verification.');
+                    showErrorModal('reCAPTCHA Required', 'Please complete the reCAPTCHA verification to continue.');
                     return false;
                 }
 
@@ -169,14 +266,12 @@
                 const password = document.getElementById('password').value;
 
                 if (!usernameOrEmail) {
-                    event.preventDefault();
-                    alert('Please enter your username or email.');
+                    showErrorModal('Username Required', 'Please enter your username or email address.');
                     return false;
                 }
 
                 if (!password) {
-                    event.preventDefault();
-                    alert('Please enter your password.');
+                    showErrorModal('Password Required', 'Please enter your password.');
                     return false;
                 }
 
@@ -187,27 +282,55 @@
                 loginButton.disabled = true;
                 rotateSpinner();
 
-                // Simulate login process and show success animation
-                setTimeout(() => {
-                    // Show success animation
-                    const successModal = document.getElementById('successModal');
-                    successModal.classList.remove('hidden');
+                // Prepare form data for AJAX submission
+                const formData = new FormData();
+                formData.append('Username', usernameOrEmail);
+                formData.append('Password', password);
+                formData.append('g-recaptcha-response', recaptchaResponse);
 
-                    // Quick success animation then redirect
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 800); // Quick 800ms success animation
-                }, 1000); // Simulate 1 second login process
+                try {
+                    const response = await fetch('/Login/Login', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
 
-                // Fallback timeout (in case something goes wrong)
-                setTimeout(() => {
-                    if (loginButton.disabled) {
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // SUCCESS: Show success modal and redirect
+                        showSuccessAndRedirect(result.redirectUrl, result.userType);
+                    } else {
+                        // ERROR: Reset button state and show error modal
                         loginButton.innerHTML = originalContent;
                         loginButton.disabled = false;
-                    }
-                }, 5000);
 
-                return true;
+                        // Show appropriate error modal based on error type
+                        if (result.errorType === 'recaptcha') {
+                            showErrorModal(result.title || 'reCAPTCHA Error', result.message || 'reCAPTCHA verification failed.');
+                        } else if (result.errorType === 'cooldown') {
+                            showErrorModal(result.title || 'Login Temporarily Disabled', result.message || 'Too many failed attempts. Please try again later.');
+                        } else if (result.errorType === 'credentials') {
+                            showErrorModal(result.title || 'Login Failed', result.message || 'Invalid username or password. Please try again.');
+                        } else if (result.errorType === 'account') {
+                            showErrorModal(result.title || 'Account Issue', result.message || 'There is an issue with your account. Please contact support.');
+                        } else if (result.errorType === 'validation') {
+                            showErrorModal(result.title || 'Validation Error', result.message || 'Please check your input and try again.');
+                        } else {
+                            showErrorModal(result.title || 'Login Failed', result.message || 'An error occurred during login. Please try again.');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+
+                    // Reset button state
+                    loginButton.innerHTML = originalContent;
+                    loginButton.disabled = false;
+
+                    showErrorModal('Network Error', 'An error occurred while processing your request. Please check your connection and try again.');
+                }
             });
 
             // Enhanced input validation
@@ -278,38 +401,6 @@
         function onRecaptchaExpired() {
             console.log('reCAPTCHA token expired');
         }
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const validationSummary = document.getElementById('validationSummary');
-            const form = document.querySelector('form');
-
-            function updateValidationVisibility() {
-                const hasErrors = validationSummary && validationSummary.innerText.trim() !== "";
-
-                if (hasErrors) {
-                    validationSummary.classList.remove('hidden');
-                    validationSummary.classList.add('opacity-100');
-                } else {
-                    validationSummary.classList.add('opacity-0');
-                    setTimeout(() => {
-                        validationSummary.classList.add('hidden');
-                    }, 300);
-                }
-            }
-
-            // Check on page load (for server-side validation)
-            updateValidationVisibility();
-
-            // Check again when user submits form (for client-side validation)
-            if (form) {
-                form.addEventListener('submit', function () {
-                    // Give ASP.NET validation a moment to populate errors
-                    setTimeout(updateValidationVisibility, 150);
-                });
-            }
-        });
     </script>
 
     <style>
