@@ -1,8 +1,10 @@
 using LingapDVO.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,14 +36,21 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = "233826016495-mdmj8b8v2314khtbb1tp4h2bu46abljh.apps.googleusercontent.com";
     options.ClientSecret = "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";
-
-    // ? Important: set correct sign-in scheme
     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.CallbackPath = "/signin-google";
 
-    // ? Remove CallbackPath override unless strictly required
-     options.CallbackPath = "/signin-google";
+    // ? Required scopes for email + profile info
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
 
-    // Optional: force re-consent
+    // ? Map the correct JSON keys from Google's response
+    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+    options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+    options.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
+
+    options.SaveTokens = true;
+
+    // Optional: re-consent if needed
     options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
     {
         OnRedirectToAuthorizationEndpoint = context =>

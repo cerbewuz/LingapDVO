@@ -46,7 +46,6 @@ namespace LingapDVO.Controllers
             };
             return Challenge(properties, FacebookDefaults.AuthenticationScheme);
         }
-
         [HttpGet]
         public async Task<IActionResult> FacebookCallback()
         {
@@ -63,12 +62,135 @@ namespace LingapDVO.Controllers
             var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             var name = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
+            if (string.IsNullOrEmpty(email))
+            {
+                TempData["ErrorMessage"] = "Your Facebook account did not provide an email address.";
+                return RedirectToAction("Login", "Login");
+            }
+
+            // ✅ Check if user already exists
+            var existingUser = context.RegisterAcc.FirstOrDefault(u => u.Email == email);
+            RegisterAcc user;
+
+            if (existingUser == null)
+            {
+                // ===========================
+                // 🔑 Create auto Facebook user
+                // ===========================
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
+                byte[] iv = RandomNumberGenerator.GetBytes(16);
+
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32);
+
+                string EncryptPassword(string password)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.IV = iv;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    using var memoryStream = new MemoryStream();
+                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                    using (var writer = new StreamWriter(cryptoStream))
+                    {
+                        writer.Write(password);
+                    }
+
+                    byte[] encryptedData = memoryStream.ToArray();
+                    byte[] combinedData = new byte[salt.Length + iv.Length + encryptedData.Length];
+
+                    Buffer.BlockCopy(salt, 0, combinedData, 0, salt.Length);
+                    Buffer.BlockCopy(iv, 0, combinedData, salt.Length, iv.Length);
+                    Buffer.BlockCopy(encryptedData, 0, combinedData, salt.Length + iv.Length, encryptedData.Length);
+
+                    return Convert.ToBase64String(combinedData);
+                }
+
+                // ✅ Generate random password (internal use only)
+                string generatedPassword = "FB-" + Guid.NewGuid().ToString("N").Substring(0, 12);
+                string encryptedPassword = EncryptPassword(generatedPassword);
+
+                user = new RegisterAcc
+                {
+                    Email = email,
+                    Username = name ?? "FacebookUser",
+                    Password = encryptedPassword,
+                    Status = "Active"
+                };
+
+                context.RegisterAcc.Add(user);
+                context.SaveChanges();
+            }
+            else
+            {
+                user = existingUser;
+            }
+
+            // ✅ Store user ID in session
+            HttpContext.Session.SetString("UserId", user.Id.ToString());
+
+            // ===========================
+            // 🔍 Check if verified
+            // ===========================
+            var verifiedUser = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+
+            if (verifiedUser != null)
+            {
+                // ✅ Store full verified session
+                HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
+                HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
+                HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
+                HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
+                HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
+                HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
+                HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
+                HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
+                HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
+                HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
+                HttpContext.Session.SetString("District", verifiedUser.District ?? "");
+                HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
+                HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
+                HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
+                HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
+                HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
+                HttpContext.Session.SetString("IsVerifiedUser", "true");
+                HttpContext.Session.SetString("IsRegisteredUser", "true");
+            }
+            else
+            {
+                // ⚙️ Not verified yet — store basic session info
+                HttpContext.Session.SetString("Email", user.Email ?? "");
+                HttpContext.Session.SetString("Username", user.Username ?? "");
+                HttpContext.Session.SetString("IsRegisteredUser", "true");
+                HttpContext.Session.SetString("IsVerifiedUser", "false");
+            }
+
+            // ✅ Always store Facebook metadata
             HttpContext.Session.SetString("FacebookEmail", email ?? "");
             HttpContext.Session.SetString("FacebookName", name ?? "");
             HttpContext.Session.SetString("Username", name ?? "Facebook User");
 
-            return RedirectToAction("Homepage", "Dashboard");
+            // ===========================
+            // 🧭 Redirect Logic
+            // ===========================
+            if (verifiedUser == null)
+            {
+                // First time Facebook login or unverified user
+                return RedirectToAction("Accountverification", "Login");
+            }
+            else
+            {
+                // Already verified — straight to homepage
+                return RedirectToAction("Homepage", "Dashboard");
+            }
         }
+
+
+
 
         [HttpGet]
         public IActionResult GoogleLogin()
@@ -99,45 +221,129 @@ namespace LingapDVO.Controllers
 
             if (string.IsNullOrEmpty(email))
             {
-                TempData["ErrorMessage"] = "Unable to retrieve your Google account details.";
+                TempData["ErrorMessage"] = "Your Google account did not provide an email address.";
                 return RedirectToAction("Login", "Login");
             }
 
+            // ✅ Check if user already exists
             var existingUser = context.RegisterAcc.FirstOrDefault(u => u.Email == email);
+            RegisterAcc user;
 
             if (existingUser == null)
             {
-                var newUser = new RegisterAcc
+                // ===========================
+                // 🔑 Create auto Google user
+                // ===========================
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
+                byte[] iv = RandomNumberGenerator.GetBytes(16);
+
+                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] key = pbkdf2.GetBytes(32);
+
+                string EncryptPassword(string password)
+                {
+                    using var aes = Aes.Create();
+                    aes.Key = key;
+                    aes.IV = iv;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    using var encryptor = aes.CreateEncryptor();
+                    using var memoryStream = new MemoryStream();
+                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                    using (var writer = new StreamWriter(cryptoStream))
+                    {
+                        writer.Write(password);
+                    }
+
+                    byte[] encryptedData = memoryStream.ToArray();
+                    byte[] combinedData = new byte[salt.Length + iv.Length + encryptedData.Length];
+
+                    Buffer.BlockCopy(salt, 0, combinedData, 0, salt.Length);
+                    Buffer.BlockCopy(iv, 0, combinedData, salt.Length, iv.Length);
+                    Buffer.BlockCopy(encryptedData, 0, combinedData, salt.Length + iv.Length, encryptedData.Length);
+
+                    return Convert.ToBase64String(combinedData);
+                }
+
+                // ✅ Generate random password (internal use only)
+                string generatedPassword = "GOOG-" + Guid.NewGuid().ToString("N").Substring(0, 12);
+                string encryptedPassword = EncryptPassword(generatedPassword);
+
+                user = new RegisterAcc
                 {
                     Email = email,
-                    Username = name ?? "Google User",
-                    Password = "GOOGLE_LOGIN",
-                    Status = "Active",
- 
+                    Username = name ?? "GoogleUser",
+                    Password = encryptedPassword,
+                    Status = "Active"
                 };
 
-                try
-                {
-                    context.RegisterAcc.Add(newUser);
-                    context.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error saving Google user: " + ex.Message);
-                    TempData["ErrorMessage"] = "Database error occurred while saving Google account.";
-                    return RedirectToAction("Login", "Login");
-                }
-
-                existingUser = newUser;
+                context.RegisterAcc.Add(user);
+                context.SaveChanges();
+            }
+            else
+            {
+                user = existingUser;
             }
 
-            HttpContext.Session.SetString("UserId", existingUser.Id.ToString());
-            HttpContext.Session.SetString("UserEmail", existingUser.Email);
-            HttpContext.Session.SetString("Username", existingUser.Username);
-            HttpContext.Session.SetString("GoogleEmail", email);
-            HttpContext.Session.SetString("GoogleName", name ?? existingUser.Username);
+            // ✅ Store user ID in session
+            HttpContext.Session.SetString("UserId", user.Id.ToString());
 
-            return RedirectToAction("Homepage", "Dashboard");
+            // ===========================
+            // 🔍 Check if verified
+            // ===========================
+            var verifiedUser = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+
+            if (verifiedUser != null)
+            {
+                // ✅ Store full verified session
+                HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
+                HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
+                HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
+                HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
+                HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
+                HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
+                HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
+                HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
+                HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
+                HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
+                HttpContext.Session.SetString("District", verifiedUser.District ?? "");
+                HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
+                HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
+                HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
+                HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
+                HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
+                HttpContext.Session.SetString("IsVerifiedUser", "true");
+                HttpContext.Session.SetString("IsRegisteredUser", "true");
+            }
+            else
+            {
+                // ⚙️ Not verified yet — store basic session info
+                HttpContext.Session.SetString("Email", user.Email ?? "");
+                HttpContext.Session.SetString("Username", user.Username ?? "");
+                HttpContext.Session.SetString("IsRegisteredUser", "true");
+                HttpContext.Session.SetString("IsVerifiedUser", "false");
+            }
+
+            // ✅ Always store Google metadata
+            HttpContext.Session.SetString("GoogleEmail", email ?? "");
+            HttpContext.Session.SetString("GoogleName", name ?? "");
+            HttpContext.Session.SetString("Username", name ?? "Google User");
+
+            // ===========================
+            // 🧭 Redirect Logic
+            // ===========================
+            if (verifiedUser == null)
+            {
+                // First time Google login or unverified user
+                return RedirectToAction("Accountverification", "Login");
+            }
+            else
+            {
+                // Already verified — straight to homepage
+                return RedirectToAction("Homepage", "Dashboard");
+            }
         }
 
 
@@ -618,6 +824,7 @@ namespace LingapDVO.Controllers
                     Email = registerAccDto.Email,
                     Username = registerAccDto.Username,
                     Password = encryptedPassword,
+                    Status = "Active"
                 };
 
                 context.RegisterAcc.Add(registercacc);
@@ -877,6 +1084,7 @@ namespace LingapDVO.Controllers
                 registerDto.Address = existingUser.Address;
                 registerDto.SecurityQuestions = existingUser.SecurityQuestions;
                 registerDto.Securityanswer = existingUser.Securityanswer;
+
 
                 // Return to view with enhanced error information
                 return View(registerDto);
