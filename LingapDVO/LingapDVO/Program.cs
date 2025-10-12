@@ -35,29 +35,37 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = "233826016495-mdmj8b8v2314khtbb1tp4h2bu46abljh.apps.googleusercontent.com";
     options.ClientSecret = "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";
 
-    // ? Important: set correct sign-in scheme
+    // ? Keep default callback path (ASP.NET handles this automatically)
+    // DO NOT set options.CallbackPath - let it use default: /signin-google
+
     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.SaveTokens = true; // Important: save tokens for later use
 
-    // ? Remove CallbackPath override unless strictly required
-     options.CallbackPath = "/signin-google";
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
 
-    // Optional: force re-consent
+    // ? Redirect to your custom action AFTER successful authentication
     options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
     {
+        OnTicketReceived = context =>
+        {
+            // After Google auth succeeds, redirect to your custom handler
+            context.ReturnUri = "/Auth/GoogleCallback";
+            return Task.CompletedTask;
+        },
+
         OnRedirectToAuthorizationEndpoint = context =>
         {
             var redirectUri = context.RedirectUri;
             if (!redirectUri.Contains("prompt="))
             {
-                redirectUri += (redirectUri.Contains("?") ? "&" : "?") + "prompt=consent&access_type=offline";
+                redirectUri += (redirectUri.Contains("?") ? "&" : "?") + "prompt=consent";
             }
-
             context.Response.Redirect(redirectUri);
             return Task.CompletedTask;
         }
     };
 });
-
 
 
 // MVC
