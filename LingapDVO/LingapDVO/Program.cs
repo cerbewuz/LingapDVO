@@ -1,10 +1,8 @@
 using LingapDVO.Services;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,15 +34,12 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = "233826016495-mdmj8b8v2314khtbb1tp4h2bu46abljh.apps.googleusercontent.com";
     options.ClientSecret = "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";
-    options.Scope.Add("email");
 
     // ? Important: set correct sign-in scheme
     options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 
     // ? Remove CallbackPath override unless strictly required
-    options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
-    options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
-    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+     options.CallbackPath = "/signin-google";
 
     // Optional: force re-consent
     options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
