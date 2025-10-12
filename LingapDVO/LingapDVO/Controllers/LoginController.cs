@@ -75,12 +75,11 @@ namespace LingapDVO.Controllers
         {
             var properties = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("Homepage", "Dashboard") // always redirect here
+                RedirectUri = Url.Action("GoogleResponse", "Login")
             };
 
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
-
 
         [HttpGet]
         [Route("/signin-google")]
@@ -113,7 +112,6 @@ namespace LingapDVO.Controllers
                     Username = name ?? "Google User",
                     Password = "GOOGLE_LOGIN",
                     Status = "Active",
- 
                 };
 
                 try
@@ -139,7 +137,6 @@ namespace LingapDVO.Controllers
 
             return RedirectToAction("Homepage", "Dashboard");
         }
-
 
         public IActionResult Login()
         {
@@ -297,7 +294,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // Check if the login is a Superadmin first0
+                // Check if the login is a Superadmin first
                 var superadmin = context.Superadminaccount.FirstOrDefault(a =>
                     a.Username == loginModel.Username);
                 if (superadmin != null && BCrypt.Net.BCrypt.Verify(loginModel.Password, superadmin.Password))
@@ -645,17 +642,14 @@ namespace LingapDVO.Controllers
             }
         }
 
-
-           public IActionResult Accountverification()
+        public IActionResult Accountverification()
         {
             return View();
         }
 
-
         [HttpPost]
         public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
         {
-
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
@@ -676,28 +670,23 @@ namespace LingapDVO.Controllers
                 // ==========================
                 // 🔑 MASTER PASSWORD SECTION
                 // ==========================
-                // This can be stored securely (e.g., environment variable)
-                string masterPassword = "SuperAdminMasterKey123!"; // <-- Change this to a secret stored securely
-                byte[] salt = RandomNumberGenerator.GetBytes(16);  // Unique salt per session
+                string masterPassword = "SuperAdminMasterKey123!";
+                byte[] salt = RandomNumberGenerator.GetBytes(16);
 
-                // Derive AES key from master password using PBKDF2
                 using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32); // 256-bit key
+                byte[] key = pbkdf2.GetBytes(32);
 
-                // ==========================
-                // 🔒 ENCRYPTION FUNCTION
-                // ==========================0
                 byte[] EncryptFile(Stream inputStream)
                 {
                     using var aes = Aes.Create();
                     aes.Key = key;
-                    aes.GenerateIV(); // Random IV per encryption
+                    aes.GenerateIV();
                     aes.Mode = CipherMode.CBC;
                     aes.Padding = PaddingMode.PKCS7;
 
                     using var memoryStream = new MemoryStream();
-                    memoryStream.Write(salt, 0, salt.Length); // Store salt at beginning
-                    memoryStream.Write(aes.IV, 0, aes.IV.Length); // Store IV next
+                    memoryStream.Write(salt, 0, salt.Length);
+                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
 
                     using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
                     {
@@ -707,9 +696,6 @@ namespace LingapDVO.Controllers
                     return memoryStream.ToArray();
                 }
 
-                // ==========================
-                // 📅 Encrypted Timestamp for Filenames
-                // ==========================
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp;
                 using (var aes = Aes.Create())
@@ -821,7 +807,6 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-
         [HttpPost]
         public IActionResult Registeredit(int id, RegisterDto registerDto, string currentPassword)
         {
@@ -831,7 +816,6 @@ namespace LingapDVO.Controllers
                 TempData["ErrorMessage"] = "User not found.";
                 return RedirectToAction("Homepage", "Dashboard");
             }
-
 
             // Skip validation for image if not provided
             if (registerDto.ImageFile == null)
@@ -940,10 +924,6 @@ namespace LingapDVO.Controllers
                 return View(registerDto);
             }
         }
-
-
-
-        // ... rest of your existing methods (Accountverification, Registeredit, etc.) remain the same
 
         // Password validation helper method
         private PasswordValidationResult ValidatePassword(string password)
