@@ -4,283 +4,82 @@
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Verify Your Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Verification</title>
     <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Tesseract.js for OCR -->
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tesseract.js -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        /* Go Back button styling for upper left */
-        .go-back-top {
-            position: fixed;
-            left: 30px;
-            top: 30px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 16px;
-            border-radius: 30px;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s;
-            cursor: pointer;
-            border: 1px solid #DC143C;
+        .crimson-500 {
             color: #DC143C;
-            text-decoration: none;
-            font-weight: bold;
         }
 
-            .go-back-top:hover, .go-back-top:focus {
-                background: #DC143C;
-                color: #fff !important;
-                box-shadow: 0 4px 16px rgba(220, 20, 60, 0.15);
-                transform: translateY(-2px);
-                text-decoration: none;
-            }
-
-        .register-form {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        .crimson-600 {
+            color: #b01030;
         }
 
-        .cobalt-text {
-            color: black !important;
-        }
-
-        .btn-cobalt {
+        .bg-crimson-500 {
             background-color: #DC143C;
-            color: white;
-            border: none;
         }
 
-            .btn-cobalt:hover {
-                background-color: #b01030;
-                color: white;
-            }
-
-        .password-strength {
-            height: 5px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            display: none;
-            border-radius: 5px;
-            transition: width 0.3s, background-color 0.3s;
+        .bg-crimson-600 {
+            background-color: #b01030;
         }
 
-        .password-requirements {
-            font-size: 0.8rem;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
-        .requirement {
-            margin-bottom: 3px;
-            transition: color 0.3s;
-        }
-
-        .valid {
-            color: #28a745;
-        }
-
-        .invalid {
-            color: #dc3545;
-        }
-
-        .form-control:focus {
+        .border-crimson-500 {
             border-color: #DC143C;
-            box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
         }
 
-        #imagePreview {
-            width: 200px;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 50%;
-            margin-top: 10px;
-            display: none;
-            border: 2px solid #DC143C;
+        .crimson-gradient {
+            background: linear-gradient(135deg, #DC143C 0%, #b01030 100%);
         }
 
-        .phone-input-group {
-            position: relative;
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
         }
 
-        .phone-prefix {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 5;
-            color: #6c757d;
+        .upload-area {
+            transition: all 0.3s ease;
+            border: 2px dashed #d1d5db;
         }
 
-        .phone-input {
-            padding-left: 40px !important;
-        }
-
-        /* ID Upload Styles */
-        .id-upload-container {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 15px;
-        }
-
-        .id-upload-section {
-            flex: 1;
-            border: 2px dashed #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-            .id-upload-section:hover {
+            .upload-area:hover {
                 border-color: #DC143C;
+                background-color: rgba(220, 20, 60, 0.02);
             }
 
-            .id-upload-section.active {
+            .upload-area.active {
                 border-color: #DC143C;
                 background-color: rgba(220, 20, 60, 0.05);
             }
 
+            .upload-area.dragover {
+                border-color: #DC143C;
+                background-color: rgba(220, 20, 60, 0.1);
+            }
+
         .id-preview {
-            max-width: 100%;
-            max-height: 150px;
-            margin-top: 10px;
-            display: none;
-            border-radius: 5px;
-        }
-
-        .id-upload-label {
-            cursor: pointer;
-            display: block;
-        }
-
-        .id-upload-icon {
-            font-size: 2rem;
-            color: #DC143C;
-            margin-bottom: 10px;
-        }
-
-        .id-upload-text {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .id-upload-hint {
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
-
-        .id-type-selector {
-            margin-bottom: 15px;
-        }
-
-        .extracted-text {
-            margin-top: 10px;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            max-height: 100px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-        }
-
-        /* OCR Status Styles */
-        #ocr-status {
-            margin-top: 10px;
-            font-size: 0.9rem;
-        }
-
-        .progress {
-            height: 10px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        #ocr-result {
-            display: none;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        .disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        #document-warning {
-            display: none;
-            color: #dc3545;
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-
-        /* Davao City Verification Styles */
-        .davao-verification-container {
-            margin-top: 15px;
-            padding: 15px;
+            transition: all 0.3s ease;
             border-radius: 8px;
-            display: none;
         }
 
-        .davao-valid {
-            background-color: #d4edda;
-            border-left: 5px solid #28a745;
-        }
-
-        .davao-invalid {
-            background-color: #f8d7da;
-            border-left: 5px solid #dc3545;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.35rem 0.75rem;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .badge-valid {
-            background: #28a745;
-            color: white;
-        }
-
-        .badge-invalid {
-            background: #dc3545;
-            color: white;
-        }
-
-        #wrong-id-warning {
-            border-left: 4px solid #dc3545;
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 12px 15px;
-            border-radius: 4px;
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
+        .progress-bar {
+            transition: width 0.3s ease;
         }
 
         .disabled-field {
@@ -296,448 +95,516 @@
                 border-color: #dee2e6;
             }
 
-        #wrong-id-warning i {
-            font-size: 18px;
-            margin-right: 10px;
+        /* Smooth entrance animations using transforms and opacity */
+        .fade-in {
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
         }
 
-        #wrong-id-message {
-            font-weight: 500;
+            .fade-in.loaded {
+                opacity: 1;
+            }
+
+        .slide-down {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease-out;
         }
+
+            .slide-down.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.3s ease-out;
+        }
+
+            .scale-in.visible {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+        /* Fix modal positioning */
+        .modal-backdrop {
+            z-index: 1040;
+        }
+
+        .modal {
+            z-index: 1050;
+        }
+
+            /* Ensure modal content is hidden by default */
+            .modal:not(.show) {
+                display: none;
+            }
+
+        /* Enhanced modal styling */
+        .modal-content {
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: none;
+        }
+
+        .modal-header {
+            border-radius: 16px 16px 0 0;
+            padding: 1.5rem 2rem;
+        }
+
+        .modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            border-radius: 0 0 16px 16px;
+            padding: 1.5rem 2rem;
+        }
+
+        .terms-section {
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+            .terms-section:nth-child(odd) {
+                background-color: rgba(220, 20, 60, 0.05);
+                border-left-color: #DC143C;
+            }
+
+            .terms-section:nth-child(even) {
+                background-color: rgba(59, 130, 246, 0.05);
+                border-left-color: #3b82f6;
+            }
+
+            .terms-section h6 {
+                font-size: 1.1rem;
+                margin-bottom: 0.75rem;
+            }
     </style>
 </head>
-<body>
-    <div>
-        <!-- Go Back Button -->
-        <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
-            <i class="fas"></i> Go Back
-        </a>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    <!-- Go Back Button -->
+    <div class="fixed top-6 left-6 z-50 fade-in">
+        <button id="goBackBtn" class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg border border-gray-200 hover:border-crimson-500 hover:bg-crimson-500 hover:text-white transition-all duration-300 group">
+            <i class="fas fa-arrow-left group-hover:transform group-hover:-translate-x-1 transition-transform"></i>
+            <span class="font-semibold">Go Back</span>
+        </button>
     </div>
 
-    <section class="register container-fluid">
-        <div class="row min-vh-100 d-flex justify-content-center align-items-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="register-form text-center text-dark">
-                    <article class="mb-4">
-                        <h1 class="cobalt-text fw-bold">Verify Your Account</h1>
-                    </article>
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8 fade-in">
+                <div class="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4 shadow-md">
+                    <i class="fas fa-id-card-alt text-3xl crimson-500"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Verify Your Account</h1>
+            </div>
 
-                    <form asp-action="Accountverification" method="post" enctype="multipart/form-data" id="registrationForm">
+            <!-- Main Form Card -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden glass-effect scale-in w-full max-w-full lg:max-w-4xl mx-auto">
+                <div class="p-6 md:p-8">
+                    <form asp-action="Accountverification" method="post" enctype="multipart/form-data" id="registrationForm" class="space-y-8">
 
-                        <!-- ID Upload Section -->
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-id-card fa-lg me-2 cobalt-text"></i>Valid ID Verification</label>
-
-                            <div class="mb-3">
-                                <label class="form-label">ID Type</label>
-                                <select asp-for="IDtype" class="form-control" id="document-type" required>
-                                    <option value="">Select Valid ID</option>
-                                    <option value="phil-id">Philippine Identification Card / National ID</option>
-                                    <option value="driver-license">Driver's License</option>
-                                </select>
-                                <span asp-validation-for="IDtype" class="text-danger"></span>
-                                <div id="document-warning">OCR is not available for the selected document type</div>
+                        <!-- ID Verification Section -->
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-id-card text-lg crimson-500"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-gray-800">ID Verification</h2>
                             </div>
-                        </div>
 
-                        <div class="id-upload-container">
-                            <div class="id-upload-section" id="upload-area-front">
-                                <div class="id-upload-content">
-                                    <div class="id-upload-icon">
-                                        <i class="fas fa-id-card"></i>
+                            <!-- ID Type Selection -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">ID Type</label>
+                                    <select asp-for="IDtype" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" id="document-type" required>
+                                        <option value="">Select Valid ID</option>
+                                        <option value="phil-id">Philippine Identification Card / National ID</option>
+                                        <option value="driver-license">Driver's License</option>
+                                    </select>
+                                    <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1"></span>
+                                    <div id="document-warning" class="text-amber-600 text-sm mt-2 hidden">
+                                        <i class="fas fa-info-circle mr-1"></i>OCR is not available for the selected document type
                                     </div>
-                                    <div class="id-upload-text">Front of ID</div>
-                                    <div class="id-upload-hint">Click to upload or drag and drop</div>
-                                    <input asp-for="ValidFrontID" type="file" id="file-input-front" class="d-none" accept="image/*">
-                                    <img id="image-preview" class="id-preview" alt="Front ID Preview">
-                                    <span asp-validation-for="ValidFrontID" class="text-danger"></span>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">ID Number</label>
+                                    <input asp-for="IDnumber" type="text" id="idnumber"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter your ID number"
+                                           required
+                                           inputmode="numeric"
+                                           pattern="[0-9]*"
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    <span asp-validation-for="IDnumber" class="text-red-500 text-sm mt-1"></span>
                                 </div>
                             </div>
 
-                            <div class="id-upload-section" id="upload-area-back">
-                                <div class="id-upload-content">
-                                    <div class="id-upload-icon">
-                                        <i class="fas fa-id-card"></i>
+                            <!-- ID Upload Sections -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Front ID Upload -->
+                                <div class="upload-area rounded-xl p-6 text-center cursor-pointer" id="upload-area-front">
+                                    <div class="id-upload-content">
+                                        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-id-card text-2xl crimson-500"></i>
+                                        </div>
+                                        <div class="font-semibold text-gray-800 mb-2">Front of ID</div>
+                                        <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
+                                        <input asp-for="ValidFrontID" type="file" id="file-input-front" class="hidden" accept="image/*">
+                                        <img id="image-preview" class="id-preview w-full max-w-xs mx-auto hidden" alt="Front ID Preview">
+                                        <span asp-validation-for="ValidFrontID" class="text-red-500 text-sm mt-2 block"></span>
                                     </div>
-                                    <div class="id-upload-text">Back of ID</div>
-                                    <div class="id-upload-hint">Click to upload or drag and drop</div>
-                                    <input asp-for="ValidBackID" type="file" id="file-input-back" class="d-none" accept="image/*">
-                                    <img id="image-preview-back" class="id-preview" alt="Back ID Preview">
-                                    <span asp-validation-for="ValidBackID" class="text-danger"></span>
+                                </div>
+
+                                <!-- Back ID Upload -->
+                                <div class="upload-area rounded-xl p-6 text-center cursor-pointer" id="upload-area-back">
+                                    <div class="id-upload-content">
+                                        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-id-card text-2xl crimson-500"></i>
+                                        </div>
+                                        <div class="font-semibold text-gray-800 mb-2">Back of ID</div>
+                                        <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
+                                        <input asp-for="ValidBackID" type="file" id="file-input-back" class="hidden" accept="image/*">
+                                        <img id="image-preview-back" class="id-preview w-full max-w-xs mx-auto hidden" alt="Back ID Preview">
+                                        <span asp-validation-for="ValidBackID" class="text-red-500 text-sm mt-2 block"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- OCR Status -->
+                            <div class="space-y-4">
+                                <div id="ocr-status" class="text-gray-600 text-sm">
+                                    <i class="fas fa-info-circle mr-2"></i>Select a document to begin
+                                </div>
+
+                                <div class="progress-bar-container hidden" id="progress-bar">
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-crimson-500 h-2 rounded-full transition-all duration-300"
+                                             id="progress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <div id="ocr-result" class="hidden p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down"></div>
+                            </div>
+
+                            <!-- Davao Verification Result -->
+                            <div id="davao-verification" class="hidden p-6 rounded-xl border-l-4 slide-down">
+                                <div class="flex items-start gap-4">
+                                    <i id="davao-result-icon" class="fas fa-check-circle text-2xl mt-1"></i>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <h4 id="davao-result-title" class="font-semibold text-lg"></h4>
+                                            <span id="davao-status-badge" class="px-3 py-1 rounded-full text-sm font-semibold"></span>
+                                        </div>
+                                        <p id="davao-result-message" class="text-gray-700"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <small class="text-gray-500 text-sm">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Upload clear images of your valid ID (JPEG, PNG). Max file size: 5MB each.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-phone text-lg text-blue-500"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-gray-800">Contact Information</h2>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                                    <input asp-for="Phonenumber" type="text" id="phonenumber"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter your phone number"
+                                           required
+                                           inputmode="numeric"
+                                           pattern="[0-9]{10,11}"
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    <span asp-validation-for="Phonenumber" class="text-red-500 text-sm mt-1"></span>
+                                    <small class="text-gray-500 text-sm">Enter a valid 10-11 digit phone number</small>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+                                    <input asp-for="Dateofbirth" type="date" id="birthdate"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           required>
+                                    <span asp-validation-for="Dateofbirth" class="text-red-500 text-sm mt-1"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Davao City Verification Result -->
-                        <div id="davao-verification" class="davao-verification-container">
-                            <div class="d-flex align-items-center mb-2">
-                                <i id="davao-result-icon" class="fas fa-check-circle me-2"></i>
-                                <h5 class="mb-0" id="davao-result-title">Davao City Verification</h5>
-                                <span id="davao-status-badge" class="status-badge badge-valid ms-auto">Valid</span>
+                        <!-- Personal Information Section -->
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-user text-lg text-green-500"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-gray-800">Personal Information</h2>
                             </div>
-                            <p id="davao-result-message" class="mb-0">Your driver's license has been verified as issued in Davao City.</p>
-                        </div>
 
-                        <!-- OCR Status -->
-                        <div id="ocr-status">Select a document to begin</div>
-                        <div class="progress" id="progress-bar">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                 role="progressbar" id="progress" style="width: 0%"></div>
-                        </div>
-                        <div id="ocr-result"></div>
+                            <!-- Name Fields -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                                    <input asp-for="Lastname" type="text" id="lastname"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter your last name" required>
+                                    <span asp-validation-for="Lastname" class="text-red-500 text-sm mt-1"></span>
+                                </div>
 
-                        <small class="text-muted">Upload clear images of your valid ID (JPEG, PNG). Max file size: 5MB each.</small>
-                        <br />
-                        <br />
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label">ID Number</label>
-                            <input asp-for="IDnumber" type="text" id="idnumber"
-                                   class="form-control"
-                                   placeholder="Enter your ID number"
-                                   required
-                                   inputmode="numeric"
-                                   pattern="[0-9]*"
-                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            <span asp-validation-for="IDnumber" class="text-danger"></span>
-                            <small class="text-muted">Enter the number exactly as it appears on your ID</small>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label">Phone Number</label>
-                            <input asp-for="Phonenumber" type="text" id="phonenumber"
-                                   class="form-control"
-                                   placeholder="Enter your phone number"
-                                   required
-                                   inputmode="numeric"
-                                   pattern="[0-9]{10,11}"
-                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            <span asp-validation-for="Phonenumber" class="text-danger"></span>
-                            <small class="text-muted">Enter a valid 10-11 digit phone number</small>
-                        </div>
-
-
-                        <div class="row mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-list-check fa-lg me-2 cobalt-text"></i>User Information</label>
-                            <br />
-                            <br />
-                            <div class="col-md-6">
-                                <label><i></i>Last Name *</label>
-                                <input asp-for="Lastname" type="text" id="lastname" class="form-control" placeholder="Enter your last name" required>
-                                <span asp-validation-for="Lastname" class="text-danger"></span>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                                    <input asp-for="Firstname" type="text" id="firstname"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter your first name" required>
+                                    <span asp-validation-for="Firstname" class="text-red-500 text-sm mt-1"></span>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label><i></i>First Name *</label>
-                                <input asp-for="Firstname" type="text" id="firstname" class="form-control" placeholder="Enter your first name" required>
-                                <span asp-validation-for="Firstname" class="text-danger"></span>
-                            </div>
-                        </div>
 
-                        <div class="row mb-3 text-start">
-                            <div class="col-md-6">
-                                <label><i></i>Middle Name</label>
-                                <input asp-for="Middlename" type="text" id="middlename" class="form-control" placeholder="Enter your middle name">
-                                <span asp-validation-for="Middlename" class="text-danger"></span>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Middle Name</label>
+                                    <input asp-for="Middlename" type="text" id="middlename"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter your middle name">
+                                    <span asp-validation-for="Middlename" class="text-red-500 text-sm mt-1"></span>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Suffix</label>
+                                    <select asp-for="Suffix" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300">
+                                        <option value="None">None</option>
+                                        <option value="Jr.">Jr</option>
+                                        <option value="Sr.">Sr</option>
+                                        <option value="II">II</option>
+                                        <option value="III">III</option>
+                                        <option value="IV">IV</option>
+                                    </select>
+                                    <span asp-validation-for="Suffix" class="text-red-500 text-sm mt-1"></span>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label><i></i>Suffix</label>
-                                <select asp-for="Suffix" class="form-control">
-                                    <option value="None">None</option>
-                                    <option value="Jr.">Jr</option>
-                                    <option value="Sr.">Sr</option>
-                                    <option value="II">II</option>
-                                    <option value="III">III</option>
-                                    <option value="IV">IV</option>
+
+                            <!-- Gender -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
+                                <select asp-for="Gender" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" id="sex">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
                                 </select>
-                                <span asp-validation-for="Suffix" class="text-danger"></span>
+                                <span asp-validation-for="Gender" class="text-red-500 text-sm mt-1"></span>
                             </div>
                         </div>
 
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-venus-mars fa-lg me-2 cobalt-text"></i>Gender</label>
-                            <select asp-for="Gender" class="form-control" id="sex">
-                                <option value="">Select</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                            <span asp-validation-for="Gender" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-calendar fa-lg me-2 cobalt-text"></i>Date of Birth</label>
-                            <input asp-for="Dateofbirth" type="date" id="birthdate" class="form-control" required>
-                            <span asp-validation-for="Dateofbirth" class="text-danger"></span>
-                        </div>
-
-                        <!-- Replace the existing Address field with this detailed version -->
-                        <div class="mb-3 text-start">
-                            <br />
-                            <label class="form-label fw-bold"><i class="fa-solid fa-home fa-lg me-2 cobalt-text"></i>Address</label>
-                            <br />
-                            <div class="row mb-2">
-                                <div class="col-md-8">
-                                    <label class="form-label">Blk / Lot / Street *</label>
-                                    <input asp-for="BlkLotStreet" type="text" class="form-control" placeholder="Enter block, lot, or street" required>
-                                    <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
+                        <!-- Address Section -->
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-home text-lg text-purple-500"></i>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Sub / Vill.</label>
-                                    <input asp-for="SubVill" type="text" class="form-control" placeholder="Enter subdivision or village">
-                                    <span asp-validation-for="SubVill" class="text-danger"></span>
+                                <h2 class="text-2xl font-bold text-gray-800">Address Information</h2>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Blk / Lot / Street</label>
+                                    <input asp-for="BlkLotStreet" type="text"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter block, lot, or street" required>
+                                    <span asp-validation-for="BlkLotStreet" class="text-red-500 text-sm mt-1"></span>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Sub / Vill.</label>
+                                    <input asp-for="SubVill" type="text"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter subdivision or village">
+                                    <span asp-validation-for="SubVill" class="text-red-500 text-sm mt-1"></span>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="form-label">Barangay *</label>
-                                    <select asp-for="Barangay" class="form-control" required>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Barangay</label>
+                                    <select asp-for="Barangay" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
                                         <option value="">Select Barangay</option>
-                                        <option value="Acacia">Acacia</option>
-                                        <option value="Agdao">Agdao</option>
-                                        <option value="Alambre">Alambre</option>
-                                        <option value="Alejandro Navarro">Alejandro Navarro (Lasang)</option>
-                                        <option value="Alfonso Angliongto Sr.">Alfonso Angliongto Sr.</option>
-                                        <option value="Angalan">Angalan</option>
-                                        <!-- Add all 182 barangays here -->
-                                        <option value="Baguio Proper">Baguio Proper</option>
-                                        <option value="Baliok">Baliok</option>
-                                        <option value="Bangkas Heights">Bangkas Heights</option>
-                                        <option value="Baracatan">Baracatan</option>
-                                        <option value="Bato">Bato</option>
-                                        <option value="Bayabas">Bayabas</option>
-                                        <option value="Biao Escuela">Biao Escuela</option>
-                                        <option value="Biao Guianga">Biao Guianga</option>
-                                        <option value="Binugao">Binugao</option>
-                                        <option value="Bucana">Bucana</option>
-                                        <option value="Buhangin Proper">Buhangin Proper</option>
-                                        <option value="Cabantian">Cabantian</option>
-                                        <option value="Cadalian">Cadalian</option>
-                                        <option value="Calinan Proper">Calinan Proper</option>
-                                        <option value="Callawa">Callawa</option>
-                                        <option value="Camansi">Camansi</option>
-                                        <option value="Carmen">Carmen</option>
-                                        <option value="Catalunan Grande">Catalunan Grande</option>
-                                        <option value="Catalunan Pequeño">Catalunan Pequeño</option>
-                                        <option value="Catigan">Catigan</option>
-                                        <option value="Cawayan">Cawayan</option>
-                                        <option value="Centro (San Juan)">Centro (San Juan)</option>
-                                        <option value="Colosas">Colosas</option>
-                                        <option value="Communal">Communal</option>
-                                        <option value="Crossing Bayabas">Crossing Bayabas</option>
-                                        <option value="Dacudao">Dacudao</option>
-                                        <option value="Dalagdag">Dalagdag</option>
-                                        <option value="Daliao">Daliao</option>
-                                        <option value="Dalican">Dalican</option>
-                                        <option value="Datu Salumay">Datu Salumay</option>
-                                        <option value="Dominga">Dominga</option>
-                                        <option value="Eden">Eden</option>
-                                        <option value="Fatima (Benowang)">Fatima (Benowang)</option>
-                                        <option value="Gatungan">Gatungan</option>
-                                        <option value="Gov. Paciano Bangoy">Gov. Paciano Bangoy</option>
-                                        <option value="Gov. Vicente Duterte">Gov. Vicente Duterte</option>
-                                        <option value="Gumalang">Gumalang</option>
-                                        <option value="Gumitan">Gumitan</option>
-                                        <option value="Indangan">Indangan</option>
-                                        <option value="Kap. Tomas Monteverde Sr.">Kap. Tomas Monteverde Sr.</option>
-                                        <option value="Kilate">Kilate</option>
-                                        <option value="Lamanan">Lamanan</option>
-                                        <option value="Lampianao">Lampianao</option>
-                                        <option value="Langub">Langub</option>
-                                        <option value="Lapu-lapu">Lapu-lapu</option>
-                                        <option value="Leon Garcia Sr.">Leon Garcia Sr.</option>
-                                        <option value="Los Amigos">Los Amigos</option>
-                                        <option value="Lubogan">Lubogan</option>
-                                        <option value="Lumiad">Lumiad</option>
-                                        <option value="Ma-a">Ma-a</option>
-                                        <option value="Mabuhay">Mabuhay</option>
-                                        <option value="Mabuhay">Mabuhay</option>
-                                        <option value="Madapo">Madapo</option>
-                                        <option value="Magtuod">Magtuod</option>
-                                        <option value="Mahayag">Mahayag</option>
-                                        <option value="Malabog">Malabog</option>
-                                        <option value="Malagos">Malagos</option>
-                                        <option value="Malamba">Malamba</option>
-                                        <option value="Malandog">Malandog</option>
-                                        <option value="Mampising">Mampising</option>
-                                        <option value="Manambulan">Manambulan</option>
-                                        <option value="Mandug">Mandug</option>
-                                        <option value="Manuel Guianga">Manuel Guianga</option>
-                                        <option value="Mapula">Mapula</option>
-                                        <option value="Marapangi">Marapangi</option>
-                                        <option value="Marilog Proper">Marilog Proper</option>
-                                        <option value="Matina Aplaya">Matina Aplaya</option>
-                                        <option value="Matina Crossing">Matina Crossing</option>
-                                        <option value="Matina Pangi">Matina Pangi</option>
-                                        <option value="Mintal">Mintal</option>
-                                        <option value="Mudiang">Mudiang</option>
-                                        <option value="Mulig">Mulig</option>
-                                        <option value="New Carmen">New Carmen</option>
-                                        <option value="New Valencia">New Valencia</option>
-                                        <option value="Pampanga">Pampanga</option>
-                                        <option value="Panacan">Panacan</option>
-                                        <option value="Pandaitan">Pandaitan</option>
-                                        <option value="Panorama">Panorama</option>
-                                        <option value="Paquibato Proper">Paquibato Proper</option>
-                                        <option value="Paradise Embak">Paradise Embak</option>
-                                        <option value="Rafael Castillo">Rafael Castillo</option>
-                                        <option value="Salapawan">Salapawan</option>
-                                        <option value="Salaysay">Salaysay</option>
-                                        <option value="Saloy">Saloy</option>
-                                        <option value="San Antonio">San Antonio</option>
-                                        <option value="San Isidro">San Isidro</option>
-                                        <option value="Sasa">Sasa</option>
-                                        <option value="Sirib">Sirib</option>
-                                        <option value="Suawan">Suawan</option>
-                                        <option value="Tacunan">Tacunan</option>
-                                        <option value="Tagakpan">Tagakpan</option>
-                                        <option value="Tagluno">Tagluno</option>
-                                        <option value="Tagurano">Tagurano</option>
-                                        <option value="Talomo Proper">Talomo Proper</option>
-                                        <option value="Talomo River">Talomo River</option>
-                                        <option value="Tamurayan">Tamurayan</option>
-                                        <option value="Tibungco">Tibungco</option>
-                                        <option value="Tigatto">Tigatto</option>
-                                        <option value="Tungkalan">Tungkalan</option>
-                                        <option value="Ubalde">Ubalde</option>
-                                        <option value="Ugac">Ugac</option>
-                                        <option value="Ula">Ula</option>
-                                        <option value="Vicente Hizon Sr.">Vicente Hizon Sr.</option>
-                                        <option value="Waan">Waan</option>
-                                        <option value="Wangan">Wangan</option>
-                                        <option value="Wilfredo Aquino">Wilfredo Aquino</option>
+                                        <!-- Barangay options here -->
                                         <option value="Wines">Wines</option>
                                     </select>
-                                    <span asp-validation-for="Barangay" class="text-danger"></span>
+                                    <span asp-validation-for="Barangay" class="text-red-500 text-sm mt-1"></span>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label class="form-label">District *</label>
-                                    <select asp-for="District" class="form-control" required>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">District</label>
+                                    <select asp-for="District" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
                                         <option value="" disabled selected>Select district</option>
-                                        <option value="1">District 1 </option>
-                                        <option value="2">District 2 </option>
-                                        <option value="3">District 3 </option>
-                                        <option value="4">District 4 </option>
-                                        <option value="5">District 5 </option>
-                                        <option value="6">District 6 </option>
-                                        <option value="7">District 7 </option>
-                                        <option value="8">District 8 </option>
-                                        <option value="9">District 9 </option>
-                                        <option value="10">District 10 </option>
-                                        <option value="10">District 11 </option>
+                                        <option value="1">District 1</option>
+                                        <option value="2">District 2</option>
+                                        <option value="3">District 3</option>
+                                        <option value="4">District 4</option>
+                                        <option value="5">District 5</option>
+                                        <option value="6">District 6</option>
+                                        <option value="7">District 7</option>
+                                        <option value="8">District 8</option>
+                                        <option value="9">District 9</option>
+                                        <option value="10">District 10</option>
+                                        <option value="11">District 11</option>
                                     </select>
-                                    <span asp-validation-for="District" class="text-danger"></span>
+                                    <span asp-validation-for="District" class="text-red-500 text-sm mt-1"></span>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Security Section -->
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-shield-alt text-lg text-orange-500"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-gray-800">Security Settings</h2>
+                            </div>
 
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-shield-alt fa-lg me-2 cobalt-text"></i>Security Question</label>
-                            <select asp-for="SecurityQuestions" class="form-control" required>
-                                <option value="">Select a question</option>
-                                <option value="What is your first pet's name?">What is your first pet's name?</option>
-                                <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
-                                <option value="What was your first school?">What was your first school?</option>
-                            </select>
-                            <span asp-validation-for="SecurityQuestions" class="text-danger"></span>
-                        </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Security Question</label>
+                                    <select asp-for="SecurityQuestions" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
+                                        <option value="">Select a question</option>
+                                        <option value="What is your first pet's name?">What is your first pet's name?</option>
+                                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                                        <option value="What was your first school?">What was your first school?</option>
+                                    </select>
+                                    <span asp-validation-for="SecurityQuestions" class="text-red-500 text-sm mt-1"></span>
+                                </div>
 
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-key fa-lg me-2 cobalt-text"></i>Security Answer</label>
-                            <input asp-for="Securityanswer" type="text" class="form-control" placeholder="Enter your answer" required>
-                            <span asp-validation-for="Securityanswer" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <input type="checkbox" id="terms" required> I agree to the <a href="#" class="text-decoration-none cobalt-text" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
-                        </div>
-                        <button type="submit" class="btn btn-cobalt w-100 py-2 fw-bold">Verify</button>
-
-                        <!-- Modal -->
-                        <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                                <div class="modal-content shadow-lg rounded-4">
-                                    <div class="modal-header bg-cobalt text-white rounded-top-4">
-                                        <h5 class="modal-title fw-bold" id="termsModalLabel">Lingap Terms & Privacy Policy</h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body p-4">
-
-                                        <h6 class="fw-bold text-cobalt">1. Acceptance of Terms</h6>
-                                        <p>By signing up for Lingap, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.</p>
-
-                                        <h6 class="fw-bold text-cobalt">2. Data Privacy & Protection</h6>
-                                        <p>Lingap is committed to safeguarding your personal data. We comply with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your information will only be used to verify eligibility and for program coordination. We will never sell or misuse your data.</p>
-
-                                        <h6 class="fw-bold text-cobalt">3. Purpose of Data Collection</h6>
-                                        <ul>
-                                            <li>Eligibility verification for Lingap programs</li>
-                                            <li>Contact and follow-up regarding assistance</li>
-                                            <li>Government or partner validation (as needed)</li>
-                                        </ul>
-
-                                        <h6 class="fw-bold text-cobalt">4. Account Integrity</h6>
-                                        <p>Each individual is allowed <strong>one account only</strong>. Creating multiple accounts or submitting false documents may result in permanent disqualification.</p>
-
-
-                                        <h6 class="fw-bold text-cobalt">5. Changes to Terms</h6>
-                                        <p>Lingap reserves the right to update this policy at any time. All changes will be posted publicly, and continued use of the service implies agreement with updated terms.</p>
-
-                                        <h6 class="fw-bold text-cobalt">6. Questions or Concerns</h6>
-                                        <p>If you have any questions regarding your privacy, you may contact our support team at <a href="mailto:support@lingap.org">support@lingap.org</a>.</p>
-
-                                    </div>
-                                    <div class="modal-footer justify-content-between">
-                                        <small class="text-muted">Last updated: May 2025</small>
-                                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
-                                    </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Security Answer</label>
+                                    <input asp-for="Securityanswer" type="text"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter your answer" required>
+                                    <span asp-validation-for="Securityanswer" class="text-red-500 text-sm mt-1"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <style>
-                            .text-cobalt {
-                                color: #DC143C;
-                            }
+                        <!-- Terms and Submit -->
+                        <div class="space-y-6 pt-6 border-t border-gray-200">
+                            <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
+                                <input type="checkbox" id="terms" required class="mt-1 w-4 h-4 text-crimson-500 border-gray-300 rounded focus:ring-crimson-500">
+                                <label for="terms" class="text-sm text-gray-700">
+                                    I agree to the <a href="#" class="text-crimson-500 font-semibold hover:underline" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                                </label>
+                            </div>
 
-                            .bg-cobalt {
-                                background-color: #DC143C;
-                            }
-
-                            .btn-cobalt {
-                                background-color: #DC143C;
-                                color: white;
-                            }
-
-                                .btn-cobalt:hover {
-                                    background-color: #DC143C;
-                                    color: white;
-                                }
-
-                            .rounded-top-4 {
-                                border-top-left-radius: 1rem;
-                                border-top-right-radius: 1rem;
-                            }
-
-                            .rounded-4 {
-                                border-radius: 1rem;
-                            }
-                        </style>
+                            <button type="submit"
+                                    class="w-full crimson-gradient text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                                <i class="fas fa-check-circle mr-2"></i>Verify Account
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+
+    <!-- Wrong ID Type Warning -->
+    <div id="wrong-id-warning" class="fixed top-4 right-4 max-w-md hidden">
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-lg slide-down">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-exclamation-triangle text-red-500 text-xl mt-0.5"></i>
+                <div>
+                    <h4 class="font-semibold text-red-800 mb-1">Wrong Document Type</h4>
+                    <p id="wrong-id-message" class="text-red-700 text-sm"></p>
+                </div>
+                <button onclick="hideWrongIdTypeWarning()" class="text-red-500 hover:text-red-700 ml-auto">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Terms Modal -->
+    <div class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable relative w-auto pointer-events-none">
+            <div class="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-md outline-none text-current">
+                <div class="modal-header crimson-gradient text-white flex flex-shrink-0 items-center justify-between p-4 rounded-t-md">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-file-contract text-xl"></i>
+                        <h5 class="modal-title text-xl font-bold leading-normal" id="termsModalLabel">Lingap Terms & Privacy Policy</h5>
+                    </div>
+                    <button type="button" class="btn-close box-content w-4 h-4 p-1 text-white border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-white hover:opacity-75 hover:no-underline" data-bs-dismiss="modal" aria-label="Close">×</button>
+                </div>
+                <div class="modal-body relative p-6 space-y-4">
+                    <div class="terms-section">
+                        <h6 class="font-bold text-crimson-500 mb-2">1. Acceptance of Terms</h6>
+                        <p class="text-gray-700">By signing up for Lingap, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.</p>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6 class="font-bold text-crimson-500 mb-2">2. Data Privacy & Protection</h6>
+                        <p class="text-gray-700">Lingap is committed to safeguarding your personal data. We comply with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your information will only be used to verify eligibility and for program coordination.</p>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6 class="font-bold text-crimson-500 mb-2">3. Purpose of Data Collection</h6>
+                        <ul class="text-gray-700 list-disc list-inside space-y-1">
+                            <li>Eligibility verification for Lingap programs</li>
+                            <li>Contact and follow-up regarding assistance</li>
+                            <li>Government or partner validation (as needed)</li>
+                        </ul>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6 class="font-bold text-crimson-500 mb-2">4. Account Integrity</h6>
+                        <p class="text-gray-700">Each individual is allowed <strong>one account only</strong>. Creating multiple accounts or submitting false documents may result in permanent disqualification.</p>
+                    </div>
+
+                    <div class="terms-section">
+                        <h6 class="font-bold text-crimson-500 mb-2">5. Changes to Terms</h6>
+                        <p class="text-gray-700">Lingap reserves the right to update this policy at any time. All changes will be posted publicly, and continued use of the service implies agreement with updated terms.</p>
+                    </div>
+                </div>
+                <div class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 rounded-b-md bg-gray-50">
+                    <button type="button" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Add this to your head section -->
-    <script src="https://unpkg.com/tesseract.js@2.1.4/dist/tesseract.min.js"></script>
 
     <script>
-        // Combined OCR and File Upload Functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize animations
+            setTimeout(() => {
+                document.querySelectorAll('.fade-in').forEach(el => {
+                    el.classList.add('loaded');
+                });
+                document.querySelectorAll('.scale-in').forEach(el => {
+                    el.classList.add('visible');
+                });
+                document.querySelectorAll('.slide-down').forEach(el => {
+                    el.classList.add('visible');
+                });
+            }, 100);
+
             // Get DOM elements
             const documentType = document.getElementById('document-type');
             const documentWarning = document.getElementById('document-warning');
@@ -760,8 +627,8 @@
             const davaoResultMessage = document.getElementById('davao-result-message');
             const davaoStatusBadge = document.getElementById('davao-status-badge');
 
-            // Wrong ID Type Warning Element (we'll create this dynamically)
-            let wrongIdTypeWarning = null;
+            // Wrong ID Type Warning Element
+            let wrongIdTypeWarning = document.getElementById('wrong-id-warning');
 
             // Form fields to disable when license is invalid
             const formFields = [
@@ -773,45 +640,32 @@
             // Track if OCR is enabled
             let ocrEnabled = false;
 
-            // Create wrong ID type warning element
-            function createWrongIdTypeWarning() {
-                if (wrongIdTypeWarning) return;
+            // Go Back button functionality
+            const goBackBtn = document.getElementById('goBackBtn');
+            goBackBtn.addEventListener('click', function() {
+                window.history.back();
+            });
 
-                wrongIdTypeWarning = document.createElement('div');
-                wrongIdTypeWarning.id = 'wrong-id-warning';
-                wrongIdTypeWarning.className = 'alert alert-danger mt-3';
-                wrongIdTypeWarning.style.display = 'none';
-                wrongIdTypeWarning.innerHTML = `
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <span id="wrong-id-message"></span>
-                `;
-
-                // Insert after the upload sections
-                const uploadContainer = document.querySelector('.upload-container');
-                if (uploadContainer) {
-                    uploadContainer.parentNode.insertBefore(wrongIdTypeWarning, uploadContainer.nextSibling);
+            // Hide wrong ID type warning
+            function hideWrongIdTypeWarning() {
+                if (wrongIdTypeWarning) {
+                    wrongIdTypeWarning.classList.add('hidden');
                 }
             }
 
             // Show wrong ID type warning
             function showWrongIdTypeWarning(expectedType, detectedType) {
-                createWrongIdTypeWarning();
-                const message = document.getElementById('wrong-id-message');
-                message.textContent = `You selected ${expectedType} but uploaded a ${detectedType}. Please upload the correct document type.`;
-                wrongIdTypeWarning.style.display = 'block';
+                if (wrongIdTypeWarning) {
+                    const message = document.getElementById('wrong-id-message');
+                    message.textContent = `You selected ${expectedType} but uploaded a ${detectedType}. Please upload the correct document type.`;
+                    wrongIdTypeWarning.classList.remove('hidden');
+                }
 
                 // Clear uploaded files and reset
                 clearUploadedFiles();
-                resultBox.style.display = 'none';
-                davaoVerification.style.display = 'none';
-                status.textContent = 'Wrong document type detected. Please upload the correct document.';
-            }
-
-            // Hide wrong ID type warning
-            function hideWrongIdTypeWarning() {
-                if (wrongIdTypeWarning) {
-                    wrongIdTypeWarning.style.display = 'none';
-                }
+                resultBox.classList.add('hidden');
+                davaoVerification.classList.add('hidden');
+                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Wrong document type detected. Please upload the correct document.';
             }
 
             // Handle document type selection
@@ -825,26 +679,26 @@
                     ocrEnabled = true;
                     uploadFront.classList.remove('disabled');
                     uploadBack.classList.remove('disabled');
-                    documentWarning.style.display = 'none';
-                    status.textContent = 'You can now upload ID images';
+                    documentWarning.classList.add('hidden');
+                    status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>You can now upload ID images';
 
                     // Show Davao verification for both driver's license and national ID
-                    davaoVerification.style.display = 'none'; // Hide initially, will show after upload
-                    enableFormFields(); // Enable form fields initially
+                    davaoVerification.classList.add('hidden');
+                    enableFormFields();
                 } else {
                     ocrEnabled = false;
                     uploadFront.classList.add('disabled');
                     uploadBack.classList.add('disabled');
                     if (selectedValue) {
-                        documentWarning.style.display = 'block';
-                        status.textContent = 'OCR not available for selected document type';
+                        documentWarning.classList.remove('hidden');
+                        status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>OCR not available for selected document type';
                     } else {
-                        documentWarning.style.display = 'none';
-                        status.textContent = 'Select a document to begin';
+                        documentWarning.classList.add('hidden');
+                        status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Select a document to begin';
                     }
-                    resultBox.style.display = 'none';
-                    davaoVerification.style.display = 'none';
-                    enableFormFields(); // Enable form fields for other ID types
+                    resultBox.classList.add('hidden');
+                    davaoVerification.classList.add('hidden');
+                    enableFormFields();
                 }
             });
 
@@ -871,18 +725,18 @@
                 uploadArea.addEventListener('dragover', (e) => {
                     if (!ocrEnabled) return;
                     e.preventDefault();
-                    uploadArea.classList.add('active');
+                    uploadArea.classList.add('dragover');
                 });
 
                 uploadArea.addEventListener('dragleave', () => {
                     if (!ocrEnabled) return;
-                    uploadArea.classList.remove('active');
+                    uploadArea.classList.remove('dragover');
                 });
 
                 uploadArea.addEventListener('drop', (e) => {
                     if (!ocrEnabled) return;
                     e.preventDefault();
-                    uploadArea.classList.remove('active');
+                    uploadArea.classList.remove('dragover');
 
                     if (e.dataTransfer.files.length) {
                         fileInput.files = e.dataTransfer.files;
@@ -899,7 +753,7 @@
                 reader.onload = function(e) {
                     // Show image preview
                     preview.src = e.target.result;
-                    preview.style.display = 'block';
+                    preview.classList.remove('hidden');
                     section.classList.add('active');
 
                     // Process with OCR if enabled
@@ -910,16 +764,10 @@
                 reader.readAsDataURL(file);
             }
 
-            // Go Back button functionality
-            const goBackBtn = document.getElementById('goBackBtn');
-            goBackBtn.addEventListener('click', function() {
-                window.history.back();
-            });
-
             // Process image with OCR
             function processImageWithOCR(preview, isBack) {
-                status.textContent = "Processing...";
-                progressBar.style.display = 'block';
+                status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                progressBar.classList.remove('hidden');
                 progress.style.width = '0%';
 
                 // Hide any previous wrong ID warning
@@ -932,8 +780,8 @@
                         }
                     }
                 }).then(({ data: { text } }) => {
-                    status.textContent = "OCR completed!";
-                    progressBar.style.display = 'none';
+                    status.innerHTML = '<i class="fas fa-check-circle mr-2"></i>OCR completed!';
+                    progressBar.classList.add('hidden');
 
                     // First, detect what type of ID was actually uploaded
                     const detectedIdType = detectIdType(text);
@@ -960,18 +808,11 @@
                         }
                     }
 
-                       }).catch(err => {
-            console.error('OCR Error:', err);
-            progressBar.style.display = 'none';
-
-            // Handle specific "Cannot set properties of null" error
-            if (err.message.includes("Cannot set properties of null")) {
-                status.textContent = "Your selected ID type and the uploaded ID do not match. Please upload the correct ID.";
-            } else {
-                status.textContent = "An error occurred while processing the ID. Please try again.";
-            }
-        });
-
+                }).catch(err => {
+                    console.error('OCR Error:', err);
+                    progressBar.classList.add('hidden');
+                    status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>An error occurred while processing the ID. Please try again.';
+                });
             }
 
             // Detect what type of ID was uploaded based on text content
@@ -1167,7 +1008,7 @@
 
                 if (sex) {
                     document.getElementById('sex').value = sex;
-                    resultBox.style.display = "block";
+                    resultBox.classList.remove('hidden');
                     resultBox.textContent = "Gender information extracted from ID back. Please verify.";
                 }
             }
@@ -1370,30 +1211,28 @@
             // Show Davao City verification result
             function showDavaoVerificationResult(isDavaoCity, detectedCity, idType) {
                 // Show for both driver's license and national ID
-                davaoVerification.style.display = 'block';
+                davaoVerification.classList.remove('hidden');
 
                 if (isDavaoCity) {
                     // Valid Davao City ID
-                    davaoVerification.className = 'davao-verification-container davao-valid';
-                    davaoResultIcon.className = 'fas fa-check-circle me-2';
-                    davaoResultIcon.style.color = '#28a745';
+                    davaoVerification.className = 'p-6 rounded-xl border-l-4 bg-green-50 border-green-200 slide-down';
+                    davaoResultIcon.className = 'fas fa-check-circle text-2xl mt-1 text-green-500';
                     davaoResultTitle.textContent = idType === 'driver-license' ? 'Valid Davao City License' : 'Valid Davao City National ID';
                     davaoResultMessage.textContent = idType === 'driver-license'
                         ? 'Your driver\'s license has been verified as issued in Davao City.'
                         : 'Your National ID has been verified as registered in Davao City.';
-                    davaoStatusBadge.className = 'status-badge badge-valid';
+                    davaoStatusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-green-500 text-white';
                     davaoStatusBadge.textContent = 'Valid';
 
                     // Enable form fields for valid ID
                     enableFormFields();
                 } else {
                     // Invalid (not Davao City) ID
-                    davaoVerification.className = 'davao-verification-container davao-invalid';
-                    davaoResultIcon.className = 'fas fa-times-circle me-2';
-                    davaoResultIcon.style.color = '#dc3545';
+                    davaoVerification.className = 'p-6 rounded-xl border-l-4 bg-red-50 border-red-200 slide-down';
+                    davaoResultIcon.className = 'fas fa-times-circle text-2xl mt-1 text-red-500';
                     davaoResultTitle.textContent = idType === 'driver-license' ? 'License Not From Davao City' : 'National ID Not From Davao City';
                     davaoResultMessage.textContent = `This service is only available for Davao City residents, or your picture may be blurry. Please try again.`;
-                    davaoStatusBadge.className = 'status-badge badge-invalid';
+                    davaoStatusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-500 text-white';
                     davaoStatusBadge.textContent = 'Invalid';
 
                     // Disable form fields and clear uploaded files for invalid ID
@@ -1416,7 +1255,7 @@
                 const submitButton = document.querySelector('button[type="submit"]');
                 if (submitButton) {
                     submitButton.disabled = true;
-                    submitButton.classList.add('disabled');
+                    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
                 }
             }
 
@@ -1434,7 +1273,7 @@
                 const submitButton = document.querySelector('button[type="submit"]');
                 if (submitButton) {
                     submitButton.disabled = false;
-                    submitButton.classList.remove('disabled');
+                    submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
             }
 
@@ -1445,8 +1284,8 @@
                 fileBack.value = '';
 
                 // Hide preview images
-                imagePreview.style.display = 'none';
-                imagePreviewBack.style.display = 'none';
+                imagePreview.classList.add('hidden');
+                imagePreviewBack.classList.add('hidden');
 
                 // Remove active class from upload areas
                 uploadFront.classList.remove('active');
@@ -1465,13 +1304,13 @@
             function cleanName(text) {
                 if (!text) return "";
                 return text
-                    .replace(/[^a-z\s]/gi, "")   // keep only letters + spaces
-                    .replace(/\s+/g, " ")        // normalize spaces
+                    .replace(/[^a-z\s]/gi, "")
+                    .replace(/\s+/g, " ")
                     .trim()
-                    .replace(/^[a-z]\s+/, "")    // remove stray single letter at start
-                    .replace(/^[a-z]\s+/, "")    // remove stray single letter at start
-                    .replace(/\s+[a-z]$/, "")    // remove stray single letter at end
-                    .replace(/^\s*[a-z]\s*$/, ""); // if only a single letter, remove it
+                    .replace(/^[a-z]\s+/, "")
+                    .replace(/^[a-z]\s+/, "")
+                    .replace(/\s+[a-z]$/, "")
+                    .replace(/^\s*[a-z]\s*$/, "");
             }
 
             function cleanText(text) {
@@ -1483,7 +1322,6 @@
 
             function cleanBirthdate(text) {
                 if (!text) return "";
-                // Try various date formats
                 const dateMatch = text.match(/(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/);
                 if (dateMatch) {
                     const [, month, day, year] = dateMatch;
@@ -1510,7 +1348,7 @@
                 if (sex) document.getElementById('sex').value = sex;
 
                 // Show success message
-                resultBox.style.display = "block";
+                resultBox.classList.remove('hidden');
                 resultBox.textContent = "Information extracted from ID. Please verify the details.";
             }
 

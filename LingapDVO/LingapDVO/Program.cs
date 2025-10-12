@@ -36,21 +36,17 @@ builder.Services.AddAuthentication(options =>
 {
     options.ClientId = "233826016495-mdmj8b8v2314khtbb1tp4h2bu46abljh.apps.googleusercontent.com";
     options.ClientSecret = "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";
-    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.CallbackPath = "/signin-google";
-
-    // ? Required scopes for email + profile info
     options.Scope.Add("email");
-    options.Scope.Add("profile");
 
-    // ? Map the correct JSON keys from Google's response
-    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+    // ? Important: set correct sign-in scheme
+    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
+    // ? Remove CallbackPath override unless strictly required
+    options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
     options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
-    options.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
+    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
 
-    options.SaveTokens = true;
-
-    // Optional: re-consent if needed
+    // Optional: force re-consent
     options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
     {
         OnRedirectToAuthorizationEndpoint = context =>
