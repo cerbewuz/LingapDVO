@@ -142,7 +142,7 @@
         /* Notification dropdown positioned outside greeting card */
         .notification-dropdown {
             position: fixed;
-            top: 80px; /* Position below header */
+            top: 80px;
             right: 20px;
             width: 350px;
             background: white;
@@ -447,7 +447,7 @@
         </div>
     </header>
 
-    <!-- Notification Dropdown - Placed outside greeting card -->
+    <!-- Notification Dropdown -->
     <div class="notification-dropdown" id="notificationDropdown">
         <div class="notification-header">
             <h6 class="mb-0">Notifications</h6>
@@ -679,7 +679,7 @@
                                 }
                             </div>
 
-                            <!-- Service 5 - Locate Facilities (Always Available) -->
+                            <!-- Service 5 - Locate Facilities -->
                             <div class="col-md-6 col-lg-4">
                                 <a asp-route="Maps" class="text-decoration-none">
                                     <div class="service-card">
@@ -692,7 +692,7 @@
                                 </a>
                             </div>
 
-                            <!-- Service 6 - Partner Directory (Always Available) -->
+                            <!-- Service 6 - Partner Directory -->
                             <div class="col-md-6 col-lg-4">
                                 <a asp-route="Listofpartners" class="text-decoration-none">
                                     <div class="service-card">
@@ -759,6 +759,14 @@
                 markAllNotificationsAsRead();
             });
 
+            // Function to hide notification badge
+            function hideNotificationBadge() {
+                if (notificationBadge) {
+                    notificationBadge.style.display = 'none';
+                    notificationBadge.textContent = '0';
+                }
+            }
+
             // Load notifications from server
             async function loadNotifications() {
                 try {
@@ -793,7 +801,7 @@
             // Mark all notifications as read
             async function markAllNotificationsAsRead() {
                 try {
-                    const response = await fetch('/Notifications/MarkAllAsRead', {
+                    const response = await fetch('/Notifications/MarkAllNotificationsAsRead', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -801,6 +809,9 @@
                     });
 
                     if (response.ok) {
+                        // Hide badge immediately
+                        hideNotificationBadge();
+                        // Reload notifications to show updated state
                         loadNotifications();
                     }
                 } catch (error) {
@@ -820,18 +831,18 @@
                             <p>No notifications</p>
                         </div>
                     `;
-                    notificationBadge.style.display = 'none';
+                    hideNotificationBadge();
                     return;
                 }
 
                 const unreadCount = notifications.filter(n => !n.isRead).length;
 
-                // Update badge
+                // Update badge - only show if there are unread notifications
                 if (unreadCount > 0) {
                     notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
                     notificationBadge.style.display = 'block';
                 } else {
-                    notificationBadge.style.display = 'none';
+                    hideNotificationBadge();
                 }
 
                 // Populate notifications list
@@ -852,24 +863,29 @@
                 });
             }
 
-            function handleNotificationClick(notification) {
-                markNotificationAsRead(notification.id);
+            async function handleNotificationClick(notification) {
+                // Mark as read
+                await markNotificationAsRead(notification.id);
 
-                if (notification.link) {
-                    window.location.href = notification.link;
-                } else if (notification.type === 'application_approved') {
-                    window.location.href = '/Applications/Approved';
-                } else if (notification.type === 'application_disapproved') {
-                    window.location.href = '/Applications/Disapproved';
-                } else if (notification.type === 'application_update') {
-                    window.location.href = '/Uploads';
+                // Hide badge and reload notifications
+                hideNotificationBadge();
+                await loadNotifications();
+
+                // Navigate if there's a link
+                if (notification.link && notification.link !== '#') {
+                    setTimeout(() => {
+                        window.location.href = notification.link;
+                    }, 200);
                 }
             }
 
             async function markNotificationAsRead(notificationId) {
                 try {
-                    await fetch(`/Notifications/MarkAsRead/${notificationId}`, {
-                        method: 'POST'
+                    await fetch(`/Notifications/MarkNotificationAsRead?notificationId=${encodeURIComponent(notificationId)}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
                     });
                 } catch (error) {
                     console.error('Failed to mark notification as read:', error);
@@ -896,29 +912,19 @@
                     .replace(/'/g, "&#039;");
             }
 
-            // Demo notifications for testing - mao ni testing na notif pre
+            // Show demo notifications if server is not available
             function showDemoNotifications() {
                 const demoNotifications = [
                     {
                         id: 1,
-                        title: 'Application Submitted',
-                        message: 'Your hospital bill assistance application has been submitted successfully.',
+                        title: "Hospital Bill Application",
+                        message: "Your hospital bill assistance application was submitted on Oct 12, 2025",
                         isRead: false,
-                        type: 'application_submitted',
-                        createdAt: new Date(Date.now() - 300000).toISOString(),
-                        link: '/Uploads'
-                    },
-                    {
-                        id: 2,
-                        title: 'Application Approved',
-                        message: 'Your medical procedures application has been approved!',
-                        isRead: false,
-                        type: 'application_approved',
-                        createdAt: new Date(Date.now() - 86400000).toISOString(),
-                        link: '/Applications/Approved'
+                        createdAt: new Date().toISOString(),
+                        type: "application_update",
+                        link: "/Uploads"
                     }
                 ];
-
                 updateNotificationUI(demoNotifications);
             }
 
