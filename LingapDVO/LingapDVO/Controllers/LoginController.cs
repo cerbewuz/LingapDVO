@@ -567,7 +567,7 @@ namespace LingapDVO.Controllers
                         {
                             success = true,
                             redirectUrl = Url.Action("Analyticsdashboard", "Adminuser"),
-                            userType = "Admin" // Added userType
+                            userType = "Admin" 
                         });
                     }
 
@@ -772,19 +772,38 @@ namespace LingapDVO.Controllers
         public IActionResult Register(RegisterAccDto registerAccDto)
         {
             if (!ModelState.IsValid)
+            {
+                // Return JSON errors for AJAX requests
+                if (IsAjaxRequest())
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    return Json(new { success = false, errors = errors });
+                }
                 return View(registerAccDto);
+            }
 
             try
             {
                 // 🔎 Check for existing email or username before saving
                 if (context.RegisterAcc.Any(u => u.Email == registerAccDto.Email))
                 {
+                    if (IsAjaxRequest())
+                    {
+                        return Json(new { success = false, errors = new List<string> { "This email is already registered." } });
+                    }
                     ModelState.AddModelError("Email", "This email is already registered.");
                     return View(registerAccDto);
                 }
 
                 if (context.RegisterAcc.Any(u => u.Username == registerAccDto.Username))
                 {
+                    if (IsAjaxRequest())
+                    {
+                        return Json(new { success = false, errors = new List<string> { "This username is already taken." } });
+                    }
                     ModelState.AddModelError("Username", "This username is already taken.");
                     return View(registerAccDto);
                 }
@@ -839,7 +858,7 @@ namespace LingapDVO.Controllers
                 context.RegisterAcc.Add(registercacc);
                 context.SaveChanges();
 
-                // ✅ SUCCESS: Return JSON for AJAX or redirect with success parameter
+                // ✅ SUCCESS: Return JSON for AJAX
                 if (IsAjaxRequest())
                 {
                     return Json(new { success = true, message = "Registration successful!" });
@@ -853,29 +872,31 @@ namespace LingapDVO.Controllers
             catch (DbUpdateException dbEx)
             {
                 // 🧱 Handle SQL unique constraint error
+                string errorMessage = "A database error occurred while saving. Please try again.";
+
                 if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Email"))
-                    ModelState.AddModelError("Email", "This email is already registered.");
+                    errorMessage = "This email is already registered.";
                 else if (dbEx.InnerException != null && dbEx.InnerException.Message.Contains("IX_RegisterAcc_Username"))
-                    ModelState.AddModelError("Username", "This username is already taken.");
-                else
-                    ModelState.AddModelError("", "A database error occurred while saving. Please try again.");
+                    errorMessage = "This username is already taken.";
 
                 if (IsAjaxRequest())
                 {
-                    return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+                    return Json(new { success = false, errors = new List<string> { errorMessage } });
                 }
 
+                ModelState.AddModelError("", errorMessage);
                 return View(registerAccDto);
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+                string errorMessage = "An unexpected error occurred. Please try again.";
 
                 if (IsAjaxRequest())
                 {
-                    return Json(new { success = false, errors = new[] { "An unexpected error occurred. Please try again." } });
+                    return Json(new { success = false, errors = new List<string> { errorMessage } });
                 }
 
+                ModelState.AddModelError("", errorMessage);
                 return View(registerAccDto);
             }
         }

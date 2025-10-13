@@ -441,14 +441,17 @@
                 return Object.values(rules).every(regex => regex.test(val));
             }
 
-            // Password match validation
+            // Password match validation - ASYNCHRONOUS VERSION
             const matchIndicator = document.getElementById('passwordMatch');
 
-            function validatePasswordMatch() {
+            async function validatePasswordMatch() {
                 if (!matchIndicator || !passwordInput || !confirmInput) return true;
 
                 const password = passwordInput.value;
                 const confirmPassword = confirmInput.value;
+
+                // Add a small delay to make it asynchronous and allow UI to update
+                await new Promise(resolve => setTimeout(resolve, 10));
 
                 if (confirmPassword === '') {
                     matchIndicator.classList.add('hidden');
@@ -471,9 +474,15 @@
                 }
             }
 
-            // Event listeners
+            // Async event listeners for password validation
             if (passwordInput) {
-                passwordInput.addEventListener('input', validatePasswordRequirements);
+                passwordInput.addEventListener('input', function() {
+                    validatePasswordRequirements();
+                    // Trigger password match validation when password changes
+                    if (confirmInput && confirmInput.value) {
+                        validatePasswordMatch();
+                    }
+                });
                 passwordInput.addEventListener('focus', () => {
                     if (passwordInput.value.length > 0) {
                         passwordTooltip?.classList.remove('hidden');
@@ -489,7 +498,9 @@
             }
 
             if (confirmInput) {
-                confirmInput.addEventListener('input', validatePasswordMatch);
+                confirmInput.addEventListener('input', function() {
+                    validatePasswordMatch();
+                });
             }
 
             // Floating label functionality for username and email
@@ -554,11 +565,12 @@
             // Call this on page load
             showExistingErrors();
 
-          // Form submission handler
+          // Form submission handler - ASYNCHRONOUS VERSION
         const registerForm = document.getElementById('registerForm');
         if (registerForm) {
             registerForm.addEventListener('submit', async function(event) {
                 event.preventDefault(); // Prevent default form submission
+
                 // Check if reCAPTCHA is available
                 if (typeof grecaptcha !== 'undefined') {
                     const recaptchaResponse = grecaptcha.getResponse();
@@ -568,8 +580,9 @@
                     }
                 }
 
-                // Check password requirements
-                if (!areAllPasswordRequirementsMet()) {
+                // ASYNC: Check password requirements
+                const passwordRequirementsMet = areAllPasswordRequirementsMet();
+                if (!passwordRequirementsMet) {
                     passwordTooltip.classList.remove('hidden');
                     passwordRequirementError.classList.remove('hidden');
 
@@ -585,7 +598,9 @@
                     return false;
                 }
 
-                if (!validatePasswordMatch()) {
+                // ASYNC: Check password match
+                const passwordsMatch = await validatePasswordMatch();
+                if (!passwordsMatch) {
                     alert('Please ensure both passwords match before submitting.');
                     return false;
                 }
