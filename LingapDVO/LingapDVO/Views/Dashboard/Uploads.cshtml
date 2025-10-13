@@ -23,6 +23,7 @@
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
+            --claimed-color: #8b5cf6;
         }
 
         body {
@@ -249,6 +250,10 @@
             background: var(--secondary-color);
         }
 
+        .timeline-marker.claimed {
+            background: var(--claimed-color);
+        }
+
         .waiting-text {
             color: var(--secondary-color);
             font-style: italic;
@@ -284,6 +289,11 @@
         .status-unapproved {
             background: #fee2e2;
             color: #991b1b;
+        }
+
+        .status-claimed {
+            background: #f3e8ff;
+            color: #7c3aed;
         }
 
         .empty-state {
@@ -617,6 +627,7 @@
                             <th>Submitted Date</th>
                             <th>Processed Date</th>
                             <th>Result Date</th>
+                            <th>Claimed Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -717,10 +728,10 @@
                                                 <i class="fas fa-check-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>@doc.Status</h6>
+                                                <h6>Result</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Result: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Status: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
@@ -728,6 +739,38 @@
                                                 }
                                             </div>
                                         </div>
+
+                                        <!-- Step 4: Claimed Status (Only show if approved) -->
+                                        @if (doc.Status2 == "Approved")
+                                        {
+                                            @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker claimed">
+                                                        <i class="fas fa-hand-holding-usd"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Claim Status</h6>
+                                                        <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                        <p class="timeline-description">
+                                                            Status: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker waiting">
+                                                        <i class="fas fa-clock"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Claim Status</h6>
+                                                        <p class="waiting-text">Waiting for claim to be processed...</p>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
                                     }
                                     else
                                     {
@@ -837,10 +880,10 @@
                                                 <i class="fas fa-check-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>@doc.Status</h6>
+                                                <h6>Result</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Result: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Status: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
@@ -848,6 +891,38 @@
                                                 }
                                             </div>
                                         </div>
+
+                                        <!-- Step 4: Claimed Status (Only show if approved) -->
+                                        @if (doc.Status2 == "Approved")
+                                        {
+                                            @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker claimed">
+                                                        <i class="fas fa-hand-holding-usd"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Claim Status</h6>
+                                                        <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                        <p class="timeline-description">
+                                                            Status: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker waiting">
+                                                        <i class="fas fa-clock"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Claim Status</h6>
+                                                        <p class="waiting-text">Waiting for claim to be processed...</p>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
                                     }
                                     else
                                     {
@@ -957,10 +1032,10 @@
                                                 <i class="fas fa-check-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>@doc.Status</h6>
+                                                <h6>Result</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Result: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Status: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
@@ -968,6 +1043,38 @@
                                                 }
                                             </div>
                                         </div>
+
+                                        <!-- Step 4: Claimed Status (Only show if approved) -->
+                                        @if (doc.Status2 == "Approved")
+                                        {
+                                            @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker claimed">
+                                                        <i class="fas fa-hand-holding-usd"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Claim Status</h6>
+                                                        <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                        <p class="timeline-description">
+                                                            Status: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker waiting">
+                                                        <i class="fas fa-clock"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Claim Status</h6>
+                                                        <p class="waiting-text">Waiting for claim to be processed...</p>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
                                     }
                                     else
                                     {
@@ -1085,7 +1192,7 @@
         function collectAllApplications() {
             const applications = [];
 
-            // Helper function to detect status for each card
+            // Helper function to detect status for each card - FIXED VERSION
             function detectStatus(card) {
                 // Check if there's a final result (approved/unapproved)
                 const resultMarker = card.querySelector('.timeline-item:nth-child(3) .timeline-marker.approved, .timeline-item:nth-child(3) .timeline-marker.unapproved');
@@ -1093,28 +1200,73 @@
                     return resultMarker.classList.contains('approved') ? 'Approved' : 'Unapproved';
                 }
 
-                // Check if processing has started
+                // Check if processing has started (look for processing marker in step 2)
                 const processingMarker = card.querySelector('.timeline-item:nth-child(2) .timeline-marker.processing');
                 if (processingMarker) {
                     return 'Processing';
+                }
+
+                // Check if result is waiting (look for waiting marker in step 3)
+                const resultWaitingMarker = card.querySelector('.timeline-item:nth-child(3) .timeline-marker.waiting');
+                if (resultWaitingMarker) {
+                    return 'Processing'; // If result is waiting, it's still being processed
                 }
 
                 // Default to pending
                 return 'Pending';
             }
 
+            // Helper function to detect claim status
+            function detectClaimStatus(card) {
+                const claimMarker = card.querySelector('.timeline-item:nth-child(4) .timeline-marker.claimed');
+                if (claimMarker) {
+                    const claimStatusBadge = card.querySelector('.timeline-item:nth-child(4) .status-badge');
+                    return claimStatusBadge ? claimStatusBadge.textContent.trim() : 'Claimed';
+                }
+                return null;
+            }
+
+            // Helper function to extract claimed date
+            function extractClaimedDate(card) {
+                const claimDateElement = card.querySelector('.timeline-item:nth-child(4) .timeline-date');
+                return claimDateElement ? new Date(claimDateElement.textContent) : null;
+            }
+
+            // Helper function to extract processing date
+            function extractProcessingDate(card) {
+                const processingDateElement = card.querySelector('.timeline-item:nth-child(2) .timeline-date');
+                return processingDateElement ? new Date(processingDateElement.textContent) : null;
+            }
+
+            // Helper function to extract result date
+            function extractResultDate(card) {
+                const resultDateElement = card.querySelector('.timeline-item:nth-child(3) .timeline-date');
+                return resultDateElement ? new Date(resultDateElement.textContent) : null;
+            }
+
+            // Helper function to get application type from icon
+            function getApplicationType(header) {
+                if (header.innerHTML.includes('fa-hospital')) return 'Hospital Bill';
+                if (header.innerHTML.includes('fa-microscope')) return 'Medical Procedure';
+                if (header.innerHTML.includes('fa-monument')) return 'Funeral Assistance';
+                return 'Application';
+            }
+
             // Hospital Bills
             document.querySelectorAll('#hospital .tracking-card').forEach(card => {
                 const header = card.querySelector('.tracking-header h5');
                 const dateText = card.querySelector('.tracking-date').textContent;
+                const appType = getApplicationType(header);
 
                 applications.push({
-                    type: 'Hospital Bill',
-                    name: header.textContent.replace('Hospital', '').trim(),
+                    type: appType,
+                    name: header.textContent.replace('Hospital', '').replace('Microscope', '').replace('Monument', '').trim(),
                     status: detectStatus(card),
+                    claimStatus: detectClaimStatus(card),
                     submittedDate: extractDate(dateText),
-                    processedDate: extractProcessedDate(card),
+                    processedDate: extractProcessingDate(card),
                     resultDate: extractResultDate(card),
+                    claimedDate: extractClaimedDate(card),
                     id: extractId(card)
                 });
             });
@@ -1123,14 +1275,17 @@
             document.querySelectorAll('#medical .tracking-card').forEach(card => {
                 const header = card.querySelector('.tracking-header h5');
                 const dateText = card.querySelector('.tracking-date').textContent;
+                const appType = getApplicationType(header);
 
                 applications.push({
-                    type: 'Medical/Lab',
-                    name: header.textContent.replace('Microscope', '').trim(),
+                    type: appType,
+                    name: header.textContent.replace('Hospital', '').replace('Microscope', '').replace('Monument', '').trim(),
                     status: detectStatus(card),
+                    claimStatus: detectClaimStatus(card),
                     submittedDate: extractDate(dateText),
-                    processedDate: extractProcessedDate(card),
+                    processedDate: extractProcessingDate(card),
                     resultDate: extractResultDate(card),
+                    claimedDate: extractClaimedDate(card),
                     id: extractId(card)
                 });
             });
@@ -1139,14 +1294,17 @@
             document.querySelectorAll('#funeral .tracking-card').forEach(card => {
                 const header = card.querySelector('.tracking-header h5');
                 const dateText = card.querySelector('.tracking-date').textContent;
+                const appType = getApplicationType(header);
 
                 applications.push({
-                    type: 'Funeral',
-                    name: header.textContent.replace('Monument', '').trim(),
+                    type: appType,
+                    name: header.textContent.replace('Hospital', '').replace('Microscope', '').replace('Monument', '').trim(),
                     status: detectStatus(card),
+                    claimStatus: detectClaimStatus(card),
                     submittedDate: extractDate(dateText),
-                    processedDate: extractProcessedDate(card),
+                    processedDate: extractProcessingDate(card),
                     resultDate: extractResultDate(card),
+                    claimedDate: extractClaimedDate(card),
                     id: extractId(card)
                 });
             });
@@ -1187,6 +1345,7 @@
             const pending = applications.filter(app => app.status === 'Pending').length;
             const processing = applications.filter(app => app.status === 'Processing').length;
             const unapproved = applications.filter(app => app.status === 'Unapproved').length;
+            const claimed = applications.filter(app => app.claimStatus && app.claimStatus.toLowerCase().includes('claimed')).length;
 
             pastDataSummary.innerHTML = `
                 <div class="summary-card">
@@ -1209,6 +1368,10 @@
                     <h5>Unapproved</h5>
                     <div class="count" style="color: var(--danger-color);">${unapproved}</div>
                 </div>
+                <div class="summary-card">
+                    <h5>Claimed</h5>
+                    <div class="count" style="color: var(--claimed-color);">${claimed}</div>
+                </div>
             `;
         }
 
@@ -1219,7 +1382,7 @@
             if (applications.length === 0) {
                 pastDataTableBody.innerHTML = `
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 2rem;">
+                        <td colspan="8" style="text-align: center; padding: 2rem;">
                             <i class="fas fa-folder-open" style="font-size: 2rem; color: var(--secondary-color); margin-bottom: 1rem; display: block;"></i>
                             <p style="color: var(--secondary-color); margin: 0;">No applications found in the selected date range.</p>
                         </td>
@@ -1237,6 +1400,14 @@
                 else if (app.status === 'Processing') statusClass = 'status-processing';
                 else if (app.status === 'Unapproved') statusClass = 'status-unapproved';
 
+                // Determine claim status badge class
+                let claimStatusDisplay = '-';
+                let claimStatusClass = '';
+                if (app.claimStatus) {
+                    claimStatusDisplay = app.claimStatus;
+                    claimStatusClass = 'status-claimed';
+                }
+
                 row.innerHTML = `
                     <td>${app.type}</td>
                     <td>${app.name}</td>
@@ -1244,6 +1415,7 @@
                     <td>${formatDate(new Date(app.submittedDate))}</td>
                     <td>${app.processedDate ? formatDate(app.processedDate) : '-'}</td>
                     <td>${app.resultDate ? formatDate(app.resultDate) : '-'}</td>
+                    <td>${app.claimedDate ? formatDate(app.claimedDate) : '-'}</td>
                     <td>
                         ${app.id ? `<a href="/Dashboard/Fillupformhospitalbillview/${app.id}" class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
                             <i class="fas fa-eye"></i> View
@@ -1264,6 +1436,113 @@
             });
         }
 
+        // Send notification when document is processed
+        function sendProcessingNotification(application) {
+            // Check if we should send a notification (only for processing status)
+            if (application.status === 'Processing' && application.processedDate) {
+                const notification = {
+                    type: application.type,
+                    title: `${application.type} Application in Progress`,
+                    message: `Your ${application.type.toLowerCase()} application is now being processed by our staff.`,
+                    timestamp: application.processedDate
+                };
+
+                // Send to notification system (you can integrate this with your existing notification system)
+                addToNotificationSystem(notification);
+            }
+
+            // Check if we should send approval notification
+            if (application.status === 'Approved' && application.resultDate) {
+                const notification = {
+                    type: application.type,
+                    title: `${application.type} Application Approved`,
+                    message: `Great news! Your ${application.type.toLowerCase()} application has been approved.`,
+                    timestamp: application.resultDate
+                };
+
+                addToNotificationSystem(notification);
+            }
+
+            // Check if we should send claim notification
+            if (application.claimStatus && application.claimedDate) {
+                const notification = {
+                    type: application.type,
+                    title: `Benefits ${application.claimStatus}`,
+                    message: `Your ${application.type.toLowerCase()} benefits have been ${application.claimStatus.toLowerCase()}.`,
+                    timestamp: application.claimedDate
+                };
+
+                addToNotificationSystem(notification);
+            }
+        }
+
+        // Add notification to the notification system
+        function addToNotificationSystem(notification) {
+            // This would integrate with your existing notification system
+            // For now, we'll log it and you can integrate it with your actual notification system
+
+            console.log('New Notification:', notification);
+
+            // Example of how to integrate with your existing notification system:
+            if (typeof window.addNotification === 'function') {
+                window.addNotification({
+                    id: `notification_${Date.now()}`,
+                    title: notification.title,
+                    message: notification.message,
+                    isRead: false,
+                    createdAt: notification.timestamp.toISOString(),
+                    type: notification.type.toLowerCase().includes('approved') ? 'approved' :
+                          notification.type.toLowerCase().includes('processing') ? 'processing' : 'claimed',
+                    link: "/Uploads"
+                });
+            }
+
+            // Show toast notification
+            showToastNotification(notification.title, notification.message);
+        }
+
+        // Show toast notification
+        function showToastNotification(title, message) {
+            // Create toast element if it doesn't exist
+            let toast = document.getElementById('processingToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'processingToast';
+                toast.className = 'toast-notification';
+                toast.innerHTML = `
+                    <div class="toast-header">
+                        <i class="fas fa-bell text-primary"></i>
+                        <h6 class="toast-title">${title}</h6>
+                    </div>
+                    <p class="toast-message">${message}</p>
+                `;
+                document.body.appendChild(toast);
+            } else {
+                toast.querySelector('.toast-title').textContent = title;
+                toast.querySelector('.toast-message').textContent = message;
+            }
+
+            // Show toast
+            toast.classList.add('show');
+
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 5000);
+        }
+
+        // Check for processing status changes and send notifications
+        function checkForStatusChanges() {
+            const applications = collectAllApplications();
+
+            applications.forEach(app => {
+                // Check if this application has processing data that should trigger a notification
+                if (app.processedDate && app.status === 'Processing') {
+                    sendProcessingNotification(app);
+                }
+            });
+        }
+
         // Event listeners
         applyFilter.addEventListener('click', loadPastData);
 
@@ -1275,6 +1554,16 @@
         if (pastDataToggle.classList.contains('active')) {
             loadPastData();
         }
+
+        // Check for status changes when the page loads (for existing processing applications)
+        setTimeout(() => {
+            checkForStatusChanges();
+        }, 1000);
+
+        // Real-time check for status changes (every 30 seconds)
+        setInterval(() => {
+            checkForStatusChanges();
+        }, 30000);
     </script>
 </body>
 </html>
