@@ -753,10 +753,18 @@ namespace LingapDVO.Controllers
 
         public IActionResult Register()
         {
+            // ✅ NEW CODE: Check for success parameter and show modal
             if (TempData["SuccessMessage"] != null)
             {
                 ViewBag.SuccessMessage = TempData["SuccessMessage"];
             }
+
+            // Check if redirected with success parameter
+            if (Request.Query["success"] == "true")
+            {
+                ViewBag.ShowSuccessModal = true;
+            }
+
             return View();
         }
 
@@ -831,8 +839,16 @@ namespace LingapDVO.Controllers
                 context.RegisterAcc.Add(registercacc);
                 context.SaveChanges();
 
-                TempData["SuccessMessage"] = "Registration successful! You can now log in.";
-                return RedirectToAction("Login", "Login");
+                // ✅ SUCCESS: Return JSON for AJAX or redirect with success parameter
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = true, message = "Registration successful!" });
+                }
+                else
+                {
+                    // For non-AJAX submissions, redirect with success parameter
+                    return RedirectToAction("Register", "Login", new { success = "true" });
+                }
             }
             catch (DbUpdateException dbEx)
             {
@@ -844,11 +860,22 @@ namespace LingapDVO.Controllers
                 else
                     ModelState.AddModelError("", "A database error occurred while saving. Please try again.");
 
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+                }
+
                 return View(registerAccDto);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
+
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = new[] { "An unexpected error occurred. Please try again." } });
+                }
+
                 return View(registerAccDto);
             }
         }

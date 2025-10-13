@@ -7,175 +7,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-
-    <!-- Preload critical resources -->
-    <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style">
-
-    <!-- Inline critical CSS -->
-    <style>
-        .text-green-600 {
-            color: #10b981;
-        }
-
-        .hover\:text-green-700:hover {
-            color: #047857;
-        }
-
-        .accent-green-600 {
-            accent-color: #10b981;
-        }
-
-        /* Floating label styles */
-        .floating-label {
-            position: relative;
-        }
-
-            .floating-label input:focus + span,
-            .floating-label input:not(:placeholder-shown) + span {
-                top: 0 !important;
-                font-size: 0.75rem !important;
-                color: #10b981 !important;
-                transform: translateY(-50%) !important;
-            }
-
-        /* Password toggle button styles */
-        .password-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-            .password-toggle:hover {
-                color: #4b5563;
-            }
-
-        /* Form validation styles */
-        .border-green-500 {
-            border-color: #10b981;
-        }
-
-        .border-red-500 {
-            border-color: #ef4444;
-        }
-    </style>
-
-    <!-- Deferred non-critical styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
-
-    <!-- Async scripts -->
-    <script src="https://cdn.tailwindcss.com" async></script>
+    <title>Sign Up</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
-
 <body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-    <!-- Loading skeleton for initial paint -->
-    <div id="loadingSkeleton" class="fixed inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
-            <div class="text-center mb-6">
-                <div class="h-8 bg-gray-200 rounded animate-pulse w-48 mx-auto mb-2"></div>
-            </div>
-            <div class="space-y-4">
-                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                    <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                </div>
-                <div class="h-32 bg-gray-200 rounded-xl animate-pulse"></div>
-                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Go Back Button -->
-    <a href="/" class="fixed left-4 top-4 z-50 flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-lg border border-gray-200 text-green-600 hover:bg-green-600 hover:text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 font-semibold text-sm hidden" id="backButton">
-        <i class="fas fa-arrow-left text-xs"></i>
-        <span>Home</span>
-    </a>
-
-    <!-- Register Card -->
-    <div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 backdrop-blur-sm hidden" id="registerCard">
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                Create an Account
-            </h1>
-        </div>
-
-        <!-- Success Message -->
-        @if (ViewBag.SuccessMessage != null)
-        {
-            <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-green-600 text-sm mb-6 flex items-center">
-                <i class="fas fa-check-circle mr-2"></i>
-                <span>@ViewBag.SuccessMessage</span>
-            </div>
-        }
-
-        <form asp-action="Register" method="post" enctype="multipart/form-data" class="space-y-6" id="registerForm">
-
-            <!-- Validation Summary -->
-            <div asp-validation-summary="All"
-                 id="validationSummary"
-                 class="hidden bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm transition-opacity duration-300">
+    <!-- Increased max-width from max-w-md to max-w-2xl for much wider form -->
+    <div class="w-full max-w-2xl">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/20 backdrop-blur-sm">
+            <!-- Compact Header -->
+            <div class="text-center mb-6 lg:mb-8">
+                <h1 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+                    Create Account
+                </h1>
             </div>
 
-            <!-- Username & Email in Horizontal Layout -->
-            <div class="space-y-3">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <!-- Username Field -->
-                    <div class="space-y-2 floating-label">
+            <form asp-action="Register" method="post" enctype="multipart/form-data" id="registerForm" class="space-y-4 lg:space-y-5">
+
+                <!-- Username & Email in Horizontal Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                    <!-- Username Field - Updated to match login form sizing -->
+                    <div class="space-y-2">
                         <label class="block text-sm font-semibold text-gray-700">
                             Username
                         </label>
                         <div class="relative">
                             <input asp-for="Username"
                                    type="text"
-                                   class="w-full px-3 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white placeholder-transparent"
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
                                    placeholder=" "
                                    required
                                    autocomplete="username"
                                    id="username">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none bg-white px-1 transition-all duration-200">
-                                <i class="fas fa-user mr-2 text-green-500"></i>Enter username
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
+                                <i class="fas fa-user mr-2 text-crimson-500"></i>Enter username
                             </span>
                         </div>
                         <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
                     </div>
 
-                    <!-- Email Field -->
-                    <div class="space-y-2 floating-label">
+                    <!-- Email Field - Updated to match login form sizing -->
+                    <div class="space-y-2">
                         <label class="block text-sm font-semibold text-gray-700">
                             Email
                         </label>
                         <div class="relative">
-                            <input asp-for="Email" type="email"
-                                   class="w-full px-3 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white placeholder-transparent"
+                            <input asp-for="Email"
+                                   type="email"
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
                                    placeholder=" "
                                    required
                                    autocomplete="email"
                                    id="email">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none bg-white px-1 transition-all duration-200">
-                                <i class="fas fa-envelope mr-2 text-green-500"></i>Enter email
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
+                                <i class="fas fa-envelope mr-2 text-crimson-500"></i>Enter email
                             </span>
                         </div>
                         <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Password & Confirm Password in Horizontal Layout -->
-            <div class="space-y-3">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <!-- Password Field -->
+                <!-- Password & Confirm Password in Horizontal Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                    <!-- Password Field - Updated to match login form sizing -->
                     <div class="space-y-2">
                         <label class="block text-sm font-semibold text-gray-700">
                             Password
@@ -183,19 +80,19 @@
                         <div class="relative">
                             <input asp-for="Password"
                                    type="password"
-                                   class="w-full px-3 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white pr-12"
-                                   placeholder="Enter password"
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-12"
+                                   placeholder="Enter your password"
                                    required
                                    autocomplete="new-password"
                                    id="password">
-                            <button type="button" class="password-toggle absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="togglePassword">
+                            <button type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="togglePassword">
                                 <i class="fas fa-eye text-sm"></i>
                             </button>
                         </div>
                         <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
                     </div>
 
-                    <!-- Confirm Password Field -->
+                    <!-- Confirm Password Field - Updated to match login form sizing -->
                     <div class="space-y-2">
                         <label class="block text-sm font-semibold text-gray-700">
                             Confirm Password
@@ -203,171 +100,105 @@
                         <div class="relative">
                             <input type="password"
                                    name="ConfirmPassword"
-                                   class="w-full px-3 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white pr-12"
-                                   placeholder="Confirm password"
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-12"
+                                   placeholder="Confirm your password"
                                    required
                                    autocomplete="new-password"
                                    id="confirmPassword">
-                            <button type="button" class="password-toggle absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="toggleConfirmPassword">
+                            <button type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="toggleConfirmPassword">
                                 <i class="fas fa-eye text-sm"></i>
                             </button>
                         </div>
-                        <div id="passwordMatch" class="text-xs mt-2"></div>
+                        <div id="passwordMatch" class="text-xs mt-1 hidden transition-all duration-300"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Password Requirements Tooltip -->
-            <div id="passwordTooltip" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-700">
-                <p class="font-semibold mb-2">Password Requirements:</p>
-                <ul class="space-y-2">
-                    <li id="rule-length" class="flex items-center gap-2">
-                        <i class="fas fa-circle text-red-500 text-xs"></i>
-                        <span>At least 8 characters</span>
-                    </li>
-                    <li id="rule-uppercase" class="flex items-center gap-2">
-                        <i class="fas fa-circle text-red-500 text-xs"></i>
-                        <span>One uppercase letter</span>
-                    </li>
-                    <li id="rule-lowercase" class="flex items-center gap-2">
-                        <i class="fas fa-circle text-red-500 text-xs"></i>
-                        <span>One lowercase letter</span>
-                    </li>
-                    <li id="rule-number" class="flex items-center gap-2">
-                        <i class="fas fa-circle text-red-500 text-xs"></i>
-                        <span>One number</span>
-                    </li>
-                    <li id="rule-symbol" class="flex items-center gap-2">
-                        <i class="fas fa-circle text-red-500 text-xs"></i>
-                        <span>One special character</span>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Password Strength Indicator -->
-            <div id="passwordStrength" class="hidden">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-xs text-gray-600">Password strength:</span>
-                    <span id="strengthText" class="text-xs font-semibold"></span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div id="strengthBar" class="h-2 rounded-full" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <!-- Social Login -->
-            <div class="pt-2">
-                <div class="flex items-center my-4">
-                    <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                    <span class="px-3 text-xs text-gray-500 bg-white font-medium">or continue with</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="/Login/GoogleLogin" class="flex items-center justify-center gap-2 px-3 py-2 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 group">
-                        <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png" alt="Google" class="w-4 h-4">
-                        <span class="text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
-                    </a>
-
-                    <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 group shadow-sm">
-                        <i class="fab fa-facebook-f text-xs"></i>
-                        <span class="text-xs font-medium">Facebook</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- reCAPTCHA -->
-            <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                <div class="g-recaptcha mx-auto scale-90 lg:scale-100" data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
-                <div id="recaptchaError" class="text-red-500 text-xs mt-2 hidden">Please complete the reCAPTCHA</div>
-            </div>
-
-            <!-- Terms Agreement -->
-            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-200">
-                <input type="checkbox" id="terms" name="terms" class="mt-0.5 accent-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-1" required>
-                <label for="terms" class="text-xs text-gray-700 flex-1 leading-relaxed cursor-pointer">
-                    I agree to the
-                    <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
-                </label>
-            </div>
-            <div id="termsError" class="text-red-500 text-xs mt-2 hidden">You must agree to the terms and conditions</div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl group disabled:opacity-50 disabled:cursor-not-allowed" id="registerButton">
-                <span class="flex items-center justify-center gap-2">
-                    <span>Sign Up</span>
-                    <i class="fas fa-arrow-right group-hover:translate-x-1"></i>
-                </span>
-            </button>
-
-            <!-- Links -->
-            <div class="text-center space-y-2 pt-2">
-                <p class="text-gray-500 text-xs lg:text-sm">
-                    Already have an account?
-                    <a href="/Login" class="text-blue-600 hover:text-blue-800 font-semibold ml-1">Sign in</a>
-                </p>
-                <p class="text-gray-500 text-xs lg:text-sm">
-                    <a href="/" class="text-blue-600 hover:text-blue-800 font-semibold">Back to Home</a>
-                </p>
-            </div>
-        </form>
-    </div>
-
-    <!-- Compact Error Modal -->
-    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-red-50">
-                <div class="modal-body p-6 text-center">
-                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                <!-- Password Requirements Tooltip with Error Message -->
+                <div id="passwordTooltip" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 transition-all duration-300">
+                    <p class="font-semibold mb-2">Password Requirements:</p>
+                    <ul class="space-y-1">
+                        <li id="rule-length" class="flex items-center gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span>At least 8 characters</span>
+                        </li>
+                        <li id="rule-uppercase" class="flex items-center gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span>One uppercase letter</span>
+                        </li>
+                        <li id="rule-lowercase" class="flex items-center gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span>One lowercase letter</span>
+                        </li>
+                        <li id="rule-number" class="flex items-center gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span>One number</span>
+                        </li>
+                        <li id="rule-symbol" class="flex items-center gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span>One special character</span>
+                        </li>
+                    </ul>
+                    <!-- Password Requirement Error Message -->
+                    <div id="passwordRequirementError" class="hidden mt-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span class="font-medium">Please meet all password requirements above</span>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-3" id="errorModalTitle">Error</h3>
-                    <p class="text-sm text-gray-600 mb-4" id="errorModalMessage">An error occurred.</p>
-                    <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200" data-bs-dismiss="modal">
-                        OK
-                    </button>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Compact Password Requirements Error Modal -->
-    <div class="modal fade" id="passwordErrorModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-red-50">
-                <div class="modal-body p-6 text-center">
-                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                <!-- Social Login - Updated spacing and sizing -->
+                <div class="pt-2">
+                    <div class="flex items-center my-4">
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                        <span class="px-3 text-xs text-gray-500 bg-white font-medium">or continue with</span>
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-3">Password Requirements</h3>
-                    <div class="bg-white rounded-lg p-3 border border-red-200 mb-4 text-left max-h-32 overflow-y-auto">
-                        <ul class="text-xs text-gray-600 space-y-1" id="passwordErrorList">
-                            <!-- Error list will be populated here -->
-                        </ul>
-                    </div>
-                    <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200" data-bs-dismiss="modal">
-                        OK
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Compact Password Mismatch Error Modal -->
-    <div class="modal fade" id="passwordMismatchModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-red-50">
-                <div class="modal-body p-6 text-center">
-                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-exclamation-circle text-red-600 text-2xl"></i>
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="/Login/GoogleLogin" class="flex items-center justify-center gap-2 px-3 py-2.5 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
+                            <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png" alt="Google" class="w-4 h-4">
+                            <span class="text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
+                        </a>
+
+                        <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
+                            <i class="fab fa-facebook-f text-xs"></i>
+                            <span class="text-xs font-medium">Facebook</span>
+                        </a>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-3">Passwords Don't Match</h3>
-                    <p class="text-sm text-gray-600 mb-4">The passwords you entered do not match.</p>
-                    <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200" data-bs-dismiss="modal">
-                        Try Again
-                    </button>
                 </div>
-            </div>
+
+                <!-- reCAPTCHA - Centered and updated styling -->
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 flex justify-center">
+                    <div class="g-recaptcha mx-auto" data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
+                </div>
+
+                <!-- Terms Agreement - Updated styling -->
+                <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200">
+                    <input type="checkbox" id="terms" name="terms" class="mt-0.5 accent-green-600" required>
+                    <label for="terms" class="text-xs text-gray-700 flex-1 leading-relaxed cursor-pointer">
+                        I agree to the
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                    </label>
+                </div>
+
+                <!-- Submit Button - Updated to match login button sizing -->
+                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 lg:py-3.5 rounded-xl font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 group" id="registerButton">
+                    <span class="flex items-center justify-center gap-2">
+                        <span>Sign Up</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200"></i>
+                    </span>
+                </button>
+
+                <!-- Links -->
+                <div class="text-center space-y-2 pt-2">
+                    <p class="text-gray-500 text-xs lg:text-sm">
+                        Already have an account?
+                        <a href="/Login" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 ml-1">Sign in</a>
+                    </p>
+                    <p class="text-gray-500 text-xs lg:text-sm">
+                        <a href="/" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200">Back to Home</a>
+                    </p>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -477,7 +308,7 @@
                             <i class="fas fa-info-circle text-blue-500"></i>
                             <span>Questions? Contact us at <a href="mailto:support@lingap.org" class="text-blue-600 font-semibold hover:underline">support@lingap.org</a></span>
                         </div>
-                        <button type="button" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:shadow-md" data-bs-dismiss="modal">
+                        <button type="button" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200 shadow-sm hover:shadow-md" data-bs-dismiss="modal">
                             I Understand
                         </button>
                     </div>
@@ -486,7 +317,7 @@
         </div>
     </div>
 
-    <!-- Success Modal with Countdown -->
+    <!-- Success Modal -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-green-50">
@@ -495,375 +326,144 @@
                         <i class="fas fa-check text-green-600 text-3xl"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h3>
-                    <p class="text-gray-600 mb-6">Your account has been created successfully. Redirecting to login...</p>
-
-                    <!-- Countdown and Progress Bar -->
+                    <p class="text-gray-600 mb-6">Welcome to our community! You can now proceed to login.</p>
                     <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                        <p class="text-sm text-gray-600 mb-2">Redirecting to login page in:</p>
-                        <div class="text-2xl font-bold text-green-600" id="countdown">3</div>
-                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div id="countdownBar" class="bg-green-600 h-2 rounded-full transition-all duration-1000" style="width: 100%"></div>
-                        </div>
-                    </div>
-
-                    <!-- Manual Redirect Button -->
-                    <div class="mt-4">
-                        <a href="/Login" class="inline-block w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200">
-                            Go to Login Now
-                        </a>
+                        <button id="proceedToLogin" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                            Proceed to Login
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Deferred JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Minimal initial loader
-        function initPage() {
-            // Hide loading skeleton and show content
-            const loadingSkeleton = document.getElementById('loadingSkeleton');
-            const registerCard = document.getElementById('registerCard');
-            const backButton = document.getElementById('backButton');
+            // Global variable to store the success modal instance
+        let successModal = null;
 
-            if (loadingSkeleton && registerCard && backButton) {
-                loadingSkeleton.classList.add('hidden');
-                registerCard.classList.remove('hidden');
-                backButton.classList.remove('hidden');
-
-                // Initialize validation visibility
-                const validationSummary = document.getElementById('validationSummary');
-                if (validationSummary && validationSummary.innerText.trim() !== "") {
-                    validationSummary.classList.remove('hidden', 'opacity-0');
-                    validationSummary.classList.add('opacity-100');
-                }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap modal
+            const successModalElement = document.getElementById('successModal');
+            if (successModalElement) {
+                successModal = new bootstrap.Modal(successModalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
             }
 
-            // Load Bootstrap async
-            loadBootstrap();
-        }
-
-        function loadBootstrap() {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
-            script.onload = initializeApp;
-            document.head.appendChild(script);
-        }
-
-        function initializeApp() {
-            // Check for success modal
+            // Auto-show success modal if redirected with success parameter
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('registration') === 'success') {
-                showSuccessModal();
+            if (urlParams.get('success') === 'true') {
+                // Small delay to ensure DOM is fully ready
+                setTimeout(() => {
+                    showSuccessModal();
+                }, 500);
             }
 
-            // Initialize form functionality
-            initializeFormFunctionality();
-        }
-
-        // Show success modal with countdown to login
-        function showSuccessModal() {
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            successModal.show();
-
-            let seconds = 3;
-            const countdownElement = document.getElementById('countdown');
-            const countdownBar = document.getElementById('countdownBar');
-
-            const countdown = setInterval(function() {
-                seconds--;
-                countdownElement.textContent = seconds;
-                countdownBar.style.width = (seconds * 33.33) + '%';
-
-                if (seconds <= 0) {
-                    clearInterval(countdown);
-                    window.location.href = '/Login';
-                }
-            }, 1000);
-        }
-
-        // Password validation rules
-        const rules = {
-            length: /.{8,}/,
-            uppercase: /[A-Z]/,
-            lowercase: /[a-z]/,
-            number: /[0-9]/,
-            symbol: /[^A-Za-z0-9]/
-        };
-
-        // Server-side compatible password validation
-        function validatePasswordRequirementsServerSide(password) {
-            const errors = [];
-
-            if (password.length < 8) {
-                errors.push("At least 8 characters long");
-            }
-            if (!/[A-Z]/.test(password)) {
-                errors.push("At least one uppercase letter (A-Z)");
-            }
-            if (!/[a-z]/.test(password)) {
-                errors.push("At least one lowercase letter (a-z)");
-            }
-            if (!/[0-9]/.test(password)) {
-                errors.push("At least one number (0-9)");
-            }
-            if (!/[^A-Za-z0-9]/.test(password)) {
-                errors.push("At least one special character (!#$%^&* etc.)");
-            }
-
-            return errors;
-        }
-
-        // Show general error modal
-        function showErrorModal(title, message) {
-            document.getElementById('errorModalTitle').textContent = title;
-            document.getElementById('errorModalMessage').textContent = message;
-            const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-            errorModal.show();
-        }
-
-        // Show password requirements error modal
-        function showPasswordErrorModal(passwordErrors) {
-            const errorList = document.getElementById('passwordErrorList');
-            errorList.innerHTML = '';
-
-            passwordErrors.forEach(error => {
-                const listItem = document.createElement('li');
-                listItem.className = 'flex items-start gap-2';
-                listItem.innerHTML = `
-                    <i class="fas fa-times text-red-500 text-xs mt-0.5"></i>
-                    <span class="text-xs">${error}</span>
-                `;
-                errorList.appendChild(listItem);
-            });
-
-            const passwordErrorModal = new bootstrap.Modal(document.getElementById('passwordErrorModal'));
-            passwordErrorModal.show();
-        }
-
-        // Show password mismatch modal
-        function showPasswordMismatchModal() {
-            const passwordMismatchModal = new bootstrap.Modal(document.getElementById('passwordMismatchModal'));
-            passwordMismatchModal.show();
-        }
-
-        // Toggle password visibility
-        function togglePasswordVisibility(input, button) {
-            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-            input.setAttribute('type', type);
-            button.innerHTML = type === 'password' ? '<i class="fas fa-eye text-sm"></i>' : '<i class="fas fa-eye-slash text-sm"></i>';
-        }
-
-        // Password strength calculation
-        function calculatePasswordStrength(password) {
-            let strength = 0;
-
-            if (password.length >= 8) strength += 20;
-            if (/[A-Z]/.test(password)) strength += 20;
-            if (/[a-z]/.test(password)) strength += 20;
-            if (/[0-9]/.test(password)) strength += 20;
-            if (/[^A-Za-z0-9]/.test(password)) strength += 20;
-
-            return Math.min(strength, 100);
-        }
-
-        function updatePasswordStrength(password) {
-            const strength = calculatePasswordStrength(password);
-            const passwordStrength = document.getElementById('passwordStrength');
-            const strengthBar = document.getElementById('strengthBar');
-            const strengthText = document.getElementById('strengthText');
-
-            if (!passwordStrength || !strengthBar || !strengthText) return;
-
-            if (password.length === 0) {
-                passwordStrength.classList.add('hidden');
-                return;
-            }
-
-            passwordStrength.classList.remove('hidden');
-            strengthBar.style.width = strength + '%';
-
-            if (strength < 40) {
-                strengthBar.className = 'h-2 rounded-full bg-red-500';
-                strengthText.textContent = 'Weak';
-                strengthText.className = 'text-xs font-semibold text-red-600';
-            } else if (strength < 80) {
-                strengthBar.className = 'h-2 rounded-full bg-yellow-500';
-                strengthText.textContent = 'Medium';
-                strengthText.className = 'text-xs font-semibold text-yellow-600';
-            } else {
-                strengthBar.className = 'h-2 rounded-full bg-green-500';
-                strengthText.textContent = 'Strong';
-                strengthText.className = 'text-xs font-semibold text-green-600';
-            }
-        }
-
-        // Password requirements validation
-        function validatePasswordRequirements() {
+            // Password toggle functionality for both password fields
+            const togglePassword = document.getElementById('togglePassword');
             const passwordInput = document.getElementById('password');
-            if (!passwordInput) return;
-            const val = passwordInput.value;
-
-            Object.entries(rules).forEach(([key, regex]) => {
-                const el = document.getElementById(`rule-${key}`);
-                if (!el) return;
-                const icon = el.querySelector("i");
-                if (regex.test(val)) {
-                    icon.classList.replace("text-red-500", "text-green-500");
-                    el.classList.add("text-green-600", "font-medium");
-                } else {
-                    icon.classList.replace("text-green-500", "text-red-500");
-                    el.classList.remove("text-green-600", "font-medium");
-                }
-            });
-
-            updatePasswordStrength(val);
-
-            const passwordTooltip = document.getElementById('passwordTooltip');
-            if (document.activeElement === passwordInput && val.length > 0) {
-                passwordTooltip?.classList.remove('hidden');
-            }
-        }
-
-        // Asynchronous password match validation
-        function validatePasswordMatchAsync() {
-            const passwordInput = document.getElementById('password');
+            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
             const confirmInput = document.getElementById('confirmPassword');
+
+            // Password toggle for main password field
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="fas fa-eye text-sm"></i>' : '<i class="fas fa-eye-slash text-sm"></i>';
+                });
+            }
+
+            // Password toggle for confirm password field
+            if (toggleConfirmPassword && confirmInput) {
+                toggleConfirmPassword.addEventListener('click', function() {
+                    const type = confirmInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    confirmInput.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="fas fa-eye text-sm"></i>' : '<i class="fas fa-eye-slash text-sm"></i>';
+                });
+            }
+
+            // Password validation rules
+            const rules = {
+                length: /.{8,}/,
+                uppercase: /[A-Z]/,
+                lowercase: /[a-z]/,
+                number: /[0-9]/,
+                symbol: /[^A-Za-z0-9]/
+            };
+
+            // Password requirements validation
+            const passwordTooltip = document.getElementById('passwordTooltip');
+            const passwordRequirementError = document.getElementById('passwordRequirementError');
+
+            function validatePasswordRequirements() {
+                if (!passwordInput) return false;
+                const val = passwordInput.value;
+
+                let allRequirementsMet = true;
+
+                Object.entries(rules).forEach(([key, regex]) => {
+                    const el = document.getElementById(`rule-${key}`);
+                    if (!el) return;
+                    const icon = el.querySelector("i");
+                    if (regex.test(val)) {
+                        icon.classList.replace("text-red-500", "text-green-500");
+                        el.classList.add("text-green-600", "font-medium");
+                    } else {
+                        icon.classList.replace("text-green-500", "text-red-500");
+                        el.classList.remove("text-green-600", "font-medium");
+                        allRequirementsMet = false;
+                    }
+                });
+
+                // Show/hide requirement error
+                if (val.length > 0 && !allRequirementsMet) {
+                    passwordRequirementError.classList.remove('hidden');
+                } else {
+                    passwordRequirementError.classList.add('hidden');
+                }
+
+                if (document.activeElement === passwordInput && val.length > 0) {
+                    passwordTooltip?.classList.remove('hidden');
+                }
+
+                return allRequirementsMet;
+            }
+
+            // Check if all password requirements are met
+            function areAllPasswordRequirementsMet() {
+                if (!passwordInput) return false;
+                const val = passwordInput.value;
+
+                return Object.values(rules).every(regex => regex.test(val));
+            }
+
+            // Password match validation
             const matchIndicator = document.getElementById('passwordMatch');
 
-            if (!passwordInput || !confirmInput || !matchIndicator) return true;
-
-            const password = passwordInput.value;
-            const confirmPassword = confirmInput.value;
-
-            if (confirmPassword === '') {
-                matchIndicator.textContent = '';
-                confirmInput.classList.remove('border-red-500', 'border-green-500');
-                return true;
-            }
-
-            // Use setTimeout to make it asynchronous
-            setTimeout(() => {
-                if (password === confirmPassword) {
-                    confirmInput.classList.remove('border-red-500');
-                    confirmInput.classList.add('border-green-500');
-                    matchIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> <span class="text-green-600 font-medium">Passwords match</span>';
-                } else {
-                    confirmInput.classList.remove('border-green-500');
-                    confirmInput.classList.add('border-red-500');
-                    matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Passwords do not match</span>';
-                }
-            }, 10);
-
-            return password === confirmPassword;
-        }
-
-        // Floating label functionality for username and email
-        function initializeFloatingLabel(inputId) {
-            const input = document.getElementById(inputId);
-            const label = input.nextElementSibling;
-
-            if (!input || !label) return;
-
-            input.addEventListener('focus', function() {
-                label.style.top = '0';
-                label.style.fontSize = '0.75rem';
-                label.style.color = '#10b981';
-                label.style.transform = 'translateY(-50%)';
-            });
-
-            input.addEventListener('blur', function() {
-                if (this.value.trim() === '') {
-                    label.style.top = '50%';
-                    label.style.fontSize = '0.875rem';
-                    label.style.color = '#9ca3af';
-                    label.style.transform = 'translateY(-50%)';
-                }
-            });
-
-            // Initialize label position
-            if (input.value.trim() !== '') {
-                label.style.top = '0';
-                label.style.fontSize = '0.75rem';
-                label.style.color = '#10b981';
-                label.style.transform = 'translateY(-50%)';
-            }
-        }
-
-        // Form validation
-        function validateForm() {
-            let isValid = true;
-
-            // Validate terms
-            const termsCheckbox = document.getElementById('terms');
-            if (!termsCheckbox.checked) {
-                showErrorModal('Terms Agreement Required', 'You must agree to the terms and conditions to continue.');
-                isValid = false;
-            }
-
-            // Validate reCAPTCHA
-            const recaptchaResponse = grecaptcha.getResponse();
-            if (!recaptchaResponse) {
-                showErrorModal('reCAPTCHA Required', 'Please complete the reCAPTCHA verification to continue.');
-                isValid = false;
-            }
-
-            // Validate password match asynchronously
-            if (!validatePasswordMatchAsync()) {
-                showPasswordMismatchModal();
-                isValid = false;
-            }
-
-            return isValid;
-        }
-
-        // Optimized form functionality
-        function initializeFormFunctionality() {
-            const form = document.getElementById('registerForm');
-            const passwordInput = document.getElementById('password');
-            const confirmInput = document.getElementById('confirmPassword');
-            const togglePassword = document.getElementById('togglePassword');
-            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
-            const registerButton = document.getElementById('registerButton');
-
-            if (!form || !passwordInput || !confirmInput) return;
-
-            // Initialize floating labels
-            initializeFloatingLabel('username');
-            initializeFloatingLabel('email');
-
-            // Toggle password visibility
-            if (togglePassword) {
-                togglePassword.addEventListener('click', () => togglePasswordVisibility(passwordInput, togglePassword));
-            }
-
-            if (toggleConfirmPassword) {
-                toggleConfirmPassword.addEventListener('click', () => togglePasswordVisibility(confirmInput, toggleConfirmPassword));
-            }
-
-            // Debounced validation
-            let typingTimer;
-            const doneTypingInterval = 300;
-
             function validatePasswordMatch() {
+                if (!matchIndicator || !passwordInput || !confirmInput) return true;
+
                 const password = passwordInput.value;
                 const confirmPassword = confirmInput.value;
-                const matchIndicator = document.getElementById('passwordMatch');
 
-                if (!matchIndicator) return;
-
-                // Reset styles
-                confirmInput.classList.remove('border-red-500', 'border-green-500');
-                matchIndicator.classList.add('hidden');
-
-                if (confirmPassword === '') return true;
+                if (confirmPassword === '') {
+                    matchIndicator.classList.add('hidden');
+                    confirmInput.classList.remove('border-red-500', 'border-green-500');
+                    return true;
+                }
 
                 if (password === confirmPassword) {
+                    confirmInput.classList.remove('border-red-500');
                     confirmInput.classList.add('border-green-500');
                     matchIndicator.classList.remove('hidden');
                     matchIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> <span class="text-green-600 font-medium">Passwords match</span>';
                     return true;
                 } else {
+                    confirmInput.classList.remove('border-green-500');
                     confirmInput.classList.add('border-red-500');
                     matchIndicator.classList.remove('hidden');
                     matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Passwords do not match</span>';
@@ -871,126 +471,284 @@
                 }
             }
 
-            // Event listeners with debouncing
-            passwordInput.addEventListener('input', () => {
-                clearTimeout(typingTimer);
-                validatePasswordRequirements();
-                if (confirmInput.value) validatePasswordMatch();
-            });
+            // Event listeners
+            if (passwordInput) {
+                passwordInput.addEventListener('input', validatePasswordRequirements);
+                passwordInput.addEventListener('focus', () => {
+                    if (passwordInput.value.length > 0) {
+                        passwordTooltip?.classList.remove('hidden');
+                    }
+                });
+                passwordInput.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        if (!passwordInput.matches(':focus')) {
+                            passwordTooltip?.classList.add('hidden');
+                        }
+                    }, 200);
+                });
+            }
 
-            confirmInput.addEventListener('input', () => {
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(validatePasswordMatch, doneTypingInterval);
-            });
+            if (confirmInput) {
+                confirmInput.addEventListener('input', validatePasswordMatch);
+            }
 
-            // Tooltip functionality
-            passwordInput.addEventListener('focus', () => {
-                const tooltip = document.getElementById('passwordTooltip');
-                if (tooltip && passwordInput.value.length > 0) {
-                    tooltip.classList.remove('hidden');
+            // Floating label functionality for username and email
+            const usernameInput = document.getElementById('username');
+            const usernameLabel = usernameInput?.nextElementSibling;
+            const emailInput = document.getElementById('email');
+            const emailLabel = emailInput?.nextElementSibling;
+
+            function initializeFloatingLabel(input, label) {
+                if (!input || !label) return;
+
+                input.addEventListener('focus', function() {
+                    label.style.top = '0';
+                    label.style.fontSize = '0.75rem';
+                    label.style.color = '#10b981';
+                    label.style.transform = 'translateY(-50%)';
+                });
+
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        label.style.top = '50%';
+                        label.style.fontSize = '0.875rem';
+                        label.style.color = '#9ca3af';
+                        label.style.transform = 'translateY(-50%)';
+                    }
+                });
+
+                // Initialize label position
+                if (input.value.trim() !== '') {
+                    label.style.top = '0';
+                    label.style.fontSize = '0.75rem';
+                    label.style.color = '#10b981';
+                    label.style.transform = 'translateY(-50%)';
                 }
-            });
+            }
 
-            passwordInput.addEventListener('blur', () => {
-                setTimeout(() => {
-                    const tooltip = document.getElementById('passwordTooltip');
-                    tooltip?.classList.add('hidden');
-                }, 200);
-            });
+            initializeFloatingLabel(usernameInput, usernameLabel);
+            initializeFloatingLabel(emailInput, emailLabel);
 
-            // Form submission
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
+            // Show validation errors on page load if they exist
+            function showExistingErrors() {
+                const validationSummary = document.getElementById('validationSummary');
 
-                // First, run the existing validation
-                if (!validateForm()) {
+                // Check if there are any visible validation error messages
+                const hasValidationErrors = document.querySelector('.field-validation-error') ||
+                                          document.querySelector('[class*="text-danger"]') ||
+                                          (validationSummary && validationSummary.innerHTML.trim() !== '');
+
+                if (validationSummary && hasValidationErrors) {
+                    validationSummary.classList.remove('hidden');
+
+                    // Scroll to errors if they exist
+                    setTimeout(() => {
+                        validationSummary.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }, 100);
+                }
+            }
+
+            // Call this on page load
+            showExistingErrors();
+
+          // Form submission handler
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent default form submission
+                // Check if reCAPTCHA is available
+                if (typeof grecaptcha !== 'undefined') {
+                    const recaptchaResponse = grecaptcha.getResponse();
+                    if (!recaptchaResponse) {
+                        alert('Please complete the reCAPTCHA verification.');
+                        return false;
+                    }
+                }
+
+                // Check password requirements
+                if (!areAllPasswordRequirementsMet()) {
+                    passwordTooltip.classList.remove('hidden');
+                    passwordRequirementError.classList.remove('hidden');
+
+                    // Scroll to password requirements
+                    setTimeout(() => {
+                        passwordTooltip.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }, 100);
+
+                    alert('Please meet all password requirements before submitting.');
                     return false;
                 }
 
-                // Additional password requirement validation
-                const password = document.getElementById('password').value;
-                const passwordErrors = validatePasswordRequirementsServerSide(password);
+                if (!validatePasswordMatch()) {
+                    alert('Please ensure both passwords match before submitting.');
+                    return false;
+                }
 
-                if (passwordErrors.length > 0) {
-                    showPasswordErrorModal(passwordErrors);
+                const termsCheckbox = document.getElementById('terms');
+                if (!termsCheckbox?.checked) {
+                    alert('Please agree to the Terms and Conditions');
                     return false;
                 }
 
                 // Show loading state
+                const registerButton = document.getElementById('registerButton');
+                const originalButtonText = registerButton.innerHTML;
                 if (registerButton) {
                     registerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
                     registerButton.disabled = true;
                 }
 
-                // Prepare form data for AJAX submission
-                const formData = new FormData(form);
+                try {
+                    // Create FormData object
+                    const formData = new FormData(registerForm);
 
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => {
-                    if (response.redirected) {
-                        // If redirected, check if it's a success redirect
-                        if (response.url.includes('success') || response.url.includes('Login')) {
-                            showSuccessModal();
-                        } else {
-                            window.location.href = response.url;
+                    // Submit via AJAX
+                    const response = await fetch(registerForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Registration successful - show modal
+                        showSuccessModal();
                     } else {
-                        return response.json().then(result => {
-                            if (result.success) {
-                                // SUCCESS: Show the success modal with redirect to login
-                                showSuccessModal();
+                        // Show errors
+                        if (result.errors) {
+                            alert('Registration failed: ' + Array.from(result.errors).join('\n'));
+                        } else {
+                            alert('Registration failed. Please try again.');
+                        }
 
-                                // Reset the form
-                                form.reset();
-
-                                // Reset reCAPTCHA
-                                if (typeof grecaptcha !== 'undefined') {
-                                    grecaptcha.reset();
-                                }
-                            } else {
-                                // ERROR: Show appropriate error modal
-                                showErrorModal(result.title || 'Registration Failed', result.message || 'An error occurred during registration.');
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Registration error:', error);
-                    showErrorModal('Network Error', 'An error occurred while processing your request. Please check your connection and try again.');
-                })
-                .finally(() => {
-                    // Reset button state
-                    if (registerButton) {
-                        registerButton.innerHTML = '<span class="flex items-center justify-center gap-2"><span>Sign Up</span><i class="fas fa-arrow-right group-hover:translate-x-1"></i></span>';
+                        // Reset button
+                        registerButton.innerHTML = originalButtonText;
                         registerButton.disabled = false;
                     }
-                });
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    alert('An error occurred during registration. Please try again.');
+
+                    // Reset button
+                    registerButton.innerHTML = originalButtonText;
+                    registerButton.disabled = false;
+                }
             });
-
-            // Initialize any existing values
-            if (passwordInput.value) validatePasswordRequirements();
-            if (confirmInput.value) validatePasswordMatch();
         }
 
-        // Start initialization when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initPage);
-        } else {
-            initPage();
+        // Add event listener for the Proceed to Login button
+        const proceedToLoginBtn = document.getElementById('proceedToLogin');
+        if (proceedToLoginBtn) {
+            proceedToLoginBtn.addEventListener('click', function() {
+                if (successModal) {
+                    successModal.hide();
+                }
+                window.location.href = '/Login';
+            });
         }
+        });
 
-        // Auto-show success modal if there's a success message from server (traditional form submission)
-        if (@(ViewBag.SuccessMessage != null ? "true" : "false") === "true") {
-            setTimeout(() => {
-                showSuccessModal();
-            }, 500);
+                // Success modal functionality - make it globally accessible
+        function showSuccessModal() {
+            if (!successModal) {
+                // Initialize modal if not already done
+                const successModalElement = document.getElementById('successModal');
+                if (successModalElement) {
+                    successModal = new bootstrap.Modal(successModalElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                } else {
+                    console.error('Success modal element not found');
+                    return;
+                }
+            }
+
+            // Show the modal
+            successModal.show();
         }
+        // Make function globally accessible
+        window.showSuccessModal = showSuccessModal;
     </script>
+
+    <style>
+        .crimson-500 {
+            color: #DC143C;
+        }
+
+        .crimson-600 {
+            color: #b01030;
+        }
+
+        .bg-crimson-500 {
+            background-color: #DC143C;
+        }
+
+        .bg-crimson-600 {
+            background-color: #b01030;
+        }
+
+        /* Custom gradient for text */
+        .text-crimson-600 {
+            color: #DC143C;
+        }
+
+        .hover\:text-crimson-700:hover {
+            color: #b01030;
+        }
+
+        /* Ensure proper focus states */
+        input:focus + span {
+            top: 0 !important;
+            font-size: 0.75rem !important;
+            color: #10b981 !important;
+            transform: translateY(-50%) !important;
+        }
+
+        /* Password toggle button styles */
+        #togglePassword, #toggleConfirmPassword {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            #togglePassword:hover, #toggleConfirmPassword:hover {
+                color: #4b5563;
+            }
+
+        /* Custom scrollbar for modal */
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+            .modal-body::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+    </style>
 </body>
 </html>
