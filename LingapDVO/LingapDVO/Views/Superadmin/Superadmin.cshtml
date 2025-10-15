@@ -877,9 +877,9 @@
                     <div class="card-container">
                         <h3 class="section-title">User Management</h3>
 
-                        @if (Model.Register.Any())
+                        @if (Model.RegisterAcc.Any())
                         {
-                            @foreach (var user in Model.Register)
+                            @foreach (var user in Model.RegisterAcc)
                             {
                                 <div class="file-item">
                                     <div class="d-flex align-items-center">
@@ -887,16 +887,13 @@
                                             <i class="fas fa-user-circle"></i>
                                         </div>
                                         <div class="file-info">
-                                            <p class="file-name">@user.Fullname</p>
+                                            <p class="file-name">@user.Username</p>
                                             <div class="file-details">
                                                 <span class="file-detail">
                                                     <i class="fas fa-id-card"></i>@user.Id
                                                 </span>
                                                 <span class="file-detail">
-                                                    <i class="fas fa-phone"></i>@user.Phonenumber
-                                                </span>
-                                                <span class="file-detail">
-                                                    <i class="fas fa-map-marker-alt"></i>@user.Address
+                                                    <i class="fas fa-phone"></i>@user.Email
                                                 </span>
                                             </div>
                                         </div>
@@ -1071,7 +1068,7 @@
             </div>
         </div>
     </div>
-    </div>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>

@@ -1,594 +1,584 @@
 ﻿@model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingapDVO Admin</title>
-    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        :root {
-            --primary: #4361ee;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
-            --processing: #9b59b6;
-            --lingap-red: #dc143c;
-            --dark: #1e1e2c;
-            --light: #f8f9fa;
-            --gray-200: #e9ecef;
-            --gray-500: #adb5bd;
-            --gray-600: #6c757d;
-            --gray-800: #343a40;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: #f5f7fb;
-            color: var(--gray-800);
-            margin: 0;
-            padding: 0;
-        }
-
-        .dashboard-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background: linear-gradient(180deg, var(--dark) 0%, #2d2d44 100%);
-            color: white;
-            padding: 1.5rem 0;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar-header {
-            padding: 0 1.5rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-title {
-            display: flex;
-            align-items: center;
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: white;
-        }
-
-            .sidebar-title i {
-                color: var(--lingap-red);
-                margin-right: 0.75rem;
-                font-size: 1.6rem;
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>LingapDVO Admin</title>
+        <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <style>
+            :root {
+                --primary: #4361ee;
+                --success: #2ecc71;
+                --danger: #e74c3c;
+                --warning: #f39c12;
+                --info: #3498db;
+                --processing: #9b59b6;
+                --lingap-red: #dc143c;
+                --dark: #1e1e2c;
+                --light: #f8f9fa;
+                --gray-200: #e9ecef;
+                --gray-500: #adb5bd;
+                --gray-600: #6c757d;
+                --gray-800: #343a40;
             }
 
-        .sidebar-nav {
-            list-style: none;
-            padding: 0;
-        }
-
-            .sidebar-nav li {
-                margin-bottom: 0.5rem;
+            body {
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                background-color: #f5f7fb;
+                color: var(--gray-800);
+                margin: 0;
+                padding: 0;
             }
 
-            .sidebar-nav a {
+            .dashboard-container {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            /* Sidebar */
+            .sidebar {
+                width: 260px;
+                background: linear-gradient(180deg, var(--dark) 0%, #2d2d44 100%);
+                color: white;
+                padding: 1.5rem 0;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar-header {
+                padding: 0 1.5rem 1.5rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                margin-bottom: 1rem;
+            }
+
+            .sidebar-title {
                 display: flex;
                 align-items: center;
-                color: rgba(255, 255, 255, 0.8);
-                text-decoration: none;
-                padding: 0.85rem 1.5rem;
-                border-radius: 0.5rem;
-                transition: all 0.2s ease;
+                font-weight: 700;
+                font-size: 1.4rem;
+                color: white;
+            }
+
+                .sidebar-title i {
+                    color: var(--lingap-red);
+                    margin-right: 0.75rem;
+                    font-size: 1.6rem;
+                }
+
+            .sidebar-nav {
+                list-style: none;
+                padding: 0;
+            }
+
+                .sidebar-nav li {
+                    margin-bottom: 0.5rem;
+                }
+
+                .sidebar-nav a {
+                    display: flex;
+                    align-items: center;
+                    color: rgba(255, 255, 255, 0.8);
+                    text-decoration: none;
+                    padding: 0.85rem 1.5rem;
+                    border-radius: 0.5rem;
+                    transition: all 0.2s ease;
+                    font-weight: 500;
+                }
+
+                    .sidebar-nav a:hover, .sidebar-nav a.active {
+                        background: rgba(255, 255, 255, 0.1);
+                        color: white;
+                    }
+
+                .sidebar-nav i {
+                    margin-right: 0.75rem;
+                    font-size: 1.2rem;
+                }
+
+            /* Main Content */
+            .main-content {
+                flex: 1;
+                padding: 1.5rem;
+                background-color: #f5f7fb;
+            }
+
+            .header {
+                display: flex;
+                justify-content: between;
+                align-items: center;
+                margin-bottom: 2rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid var(--gray-200);
+            }
+
+            .page-title h1 {
+                font-weight: 700;
+                color: var(--dark);
+                margin-bottom: 0.25rem;
+                font-size: 1.8rem;
+            }
+
+            .page-title p {
+                color: var(--gray-600);
+                margin-bottom: 0;
+                font-size: 1rem;
+            }
+
+            /* Stats Cards */
+            .stats-container {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: white;
+                border-radius: 1rem;
+                padding: 1.5rem;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                border: none;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+            }
+
+                .stat-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+                }
+
+                .stat-card.active {
+                    border-left: 4px solid;
+                }
+
+                .stat-card.approved.active {
+                    border-left-color: var(--success);
+                }
+
+                .stat-card.unapproved.active {
+                    border-left-color: var(--danger);
+                }
+
+                .stat-card.pending.active {
+                    border-left-color: var(--warning);
+                }
+
+                .stat-card.processing.active {
+                    border-left-color: var(--processing);
+                }
+
+                .stat-card.claimed.active {
+                    border-left-color: var(--info);
+                }
+
+            .stat-icon {
+                width: 60px;
+                height: 60px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 1rem;
+                font-size: 1.75rem;
+            }
+
+            .stat-card.approved .stat-icon {
+                background: rgba(46, 204, 113, 0.15);
+                color: var(--success);
+            }
+
+            .stat-card.unapproved .stat-icon {
+                background: rgba(231, 76, 60, 0.15);
+                color: var(--danger);
+            }
+
+            .stat-card.pending .stat-icon {
+                background: rgba(243, 156, 18, 0.15);
+                color: var(--warning);
+            }
+
+            .stat-card.processing .stat-icon {
+                background: rgba(155, 89, 182, 0.15);
+                color: var(--processing);
+            }
+
+            .stat-card.claimed .stat-icon {
+                background: rgba(52, 152, 219, 0.15);
+                color: var(--info);
+            }
+
+            .stat-info h3 {
+                font-size: 1.75rem;
+                font-weight: 700;
+                margin-bottom: 0.25rem;
+            }
+
+            .stat-info p {
+                color: var(--gray-600);
+                margin-bottom: 0;
                 font-weight: 500;
             }
 
-                .sidebar-nav a:hover, .sidebar-nav a.active {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: white;
+            /* Main Table Card */
+            .main-card {
+                background: white;
+                border-radius: 1rem;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                overflow: hidden;
+                margin-bottom: 2rem;
+            }
+
+            .card-header {
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--gray-200);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .card-title {
+                font-weight: 600;
+                color: var(--dark);
+                margin-bottom: 0;
+                font-size: 1.3rem;
+            }
+
+            .card-tools {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .search-box {
+                position: relative;
+            }
+
+                .search-box input {
+                    padding-left: 2.5rem;
+                    border-radius: 0.5rem;
+                    border: 1px solid var(--gray-200);
+                    width: 250px;
+                    height: 40px;
                 }
 
-            .sidebar-nav i {
-                margin-right: 0.75rem;
-                font-size: 1.2rem;
-            }
+                .search-box i {
+                    position: absolute;
+                    left: 0.75rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: var(--gray-500);
+                }
 
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 1.5rem;
-            background-color: #f5f7fb;
-        }
-
-        .header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .page-title h1 {
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 0.25rem;
-            font-size: 1.8rem;
-        }
-
-        .page-title p {
-            color: var(--gray-600);
-            margin-bottom: 0;
-            font-size: 1rem;
-        }
-
-        /* Stats Cards */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: none;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-        }
-
-            .stat-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            }
-
-            .stat-card.active {
-                border-left: 4px solid;
-            }
-
-            .stat-card.approved.active {
-                border-left-color: var(--success);
-            }
-
-            .stat-card.unapproved.active {
-                border-left-color: var(--danger);
-            }
-
-            .stat-card.pending.active {
-                border-left-color: var(--warning);
-            }
-
-            .stat-card.processing.active {
-                border-left-color: var(--processing);
-            }
-
-            .stat-card.claimed.active {
-                border-left-color: var(--info);
-            }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            font-size: 1.75rem;
-        }
-
-        .stat-card.approved .stat-icon {
-            background: rgba(46, 204, 113, 0.15);
-            color: var(--success);
-        }
-
-        .stat-card.unapproved .stat-icon {
-            background: rgba(231, 76, 60, 0.15);
-            color: var(--danger);
-        }
-
-        .stat-card.pending .stat-icon {
-            background: rgba(243, 156, 18, 0.15);
-            color: var(--warning);
-        }
-
-        .stat-card.processing .stat-icon {
-            background: rgba(155, 89, 182, 0.15);
-            color: var(--processing);
-        }
-
-        .stat-card.claimed .stat-icon {
-            background: rgba(52, 152, 219, 0.15);
-            color: var(--info);
-        }
-
-        .stat-info h3 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-info p {
-            color: var(--gray-600);
-            margin-bottom: 0;
-            font-weight: 500;
-        }
-
-        /* Main Table Card */
-        .main-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-
-        .card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--gray-200);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-title {
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 0;
-            font-size: 1.3rem;
-        }
-
-        .card-tools {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .search-box {
-            position: relative;
-        }
-
-            .search-box input {
-                padding-left: 2.5rem;
+            .filter-select {
                 border-radius: 0.5rem;
                 border: 1px solid var(--gray-200);
-                width: 250px;
+                padding: 0.5rem;
+                width: 200px;
                 height: 40px;
             }
 
-            .search-box i {
-                position: absolute;
-                left: 0.75rem;
-                top: 50%;
-                transform: translateY(-50%);
-                color: var(--gray-500);
+            .time-filter {
+                display: flex;
+                gap: 0.5rem;
             }
 
-        .filter-select {
-            border-radius: 0.5rem;
-            border: 1px solid var(--gray-200);
-            padding: 0.5rem;
-            width: 200px;
-            height: 40px;
-        }
-
-        .time-filter {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .time-filter-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--gray-200);
-            background: white;
-            color: var(--gray-600);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-            .time-filter-btn:hover {
-                background: var(--gray-200);
+            .time-filter-btn {
+                padding: 0.5rem 1rem;
+                border-radius: 0.5rem;
+                border: 1px solid var(--gray-200);
+                background: white;
+                color: var(--gray-600);
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
             }
 
-            .time-filter-btn.active {
-                background: var(--primary);
-                color: white;
-                border-color: var(--primary);
+                .time-filter-btn:hover {
+                    background: var(--gray-200);
+                }
+
+                .time-filter-btn.active {
+                    background: var(--primary);
+                    color: white;
+                    border-color: var(--primary);
+                }
+
+            /* Table Styles */
+            .table-responsive {
+                max-height: 500px;
+                overflow-y: auto;
             }
 
-        /* Table Styles */
-        .table-responsive {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .table {
-            margin-bottom: 0;
-            width: 100%;
-        }
-
-            .table thead {
-                position: sticky;
-                top: 0;
-                background: var(--light);
-                z-index: 10;
+            .table {
+                margin-bottom: 0;
+                width: 100%;
             }
 
-            .table th {
-                border-top: none;
+                .table thead {
+                    position: sticky;
+                    top: 0;
+                    background: var(--light);
+                    z-index: 10;
+                }
+
+                .table th {
+                    border-top: none;
+                    font-weight: 600;
+                    color: var(--gray-800);
+                    padding: 1rem;
+                    border-bottom: 1px solid var(--gray-200);
+                    background-color: var(--light);
+                }
+
+                .table td {
+                    padding: 1rem;
+                    vertical-align: middle;
+                    border-bottom: 1px solid var(--gray-200);
+                }
+
+                .table tbody tr:hover {
+                    background-color: rgba(67, 97, 238, 0.03);
+                }
+
+            .status-badge {
+                padding: 0.35rem 0.75rem;
+                border-radius: 50px;
+                font-size: 0.8rem;
                 font-weight: 600;
-                color: var(--gray-800);
-                padding: 1rem;
-                border-bottom: 1px solid var(--gray-200);
-                background-color: var(--light);
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
             }
 
-            .table td {
-                padding: 1rem;
-                vertical-align: middle;
-                border-bottom: 1px solid var(--gray-200);
+            .status-approved {
+                background: rgba(46, 204, 113, 0.15);
+                color: var(--success);
             }
 
-            .table tbody tr:hover {
-                background-color: rgba(67, 97, 238, 0.03);
+            .status-pending {
+                background: rgba(243, 156, 18, 0.15);
+                color: var(--warning);
             }
 
-        .status-badge {
-            padding: 0.35rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .status-approved {
-            background: rgba(46, 204, 113, 0.15);
-            color: var(--success);
-        }
-
-        .status-pending {
-            background: rgba(243, 156, 18, 0.15);
-            color: var(--warning);
-        }
-
-        .status-processing {
-            background: rgba(155, 89, 182, 0.15);
-            color: var(--processing);
-        }
-
-        .status-unapproved {
-            background: rgba(231, 76, 60, 0.15);
-            color: var(--danger);
-        }
-
-        .status-claimed {
-            background: rgba(52, 152, 219, 0.15);
-            color: var(--info);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .btn-action {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .btn-view {
-            background: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-        }
-
-            .btn-view:hover {
-                background: var(--primary);
-                color: white;
+            .status-processing {
+                background: rgba(155, 89, 182, 0.15);
+                color: var(--processing);
             }
 
-        .btn-edit {
-            background: rgba(46, 204, 113, 0.1);
-            color: var(--success);
-        }
-
-            .btn-edit:hover {
-                background: var(--success);
-                color: white;
+            .status-unapproved {
+                background: rgba(231, 76, 60, 0.15);
+                color: var(--danger);
             }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--gray-600);
-        }
-
-            .empty-state i {
-                font-size: 3.5rem;
-                margin-bottom: 1rem;
-                opacity: 0.5;
+            .status-claimed {
+                background: rgba(52, 152, 219, 0.15);
+                color: var(--info);
             }
 
-            .empty-state h4 {
-                margin-bottom: 0.5rem;
+            .action-buttons {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .btn-action {
+                width: 36px;
+                height: 36px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: none;
+                transition: all 0.2s ease;
+                text-decoration: none;
+            }
+
+            .btn-edit {
+                background: rgba(46, 204, 113, 0.1);
+                color: var(--success);
+            }
+
+                .btn-edit:hover {
+                    background: var(--success);
+                    color: white;
+                }
+
+            /* Empty State */
+            .empty-state {
+                text-align: center;
+                padding: 3rem 1rem;
+                color: var(--gray-600);
+            }
+
+                .empty-state i {
+                    font-size: 3.5rem;
+                    margin-bottom: 1rem;
+                    opacity: 0.5;
+                }
+
+                .empty-state h4 {
+                    margin-bottom: 0.5rem;
+                    font-weight: 600;
+                }
+
+            /* Time Filter Label */
+            .time-filter-label {
                 font-weight: 600;
+                color: var(--gray-600);
+                margin-right: 0.5rem;
             }
-
-        /* Time Filter Label */
-        .time-filter-label {
-            font-weight: 600;
-            color: var(--gray-600);
-            margin-right: 0.5rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">
-                    <i class="bi bi-heart-pulse"></i>
-                    <span>LingapDVO</span>
+        </style>
+    </head>
+    <body>
+        <div class="dashboard-container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">
+                        <i class="bi bi-heart-pulse"></i>
+                        <span>LingapDVO</span>
+                    </div>
                 </div>
-            </div>
-            <ul class="sidebar-nav">
-                <li>
-                    <a asp-route="Analyticsdashboard" class="active">
-                        <i class="bi bi-bar-chart"></i>
-                        <span>Analytics Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a asp-route="Admin">
-                        <i class="bi bi-house-door"></i>
-                        <span>Application Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a asp-controller="Login" asp-action="Logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Header -->
-            <div class="header">
-                <div class="page-title">
-                    <h1>Application Dashboard</h1>
-                </div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a asp-route="Analyticsdashboard" class="active">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Analytics Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-route="Admin">
+                            <i class="bi bi-house-door"></i>
+                            <span>Application Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Login" asp-action="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
             </div>
 
-            <!-- Time Filter Section -->
-            <div class="main-card mb-3">
-                <div class="card-header">
-                    <h3 class="card-title">Filter by Time Period</h3>
-                    <div class="card-tools">
-                        <div class="time-filter">
-                            <span class="time-filter-label">Show:</span>
-                            <button class="time-filter-btn" data-period="1year">Last Year</button>
-                            <button class="time-filter-btn" data-period="1week">Last Week</button>
-                            <button class="time-filter-btn active" data-period="currentMonth">Current Month</button>
-                            <button class="time-filter-btn" data-period="all">All</button>
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Header -->
+                <div class="header">
+                    <div class="page-title">
+                        <h1>Application Dashboard</h1>
+                    </div>
+                </div>
+
+                <!-- Time Filter Section -->
+                <div class="main-card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Filter by Time Period</h3>
+                        <div class="card-tools">
+                            <div class="time-filter">
+                                <span class="time-filter-label">Show:</span>
+                                <button class="time-filter-btn" data-period="1year">Last Year</button>
+                                <button class="time-filter-btn" data-period="1week">Last Week</button>
+                                <button class="time-filter-btn active" data-period="currentMonth">Current Month</button>
+                                <button class="time-filter-btn" data-period="all">All</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-container">
+                    <div class="stat-card approved active" data-status="approved">
+                        <div class="stat-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="approved-count">0</h3>
+                            <p>Approved</p>
+                        </div>
+                    </div>
+                    <div class="stat-card unapproved" data-status="unapproved">
+                        <div class="stat-icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="unapproved-count">0</h3>
+                            <p>Unapproved</p>
+                        </div>
+                    </div>
+                    <div class="stat-card pending" data-status="pending">
+                        <div class="stat-icon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="pending-count">0</h3>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                    <div class="stat-card processing" data-status="processing">
+                        <div class="stat-icon">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="processing-count">0</h3>
+                            <p>Processing</p>
+                        </div>
+                    </div>
+                    <div class="stat-card claimed" data-status="claimed">
+                        <div class="stat-icon">
+                            <i class="bi bi-cloud-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="claimed-count">0</h3>
+                            <p>Claimed</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Table Card -->
+                <div class="main-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Applications</h3>
+                        <div class="card-tools">
+                            <div class="search-box">
+                                <i class="bi bi-search"></i>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Search applications...">
+                            </div>
+                            <select class="filter-select" id="typeFilter">
+                                <option value="all">All Types</option>
+                                <option value="Hospital Bill Assistance">Hospital Bill Assistance</option>
+                                <option value="Medical and laboratory Procedure">Medical & Laboratory</option>
+                                <option value="Funeral and burial assistance">Funeral & Burial</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Applicant</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Date Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="applicationsTable">
+                                    <!-- Table rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Stats Cards -->
-            <div class="stats-container">
-                <div class="stat-card approved active" data-status="approved">
-                    <div class="stat-icon">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="approved-count">0</h3>
-                        <p>Approved</p>
-                    </div>
-                </div>
-                <div class="stat-card unapproved" data-status="unapproved">
-                    <div class="stat-icon">
-                        <i class="bi bi-x-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="unapproved-count">0</h3>
-                        <p>Unapproved</p>
-                    </div>
-                </div>
-                <div class="stat-card pending" data-status="pending">
-                    <div class="stat-icon">
-                        <i class="bi bi-hourglass-split"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="pending-count">0</h3>
-                        <p>Pending</p>
-                    </div>
-                </div>
-                <div class="stat-card processing" data-status="processing">
-                    <div class="stat-icon">
-                        <i class="bi bi-gear"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="processing-count">0</h3>
-                        <p>Processing</p>
-                    </div>
-                </div>
-                <div class="stat-card claimed" data-status="claimed">
-                    <div class="stat-icon">
-                        <i class="bi bi-cloud-check"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="claimed-count">0</h3>
-                        <p>Claimed</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Table Card -->
-            <div class="main-card">
-                <div class="card-header">
-                    <h3 class="card-title">Applications</h3>
-                    <div class="card-tools">
-                        <div class="search-box">
-                            <i class="bi bi-search"></i>
-                            <input type="text" class="form-control" id="searchInput" placeholder="Search applications...">
-                        </div>
-                        <select class="filter-select" id="typeFilter">
-                            <option value="all">All Types</option>
-                            <option value="Hospital Bill Assistance">Hospital Bill Assistance</option>
-                            <option value="Medical and laboratory Procedure">Medical & Laboratory</option>
-                            <option value="Funeral and burial assistance">Funeral & Burial</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Applicant</th>
-                                    <th>Type</th>
-                                    <th>Status</th>
-                                    <th>Date Submitted</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="applicationsTable">
-                                <!-- Table rows will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
-    </div>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -598,54 +588,54 @@
                 // Add Hospital Bills
                 @foreach (var f in Model.HospitalBills)
                 {
-                        <text>
-                        allApplications.push({
-                            type: "Hospital Bill Assistance",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                                <text>
+                                allApplications.push({
+                                    type: "Hospital Bill Assistance",
+                                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                    status: "@f.Status?.ToLower()",
+                                    status2: "@f.Status2?.ToLower()",
+                                    status3: "@f.Status3?.ToLower()",
+                                    formId: @f.Id,
+                                    controller: "Dashboard"
+                                });
+                                </text>
                 }
 
                 // Add Medical Lab Forms
                 @foreach (var f in Model.MedicalLabForms)
                 {
-                        <text>
-                        allApplications.push({
-                            type: "Medical and laboratory Procedure",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
-                            formId: @f.Id,
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                                <text>
+                                allApplications.push({
+                                    type: "Medical and laboratory Procedure",
+                                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                    status: "@f.Status?.ToLower()",
+                                    status2: "@f.Status2?.ToLower()",
+                                    status3: "@f.Status3?.ToLower()",
+                                    formId: @f.Id,
+                                    formId: @f.Id,
+                                    controller: "Dashboard"
+                                });
+                                </text>
                 }
 
                 // Add Funeral Forms
                 @foreach (var f in Model.Funeralburialform)
                 {
-                        <text>
-                        allApplications.push({
-                            type: "Funeral and burial assistance",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
-                            formId: @f.Id,
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                                <text>
+                                allApplications.push({
+                                    type: "Funeral and burial assistance",
+                                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                    status: "@f.Status?.ToLower()",
+                                    status2: "@f.Status2?.ToLower()",
+                                    status3: "@f.Status3?.ToLower()",
+                                    formId: @f.Id,
+                                    formId: @f.Id,
+                                    controller: "Dashboard"
+                                });
+                                </text>
                 }
 
                 // DOM elements
@@ -851,14 +841,20 @@
                     `;
                 }
 
-                // Helper function to get action buttons HTML - UPDATED VERSION
+                // Helper function to get action buttons HTML - UPDATED VERSION (show eye for claimed+unapproved)
                 function getActionButtons(app) {
-                    let viewUrl = '';
                     let editUrl = '';
+                    let iconClass = 'bi-pencil';
+                    let title = 'Update Status';
+
+                    // Check if status3 is claimed AND status2 is unapproved
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed' &&
+                        app.status2 && app.status2.toLowerCase() === 'unapproved') {
+                        iconClass = 'bi-eye';
+                        title = 'View Details';
+                    }
 
                     if (app.type === "Hospital Bill Assistance") {
-                        viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
-
                         // Check status3 FIRST for claimed (highest priority)
                         if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                             editUrl = `/Adminuser/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
@@ -877,8 +873,6 @@
                         }
 
                     } else if (app.type === "Medical and laboratory Procedure") {
-                        viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
-
                         // Apply the same logic for Medical forms
                         if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                             editUrl = `/Adminuser/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
@@ -894,8 +888,6 @@
                         }
 
                     } else if (app.type === "Funeral and burial assistance") {
-                        viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
-
                         // Apply the same logic for Funeral forms
                         if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                             editUrl = `/Adminuser/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
@@ -913,11 +905,8 @@
 
                     return `
                         <div class="action-buttons">
-                            <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
-                                <i class="bi bi-pencil"></i>
+                            <a class="btn-action btn-edit" href="${editUrl}" title="${title}">
+                                <i class="bi ${iconClass}"></i>
                             </a>
                         </div>
                     `;
@@ -1001,6 +990,6 @@
                 applyFilters();
             });
         </script>
-</body>
-</html>
+    </body>
+    </html>
 }

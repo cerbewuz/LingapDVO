@@ -1049,27 +1049,8 @@ namespace LingapDVO.Controllers
             }
 
             ViewBag.Id = HttpContext.Session.GetString("UserId");
-            ViewBag.ImageFilename = HttpContext.Session.GetString("ImageFilename");
-            ViewBag.Fullname = HttpContext.Session.GetString("Fullname");
             ViewBag.Username = HttpContext.Session.GetString("Username");
             ViewBag.Email = HttpContext.Session.GetString("Email");
-            ViewBag.Phonenumber = HttpContext.Session.GetString("Phonenumber");
-            ViewBag.Address = HttpContext.Session.GetString("Address");
-            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
-            ViewBag.Gender = HttpContext.Session.GetString("Gender");
-            ViewBag.SecurityQuestions = HttpContext.Session.GetString("SecurityQuestions");
-
-            ViewBag.GenderList = new SelectList(new List<string> { "Male", "Female" }, ViewBag.Gender);
-            ViewBag.SecurityQuestionslist = new SelectList(
-                  new List<string> {
-                   "What is your first pet's name?",
-                  "What is your mother's maiden name?",
-                   "What was your first school?"
-                         },
-                          ViewBag.SecurityQuestions
-                      );
-
-            ViewBag.Securityanswer = HttpContext.Session.GetString("Securityanswer");
 
             return View();
         }
