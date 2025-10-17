@@ -398,7 +398,24 @@ namespace LingapDVO.Controllers
                 context.FillupformHospitalBill.Add(fillupformHospitalBill);
                 context.SaveChanges();
 
-                return RedirectToAction("Homepage", "Dashboard");
+                // ✅ SUCCESS: Set the success flag to trigger the modal
+                ViewBag.Success = true;
+
+                // Also set the session data again to repopulate the form
+                ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+                ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+                ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+                ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+                ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+                ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+                ViewBag.District = HttpContext.Session.GetString("District");
+                ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+                ViewBag.Gender = HttpContext.Session.GetString("Gender");
+                ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+                ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+                ViewBag.BackID = HttpContext.Session.GetString("BackID");
+
+                return View(fillupformHospitalbilldto);
             }
             catch (DbUpdateException ex)
             {
@@ -968,6 +985,9 @@ namespace LingapDVO.Controllers
                 context.Medicalandlabform.Add(medicalandlabform);
                 context.SaveChanges();
 
+                ViewBag.Success = true;
+
+
                 return RedirectToAction("Homepage", "Dashboard");
             }
             catch (DbUpdateException ex)
@@ -1492,6 +1512,7 @@ namespace LingapDVO.Controllers
 
                 context.Funeralburialform.Add(funeralburialform);
                 context.SaveChanges();
+                ViewBag.Success = true;
 
                 return RedirectToAction("Homepage", "Dashboard");
             }
