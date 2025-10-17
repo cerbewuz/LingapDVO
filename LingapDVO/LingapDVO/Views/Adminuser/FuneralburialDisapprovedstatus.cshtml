@@ -1,4 +1,4 @@
-﻿@model FillupformHospitalBillDto
+﻿@model FuneralburialformDto
 @{
     Layout = null;
     var selectedSex = ViewData["Sex"]?.ToString();
@@ -174,7 +174,7 @@
             color: #155724;
         }
 
-        .status-unapproved {
+        .status-disapproved {
             background-color: #f8d7da;
             color: #721c24;
         }
@@ -523,7 +523,7 @@
     </div>
 
     <div class="receipt-container">
-        <form asp-action="FillupformHospitalBillUnapprovedstatus" enctype="multipart/form-data" method="post">
+        <form asp-action="FuneralburialDisapprovedstatus" enctype="multipart/form-data" method="post">
             <div class="receipt-header">
                 <h3>Hospital Bill Application Details</h3>
 

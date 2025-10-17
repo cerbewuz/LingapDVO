@@ -171,7 +171,7 @@
             color: #155724;
         }
 
-        .status-unapproved {
+        .status-disapproved {
             background-color: #f8d7da;
             color: #721c24;
         }
@@ -217,7 +217,7 @@
                 color: white;
             }
 
-        .btn-unapproved {
+        .btn-disapproved {
             background-color: #dc3545;
             border-color: #dc3545;
             color: white;
@@ -227,7 +227,7 @@
             margin: 0 0.5rem;
         }
 
-            .btn-unapproved:hover {
+            .btn-disapproved:hover {
                 background-color: #c82333;
                 border-color: #bd2130;
                 color: white;
@@ -578,13 +578,13 @@
                 <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
             </div>
             <div class="mb-3">
-                <label for="commentsTextarea" class="form-label">Please provide comments for unapproval:</label>
-                <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is unapproved..." required></textarea>
-                <div class="invalid-feedback">Comments are required when unapproving an application.</div>
+                <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
+                <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
+                <div class="invalid-feedback">Comments are required when disapproving an application.</div>
             </div>
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
-                <button type="button" class="btn btn-unapproved" onclick="submitUnapproved()">Submit Unapproved</button>
+                <button type="button" class="btn btn-disapproved" onclick="submitDisapproved()">Submit Disapproved</button>
             </div>
         </div>
     </div>
@@ -871,8 +871,8 @@
                         <button type="button" class="btn btn-approved" onclick="submitApproved()">
                             <i class="bi bi-check-circle"></i> Approved
                         </button>
-                        <button type="button" class="btn btn-unapproved" onclick="showCommentsModal()">
-                            <i class="bi bi-x-circle"></i> Unapproved
+                        <button type="button" class="btn btn-disapproved" onclick="showCommentsModal()">
+                            <i class="bi bi-x-circle"></i> Disapproved
                         </button>
                     </div>
                 </div>
@@ -986,7 +986,7 @@
             document.getElementById('commentsTextarea').classList.remove('is-invalid');
         }
 
-        function submitUnapproved() {
+        function submitDisapproved() {
             const commentsTextarea = document.getElementById('commentsTextarea');
             const comments = commentsTextarea.value.trim();
 
@@ -996,7 +996,7 @@
                 return;
             }
 
-            document.getElementById('statusInput').value = 'Unapproved';
+            document.getElementById('statusInput').value = 'Disapproved';
             document.getElementById('commentsInput').value = comments;
             document.getElementById('statusForm').submit();
         }

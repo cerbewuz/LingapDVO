@@ -162,7 +162,7 @@
                     border-left-color: var(--success);
                 }
 
-                .stat-card.unapproved.active {
+                .stat-card.disapproved.active {
                     border-left-color: var(--danger);
                 }
 
@@ -194,7 +194,7 @@
                 color: var(--success);
             }
 
-            .stat-card.unapproved .stat-icon {
+            .stat-card.disapproved .stat-icon {
                 background: rgba(231, 76, 60, 0.15);
                 color: var(--danger);
             }
@@ -372,7 +372,7 @@
                 color: var(--processing);
             }
 
-            .status-unapproved {
+            .status-disapproved {
                 background: rgba(231, 76, 60, 0.15);
                 color: var(--danger);
             }
@@ -503,13 +503,13 @@
                             <p>Approved</p>
                         </div>
                     </div>
-                    <div class="stat-card unapproved" data-status="unapproved">
+                    <div class="stat-card disapproved" data-status="disapproved">
                         <div class="stat-icon">
                             <i class="bi bi-x-circle"></i>
                         </div>
                         <div class="stat-info">
-                            <h3 id="unapproved-count">0</h3>
-                            <p>Unapproved</p>
+                            <h3 id="disapproved-count">0</h3>
+                            <p>Disapproved</p>
                         </div>
                     </div>
                     <div class="stat-card pending" data-status="pending">
@@ -588,54 +588,54 @@
                 // Add Hospital Bills
                 @foreach (var f in Model.HospitalBills)
                 {
-                                <text>
-                                allApplications.push({
-                                    type: "Hospital Bill Assistance",
-                                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                    status: "@f.Status?.ToLower()",
-                                    status2: "@f.Status2?.ToLower()",
-                                    status3: "@f.Status3?.ToLower()",
-                                    formId: @f.Id,
-                                    controller: "Dashboard"
-                                });
-                                </text>
+                                    <text>
+                                    allApplications.push({
+                                        type: "Hospital Bill Assistance",
+                                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                        status: "@f.Status?.ToLower()",
+                                        status2: "@f.Status2?.ToLower()",
+                                        status3: "@f.Status3?.ToLower()",
+                                        formId: @f.Id,
+                                        controller: "Dashboard"
+                                    });
+                                    </text>
                 }
 
                 // Add Medical Lab Forms
                 @foreach (var f in Model.MedicalLabForms)
                 {
-                                <text>
-                                allApplications.push({
-                                    type: "Medical and laboratory Procedure",
-                                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                    status: "@f.Status?.ToLower()",
-                                    status2: "@f.Status2?.ToLower()",
-                                    status3: "@f.Status3?.ToLower()",
-                                    formId: @f.Id,
-                                    formId: @f.Id,
-                                    controller: "Dashboard"
-                                });
-                                </text>
+                                    <text>
+                                    allApplications.push({
+                                        type: "Medical and laboratory Procedure",
+                                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                        status: "@f.Status?.ToLower()",
+                                        status2: "@f.Status2?.ToLower()",
+                                        status3: "@f.Status3?.ToLower()",
+                                        formId: @f.Id,
+                                        formId: @f.Id,
+                                        controller: "Dashboard"
+                                    });
+                                    </text>
                 }
 
                 // Add Funeral Forms
                 @foreach (var f in Model.Funeralburialform)
                 {
-                                <text>
-                                allApplications.push({
-                                    type: "Funeral and burial assistance",
-                                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                    status: "@f.Status?.ToLower()",
-                                    status2: "@f.Status2?.ToLower()",
-                                    status3: "@f.Status3?.ToLower()",
-                                    formId: @f.Id,
-                                    formId: @f.Id,
-                                    controller: "Dashboard"
-                                });
-                                </text>
+                                    <text>
+                                    allApplications.push({
+                                        type: "Funeral and burial assistance",
+                                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                        status: "@f.Status?.ToLower()",
+                                        status2: "@f.Status2?.ToLower()",
+                                        status3: "@f.Status3?.ToLower()",
+                                        formId: @f.Id,
+                                        formId: @f.Id,
+                                        controller: "Dashboard"
+                                    });
+                                    </text>
                 }
 
                 // DOM elements
@@ -647,7 +647,7 @@
 
                 // Status count elements
                 const approvedCount = document.getElementById('approved-count');
-                const unapprovedCount = document.getElementById('unapproved-count');
+                const disapprovedCount = document.getElementById('disapproved-count');
                 const pendingCount = document.getElementById('pending-count');
                 const processingCount = document.getElementById('processing-count');
                 const claimedCount = document.getElementById('claimed-count');
@@ -693,8 +693,8 @@
                         }
 
                         // For other statuses, EXCLUDE applications that have status3 = claimed
-                        // Then check status2 for approved/unapproved
-                        if (status === 'approved' || status === 'unapproved') {
+                        // Then check status2 for approved/disapproved
+                        if (status === 'approved' || status === 'disapproved') {
                             return app.status2 && app.status2.trim() !== '' &&
                                    app.status2 === status &&
                                    (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
@@ -704,7 +704,7 @@
                         return app.status === status &&
                                (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
                                (!app.status2 || app.status2.trim() === '' ||
-                                (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
+                                (app.status2 !== 'approved' && app.status2 !== 'disapproved'));
                     });
                 }
 
@@ -732,7 +732,7 @@
 
                     const statusCounts = {
                         approved: 0,
-                        unapproved: 0,
+                        disapproved: 0,
                         pending: 0,
                         processing: 0,
                         claimed: 0
@@ -743,14 +743,14 @@
                         if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
                             statusCounts.claimed++;
                         }
-                        // If NOT claimed, then check status2 for approved/unapproved
+                        // If NOT claimed, then check status2 for approved/disapproved
                         else if (app.status2 && app.status2.trim() !== '') {
                             if (app.status2 === 'approved') {
                                 statusCounts.approved++;
-                            } else if (app.status2 === 'unapproved') {
-                                statusCounts.unapproved++;
+                            } else if (app.status2 === 'disapproved') {
+                                statusCounts.disapproved++;
                             }
-                            // DO NOT count in processing/pending if Status2 is approved/unapproved
+                            // DO NOT count in processing/pending if Status2 is approved/disapproved
                         } else {
                             // No Status2 or Status2 is empty, and no claimed status3, use original status
                             if (statusCounts.hasOwnProperty(app.status)) {
@@ -761,7 +761,7 @@
 
                     // Update the count displays
                     approvedCount.textContent = statusCounts.approved;
-                    unapprovedCount.textContent = statusCounts.unapproved;
+                    disapprovedCount.textContent = statusCounts.disapproved;
                     pendingCount.textContent = statusCounts.pending;
                     processingCount.textContent = statusCounts.processing;
                     claimedCount.textContent = statusCounts.claimed;
@@ -814,10 +814,10 @@
                         displayStatus = 'claimed';
                         displayText = 'Claimed';
                     }
-                    // Priority 2: Check status2 for approved/unapproved (only if NOT claimed)
+                    // Priority 2: Check status2 for approved/disapproved (only if NOT claimed)
                     else if (app.status2 && app.status2.trim() !== '') {
                         const status2 = app.status2.trim().toLowerCase();
-                        if (status2 === 'approved' || status2 === 'unapproved') {
+                        if (status2 === 'approved' || status2 === 'disapproved') {
                             displayStatus = status2;
                             displayText = status2.charAt(0).toUpperCase() + status2.slice(1);
                         }
@@ -826,7 +826,7 @@
 
                     const statusMap = {
                         'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approved' },
-                        'unapproved': { class: 'status-unapproved', icon: 'bi-x-circle', text: 'Unapproved' },
+                        'disapproved': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapproved' },
                         'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
                         'processing': { class: 'status-processing', icon: 'bi-gear', text: 'Processing' },
                         'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
@@ -841,15 +841,15 @@
                     `;
                 }
 
-                // Helper function to get action buttons HTML - UPDATED VERSION (show eye for claimed+unapproved)
+                // Helper function to get action buttons HTML - UPDATED VERSION (show eye for claimed+disapproved)
                 function getActionButtons(app) {
                     let editUrl = '';
                     let iconClass = 'bi-pencil';
                     let title = 'Update Status';
 
-                    // Check if status3 is claimed AND status2 is unapproved
+                    // Check if status3 is claimed AND status2 is disapproved
                     if (app.status3 && app.status3.toLowerCase() === 'claimed' &&
-                        app.status2 && app.status2.toLowerCase() === 'unapproved') {
+                        app.status2 && app.status2.toLowerCase() === 'disapproved') {
                         iconClass = 'bi-eye';
                         title = 'View Details';
                     }
@@ -859,11 +859,11 @@
                         if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                             editUrl = `/Adminuser/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
                         }
-                        // Then check status2 for approved/unapproved
+                        // Then check status2 for approved/disapproved
                         else if (app.status2 === "approved") {
                             editUrl = `/Adminuser/FillupformHospitalBillapprovedstatus/${app.formId}`;
-                        } else if (app.status2 === "unapproved") {
-                            editUrl = `/Adminuser/FillupformHospitalBillUnapprovedstatus/${app.formId}`;
+                        } else if (app.status2 === "disapproved") {
+                            editUrl = `/Adminuser/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
                         }
                         // Then check original status
                         else if (app.status === "processing") {
@@ -879,8 +879,8 @@
                         }
                         else if (app.status2 === "approved") {
                             editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
-                        } else if (app.status2 === "unapproved") {
-                            editUrl = `/Adminuser/MedicalandlabformUnapprovedstatus/${app.formId}`;
+                        } else if (app.status2 === "disapproved") {
+                            editUrl = `/Adminuser/MedicalandlabformDisapprovedstatus/${app.formId}`;
                         } else if (app.status === "processing") {
                             editUrl = `/Adminuser/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
                         } else {
@@ -894,8 +894,8 @@
                         }
                         else if (app.status2 === "approved") {
                             editUrl = `/Adminuser/Funeralburialapprovedstatus/${app.formId}`;
-                        } else if (app.status2 === "unapproved") {
-                            editUrl = `/Adminuser/FuneralburialUnapprovedstatus/${app.formId}`;
+                        } else if (app.status2 === "disapproved") {
+                            editUrl = `/Adminuser/FuneralburialDisapprovedstatus/${app.formId}`;
                         } else if (app.status === "processing") {
                             editUrl = `/Adminuser/FuneralburialformUpdateprocessingstatus/${app.formId}`;
                         } else {

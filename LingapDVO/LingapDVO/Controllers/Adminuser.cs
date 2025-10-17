@@ -1916,7 +1916,7 @@ namespace LingapDVO.Controllers
 
 
         //For not approved statuses
-        public IActionResult FillupformHospitalBillUnapprovedstatus(int id)
+        public IActionResult FillupformHospitalBillDisapprovedstatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -2107,7 +2107,7 @@ namespace LingapDVO.Controllers
 
         }
 
-        public IActionResult FuneralburialUnapprovedstatus(int id)
+        public IActionResult FuneralburialDisapprovedstatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -2297,7 +2297,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-        public IActionResult MedicalandlabformUnapprovedstatus(int id)
+        public IActionResult MedicalandlabformDisapprovedstatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -3389,7 +3389,7 @@ namespace LingapDVO.Controllers
                                 {fromName}
                                 LINGAP DVO Medical Assistance Program";
                                                     }
-                                                    else if (status == "unapproved")
+                                                    else if (status == "disapproved")
                                                     {
                                                         // ❌ Unapproved message – same structure, but message adjusted and Comments prioritized
                                                         subject = "Hospital Bill Assistance Application Update - LINGAP DVO";
@@ -3540,7 +3540,7 @@ namespace LingapDVO.Controllers
                                 {fromName}
                                 LINGAP DVO Medical Assistance Program";
                                                     }
-                                                    else if (status == "unapproved")
+                                                    else if (status == "disapproved")
                                                     {
                                                         // ❌ Unapproved message – same structure but prioritizes comments
                                                         subject = "Medical Assistance Application Update - LINGAP DVO";
@@ -3691,7 +3691,7 @@ namespace LingapDVO.Controllers
                         {fromName}
                         LINGAP DVO Funeral Assistance Program";
                     }
-                    else if (status == "unapproved")
+                    else if (status == "disapproved")
                     {
                         // ❌ Unapproved message
                         subject = "Funeral Assistance Application Update - LINGAP DVO";

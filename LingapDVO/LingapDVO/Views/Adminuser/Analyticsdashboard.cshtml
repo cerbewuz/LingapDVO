@@ -99,7 +99,6 @@
             --gray-800: #343a40;
         }
 
-        
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: #f5f7fb;
@@ -255,14 +254,23 @@
 
         .chart-container {
             position: relative;
-            height: 400px;
-            padding: 1rem;
+            height: 450px; /* Increased height for better visibility */
+            padding: 1.5rem; /* Increased padding */
         }
 
         .summary-card {
             text-align: center;
             padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
+
+            .summary-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+                border-color: rgba(0,0,0,0.1);
+            }
 
         .summary-icon {
             width: 60px;
@@ -295,7 +303,7 @@
             color: var(--processing);
         }
 
-        .summary-unapproved .summary-icon {
+        .summary-disapproved .summary-icon {
             background: rgba(231, 76, 60, 0.15);
             color: var(--danger);
         }
@@ -473,6 +481,48 @@
             background: white;
             min-width: 150px;
         }
+
+        /* Percentage labels styling */
+        .percentage-label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* Larger font sizes for better readability */
+        .chart-title {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+        }
+
+        .chart-legend-text {
+            font-size: 14px !important;
+        }
+
+        .chart-tooltip {
+            font-size: 14px !important;
+        }
     </style>
 </head>
 <body>
@@ -523,6 +573,7 @@
                     </button>
                     <div class="header-title">
                         <h1>Analytics Dashboard</h1>
+                        <p>Click on any status card below to view detailed applications</p>
                     </div>
                 </div>
                 <div class="date-filter">
@@ -657,6 +708,17 @@
             }
         });
 
+        // Function to redirect to Application Dashboard with status filter
+        function redirectToApplicationDashboard(status) {
+            // Store the selected status in localStorage (more reliable than sessionStorage)
+            localStorage.setItem('selectedStatus', status);
+
+            console.log('Redirecting to Application Dashboard with status:', status);
+
+            // Redirect to Application Dashboard
+            window.location.href = '/Admin';
+        }
+
         // Initialize dashboard with data - FOLLOWING ADMIN.CSHTML PATTERN
         function initializeDashboard() {
             // Create combined applications array following Admin.cshtml pattern
@@ -665,58 +727,58 @@
             // Add Hospital Bills following Admin.cshtml pattern
             @foreach (var f in Model.HospitalBills)
             {
-                        <text>
-                        allApplications.push({
-                            type: "Hospital Bill Assistance",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()", // ADDED status3
-                            brgy: "@f.Brgy",
-                            typeassistance: "@f.Typeassistance",
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                    <text>
+                    allApplications.push({
+                        type: "Hospital Bill Assistance",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()", // ADDED status3
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
             // Add Medical Lab Forms following Admin.cshtml pattern
             @foreach (var f in Model.MedicalLabForms)
             {
-                        <text>
-                        allApplications.push({
-                            type: "Medical and laboratory Procedure",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
-                            brgy: "@f.Brgy",
-                            typeassistance: "@f.Typeassistance",
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                    <text>
+                    allApplications.push({
+                        type: "Medical and laboratory Procedure",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
             // Add Funeral Forms following Admin.cshtml pattern
             @foreach (var f in Model.Funeralburialform)
             {
-                        <text>
-                        allApplications.push({
-                            type: "Funeral and burial assistance",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
-                            brgy: "@f.Brgy",
-                            typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                    <text>
+                    allApplications.push({
+                        type: "Funeral and burial assistance",
+                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
             originalData = {
@@ -813,8 +875,8 @@
                     }
 
                     // For other statuses, EXCLUDE applications that have status3 = claimed
-                    // Then check status2 for approved/unapproved
-                    if (status === 'approved' || status === 'unapproved') {
+                    // Then check status2 for approved/disapproved
+                    if (status === 'approved' || status === 'disapproved') {
                         return app.status2 && app.status2.trim() !== '' &&
                                app.status2 === status &&
                                (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
@@ -824,26 +886,20 @@
                     return app.status === status &&
                            (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
                            (!app.status2 || app.status2.trim() === '' ||
-                            (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
+                            (app.status2 !== 'approved' && app.status2 !== 'disapproved'));
                 });
             }
 
             return filtered;
         }
 
-        // Apply status filter
-        function applyStatusFilter() {
-            currentStatusFilter = document.getElementById('statusFilter').value;
-            processDataAndUpdateCharts();
-        }
-
-        // Update summary cards with filtered data - UPDATED VERSION
+        // Update summary cards with filtered data - UPDATED VERSION WITH CLICKABLE CARDS
         function updateSummaryCards(data) {
             const applications = data.allApplications || [];
 
             const statusCounts = {
                 approved: 0,
-                unapproved: 0,
+                disapproved: 0,
                 pending: 0,
                 processing: 0,
                 claimed: 0,
@@ -856,14 +912,14 @@
                 if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
                     statusCounts.claimed++;
                 }
-                // If NOT claimed, then check status2 for approved/unapproved
+                // If NOT claimed, then check status2 for approved/disapproved
                 else if (app.status2 && app.status2.trim() !== '') {
                     if (app.status2 === 'approved') {
                         statusCounts.approved++;
-                    } else if (app.status2 === 'unapproved') {
-                        statusCounts.unapproved++;
+                    } else if (app.status2 === 'disapproved') {
+                        statusCounts.disapproved++;
                     }
-                    // DO NOT count in processing/pending if Status2 is approved/unapproved
+                    // DO NOT count in processing/pending if Status2 is approved/disapproved
                 } else {
                     // No Status2 or Status2 is empty, and no claimed status3, use original status
                     if (statusCounts.hasOwnProperty(app.status)) {
@@ -878,7 +934,7 @@
             const summaryCards = document.getElementById('summaryCards');
             summaryCards.innerHTML = `
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-total">
+                    <div class="card-analytics summary-card summary-total" onclick="redirectToApplicationDashboard('all')">
                         <div class="summary-icon">
                             <i class="bi bi-files"></i>
                         </div>
@@ -887,7 +943,7 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-approved">
+                    <div class="card-analytics summary-card summary-approved" onclick="redirectToApplicationDashboard('approved')">
                         <div class="summary-icon">
                             <i class="bi bi-check-circle"></i>
                         </div>
@@ -896,7 +952,7 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-pending">
+                    <div class="card-analytics summary-card summary-pending" onclick="redirectToApplicationDashboard('pending')">
                         <div class="summary-icon">
                             <i class="bi bi-hourglass-split"></i>
                         </div>
@@ -905,7 +961,7 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-processing">
+                    <div class="card-analytics summary-card summary-processing" onclick="redirectToApplicationDashboard('processing')">
                         <div class="summary-icon">
                             <i class="bi bi-gear"></i>
                         </div>
@@ -914,16 +970,16 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-unapproved">
+                    <div class="card-analytics summary-card summary-disapproved" onclick="redirectToApplicationDashboard('disapproved')">
                         <div class="summary-icon">
                             <i class="bi bi-x-circle"></i>
                         </div>
-                        <div class="summary-number">${statusCounts.unapproved}</div>
-                        <div class="summary-label">Unapproved</div>
+                        <div class="summary-number">${statusCounts.disapproved}</div>
+                        <div class="summary-label">Disapproved</div>
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-claimed">
+                    <div class="card-analytics summary-card summary-claimed" onclick="redirectToApplicationDashboard('claimed')">
                         <div class="summary-icon">
                             <i class="bi bi-box-seam"></i>
                         </div>
@@ -935,9 +991,9 @@
 
             // Update global chart data
             window.chartData = {
-                statusData: [statusCounts.approved, statusCounts.pending, statusCounts.processing, statusCounts.unapproved, statusCounts.claimed],
+                statusData: [statusCounts.approved, statusCounts.pending, statusCounts.processing, statusCounts.disapproved, statusCounts.claimed],
                 typeData: countApplicationTypes(applications),
-                statusLabels: ['Approved', 'Pending', 'Processing', 'Unapproved', 'Claimed'],
+                statusLabels: ['Approved', 'Pending', 'Processing', 'Disapproved', 'Claimed'],
                 typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
                 // Barangay data will be processed separately
                 ...processBarangayData(applications)
@@ -1011,7 +1067,7 @@
             };
         }
 
-        // Type Chart functions
+        // Type Chart functions with percentages
         function updateTypeChart(type) {
             const ctx = document.getElementById('typeChart');
             if (!ctx || !window.chartData) return;
@@ -1019,21 +1075,171 @@
             const context = ctx.getContext('2d');
             if (typeChart) typeChart.destroy();
 
+            // Calculate percentages
+            const total = window.chartData.typeData.reduce((a, b) => a + b, 0);
+            const percentages = window.chartData.typeData.map(value =>
+                total > 0 ? Math.round((value / total) * 100) : 0
+            );
+
+            // Create labels with percentages on the left side
+            const labelsWithPercentages = window.chartData.typeLabels.map((label, index) =>
+                `${percentages[index]}% - ${label}`
+            );
+
             typeChart = new Chart(context, {
                 type: type,
                 data: {
-                    labels: window.chartData.typeLabels,
+                    labels: labelsWithPercentages,
                     datasets: [{
                         data: window.chartData.typeData,
                         backgroundColor: [colors.hospital, colors.medical, colors.funeral],
-                        borderWidth: 0
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
-                options: getChartOptions('Application Types', type)
+                options: getTypeChartOptions(type, total, percentages)
             });
         }
 
-        // Status Chart functions
+        // Enhanced chart options for type chart with percentages
+        function getTypeChartOptions(type, total, percentages) {
+            const isPie = type === 'pie' || type === 'doughnut';
+
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        top: 20,
+                        bottom: 20
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: isPie ? 'right' : 'top',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                size: 14 // Larger font for legend
+                            },
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const value = data.datasets[0].data[i];
+                                        const percentage = percentages[i];
+                                        const cleanLabel = label.replace(/^\d+% - /, '');
+                                        return {
+                                            text: `${cleanLabel}: ${value} (${percentage}%)`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            strokeStyle: data.datasets[0].backgroundColor[i],
+                                            lineWidth: 2,
+                                            pointStyle: 'circle',
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: `Application Types - Total: ${total} Applications`,
+                        font: {
+                            size: 18, // Larger title
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#ffffff',
+                        borderWidth: 1,
+                        titleFont: {
+                            size: 14 // Larger tooltip font
+                        },
+                        bodyFont: {
+                            size: 14 // Larger tooltip font
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label.replace(/^\d+% - /, '');
+                                const value = context.raw || 0;
+                                const percentage = percentages[context.dataIndex];
+                                return [
+                                    `Type: ${label}`,
+                                    `Count: ${value}`,
+                                    `Percentage: ${percentage}%`
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: isPie ? {} : {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            font: {
+                                size: 14 // Larger font for y-axis
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Applications',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 13 // Larger font for x-axis
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Application Types with Percentages',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                // Animation configuration
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                },
+                // Interaction configuration
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            };
+        }
+
+        // Status Chart functions with real-time percentages
         function updateStatusChart(type) {
             const ctx = document.getElementById('statusChart');
             if (!ctx || !window.chartData) return;
@@ -1041,21 +1247,171 @@
             const context = ctx.getContext('2d');
             if (statusChart) statusChart.destroy();
 
+            // Calculate percentages
+            const total = window.chartData.statusData.reduce((a, b) => a + b, 0);
+            const percentages = window.chartData.statusData.map(value =>
+                total > 0 ? Math.round((value / total) * 100) : 0
+            );
+
+            // Create labels with percentages on the left side
+            const labelsWithPercentages = window.chartData.statusLabels.map((label, index) =>
+                `${percentages[index]}% - ${label}`
+            );
+
             statusChart = new Chart(context, {
                 type: type,
                 data: {
-                    labels: window.chartData.statusLabels,
+                    labels: labelsWithPercentages,
                     datasets: [{
                         data: window.chartData.statusData,
                         backgroundColor: [colors.success, colors.warning, colors.processing, colors.danger, colors.info],
-                        borderWidth: 0
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
-                options: getChartOptions('Status Distribution', type)
+                options: getStatusChartOptions(type, total, percentages)
             });
         }
 
-        // Barangay Chart functions
+        // Enhanced chart options for status chart with percentages
+        function getStatusChartOptions(type, total, percentages) {
+            const isPie = type === 'pie' || type === 'doughnut';
+
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        top: 20,
+                        bottom: 20
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: isPie ? 'right' : 'top',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                size: 14 // Larger font for legend
+                            },
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const value = data.datasets[0].data[i];
+                                        const percentage = percentages[i];
+                                        const cleanLabel = label.replace(/^\d+% - /, '');
+                                        return {
+                                            text: `${cleanLabel}: ${value} (${percentage}%)`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            strokeStyle: data.datasets[0].backgroundColor[i],
+                                            lineWidth: 2,
+                                            pointStyle: 'circle',
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: `Status Distribution - Total: ${total} Applications`,
+                        font: {
+                            size: 18, // Larger title
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#ffffff',
+                        borderWidth: 1,
+                        titleFont: {
+                            size: 14 // Larger tooltip font
+                        },
+                        bodyFont: {
+                            size: 14 // Larger tooltip font
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label.replace(/^\d+% - /, '');
+                                const value = context.raw || 0;
+                                const percentage = percentages[context.dataIndex];
+                                return [
+                                    `Status: ${label}`,
+                                    `Count: ${value}`,
+                                    `Percentage: ${percentage}%`
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: isPie ? {} : {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            font: {
+                                size: 14 // Larger font for y-axis
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Applications',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 13 // Larger font for x-axis
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Status with Percentages',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                // Animation configuration
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                },
+                // Interaction configuration
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            };
+        }
+
+        // Barangay Chart functions with percentages
         function updateBarangayChart() {
             if (!window.chartData) return;
 
@@ -1111,6 +1467,11 @@
             const assistanceTypes = Object.keys(assistanceData);
             const assistanceColors = generateAssistanceTypeColors(assistanceTypes.length);
 
+            // Calculate total for each barangay for percentages
+            const barangayTotals = labels.map((_, index) =>
+                assistanceTypes.reduce((sum, type) => sum + (assistanceData[type][index] || 0), 0)
+            );
+
             const datasets = assistanceTypes.map((type, index) => ({
                 label: type,
                 data: assistanceData[type],
@@ -1130,26 +1491,63 @@
                     plugins: {
                         legend: {
                             position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14 // Larger legend font
+                                }
+                            }
                         },
                         title: {
                             display: true,
                             text: 'Applications by Barangay and Specific Assistance Type',
-                            font: { size: 14 }
+                            font: {
+                                size: 18, // Larger title
+                                weight: 'bold'
+                            }
+                        },
+                        tooltip: {
+                            titleFont: {
+                                size: 14 // Larger tooltip font
+                            },
+                            bodyFont: {
+                                size: 14 // Larger tooltip font
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    const total = barangayTotals[context.dataIndex];
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
                         }
                     },
                     scales: {
                         x: {
                             stacked: isStacked,
+                            ticks: {
+                                font: {
+                                    size: 12 // Larger x-axis font
+                                }
+                            }
                         },
                         y: {
                             stacked: isStacked,
                             beginAtZero: true,
                             ticks: {
-                                precision: 0
+                                precision: 0,
+                                font: {
+                                    size: 12 // Larger y-axis font
+                                }
                             },
                             title: {
                                 display: true,
-                                text: 'Number of Applications'
+                                text: 'Number of Applications',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             }
                         }
                     }
@@ -1158,14 +1556,26 @@
         }
 
         function createPieChart(ctx, labels, totals, chartType) {
+            // Calculate percentages for pie/doughnut charts
+            const total = totals.reduce((a, b) => a + b, 0);
+            const percentages = totals.map(value =>
+                total > 0 ? Math.round((value / total) * 100) : 0
+            );
+
+            // Create labels with percentages
+            const labelsWithPercentages = labels.map((label, index) =>
+                `${percentages[index]}% - ${label}`
+            );
+
             barangayChart = new Chart(ctx, {
                 type: chartType,
                 data: {
-                    labels: labels,
+                    labels: labelsWithPercentages,
                     datasets: [{
                         data: totals,
                         backgroundColor: generateAssistanceTypeColors(labels.length),
-                        borderWidth: 0
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: {
@@ -1178,14 +1588,24 @@
                         title: {
                             display: true,
                             text: 'Total Applications by Barangay',
-                            font: { size: 14 }
+                            font: {
+                                size: 18, // Larger title
+                                weight: 'bold'
+                            }
                         },
                         tooltip: {
+                            titleFont: {
+                                size: 14 // Larger tooltip font
+                            },
+                            bodyFont: {
+                                size: 14 // Larger tooltip font
+                            },
                             callbacks: {
                                 label: function(context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((context.raw / total) * 100);
-                                    return `${context.label}: ${context.raw} (${percentage}%)`;
+                                    const label = context.label.replace(/^\d+% - /, '');
+                                    const value = context.raw || 0;
+                                    const percentage = percentages[context.dataIndex];
+                                    return `${label}: ${value} (${percentage}%)`;
                                 }
                             }
                         }
@@ -1227,39 +1647,6 @@
         }
 
         // Helper functions
-        function getChartOptions(title, type) {
-            const isPie = type === 'pie' || type === 'doughnut';
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: isPie ? 'right' : 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: title,
-                        font: { size: 14 }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                if (isPie) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((context.raw / total) * 100);
-                                    return `${context.label}: ${context.raw} (${percentage}%)`;
-                                }
-                                return `${context.label}: ${context.raw}`;
-                            }
-                        }
-                    }
-                },
-                scales: isPie ? {} : {
-                    y: { beginAtZero: true, ticks: { precision: 0 } }
-                }
-            };
-        }
-
         function generateAssistanceTypeColors(count) {
             const colorPalette = [
                 '#4361ee', '#3a0ca3', '#4cc9f0', '#f72585', '#7209b7',
@@ -1311,4 +1698,3 @@
     </script>
 </body>
 </html>
-}
