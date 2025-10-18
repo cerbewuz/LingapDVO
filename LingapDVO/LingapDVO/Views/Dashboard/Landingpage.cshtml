@@ -678,8 +678,8 @@
                         <div class="step-number">1</div>
                         <div class="step-content">
                             <h3 class="step-title">Start by creating an Account</h3>
-                            <p class="step-description">Begin your application journey by creating an account on our platform. This will give you access to all our services.</p>
                             <p class="step-bisaya">Sugdan sa paghimo ug account ani nga website.</p>
+                            <p class="step-description">Begin your application journey by creating an account on our platform. This will give you access to all our services.</p>
                         </div>
                     </div>
 
@@ -687,8 +687,8 @@
                         <div class="step-number">2</div>
                         <div class="step-content">
                             <h3 class="step-title">Login to Verify Your Account</h3>
-                            <p class="step-description">After successful registration, proceed to login to open and verify your account for secure access to our services.</p>
                             <p class="step-bisaya">"Kung ang registration nag "successful", diretso sa login para ma abri ug ma-"verify" imong account."</p>
+                            <p class="step-description">After successful registration, proceed to login to open and verify your account for secure access to our services.</p>
                         </div>
                     </div>
 
@@ -696,8 +696,8 @@
                         <div class="step-number">3</div>
                         <div class="step-content">
                             <h3 class="step-title">Complete Account Verification</h3>
-                            <p class="step-description">Verify your account by filling out all necessary fields, including submission of a Valid ID to ensure the security of your application.</p>
                             <p class="step-bisaya">"I-"verify" imong account pinaagi sa pag "fill-out" sa tanan kailangan nga "fields", apil niini ang pagpasa sa imong Valid ID."</p>
+                            <p class="step-description">Verify your account by filling out all necessary fields, including submission of a Valid ID to ensure the security of your application.</p>
                         </div>
                     </div>
 
@@ -705,8 +705,8 @@
                         <div class="step-number">4</div>
                         <div class="step-content">
                             <h3 class="step-title">Access All Services</h3>
-                            <p class="step-description">Once verified, all services/assistance like Hospital Bill Assistance, Medical/Laboratory Assistance, and Funeral Assistance will be available for your use.</p>
                             <p class="step-bisaya">"Human ma-"verified", tanan serbisyo/ tabang sama sa tabang sa Hospital Bill, tabang sa Medical/ Laboratory, ug tabang sa Funeral kay mahimo nang magamit."</p>
+                            <p class="step-description">Once verified, all services/assistance like Hospital Bill Assistance, Medical/Laboratory Assistance, and Funeral Assistance will be available for your use.</p>
                         </div>
                     </div>
                 </div>
@@ -766,45 +766,52 @@
 
         .modal-header {
             background: white;
-            padding: 3rem 2rem 2rem 2rem;
+            padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem);
             border-radius: 1.25rem 1.25rem 0 0;
             text-align: center;
             position: relative;
             flex-shrink: 0;
             border-bottom: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .modal-title {
             color: #367588;
-            font-size: 2.5rem;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: clamp(0.5rem, 2vw, 1rem);
             line-height: 1.1;
             text-transform: uppercase;
+            width: 100%;
+            display: block;
         }
 
         .modal-subtitle {
             color: #6c757d;
-            font-size: 1.2rem;
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
             line-height: 1.6;
             margin: 0;
-            max-width: 600px;
+            max-width: clamp(280px, 80%, 600px);
             margin-left: auto;
             margin-right: auto;
             font-weight: 400;
+            width: 100%;
+            display: block;
         }
 
         .modal-close {
             position: absolute;
-            top: 1rem;
-            right: 1.5rem;
+            top: clamp(0.5rem, 2vw, 1rem);
+            right: clamp(0.75rem, 2vw, 1.5rem);
             background: rgba(0, 0, 0, 0.1);
             border: none;
             color: black;
-            width: 2.5rem;
-            height: 2.5rem;
+            width: clamp(2rem, 5vw, 2.5rem);
+            height: clamp(2rem, 5vw, 2.5rem);
             border-radius: 50%;
-            font-size: 1.5rem;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -818,7 +825,7 @@
             }
 
         .modal-body {
-            padding: 2.5rem;
+            padding: clamp(1.5rem, 4vw, 2.5rem);
             flex: 1;
             overflow-y: auto;
         }
@@ -826,18 +833,18 @@
         .step-container {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: clamp(1rem, 3vw, 2rem);
         }
 
         .step-item {
             display: flex;
             align-items: flex-start;
-            gap: 1.5rem;
-            padding: 1.5rem;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            padding: clamp(1rem, 2.5vw, 1.5rem);
             border-radius: 0.9375rem;
             background: #f8f9fa;
             transition: all 0.3s ease;
-            border-left: 0.25rem solid #367588;
+            border-left: clamp(0.1875rem, 0.4vw, 0.25rem) solid #367588;
             flex-wrap: wrap;
         }
 
@@ -849,13 +856,13 @@
         .step-number {
             background: #367588;
             color: white;
-            width: 3.125rem;
-            height: 3.125rem;
+            width: clamp(2.5rem, 6vw, 3.125rem);
+            height: clamp(2.5rem, 6vw, 3.125rem);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
             font-weight: bold;
             flex-shrink: 0;
             box-shadow: 0 0.25rem 0.9375rem rgba(54, 117, 136, 0.3);
@@ -863,35 +870,39 @@
 
         .step-content {
             flex: 1;
-            min-width: 0;
+            min-width: clamp(200px, 60%, 100%);
         }
 
         .step-title {
             color: #367588;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
             word-wrap: break-word;
         }
 
         .step-description {
             color: #495057;
+            font-size: clamp(0.875rem, 1.8vw, 1rem);
             line-height: 1.6;
-            margin-bottom: 0.5rem;
+            margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
             word-wrap: break-word;
         }
 
         .step-bisaya {
             color: #6c757d;
+            font-size: clamp(0.875rem, 1.8vw, 1rem);
             font-style: italic;
             background: rgba(54, 117, 136, 0.05);
-            padding: 0.75rem;
+            padding: clamp(0.5rem, 1.5vw, 0.75rem);
             border-radius: 0.5rem;
-            border-left: 0.1875rem solid #367588;
+            border-left: clamp(0.125rem, 0.3vw, 0.1875rem) solid #367588;
             word-wrap: break-word;
+            margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
         }
 
         .modal-footer {
-            padding: 1.5rem 2.5rem;
+            padding: clamp(1rem, 2.5vw, 1.5rem) clamp(1.5rem, 4vw, 2.5rem);
             background: #f8f9fa;
             border-radius: 0 0 1.25rem 1.25rem;
             text-align: center;
@@ -903,14 +914,15 @@
             background: linear-gradient(135deg, #367588 0%, #2a5c6b 100%);
             color: white;
             border: none;
-            padding: 1rem 2.5rem;
+            padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2.5rem);
             border-radius: 3.125rem;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
             font-weight: 700;
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: clamp(0.5rem, 1.5vw, 0.75rem);
             box-shadow: 0 0.5rem 1.5rem rgba(54, 117, 136, 0.4);
             white-space: nowrap;
         }

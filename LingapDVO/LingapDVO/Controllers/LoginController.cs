@@ -32,6 +32,200 @@ namespace LingapDVO.Controllers
             _smsService = smsService;
         }
 
+        // ╔═══════════════════════════════════════════════════════════════════════════╗
+        // ║                    AES-256 ENCRYPTION HELPER CLASS                        ║
+        // ║         Hardcoded AES-256 Implementation with Detailed Comments           ║
+        // ╚═══════════════════════════════════════════════════════════════════════════╝
+        private static class AesEncryptionHelper
+        {
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 1: Define hardcoded 256-bit (32 bytes) encryption key          │
+            // │ This is a fixed key for AES-256 encryption                          │
+            // │ In production, store this securely (e.g., Azure Key Vault)          │
+            // └─────────────────────────────────────────────────────────────────────┘
+            private static readonly byte[] HARDCODED_AES_KEY = new byte[32]
+            {
+                0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
+                0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C,
+                0x76, 0x2E, 0x71, 0x60, 0xF3, 0x8B, 0x4D, 0xA5,
+                0x6A, 0x78, 0x4D, 0x90, 0x45, 0x19, 0x03, 0xCB
+            };
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 2: Encrypt string data using AES-256-CBC                       │
+            // │ Process:                                                             │
+            // │   1. Generate random 16-byte IV (Initialization Vector)             │
+            // │   2. Create AES cipher with 256-bit key                             │
+            // │   3. Configure CBC mode with PKCS7 padding                          │
+            // │   4. Encrypt the plaintext data                                     │
+            // │   5. Combine IV + encrypted data                                    │
+            // │   6. Return Base64-encoded result                                   │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public static string Encrypt(string plainText)
+            {
+                // Step 2.1: Convert plaintext string to bytes
+                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+
+                // Step 2.2: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 2.3: Set the hardcoded 256-bit key (32 bytes)
+                aes.Key = HARDCODED_AES_KEY;
+
+                // Step 2.4: Generate random 128-bit IV (16 bytes) for each encryption
+                // This ensures same plaintext produces different ciphertext each time
+                aes.GenerateIV();
+
+                // Step 2.5: Set cipher mode to CBC (Cipher Block Chaining)
+                aes.Mode = CipherMode.CBC;
+
+                // Step 2.6: Set padding mode to PKCS7 (standard padding for AES)
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 2.7: Perform the encryption operation
+                using var encryptor = aes.CreateEncryptor();
+                using var memoryStream = new MemoryStream();
+
+                // Step 2.8: Write IV at the beginning (needed for decryption)
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Step 2.9: Create crypto stream for encryption
+                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                using (var writer = new StreamWriter(cryptoStream))
+                {
+                    // Step 2.10: Write plaintext to crypto stream (encrypts automatically)
+                    writer.Write(plainText);
+                }
+
+                // Step 2.11: Get encrypted data as byte array (IV + encrypted data)
+                byte[] encryptedData = memoryStream.ToArray();
+
+                // Step 2.12: Convert to Base64 for safe storage/transmission
+                return Convert.ToBase64String(encryptedData);
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 3: Decrypt string data using AES-256-CBC                       │
+            // │ Process:                                                             │
+            // │   1. Decode Base64 string to bytes                                  │
+            // │   2. Extract IV from first 16 bytes                                 │
+            // │   3. Extract encrypted data from remaining bytes                    │
+            // │   4. Create AES cipher with same key                                │
+            // │   5. Configure CBC mode with PKCS7 padding                          │
+            // │   6. Decrypt the data                                               │
+            // │   7. Return plaintext string                                        │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public static string Decrypt(string encryptedText)
+            {
+                // Step 3.1: Convert Base64 string back to bytes
+                byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+
+                // Step 3.2: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 3.3: Set the same hardcoded 256-bit key (32 bytes)
+                aes.Key = HARDCODED_AES_KEY;
+
+                // Step 3.4: Extract IV from first 16 bytes of encrypted data
+                byte[] iv = new byte[16];
+                Array.Copy(encryptedBytes, 0, iv, 0, 16);
+                aes.IV = iv;
+
+                // Step 3.5: Set cipher mode to CBC (same as encryption)
+                aes.Mode = CipherMode.CBC;
+
+                // Step 3.6: Set padding mode to PKCS7 (same as encryption)
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 3.7: Perform the decryption operation
+                using var decryptor = aes.CreateDecryptor();
+                using var memoryStream = new MemoryStream(encryptedBytes, 16, encryptedBytes.Length - 16);
+                using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                using var reader = new StreamReader(cryptoStream);
+
+                // Step 3.8: Read decrypted plaintext from stream
+                return reader.ReadToEnd();
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 4: Encrypt file/stream data using AES-256-CBC                  │
+            // │ Process:                                                             │
+            // │   1. Generate random 16-byte IV                                     │
+            // │   2. Create AES cipher with 256-bit key                             │
+            // │   3. Configure CBC mode with PKCS7 padding                          │
+            // │   4. Encrypt the file stream                                        │
+            // │   5. Return IV + encrypted data as byte array                       │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public static byte[] EncryptStream(Stream inputStream)
+            {
+                // Step 4.1: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 4.2: Set the hardcoded 256-bit key (32 bytes)
+                aes.Key = HARDCODED_AES_KEY;
+
+                // Step 4.3: Generate random 128-bit IV (16 bytes)
+                aes.GenerateIV();
+
+                // Step 4.4: Set cipher mode to CBC
+                aes.Mode = CipherMode.CBC;
+
+                // Step 4.5: Set padding mode to PKCS7
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 4.6: Create output stream to hold IV + encrypted data
+                using var memoryStream = new MemoryStream();
+
+                // Step 4.7: Write IV at the beginning (16 bytes)
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Step 4.8: Create encryptor and encrypt the input stream
+                using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                {
+                    // Step 4.9: Copy input stream to crypto stream (encrypts automatically)
+                    inputStream.CopyTo(cryptoStream);
+                }
+
+                // Step 4.10: Return complete encrypted data (IV + ciphertext)
+                return memoryStream.ToArray();
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 5: Encrypt timestamp string using AES-256-CBC                  │
+            // │ Used for generating unique encrypted filenames                      │
+            // │ Returns only the ciphertext (without IV) as Base64                  │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public static string EncryptTimestamp(string timestamp)
+            {
+                // Step 5.1: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 5.2: Set the hardcoded 256-bit key
+                aes.Key = HARDCODED_AES_KEY;
+
+                // Step 5.3: Generate random IV
+                aes.GenerateIV();
+
+                // Step 5.4: Set cipher mode to CBC
+                aes.Mode = CipherMode.CBC;
+
+                // Step 5.5: Set padding mode to PKCS7
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 5.6: Create encryptor
+                using var encryptor = aes.CreateEncryptor();
+
+                // Step 5.7: Convert timestamp to bytes
+                byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+
+                // Step 5.8: Encrypt timestamp bytes
+                byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+
+                // Step 5.9: Return Base64-encoded encrypted timestamp
+                return Convert.ToBase64String(encryptedBytes);
+            }
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -56,7 +250,8 @@ namespace LingapDVO.Controllers
             {
                 var error = result.Properties?.GetString(".error");
                 var errorDescription = result.Properties?.GetString(".error.description");
-                return RedirectToAction("Login", "Login");
+                return Redirect("/Login");
+
             }
 
             var claims = result.Principal.Claims.ToList();
@@ -76,44 +271,14 @@ namespace LingapDVO.Controllers
             if (existingUser == null)
             {
                 // ===========================
-                // 🔑 Create auto Facebook user
+                // 🔑 Create auto Facebook user with AES-256 encryption
                 // ===========================
-                string masterPassword = "SuperAdminMasterKey123!";
-                byte[] salt = RandomNumberGenerator.GetBytes(16);
-                byte[] iv = RandomNumberGenerator.GetBytes(16);
-
-                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32);
-
-                string EncryptPassword(string password)
-                {
-                    using var aes = Aes.Create();
-                    aes.Key = key;
-                    aes.IV = iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var encryptor = aes.CreateEncryptor();
-                    using var memoryStream = new MemoryStream();
-                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                    using (var writer = new StreamWriter(cryptoStream))
-                    {
-                        writer.Write(password);
-                    }
-
-                    byte[] encryptedData = memoryStream.ToArray();
-                    byte[] combinedData = new byte[salt.Length + iv.Length + encryptedData.Length];
-
-                    Buffer.BlockCopy(salt, 0, combinedData, 0, salt.Length);
-                    Buffer.BlockCopy(iv, 0, combinedData, salt.Length, iv.Length);
-                    Buffer.BlockCopy(encryptedData, 0, combinedData, salt.Length + iv.Length, encryptedData.Length);
-
-                    return Convert.ToBase64String(combinedData);
-                }
 
                 // ✅ Generate random password (internal use only)
                 string generatedPassword = "FB-" + Guid.NewGuid().ToString("N").Substring(0, 12);
-                string encryptedPassword = EncryptPassword(generatedPassword);
+
+                // Use hardcoded AES-256 helper to encrypt password
+                string encryptedPassword = AesEncryptionHelper.Encrypt(generatedPassword);
 
                 user = new RegisterAcc
                 {
@@ -231,44 +396,14 @@ namespace LingapDVO.Controllers
             if (existingUser == null)
             {
                 // ===========================
-                // 🔑 Create auto Google user
+                // 🔑 Create auto Google user with AES-256 encryption
                 // ===========================
-                string masterPassword = "SuperAdminMasterKey123!";
-                byte[] salt = RandomNumberGenerator.GetBytes(16);
-                byte[] iv = RandomNumberGenerator.GetBytes(16);
-
-                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32);
-
-                string EncryptPassword(string password)
-                {
-                    using var aes = Aes.Create();
-                    aes.Key = key;
-                    aes.IV = iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var encryptor = aes.CreateEncryptor();
-                    using var memoryStream = new MemoryStream();
-                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                    using (var writer = new StreamWriter(cryptoStream))
-                    {
-                        writer.Write(password);
-                    }
-
-                    byte[] encryptedData = memoryStream.ToArray();
-                    byte[] combinedData = new byte[salt.Length + iv.Length + encryptedData.Length];
-
-                    Buffer.BlockCopy(salt, 0, combinedData, 0, salt.Length);
-                    Buffer.BlockCopy(iv, 0, combinedData, salt.Length, iv.Length);
-                    Buffer.BlockCopy(encryptedData, 0, combinedData, salt.Length + iv.Length, encryptedData.Length);
-
-                    return Convert.ToBase64String(combinedData);
-                }
 
                 // ✅ Generate random password (internal use only)
                 string generatedPassword = "GOOG-" + Guid.NewGuid().ToString("N").Substring(0, 12);
-                string encryptedPassword = EncryptPassword(generatedPassword);
+
+                // Use hardcoded AES-256 helper to encrypt password
+                string encryptedPassword = AesEncryptionHelper.Encrypt(generatedPassword);
 
                 user = new RegisterAcc
                 {
@@ -580,34 +715,8 @@ namespace LingapDVO.Controllers
 
                 if (registerAccUser != null)
                 {
-                    string DecryptPassword(string encryptedPassword)
-                    {
-                        byte[] encryptedBytes = Convert.FromBase64String(encryptedPassword);
-
-                        using var memoryStream = new MemoryStream(encryptedBytes);
-                        byte[] salt = new byte[16];
-                        byte[] iv = new byte[16];
-                        memoryStream.Read(salt, 0, salt.Length);
-                        memoryStream.Read(iv, 0, iv.Length);
-
-                        string masterPassword = "SuperAdminMasterKey123!";
-                        using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                        byte[] key = pbkdf2.GetBytes(32);
-
-                        using var aes = Aes.Create();
-                        aes.Key = key;
-                        aes.IV = iv;
-                        aes.Mode = CipherMode.CBC;
-                        aes.Padding = PaddingMode.PKCS7;
-
-                        using var decryptor = aes.CreateDecryptor();
-                        using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
-                        using var reader = new StreamReader(cryptoStream);
-
-                        return reader.ReadToEnd();
-                    }
-
-                    string decryptedPassword = DecryptPassword(registerAccUser.Password);
+                    // Use hardcoded AES-256 helper to decrypt password
+                    string decryptedPassword = AesEncryptionHelper.Decrypt(registerAccUser.Password);
 
                     if (decryptedPassword == loginModel.Password)
                     {
@@ -809,43 +918,10 @@ namespace LingapDVO.Controllers
                 }
 
                 // ==========================
-                // 🔑 MASTER PASSWORD SECTION
+                // 🔑 AES-256 PASSWORD ENCRYPTION
                 // ==========================
-                string masterPassword = "SuperAdminMasterKey123!";
-                byte[] salt = RandomNumberGenerator.GetBytes(16);
-                byte[] iv = RandomNumberGenerator.GetBytes(16);
-
-                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32);
-
-                string EncryptPassword(string password)
-                {
-                    using var aes = Aes.Create();
-                    aes.Key = key;
-                    aes.IV = iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var encryptor = aes.CreateEncryptor();
-                    using var memoryStream = new MemoryStream();
-
-                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                    using (var writer = new StreamWriter(cryptoStream))
-                    {
-                        writer.Write(password);
-                    }
-
-                    byte[] encryptedData = memoryStream.ToArray();
-                    byte[] combinedData = new byte[salt.Length + iv.Length + encryptedData.Length];
-
-                    Buffer.BlockCopy(salt, 0, combinedData, 0, salt.Length);
-                    Buffer.BlockCopy(iv, 0, combinedData, salt.Length, iv.Length);
-                    Buffer.BlockCopy(encryptedData, 0, combinedData, salt.Length + iv.Length, encryptedData.Length);
-
-                    return Convert.ToBase64String(combinedData);
-                }
-
-                string encryptedPassword = EncryptPassword(registerAccDto.Password);
+                // Use hardcoded AES-256 helper to encrypt password
+                string encryptedPassword = AesEncryptionHelper.Encrypt(registerAccDto.Password);
 
                 var registercacc = new RegisterAcc
                 {
@@ -927,57 +1003,11 @@ namespace LingapDVO.Controllers
             try
             {
                 // ==========================
-                // 🔑 MASTER PASSWORD SECTION
+                // 🔑 AES-256 FILE ENCRYPTION
                 // ==========================
-                // This can be stored securely (e.g., environment variable)
-                string masterPassword = "SuperAdminMasterKey123!"; // <-- Change this to a secret stored securely
-                byte[] salt = RandomNumberGenerator.GetBytes(16);  // Unique salt per session
-
-                // Derive AES key from master password using PBKDF2
-                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32); // 256-bit key
-
-                // ==========================
-                // 🔒 ENCRYPTION FUNCTION
-                // ==========================
-                byte[] EncryptFile(Stream inputStream)
-                {
-                    using var aes = Aes.Create();
-                    aes.Key = key;
-                    aes.GenerateIV(); // Random IV per encryption
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var memoryStream = new MemoryStream();
-                    memoryStream.Write(salt, 0, salt.Length); // Store salt at beginning
-                    memoryStream.Write(aes.IV, 0, aes.IV.Length); // Store IV next
-
-                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        inputStream.CopyTo(cryptoStream);
-                    }
-
-                    return memoryStream.ToArray();
-                }
-
-                // ==========================
-                // 📅 Encrypted Timestamp for Filenames
-                // ==========================
+                // Generate unique encrypted timestamp for filenames
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp;
-                using (var aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.GenerateIV();
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var encryptor = aes.CreateEncryptor();
-                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
-                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
-                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
-                }
-
+                string encryptedTimestamp = AesEncryptionHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // ==========================
@@ -989,7 +1019,8 @@ namespace LingapDVO.Controllers
                 string frontPath = Path.Combine(validFolder, frontFileName);
                 using (var fileStream = new FileStream(frontPath, FileMode.Create))
                 {
-                    byte[] encryptedData = EncryptFile(VerifyaccountDto.ValidFrontID!.OpenReadStream());
+                    // Use hardcoded AES-256 helper to encrypt file stream
+                    byte[] encryptedData = AesEncryptionHelper.EncryptStream(VerifyaccountDto.ValidFrontID!.OpenReadStream());
                     fileStream.Write(encryptedData, 0, encryptedData.Length);
                 }
 
@@ -1000,7 +1031,8 @@ namespace LingapDVO.Controllers
                 string backPath = Path.Combine(validFolder, backFileName);
                 using (var fileStream = new FileStream(backPath, FileMode.Create))
                 {
-                    byte[] encryptedData = EncryptFile(VerifyaccountDto.ValidBackID!.OpenReadStream());
+                    // Use hardcoded AES-256 helper to encrypt file stream
+                    byte[] encryptedData = AesEncryptionHelper.EncryptStream(VerifyaccountDto.ValidBackID!.OpenReadStream());
                     fileStream.Write(encryptedData, 0, encryptedData.Length);
                 }
 

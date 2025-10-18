@@ -99,7 +99,7 @@
             --gray-800: #343a40;
         }
 
-        
+
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: #f5f7fb;
@@ -112,14 +112,16 @@
         .dashboard-container {
             display: flex;
             min-height: 100vh;
+            flex-wrap: wrap;
         }
 
         /* Sidebar */
         .sidebar {
-            width: 260px;
+            width: clamp(200px, 260px, 100%);
+            min-width: 200px;
             background: linear-gradient(180deg, var(--dark) 0%, #2d2d44 100%);
             color: white;
-            padding: 1.5rem 0;
+            padding: clamp(1rem, 1.5rem, 2rem) 0;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             position: fixed;
             left: 0;
@@ -127,6 +129,7 @@
             height: 100vh;
             z-index: 1000;
             transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
         .sidebar-header {
@@ -139,14 +142,14 @@
             display: flex;
             align-items: center;
             font-weight: 700;
-            font-size: 1.4rem;
+            font-size: clamp(1.1rem, 1.4rem, 1.6rem);
             color: white;
         }
 
             .sidebar-title i {
                 color: var(--lingap-red);
-                margin-right: 0.75rem;
-                font-size: 1.6rem;
+                margin-right: clamp(0.5rem, 0.75rem, 1rem);
+                font-size: clamp(1.2rem, 1.6rem, 1.8rem);
             }
 
         .sidebar-nav {
@@ -163,10 +166,11 @@
                 align-items: center;
                 color: rgba(255, 255, 255, 0.8);
                 text-decoration: none;
-                padding: 0.85rem 1.5rem;
+                padding: clamp(0.65rem, 0.85rem, 1rem) clamp(1rem, 1.5rem, 1.75rem);
                 border-radius: 0.5rem;
                 transition: all 0.2s ease;
                 font-weight: 500;
+                font-size: clamp(0.85rem, 1rem, 1.1rem);
             }
 
                 .sidebar-nav a:hover, .sidebar-nav a.active {
@@ -175,62 +179,68 @@
                 }
 
             .sidebar-nav i {
-                margin-right: 0.75rem;
-                font-size: 1.2rem;
+                margin-right: clamp(0.5rem, 0.75rem, 1rem);
+                font-size: clamp(1rem, 1.2rem, 1.3rem);
             }
 
         /* Main Content */
         .main-content {
             flex: 1;
-            padding: 1.5rem;
+            padding: clamp(0.75rem, 1.5rem, 2rem);
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            margin-left: 260px;
+            margin-left: clamp(200px, 260px, 280px);
             transition: margin-left 0.3s ease;
+            min-width: 0;
         }
 
         .dashboard-header {
             background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
+            border-radius: clamp(0.75rem, 1rem, 1.25rem);
+            padding: clamp(1rem, 1.5rem, 2rem);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin-bottom: 1.5rem;
+            margin-bottom: clamp(1rem, 1.5rem, 2rem);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .header-title h1 {
             color: var(--dark);
             font-weight: 700;
             margin: 0;
-            font-size: 1.8rem;
+            font-size: clamp(1.3rem, 1.8rem, 2.2rem);
         }
 
         .header-title p {
             color: var(--gray-600);
             margin: 0;
+            font-size: clamp(0.85rem, 1rem, 1.1rem);
         }
 
         .date-filter {
             display: flex;
-            gap: 10px;
+            gap: clamp(6px, 10px, 14px);
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .date-input {
-            padding: 8px 12px;
+            padding: clamp(6px, 8px, 10px) clamp(10px, 12px, 14px);
             border-radius: 8px;
             border: 1px solid var(--gray-200);
             background: white;
+            font-size: clamp(0.85rem, 1rem, 1.1rem);
         }
 
         .card-analytics {
             background: white;
-            border-radius: 1rem;
+            border-radius: clamp(0.75rem, 1rem, 1.25rem);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             border: none;
-            margin-bottom: 1.5rem;
+            margin-bottom: clamp(1rem, 1.5rem, 2rem);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -242,37 +252,37 @@
         .card-header-custom {
             background: white;
             border-bottom: 1px solid var(--gray-200);
-            padding: 1.25rem 1.5rem;
-            border-radius: 1rem 1rem 0 0 !important;
+            padding: clamp(1rem, 1.25rem, 1.5rem) clamp(1rem, 1.5rem, 2rem);
+            border-radius: clamp(0.75rem, 1rem, 1.25rem) clamp(0.75rem, 1rem, 1.25rem) 0 0 !important;
         }
 
         .card-title-custom {
             font-weight: 600;
             color: var(--dark);
             margin: 0;
-            font-size: 1.1rem;
+            font-size: clamp(1rem, 1.1rem, 1.2rem);
         }
 
         .chart-container {
             position: relative;
-            height: 400px;
-            padding: 1rem;
+            height: clamp(300px, 400px, 500px);
+            padding: clamp(0.75rem, 1rem, 1.5rem);
         }
 
         .summary-card {
             text-align: center;
-            padding: 1.5rem;
+            padding: clamp(1rem, 1.5rem, 2rem);
         }
 
         .summary-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: clamp(45px, 60px, 70px);
+            height: clamp(45px, 60px, 70px);
+            border-radius: clamp(8px, 12px, 14px);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
+            margin: 0 auto clamp(0.75rem, 1rem, 1.25rem);
+            font-size: clamp(1.2rem, 1.5rem, 1.75rem);
         }
 
         .summary-total .summary-icon {
@@ -306,36 +316,39 @@
         }
 
         .summary-number {
-            font-size: 2rem;
+            font-size: clamp(1.5rem, 2rem, 2.3rem);
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: clamp(0.35rem, 0.5rem, 0.65rem);
         }
 
         .summary-label {
             color: var(--gray-600);
             font-weight: 500;
+            font-size: clamp(0.85rem, 1rem, 1.1rem);
         }
 
         .chart-controls {
             display: flex;
-            gap: 0.75rem;
+            gap: clamp(0.5rem, 0.75rem, 1rem);
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .chart-select {
-            padding: 0.4rem 0.75rem;
+            padding: clamp(0.3rem, 0.4rem, 0.5rem) clamp(0.6rem, 0.75rem, 0.9rem);
             border-radius: 8px;
             border: 1px solid var(--gray-200);
             background: white;
-            font-size: 0.85rem;
+            font-size: clamp(0.8rem, 0.85rem, 0.95rem);
         }
 
         .btn-custom {
-            padding: 0.5rem 1rem;
+            padding: clamp(0.4rem, 0.5rem, 0.6rem) clamp(0.85rem, 1rem, 1.15rem);
             border-radius: 8px;
             font-weight: 500;
             border: none;
             transition: all 0.3s ease;
+            font-size: clamp(0.85rem, 0.95rem, 1rem);
         }
 
         .btn-primary-custom {
@@ -355,47 +368,50 @@
         }
 
         .barangay-list {
-            max-height: 300px;
+            max-height: clamp(250px, 300px, 350px);
             overflow-y: auto;
-            margin-top: 1rem;
-            padding: 0 1rem 1rem 1rem;
+            margin-top: clamp(0.75rem, 1rem, 1.25rem);
+            padding: 0 clamp(0.75rem, 1rem, 1.25rem) clamp(0.75rem, 1rem, 1.25rem) clamp(0.75rem, 1rem, 1.25rem);
         }
 
         .barangay-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.5rem 0;
+            padding: clamp(0.4rem, 0.5rem, 0.6rem) 0;
             border-bottom: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .barangay-name {
             font-weight: 500;
+            font-size: clamp(0.85rem, 0.95rem, 1rem);
         }
 
         .barangay-count {
             background: var(--primary);
             color: white;
-            padding: 0.25rem 0.5rem;
+            padding: clamp(0.2rem, 0.25rem, 0.3rem) clamp(0.4rem, 0.5rem, 0.6rem);
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: clamp(0.75rem, 0.8rem, 0.85rem);
             font-weight: 600;
         }
 
         .assistance-details {
-            font-size: 0.8rem;
+            font-size: clamp(0.75rem, 0.8rem, 0.85rem);
             color: var(--gray-600);
-            margin-top: 0.25rem;
+            margin-top: clamp(0.2rem, 0.25rem, 0.3rem);
         }
 
         .assistance-type-badge {
             background: var(--gray-200);
             color: var(--gray-700);
-            padding: 0.2rem 0.5rem;
+            padding: clamp(0.15rem, 0.2rem, 0.25rem) clamp(0.4rem, 0.5rem, 0.6rem);
             border-radius: 12px;
-            font-size: 0.7rem;
-            margin-right: 0.3rem;
-            margin-bottom: 0.2rem;
+            font-size: clamp(0.65rem, 0.7rem, 0.75rem);
+            margin-right: clamp(0.25rem, 0.3rem, 0.35rem);
+            margin-bottom: clamp(0.15rem, 0.2rem, 0.25rem);
             display: inline-block;
         }
 
