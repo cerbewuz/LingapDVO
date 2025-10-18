@@ -25,6 +25,201 @@ namespace LingapDVO.Controllers
             this.context = context;
             this.environment = environment;
         }
+
+        // ╔═══════════════════════════════════════════════════════════════════════════╗
+        // ║                    AES-256 ENCRYPTION HELPER CLASS                        ║
+        // ║         Hardcoded AES-256 Implementation with Detailed Comments           ║
+        // ╚═══════════════════════════════════════════════════════════════════════════╝
+        private static class AesEncryptionHelper
+        {
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 1: Define hardcoded 256-bit (32 bytes) encryption key          │
+            // │ This is a fixed key for AES-256 encryption                          │
+            // │ In production, store this securely (e.g., Azure Key Vault)          │
+            // └─────────────────────────────────────────────────────────────────────┘
+            private static readonly byte[] HARDCODED_AES_KEY = new byte[32]
+            {
+                0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
+                0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C,
+                0x76, 0x2E, 0x71, 0x60, 0xF3, 0x8B, 0x4D, 0xA5,
+                0x6A, 0x78, 0x4D, 0x90, 0x45, 0x19, 0x03, 0xCB
+            };
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 2: Encrypt string data using AES-256-CBC                       │
+            // │ Process:                                                             │
+            // │   1. Generate random 16-byte IV (Initialization Vector)             │
+            // │   2. Create AES cipher with 256-bit key                             │
+            // │   3. Configure CBC mode with PKCS7 padding                          │
+            // │   4. Encrypt the plaintext data                                     │
+            // │   5. Combine IV + encrypted data                                    │
+            // │   6. Return Base64-encoded result                                   │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public static string Encrypt(string plainText)
+            {
+                // Step 2.1: Convert plaintext string to bytes
+                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+
+                // Step 2.2: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 2.3: Set the hardcoded 256-bit key (32 bytes)
+                aes.Key = HARDCODED_AES_KEY;
+
+                // Step 2.4: Generate random 128-bit IV (16 bytes) for each encryption
+                // This ensures same plaintext produces different ciphertext each time
+                aes.GenerateIV();
+
+                // Step 2.5: Set cipher mode to CBC (Cipher Block Chaining)
+                aes.Mode = CipherMode.CBC;
+
+                // Step 2.6: Set padding mode to PKCS7 (standard padding for AES)
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 2.7: Perform the encryption operation
+                using var encryptor = aes.CreateEncryptor();
+                using var memoryStream = new MemoryStream();
+
+                // Step 2.8: Write IV at the beginning (needed for decryption)
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Step 2.9: Create crypto stream for encryption
+                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                using (var writer = new StreamWriter(cryptoStream))
+                {
+                    // Step 2.10: Write plaintext to crypto stream (encrypts automatically)
+                    writer.Write(plainText);
+                }
+
+                // Step 2.11: Get encrypted data as byte array (IV + encrypted data)
+                byte[] encryptedData = memoryStream.ToArray();
+
+                // Step 2.12: Convert to Base64 for safe storage/transmission
+                return Convert.ToBase64String(encryptedData);
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 3: Decrypt string data using AES-256-CBC                       │
+            // │ Process:                                                             │
+            // │   1. Decode Base64 string to bytes                                  │
+            // │   2. Extract IV from first 16 bytes                                 │
+            // │   3. Extract encrypted data from remaining bytes                    │
+            // │   4. Create AES cipher with same key                                │
+            // │   5. Configure CBC mode with PKCS7 padding                          │
+            // │   6. Decrypt the data                                               │
+            // │   7. Return plaintext string                                        │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public static string Decrypt(string encryptedText)
+            {
+                // Step 3.1: Convert Base64 string back to bytes
+                byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+
+                // Step 3.2: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 3.3: Set the same hardcoded 256-bit key (32 bytes)
+                aes.Key = HARDCODED_AES_KEY;
+
+                // Step 3.4: Extract IV from first 16 bytes of encrypted data
+                byte[] iv = new byte[16];
+                Array.Copy(encryptedBytes, 0, iv, 0, 16);
+                aes.IV = iv;
+
+                // Step 3.5: Set cipher mode to CBC (same as encryption)
+                aes.Mode = CipherMode.CBC;
+
+                // Step 3.6: Set padding mode to PKCS7 (same as encryption)
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 3.7: Perform the decryption operation
+                using var decryptor = aes.CreateDecryptor();
+                using var memoryStream = new MemoryStream(encryptedBytes, 16, encryptedBytes.Length - 16);
+                using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                using var reader = new StreamReader(cryptoStream);
+
+                // Step 3.8: Read decrypted plaintext from stream
+                return reader.ReadToEnd();
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 4: Encrypt file/stream data using AES-256-CBC                  │
+            // │ Process:                                                             │
+            // │   1. Generate random 16-byte IV                                     │
+            // │   2. Create AES cipher with 256-bit key                             │
+            // │   3. Configure CBC mode with PKCS7 padding                          │
+            // │   4. Encrypt the file stream                                        │
+            // │   5. Return IV + encrypted data as byte array                       │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public static byte[] EncryptStream(Stream inputStream)
+            {
+                // Step 4.1: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 4.2: Set the hardcoded 256-bit key (32 bytes)
+                aes.Key = HARDCODED_AES_KEY;
+
+                // Step 4.3: Generate random 128-bit IV (16 bytes)
+                aes.GenerateIV();
+
+                // Step 4.4: Set cipher mode to CBC
+                aes.Mode = CipherMode.CBC;
+
+                // Step 4.5: Set padding mode to PKCS7
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 4.6: Create output stream to hold IV + encrypted data
+                using var memoryStream = new MemoryStream();
+
+                // Step 4.7: Write IV at the beginning (16 bytes)
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Step 4.8: Create encryptor and encrypt the input stream
+                using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                {
+                    // Step 4.9: Copy input stream to crypto stream (encrypts automatically)
+                    inputStream.CopyTo(cryptoStream);
+                }
+
+                // Step 4.10: Return complete encrypted data (IV + ciphertext)
+                return memoryStream.ToArray();
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 5: Encrypt timestamp string using AES-256-CBC                  │
+            // │ Used for generating unique encrypted filenames                      │
+            // │ Returns only the ciphertext (without IV) as Base64                  │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public static string EncryptTimestamp(string timestamp)
+            {
+                // Step 5.1: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 5.2: Set the hardcoded 256-bit key
+                aes.Key = HARDCODED_AES_KEY;
+
+                // Step 5.3: Generate random IV
+                aes.GenerateIV();
+
+                // Step 5.4: Set cipher mode to CBC
+                aes.Mode = CipherMode.CBC;
+
+                // Step 5.5: Set padding mode to PKCS7
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 5.6: Create encryptor
+                using var encryptor = aes.CreateEncryptor();
+
+                // Step 5.7: Convert timestamp to bytes
+                byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+
+                // Step 5.8: Encrypt timestamp bytes
+                byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+
+                // Step 5.9: Return Base64-encoded encrypted timestamp
+                return Convert.ToBase64String(encryptedBytes);
+            }
+        }
+
         public IActionResult Index()
         {
 
@@ -267,51 +462,12 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // 🔑 MASTER PASSWORD - Use the same as in Accountverification
-                string masterPassword = "SuperAdminMasterKey123!";
-                byte[] salt = RandomNumberGenerator.GetBytes(16);
-
-                // Derive AES key from master password
-                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32);
-
-                // 🔒 ENCRYPTION FUNCTION
-                byte[] EncryptFile(Stream inputStream)
-                {
-                    using var aes = Aes.Create();
-                    aes.Key = key;
-                    aes.GenerateIV();
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var memoryStream = new MemoryStream();
-                    memoryStream.Write(salt, 0, salt.Length);
-                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
-
-                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        inputStream.CopyTo(cryptoStream);
-                    }
-
-                    return memoryStream.ToArray();
-                }
-
-                // 📅 Encrypted Timestamp for unique filenames
+                // ===========================
+                // 🔑 AES-256 FILE ENCRYPTION
+                // ===========================
+                // Generate unique encrypted timestamp for filenames
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp;
-                using (var aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.GenerateIV();
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var encryptor = aes.CreateEncryptor();
-                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
-                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
-                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
-                }
-
+                string encryptedTimestamp = AesEncryptionHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // Generate encrypted filenames
@@ -332,7 +488,8 @@ namespace LingapDVO.Controllers
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(fillupformHospitalbilldto.DoctorPrescriptionimage.OpenReadStream());
+                        // Use hardcoded AES-256 helper to encrypt file stream
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(fillupformHospitalbilldto.DoctorPrescriptionimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -344,7 +501,8 @@ namespace LingapDVO.Controllers
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(fillupformHospitalbilldto.DeathCertificateimage.OpenReadStream());
+                        // Use hardcoded AES-256 helper to encrypt file stream
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(fillupformHospitalbilldto.DeathCertificateimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -766,7 +924,7 @@ namespace LingapDVO.Controllers
             // SECOND: Check for any pending or processing forms (user can only have one form at a time)
             var hasPendingForm = context.Medicalandlabform
                 .Any(f => f.UserId == userId && (f.Status == "Pending" || f.Status == "Processing"));
- 
+
 
             if (hasPendingForm)
             {
@@ -810,51 +968,12 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // 🔑 MASTER PASSWORD - Use the same as in other forms
-                string masterPassword = "SuperAdminMasterKey123!";
-                byte[] salt = RandomNumberGenerator.GetBytes(16);
-
-                // Derive AES key from master password
-                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32);
-
-                // 🔒 ENCRYPTION FUNCTION
-                byte[] EncryptFile(Stream inputStream)
-                {
-                    using var aes = Aes.Create();
-                    aes.Key = key;
-                    aes.GenerateIV();
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var memoryStream = new MemoryStream();
-                    memoryStream.Write(salt, 0, salt.Length);
-                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
-
-                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        inputStream.CopyTo(cryptoStream);
-                    }
-
-                    return memoryStream.ToArray();
-                }
-
-                // 📅 Encrypted Timestamp for unique filenames
+                // ===========================
+                // 🔑 AES-256 FILE ENCRYPTION
+                // ===========================
+                // Generate unique encrypted timestamp for filenames
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp;
-                using (var aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.GenerateIV();
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var encryptor = aes.CreateEncryptor();
-                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
-                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
-                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
-                }
-
+                string encryptedTimestamp = AesEncryptionHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // Generate encrypted filenames
@@ -882,7 +1001,7 @@ namespace LingapDVO.Controllers
                     string filePathFront = Path.Combine(uploadsFolder, newFileNameFront);
                     using (var fileStream = new FileStream(filePathFront, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(medicalandlabformdto.IdFrontimage.OpenReadStream());
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.IdFrontimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -894,7 +1013,7 @@ namespace LingapDVO.Controllers
                     string filePathBack = Path.Combine(uploadsFolder, newFileNameBack);
                     using (var fileStream = new FileStream(filePathBack, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(medicalandlabformdto.IdBackimage.OpenReadStream());
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.IdBackimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -906,7 +1025,7 @@ namespace LingapDVO.Controllers
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(medicalandlabformdto.DoctorPrescriptionimage.OpenReadStream());
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.DoctorPrescriptionimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -918,7 +1037,7 @@ namespace LingapDVO.Controllers
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(medicalandlabformdto.DeathCertificateimage.OpenReadStream());
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.DeathCertificateimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -930,7 +1049,7 @@ namespace LingapDVO.Controllers
                     string filePathMedCertificate = Path.Combine(uploadsFolder3, newFileNameMedCertificate);
                     using (var fileStream = new FileStream(filePathMedCertificate, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(medicalandlabformdto.MedCertificateimage.OpenReadStream());
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.MedCertificateimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -1382,51 +1501,12 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // 🔑 MASTER PASSWORD - Use the same as in Accountverification
-                string masterPassword = "SuperAdminMasterKey123!";
-                byte[] salt = RandomNumberGenerator.GetBytes(16);
-
-                // Derive AES key from master password
-                using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-                byte[] key = pbkdf2.GetBytes(32);
-
-                // 🔒 ENCRYPTION FUNCTION
-                byte[] EncryptFile(Stream inputStream)
-                {
-                    using var aes = Aes.Create();
-                    aes.Key = key;
-                    aes.GenerateIV();
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var memoryStream = new MemoryStream();
-                    memoryStream.Write(salt, 0, salt.Length);
-                    memoryStream.Write(aes.IV, 0, aes.IV.Length);
-
-                    using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        inputStream.CopyTo(cryptoStream);
-                    }
-
-                    return memoryStream.ToArray();
-                }
-
-                // 📅 Encrypted Timestamp for unique filenames
+                // ===========================
+                // 🔑 AES-256 FILE ENCRYPTION
+                // ===========================
+                // Generate unique encrypted timestamp for filenames
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp;
-                using (var aes = Aes.Create())
-                {
-                    aes.Key = key;
-                    aes.GenerateIV();
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using var encryptor = aes.CreateEncryptor();
-                    byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
-                    byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
-                    encryptedTimestamp = Convert.ToBase64String(encryptedBytes);
-                }
-
+                string encryptedTimestamp = AesEncryptionHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // Generate encrypted filenames
@@ -1447,7 +1527,7 @@ namespace LingapDVO.Controllers
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(funeralburialformdto.DoctorPrescriptionimage.OpenReadStream());
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(funeralburialformdto.DoctorPrescriptionimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -1459,7 +1539,7 @@ namespace LingapDVO.Controllers
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
-                        byte[] encryptedData = EncryptFile(funeralburialformdto.DeathCertificateimage.OpenReadStream());
+                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(funeralburialformdto.DeathCertificateimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
