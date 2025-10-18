@@ -4,9 +4,21 @@ namespace LingapDVO.Models
 {
     public class RegisterAccDto
     {
+        [Required, MaxLength(100)]
+        public string FirstName { get; set; } = "";
+
+        [Required, MaxLength(100)]
+        public string MiddleName { get; set; } = "";
+
+        [Required, MaxLength(100)]
+        public string LastName { get; set; } = "";
+
+        [MaxLength(50)]
+        public string? Suffix { get; set; } = "";
 
         [Required, MaxLength(100)]
         public string Email { get; set; } = "";
+
         [Required, MaxLength(100)]
         public string Username { get; set; } = "";
 

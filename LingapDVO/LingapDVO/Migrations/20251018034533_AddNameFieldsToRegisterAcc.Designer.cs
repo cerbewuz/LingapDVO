@@ -4,6 +4,7 @@ using LingapDVO.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LingapDVO.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251018034533_AddNameFieldsToRegisterAcc")]
+    partial class AddNameFieldsToRegisterAcc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,7 +59,7 @@ namespace LingapDVO.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Adminaccount", (string)null);
+                    b.ToTable("Adminaccount");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.FillupformHospitalBill", b =>
@@ -240,7 +243,7 @@ namespace LingapDVO.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FillupformHospitalBill", (string)null);
+                    b.ToTable("FillupformHospitalBill");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Funeralburialform", b =>
@@ -424,7 +427,7 @@ namespace LingapDVO.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Funeralburialform", (string)null);
+                    b.ToTable("Funeralburialform");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Medicalandlabform", b =>
@@ -613,7 +616,7 @@ namespace LingapDVO.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Medicalandlabform", (string)null);
+                    b.ToTable("Medicalandlabform");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Notification", b =>
@@ -650,7 +653,7 @@ namespace LingapDVO.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Register", b =>
@@ -733,7 +736,7 @@ namespace LingapDVO.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Register", (string)null);
+                    b.ToTable("Register");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.RegisterAcc", b =>
@@ -773,6 +776,7 @@ namespace LingapDVO.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Suffix")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -789,7 +793,7 @@ namespace LingapDVO.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("RegisterAcc", (string)null);
+                    b.ToTable("RegisterAcc");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Superadminaccount", b =>
@@ -828,7 +832,7 @@ namespace LingapDVO.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Superadminaccount", (string)null);
+                    b.ToTable("Superadminaccount");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Useraccount", b =>
@@ -958,7 +962,7 @@ namespace LingapDVO.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Useraccount", (string)null);
+                    b.ToTable("Useraccount");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Verifyaccount", b =>
@@ -1059,7 +1063,7 @@ namespace LingapDVO.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Verifyaccount", (string)null);
+                    b.ToTable("Verifyaccount");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Notification", b =>

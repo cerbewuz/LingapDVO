@@ -27,6 +27,91 @@
 
             <form asp-action="Register" method="post" enctype="multipart/form-data" id="registerForm" class="space-y-3 sm:space-y-4 md:space-y-4 lg:space-y-5">
 
+                <!-- First Name & Middle Name in Horizontal Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-4 lg:gap-6">
+                    <!-- First Name Field -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            First Name
+                        </label>
+                        <div class="relative">
+                            <input asp-for="FirstName"
+                                   type="text"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white"
+                                   placeholder="Enter first name"
+                                   required
+                                   autocomplete="given-name"
+                                   id="firstName">
+                        </div>
+                        <span asp-validation-for="FirstName" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Middle Name Field -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Middle Name
+                        </label>
+                        <div class="relative">
+                            <input asp-for="MiddleName"
+                                   type="text"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white"
+                                   placeholder="Enter middle name"
+                                   required
+                                   autocomplete="additional-name"
+                                   id="middleName">
+                        </div>
+                        <span asp-validation-for="MiddleName" class="text-red-500 text-xs"></span>
+                    </div>
+                </div>
+
+                <!-- Last Name & Suffix in Horizontal Layout (50% / 20% / 30%) -->
+                <div class="grid grid-cols-1 md:grid-cols-[50%_20%_30%] gap-3 sm:gap-4 md:gap-4 lg:gap-6">
+                    <!-- Last Name Field (50%) -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Last Name
+                        </label>
+                        <div class="relative">
+                            <input asp-for="LastName"
+                                   type="text"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white"
+                                   placeholder="Enter last name"
+                                   required
+                                   autocomplete="family-name"
+                                   id="lastName">
+                        </div>
+                        <span asp-validation-for="LastName" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Suffix Field (20%) -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Suffix <span class="text-gray-400 text-xs">(Optional)</span>
+                        </label>
+                        <div class="relative">
+                            <select asp-for="Suffix"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white appearance-none cursor-pointer"
+                                    autocomplete="honorific-suffix"
+                                    id="suffix">
+                                <option value="">None</option>
+                                <option value="Jr.">Jr.</option>
+                                <option value="Sr.">Sr.</option>
+                                <option value="II">II</option>
+                                <option value="III">III</option>
+                                <option value="IV">IV</option>
+                                <option value="V">V</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-3 sm:right-4 flex items-center">
+                                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Suffix" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Blank Space (30%) -->
+                    <div></div>
+                </div>
+
                 <!-- Username & Email in Horizontal Layout -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-4 lg:gap-6">
                     <!-- Username Field - Updated to match login form sizing -->
@@ -318,8 +403,8 @@
     </div>
 
     <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered mx-3 sm:mx-auto">
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-green-50">
                 <div class="modal-body p-5 sm:p-6 text-center">
                     <div class="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
@@ -540,6 +625,203 @@
             initializeFloatingLabel(usernameInput, usernameLabel);
             initializeFloatingLabel(emailInput, emailLabel);
 
+            // ===========================
+            // 🔍 REAL-TIME DUPLICATE CHECKING
+            // ===========================
+
+            // Debounce function to limit API calls
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Check if email already exists
+            async function checkEmailExists(email) {
+                if (!email || email.trim() === '') return;
+
+                try {
+                    const response = await fetch(`/Login/CheckEmailExists?email=${encodeURIComponent(email)}`);
+                    const data = await response.json();
+
+                    const emailInput = document.getElementById('email');
+                    const emailValidation = emailInput.parentElement.parentElement.querySelector('.text-red-500');
+
+                    if (data.exists) {
+                        emailInput.classList.add('border-red-500');
+                        emailInput.classList.remove('border-green-500');
+                        if (emailValidation) {
+                            emailValidation.textContent = 'This email is already registered.';
+                            emailValidation.classList.remove('hidden');
+                        }
+                        return false;
+                    } else {
+                        emailInput.classList.remove('border-red-500');
+                        emailInput.classList.add('border-green-500');
+                        if (emailValidation) {
+                            emailValidation.textContent = '';
+                            emailValidation.classList.add('hidden');
+                        }
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Error checking email:', error);
+                    return true;
+                }
+            }
+
+            // Check if username already exists
+            async function checkUsernameExists(username) {
+                if (!username || username.trim() === '') return;
+
+                try {
+                    const response = await fetch(`/Login/CheckUsernameExists?username=${encodeURIComponent(username)}`);
+                    const data = await response.json();
+
+                    const usernameInput = document.getElementById('username');
+                    const usernameValidation = usernameInput.parentElement.parentElement.querySelector('.text-red-500');
+
+                    if (data.exists) {
+                        usernameInput.classList.add('border-red-500');
+                        usernameInput.classList.remove('border-green-500');
+                        if (usernameValidation) {
+                            usernameValidation.textContent = 'This username is already taken.';
+                            usernameValidation.classList.remove('hidden');
+                        }
+                        return false;
+                    } else {
+                        usernameInput.classList.remove('border-red-500');
+                        usernameInput.classList.add('border-green-500');
+                        if (usernameValidation) {
+                            usernameValidation.textContent = '';
+                            usernameValidation.classList.add('hidden');
+                        }
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Error checking username:', error);
+                    return true;
+                }
+            }
+
+            // Check if full name already exists (duplicate person check)
+            async function checkNameExists() {
+                const firstName = document.getElementById('firstName')?.value?.trim();
+                const middleName = document.getElementById('middleName')?.value?.trim();
+                const lastName = document.getElementById('lastName')?.value?.trim();
+                const suffix = document.getElementById('suffix')?.value?.trim();
+
+                // Need at least first and last name to check
+                if (!firstName || !lastName) {
+                    return true; // Can't check yet, allow to continue
+                }
+
+                try {
+                    const url = `/Login/CheckNameExists?firstName=${encodeURIComponent(firstName)}&middleName=${encodeURIComponent(middleName)}&lastName=${encodeURIComponent(lastName)}&suffix=${encodeURIComponent(suffix)}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    // Create or get the name warning container
+                    let nameWarningContainer = document.getElementById('nameWarningContainer');
+                    if (!nameWarningContainer) {
+                        // Insert warning container after the suffix field
+                        const suffixField = document.getElementById('suffix').closest('.space-y-1\\.5');
+                        nameWarningContainer = document.createElement('div');
+                        nameWarningContainer.id = 'nameWarningContainer';
+                        nameWarningContainer.className = 'col-span-full';
+                        suffixField.parentElement.insertAdjacentElement('afterend', nameWarningContainer);
+                    }
+
+                    if (data.exists) {
+                        // Exact match found - show error
+                        nameWarningContainer.innerHTML = `
+                            <div class="bg-red-50 border border-red-200 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                                <div class="flex items-start gap-2 sm:gap-3">
+                                    <i class="fas fa-exclamation-circle text-red-600 text-base sm:text-lg mt-0.5"></i>
+                                    <div class="flex-1">
+                                        <p class="text-red-800 font-semibold text-sm sm:text-base">Duplicate Account Detected</p>
+                                        <p class="text-red-700 text-xs sm:text-sm mt-1">${data.message}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        return false;
+                    } else if (data.warning) {
+                        // Similar name found - show warning
+                        nameWarningContainer.innerHTML = `
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                                <div class="flex items-start gap-2 sm:gap-3">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-base sm:text-lg mt-0.5"></i>
+                                    <div class="flex-1">
+                                        <p class="text-yellow-800 font-semibold text-sm sm:text-base">Similar Name Found</p>
+                                        <p class="text-yellow-700 text-xs sm:text-sm mt-1">${data.message}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        return true; // Allow to continue but with warning
+                    } else {
+                        // No duplicate - clear any warnings
+                        nameWarningContainer.innerHTML = '';
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Error checking name:', error);
+                    return true; // Allow to continue on error
+                }
+            }
+
+            // Debounced validation functions (wait 500ms after user stops typing)
+            const debouncedEmailCheck = debounce(checkEmailExists, 500);
+            const debouncedUsernameCheck = debounce(checkUsernameExists, 500);
+            const debouncedNameCheck = debounce(checkNameExists, 800);
+
+            // Add event listeners for real-time validation
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    debouncedEmailCheck(this.value);
+                });
+
+                // Also check on blur (when user leaves the field)
+                emailInput.addEventListener('blur', function() {
+                    checkEmailExists(this.value);
+                });
+            }
+
+            if (usernameInput) {
+                usernameInput.addEventListener('input', function() {
+                    debouncedUsernameCheck(this.value);
+                });
+
+                // Also check on blur (when user leaves the field)
+                usernameInput.addEventListener('blur', function() {
+                    checkUsernameExists(this.value);
+                });
+            }
+
+            // Add event listeners for name fields
+            const firstNameInput = document.getElementById('firstName');
+            const middleNameInput = document.getElementById('middleName');
+            const lastNameInput = document.getElementById('lastName');
+            const suffixInput = document.getElementById('suffix');
+
+            [firstNameInput, middleNameInput, lastNameInput, suffixInput].forEach(input => {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        debouncedNameCheck();
+                    });
+                    input.addEventListener('blur', function() {
+                        checkNameExists();
+                    });
+                }
+            });
+
             // Show validation errors on page load if they exist
             function showExistingErrors() {
                 const validationSummary = document.getElementById('validationSummary');
@@ -602,6 +884,36 @@
                 const passwordsMatch = await validatePasswordMatch();
                 if (!passwordsMatch) {
                     alert('Please ensure both passwords match before submitting.');
+                    return false;
+                }
+
+                // 🔍 FINAL CHECK: Verify email and username don't exist before submission
+                const emailValue = emailInput?.value;
+                const usernameValue = usernameInput?.value;
+
+                if (emailValue) {
+                    const emailAvailable = await checkEmailExists(emailValue);
+                    if (emailAvailable === false) {
+                        alert('This email is already registered. Please use a different email.');
+                        emailInput.focus();
+                        return false;
+                    }
+                }
+
+                if (usernameValue) {
+                    const usernameAvailable = await checkUsernameExists(usernameValue);
+                    if (usernameAvailable === false) {
+                        alert('This username is already taken. Please choose a different username.');
+                        usernameInput.focus();
+                        return false;
+                    }
+                }
+
+                // 🔍 FINAL CHECK: Verify full name doesn't already exist
+                const nameIsUnique = await checkNameExists();
+                if (nameIsUnique === false) {
+                    alert('A user with this exact name already exists in our system. Each person is allowed only one account. If you believe this is an error, please contact support.');
+                    firstNameInput?.focus();
                     return false;
                 }
 
@@ -764,6 +1076,58 @@
             .modal-body::-webkit-scrollbar-thumb:hover {
                 background: #a8a8a8;
             }
+
+        /* Success Modal Centering - Fixed positioning for all screen sizes */
+        #successModal {
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        #successModal.show {
+            z-index: 1055;
+            pointer-events: auto;
+        }
+
+        /* Override Bootstrap modal display to use flexbox centering */
+        #successModal .modal-dialog {
+            width: clamp(300px, 90%, 500px);
+            max-width: 500px;
+            margin: auto;
+        }
+
+        /* Ensure modal is vertically centered on all screen sizes */
+        #successModal.modal {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #successModal.modal.fade:not(.show) {
+            opacity: 0;
+        }
+
+        #successModal.modal.show {
+            opacity: 1;
+        }
+
+        /* Scale animation */
+        #successModal.modal.fade .modal-dialog {
+            transform: scale(0.9);
+            transition: transform 0.3s ease-out;
+        }
+
+        #successModal.modal.show .modal-dialog {
+            transform: scale(1);
+        }
+
+        /* Ensure terms modal doesn't conflict */
+        #termsModal {
+            z-index: 1056;
+        }
+
+        #termsModal + .modal-backdrop {
+            z-index: 1055;
+        }
     </style>
 </body>
 </html>

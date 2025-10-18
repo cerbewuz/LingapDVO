@@ -282,6 +282,10 @@ namespace LingapDVO.Controllers
 
                 user = new RegisterAcc
                 {
+                    FirstName = name?.Split(' ').FirstOrDefault() ?? "Facebook",
+                    MiddleName = "",
+                    LastName = name?.Split(' ').LastOrDefault() ?? "User",
+                    Suffix = "",
                     Email = email,
                     Username = name ?? "FacebookUser",
                     Password = encryptedPassword,
@@ -407,6 +411,10 @@ namespace LingapDVO.Controllers
 
                 user = new RegisterAcc
                 {
+                    FirstName = name?.Split(' ').FirstOrDefault() ?? "Google",
+                    MiddleName = "",
+                    LastName = name?.Split(' ').LastOrDefault() ?? "User",
+                    Suffix = "",
                     Email = email,
                     Username = name ?? "GoogleUser",
                     Password = encryptedPassword,
@@ -877,6 +885,96 @@ namespace LingapDVO.Controllers
             return View();
         }
 
+        // ===========================
+        // 🔍 REAL-TIME DUPLICATE CHECKING API ENDPOINTS
+        // ===========================
+
+        /// <summary>
+        /// Check if email already exists in database (Real-time validation)
+        /// </summary>
+        [HttpGet]
+        public JsonResult CheckEmailExists(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return Json(new { exists = false });
+            }
+
+            bool exists = context.RegisterAcc.Any(u => u.Email.ToLower() == email.ToLower());
+            return Json(new { exists = exists });
+        }
+
+        /// <summary>
+        /// Check if username already exists in database (Real-time validation)
+        /// </summary>
+        [HttpGet]
+        public JsonResult CheckUsernameExists(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Json(new { exists = false });
+            }
+
+            bool exists = context.RegisterAcc.Any(u => u.Username.ToLower() == username.ToLower());
+            return Json(new { exists = exists });
+        }
+
+        /// <summary>
+        /// Check if a person with the same full name already exists (Real-time validation)
+        /// This helps prevent duplicate registrations by the same person
+        /// </summary>
+        [HttpGet]
+        public JsonResult CheckNameExists(string firstName, string middleName, string lastName, string suffix)
+        {
+            // Normalize inputs (trim and convert to lowercase for comparison)
+            firstName = firstName?.Trim().ToLower() ?? "";
+            middleName = middleName?.Trim().ToLower() ?? "";
+            lastName = lastName?.Trim().ToLower() ?? "";
+            suffix = suffix?.Trim().ToLower() ?? "";
+
+            // Need at least first name and last name to check
+            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
+            {
+                return Json(new { exists = false, message = "" });
+            }
+
+            // Check if exact match exists (all name fields match)
+            bool exactMatch = context.RegisterAcc.Any(u =>
+                u.FirstName.ToLower() == firstName &&
+                u.MiddleName.ToLower() == middleName &&
+                u.LastName.ToLower() == lastName &&
+                (u.Suffix == null ? "" : u.Suffix.ToLower()) == suffix
+            );
+
+            if (exactMatch)
+            {
+                return Json(new
+                {
+                    exists = true,
+                    message = "A user with this exact name already exists in our system."
+                });
+            }
+
+            // Check for similar names (same first, middle, last but different or no suffix)
+            bool similarMatch = context.RegisterAcc.Any(u =>
+                u.FirstName.ToLower() == firstName &&
+                u.MiddleName.ToLower() == middleName &&
+                u.LastName.ToLower() == lastName
+            );
+
+            if (similarMatch)
+            {
+                return Json(new
+                {
+                    exists = false,
+                    warning = true,
+                    message = "A user with a similar name already exists. Please ensure you are not creating a duplicate account."
+                });
+            }
+
+            return Json(new { exists = false, message = "" });
+        }
+
         [HttpPost]
         public IActionResult Register(RegisterAccDto registerAccDto)
         {
@@ -917,6 +1015,25 @@ namespace LingapDVO.Controllers
                     return View(registerAccDto);
                 }
 
+                // 🔎 Check for duplicate full name (exact match)
+                var normalizedSuffix = registerAccDto.Suffix?.Trim().ToLower() ?? "";
+                bool duplicateName = context.RegisterAcc.Any(u =>
+                    u.FirstName.ToLower() == registerAccDto.FirstName.Trim().ToLower() &&
+                    u.MiddleName.ToLower() == registerAccDto.MiddleName.Trim().ToLower() &&
+                    u.LastName.ToLower() == registerAccDto.LastName.Trim().ToLower() &&
+                    (u.Suffix == null ? "" : u.Suffix.ToLower()) == normalizedSuffix
+                );
+
+                if (duplicateName)
+                {
+                    if (IsAjaxRequest())
+                    {
+                        return Json(new { success = false, errors = new List<string> { "A user with this exact name already exists in our system. Each person is allowed only one account." } });
+                    }
+                    ModelState.AddModelError("", "A user with this exact name already exists in our system. Each person is allowed only one account.");
+                    return View(registerAccDto);
+                }
+
                 // ==========================
                 // 🔑 AES-256 PASSWORD ENCRYPTION
                 // ==========================
@@ -925,6 +1042,10 @@ namespace LingapDVO.Controllers
 
                 var registercacc = new RegisterAcc
                 {
+                    FirstName = registerAccDto.FirstName,
+                    MiddleName = registerAccDto.MiddleName,
+                    LastName = registerAccDto.LastName,
+                    Suffix = registerAccDto.Suffix,
                     Email = registerAccDto.Email,
                     Username = registerAccDto.Username,
                     Password = encryptedPassword,

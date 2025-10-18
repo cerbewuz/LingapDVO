@@ -25,6 +25,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
+        /* ===========================
+           ADAPTIVE NAVBAR SYSTEM
+           Automatically adjusts to section background colors
+        =========================== */
+
         h1 {
             color: antiquewhite;
             transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1), text-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -32,103 +37,103 @@
             transform: translateY(0);
         }
 
-       
-        .site-navbar.is-sticky h1 {
-            color: #DC143C;
-            mix-blend-mode: normal;
-            transition: color 0.7s cubic-bezier(0.4, 0, 0.2, 1), text-shadow 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-       
-        .site-navbar.do-transition.is-sticky h1 {
-            color: #DC143C;
-            text-shadow: 0 6px 12px rgba(220, 20, 60, 0.4);
-            transform: translateY(-2px) scale(1.02);
-            transition: color 0.8s cubic-bezier(0.4, 0, 0.2, 1), text-shadow 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        
         .site-navbar {
             background: transparent;
-            height: 100px;
-            padding-top: 14px;
-            padding-bottom: 20px;
-            position: relative;
+            height: clamp(70px, 12vw, 100px);
+            padding-top: clamp(10px, 2vw, 14px);
+            padding-bottom: clamp(14px, 3vw, 20px);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
             transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-           
-            .site-navbar.is-sticky {
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-                padding-top: 12px;
-                padding-bottom: 12px;
-                height: 85px;
-                border-bottom: 1px solid rgba(220, 20, 60, 0.1);
-            }
+        /* When on LIGHT background sections - Use DARK navbar for visibility */
+        .site-navbar.on-light-bg {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(220, 20, 60, 0.1);
+        }
 
-           
-            .site-navbar.do-transition {
-                transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            }
+        .site-navbar.on-light-bg h1 {
+            color: #DC143C;
+            text-shadow: 0 6px 12px rgba(220, 20, 60, 0.4);
+            transform: translateY(-2px) scale(1.02);
+        }
 
-                .site-navbar.do-transition.is-sticky {
-                    background: rgba(255, 255, 255, 0.98);
-                    backdrop-filter: blur(15px);
-                    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
-                }
+        .site-navbar.on-light-bg .nav-btn {
+            color: #DC143C;
+        }
 
-        
+        /* When on DARK background sections - Use LIGHT navbar for visibility */
+        .site-navbar.on-dark-bg {
+            background: rgba(52, 58, 64, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .site-navbar.on-dark-bg h1 {
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .site-navbar.on-dark-bg .nav-btn {
+            color: #ffffff;
+        }
+
+        /* Top of page - Transparent navbar */
+        .site-navbar.at-top {
+            background: transparent;
+        }
+
+        .site-navbar.at-top h1 {
+            color: antiquewhite;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .site-navbar.at-top .nav-btn {
+            color: #ffffff;
+        }
+
+        /* Nav Button Base Styles */
         .nav-btn {
             background: none;
             border: none;
             font-weight: 700;
-            font-size: 20px;
-            padding: 14px 28px;
+            font-size: clamp(14px, 3vw, 20px);
+            padding: clamp(10px, 2vw, 14px) clamp(18px, 3vw, 28px);
             cursor: pointer;
-            color: #ffff;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            border-radius: 8px;
+            border-radius: clamp(6px, 1.5vw, 8px);
             position: relative;
             overflow: hidden;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
-        
-        .site-navbar.is-sticky .nav-btn {
-            color: #DC143C;
-            mix-blend-mode: normal;
-        }
-
-        
-        .site-navbar.do-transition .nav-btn {
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .site-navbar.do-transition.is-sticky .nav-btn {
-            color: #DC143C;
-            mix-blend-mode: normal;
-        }
-
-        .site-navbar .nav-btn {
-            mix-blend-mode: normal;
-        }
-
-        
-        .nav-btn:hover {
-            color: #DC143C;
-            transform: translateY(-2px);
-            background: rgba(220, 20, 60, 0.1);
-            box-shadow: 0 4px 15px rgba(220, 20, 60, 0.2);
-            font-size: 21px; 
-        }
-
-        .site-navbar.is-sticky .nav-btn:hover {
+        /* Hover states based on navbar background */
+        .site-navbar.on-light-bg .nav-btn:hover {
             color: #ffffff;
             background: #DC143C;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(220, 20, 60, 0.4);
+        }
+
+        .site-navbar.on-dark-bg .nav-btn:hover {
+            color: #343a40;
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+        }
+
+        .site-navbar.at-top .nav-btn:hover {
+            color: #DC143C;
+            transform: translateY(-2px);
+            background: rgba(220, 20, 60, 0.1);
+            box-shadow: 0 4px 15px rgba(220, 20, 60, 0.2);
         }
 
         .site-navbar,
@@ -136,49 +141,67 @@
             isolation: isolate;
         }
 
-        
+        /* Navbar Brand */
         .navbar-brand {
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        .site-navbar.is-sticky .navbar-brand {
-            transform: scale(0.95);
+        .site-navbar.on-light-bg .navbar-brand,
+        .site-navbar.on-dark-bg .navbar-brand {
+            transform: scale(clamp(0.85, 1.5vw, 0.95));
         }
 
-       
+        /* Mobile Menu Toggle Icon */
+        .site-menu-toggle {
+            transition: all 0.3s ease;
+        }
+
+        .site-menu-toggle .icon-menu {
+            color: #ffffff;
+            transition: color 0.3s ease;
+        }
+
+        .site-navbar.on-light-bg .site-menu-toggle .icon-menu {
+            color: #DC143C;
+        }
+
+        .site-navbar.on-dark-bg .site-menu-toggle .icon-menu {
+            color: #ffffff;
+        }
+
+        .site-navbar.at-top .site-menu-toggle .icon-menu {
+            color: #ffffff;
+        }
+
+        /* Mobile Menu Adaptive Colors */
         .site-mobile-menu {
             background-color: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(20px);
             color: white;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 2000;
         }
 
-            .site-mobile-menu a,
-            .site-mobile-menu .nav-btn {
-                color: white;
-                font-weight: 700;
-                font-size: 18px;
-                transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-                padding: 14px 24px;
-                border-radius: 6px;
-            }
-
-                .site-mobile-menu a:hover,
-                .site-mobile-menu .nav-btn:hover {
-                    color: #DC143C;
-                    background: rgba(255, 255, 255, 0.1);
-                    transform: translateX(5px);
-                    font-size: 19px;
-                }
-
-        
-        .site-navbar.is-sticky {
-            background: rgba(255, 255, 255, 0.95);
-            transition: background-color 0.4s ease, backdrop-filter 0.4s ease;
+        .site-mobile-menu a,
+        .site-mobile-menu .nav-btn {
+            color: white;
+            font-weight: 700;
+            font-size: clamp(16px, 3.5vw, 18px);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            padding: clamp(12px, 2.5vw, 14px) clamp(20px, 4vw, 24px);
+            border-radius: clamp(4px, 1vw, 6px);
+            display: block;
         }
 
-        .site-navbar.do-transition.is-sticky {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(15px);
+        .site-mobile-menu a:hover,
+        .site-mobile-menu .nav-btn:hover {
+            color: #DC143C;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(clamp(3px, 1vw, 5px));
         }
 
         
@@ -1020,6 +1043,77 @@
                     mobileMenu.classList.toggle('active');
                 });
             }
+
+            // ===========================
+            // ADAPTIVE NAVBAR COLOR SYSTEM
+            // Automatically changes navbar colors based on section backgrounds
+            // ===========================
+
+            const navbar = document.querySelector('.site-navbar');
+
+            // Define sections and their background types
+            // 'light' = light/white background section (needs dark text navbar)
+            // 'dark' = dark background section (needs light text navbar)
+            const sections = [
+                { id: 'home-section', bg: 'dark' },          // Dark background image - needs light navbar
+                { id: 'about-section', bg: 'light' },        // White background - needs dark navbar
+                { id: 'next', bg: 'light' },                 // White background - needs dark navbar
+                { id: 'contact-section', bg: 'light' }       // Light gray background - needs dark navbar
+            ];
+
+            function updateNavbarColor() {
+                const scrollPosition = window.scrollY;
+                const navbarHeight = navbar.offsetHeight;
+
+                // At the very top of the page
+                if (scrollPosition < 50) {
+                    navbar.classList.remove('on-dark-bg', 'on-light-bg');
+                    navbar.classList.add('at-top');
+                    return;
+                }
+
+                navbar.classList.remove('at-top');
+
+                // Check which section is currently in view
+                let currentSection = null;
+
+                sections.forEach(section => {
+                    const element = document.getElementById(section.id);
+                    if (element) {
+                        const rect = element.getBoundingClientRect();
+                        const sectionTop = rect.top + window.scrollY;
+                        const sectionBottom = sectionTop + element.offsetHeight;
+
+                        // Check if navbar overlaps with this section
+                        if (scrollPosition >= sectionTop - navbarHeight &&
+                            scrollPosition < sectionBottom - navbarHeight) {
+                            currentSection = section;
+                        }
+                    }
+                });
+
+                // Apply appropriate navbar style
+                if (currentSection) {
+                    if (currentSection.bg === 'dark') {
+                        // Dark section background = light navbar text
+                        navbar.classList.remove('on-light-bg');
+                        navbar.classList.add('on-dark-bg');
+                    } else {
+                        // Light section background = dark navbar text
+                        navbar.classList.remove('on-dark-bg');
+                        navbar.classList.add('on-light-bg');
+                    }
+                }
+            }
+
+            // Update navbar on scroll
+            window.addEventListener('scroll', updateNavbarColor);
+
+            // Update navbar on page load
+            updateNavbarColor();
+
+            // Update navbar on window resize (for responsive behavior)
+            window.addEventListener('resize', updateNavbarColor);
         });
     </script>
 </body>
