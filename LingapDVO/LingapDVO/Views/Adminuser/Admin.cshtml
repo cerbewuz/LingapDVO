@@ -300,6 +300,15 @@
                 font-size: clamp(0.85rem, 1rem, 1.1rem);
             }
 
+            .sort-select {
+                border-radius: 0.5rem;
+                border: 1px solid var(--gray-200);
+                padding: 0.5rem;
+                width: clamp(180px, 220px, 260px);
+                height: clamp(36px, 40px, 44px);
+                font-size: clamp(0.85rem, 1rem, 1.1rem);
+            }
+
             .time-filter {
                 display: flex;
                 gap: clamp(0.25rem, 0.5rem, 0.75rem);
@@ -356,7 +365,24 @@
                     border-bottom: 1px solid var(--gray-200);
                     background-color: var(--light);
                     font-size: clamp(0.85rem, 0.95rem, 1rem);
+                    cursor: pointer;
+                    user-select: none;
+                    transition: background-color 0.2s ease;
                 }
+
+                    .table th.sortable:hover {
+                        background-color: var(--gray-200);
+                    }
+
+                    .table th i {
+                        margin-left: 0.5rem;
+                        opacity: 0.6;
+                        transition: opacity 0.2s ease;
+                    }
+
+                    .table th:hover i {
+                        opacity: 1;
+                    }
 
                 .table td {
                     padding: clamp(0.75rem, 1rem, 1.25rem);
@@ -455,6 +481,24 @@
                 color: var(--gray-600);
                 margin-right: 0.5rem;
             }
+
+            /* Sort Indicator */
+            .sort-indicator {
+                display: inline-flex;
+                flex-direction: column;
+                margin-left: 0.5rem;
+            }
+
+            .sort-arrow {
+                line-height: 0.5;
+                opacity: 0.3;
+                transition: opacity 0.2s ease;
+            }
+
+                .sort-arrow.active {
+                    opacity: 1;
+                    color: var(--primary);
+                }
         </style>
     </head>
     <body>
@@ -578,6 +622,16 @@
                                 <option value="Medical and laboratory Procedure">Medical & Laboratory</option>
                                 <option value="Funeral and burial assistance">Funeral & Burial</option>
                             </select>
+                            <select class="sort-select" id="sortSelect">
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="name-asc">Name A-Z</option>
+                                <option value="name-desc">Name Z-A</option>
+                                <option value="type-asc">Type A-Z</option>
+                                <option value="type-desc">Type Z-A</option>
+                                <option value="status-asc">Status A-Z</option>
+                                <option value="status-desc">Status Z-A</option>
+                            </select>
                         </div>
                     </div>
                     <div class="card-body">
@@ -585,10 +639,34 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Applicant</th>
-                                        <th>Type</th>
-                                        <th>Status</th>
-                                        <th>Date Submitted</th>
+                                        <th class="sortable" data-sort="name">
+                                            Applicant
+                                            <span class="sort-indicator">
+                                                <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                                <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable" data-sort="type">
+                                            Type
+                                            <span class="sort-indicator">
+                                                <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                                <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable" data-sort="status">
+                                            Status
+                                            <span class="sort-indicator">
+                                                <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                                <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                                            </span>
+                                        </th>
+                                        <th class="sortable" data-sort="date">
+                                            Date Submitted
+                                            <span class="sort-indicator">
+                                                <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                                <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                                            </span>
+                                        </th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -610,62 +688,62 @@
                 // Add Hospital Bills
                 @foreach (var f in Model.HospitalBills)
                 {
-                                    <text>
-                                    allApplications.push({
-                                        type: "Hospital Bill Assistance",
-                                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                        status: "@f.Status?.ToLower()",
-                                        status2: "@f.Status2?.ToLower()",
-                                        status3: "@f.Status3?.ToLower()",
-                                        formId: @f.Id,
-                                        controller: "Dashboard"
-                                    });
-                                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Hospital Bill Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
                 }
 
                 // Add Medical Lab Forms
                 @foreach (var f in Model.MedicalLabForms)
                 {
-                                    <text>
-                                    allApplications.push({
-                                        type: "Medical and laboratory Procedure",
-                                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                        status: "@f.Status?.ToLower()",
-                                        status2: "@f.Status2?.ToLower()",
-                                        status3: "@f.Status3?.ToLower()",
-                                        formId: @f.Id,
-                                        formId: @f.Id,
-                                        controller: "Dashboard"
-                                    });
-                                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Medical and laboratory Procedure",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
                 }
 
                 // Add Funeral Forms
                 @foreach (var f in Model.Funeralburialform)
                 {
-                                    <text>
-                                    allApplications.push({
-                                        type: "Funeral and burial assistance",
-                                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                        status: "@f.Status?.ToLower()",
-                                        status2: "@f.Status2?.ToLower()",
-                                        status3: "@f.Status3?.ToLower()",
-                                        formId: @f.Id,
-                                        formId: @f.Id,
-                                        controller: "Dashboard"
-                                    });
-                                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Funeral and burial assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
                 }
 
                 // DOM elements
                 const applicationsTable = document.getElementById('applicationsTable');
                 const searchInput = document.getElementById('searchInput');
                 const typeFilter = document.getElementById('typeFilter');
+                const sortSelect = document.getElementById('sortSelect');
                 const timeFilterButtons = document.querySelectorAll('.time-filter-btn');
                 const statCards = document.querySelectorAll('.stat-card');
+                const sortableHeaders = document.querySelectorAll('th.sortable');
 
                 // Status count elements
                 const approvedCount = document.getElementById('approved-count');
@@ -679,6 +757,78 @@
                 let currentTimeFilter = 'currentMonth';
                 let currentTypeFilter = 'all';
                 let currentSearchTerm = '';
+                let currentSort = 'date-desc';
+
+                // Function to sort applications
+                function sortApplications(applications, sortOption) {
+                    const sortedApplications = [...applications];
+
+                    switch (sortOption) {
+                        case 'date-asc':
+                            return sortedApplications.sort((a, b) => a.createdAt - b.createdAt);
+                        case 'date-desc':
+                            return sortedApplications.sort((a, b) => b.createdAt - a.createdAt);
+                        case 'name-asc':
+                            return sortedApplications.sort((a, b) => a.name.localeCompare(b.name));
+                        case 'name-desc':
+                            return sortedApplications.sort((a, b) => b.name.localeCompare(a.name));
+                        case 'type-asc':
+                            return sortedApplications.sort((a, b) => a.type.localeCompare(b.type));
+                        case 'type-desc':
+                            return sortedApplications.sort((a, b) => b.type.localeCompare(a.type));
+                        case 'status-asc':
+                            return sortedApplications.sort((a, b) => {
+                                const statusA = getDisplayStatus(a);
+                                const statusB = getDisplayStatus(b);
+                                return statusA.localeCompare(statusB);
+                            });
+                        case 'status-desc':
+                            return sortedApplications.sort((a, b) => {
+                                const statusA = getDisplayStatus(a);
+                                const statusB = getDisplayStatus(b);
+                                return statusB.localeCompare(statusA);
+                            });
+                        default:
+                            return sortedApplications.sort((a, b) => b.createdAt - a.createdAt);
+                    }
+                }
+
+                // Helper function to get display status for sorting
+                function getDisplayStatus(app) {
+                    // Priority 1: Check status3 for "claimed" status
+                    if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                        return 'claimed';
+                    }
+                    // Priority 2: Check status2 for approved/disapproved
+                    else if (app.status2 && app.status2.trim() !== '') {
+                        const status2 = app.status2.trim().toLowerCase();
+                        if (status2 === 'approved' || status2 === 'disapproved') {
+                            return status2;
+                        }
+                    }
+                    // Priority 3: Use original status
+                    return app.status;
+                }
+
+                // Function to update sort indicators
+                function updateSortIndicators() {
+                    // Reset all indicators
+                    document.querySelectorAll('.sort-arrow').forEach(arrow => {
+                        arrow.classList.remove('active');
+                    });
+
+                    // Get the current sort field and direction
+                    const [field, direction] = currentSort.split('-');
+
+                    // Find the corresponding header and update its indicator
+                    const header = document.querySelector(`th[data-sort="${field}"]`);
+                    if (header) {
+                        const indicator = header.querySelector(`.sort-arrow[data-direction="${direction}"]`);
+                        if (indicator) {
+                            indicator.classList.add('active');
+                        }
+                    }
+                }
 
                 // Function to filter applications by time period
                 function filterByTimePeriod(applications, period) {
@@ -962,6 +1112,9 @@
                     // Apply search filter
                     filteredApplications = filterBySearch(filteredApplications, currentSearchTerm);
 
+                    // Apply sorting
+                    filteredApplications = sortApplications(filteredApplications, currentSort);
+
                     // Update table
                     renderApplicationsTable(filteredApplications);
                 }
@@ -1007,8 +1160,39 @@
                     applyFilters();
                 });
 
+                // Event listener for sort select
+                sortSelect.addEventListener('change', function() {
+                    currentSort = this.value;
+                    updateSortIndicators();
+                    applyFilters();
+                });
+
+                // Event listeners for sortable headers
+                sortableHeaders.forEach(header => {
+                    header.addEventListener('click', function() {
+                        const sortField = this.dataset.sort;
+                        let newSort = '';
+
+                        // Determine the new sort direction
+                        if (currentSort.startsWith(sortField)) {
+                            // Toggle direction if clicking the same field
+                            const currentDirection = currentSort.split('-')[1];
+                            newSort = `${sortField}-${currentDirection === 'asc' ? 'desc' : 'asc'}`;
+                        } else {
+                            // Default to descending for new field
+                            newSort = `${sortField}-desc`;
+                        }
+
+                        currentSort = newSort;
+                        sortSelect.value = newSort;
+                        updateSortIndicators();
+                        applyFilters();
+                    });
+                });
+
                 // Initialize the dashboard
                 updateStatusCounts(currentTimeFilter);
+                updateSortIndicators();
                 applyFilters();
             });
         </script>
