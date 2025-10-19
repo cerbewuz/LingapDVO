@@ -24,5 +24,12 @@ namespace LingapDVO.Models
 
         [Required, MaxLength(250)]
         public string Password { get; set; } = "";
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🔒 ANTI-MANIPULATION TOKEN
+        // ═══════════════════════════════════════════════════════════════
+        [Required(ErrorMessage = "Security token is required. Please refresh the page and try again.")]
+        [MaxLength(500)]
+        public string RegistrationToken { get; set; } = "";
     }
 }

@@ -27,6 +27,11 @@
 
             <form asp-action="Register" method="post" enctype="multipart/form-data" id="registerForm" class="space-y-3 sm:space-y-4 md:space-y-4 lg:space-y-5">
 
+                @* ═══════════════════════════════════════════════════════════════ *@
+                @* 🔒 ANTI-MANIPULATION SECURITY TOKEN (HIDDEN FIELD)             *@
+                @* ═══════════════════════════════════════════════════════════════ *@
+                <input type="hidden" asp-for="RegistrationToken" value="@ViewBag.RegistrationToken" id="registrationToken" />
+
                 <!-- First Name & Middle Name in Horizontal Layout -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-4 lg:gap-6">
                     <!-- First Name Field -->
