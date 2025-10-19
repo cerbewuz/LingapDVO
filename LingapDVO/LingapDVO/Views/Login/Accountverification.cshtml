@@ -933,32 +933,152 @@
                     preview.classList.remove('hidden');
                     section.classList.add('active');
 
-                    // Process with OCR if enabled
+                    // Wait for image to load before processing with OCR
                     if (ocrEnabled) {
-                        processImageWithOCR(preview, isBack);
+                        // Ensure the preview image is fully loaded
+                        if (preview.complete && preview.naturalHeight !== 0) {
+                            // Already loaded
+                            processImageWithOCR(preview, isBack);
+                        } else {
+                            // Wait for load event
+                            preview.onload = function() {
+                                // Small delay to ensure DOM is fully updated
+                                setTimeout(() => {
+                                    processImageWithOCR(preview, isBack);
+                                }, 100);
+                            };
+                            preview.onerror = function() {
+                                console.error('Failed to load preview image');
+                                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-600"></i><span class="font-semibold">Failed to load the image. Please try again.</span>';
+                            };
+                        }
                     }
                 };
                 reader.readAsDataURL(file);
             }
 
+            // Optimized image preprocessing - Simple, Fast, Effective
+            function preprocessImage(imageElement) {
+                return new Promise((resolve, reject) => {
+                    function processImage() {
+                        try {
+                            // Validate image
+                            const width = imageElement.naturalWidth || imageElement.width;
+                            const height = imageElement.naturalHeight || imageElement.height;
+
+                            if (!width || !height || width === 0 || height === 0) {
+                                reject(new Error('Invalid image dimensions'));
+                                return;
+                            }
+
+                            console.log('Processing image:', width, 'x', height);
+
+                            // Create canvas with optimal size for OCR (1500-2000px on longest side)
+                            const maxDim = Math.max(width, height);
+                            let scale = 1;
+
+                            if (maxDim < 1000) {
+                                scale = 1500 / maxDim; // Upscale small images
+                            } else if (maxDim > 2500) {
+                                scale = 2000 / maxDim; // Downscale large images
+                            }
+
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.round(width * scale);
+                            canvas.height = Math.round(height * scale);
+
+                            const ctx = canvas.getContext('2d', {
+                                willReadFrequently: true,
+                                alpha: false
+                            });
+
+                            // Use high-quality scaling
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = 'high';
+
+                            // Draw scaled image
+                            ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
+
+                            // Get image data
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const pixels = imageData.data;
+
+                            // Simple and effective: Grayscale + Contrast boost
+                            for (let i = 0; i < pixels.length; i += 4) {
+                                // Convert to grayscale using luminosity method
+                                const gray = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
+
+                                // Apply contrast enhancement (simple S-curve)
+                                let enhanced = gray;
+                                if (gray < 128) {
+                                    enhanced = gray * 0.8; // Darken dark areas slightly
+                                } else {
+                                    enhanced = gray + (255 - gray) * 0.2; // Brighten light areas
+                                }
+
+                                // Clamp to valid range
+                                enhanced = Math.max(0, Math.min(255, enhanced));
+
+                                pixels[i] = pixels[i + 1] = pixels[i + 2] = enhanced;
+                            }
+
+                            // Put processed data back
+                            ctx.putImageData(imageData, 0, 0);
+
+                            // Return as high-quality data URL
+                            const result = canvas.toDataURL('image/jpeg', 0.92);
+                            console.log('Preprocessing complete');
+                            resolve(result);
+
+                        } catch (error) {
+                            console.error('Preprocessing error:', error);
+                            reject(error);
+                        }
+                    }
+
+                    // Wait for image load
+                    if (imageElement.complete && imageElement.naturalHeight !== 0) {
+                        processImage();
+                    } else {
+                        imageElement.onload = processImage;
+                        imageElement.onerror = () => reject(new Error('Failed to load image'));
+                    }
+                });
+            }
+
             // Process image with OCR
-            function processImageWithOCR(preview, isBack) {
-                status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            async function processImageWithOCR(preview, isBack) {
+                status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Preprocessing image...';
                 progressBar.classList.remove('hidden');
-                progress.style.width = '0%';
+                progress.style.width = '15%';
 
                 // Hide any previous wrong ID warning
                 hideWrongIdTypeWarning();
 
-                Tesseract.recognize(preview.src, 'eng', {
-                    logger: m => {
-                        if (m.status === 'recognizing text') {
-                            progress.style.width = `${Math.round(m.progress * 100)}%`;
-                        }
-                    }
-                }).then(({ data: { text } }) => {
+                try {
+                    // Preprocess image for better OCR
+                    const processedImage = await preprocessImage(preview);
+
+                    status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Extracting text...';
+                    progress.style.width = '30%';
+
+                    const { data: { text } } = await Tesseract.recognize(processedImage, 'eng', {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                const ocrProgress = 30 + (m.progress * 60);
+                                progress.style.width = `${Math.round(ocrProgress)}%`;
+                            }
+                        },
+                        tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT,
+                        tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY,
+                        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÑñ0123456789-/., '
+                    });
+
+                    console.log('OCR Text extracted:', text.substring(0, 200));
+
                     status.innerHTML = '<i class="fas fa-check-circle mr-2"></i>OCR completed!';
-                    progressBar.classList.add('hidden');
+                    progress.style.width = '100%';
+                    setTimeout(() => progressBar.classList.add('hidden'), 1000);
 
                     // First, detect what type of ID was actually uploaded
                     const detectedIdType = detectIdType(text);
@@ -985,11 +1105,23 @@
                         }
                     }
 
-                }).catch(err => {
+                } catch (err) {
                     console.error('OCR Error:', err);
                     progressBar.classList.add('hidden');
-                    status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>An error occurred while processing the ID. Please try again.';
-                });
+
+                    let errorMessage = 'An error occurred while processing the ID. Please try again.';
+
+                    // Provide more specific error messages
+                    if (err.message && err.message.includes('Invalid image dimensions')) {
+                        errorMessage = 'Unable to read the image. Please ensure the image is valid and try again.';
+                    } else if (err.message && err.message.includes('Failed to load image')) {
+                        errorMessage = 'Failed to load the image. Please try uploading a different image.';
+                    } else if (err.name === 'IndexSizeError') {
+                        errorMessage = 'Image processing error. Please try uploading a different image.';
+                    }
+
+                    status.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-red-600"></i><span class="font-semibold">${errorMessage}</span>`;
+                }
             }
 
             // Detect what type of ID was uploaded based on text content
@@ -1135,23 +1267,141 @@
                     }
                 }
 
-                // Find names
-                for (let i = 0; i < linesUpper.length; i++) {
+                // Comprehensive name indicators
+                const lastNameIndicators = [
+                    'APELYIDO', 'LAST NAME', 'LASTNAME', 'SURNAME',
+                    'FAMILY NAME', 'HULING PANGALAN', 'PANGALAN NG PAMILYA'
+                ];
+
+                const firstNameIndicators = [
+                    'MGA PANGALAN', 'PANGALAN', 'GIVEN NAME', 'GIVEN NAMES',
+                    'GIVENNAME', 'GIVENNAMES', 'FIRST NAME', 'FIRSTNAME',
+                    'UNANG PANGALAN', 'GIVEN NAME(S)', 'GIVEN NAME/S'
+                ];
+
+                const middleNameIndicators = [
+                    'GITNANG PANGALAN', 'GITNANG', 'MIDDLE NAME', 'MIDDLENAME',
+                    'IKALAWANG PANGALAN', 'SECOND NAME'
+                ];
+
+                // Helper to check if value is a valid name (not a label)
+                function isValidName(value) {
+                    if (!value || value.length < 2) return false;
+                    const cleaned = value.replace(/[^A-Za-zÑñ]/g, '');
+                    if (cleaned.length < 2) return false;
+
+                    const upper = value.toUpperCase();
+                    const labelWords = ['NAME', 'PANGALAN', 'APELYIDO', 'GITNANG',
+                                       'REPUBLIC', 'PHILIPPINES', 'NATIONAL'];
+                    for (const label of labelWords) {
+                        if (upper.includes(label)) return false;
+                    }
+                    return true;
+                }
+
+                // Extract Last Name
+                for (let i = 0; i < linesUpper.length && !lastName; i++) {
                     const line = linesUpper[i];
-                    if (line.includes("APELYIDO") && !line.includes("GITNANG")) {
-                        lastName = cleanName(lines[i + 1] || "");
+
+                    for (const indicator of lastNameIndicators) {
+                        if (line.includes(indicator) && !line.includes("GITNANG")) {
+                            // Try same line first
+                            const afterIndicator = lines[i].substring(lines[i].toUpperCase().indexOf(indicator) + indicator.length).trim();
+                            if (afterIndicator && isValidName(afterIndicator)) {
+                                lastName = cleanName(afterIndicator);
+                                break;
+                            }
+                            // Try next line
+                            if (i + 1 < lines.length) {
+                                const nextValue = cleanName(lines[i + 1]);
+                                if (isValidName(nextValue)) {
+                                    lastName = nextValue;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                    if (line.includes("MGA PANGALAN") || line.includes("GIVEN NAMES")) {
-                        firstName = cleanName(lines[i + 1] || "");
+                }
+
+                // Extract First Name (with multi-line support)
+                for (let i = 0; i < linesUpper.length && !firstName; i++) {
+                    const line = linesUpper[i];
+
+                    for (const indicator of firstNameIndicators) {
+                        if (line.includes(indicator)) {
+                            // Try same line first
+                            const afterIndicator = lines[i].substring(lines[i].toUpperCase().indexOf(indicator) + indicator.length).trim();
+                            if (afterIndicator && isValidName(afterIndicator)) {
+                                firstName = cleanName(afterIndicator);
+                            }
+                            // Try next line
+                            if (!firstName && i + 1 < lines.length) {
+                                const nextValue = cleanName(lines[i + 1]);
+                                if (isValidName(nextValue)) {
+                                    firstName = nextValue;
+
+                                    // Check for multiple given names on subsequent lines
+                                    for (let j = i + 2; j <= Math.min(i + 3, lines.length - 1); j++) {
+                                        const additionalName = cleanName(lines[j]);
+                                        if (isValidName(additionalName) && additionalName.length > 1 && additionalName.length < 20) {
+                                            // Check if it's not a middle name indicator
+                                            let isMiddleIndicator = false;
+                                            for (const midInd of middleNameIndicators) {
+                                                if (lines[j].toUpperCase().includes(midInd)) {
+                                                    isMiddleIndicator = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (!isMiddleIndicator) {
+                                                firstName += " " + additionalName;
+                                            } else {
+                                                break;
+                                            }
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (firstName) break;
+                        }
                     }
-                    if (line.includes("GITNANG") || line.includes("MIDDLE NAME")) {
-                        middleName = cleanName(lines[i + 1] || "");
+                }
+
+                // Extract Middle Name
+                for (let i = 0; i < linesUpper.length && !middleName; i++) {
+                    const line = linesUpper[i];
+
+                    for (const indicator of middleNameIndicators) {
+                        if (line.includes(indicator)) {
+                            // Try same line first
+                            const afterIndicator = lines[i].substring(lines[i].toUpperCase().indexOf(indicator) + indicator.length).trim();
+                            if (afterIndicator && isValidName(afterIndicator)) {
+                                middleName = cleanName(afterIndicator);
+                                break;
+                            }
+                            // Try next line
+                            if (i + 1 < lines.length) {
+                                const nextValue = cleanName(lines[i + 1]);
+                                if (isValidName(nextValue)) {
+                                    middleName = nextValue;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                    // Look for birthdate in various formats
-                    if (line.includes("KAPANGANAKAN") || line.includes("PETSA") || line.includes("BIRTHDATE") || line.includes("DATE OF BIRTH")) {
+                }
+
+                // Extract Birthdate
+                for (let i = 0; i < linesUpper.length && !birthdate; i++) {
+                    const line = linesUpper[i];
+
+                    // Look for birthdate indicators in various formats
+                    if (line.includes("KAPANGANAKAN") || line.includes("PETSA") ||
+                        line.includes("BIRTHDATE") || line.includes("DATE OF BIRTH")) {
                         // Try to extract birthdate from current line or next line
-                        let dateText = line;
-                        if (!containsDate(line) && i + 1 < lines.length) {
+                        let dateText = lines[i];
+                        if (!containsDate(lines[i]) && i + 1 < lines.length) {
                             dateText = lines[i + 1];
                         }
                         birthdate = extractBirthdateFromText(dateText);
@@ -1477,17 +1727,67 @@
                 document.getElementById('sex').value = '';
             }
 
-            // Helper functions
+            // Enhanced name cleaning with OCR error correction
             function cleanName(text) {
                 if (!text) return "";
-                return text
-                    .replace(/[^a-z\s]/gi, "")
-                    .replace(/\s+/g, " ")
-                    .trim()
-                    .replace(/^[a-z]\s+/, "")
-                    .replace(/^[a-z]\s+/, "")
-                    .replace(/\s+[a-z]$/, "")
-                    .replace(/^\s*[a-z]\s*$/, "");
+
+                let cleaned = text.trim();
+
+                // OCR error corrections - number to letter
+                cleaned = cleaned
+                    .replace(/\b0([A-Za-z])/g, 'O$1')       // 0 → O at start
+                    .replace(/([A-Za-z])0\b/g, '$1O')       // 0 → O at end
+                    .replace(/([A-Za-z])0([A-Za-z])/g, '$1O$2')  // 0 → O in middle
+                    .replace(/\b1([A-Za-z])/g, 'I$1')       // 1 → I at start
+                    .replace(/([A-Za-z])1([A-Za-z])/g, '$1I$2')  // 1 → I in middle
+                    .replace(/\b5([A-Za-z])/g, 'S$1')       // 5 → S at start
+                    .replace(/([A-Za-z])5\b/g, '$1S')       // 5 → S at end
+                    .replace(/\b8([A-Za-z])/g, 'B$1')       // 8 → B at start
+                    .replace(/\bRN\b/gi, 'M')               // RN → M
+                    .replace(/VV/g, 'W')                    // VV → W
+                    .replace(/\|/g, 'I');                   // | → I
+
+                // Filipino name particles
+                cleaned = cleaned
+                    .replace(/\bDe\s+La\b/gi, 'Dela')
+                    .replace(/\bDe\s+Los\b/gi, 'Delos')
+                    .replace(/\bDel\s+/gi, 'Del ');
+
+                // Keep only valid characters
+                cleaned = cleaned.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s\-\.]/g, "");
+
+                // Normalize spaces
+                cleaned = cleaned.replace(/\s+/g, " ");
+
+                // Remove leading/trailing punctuation
+                cleaned = cleaned.replace(/^[\-\.\s]+|[\-\.\s]+$/g, "");
+
+                // Remove standalone single characters (likely OCR errors)
+                cleaned = cleaned.replace(/\b[a-z]\b/gi, '').replace(/\s+/g, ' ');
+
+                // Capitalize properly
+                cleaned = cleaned.split(' ')
+                    .filter(word => word.length > 0)
+                    .map(word => {
+                        const upper = word.toUpperCase();
+                        if (upper === 'II' || upper === 'III' || upper === 'IV' ||
+                            upper === 'JR' || upper === 'SR') {
+                            return upper;
+                        }
+                        if (word.toLowerCase().startsWith('mc') && word.length > 2) {
+                            return 'Mc' + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
+                        }
+                        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                    })
+                    .join(' ');
+
+                cleaned = cleaned.trim();
+
+                // Validation
+                if (cleaned.length < 2) return "";
+                if (/^(.)\1+$/.test(cleaned.replace(/\s/g, ''))) return "";
+
+                return cleaned;
             }
 
             function cleanText(text) {

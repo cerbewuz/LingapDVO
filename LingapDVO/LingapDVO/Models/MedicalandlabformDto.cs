@@ -128,5 +128,12 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string Status3 { get; set; } = "";
 
+        // ═══════════════════════════════════════════════════════════════
+        // 🔒 ANTI-DUPLICATION SECURITY TOKEN
+        // ═══════════════════════════════════════════════════════════════
+        [Required(ErrorMessage = "Security token is required. Please refresh the page and try again.")]
+        [MaxLength(500)]
+        public string FormSubmissionToken { get; set; } = "";
+
     }
 }

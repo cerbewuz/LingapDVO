@@ -870,6 +870,38 @@ namespace LingapDVO.Controllers
 
         public IActionResult Register()
         {
+            // ═══════════════════════════════════════════════════════════════
+            // 🔒 GENERATE ANTI-MANIPULATION REGISTRATION TOKEN
+            // ═══════════════════════════════════════════════════════════════
+
+            // Get client information
+            string ipAddress = GetClientIpAddress();
+            string userAgent = Request.Headers["User-Agent"].ToString() ?? "Unknown";
+
+            // Generate unique cryptographic token
+            string registrationToken = GenerateSecureToken();
+
+            // Store token in database with expiration (10 minutes)
+            var tokenRecord = new RegistrationToken
+            {
+                Token = registrationToken,
+                IpAddress = ipAddress,
+                UserAgent = userAgent,
+                CreatedAt = DateTime.Now,
+                ExpiresAt = DateTime.Now.AddMinutes(10),
+                IsUsed = false,
+                IsRevoked = false
+            };
+
+            context.RegistrationTokens.Add(tokenRecord);
+            context.SaveChanges();
+
+            // Clean up expired tokens (older than 1 hour)
+            CleanupExpiredTokens();
+
+            // Pass token to view via ViewBag (will be embedded in hidden field)
+            ViewBag.RegistrationToken = registrationToken;
+
             // ✅ NEW CODE: Check for success parameter and show modal
             if (TempData["SuccessMessage"] != null)
             {
@@ -883,6 +915,135 @@ namespace LingapDVO.Controllers
             }
 
             return View();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🔐 SECURITY HELPER METHODS
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Generate cryptographically secure random token
+        /// </summary>
+        private string GenerateSecureToken()
+        {
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                byte[] tokenData = new byte[64];
+                rng.GetBytes(tokenData);
+
+                // Combine with timestamp for uniqueness
+                string timestamp = DateTime.Now.Ticks.ToString();
+                string combined = Convert.ToBase64String(tokenData) + timestamp;
+
+                // Hash the combination for additional security
+                using (var sha256 = SHA256.Create())
+                {
+                    byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(combined));
+                    return Convert.ToBase64String(hashBytes);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get client IP address (handles proxies and load balancers)
+        /// </summary>
+        private string GetClientIpAddress()
+        {
+            // Check for forwarded IP (behind proxy/load balancer)
+            string forwardedFor = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(forwardedFor))
+            {
+                return forwardedFor.Split(',')[0].Trim();
+            }
+
+            // Check for real IP header
+            string realIp = Request.Headers["X-Real-IP"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(realIp))
+            {
+                return realIp;
+            }
+
+            // Fall back to remote IP
+            return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        }
+
+        /// <summary>
+        /// Cleanup expired registration tokens
+        /// </summary>
+        private void CleanupExpiredTokens()
+        {
+            try
+            {
+                var oneHourAgo = DateTime.Now.AddHours(-1);
+                var expiredTokens = context.RegistrationTokens
+                    .Where(t => t.ExpiresAt < oneHourAgo)
+                    .ToList();
+
+                if (expiredTokens.Any())
+                {
+                    context.RegistrationTokens.RemoveRange(expiredTokens);
+                    context.SaveChanges();
+                }
+            }
+            catch
+            {
+                // Ignore cleanup errors - not critical
+            }
+        }
+
+        /// <summary>
+        /// Determine the source of the registration request
+        /// </summary>
+        private string DetermineRequestSource()
+        {
+            // Check if it's a form submission
+            if (Request.HasFormContentType)
+            {
+                return "WEB_FORM";
+            }
+
+            // Check if it's an AJAX request
+            if (IsAjaxRequest())
+            {
+                return "AJAX";
+            }
+
+            // Check content type for API calls
+            string contentType = Request.ContentType ?? "";
+            if (contentType.Contains("application/json"))
+            {
+                return "API";
+            }
+
+            // Check if referrer is from same domain
+            string referer = Request.Headers["Referer"].ToString();
+            if (!string.IsNullOrEmpty(referer) && referer.Contains(Request.Host.Host))
+            {
+                return "WEB_FORM";
+            }
+
+            // If none of the above, mark as unknown (suspicious)
+            return "UNKNOWN";
+        }
+
+        /// <summary>
+        /// Extract browser name from User Agent string
+        /// </summary>
+        private string GetBrowserName(string userAgent)
+        {
+            if (string.IsNullOrEmpty(userAgent))
+                return "Unknown";
+
+            userAgent = userAgent.ToLower();
+
+            if (userAgent.Contains("edge")) return "Edge";
+            if (userAgent.Contains("chrome")) return "Chrome";
+            if (userAgent.Contains("firefox")) return "Firefox";
+            if (userAgent.Contains("safari")) return "Safari";
+            if (userAgent.Contains("opera")) return "Opera";
+            if (userAgent.Contains("msie") || userAgent.Contains("trident")) return "IE";
+
+            return "Unknown";
         }
 
         // ===========================
@@ -978,8 +1139,204 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public IActionResult Register(RegisterAccDto registerAccDto)
         {
+            // ═══════════════════════════════════════════════════════════════
+            // 🔒 ANTI-MANIPULATION SECURITY LAYER 1: TOKEN VALIDATION
+            // ═══════════════════════════════════════════════════════════════
+
+            string ipAddress = GetClientIpAddress();
+            string userAgent = Request.Headers["User-Agent"].ToString() ?? "Unknown";
+            string fullName = $"{registerAccDto.FirstName} {registerAccDto.MiddleName} {registerAccDto.LastName} {registerAccDto.Suffix}".Trim();
+
+            // Create audit log for this attempt
+            var auditLog = new RegistrationAuditLog
+            {
+                IpAddress = ipAddress,
+                UserAgent = userAgent,
+                Email = registerAccDto.Email,
+                Username = registerAccDto.Username,
+                FullName = fullName,
+                Action = "ATTEMPT",
+                Source = DetermineRequestSource(),
+                RegistrationToken = registerAccDto.RegistrationToken,
+                AttemptedAt = DateTime.Now,
+                SuspiciousActivity = false,
+                HasValidToken = false
+            };
+
+            // Validate token exists in request
+            if (string.IsNullOrWhiteSpace(registerAccDto.RegistrationToken))
+            {
+                auditLog.Action = "BLOCKED";
+                auditLog.Reason = "Missing registration token - possible backend manipulation";
+                auditLog.SuspiciousActivity = true;
+                auditLog.SuspiciousReasons = "NO_TOKEN";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
+                ModelState.AddModelError("", "🚫 Security Error: Invalid registration request. Please refresh the page and try again.");
+
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = new List<string> { "Security validation failed. Please refresh the page." } });
+                }
+                return View(registerAccDto);
+            }
+
+            // Validate token exists in database
+            var tokenRecord = context.RegistrationTokens
+                .FirstOrDefault(t => t.Token == registerAccDto.RegistrationToken);
+
+            if (tokenRecord == null)
+            {
+                auditLog.Action = "BLOCKED";
+                auditLog.Reason = "Token not found in database - possible forgery or direct API call";
+                auditLog.SuspiciousActivity = true;
+                auditLog.SuspiciousReasons = "INVALID_TOKEN";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
+                ModelState.AddModelError("", "🚫 Security Error: Invalid security token. Please refresh the page and try again.");
+
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = new List<string> { "Invalid security token. Please refresh the page." } });
+                }
+                return View(registerAccDto);
+            }
+
+            // Check if token has expired
+            if (tokenRecord.ExpiresAt < DateTime.Now)
+            {
+                auditLog.Action = "BLOCKED";
+                auditLog.Reason = "Token expired - session took too long or replay attack";
+                auditLog.SuspiciousActivity = true;
+                auditLog.SuspiciousReasons = "EXPIRED_TOKEN";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
+                ModelState.AddModelError("", "⏱️ Session Expired: Your registration session has expired. Please refresh the page and try again.");
+
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = new List<string> { "Session expired. Please refresh the page." } });
+                }
+                return View(registerAccDto);
+            }
+
+            // Check if token has already been used
+            if (tokenRecord.IsUsed)
+            {
+                auditLog.Action = "BLOCKED";
+                auditLog.Reason = $"Token already used - possible replay attack (previously used for: {tokenRecord.UsedByEmail})";
+                auditLog.SuspiciousActivity = true;
+                auditLog.SuspiciousReasons = "TOKEN_REUSE";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
+                ModelState.AddModelError("", "🚫 Security Error: This registration token has already been used. Please refresh the page.");
+
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = new List<string> { "Security token already used. Please refresh the page." } });
+                }
+                return View(registerAccDto);
+            }
+
+            // Check if token is revoked
+            if (tokenRecord.IsRevoked)
+            {
+                auditLog.Action = "BLOCKED";
+                auditLog.Reason = "Token revoked - administrative action or security incident";
+                auditLog.SuspiciousActivity = true;
+                auditLog.SuspiciousReasons = "REVOKED_TOKEN";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
+                ModelState.AddModelError("", "🚫 Access Denied: This registration session has been revoked. Please contact support.");
+
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = new List<string> { "Access denied. Please contact support." } });
+                }
+                return View(registerAccDto);
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // 🔒 ANTI-MANIPULATION SECURITY LAYER 2: IP/USER AGENT VALIDATION
+            // ═══════════════════════════════════════════════════════════════
+
+            List<string> suspiciousReasons = new List<string>();
+
+            // Validate IP address matches
+            if (tokenRecord.IpAddress != ipAddress)
+            {
+                suspiciousReasons.Add($"IP_MISMATCH: Token IP={tokenRecord.IpAddress}, Request IP={ipAddress}");
+                auditLog.SuspiciousActivity = true;
+            }
+
+            // Validate User Agent matches (some variation allowed for browser updates)
+            if (!tokenRecord.UserAgent.Contains(GetBrowserName(userAgent)) ||
+                !userAgent.Contains(GetBrowserName(tokenRecord.UserAgent)))
+            {
+                suspiciousReasons.Add($"USERAGENT_MISMATCH: Token UA={tokenRecord.UserAgent}, Request UA={userAgent}");
+                auditLog.SuspiciousActivity = true;
+            }
+
+            // Check for API/direct database manipulation attempts
+            if (auditLog.Source == "API" || auditLog.Source == "DIRECT_DB" || auditLog.Source == "UNKNOWN")
+            {
+                suspiciousReasons.Add($"SUSPICIOUS_SOURCE: {auditLog.Source}");
+                auditLog.SuspiciousActivity = true;
+            }
+
+            // Log suspicious activity but allow to continue (might be legitimate edge cases)
+            if (suspiciousReasons.Any())
+            {
+                auditLog.SuspiciousReasons = string.Join("; ", suspiciousReasons);
+            }
+
+            // Mark token as valid for audit
+            auditLog.HasValidToken = true;
+
+            // ═══════════════════════════════════════════════════════════════
+            // 🔒 ANTI-MANIPULATION SECURITY LAYER 3: RATE LIMITING
+            // ═══════════════════════════════════════════════════════════════
+
+            // Check for multiple registration attempts from same IP in last hour
+            var recentAttemptsFromIp = context.RegistrationAuditLogs
+                .Where(log => log.IpAddress == ipAddress &&
+                              log.AttemptedAt > DateTime.Now.AddHours(-1))
+                .Count();
+
+            if (recentAttemptsFromIp > 5)
+            {
+                auditLog.Action = "BLOCKED";
+                auditLog.Reason = $"Rate limit exceeded - {recentAttemptsFromIp} attempts in last hour";
+                auditLog.SuspiciousActivity = true;
+                auditLog.SuspiciousReasons = (auditLog.SuspiciousReasons ?? "") + "; RATE_LIMIT_EXCEEDED";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
+                ModelState.AddModelError("", "⚠️ Too Many Attempts: You have exceeded the registration limit. Please try again later.");
+
+                if (IsAjaxRequest())
+                {
+                    return Json(new { success = false, errors = new List<string> { "Too many registration attempts. Please try again later." } });
+                }
+                return View(registerAccDto);
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // ✅ PROCEED WITH NORMAL VALIDATION
+            // ═══════════════════════════════════════════════════════════════
+
             if (!ModelState.IsValid)
             {
+                auditLog.Action = "FAILED";
+                auditLog.Reason = "Model validation failed";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
                 // Return JSON errors for AJAX requests
                 if (IsAjaxRequest())
                 {
@@ -1055,6 +1412,23 @@ namespace LingapDVO.Controllers
                 context.RegisterAcc.Add(registercacc);
                 context.SaveChanges();
 
+                // ═══════════════════════════════════════════════════════════════
+                // 🔒 MARK TOKEN AS USED & LOG SUCCESS
+                // ═══════════════════════════════════════════════════════════════
+
+                // Mark the registration token as used
+                tokenRecord.IsUsed = true;
+                tokenRecord.UsedAt = DateTime.Now;
+                tokenRecord.UsedByEmail = registerAccDto.Email;
+                context.SaveChanges();
+
+                // Log successful registration
+                auditLog.Action = "SUCCESS";
+                auditLog.Reason = "Registration completed successfully";
+                auditLog.RegisteredUserId = registercacc.Id;
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
                 // ✅ SUCCESS: Return JSON for AJAX
                 if (IsAjaxRequest())
                 {
@@ -1068,6 +1442,12 @@ namespace LingapDVO.Controllers
             }
             catch (DbUpdateException dbEx)
             {
+                // Log database error
+                auditLog.Action = "FAILED";
+                auditLog.Reason = $"Database error: {dbEx.Message}";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
                 // 🧱 Handle SQL unique constraint error
                 string errorMessage = "A database error occurred while saving. Please try again.";
 
@@ -1086,6 +1466,12 @@ namespace LingapDVO.Controllers
             }
             catch (Exception ex)
             {
+                // Log unexpected error
+                auditLog.Action = "FAILED";
+                auditLog.Reason = $"Unexpected error: {ex.Message}";
+                context.RegistrationAuditLogs.Add(auditLog);
+                context.SaveChanges();
+
                 string errorMessage = "An unexpected error occurred. Please try again.";
 
                 if (IsAjaxRequest())
@@ -1100,6 +1486,26 @@ namespace LingapDVO.Controllers
 
         public IActionResult Accountverification()
         {
+            // Get the current user's ID from the session
+            if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
+            {
+                // If user is not logged in, redirect to login page
+                return RedirectToAction("Login", "Login");
+            }
+
+            // Retrieve the registered user's information
+            var registeredUser = context.RegisterAcc.FirstOrDefault(r => r.Id == userId);
+            if (registeredUser == null)
+            {
+                return RedirectToAction("Login", "Login");
+            }
+
+            // Pass the registered user's name to ViewBag for comparison
+            ViewBag.RegisteredFirstName = registeredUser.FirstName;
+            ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+            ViewBag.RegisteredLastName = registeredUser.LastName;
+            ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
+
             return View();
         }
 
