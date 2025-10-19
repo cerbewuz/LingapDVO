@@ -1085,12 +1085,50 @@ namespace LingapDVO.Controllers
         /// This helps prevent duplicate registrations by the same person
         /// </summary>
         [HttpGet]
+        // ═══════════════════════════════════════════════════════════════
+        // 🇵🇭 PHILIPPINE NAME NORMALIZATION HELPER
+        // ═══════════════════════════════════════════════════════════════
+        private string NormalizePhilippineName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return "";
+
+            string normalized = name.ToLower().Trim();
+
+            // Remove periods commonly found in Philippine names
+            normalized = normalized.Replace(".", "");
+
+            // Normalize Filipino compound name particles
+            normalized = normalized
+                .Replace("dela cruz", "delacruz")
+                .Replace("de la cruz", "delacruz")
+                .Replace("delos santos", "delossantos")
+                .Replace("de los santos", "delossantos")
+                .Replace("delos reyes", "delosreyes")
+                .Replace("de los reyes", "delosreyes")
+                .Replace("dela rosa", "delarosa")
+                .Replace("de la rosa", "delarosa")
+                .Replace("dela paz", "delapaz")
+                .Replace("de la paz", "delapaz")
+                .Replace("del rosario", "delrosario")
+                .Replace("de guzman", "deguzman")
+                .Replace("san jose", "sanjose")
+                .Replace("san juan", "sanjuan")
+                .Replace("santa maria", "santamaria")
+                .Replace("santa cruz", "santacruz");
+
+            // Remove extra whitespace
+            normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"\s+", " ").Trim();
+
+            return normalized;
+        }
+
         public JsonResult CheckNameExists(string firstName, string middleName, string lastName, string suffix)
         {
-            // Normalize inputs (trim and convert to lowercase for comparison)
-            firstName = firstName?.Trim().ToLower() ?? "";
-            middleName = middleName?.Trim().ToLower() ?? "";
-            lastName = lastName?.Trim().ToLower() ?? "";
+            // Normalize inputs using Philippine name normalization
+            firstName = NormalizePhilippineName(firstName);
+            middleName = NormalizePhilippineName(middleName);
+            lastName = NormalizePhilippineName(lastName);
             suffix = suffix?.Trim().ToLower() ?? "";
 
             // Need at least first name and last name to check
@@ -1099,11 +1137,11 @@ namespace LingapDVO.Controllers
                 return Json(new { exists = false, message = "" });
             }
 
-            // Check if exact match exists (all name fields match)
+            // Check if exact match exists (all name fields match) using normalized names
             bool exactMatch = context.RegisterAcc.Any(u =>
-                u.FirstName.ToLower() == firstName &&
-                u.MiddleName.ToLower() == middleName &&
-                u.LastName.ToLower() == lastName &&
+                NormalizePhilippineName(u.FirstName) == firstName &&
+                NormalizePhilippineName(u.MiddleName) == middleName &&
+                NormalizePhilippineName(u.LastName) == lastName &&
                 (u.Suffix == null ? "" : u.Suffix.ToLower()) == suffix
             );
 
@@ -1118,9 +1156,9 @@ namespace LingapDVO.Controllers
 
             // Check for similar names (same first, middle, last but different or no suffix)
             bool similarMatch = context.RegisterAcc.Any(u =>
-                u.FirstName.ToLower() == firstName &&
-                u.MiddleName.ToLower() == middleName &&
-                u.LastName.ToLower() == lastName
+                NormalizePhilippineName(u.FirstName) == firstName &&
+                NormalizePhilippineName(u.MiddleName) == middleName &&
+                NormalizePhilippineName(u.LastName) == lastName
             );
 
             if (similarMatch)
