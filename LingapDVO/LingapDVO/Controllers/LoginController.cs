@@ -323,6 +323,7 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
                 HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                 HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
+                HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
                 HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
                 HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
                 HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
@@ -452,6 +453,7 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
                 HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                 HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
+                HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
                 HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
                 HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
                 HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
@@ -752,6 +754,7 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
                             HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                             HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
+                            HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
                             HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
                             HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
                             HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
@@ -1624,6 +1627,7 @@ namespace LingapDVO.Controllers
                     SecurityQuestions = VerifyaccountDto.SecurityQuestions,
                     Securityanswer = VerifyaccountDto.Securityanswer,
                     Phonenumber = VerifyaccountDto.Phonenumber,
+                    CivilStatus = VerifyaccountDto.CivilStatus,
                 };
 
                 context.Verifyaccount.Add(verifyaccount);

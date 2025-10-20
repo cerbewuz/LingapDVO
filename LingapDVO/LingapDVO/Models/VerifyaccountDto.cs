@@ -64,5 +64,8 @@ namespace LingapDVO.Models
 
         [Required, MaxLength(100)]
         public string Phonenumber { get; set; } = "";
+
+        [Required, MaxLength(100)]
+        public string CivilStatus { get; set; } = "";
     }
 }
