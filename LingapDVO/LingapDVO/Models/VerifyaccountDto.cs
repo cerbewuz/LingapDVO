@@ -25,13 +25,13 @@ namespace LingapDVO.Models
         [Required, MaxLength(100)]
         public string Firstname { get; set; } = "";
 
-        [Required, MaxLength(100)]
+        [MaxLength(100)]
         public string Middlename { get; set; } = "";
 
         [Required, MaxLength(100)]
         public string Lastname { get; set; } = "";
 
-        [Required, MaxLength(100)]
+        [MaxLength(100)]
         public string Suffix { get; set; } = "";
 
         [Required, MaxLength(100)]
@@ -45,7 +45,7 @@ namespace LingapDVO.Models
         [Required, MaxLength(100)]
         public string BlkLotStreet { get; set; } = "";
 
-        [Required, MaxLength(100)]
+        [MaxLength(100)]
         public string SubVill { get; set; } = "";
 
         [Required, MaxLength(100)]

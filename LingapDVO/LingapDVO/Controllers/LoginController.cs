@@ -24,32 +24,53 @@ namespace LingapDVO.Controllers
         public readonly ApplicationDbContext context;
         private readonly IWebHostEnvironment environment;
         private readonly SmsService _smsService;
+        private readonly IConfiguration _configuration;
 
-        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, SmsService smsService)
+        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, SmsService smsService, IConfiguration configuration)
         {
             this.context = context;
             this.environment = environment;
             _smsService = smsService;
+            _configuration = configuration;
         }
 
         // ╔═══════════════════════════════════════════════════════════════════════════╗
         // ║                    AES-256 ENCRYPTION HELPER CLASS                        ║
-        // ║         Hardcoded AES-256 Implementation with Detailed Comments           ║
+        // ║         Secure AES-256 Implementation using Configuration                 ║
         // ╚═══════════════════════════════════════════════════════════════════════════╝
-        private static class AesEncryptionHelper
+        private class AesEncryptionHelper
         {
+            private readonly byte[] _aesKey;
+
             // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 1: Define hardcoded 256-bit (32 bytes) encryption key          │
-            // │ This is a fixed key for AES-256 encryption                          │
-            // │ In production, store this securely (e.g., Azure Key Vault)          │
+            // │ STEP 1: Load AES-256 key from configuration (appsettings.json)      │
+            // │ This is a secure way to manage encryption keys                      │
+            // │ In production, use Azure Key Vault or AWS Secrets Manager           │
             // └─────────────────────────────────────────────────────────────────────┘
-            private static readonly byte[] HARDCODED_AES_KEY = new byte[32]
+            public AesEncryptionHelper(IConfiguration configuration)
             {
-                0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
-                0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C,
-                0x76, 0x2E, 0x71, 0x60, 0xF3, 0x8B, 0x4D, 0xA5,
-                0x6A, 0x78, 0x4D, 0x90, 0x45, 0x19, 0x03, 0xCB
-            };
+                string keyHex = configuration["Security:AesEncryption:Key"]
+                    ?? throw new InvalidOperationException("AES encryption key not found in configuration");
+
+                // Convert hex string to byte array
+                _aesKey = ConvertHexStringToByteArray(keyHex);
+
+                if (_aesKey.Length != 32)
+                    throw new InvalidOperationException("AES key must be 32 bytes (256 bits)");
+            }
+
+            private static byte[] ConvertHexStringToByteArray(string hex)
+            {
+                if (hex.Length % 2 != 0)
+                    throw new ArgumentException("Hex string must have even length");
+
+                byte[] bytes = new byte[hex.Length / 2];
+                for (int i = 0; i < hex.Length; i += 2)
+                {
+                    bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+                }
+                return bytes;
+            }
 
             // ┌─────────────────────────────────────────────────────────────────────┐
             // │ STEP 2: Encrypt string data using AES-256-CBC                       │
@@ -61,7 +82,7 @@ namespace LingapDVO.Controllers
             // │   5. Combine IV + encrypted data                                    │
             // │   6. Return Base64-encoded result                                   │
             // └─────────────────────────────────────────────────────────────────────┘
-            public static string Encrypt(string plainText)
+            public string Encrypt(string plainText)
             {
                 // Step 2.1: Convert plaintext string to bytes
                 byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
@@ -69,8 +90,8 @@ namespace LingapDVO.Controllers
                 // Step 2.2: Create AES algorithm instance
                 using var aes = Aes.Create();
 
-                // Step 2.3: Set the hardcoded 256-bit key (32 bytes)
-                aes.Key = HARDCODED_AES_KEY;
+                // Step 2.3: Set the 256-bit key from configuration (32 bytes)
+                aes.Key = _aesKey;
 
                 // Step 2.4: Generate random 128-bit IV (16 bytes) for each encryption
                 // This ensures same plaintext produces different ciphertext each time
@@ -115,7 +136,7 @@ namespace LingapDVO.Controllers
             // │   6. Decrypt the data                                               │
             // │   7. Return plaintext string                                        │
             // └─────────────────────────────────────────────────────────────────────┘
-            public static string Decrypt(string encryptedText)
+            public string Decrypt(string encryptedText)
             {
                 // Step 3.1: Convert Base64 string back to bytes
                 byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
@@ -123,8 +144,8 @@ namespace LingapDVO.Controllers
                 // Step 3.2: Create AES algorithm instance
                 using var aes = Aes.Create();
 
-                // Step 3.3: Set the same hardcoded 256-bit key (32 bytes)
-                aes.Key = HARDCODED_AES_KEY;
+                // Step 3.3: Set the same 256-bit key from configuration (32 bytes)
+                aes.Key = _aesKey;
 
                 // Step 3.4: Extract IV from first 16 bytes of encrypted data
                 byte[] iv = new byte[16];
@@ -156,13 +177,13 @@ namespace LingapDVO.Controllers
             // │   4. Encrypt the file stream                                        │
             // │   5. Return IV + encrypted data as byte array                       │
             // └─────────────────────────────────────────────────────────────────────┘
-            public static byte[] EncryptStream(Stream inputStream)
+            public byte[] EncryptStream(Stream inputStream)
             {
                 // Step 4.1: Create AES algorithm instance
                 using var aes = Aes.Create();
 
-                // Step 4.2: Set the hardcoded 256-bit key (32 bytes)
-                aes.Key = HARDCODED_AES_KEY;
+                // Step 4.2: Set the 256-bit key from configuration (32 bytes)
+                aes.Key = _aesKey;
 
                 // Step 4.3: Generate random 128-bit IV (16 bytes)
                 aes.GenerateIV();
@@ -195,13 +216,13 @@ namespace LingapDVO.Controllers
             // │ Used for generating unique encrypted filenames                      │
             // │ Returns only the ciphertext (without IV) as Base64                  │
             // └─────────────────────────────────────────────────────────────────────┘
-            public static string EncryptTimestamp(string timestamp)
+            public string EncryptTimestamp(string timestamp)
             {
                 // Step 5.1: Create AES algorithm instance
                 using var aes = Aes.Create();
 
-                // Step 5.2: Set the hardcoded 256-bit key
-                aes.Key = HARDCODED_AES_KEY;
+                // Step 5.2: Set the 256-bit key from configuration
+                aes.Key = _aesKey;
 
                 // Step 5.3: Generate random IV
                 aes.GenerateIV();
@@ -223,6 +244,46 @@ namespace LingapDVO.Controllers
 
                 // Step 5.9: Return Base64-encoded encrypted timestamp
                 return Convert.ToBase64String(encryptedBytes);
+            }
+            // Add this method to your controller class (before the Action methods)
+            private string NormalizePhilippineName(string name)
+            {
+                if (string.IsNullOrEmpty(name))
+                    return "";
+
+                string normalized = name.ToLower().Trim();
+
+                // Remove periods and extra spaces
+                normalized = normalized.Replace(".", "").Replace("  ", " ").Trim();
+
+                // Normalize Filipino compound name particles
+                var normalizationMap = new Dictionary<string, string>
+    {
+        { "dela cruz", "delacruz" },
+        { "de la cruz", "delacruz" },
+        { "delos santos", "delossantos" },
+        { "de los santos", "delossantos" },
+        { "delos reyes", "delosreyes" },
+        { "de los reyes", "delosreyes" },
+        { "dela rosa", "delarosa" },
+        { "de la rosa", "delarosa" },
+        { "dela paz", "delapaz" },
+        { "de la paz", "delapaz" },
+        { "del rosario", "delrosario" },
+        { "de guzman", "deguzman" },
+        { "san jose", "sanjose" },
+        { "san juan", "sanjuan" },
+        { "santa maria", "santamaria" },
+        { "santa cruz", "santacruz" }
+    };
+
+                // Apply normalization
+                foreach (var mapping in normalizationMap)
+                {
+                    normalized = normalized.Replace(mapping.Key, mapping.Value);
+                }
+
+                return normalized;
             }
         }
 
@@ -277,8 +338,9 @@ namespace LingapDVO.Controllers
                 // ✅ Generate random password (internal use only)
                 string generatedPassword = "FB-" + Guid.NewGuid().ToString("N").Substring(0, 12);
 
-                // Use hardcoded AES-256 helper to encrypt password
-                string encryptedPassword = AesEncryptionHelper.Encrypt(generatedPassword);
+                // Use AES-256 helper from configuration to encrypt password
+                var aesHelper = new AesEncryptionHelper(_configuration);
+                string encryptedPassword = aesHelper.Encrypt(generatedPassword);
 
                 user = new RegisterAcc
                 {
@@ -407,8 +469,9 @@ namespace LingapDVO.Controllers
                 // ✅ Generate random password (internal use only)
                 string generatedPassword = "GOOG-" + Guid.NewGuid().ToString("N").Substring(0, 12);
 
-                // Use hardcoded AES-256 helper to encrypt password
-                string encryptedPassword = AesEncryptionHelper.Encrypt(generatedPassword);
+                // Use AES-256 helper from configuration to encrypt password
+                var aesHelper = new AesEncryptionHelper(_configuration);
+                string encryptedPassword = aesHelper.Encrypt(generatedPassword);
 
                 user = new RegisterAcc
                 {
@@ -519,6 +582,9 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
+            // Pass reCAPTCHA site key to view
+            ViewBag.ReCaptchaSiteKey = _configuration["Security:ReCaptcha:SiteKey"] ?? "6Lfdj1orAAAAANkMj0kOMkNb8nLKFYlDL_9eZVhS";
+
             return View();
         }
 
@@ -573,7 +639,8 @@ namespace LingapDVO.Controllers
             {
                 using (var httpClient = new System.Net.Http.HttpClient())
                 {
-                    string secretKey = "6Lfdj1orAAAAAKINUvegNElqk5Fld8S9qASq8jtP";
+                    string secretKey = _configuration["Security:ReCaptcha:SecretKey"]
+                        ?? throw new InvalidOperationException("ReCaptcha secret key not found in configuration");
                     var response = await httpClient.GetStringAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={recaptchaResponse}");
                     var captchaResult = System.Text.Json.JsonDocument.Parse(response);
                     bool isSuccess = captchaResult.RootElement.GetProperty("success").GetBoolean();
@@ -725,8 +792,9 @@ namespace LingapDVO.Controllers
 
                 if (registerAccUser != null)
                 {
-                    // Use hardcoded AES-256 helper to decrypt password
-                    string decryptedPassword = AesEncryptionHelper.Decrypt(registerAccUser.Password);
+                    // Use AES-256 helper from configuration to decrypt password
+                    var aesHelper = new AesEncryptionHelper(_configuration);
+                    string decryptedPassword = aesHelper.Decrypt(registerAccUser.Password);
 
                     if (decryptedPassword == loginModel.Password)
                     {
@@ -904,6 +972,9 @@ namespace LingapDVO.Controllers
 
             // Pass token to view via ViewBag (will be embedded in hidden field)
             ViewBag.RegistrationToken = registrationToken;
+
+            // Pass reCAPTCHA site key to view
+            ViewBag.ReCaptchaSiteKey = _configuration["Security:ReCaptcha:SiteKey"] ?? "6Lfdj1orAAAAANkMj0kOMkNb8nLKFYlDL_9eZVhS";
 
             // ✅ NEW CODE: Check for success parameter and show modal
             if (TempData["SuccessMessage"] != null)
@@ -1435,8 +1506,9 @@ namespace LingapDVO.Controllers
                 // ==========================
                 // 🔑 AES-256 PASSWORD ENCRYPTION
                 // ==========================
-                // Use hardcoded AES-256 helper to encrypt password
-                string encryptedPassword = AesEncryptionHelper.Encrypt(registerAccDto.Password);
+                // Use AES-256 helper from configuration to encrypt password
+                var aesHelper = new AesEncryptionHelper(_configuration);
+                string encryptedPassword = aesHelper.Encrypt(registerAccDto.Password);
 
                 var registercacc = new RegisterAcc
                 {
@@ -1550,6 +1622,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
+
         [HttpPost]
         public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
         {
@@ -1560,6 +1633,110 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
+            // ═══════════════════════════════════════════════════════════════
+            // 🔍 CHECK FOR DUPLICATE VERIFICATION
+            // ═══════════════════════════════════════════════════════════════
+            var existingVerification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            if (existingVerification != null)
+            {
+                ModelState.AddModelError("", "Your account has already been verified. You cannot verify again.");
+                return View(VerifyaccountDto);
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // 🔍 NAME MATCHING VALIDATION (ID vs Registered Account)
+            // ═══════════════════════════════════════════════════════════════
+            var registeredUser = context.RegisterAcc.FirstOrDefault(r => r.Id == userId);
+            if (registeredUser == null)
+            {
+                ModelState.AddModelError("", "User account not found. Please login again.");
+                return RedirectToAction("Login", "Login");
+            }
+
+            // Pass registered user info back to view for comparison (ALWAYS do this)
+            ViewBag.RegisteredFirstName = registeredUser.FirstName;
+            ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+            ViewBag.RegisteredLastName = registeredUser.LastName;
+            ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
+
+            // Normalize names for comparison
+            string regFirstName = NormalizePhilippineName(registeredUser.FirstName ?? "");
+            string regMiddleName = NormalizePhilippineName(registeredUser.MiddleName ?? "");
+            string regLastName = NormalizePhilippineName(registeredUser.LastName ?? "");
+
+            string idFirstName = NormalizePhilippineName(VerifyaccountDto.Firstname ?? "");
+            string idMiddleName = NormalizePhilippineName(VerifyaccountDto.Middlename ?? "");
+            string idLastName = NormalizePhilippineName(VerifyaccountDto.Lastname ?? "");
+
+            // Debug logging (you can remove this in production)
+            Console.WriteLine($"=== NAME VALIDATION DEBUG ===");
+            Console.WriteLine($"Registered: {registeredUser.FirstName} {registeredUser.LastName}");
+            Console.WriteLine($"Registered (normalized): {regFirstName} {regLastName}");
+            Console.WriteLine($"ID: {VerifyaccountDto.Firstname} {VerifyaccountDto.Lastname}");
+            Console.WriteLine($"ID (normalized): {idFirstName} {idLastName}");
+            Console.WriteLine($"First Name Match: {regFirstName == idFirstName}");
+            Console.WriteLine($"Last Name Match: {regLastName == idLastName}");
+
+            // Check if names match (allow some flexibility for middle names)
+            bool firstNameMatches = !string.IsNullOrEmpty(regFirstName) &&
+                                   !string.IsNullOrEmpty(idFirstName) &&
+                                   regFirstName.Equals(idFirstName, StringComparison.OrdinalIgnoreCase);
+
+            bool lastNameMatches = !string.IsNullOrEmpty(regLastName) &&
+                                  !string.IsNullOrEmpty(idLastName) &&
+                                  regLastName.Equals(idLastName, StringComparison.OrdinalIgnoreCase);
+
+            // Validation fails if either first name or last name doesn't match
+            if (!firstNameMatches || !lastNameMatches)
+            {
+                ModelState.AddModelError("", "Name does not match with the registered name. Please use your own valid ID.");
+                TempData["ErrorMessage"] = "Name does not match with the registered name. Please use your own valid ID.";
+
+                // Log the mismatch for debugging
+                Console.WriteLine($"❌ NAME VALIDATION FAILED: Registered='{regFirstName} {regLastName}' vs ID='{idFirstName} {idLastName}'");
+
+                return View(VerifyaccountDto);
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // 🏙️ SERVER-SIDE DAVAO CITY VALIDATION
+            // ═══════════════════════════════════════════════════════════════
+            // List of valid Davao City barangays
+            var davaoBarangays = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "Acacia", "Agdao", "Alambre", "Alejandro Navarro", "Alfonso Angliongto Sr.",
+        "Angalan", "Baguio Proper", "Baliok", "Bangkas Heights", "Baracatan",
+        "Bato", "Bayabas", "Biao Escuela", "Biao Guianga", "Binugao",
+        "Bucana", "Buhangin Proper", "Cabantian", "Cadalian", "Calinan Proper",
+        "Callawa", "Camansi", "Carmen", "Catalunan Grande", "Catalunan Pequeño",
+        "Catigan", "Cawayan", "Centro (San Juan)", "Colosas", "Communal",
+        "Crossing Bayabas", "Dacudao", "Dalagdag", "Daliao", "Dalican",
+        "Datu Salumay", "Dominga", "Eden", "Fatima (Benowang)", "Gatungan",
+        "Gov. Paciano Bangoy", "Gov. Vicente Duterte", "Gumalang", "Gumitan",
+        "Indangan", "Kap. Tomas Monteverde Sr.", "Kilate", "Lamanan",
+        "Lampianao", "Langub", "Lapu-lapu", "Leon Garcia Sr.", "Los Amigos",
+        "Lubogan", "Lumiad", "Ma-a", "Mabuhay", "Madapo", "Magtuod",
+        "Mahayag", "Malabog", "Malagos", "Malamba", "Malandog", "Mampising",
+        "Manambulan", "Mandug", "Manuel Guianga", "Mapula", "Marapangi",
+        "Marilog Proper", "Matina Aplaya", "Matina Crossing", "Matina Pangi",
+        "Mintal", "Mudiang", "Mulig", "New Carmen", "New Valencia", "Pampanga",
+        "Panacan", "Pandaitan", "Panorama", "Paquibato Proper", "Paradise Embak",
+        "Rafael Castillo", "Salapawan", "Salaysay", "Saloy", "San Antonio",
+        "San Isidro", "Sasa", "Sirib", "Suawan", "Tacunan", "Tagakpan",
+        "Tagluno", "Tagurano", "Talomo Proper", "Talomo River", "Tamurayan",
+        "Tibungco", "Tigatto", "Tungkalan", "Ubalde", "Ugac", "Ula",
+        "Vicente Hizon Sr.", "Waan", "Wangan", "Wilfredo Aquino", "Wines"
+    };
+
+            if (!davaoBarangays.Contains(VerifyaccountDto.Barangay))
+            {
+                ModelState.AddModelError("Barangay",
+                    "This service is only available for Davao City residents. " +
+                    "Please select a valid Davao City barangay.");
+                return View(VerifyaccountDto);
+            }
+
+            // File validation
             if (VerifyaccountDto.ValidFrontID == null)
                 ModelState.AddModelError("ValidFrontID", "Front ID image is required");
             if (VerifyaccountDto.ValidBackID == null)
@@ -1573,9 +1750,12 @@ namespace LingapDVO.Controllers
                 // ==========================
                 // 🔑 AES-256 FILE ENCRYPTION
                 // ==========================
+                // Create AES helper instance with configuration
+                var aesHelper = new AesEncryptionHelper(_configuration);
+
                 // Generate unique encrypted timestamp for filenames
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = AesEncryptionHelper.EncryptTimestamp(timestamp);
+                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // ==========================
@@ -1587,8 +1767,8 @@ namespace LingapDVO.Controllers
                 string frontPath = Path.Combine(validFolder, frontFileName);
                 using (var fileStream = new FileStream(frontPath, FileMode.Create))
                 {
-                    // Use hardcoded AES-256 helper to encrypt file stream
-                    byte[] encryptedData = AesEncryptionHelper.EncryptStream(VerifyaccountDto.ValidFrontID!.OpenReadStream());
+                    // Use AES-256 helper from configuration to encrypt file stream
+                    byte[] encryptedData = aesHelper.EncryptStream(VerifyaccountDto.ValidFrontID!.OpenReadStream());
                     fileStream.Write(encryptedData, 0, encryptedData.Length);
                 }
 
@@ -1599,9 +1779,22 @@ namespace LingapDVO.Controllers
                 string backPath = Path.Combine(validFolder, backFileName);
                 using (var fileStream = new FileStream(backPath, FileMode.Create))
                 {
-                    // Use hardcoded AES-256 helper to encrypt file stream
-                    byte[] encryptedData = AesEncryptionHelper.EncryptStream(VerifyaccountDto.ValidBackID!.OpenReadStream());
+                    // Use AES-256 helper from configuration to encrypt file stream
+                    byte[] encryptedData = aesHelper.EncryptStream(VerifyaccountDto.ValidBackID!.OpenReadStream());
                     fileStream.Write(encryptedData, 0, encryptedData.Length);
+                }
+
+                // ==========================
+                // 🔐 HASH SECURITY ANSWER WITH SHA256
+                // ==========================
+                string hashedSecurityAnswer = string.Empty;
+                if (!string.IsNullOrWhiteSpace(VerifyaccountDto.Securityanswer))
+                {
+                    using (var sha256 = SHA256.Create())
+                    {
+                        byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(VerifyaccountDto.Securityanswer.Trim().ToLower()));
+                        hashedSecurityAnswer = Convert.ToBase64String(hashBytes);
+                    }
                 }
 
                 // ==========================
@@ -1625,7 +1818,7 @@ namespace LingapDVO.Controllers
                     Barangay = VerifyaccountDto.Barangay,
                     District = VerifyaccountDto.District,
                     SecurityQuestions = VerifyaccountDto.SecurityQuestions,
-                    Securityanswer = VerifyaccountDto.Securityanswer,
+                    Securityanswer = hashedSecurityAnswer, // Store hashed answer
                     Phonenumber = VerifyaccountDto.Phonenumber,
                     CivilStatus = VerifyaccountDto.CivilStatus,
                 };
@@ -1633,7 +1826,29 @@ namespace LingapDVO.Controllers
                 context.Verifyaccount.Add(verifyaccount);
                 context.SaveChanges();
 
-                return Redirect("/Homepage");
+                // ═══════════════════════════════════════════════════════════════
+                // ✅ UPDATE SESSION WITH VERIFIED USER DATA
+                // ═══════════════════════════════════════════════════════════════
+                HttpContext.Session.SetString("IDtype", verifyaccount.IDtype ?? "");
+                HttpContext.Session.SetString("IDnumber", verifyaccount.IDnumber ?? "");
+                HttpContext.Session.SetString("Firstname", verifyaccount.Firstname ?? "");
+                HttpContext.Session.SetString("Middlename", verifyaccount.Middlename ?? "");
+                HttpContext.Session.SetString("Lastname", verifyaccount.Lastname ?? "");
+                HttpContext.Session.SetString("Gender", verifyaccount.Gender ?? "");
+                HttpContext.Session.SetString("Suffix", verifyaccount.Suffix ?? "");
+                HttpContext.Session.SetString("Dateofbirth", verifyaccount.Dateofbirth ?? "");
+                HttpContext.Session.SetString("BlkLotStreet", verifyaccount.BlkLotStreet ?? "");
+                HttpContext.Session.SetString("SubVill", verifyaccount.SubVill ?? "");
+                HttpContext.Session.SetString("District", verifyaccount.District ?? "");
+                HttpContext.Session.SetString("Barangay", verifyaccount.Barangay ?? "");
+                HttpContext.Session.SetString("CivilStatus", verifyaccount.CivilStatus ?? "");
+                HttpContext.Session.SetString("SecurityQuestions", verifyaccount.SecurityQuestions ?? "");
+                HttpContext.Session.SetString("Securityanswer", verifyaccount.Securityanswer ?? "");
+                HttpContext.Session.SetString("FrontID", verifyaccount.FrontID ?? "");
+                HttpContext.Session.SetString("BackID", verifyaccount.BackID ?? "");
+                HttpContext.Session.SetString("IsVerifiedUser", "true");
+
+                return RedirectToAction("Homepage", "Dashboard");
             }
             catch (Exception ex)
             {
