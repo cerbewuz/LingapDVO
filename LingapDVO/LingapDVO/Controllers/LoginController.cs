@@ -42,27 +42,47 @@ namespace LingapDVO.Controllers
         {
             private readonly byte[] _aesKey;
 
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 1: Load AES-256 key from configuration (appsettings.json)      │
-            // │ This is a secure way to manage encryption keys                      │
-            // │ In production, use Azure Key Vault or AWS Secrets Manager           │
-            // └─────────────────────────────────────────────────────────────────────┘
             public AesEncryptionHelper(IConfiguration configuration)
             {
                 string keyHex = configuration["Security:AesEncryption:Key"]
                     ?? throw new InvalidOperationException("AES encryption key not found in configuration");
 
-                // Convert hex string to byte array
-                _aesKey = ConvertHexStringToByteArray(keyHex);
+                // Clean the key - remove any whitespace or special characters
+                keyHex = keyHex.Trim().Replace(" ", "").Replace("-", "").Replace(":", "");
+
+                if (string.IsNullOrWhiteSpace(keyHex))
+                    throw new InvalidOperationException("AES encryption key is empty");
+
+                // Log key info for debugging
+                System.Diagnostics.Debug.WriteLine($"AES Key Length: {keyHex.Length} characters");
+
+                // Convert with automatic padding
+                _aesKey = SafeConvertHexStringToByteArray(keyHex);
 
                 if (_aesKey.Length != 32)
-                    throw new InvalidOperationException("AES key must be 32 bytes (256 bits)");
+                    throw new InvalidOperationException($"AES key must be 32 bytes (256 bits). Current: {_aesKey.Length} bytes");
             }
 
-            private static byte[] ConvertHexStringToByteArray(string hex)
+            private static byte[] SafeConvertHexStringToByteArray(string hex)
             {
+                if (string.IsNullOrWhiteSpace(hex))
+                    throw new ArgumentException("Hex string cannot be null or empty");
+
+                // Clean the hex string
+                hex = hex.Trim().Replace(" ", "").Replace("-", "").Replace(":", "");
+
+                // Ensure even length by padding with leading zero if needed
                 if (hex.Length % 2 != 0)
-                    throw new ArgumentException("Hex string must have even length");
+                {
+                    hex = "0" + hex;
+                    System.Diagnostics.Debug.WriteLine($"Hex string padded from {hex.Length - 1} to {hex.Length} characters");
+                }
+
+                // Validate hex format
+                if (!System.Text.RegularExpressions.Regex.IsMatch(hex, @"^[0-9A-Fa-f]+$"))
+                {
+                    throw new ArgumentException("Hex string contains invalid characters");
+                }
 
                 byte[] bytes = new byte[hex.Length / 2];
                 for (int i = 0; i < hex.Length; i += 2)
@@ -71,6 +91,7 @@ namespace LingapDVO.Controllers
                 }
                 return bytes;
             }
+
 
             // ┌─────────────────────────────────────────────────────────────────────┐
             // │ STEP 2: Encrypt string data using AES-256-CBC                       │
