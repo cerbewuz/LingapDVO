@@ -56,11 +56,11 @@ namespace LingapDVO.Models
 
 
 
-        [Required, MaxLength(100)]
-        public string SecurityQuestions { get; set; } = "";
+   
+        public string? SecurityQuestions { get; set; } = "";
 
-        [Required, MaxLength(100)]
-        public string Securityanswer { get; set; } = "";
+
+        public string? Securityanswer { get; set; } = "";
 
         [Required, MaxLength(100)]
         public string Phonenumber { get; set; } = "";

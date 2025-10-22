@@ -1220,24 +1220,25 @@ namespace LingapDVO.Controllers
 
         public JsonResult CheckNameExists(string firstName, string middleName, string lastName, string suffix)
         {
-            // Normalize inputs using Philippine name normalization
+            // Normalize inputs first (client-side)
             firstName = NormalizePhilippineName(firstName);
             middleName = NormalizePhilippineName(middleName);
             lastName = NormalizePhilippineName(lastName);
             suffix = suffix?.Trim().ToLower() ?? "";
 
-            // Need at least first name and last name to check
             if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
             {
                 return Json(new { exists = false, message = "" });
             }
 
-            // Check if exact match exists (all name fields match) using normalized names
-            bool exactMatch = context.RegisterAcc.Any(u =>
+            // Pull data from DB first, then do the NormalizePhilippineName comparisons in memory
+            var users = context.RegisterAcc.AsEnumerable(); // This line moves it to client-side processing
+
+            bool exactMatch = users.Any(u =>
                 NormalizePhilippineName(u.FirstName) == firstName &&
                 NormalizePhilippineName(u.MiddleName) == middleName &&
                 NormalizePhilippineName(u.LastName) == lastName &&
-                (u.Suffix == null ? "" : u.Suffix.ToLower()) == suffix
+                ((u.Suffix ?? "").ToLower() == suffix)
             );
 
             if (exactMatch)
@@ -1249,8 +1250,7 @@ namespace LingapDVO.Controllers
                 });
             }
 
-            // Check for similar names (same first, middle, last but different or no suffix)
-            bool similarMatch = context.RegisterAcc.Any(u =>
+            bool similarMatch = users.Any(u =>
                 NormalizePhilippineName(u.FirstName) == firstName &&
                 NormalizePhilippineName(u.MiddleName) == middleName &&
                 NormalizePhilippineName(u.LastName) == lastName
@@ -1268,6 +1268,7 @@ namespace LingapDVO.Controllers
 
             return Json(new { exists = false, message = "" });
         }
+
 
         [HttpPost]
         public IActionResult Register(RegisterAccDto registerAccDto)
