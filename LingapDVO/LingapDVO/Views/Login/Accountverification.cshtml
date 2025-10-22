@@ -248,32 +248,6 @@
                 <h1 class="text-4xl font-bold text-gray-800 mb-2">Verify Your Account</h1>
             </div>
 
-            <!-- Registered Name Info Card -->
-            @if (!string.IsNullOrEmpty(ViewBag.RegisteredFirstName) && !string.IsNullOrEmpty(ViewBag.RegisteredLastName))
-            {
-                <div class="bg-blue-50 border-l-4 border-blue-500 rounded-xl p-6 mb-6 slide-down">
-                    <div class="flex items-start gap-4">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-info-circle text-2xl text-blue-500"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-lg font-semibold text-blue-800 mb-2">Registered Account Information</h3>
-                            <p class="text-blue-700 mb-2">
-                                Your ID must match the following registered name:
-                            </p>
-                            <div class="bg-white rounded-lg p-4 border border-blue-200">
-                                <p class="text-gray-800 font-bold text-lg">
-                                    @ViewBag.RegisteredFirstName @ViewBag.RegisteredMiddleName @ViewBag.RegisteredLastName @ViewBag.RegisteredSuffix
-                                </p>
-                            </div>
-                            <p class="text-sm text-blue-600 mt-2">
-                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                <strong>Important:</strong> The name on your ID must match this registered name exactly.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            }
 
             <!-- Main Form Card -->
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden glass-effect scale-in w-full max-w-full lg:max-w-4xl mx-auto">
