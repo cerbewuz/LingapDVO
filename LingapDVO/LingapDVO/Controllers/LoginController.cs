@@ -407,8 +407,6 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                 HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
                 HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
-                HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
-                HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
                 HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
                 HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
                 HttpContext.Session.SetString("IsVerifiedUser", "true");
@@ -538,8 +536,6 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                 HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
                 HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
-                HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
-                HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
                 HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
                 HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
                 HttpContext.Session.SetString("IsVerifiedUser", "true");
@@ -845,8 +841,6 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
                             HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
                             HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
-                            HttpContext.Session.SetString("SecurityQuestions", verifiedUser.SecurityQuestions ?? "");
-                            HttpContext.Session.SetString("Securityanswer", verifiedUser.Securityanswer ?? "");
                             HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
                             HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
                             HttpContext.Session.SetString("IsVerifiedUser", "true");
@@ -1838,8 +1832,6 @@ namespace LingapDVO.Controllers
                     SubVill = VerifyaccountDto.SubVill,
                     Barangay = VerifyaccountDto.Barangay,
                     District = VerifyaccountDto.District,
-                    SecurityQuestions = VerifyaccountDto.SecurityQuestions,
-                    Securityanswer = hashedSecurityAnswer, // Store hashed answer
                     Phonenumber = VerifyaccountDto.Phonenumber,
                     CivilStatus = VerifyaccountDto.CivilStatus,
                 };
@@ -1863,8 +1855,6 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("District", verifyaccount.District ?? "");
                 HttpContext.Session.SetString("Barangay", verifyaccount.Barangay ?? "");
                 HttpContext.Session.SetString("CivilStatus", verifyaccount.CivilStatus ?? "");
-                HttpContext.Session.SetString("SecurityQuestions", verifyaccount.SecurityQuestions ?? "");
-                HttpContext.Session.SetString("Securityanswer", verifyaccount.Securityanswer ?? "");
                 HttpContext.Session.SetString("FrontID", verifyaccount.FrontID ?? "");
                 HttpContext.Session.SetString("BackID", verifyaccount.BackID ?? "");
                 HttpContext.Session.SetString("IsVerifiedUser", "true");
@@ -1944,8 +1934,6 @@ namespace LingapDVO.Controllers
                 registerDto.Dateofbirth = existingUser.Dateofbirth;
                 registerDto.Gender = existingUser.Gender;
                 registerDto.Address = existingUser.Address;
-                registerDto.SecurityQuestions = existingUser.SecurityQuestions;
-                registerDto.Securityanswer = existingUser.Securityanswer;
 
                 // Return to view with enhanced error information
                 return View(registerDto);
@@ -1986,8 +1974,6 @@ namespace LingapDVO.Controllers
                 existingUser.Dateofbirth = registerDto.Dateofbirth;
                 existingUser.Gender = registerDto.Gender;
                 existingUser.Address = registerDto.Address;
-                existingUser.SecurityQuestions = registerDto.SecurityQuestions;
-                existingUser.Securityanswer = registerDto.Securityanswer;
 
                 // Update password if provided
                 if (!string.IsNullOrWhiteSpace(registerDto.Password))
