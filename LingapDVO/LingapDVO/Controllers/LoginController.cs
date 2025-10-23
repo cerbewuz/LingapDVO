@@ -1801,19 +1801,6 @@ namespace LingapDVO.Controllers
                 }
 
                 // ==========================
-                // 🔐 HASH SECURITY ANSWER WITH SHA256
-                // ==========================
-                string hashedSecurityAnswer = string.Empty;
-                if (!string.IsNullOrWhiteSpace(VerifyaccountDto.Securityanswer))
-                {
-                    using (var sha256 = SHA256.Create())
-                    {
-                        byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(VerifyaccountDto.Securityanswer.Trim().ToLower()));
-                        hashedSecurityAnswer = Convert.ToBase64String(hashBytes);
-                    }
-                }
-
-                // ==========================
                 // 🗃 Save to Database
                 // ==========================
                 Verifyaccount verifyaccount = new Verifyaccount()
@@ -1841,7 +1828,7 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // ═══════════════════════════════════════════════════════════════
-                // ✅ UPDATE SESSION WITH VERIFIED USER DATA
+                //  UPDATE SESSION WITH VERIFIED USER DATA
                 // ═══════════════════════════════════════════════════════════════
                 HttpContext.Session.SetString("IDtype", verifyaccount.IDtype ?? "");
                 HttpContext.Session.SetString("IDnumber", verifyaccount.IDnumber ?? "");

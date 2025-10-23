@@ -46,7 +46,7 @@
         .submitbtn-color {
             background: #32cd32;
         }
-      
+
         .glass-effect {
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.95);
@@ -184,49 +184,6 @@
                 font-size: 1.1rem;
                 margin-bottom: 0.75rem;
             }
-
-        .border-red-500 {
-            border-color: #DC143C !important;
-        }
-
-        .bg-red-50 {
-            background-color: #fef2f2 !important;
-        }
-
-        /* Enhanced error states for name fields */
-        input.error-field {
-            border-color: #DC143C !important;
-            background-color: #fef2f2 !important;
-            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1) !important;
-        }
-
-        /* Smooth transition for error states */
-        #firstname, #lastname {
-            transition: all 0.3s ease;
-        }
-        /* New styles for enhanced OCR */
-        .confidence-indicator {
-            height: 4px;
-            border-radius: 2px;
-            margin-top: 5px;
-        }
-
-        .confidence-high {
-            background: linear-gradient(90deg, #10b981, #34d399);
-        }
-
-        .confidence-medium {
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-        }
-
-        .confidence-low {
-            background: linear-gradient(90deg, #ef4444, #f87171);
-        }
-
-        .extraction-badge {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 12px;
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
@@ -242,33 +199,13 @@
         <div class="max-w-4xl mx-auto">
             <!-- Header -->
             <div class="text-center mb-8 fade-in">
-                <div class="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4 shadow-md">
-                    <i class="fas fa-id-card-alt text-3xl crimson-500"></i>
-                </div>
                 <h1 class="text-4xl font-bold text-gray-800 mb-2">Verify Your Account</h1>
             </div>
-
 
             <!-- Main Form Card -->
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden glass-effect scale-in w-full max-w-full lg:max-w-4xl mx-auto">
                 <div class="p-6 md:p-8">
                     <form asp-action="Accountverification" method="post" enctype="multipart/form-data" id="registrationForm" class="space-y-8">
-
-                        <!-- Validation Summary for Errors -->
-                        @if (!ViewData.ModelState.IsValid)
-                        {
-                            <div class="bg-red-50 border-l-4 border-red-500 rounded-xl p-6 mb-6 slide-down">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
-                                    </div>
-                                    <div class="flex-1">
-                                        <h3 class="text-lg font-semibold text-red-800 mb-2">Verification Error</h3>
-                                        <div asp-validation-summary="All" class="text-red-700 space-y-1"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
 
                         <!-- ID Verification Section -->
                         <div class="space-y-6">
@@ -318,7 +255,7 @@
                                         <div class="font-semibold text-gray-800 mb-2">Front of ID</div>
                                         <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
                                         <input asp-for="ValidFrontID" type="file" id="file-input-front" class="hidden" accept="image/*">
-                                        <img id="image-preview" class="id-preview w-full max-w-xs mx-auto hidden" alt="Front ID Preview">
+                                        <img id="image-preview-front" class="id-preview w-full max-w-xs mx-auto hidden" alt="Front ID Preview">
                                         <span asp-validation-for="ValidFrontID" class="text-red-500 text-sm mt-2 block"></span>
                                     </div>
                                 </div>
@@ -351,15 +288,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Enhanced OCR Results Display -->
-                                <div id="ocr-result" class="hidden p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="font-semibold">Extracted Information</span>
-                                        <span id="confidence-badge" class="extraction-badge bg-blue-100 text-blue-800"></span>
-                                    </div>
-                                    <div id="confidence-indicator" class="confidence-indicator"></div>
-                                    <div id="extracted-fields" class="mt-2 space-y-1"></div>
-                                </div>
+                                <div id="ocr-result" class="hidden p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down"></div>
                             </div>
 
                             <!-- Davao Verification Result -->
@@ -435,21 +364,20 @@
                                 </div>
                             </div>
 
-                            <!-- Gender and Civil Status -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
-                                    <select asp-for="Gender" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" id="sex" required>
+                                    <label for="gender" class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
+                                    <select id="gender" name="Gender" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-colors">
                                         <option value="">Select Gender</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                     </select>
-                                    <span asp-validation-for="Gender" class="text-red-500 text-sm mt-1"></span>
+                                    <div class="error-message hidden" id="gender-error"></div>
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Civil Status</label>
-                                    <select asp-for="CivilStatus" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
+                                    <label for="civil-status" class="block text-sm font-semibold text-gray-700 mb-2">Civil Status</label>
+                                    <select id="civil-status" name="CivilStatus" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-colors">
                                         <option value="">Select Civil Status</option>
                                         <option value="Single">Single</option>
                                         <option value="Married">Married</option>
@@ -457,24 +385,22 @@
                                         <option value="Separated">Separated</option>
                                         <option value="Divorced">Divorced</option>
                                     </select>
-                                    <span asp-validation-for="CivilStatus" class="text-red-500 text-sm mt-1"></span>
+                                    <div class="error-message hidden" id="civilstatus-error"></div>
                                 </div>
                             </div>
-                      
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
                                     <input asp-for="Phonenumber" type="text" id="phonenumber"
                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
-                                           placeholder="Enter your phone number (e.g., 09171234567)"
+                                           placeholder="Enter your phone number"
                                            required
                                            inputmode="numeric"
-                                           minlength="10"
-                                           maxlength="11"
                                            pattern="[0-9]{10,11}"
-                                           oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 11)">
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                     <span asp-validation-for="Phonenumber" class="text-red-500 text-sm mt-1"></span>
-                                    <small class="text-gray-500 text-sm">Enter a valid 10-11 digit Philippine phone number</small>
+                                    <small class="text-gray-500 text-sm">Enter a valid 10-11 digit phone number</small>
                                 </div>
 
                                 <div>
@@ -518,119 +444,120 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Barangay</label>
                                     <select asp-for="Barangay" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
-                                        <option value="">Select Barangay</option>
-                                        <option value="Acacia">Acacia</option>
-                                        <option value="Agdao">Agdao</option>
-                                        <option value="Alambre">Alambre</option>
-        <option value="Alejandro Navarro">Alejandro Navarro (Lasang)</option>
-        <option value="Alfonso Angliongto Sr.">Alfonso Angliongto Sr.</option>
-        <option value="Angalan">Angalan</option>
-        <option value="Baguio Proper">Baguio Proper</option>
-        <option value="Baliok">Baliok</option>
-        <option value="Bangkas Heights">Bangkas Heights</option>
-        <option value="Baracatan">Baracatan</option>
-        <option value="Bato">Bato</option>
-        <option value="Bayabas">Bayabas</option>
-        <option value="Biao Escuela">Biao Escuela</option>
-        <option value="Biao Guianga">Biao Guianga</option>
-        <option value="Binugao">Binugao</option>
-        <option value="Bucana">Bucana</option>
-        <option value="Buhangin Proper">Buhangin Proper</option>
-        <option value="Cabantian">Cabantian</option>
-        <option value="Cadalian">Cadalian</option>
-        <option value="Calinan Proper">Calinan Proper</option>
-        <option value="Callawa">Callawa</option>
-        <option value="Camansi">Camansi</option>
-        <option value="Carmen">Carmen</option>
-        <option value="Catalunan Grande">Catalunan Grande</option>
-        <option value="Catalunan Pequeño">Catalunan Pequeño</option>
-        <option value="Catigan">Catigan</option>
-        <option value="Cawayan">Cawayan</option>
-        <option value="Centro (San Juan)">Centro (San Juan)</option>
-        <option value="Colosas">Colosas</option>
-        <option value="Communal">Communal</option>
-        <option value="Crossing Bayabas">Crossing Bayabas</option>
-        <option value="Dacudao">Dacudao</option>
-        <option value="Dalagdag">Dalagdag</option>
-        <option value="Daliao">Daliao</option>
-        <option value="Dalican">Dalican</option>
-        <option value="Datu Salumay">Datu Salumay</option>
-        <option value="Dominga">Dominga</option>
-        <option value="Eden">Eden</option>
-        <option value="Fatima (Benowang)">Fatima (Benowang)</option>
-        <option value="Gatungan">Gatungan</option>
-        <option value="Gov. Paciano Bangoy">Gov. Paciano Bangoy</option>
-        <option value="Gov. Vicente Duterte">Gov. Vicente Duterte</option>
-        <option value="Gumalang">Gumalang</option>
-        <option value="Gumitan">Gumitan</option>
-        <option value="Indangan">Indangan</option>
-        <option value="Kap. Tomas Monteverde Sr.">Kap. Tomas Monteverde Sr.</option>
-        <option value="Kilate">Kilate</option>
-        <option value="Lamanan">Lamanan</option>
-        <option value="Lampianao">Lampianao</option>
-        <option value="Langub">Langub</option>
-        <option value="Lapu-lapu">Lapu-lapu</option>
-        <option value="Leon Garcia Sr.">Leon Garcia Sr.</option>
-        <option value="Los Amigos">Los Amigos</option>
-        <option value="Lubogan">Lubogan</option>
-        <option value="Lumiad">Lumiad</option>
-        <option value="Ma-a">Ma-a</option>
-        <option value="Mabuhay">Mabuhay</option>
-        <option value="Madapo">Madapo</option>
-        <option value="Magtuod">Magtuod</option>
-        <option value="Mahayag">Mahayag</option>
-        <option value="Malabog">Malabog</option>
-        <option value="Malagos">Malagos</option>
-        <option value="Malamba">Malamba</option>
-        <option value="Malandog">Malandog</option>
-        <option value="Mampising">Mampising</option>
-        <option value="Manambulan">Manambulan</option>
-        <option value="Mandug">Mandug</option>
-        <option value="Manuel Guianga">Manuel Guianga</option>
-        <option value="Mapula">Mapula</option>
-        <option value="Marapangi">Marapangi</option>
-        <option value="Marilog Proper">Marilog Proper</option>
-        <option value="Matina Aplaya">Matina Aplaya</option>
-        <option value="Matina Crossing">Matina Crossing</option>
-        <option value="Matina Pangi">Matina Pangi</option>
-        <option value="Mintal">Mintal</option>
-        <option value="Mudiang">Mudiang</option>
-        <option value="Mulig">Mulig</option>
-        <option value="New Carmen">New Carmen</option>
-        <option value="New Valencia">New Valencia</option>
-        <option value="Pampanga">Pampanga</option>
-        <option value="Panacan">Panacan</option>
-        <option value="Pandaitan">Pandaitan</option>
-        <option value="Panorama">Panorama</option>
-        <option value="Paquibato Proper">Paquibato Proper</option>
-        <option value="Paradise Embak">Paradise Embak</option>
-        <option value="Rafael Castillo">Rafael Castillo</option>
-        <option value="Salapawan">Salapawan</option>
-        <option value="Salaysay">Salaysay</option>
-        <option value="Saloy">Saloy</option>
-        <option value="San Antonio">San Antonio</option>
-        <option value="San Isidro">San Isidro</option>
-        <option value="Sasa">Sasa</option>
-        <option value="Sirib">Sirib</option>
-        <option value="Suawan">Suawan</option>
-        <option value="Tacunan">Tacunan</option>
-        <option value="Tagakpan">Tagakpan</option>
-        <option value="Tagluno">Tagluno</option>
-        <option value="Tagurano">Tagurano</option>
-        <option value="Talomo Proper">Talomo Proper</option>
-        <option value="Talomo River">Talomo River</option>
-        <option value="Tamurayan">Tamurayan</option>
-        <option value="Tibungco">Tibungco</option>
-        <option value="Tigatto">Tigatto</option>
-        <option value="Tungkalan">Tungkalan</option>
-        <option value="Ubalde">Ubalde</option>
-        <option value="Ugac">Ugac</option>
-        <option value="Ula">Ula</option>
-        <option value="Vicente Hizon Sr.">Vicente Hizon Sr.</option>
-        <option value="Waan">Waan</option>
-                                        <option value="Wangan">Wangan</option>
-                                        <option value="Wilfredo Aquino">Wilfredo Aquino</option>
-                                        <option value="Wines">Wines</option>
+                                        <option value="" disabled selected>--Select Barangay--</option>
+                                            <option value="Acacia">Acacia</option>
+                                            <option value="Agdao">Agdao</option>
+                                            <option value="Alambre">Alambre</option>
+                                            <option value="Alejandro Navarro">Alejandro Navarro (Lasang)</option>
+                                            <option value="Alfonso Angliongto Sr.">Alfonso Angliongto Sr.</option>
+                                            <option value="Angalan">Angalan</option>
+                                            <option value="Baguio Proper">Baguio Proper</option>
+                                            <option value="Baliok">Baliok</option>
+                                            <option value="Bangkas Heights">Bangkas Heights</option>
+                                            <option value="Baracatan">Baracatan</option>
+                                            <option value="Bato">Bato</option>
+                                            <option value="Bayabas">Bayabas</option>
+                                            <option value="Biao Escuela">Biao Escuela</option>
+                                            <option value="Biao Guianga">Biao Guianga</option>
+                                            <option value="Binugao">Binugao</option>
+                                            <option value="Bucana">Bucana</option>
+                                            <option value="Buhangin Proper">Buhangin Proper</option>
+                                            <option value="Cabantian">Cabantian</option>
+                                            <option value="Cadalian">Cadalian</option>
+                                            <option value="Calinan Proper">Calinan Proper</option>
+                                            <option value="Callawa">Callawa</option>
+                                            <option value="Camansi">Camansi</option>
+                                            <option value="Carmen">Carmen</option>
+                                            <option value="Catalunan Grande">Catalunan Grande</option>
+                                            <option value="Catalunan Pequeño">Catalunan Pequeño</option>
+                                            <option value="Catigan">Catigan</option>
+                                            <option value="Cawayan">Cawayan</option>
+                                            <option value="Centro (San Juan)">Centro (San Juan)</option>
+                                            <option value="Colosas">Colosas</option>
+                                            <option value="Communal">Communal</option>
+                                            <option value="Crossing Bayabas">Crossing Bayabas</option>
+                                            <option value="Dacudao">Dacudao</option>
+                                            <option value="Dalagdag">Dalagdag</option>
+                                            <option value="Daliao">Daliao</option>
+                                            <option value="Dalican">Dalican</option>
+                                            <option value="Datu Salumay">Datu Salumay</option>
+                                            <option value="Dominga">Dominga</option>
+                                            <option value="Eden">Eden</option>
+                                            <option value="Fatima (Benowang)">Fatima (Benowang)</option>
+                                            <option value="Gatungan">Gatungan</option>
+                                            <option value="Gov. Paciano Bangoy">Gov. Paciano Bangoy</option>
+                                            <option value="Gov. Vicente Duterte">Gov. Vicente Duterte</option>
+                                            <option value="Gumalang">Gumalang</option>
+                                            <option value="Gumitan">Gumitan</option>
+                                            <option value="Indangan">Indangan</option>
+                                            <option value="Kap. Tomas Monteverde Sr.">Kap. Tomas Monteverde Sr.</option>
+                                            <option value="Kilate">Kilate</option>
+                                            <option value="Lamanan">Lamanan</option>
+                                            <option value="Lampianao">Lampianao</option>
+                                            <option value="Langub">Langub</option>
+                                            <option value="Lapu-lapu">Lapu-lapu</option>
+                                            <option value="Leon Garcia Sr.">Leon Garcia Sr.</option>
+                                            <option value="Los Amigos">Los Amigos</option>
+                                            <option value="Lubogan">Lubogan</option>
+                                            <option value="Lumiad">Lumiad</option>
+                                            <option value="Ma-a">Ma-a</option>
+                                            <option value="Mabuhay">Mabuhay</option>
+                                            <option value="Mabuhay">Mabuhay</option>
+                                            <option value="Madapo">Madapo</option>
+                                            <option value="Magtuod">Magtuod</option>
+                                            <option value="Mahayag">Mahayag</option>
+                                            <option value="Malabog">Malabog</option>
+                                            <option value="Malagos">Malagos</option>
+                                            <option value="Malamba">Malamba</option>
+                                            <option value="Malandog">Malandog</option>
+                                            <option value="Mampising">Mampising</option>
+                                            <option value="Manambulan">Manambulan</option>
+                                            <option value="Mandug">Mandug</option>
+                                            <option value="Manuel Guianga">Manuel Guianga</option>
+                                            <option value="Mapula">Mapula</option>
+                                            <option value="Marapangi">Marapangi</option>
+                                            <option value="Marilog Proper">Marilog Proper</option>
+                                            <option value="Matina Aplaya">Matina Aplaya</option>
+                                            <option value="Matina Crossing">Matina Crossing</option>
+                                            <option value="Matina Pangi">Matina Pangi</option>
+                                            <option value="Mintal">Mintal</option>
+                                            <option value="Mudiang">Mudiang</option>
+                                            <option value="Mulig">Mulig</option>
+                                            <option value="New Carmen">New Carmen</option>
+                                            <option value="New Valencia">New Valencia</option>
+                                            <option value="Pampanga">Pampanga</option>
+                                            <option value="Panacan">Panacan</option>
+                                            <option value="Pandaitan">Pandaitan</option>
+                                            <option value="Panorama">Panorama</option>
+                                            <option value="Paquibato Proper">Paquibato Proper</option>
+                                            <option value="Paradise Embak">Paradise Embak</option>
+                                            <option value="Rafael Castillo">Rafael Castillo</option>
+                                            <option value="Salapawan">Salapawan</option>
+                                            <option value="Salaysay">Salaysay</option>
+                                            <option value="Saloy">Saloy</option>
+                                            <option value="San Antonio">San Antonio</option>
+                                            <option value="San Isidro">San Isidro</option>
+                                            <option value="Sasa">Sasa</option>
+                                            <option value="Sirib">Sirib</option>
+                                            <option value="Suawan">Suawan</option>
+                                            <option value="Tacunan">Tacunan</option>
+                                            <option value="Tagakpan">Tagakpan</option>
+                                            <option value="Tagluno">Tagluno</option>
+                                            <option value="Tagurano">Tagurano</option>
+                                            <option value="Talomo Proper">Talomo Proper</option>
+                                            <option value="Talomo River">Talomo River</option>
+                                            <option value="Tamurayan">Tamurayan</option>
+                                            <option value="Tibungco">Tibungco</option>
+                                            <option value="Tigatto">Tigatto</option>
+                                            <option value="Tungkalan">Tungkalan</option>
+                                            <option value="Ubalde">Ubalde</option>
+                                            <option value="Ugac">Ugac</option>
+                                            <option value="Ula">Ula</option>
+                                            <option value="Vicente Hizon Sr.">Vicente Hizon Sr.</option>
+                                            <option value="Waan">Waan</option>
+                                            <option value="Wangan">Wangan</option>
+                                            <option value="Wilfredo Aquino">Wilfredo Aquino</option>
+                                            <option value="Wines">Wines</option>
                                     </select>
                                     <span asp-validation-for="Barangay" class="text-red-500 text-sm mt-1"></span>
                                 </div>
@@ -638,7 +565,7 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">District</label>
                                     <select asp-for="District" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
-                                        <option value="" disabled selected>Select district</option>
+                                        <option value="" disabled selected>--Select district--</option>
                                         <option value="1">District 1</option>
                                         <option value="2">District 2</option>
                                         <option value="3">District 3</option>
@@ -807,94 +734,178 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <div id="server-data"
-         data-first-name="@ViewBag.RegisteredFirstName"
-         data-middle-name="@ViewBag.RegisteredMiddleName"
-         data-last-name="@ViewBag.RegisteredLastName"
-         data-suffix="@ViewBag.RegisteredSuffix"
-         style="display: none;">
-    </div>
 
-    <script src="~/js/verification-ocr.js"></script>
+     <script src="~/js/verification-ocr.js"></script>
 
-    <!-- Name Mismatch Modal -->
-    <div class="modal fade" id="nameMismatchModal" tabindex="-1" aria-labelledby="nameMismatchModalLabel" aria-hidden="true">
+    <!-- Wrong ID Type Warning Modal -->
+    <div class="modal fade" id="wrongIdModal" tabindex="-1" aria-labelledby="wrongIdModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-red-50">
-                <!-- Header -->
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
                 <div class="modal-header bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 border-b-0">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                             <i class="fas fa-exclamation-triangle text-white text-lg"></i>
                         </div>
                         <div>
-                            <h5 class="modal-title font-bold text-lg tracking-wide" id="nameMismatchModalLabel">
-                                Name Verification Failed
-                            </h5>
-                            <p class="text-red-100 text-sm font-normal">ID doesn't match registered account</p>
+                            <h5 class="modal-title font-bold text-lg" id="wrongIdModalLabel">Wrong Document Type</h5>
                         </div>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-
-                <!-- Body -->
-                <div class="modal-body p-6">
-                    <div class="text-center mb-4">
-                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i class="fas fa-times text-red-500 text-2xl"></i>
-                        </div>
-                        <h4 class="text-xl font-bold text-red-800 mb-2">Name Doesn't Match</h4>
-                        <p class="text-gray-700 mb-4">
-                            The name on your ID doesn't match your registered account information.
-                            <strong>First name and last name must match exactly</strong> (excluding middle name variations).
-                        </p>
+                <div class="modal-body p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-times text-red-500 text-2xl"></i>
                     </div>
-
-                    <div class="bg-white rounded-xl p-4 border border-red-200 mb-4">
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <h6 class="font-semibold text-red-700 mb-2">Your Registered Name</h6>
-                                <div class="bg-gray-50 rounded-lg p-3">
-                                    <p class="font-medium text-gray-800" id="registeredNameDisplay"></p>
-                                </div>
-                            </div>
-                            <div>
-                                <h6 class="font-semibold text-red-700 mb-2">Name on Your ID</h6>
-                                <div class="bg-gray-50 rounded-lg p-3">
-                                    <p class="font-medium text-gray-800" id="idNameDisplay"></p>
-                                </div>
-                            </div>
+                    <h4 class="font-bold text-gray-800 text-lg mb-2" id="wrong-id-title">Document Mismatch</h4>
+                    <p id="wrong-id-message" class="text-gray-600 mb-4">
+                        You selected one document type but uploaded a different one.
+                    </p>
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-left">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-semibold text-gray-700">Selected:</span>
+                            <span id="selected-type" class="text-sm font-bold text-red-600"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">Uploaded:</span>
+                            <span id="detected-type" class="text-sm font-bold text-red-600"></span>
                         </div>
                     </div>
+                </div>
+                <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0">
+                    <div class="w-full flex flex-col sm:flex-row gap-3">
+                        <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors" data-bs-dismiss="modal">
+                            Upload Correct Document
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <div class="bg-amber-50 border-l-4 border-amber-400 rounded-xl p-4">
+    <!-- OCR Error Modal -->
+    <div class="modal fade" id="ocrErrorModal" tabindex="-1" aria-labelledby="ocrErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                <div class="modal-header bg-gradient-to-r from-amber-500 to-amber-600 text-white py-4 px-6 border-b-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-search text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-lg" id="ocrErrorModalLabel">OCR Processing Issue</h5>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-6 text-center">
+                    <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-circle text-amber-500 text-2xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg mb-2">Couldn't Process Document</h4>
+                    <p id="ocr-error-message" class="text-gray-600 mb-4">
+                        We encountered an issue while processing your document.
+                    </p>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left">
+                        <ul class="text-sm text-amber-700 space-y-2">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-lightbulb mt-1 text-amber-500"></i>
+                                <span>Ensure the image is clear and well-lit</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-lightbulb mt-1 text-amber-500"></i>
+                                <span>Make sure the entire document is visible</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-lightbulb mt-1 text-amber-500"></i>
+                                <span>Avoid glare and shadows</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0">
+                    <div class="w-full flex flex-col sm:flex-row gap-3">
+                        <button type="button" class="w-full bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors" data-bs-dismiss="modal">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Davao Verification Failed Modal -->
+    <div class="modal fade" id="davaoVerificationModal" tabindex="-1" aria-labelledby="davaoVerificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                <div class="modal-header bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 border-b-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-map-marker-alt text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-lg" id="davaoVerificationModalLabel">Location Restriction</h5>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-times text-red-500 text-2xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg mb-2">Service Area Restriction</h4>
+                    <p id="davao-error-message" class="text-gray-600 mb-4">
+                        This service is currently only available for Davao City residents.
+                    </p>
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-left">
                         <div class="flex items-start gap-3">
-                            <i class="fas fa-lightbulb text-amber-500 text-lg mt-0.5"></i>
+                            <i class="fas fa-info-circle text-red-500 mt-0.5"></i>
                             <div>
-                                <h6 class="font-semibold text-amber-800 mb-1">Important Notice</h6>
-                                <p class="text-amber-700 text-sm">
-                                    For security purposes, you must use your own valid ID that matches your registered account name exactly.
-                                    <strong>First name and last name must be identical</strong> to your registered information.
-                                </p>
+                                <p class="text-sm text-red-700 font-semibold mb-1">Detected Location:</p>
+                                <p id="detected-location" class="text-sm text-red-600"></p>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Footer -->
                 <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0">
                     <div class="w-full flex flex-col sm:flex-row gap-3">
-                        <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i>
-                            Close
-                        </button>
-                        <button type="button" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2" onclick="clearUploadedFilesAndReset()">
-                            <i class="fas fa-redo"></i>
-                            Try Again
+                        <button type="button" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors" data-bs-dismiss="modal">
+                            Understand
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Upload Error Modal -->
+    <div class="modal fade" id="fileErrorModal" tabindex="-1" aria-labelledby="fileErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                <div class="modal-header bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 border-b-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-file-upload text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-lg" id="fileErrorModalLabel">Upload Error</h5>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-6 text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-orange-500 text-2xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg mb-2" id="file-error-title">Invalid File</h4>
+                    <p id="file-error-message" class="text-gray-600 mb-4">
+                        There was an issue with your file upload.
+                    </p>
+                </div>
+                <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0">
+                    <button type="button" class="w-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors" data-bs-dismiss="modal">
+                        Try Another File
+                    </button>
                 </div>
             </div>
         </div>
