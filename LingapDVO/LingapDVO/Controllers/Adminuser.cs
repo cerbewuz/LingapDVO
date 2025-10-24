@@ -633,25 +633,167 @@ namespace LingapDVO.Controllers
             // Pass the view model to the view
             return View(viewModel);
         }
-
         // ====================================
-        // COMPLETE HOSPITAL BILL CONTROLLER - FIXED VERSION
+        // COMPLETE HOSPITAL BILL CONTROLLER - WITH EMBEDDED AES ENCRYPTION HELPER
         // ====================================
 
-        // 1. DECRYPTION HELPER METHOD
-        private byte[] DecryptFile(string encryptedFilePath, string masterPassword)
+        // ╔═══════════════════════════════════════════════════════════════════════════╗
+        // ║                    AES-256 ENCRYPTION HELPER CLASS                        ║
+        // ║         Secure AES-256 Implementation using Configuration                 ║
+        // ╚═══════════════════════════════════════════════════════════════════════════╝
+        private class AesEncryptionHelper
+        {
+            private readonly byte[] _aesKey;
+
+            public AesEncryptionHelper(IConfiguration configuration)
+            {
+                string keyHex = configuration["Security:AesEncryption:Key"]
+                    ?? throw new InvalidOperationException("AES encryption key not found in configuration");
+
+                // Clean the key - remove any whitespace or special characters
+                keyHex = keyHex.Trim().Replace(" ", "").Replace("-", "").Replace(":", "");
+
+                if (string.IsNullOrWhiteSpace(keyHex))
+                    throw new InvalidOperationException("AES encryption key is empty");
+
+                // Convert with automatic padding
+                _aesKey = SafeConvertHexStringToByteArray(keyHex);
+
+                if (_aesKey.Length != 32)
+                    throw new InvalidOperationException($"AES key must be 32 bytes (256 bits). Current: {_aesKey.Length} bytes");
+            }
+
+            private static byte[] SafeConvertHexStringToByteArray(string hex)
+            {
+                if (string.IsNullOrWhiteSpace(hex))
+                    throw new ArgumentException("Hex string cannot be null or empty");
+
+                // Clean the hex string
+                hex = hex.Trim().Replace(" ", "").Replace("-", "").Replace(":", "");
+
+                // Ensure even length by padding with leading zero if needed
+                if (hex.Length % 2 != 0)
+                {
+                    hex = "0" + hex;
+                }
+
+                // Validate hex format
+                if (!System.Text.RegularExpressions.Regex.IsMatch(hex, @"^[0-9A-Fa-f]+$"))
+                {
+                    throw new ArgumentException("Hex string contains invalid characters");
+                }
+
+                byte[] bytes = new byte[hex.Length / 2];
+                for (int i = 0; i < hex.Length; i += 2)
+                {
+                    bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+                }
+                return bytes;
+            }
+
+            public string Encrypt(string plainText)
+            {
+                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+                aes.GenerateIV();
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var encryptor = aes.CreateEncryptor();
+                using var memoryStream = new MemoryStream();
+
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                using (var writer = new StreamWriter(cryptoStream))
+                {
+                    writer.Write(plainText);
+                }
+
+                byte[] encryptedData = memoryStream.ToArray();
+                return Convert.ToBase64String(encryptedData);
+            }
+
+            public string Decrypt(string encryptedText)
+            {
+                byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+
+                byte[] iv = new byte[16];
+                Array.Copy(encryptedBytes, 0, iv, 0, 16);
+                aes.IV = iv;
+
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var decryptor = aes.CreateDecryptor();
+                using var memoryStream = new MemoryStream(encryptedBytes, 16, encryptedBytes.Length - 16);
+                using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                using var reader = new StreamReader(cryptoStream);
+
+                return reader.ReadToEnd();
+            }
+
+            public byte[] EncryptStream(Stream inputStream)
+            {
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+                aes.GenerateIV();
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var memoryStream = new MemoryStream();
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                {
+                    inputStream.CopyTo(cryptoStream);
+                }
+
+                return memoryStream.ToArray();
+            }
+
+            public string EncryptTimestamp(string timestamp)
+            {
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+                aes.GenerateIV();
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var encryptor = aes.CreateEncryptor();
+                byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+                byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+
+                return Convert.ToBase64String(encryptedBytes);
+            }
+        }
+
+        // 1. DECRYPTION HELPER METHOD USING CONFIGURATION-BASED AES KEY
+        private byte[] DecryptFile(string encryptedFilePath)
         {
             byte[] encryptedData = System.IO.File.ReadAllBytes(encryptedFilePath);
             using var memoryStream = new MemoryStream(encryptedData);
 
-            byte[] salt = new byte[16];
-            memoryStream.Read(salt, 0, salt.Length);
-
-            using var pbkdf2 = new Rfc2898DeriveBytes(masterPassword, salt, 100_000, HashAlgorithmName.SHA256);
-            byte[] key = pbkdf2.GetBytes(32);
-
+            // Read IV from the beginning of the file (first 16 bytes)
             byte[] iv = new byte[16];
             memoryStream.Read(iv, 0, iv.Length);
+
+            // Use configuration-based AES helper
+            var aesHelper = new AesEncryptionHelper(_configuration);
+
+            // Get the key using reflection
+            var keyField = typeof(AesEncryptionHelper).GetField("_aesKey",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            if (keyField == null)
+                throw new InvalidOperationException("Cannot access AES key");
+
+            byte[] key = (byte[])keyField.GetValue(aesHelper);
 
             using var aes = Aes.Create();
             aes.Key = key;
@@ -693,15 +835,13 @@ namespace LingapDVO.Controllers
             }
         }
 
-        // 2. MAIN VIEW METHOD - WITH PROPER PDF DETECTION
+        // 2. MAIN VIEW METHOD - UPDATED TO USE CONFIGURATION-BASED KEY
         public IActionResult FillupformHospitalBillUpdateprocessingstatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
-
-
 
             var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
             if (fillupformhospitalBill == null)
@@ -757,9 +897,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -774,7 +913,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, fillupformhospitalBill.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -786,13 +925,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, fillupformhospitalBill.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED
                 if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, fillupformhospitalBill.DoctorPrescription);
@@ -804,11 +943,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -831,7 +970,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED
                 if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, fillupformhospitalBill.DeathCertificate);
@@ -843,11 +982,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -945,9 +1084,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -963,7 +1101,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, medicallabform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -975,13 +1113,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, medicallabform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
@@ -993,11 +1131,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = medicallabform.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -1020,7 +1158,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ MEDICAL CERTIFICATE - SPECIFIC TO MEDICAL/LAB FORM
+                // ⭐ MEDICAL CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
                 {
                     string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
@@ -1032,11 +1170,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedMedical = DecryptFile(medicalPath, masterPassword);
+                            byte[] decryptedMedical = DecryptFile(medicalPath);
                             ViewData["MedicalCertificateBase64"] = Convert.ToBase64String(decryptedMedical);
                             ViewData["MedicalCertificate"] = medicallabform.MedCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedMedical);
                             ViewData["IsMedicalCertificatePdf"] = isPdf;
 
@@ -1059,7 +1197,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Medical Certificate in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
@@ -1071,11 +1209,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = medicallabform.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -1111,15 +1249,12 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
         public IActionResult FuneralburialformUpdateprocessingstatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
-
-
 
             var funeralburialform = context.Funeralburialform.Find(id);
             if (funeralburialform == null)
@@ -1175,9 +1310,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -1192,7 +1326,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, funeralburialform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -1204,13 +1338,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, funeralburialform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(funeralburialform.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, funeralburialform.DoctorPrescription);
@@ -1222,11 +1356,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = funeralburialform.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -1249,7 +1383,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(funeralburialform.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, funeralburialform.DeathCertificate);
@@ -1261,11 +1395,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = funeralburialform.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -1302,7 +1436,6 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-
         //for approving statuses
         public IActionResult FillupformHospitalBillapprovedstatus(int id)
         {
@@ -1310,8 +1443,6 @@ namespace LingapDVO.Controllers
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
-
-
 
             var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
             if (fillupformhospitalBill == null)
@@ -1367,9 +1498,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -1384,7 +1514,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, fillupformhospitalBill.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -1396,13 +1526,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, fillupformhospitalBill.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED
                 if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, fillupformhospitalBill.DoctorPrescription);
@@ -1414,11 +1544,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -1441,7 +1571,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED
                 if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, fillupformhospitalBill.DeathCertificate);
@@ -1453,11 +1583,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -1500,8 +1630,6 @@ namespace LingapDVO.Controllers
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
-
-
 
             var funeralburialform = context.Funeralburialform.Find(id);
             if (funeralburialform == null)
@@ -1557,9 +1685,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -1574,7 +1701,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, funeralburialform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -1586,13 +1713,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, funeralburialform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(funeralburialform.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, funeralburialform.DoctorPrescription);
@@ -1604,11 +1731,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = funeralburialform.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -1631,7 +1758,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(funeralburialform.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, funeralburialform.DeathCertificate);
@@ -1643,11 +1770,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = funeralburialform.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -1683,7 +1810,6 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
 
         public IActionResult Medicalandlabformapprovedsstatus(int id)
         {
@@ -1746,9 +1872,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -1764,7 +1889,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, medicallabform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -1776,13 +1901,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, medicallabform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
@@ -1794,11 +1919,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = medicallabform.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -1821,7 +1946,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ MEDICAL CERTIFICATE - SPECIFIC TO MEDICAL/LAB FORM
+                // ⭐ MEDICAL CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
                 {
                     string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
@@ -1833,11 +1958,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedMedical = DecryptFile(medicalPath, masterPassword);
+                            byte[] decryptedMedical = DecryptFile(medicalPath);
                             ViewData["MedicalCertificateBase64"] = Convert.ToBase64String(decryptedMedical);
                             ViewData["MedicalCertificate"] = medicallabform.MedCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedMedical);
                             ViewData["IsMedicalCertificatePdf"] = isPdf;
 
@@ -1860,7 +1985,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Medical Certificate in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
@@ -1872,11 +1997,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = medicallabform.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -1911,9 +2036,7 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = medicallabform.Comments;
 
             return View();
-
         }
-
 
         //For not approved statuses
         public IActionResult FillupformHospitalBillDisapprovedstatus(int id)
@@ -1922,8 +2045,6 @@ namespace LingapDVO.Controllers
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
-
-
 
             var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
             if (fillupformhospitalBill == null)
@@ -1979,9 +2100,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -1996,7 +2116,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, fillupformhospitalBill.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -2008,13 +2128,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, fillupformhospitalBill.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED
                 if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, fillupformhospitalBill.DoctorPrescription);
@@ -2026,11 +2146,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -2053,7 +2173,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED
                 if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, fillupformhospitalBill.DeathCertificate);
@@ -2065,11 +2185,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -2104,7 +2224,6 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = fillupformhospitalBill.Comments;
 
             return View();
-
         }
 
         public IActionResult FuneralburialDisapprovedstatus(int id)
@@ -2113,8 +2232,6 @@ namespace LingapDVO.Controllers
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
-
-
 
             var funeralburialform = context.Funeralburialform.Find(id);
             if (funeralburialform == null)
@@ -2170,9 +2287,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -2187,7 +2303,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, funeralburialform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -2199,13 +2315,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, funeralburialform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(funeralburialform.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, funeralburialform.DoctorPrescription);
@@ -2217,11 +2333,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = funeralburialform.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -2244,7 +2360,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(funeralburialform.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, funeralburialform.DeathCertificate);
@@ -2256,11 +2372,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = funeralburialform.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -2358,9 +2474,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -2376,7 +2491,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, medicallabform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -2388,13 +2503,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, medicallabform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
@@ -2406,11 +2521,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = medicallabform.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -2433,7 +2548,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ MEDICAL CERTIFICATE - SPECIFIC TO MEDICAL/LAB FORM
+                // ⭐ MEDICAL CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
                 {
                     string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
@@ -2445,11 +2560,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedMedical = DecryptFile(medicalPath, masterPassword);
+                            byte[] decryptedMedical = DecryptFile(medicalPath);
                             ViewData["MedicalCertificateBase64"] = Convert.ToBase64String(decryptedMedical);
                             ViewData["MedicalCertificate"] = medicallabform.MedCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedMedical);
                             ViewData["IsMedicalCertificatePdf"] = isPdf;
 
@@ -2472,7 +2587,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Medical Certificate in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
@@ -2484,11 +2599,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = medicallabform.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -2523,8 +2638,10 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = medicallabform.Comments;
 
             return View();
-
         }
+
+
+
 
         //Claimed statuses
         public IActionResult FillupformHospitalBillUpdatestatuClaimeddocs(int id)
@@ -2533,8 +2650,6 @@ namespace LingapDVO.Controllers
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
-
-
 
             var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
             if (fillupformhospitalBill == null)
@@ -2570,7 +2685,7 @@ namespace LingapDVO.Controllers
             ViewData["RDistrict"] = fillupformhospitalBill.RDistrict;
             ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
             ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
-            ViewData["Comments"] = fillupformhospitalBill.Comments;
+
             // Type of assistance
             var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
@@ -2590,9 +2705,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -2607,7 +2721,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, fillupformhospitalBill.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -2619,13 +2733,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, fillupformhospitalBill.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED
                 if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, fillupformhospitalBill.DoctorPrescription);
@@ -2637,11 +2751,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -2664,7 +2778,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED
                 if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, fillupformhospitalBill.DeathCertificate);
@@ -2676,11 +2790,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -2716,7 +2830,6 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
 
         public IActionResult MedicalandlabformstatusUpdateClaimeddocs(int id)
         {
@@ -2779,9 +2892,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -2797,7 +2909,7 @@ namespace LingapDVO.Controllers
                     string frontPath = Path.Combine(validFolder, medicallabform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
@@ -2809,13 +2921,13 @@ namespace LingapDVO.Controllers
                     string backPath = Path.Combine(validFolder, medicallabform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
@@ -2827,11 +2939,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
                             ViewData["DoctorPrescription"] = medicallabform.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -2854,7 +2966,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ MEDICAL CERTIFICATE - SPECIFIC TO MEDICAL/LAB FORM
+                // ⭐ MEDICAL CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
                 {
                     string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
@@ -2866,11 +2978,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedMedical = DecryptFile(medicalPath, masterPassword);
+                            byte[] decryptedMedical = DecryptFile(medicalPath);
                             ViewData["MedicalCertificateBase64"] = Convert.ToBase64String(decryptedMedical);
                             ViewData["MedicalCertificate"] = medicallabform.MedCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedMedical);
                             ViewData["IsMedicalCertificatePdf"] = isPdf;
 
@@ -2893,7 +3005,7 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Medical Certificate in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
@@ -2905,11 +3017,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
                             ViewData["DeathCertificate"] = medicallabform.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -2945,7 +3057,6 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
         public IActionResult FuneralburialapprovedstatusUpdateClaimeddocs(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
@@ -2953,45 +3064,43 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
-
-
-            var funeralform = context.Funeralburialform.Find(id);
-            if (funeralform == null)
+            var funeralburialform = context.Funeralburialform.Find(id);
+            if (funeralburialform == null)
             {
                 return NotFound();
             }
 
             // Basic ViewData setup
-            ViewData["Status3"] = funeralform.Status3;
-            ViewData["Id"] = funeralform.Id;
-            ViewData["Lastname"] = funeralform.Lastname;
-            ViewData["Firstname"] = funeralform.Firstname;
-            ViewData["Middlename"] = funeralform.Middlename;
-            ViewData["Suffix"] = funeralform.Suffix;
-            ViewData["BlkLotStreet"] = funeralform.BlkLotStreet;
-            ViewData["SubVill"] = funeralform.SubVill;
-            ViewData["Brgy"] = funeralform.Brgy;
-            ViewData["District"] = funeralform.District;
-            ViewData["Sex"] = funeralform.Sex;
-            ViewData["PhilHealth"] = funeralform.PhilHealth;
-            ViewData["PhilHealthNo"] = funeralform.PhilHealthNo;
-            ViewData["Dateofbirth"] = funeralform.Dateofbirth;
-            ViewData["Age"] = funeralform.Age;
+            ViewData["Status3"] = funeralburialform.Status3;
+            ViewData["Id"] = funeralburialform.Id;
+            ViewData["Lastname"] = funeralburialform.Lastname;
+            ViewData["Firstname"] = funeralburialform.Firstname;
+            ViewData["Middlename"] = funeralburialform.Middlename;
+            ViewData["Suffix"] = funeralburialform.Suffix;
+            ViewData["BlkLotStreet"] = funeralburialform.BlkLotStreet;
+            ViewData["SubVill"] = funeralburialform.SubVill;
+            ViewData["Brgy"] = funeralburialform.Brgy;
+            ViewData["District"] = funeralburialform.District;
+            ViewData["Sex"] = funeralburialform.Sex;
+            ViewData["PhilHealth"] = funeralburialform.PhilHealth;
+            ViewData["PhilHealthNo"] = funeralburialform.PhilHealthNo;
+            ViewData["Dateofbirth"] = funeralburialform.Dateofbirth;
+            ViewData["Age"] = funeralburialform.Age;
 
             // Requestor details
-            ViewData["RLastname"] = funeralform.RLastname;
-            ViewData["RFirstname"] = funeralform.RFirstname;
-            ViewData["RMiddlename"] = funeralform.RMiddlename;
-            ViewData["RSuffix"] = funeralform.RSuffix;
-            ViewData["RBlkLotStreet"] = funeralform.RBlkLotStreet;
-            ViewData["RSubVill"] = funeralform.RSubVill;
-            ViewData["RBrgy"] = funeralform.RBrgy;
-            ViewData["RDistrict"] = funeralform.RDistrict;
-            ViewData["RelationshipPatient"] = funeralform.RelationshipPatient;
-            ViewData["ContactNo"] = funeralform.ContactNo;
-            ViewData["Comments"] = funeralform.Comments;
+            ViewData["RLastname"] = funeralburialform.RLastname;
+            ViewData["RFirstname"] = funeralburialform.RFirstname;
+            ViewData["RMiddlename"] = funeralburialform.RMiddlename;
+            ViewData["RSuffix"] = funeralburialform.RSuffix;
+            ViewData["RBlkLotStreet"] = funeralburialform.RBlkLotStreet;
+            ViewData["RSubVill"] = funeralburialform.RSubVill;
+            ViewData["RBrgy"] = funeralburialform.RBrgy;
+            ViewData["RDistrict"] = funeralburialform.RDistrict;
+            ViewData["RelationshipPatient"] = funeralburialform.RelationshipPatient;
+            ViewData["ContactNo"] = funeralburialform.ContactNo;
+
             // Type of assistance
-            var typeAssistanceRaw = funeralform.Typeassistance ?? "";
+            var typeAssistanceRaw = funeralburialform.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
             var parsed = typeAssistanceRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -3000,7 +3109,7 @@ namespace LingapDVO.Controllers
             ViewData["CheckedAssistance"] = parsed;
 
             // CMO Personnel
-            var cmoPersonnelRaw = funeralform.ForCMOPERSONNEL ?? "";
+            var cmoPersonnelRaw = funeralburialform.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
             var parsedCMO = cmoPersonnelRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -3009,9 +3118,8 @@ namespace LingapDVO.Controllers
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
             // ====================================
-            // DECRYPTION SECTION WITH PROPER PDF DETECTION
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
-            string masterPassword = "SuperAdminMasterKey123!";
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
             string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
             string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
@@ -3021,34 +3129,34 @@ namespace LingapDVO.Controllers
             try
             {
                 // Front ID
-                if (!string.IsNullOrEmpty(funeralform.Validfrontimage))
+                if (!string.IsNullOrEmpty(funeralburialform.Validfrontimage))
                 {
-                    string frontPath = Path.Combine(validFolder, funeralform.Validfrontimage);
+                    string frontPath = Path.Combine(validFolder, funeralburialform.Validfrontimage);
                     if (System.IO.File.Exists(frontPath))
                     {
-                        byte[] decryptedFront = DecryptFile(frontPath, masterPassword);
+                        byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
                         debugMessages.Add("✅ Front ID decrypted");
                     }
                 }
 
                 // Back ID
-                if (!string.IsNullOrEmpty(funeralform.ValidBackimage))
+                if (!string.IsNullOrEmpty(funeralburialform.ValidBackimage))
                 {
-                    string backPath = Path.Combine(validFolder, funeralform.ValidBackimage);
+                    string backPath = Path.Combine(validFolder, funeralburialform.ValidBackimage);
                     if (System.IO.File.Exists(backPath))
                     {
-                        byte[] decryptedBack = DecryptFile(backPath, masterPassword);
+                        byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
                         debugMessages.Add("✅ Back ID decrypted");
                     }
                 }
 
-                // ⭐ DOCTOR PRESCRIPTION - FIXED PDF DETECTION
-                if (!string.IsNullOrEmpty(funeralform.DoctorPrescription))
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
+                if (!string.IsNullOrEmpty(funeralburialform.DoctorPrescription))
                 {
-                    string prescPath = Path.Combine(doctorPrescriptionFolder, funeralform.DoctorPrescription);
-                    debugMessages.Add($"📄 Doctor Prescription filename: {funeralform.DoctorPrescription}");
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, funeralburialform.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {funeralburialform.DoctorPrescription}");
                     debugMessages.Add($"📂 Full path: {prescPath}");
                     debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
 
@@ -3056,11 +3164,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedPresc = DecryptFile(prescPath, masterPassword);
+                            byte[] decryptedPresc = DecryptFile(prescPath);
                             ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
-                            ViewData["DoctorPrescription"] = funeralform.DoctorPrescription;
+                            ViewData["DoctorPrescription"] = funeralburialform.DoctorPrescription;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
@@ -3083,11 +3191,11 @@ namespace LingapDVO.Controllers
                     debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ⭐ DEATH CERTIFICATE - FIXED PDF DETECTION
-                if (!string.IsNullOrEmpty(funeralform.DeathCertificate))
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                if (!string.IsNullOrEmpty(funeralburialform.DeathCertificate))
                 {
-                    string deathPath = Path.Combine(deathCertificateFolder, funeralform.DeathCertificate);
-                    debugMessages.Add($"📄 Death Certificate filename: {funeralform.DeathCertificate}");
+                    string deathPath = Path.Combine(deathCertificateFolder, funeralburialform.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {funeralburialform.DeathCertificate}");
                     debugMessages.Add($"📂 Full path: {deathPath}");
                     debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
 
@@ -3095,11 +3203,11 @@ namespace LingapDVO.Controllers
                     {
                         try
                         {
-                            byte[] decryptedDeath = DecryptFile(deathPath, masterPassword);
+                            byte[] decryptedDeath = DecryptFile(deathPath);
                             ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
-                            ViewData["DeathCertificate"] = funeralform.DeathCertificate;
+                            ViewData["DeathCertificate"] = funeralburialform.DeathCertificate;
 
-                            // ⭐⭐⭐ PROPER PDF DETECTION ⭐⭐⭐
+                            // PDF DETECTION
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
@@ -3129,16 +3237,14 @@ namespace LingapDVO.Controllers
             }
 
             ViewData["DebugMessages"] = debugMessages;
-            ViewData["Validfrontimage"] = funeralform.Validfrontimage;
-            ViewData["ValidBackimage"] = funeralform.ValidBackimage;
-            ViewData["Comments"] = funeralform.Comments;
+            ViewData["Validfrontimage"] = funeralburialform.Validfrontimage;
+            ViewData["ValidBackimage"] = funeralburialform.ValidBackimage;
+            ViewData["Comments"] = funeralburialform.Comments;
 
             return View();
         }
-
-        
-
-        [HttpGet]
+            // UPDATED ViewPDF METHOD
+            [HttpGet]
         public IActionResult ViewPDF(string fileName, string fileType)
         {
             try
@@ -3167,12 +3273,12 @@ namespace LingapDVO.Controllers
                 // Security: Prevent directory traversal
                 string safeFileName = Path.GetFileName(fileName);
 
-                // Define the directory based on file type - ADD MEDICAL CERTIFICATE CASE
+                // Define the directory based on file type
                 string folderPath = fileType.ToLower() switch
                 {
                     "doctorprescription" => Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage"),
                     "deathcertificate" => Path.Combine(environment.WebRootPath, "Funeralimg"),
-                    "medicalcertificate" => Path.Combine(environment.WebRootPath, "MedCertificateimage"), // ADD THIS LINE
+                    "medicalcertificate" => Path.Combine(environment.WebRootPath, "MedCertificateimage"),
                     _ => Path.Combine(environment.WebRootPath, "Validimg")
                 };
 
@@ -3199,9 +3305,8 @@ namespace LingapDVO.Controllers
 
                 Console.WriteLine($"✅ File exists. Size: {new FileInfo(encryptedFilePath).Length} bytes");
 
-                // Decrypt the file
-                string masterPassword = "SuperAdminMasterKey123!";
-                byte[] decryptedBytes = DecryptFile(encryptedFilePath, masterPassword);
+                // Decrypt the file USING CONFIGURATION-BASED KEY
+                byte[] decryptedBytes = DecryptFile(encryptedFilePath);
                 Console.WriteLine($"✅ File decrypted. Decrypted size: {decryptedBytes.Length} bytes");
 
                 // Verify it's actually a PDF
@@ -3215,7 +3320,6 @@ namespace LingapDVO.Controllers
                 }
 
                 // ⭐ CRITICAL: Set headers to FORCE inline viewing and PREVENT download
-                // Remove any filename reference to avoid browser download prompts
                 Response.Headers["Content-Disposition"] = "inline";
                 Response.Headers["X-Content-Type-Options"] = "nosniff";
                 Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
@@ -3247,9 +3351,7 @@ namespace LingapDVO.Controllers
             }
         }
 
-
-
-        // Keep the CheckFileType helper method as-is
+        // UPDATED CheckFileType METHOD
         [HttpGet]
         public IActionResult CheckFileType(string fileName, string fileType = "validid")
         {
@@ -3258,7 +3360,6 @@ namespace LingapDVO.Controllers
                 return Unauthorized();
             }
 
-            string masterPassword = "SuperAdminMasterKey123!";
             string folder;
 
             switch (fileType.ToLower())
@@ -3269,7 +3370,7 @@ namespace LingapDVO.Controllers
                 case "deathcertificate":
                     folder = Path.Combine(environment.WebRootPath, "Funeralimg");
                     break;
-                case "medicalcertificate": // ADD THIS CASE
+                case "medicalcertificate":
                     folder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
                     break;
                 default:
@@ -3287,7 +3388,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                byte[] decryptedData = DecryptFile(filePath, masterPassword);
+                byte[] decryptedData = DecryptFile(filePath);
                 bool isPdf = IsPdfFile(decryptedData);
 
                 return Json(new

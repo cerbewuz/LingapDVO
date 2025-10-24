@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Win32;
 using System.Net;
 using System.Security.Cryptography;
@@ -19,207 +20,15 @@ namespace LingapDVO.Controllers
     {
         public readonly ApplicationDbContext context;
         private readonly IWebHostEnvironment environment;
+        private readonly IConfiguration _configuration;
 
-        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment)
+        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration)
         {
             this.context = context;
             this.environment = environment;
+            _configuration = configuration;
         }
-
-        // ╔═══════════════════════════════════════════════════════════════════════════╗
-        // ║                    AES-256 ENCRYPTION HELPER CLASS                        ║
-        // ║         Hardcoded AES-256 Implementation with Detailed Comments           ║
-        // ╚═══════════════════════════════════════════════════════════════════════════╝
-        private static class AesEncryptionHelper
-        {
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 1: Define hardcoded 256-bit (32 bytes) encryption key          │
-            // │ This is a fixed key for AES-256 encryption                          │
-            // │ In production, store this securely (e.g., Azure Key Vault)          │
-            // └─────────────────────────────────────────────────────────────────────┘
-            private static readonly byte[] HARDCODED_AES_KEY = new byte[32]
-            {
-                0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,
-                0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C,
-                0x76, 0x2E, 0x71, 0x60, 0xF3, 0x8B, 0x4D, 0xA5,
-                0x6A, 0x78, 0x4D, 0x90, 0x45, 0x19, 0x03, 0xCB
-            };
-
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 2: Encrypt string data using AES-256-CBC                       │
-            // │ Process:                                                             │
-            // │   1. Generate random 16-byte IV (Initialization Vector)             │
-            // │   2. Create AES cipher with 256-bit key                             │
-            // │   3. Configure CBC mode with PKCS7 padding                          │
-            // │   4. Encrypt the plaintext data                                     │
-            // │   5. Combine IV + encrypted data                                    │
-            // │   6. Return Base64-encoded result                                   │
-            // └─────────────────────────────────────────────────────────────────────┘
-            public static string Encrypt(string plainText)
-            {
-                // Step 2.1: Convert plaintext string to bytes
-                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-
-                // Step 2.2: Create AES algorithm instance
-                using var aes = Aes.Create();
-
-                // Step 2.3: Set the hardcoded 256-bit key (32 bytes)
-                aes.Key = HARDCODED_AES_KEY;
-
-                // Step 2.4: Generate random 128-bit IV (16 bytes) for each encryption
-                // This ensures same plaintext produces different ciphertext each time
-                aes.GenerateIV();
-
-                // Step 2.5: Set cipher mode to CBC (Cipher Block Chaining)
-                aes.Mode = CipherMode.CBC;
-
-                // Step 2.6: Set padding mode to PKCS7 (standard padding for AES)
-                aes.Padding = PaddingMode.PKCS7;
-
-                // Step 2.7: Perform the encryption operation
-                using var encryptor = aes.CreateEncryptor();
-                using var memoryStream = new MemoryStream();
-
-                // Step 2.8: Write IV at the beginning (needed for decryption)
-                memoryStream.Write(aes.IV, 0, aes.IV.Length);
-
-                // Step 2.9: Create crypto stream for encryption
-                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                using (var writer = new StreamWriter(cryptoStream))
-                {
-                    // Step 2.10: Write plaintext to crypto stream (encrypts automatically)
-                    writer.Write(plainText);
-                }
-
-                // Step 2.11: Get encrypted data as byte array (IV + encrypted data)
-                byte[] encryptedData = memoryStream.ToArray();
-
-                // Step 2.12: Convert to Base64 for safe storage/transmission
-                return Convert.ToBase64String(encryptedData);
-            }
-
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 3: Decrypt string data using AES-256-CBC                       │
-            // │ Process:                                                             │
-            // │   1. Decode Base64 string to bytes                                  │
-            // │   2. Extract IV from first 16 bytes                                 │
-            // │   3. Extract encrypted data from remaining bytes                    │
-            // │   4. Create AES cipher with same key                                │
-            // │   5. Configure CBC mode with PKCS7 padding                          │
-            // │   6. Decrypt the data                                               │
-            // │   7. Return plaintext string                                        │
-            // └─────────────────────────────────────────────────────────────────────┘
-            public static string Decrypt(string encryptedText)
-            {
-                // Step 3.1: Convert Base64 string back to bytes
-                byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
-
-                // Step 3.2: Create AES algorithm instance
-                using var aes = Aes.Create();
-
-                // Step 3.3: Set the same hardcoded 256-bit key (32 bytes)
-                aes.Key = HARDCODED_AES_KEY;
-
-                // Step 3.4: Extract IV from first 16 bytes of encrypted data
-                byte[] iv = new byte[16];
-                Array.Copy(encryptedBytes, 0, iv, 0, 16);
-                aes.IV = iv;
-
-                // Step 3.5: Set cipher mode to CBC (same as encryption)
-                aes.Mode = CipherMode.CBC;
-
-                // Step 3.6: Set padding mode to PKCS7 (same as encryption)
-                aes.Padding = PaddingMode.PKCS7;
-
-                // Step 3.7: Perform the decryption operation
-                using var decryptor = aes.CreateDecryptor();
-                using var memoryStream = new MemoryStream(encryptedBytes, 16, encryptedBytes.Length - 16);
-                using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
-                using var reader = new StreamReader(cryptoStream);
-
-                // Step 3.8: Read decrypted plaintext from stream
-                return reader.ReadToEnd();
-            }
-
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 4: Encrypt file/stream data using AES-256-CBC                  │
-            // │ Process:                                                             │
-            // │   1. Generate random 16-byte IV                                     │
-            // │   2. Create AES cipher with 256-bit key                             │
-            // │   3. Configure CBC mode with PKCS7 padding                          │
-            // │   4. Encrypt the file stream                                        │
-            // │   5. Return IV + encrypted data as byte array                       │
-            // └─────────────────────────────────────────────────────────────────────┘
-            public static byte[] EncryptStream(Stream inputStream)
-            {
-                // Step 4.1: Create AES algorithm instance
-                using var aes = Aes.Create();
-
-                // Step 4.2: Set the hardcoded 256-bit key (32 bytes)
-                aes.Key = HARDCODED_AES_KEY;
-
-                // Step 4.3: Generate random 128-bit IV (16 bytes)
-                aes.GenerateIV();
-
-                // Step 4.4: Set cipher mode to CBC
-                aes.Mode = CipherMode.CBC;
-
-                // Step 4.5: Set padding mode to PKCS7
-                aes.Padding = PaddingMode.PKCS7;
-
-                // Step 4.6: Create output stream to hold IV + encrypted data
-                using var memoryStream = new MemoryStream();
-
-                // Step 4.7: Write IV at the beginning (16 bytes)
-                memoryStream.Write(aes.IV, 0, aes.IV.Length);
-
-                // Step 4.8: Create encryptor and encrypt the input stream
-                using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                {
-                    // Step 4.9: Copy input stream to crypto stream (encrypts automatically)
-                    inputStream.CopyTo(cryptoStream);
-                }
-
-                // Step 4.10: Return complete encrypted data (IV + ciphertext)
-                return memoryStream.ToArray();
-            }
-
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 5: Encrypt timestamp string using AES-256-CBC                  │
-            // │ Used for generating unique encrypted filenames                      │
-            // │ Returns only the ciphertext (without IV) as Base64                  │
-            // └─────────────────────────────────────────────────────────────────────┘
-            public static string EncryptTimestamp(string timestamp)
-            {
-                // Step 5.1: Create AES algorithm instance
-                using var aes = Aes.Create();
-
-                // Step 5.2: Set the hardcoded 256-bit key
-                aes.Key = HARDCODED_AES_KEY;
-
-                // Step 5.3: Generate random IV
-                aes.GenerateIV();
-
-                // Step 5.4: Set cipher mode to CBC
-                aes.Mode = CipherMode.CBC;
-
-                // Step 5.5: Set padding mode to PKCS7
-                aes.Padding = PaddingMode.PKCS7;
-
-                // Step 5.6: Create encryptor
-                using var encryptor = aes.CreateEncryptor();
-
-                // Step 5.7: Convert timestamp to bytes
-                byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
-
-                // Step 5.8: Encrypt timestamp bytes
-                byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
-
-                // Step 5.9: Return Base64-encoded encrypted timestamp
-                return Convert.ToBase64String(encryptedBytes);
-            }
-        }
-
+    
         public IActionResult Index()
         {
 
@@ -392,6 +201,240 @@ namespace LingapDVO.Controllers
             return View();
         }
 
+        // ╔═══════════════════════════════════════════════════════════════════════════╗
+        // ║                    AES-256 ENCRYPTION HELPER CLASS                        ║
+        // ║         Secure AES-256 Implementation using Configuration                 ║
+        // ╚═══════════════════════════════════════════════════════════════════════════╝
+        private class AesEncryptionHelper
+        {
+            private readonly byte[] _aesKey;
+
+            public AesEncryptionHelper(IConfiguration configuration)
+            {
+                string keyHex = configuration["Security:AesEncryption:Key"]
+                    ?? throw new InvalidOperationException("AES encryption key not found in configuration");
+
+                // Clean the key - remove any whitespace or special characters
+                keyHex = keyHex.Trim().Replace(" ", "").Replace("-", "").Replace(":", "");
+
+                if (string.IsNullOrWhiteSpace(keyHex))
+                    throw new InvalidOperationException("AES encryption key is empty");
+
+                // Log key info for debugging
+                System.Diagnostics.Debug.WriteLine($"AES Key Length: {keyHex.Length} characters");
+
+                // Convert with automatic padding
+                _aesKey = SafeConvertHexStringToByteArray(keyHex);
+
+                if (_aesKey.Length != 32)
+                    throw new InvalidOperationException($"AES key must be 32 bytes (256 bits). Current: {_aesKey.Length} bytes");
+            }
+
+            private static byte[] SafeConvertHexStringToByteArray(string hex)
+            {
+                if (string.IsNullOrWhiteSpace(hex))
+                    throw new ArgumentException("Hex string cannot be null or empty");
+
+                // Clean the hex string
+                hex = hex.Trim().Replace(" ", "").Replace("-", "").Replace(":", "");
+
+                // Ensure even length by padding with leading zero if needed
+                if (hex.Length % 2 != 0)
+                {
+                    hex = "0" + hex;
+                    System.Diagnostics.Debug.WriteLine($"Hex string padded from {hex.Length - 1} to {hex.Length} characters");
+                }
+
+                // Validate hex format
+                if (!System.Text.RegularExpressions.Regex.IsMatch(hex, @"^[0-9A-Fa-f]+$"))
+                {
+                    throw new ArgumentException("Hex string contains invalid characters");
+                }
+
+                byte[] bytes = new byte[hex.Length / 2];
+                for (int i = 0; i < hex.Length; i += 2)
+                {
+                    bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+                }
+                return bytes;
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 2: Encrypt string data using AES-256-CBC                       │
+            // │ Process:                                                             │
+            // │   1. Generate random 16-byte IV (Initialization Vector)             │
+            // │   2. Create AES cipher with 256-bit key                             │
+            // │   3. Configure CBC mode with PKCS7 padding                          │
+            // │   4. Encrypt the plaintext data                                     │
+            // │   5. Combine IV + encrypted data                                    │
+            // │   6. Return Base64-encoded result                                   │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public string Encrypt(string plainText)
+            {
+                // Step 2.1: Convert plaintext string to bytes
+                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+
+                // Step 2.2: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 2.3: Set the 256-bit key from configuration (32 bytes)
+                aes.Key = _aesKey;
+
+                // Step 2.4: Generate random 128-bit IV (16 bytes) for each encryption
+                // This ensures same plaintext produces different ciphertext each time
+                aes.GenerateIV();
+
+                // Step 2.5: Set cipher mode to CBC (Cipher Block Chaining)
+                aes.Mode = CipherMode.CBC;
+
+                // Step 2.6: Set padding mode to PKCS7 (standard padding for AES)
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 2.7: Perform the encryption operation
+                using var encryptor = aes.CreateEncryptor();
+                using var memoryStream = new MemoryStream();
+
+                // Step 2.8: Write IV at the beginning (needed for decryption)
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Step 2.9: Create crypto stream for encryption
+                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                using (var writer = new StreamWriter(cryptoStream))
+                {
+                    // Step 2.10: Write plaintext to crypto stream (encrypts automatically)
+                    writer.Write(plainText);
+                }
+
+                // Step 2.11: Get encrypted data as byte array (IV + encrypted data)
+                byte[] encryptedData = memoryStream.ToArray();
+
+                // Step 2.12: Convert to Base64 for safe storage/transmission
+                return Convert.ToBase64String(encryptedData);
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 3: Decrypt string data using AES-256-CBC                       │
+            // │ Process:                                                             │
+            // │   1. Decode Base64 string to bytes                                  │
+            // │   2. Extract IV from first 16 bytes                                 │
+            // │   3. Extract encrypted data from remaining bytes                    │
+            // │   4. Create AES cipher with same key                                │
+            // │   5. Configure CBC mode with PKCS7 padding                          │
+            // │   6. Decrypt the data                                               │
+            // │   7. Return plaintext string                                        │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public string Decrypt(string encryptedText)
+            {
+                // Step 3.1: Convert Base64 string back to bytes
+                byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+
+                // Step 3.2: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 3.3: Set the same 256-bit key from configuration (32 bytes)
+                aes.Key = _aesKey;
+
+                // Step 3.4: Extract IV from first 16 bytes of encrypted data
+                byte[] iv = new byte[16];
+                Array.Copy(encryptedBytes, 0, iv, 0, 16);
+                aes.IV = iv;
+
+                // Step 3.5: Set cipher mode to CBC (same as encryption)
+                aes.Mode = CipherMode.CBC;
+
+                // Step 3.6: Set padding mode to PKCS7 (same as encryption)
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 3.7: Perform the decryption operation
+                using var decryptor = aes.CreateDecryptor();
+                using var memoryStream = new MemoryStream(encryptedBytes, 16, encryptedBytes.Length - 16);
+                using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                using var reader = new StreamReader(cryptoStream);
+
+                // Step 3.8: Read decrypted plaintext from stream
+                return reader.ReadToEnd();
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 4: Encrypt file/stream data using AES-256-CBC                  │
+            // │ Process:                                                             │
+            // │   1. Generate random 16-byte IV                                     │
+            // │   2. Create AES cipher with 256-bit key                             │
+            // │   3. Configure CBC mode with PKCS7 padding                          │
+            // │   4. Encrypt the file stream                                        │
+            // │   5. Return IV + encrypted data as byte array                       │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public byte[] EncryptStream(Stream inputStream)
+            {
+                // Step 4.1: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 4.2: Set the 256-bit key from configuration (32 bytes)
+                aes.Key = _aesKey;
+
+                // Step 4.3: Generate random 128-bit IV (16 bytes)
+                aes.GenerateIV();
+
+                // Step 4.4: Set cipher mode to CBC
+                aes.Mode = CipherMode.CBC;
+
+                // Step 4.5: Set padding mode to PKCS7
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 4.6: Create output stream to hold IV + encrypted data
+                using var memoryStream = new MemoryStream();
+
+                // Step 4.7: Write IV at the beginning (16 bytes)
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Step 4.8: Create encryptor and encrypt the input stream
+                using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                {
+                    // Step 4.9: Copy input stream to crypto stream (encrypts automatically)
+                    inputStream.CopyTo(cryptoStream);
+                }
+
+                // Step 4.10: Return complete encrypted data (IV + ciphertext)
+                return memoryStream.ToArray();
+            }
+
+            // ┌─────────────────────────────────────────────────────────────────────┐
+            // │ STEP 5: Encrypt timestamp string using AES-256-CBC                  │
+            // │ Used for generating unique encrypted filenames                      │
+            // │ Returns only the ciphertext (without IV) as Base64                  │
+            // └─────────────────────────────────────────────────────────────────────┘
+            public string EncryptTimestamp(string timestamp)
+            {
+                // Step 5.1: Create AES algorithm instance
+                using var aes = Aes.Create();
+
+                // Step 5.2: Set the 256-bit key from configuration
+                aes.Key = _aesKey;
+
+                // Step 5.3: Generate random IV
+                aes.GenerateIV();
+
+                // Step 5.4: Set cipher mode to CBC
+                aes.Mode = CipherMode.CBC;
+
+                // Step 5.5: Set padding mode to PKCS7
+                aes.Padding = PaddingMode.PKCS7;
+
+                // Step 5.6: Create encryptor
+                using var encryptor = aes.CreateEncryptor();
+
+                // Step 5.7: Convert timestamp to bytes
+                byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
+
+                // Step 5.8: Encrypt timestamp bytes
+                byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+
+                // Step 5.9: Return Base64-encoded encrypted timestamp
+                return Convert.ToBase64String(encryptedBytes);
+            }
+        }
+
+
         [HttpPost]
         public IActionResult FillupformHospitalBill(FillupformHospitalBillDto fillupformHospitalbilldto)
         {
@@ -465,9 +508,12 @@ namespace LingapDVO.Controllers
                 // ===========================
                 // 🔑 AES-256 FILE ENCRYPTION
                 // ===========================
+                // Use configuration-based AES helper
+                var aesHelper = new AesEncryptionHelper(_configuration);
+
                 // Generate unique encrypted timestamp for filenames
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = AesEncryptionHelper.EncryptTimestamp(timestamp);
+                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // Generate encrypted filenames
@@ -488,8 +534,8 @@ namespace LingapDVO.Controllers
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        // Use hardcoded AES-256 helper to encrypt file stream
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(fillupformHospitalbilldto.DoctorPrescriptionimage.OpenReadStream());
+                        // Use configuration-based AES helper to encrypt file stream
+                        byte[] encryptedData = aesHelper.EncryptStream(fillupformHospitalbilldto.DoctorPrescriptionimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -501,8 +547,8 @@ namespace LingapDVO.Controllers
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
-                        // Use hardcoded AES-256 helper to encrypt file stream
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(fillupformHospitalbilldto.DeathCertificateimage.OpenReadStream());
+                        // Use configuration-based AES helper to encrypt file stream
+                        byte[] encryptedData = aesHelper.EncryptStream(fillupformHospitalbilldto.DeathCertificateimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -894,7 +940,7 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
+        //1
         [HttpPost]
         public IActionResult Medicalandlabform(MedicalandlabformDto medicalandlabformdto)
         {
@@ -905,19 +951,28 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // Get the user's ID filenames from session (if available)
+            // Get the user's ID filenames from session
             string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
             string userBackID = HttpContext.Session.GetString("BackID") ?? "";
 
-            // FIRST: Check for recently approved forms (1-month cooldown)
+            // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            var hasRecentApproval = context.Medicalandlabform.Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
-
+            // Check for forms with Status = "Approved" within the last month
+            var hasRecentApproval = context.Medicalandlabform
+                .Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
 
             if (hasRecentApproval)
             {
-                ModelState.AddModelError("", "You cannot submit a new form because you have an approved form within the last month. Please wait until one month has passed since your last approval.");
+                // Get the most recent approved form to show the exact date
+                var recentApprovedForm = context.Medicalandlabform
+                    .Where(f => f.UserId == userId && f.Status == "Approved")
+                    .OrderByDescending(f => f.CreatedAt)
+                    .FirstOrDefault();
+
+                string approvedDate = recentApprovedForm?.CreatedAt.ToString("MMMM dd, yyyy") ?? "recently";
+
+                ModelState.AddModelError("", $"You cannot submit a new form because you already have an approved request dated {approvedDate}. Please wait one month from {approvedDate} before submitting another application.");
                 return View(medicalandlabformdto);
             }
 
@@ -925,12 +980,13 @@ namespace LingapDVO.Controllers
             var hasPendingForm = context.Medicalandlabform
                 .Any(f => f.UserId == userId && (f.Status == "Pending" || f.Status == "Processing"));
 
-
             if (hasPendingForm)
             {
                 ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it's approved before submitting a new one.");
                 return View(medicalandlabformdto);
             }
+
+            // If neither condition above is met, proceed with form submission
 
             // Optional field handling
             if (string.IsNullOrEmpty(medicalandlabformdto.PhilHealthNo))
@@ -938,27 +994,19 @@ namespace LingapDVO.Controllers
                 ModelState.Remove("PhilHealthNo");
             }
 
-            // MODIFIED: Image validation - Make all image fields optional but require at least one document
+            // MODIFIED: Image validation - Remove ID image validation since we'll use existing ones from user account
             ModelState.Remove("IdFrontimage");
             ModelState.Remove("IdBackimage");
             ModelState.Remove("DoctorPrescriptionimage");
             ModelState.Remove("DeathCertificateimage");
-            ModelState.Remove("MedCertificateimage"); // Added Medical Certificate as optional
-
-            // NEW VALIDATION: Check if user has existing ID images in session, otherwise require ID upload
-            bool hasExistingIDs = !string.IsNullOrEmpty(userFrontID) && !string.IsNullOrEmpty(userBackID);
-
-            if (!hasExistingIDs && (medicalandlabformdto.IdFrontimage == null || medicalandlabformdto.IdBackimage == null))
-            {
-                ModelState.AddModelError("IdFrontimage", "ID images are required when no existing IDs are found in your account.");
-            }
+            ModelState.Remove("MedCertificateimage");
 
             // NEW VALIDATION: At least one of the medical documents must be provided
             if (medicalandlabformdto.DoctorPrescriptionimage == null &&
                 medicalandlabformdto.DeathCertificateimage == null &&
                 medicalandlabformdto.MedCertificateimage == null)
             {
-                ModelState.AddModelError("", "At least one medical document (Doctor Prescription, Death Certificate, or Medical Certificate) is required");
+                ModelState.AddModelError("DoctorPrescriptionimage", "At least one medical document (Doctor Prescription, Death Certificate, or Medical Certificate) is required");
             }
 
             if (!ModelState.IsValid)
@@ -971,52 +1019,27 @@ namespace LingapDVO.Controllers
                 // ===========================
                 // 🔑 AES-256 FILE ENCRYPTION
                 // ===========================
+                // Use configuration-based AES helper
+                var aesHelper = new AesEncryptionHelper(_configuration);
+
                 // Generate unique encrypted timestamp for filenames
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = AesEncryptionHelper.EncryptTimestamp(timestamp);
+                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // Generate encrypted filenames
-                string? newFileNameFront = null;
-                string? newFileNameBack = null;
                 string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
-                string? newFileNameMedCertificate = null; // Added for Medical Certificate
+                string? newFileNameMedCertificate = null;
 
-                string uploadsFolder = Path.Combine(environment.WebRootPath, "Validimg");
                 string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
                 string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
-                string uploadsFolder3 = Path.Combine(environment.WebRootPath, "MedCertificateimage"); // Added folder for Medical Certificate
+                string uploadsFolder3 = Path.Combine(environment.WebRootPath, "MedCertificateimage");
 
                 // Ensure directories exist
-                Directory.CreateDirectory(uploadsFolder);
                 Directory.CreateDirectory(uploadsFolder1);
                 Directory.CreateDirectory(uploadsFolder2);
-                Directory.CreateDirectory(uploadsFolder3); // Ensure Medical Certificate directory exists
-
-                // Encrypt and Save Front ID Image if provided and no existing ID
-                if (!hasExistingIDs && medicalandlabformdto.IdFrontimage != null)
-                {
-                    newFileNameFront = safeEncryptedTimestamp + "_frontid.enc";
-                    string filePathFront = Path.Combine(uploadsFolder, newFileNameFront);
-                    using (var fileStream = new FileStream(filePathFront, FileMode.Create))
-                    {
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.IdFrontimage.OpenReadStream());
-                        fileStream.Write(encryptedData, 0, encryptedData.Length);
-                    }
-                }
-
-                // Encrypt and Save Back ID Image if provided and no existing ID
-                if (!hasExistingIDs && medicalandlabformdto.IdBackimage != null)
-                {
-                    newFileNameBack = safeEncryptedTimestamp + "_backid.enc";
-                    string filePathBack = Path.Combine(uploadsFolder, newFileNameBack);
-                    using (var fileStream = new FileStream(filePathBack, FileMode.Create))
-                    {
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.IdBackimage.OpenReadStream());
-                        fileStream.Write(encryptedData, 0, encryptedData.Length);
-                    }
-                }
+                Directory.CreateDirectory(uploadsFolder3);
 
                 // Encrypt and Save Prescription Image if provided
                 if (medicalandlabformdto.DoctorPrescriptionimage != null)
@@ -1025,7 +1048,8 @@ namespace LingapDVO.Controllers
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.DoctorPrescriptionimage.OpenReadStream());
+                        // Use configuration-based AES helper to encrypt file stream
+                        byte[] encryptedData = aesHelper.EncryptStream(medicalandlabformdto.DoctorPrescriptionimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -1037,19 +1061,21 @@ namespace LingapDVO.Controllers
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.DeathCertificateimage.OpenReadStream());
+                        // Use configuration-based AES helper to encrypt file stream
+                        byte[] encryptedData = aesHelper.EncryptStream(medicalandlabformdto.DeathCertificateimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
 
-                // NEW: Encrypt and Save Medical Certificate Image if provided
+                // Encrypt and Save Medical Certificate Image if provided
                 if (medicalandlabformdto.MedCertificateimage != null)
                 {
                     newFileNameMedCertificate = safeEncryptedTimestamp + "_medcert.enc";
                     string filePathMedCertificate = Path.Combine(uploadsFolder3, newFileNameMedCertificate);
                     using (var fileStream = new FileStream(filePathMedCertificate, FileMode.Create))
                     {
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(medicalandlabformdto.MedCertificateimage.OpenReadStream());
+                        // Use configuration-based AES helper to encrypt file stream
+                        byte[] encryptedData = aesHelper.EncryptStream(medicalandlabformdto.MedCertificateimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -1089,12 +1115,12 @@ namespace LingapDVO.Controllers
                     Typeassistance = medicalandlabformdto.Typeassistance,
                     ForCMOPERSONNEL = medicalandlabformdto.ForCMOPERSONNEL,
 
-                    // MODIFIED: Use existing ID images from user account if available, otherwise use new uploads
-                    Validfrontimage = hasExistingIDs ? userFrontID : newFileNameFront ?? string.Empty,
-                    ValidBackimage = hasExistingIDs ? userBackID : newFileNameBack ?? string.Empty,
+                    // MODIFIED: Use existing ID images from user account instead of new uploads
+                    Validfrontimage = userFrontID,
+                    ValidBackimage = userBackID,
                     DoctorPrescription = newFileNamePrescription ?? string.Empty,
                     DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
-                    MedCertificate = newFileNameMedCertificate ?? string.Empty, // Added Medical Certificate
+                    MedCertificate = newFileNameMedCertificate ?? string.Empty,
                     Status = "Pending",
 
                     // Created Timestamp
@@ -1104,10 +1130,24 @@ namespace LingapDVO.Controllers
                 context.Medicalandlabform.Add(medicalandlabform);
                 context.SaveChanges();
 
+                // ✅ SUCCESS: Set the success flag to trigger the modal
                 ViewBag.Success = true;
 
+                // Also set the session data again to repopulate the form
+                ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+                ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+                ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+                ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+                ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+                ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+                ViewBag.District = HttpContext.Session.GetString("District");
+                ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+                ViewBag.Gender = HttpContext.Session.GetString("Gender");
+                ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+                ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+                ViewBag.BackID = HttpContext.Session.GetString("BackID");
 
-                return RedirectToAction("Homepage", "Dashboard");
+                return View(medicalandlabformdto);
             }
             catch (DbUpdateException ex)
             {
@@ -1138,6 +1178,7 @@ namespace LingapDVO.Controllers
                 return View(medicalandlabformdto);
             }
         }
+
         public IActionResult Medicalandlabformedit(int id)
         {
             var medicalandlabform = context.Medicalandlabform.Find(id);
@@ -1447,15 +1488,15 @@ namespace LingapDVO.Controllers
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            // Check for forms with Status = "Approved" within the last month across all form types
+            // Check for forms with Status = "Approved" within the last month
             var hasRecentApproval = context.Funeralburialform
-                .Any(f => f.UserId == userId && f.Status2 == "Approved" && f.CreatedAt >= oneMonthAgo);
+                .Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
 
             if (hasRecentApproval)
             {
                 // Get the most recent approved form to show the exact date
                 var recentApprovedForm = context.Funeralburialform
-                    .Where(f => f.UserId == userId && f.Status2 == "Approved")
+                    .Where(f => f.UserId == userId && f.Status == "Approved")
                     .OrderByDescending(f => f.CreatedAt)
                     .FirstOrDefault();
 
@@ -1475,23 +1516,25 @@ namespace LingapDVO.Controllers
                 return View(funeralburialformdto);
             }
 
+            // If neither condition above is met, proceed with form submission
+
             // Optional field handling
             if (string.IsNullOrEmpty(funeralburialformdto.PhilHealthNo))
             {
                 ModelState.Remove("PhilHealthNo");
             }
 
-            // MODIFIED: Image validation - Remove ID image validation and make both prescription and death certificate optional
+            // MODIFIED: Image validation - Remove ID image validation since we'll use existing ones from user account
             ModelState.Remove("IdFrontimage");
             ModelState.Remove("IdBackimage");
-            ModelState.Remove("DoctorPrescriptionimage"); // Make doctor prescription optional
-            ModelState.Remove("DeathCertificateimage");   // Death certificate is already optional
+            ModelState.Remove("DoctorPrescriptionimage");
+            ModelState.Remove("DeathCertificateimage");
 
-            // NEW VALIDATION: At least one of the documents must be provided
-            if (funeralburialformdto.DoctorPrescriptionimage == null && funeralburialformdto.DeathCertificateimage == null)
+            // NEW VALIDATION: At least one of the medical documents must be provided
+            if (funeralburialformdto.DoctorPrescriptionimage == null &&
+                funeralburialformdto.DeathCertificateimage == null)
             {
-                ModelState.AddModelError("", "At least one document (Doctor Prescription or Death Certificate) is required");
-                return View(funeralburialformdto);
+                ModelState.AddModelError("DoctorPrescriptionimage", "At least one medical document (Doctor Prescription or Death Certificate) is required");
             }
 
             if (!ModelState.IsValid)
@@ -1504,9 +1547,12 @@ namespace LingapDVO.Controllers
                 // ===========================
                 // 🔑 AES-256 FILE ENCRYPTION
                 // ===========================
+                // Use configuration-based AES helper
+                var aesHelper = new AesEncryptionHelper(_configuration);
+
                 // Generate unique encrypted timestamp for filenames
                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = AesEncryptionHelper.EncryptTimestamp(timestamp);
+                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // Generate encrypted filenames
@@ -1527,7 +1573,8 @@ namespace LingapDVO.Controllers
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(funeralburialformdto.DoctorPrescriptionimage.OpenReadStream());
+                        // Use configuration-based AES helper to encrypt file stream
+                        byte[] encryptedData = aesHelper.EncryptStream(funeralburialformdto.DoctorPrescriptionimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -1539,7 +1586,8 @@ namespace LingapDVO.Controllers
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
-                        byte[] encryptedData = AesEncryptionHelper.EncryptStream(funeralburialformdto.DeathCertificateimage.OpenReadStream());
+                        // Use configuration-based AES helper to encrypt file stream
+                        byte[] encryptedData = aesHelper.EncryptStream(funeralburialformdto.DeathCertificateimage.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -1592,9 +1640,25 @@ namespace LingapDVO.Controllers
 
                 context.Funeralburialform.Add(funeralburialform);
                 context.SaveChanges();
+
+                // ✅ SUCCESS: Set the success flag to trigger the modal
                 ViewBag.Success = true;
 
-                return RedirectToAction("Homepage", "Dashboard");
+                // Also set the session data again to repopulate the form
+                ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+                ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+                ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+                ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+                ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+                ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+                ViewBag.District = HttpContext.Session.GetString("District");
+                ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+                ViewBag.Gender = HttpContext.Session.GetString("Gender");
+                ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+                ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+                ViewBag.BackID = HttpContext.Session.GetString("BackID");
+
+                return View(funeralburialformdto);
             }
             catch (DbUpdateException ex)
             {
