@@ -19,8 +19,14 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- Tesseract.js -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <!--
+        OCR Engine: Using OCR.space API (much better than Tesseract for IDs)
+        - Free tier: 25,000 requests/month
+        - Superior accuracy for structured documents like IDs
+        - No heavy libraries to load
+        - Faster processing
+        Get your own API key at: https://ocr.space/ocrapi
+    -->
 
     <style>
         .crimson-500 {
@@ -55,6 +61,10 @@
         .upload-area {
             transition: all 0.3s ease;
             border: 2px dashed #d1d5db;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
             .upload-area:hover {
@@ -72,10 +82,43 @@
                 background-color: rgba(220, 20, 60, 0.1);
             }
 
+            .upload-area.has-image {
+                border-style: solid;
+                background-color: rgba(220, 20, 60, 0.02);
+            }
+
         .id-preview {
             transition: all 0.3s ease;
             border-radius: 8px;
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+
+        .id-upload-content {
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+            .id-upload-content.preview-mode > div:not(:has(img)),
+            .id-upload-content.preview-mode > .font-semibold,
+            .id-upload-content.preview-mode > .text-gray-500 {
+                opacity: 0;
+                height: 0;
+                overflow: hidden;
+                margin: 0;
+                padding: 0;
+            }
+
+            .id-upload-content.preview-mode img {
+                display: block !important;
+                margin: 0 auto;
+            }
+
+            .id-upload-content.preview-mode {
+                padding: 0;
+            }
 
         .progress-bar {
             transition: width 0.3s ease;
@@ -184,6 +227,77 @@
                 font-size: 1.1rem;
                 margin-bottom: 0.75rem;
             }
+
+        /* Enhanced animations - Using opacity transitions instead of keyframes */
+        .upload-area.active {
+            opacity: 0.7;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Smooth focus states */
+        input:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        /* Enhanced button styles */
+        button[type="submit"] {
+            background: linear-gradient(135deg, #32cd32 0%, #28a428 100%);
+            transition: all 0.3s ease;
+        }
+
+            button[type="submit"]:hover:not(:disabled) {
+                background: linear-gradient(135deg, #28a428 0%, #1f8c1f 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px -5px rgba(50, 205, 50, 0.4);
+            }
+
+            button[type="submit"]:active:not(:disabled) {
+                transform: translateY(0);
+            }
+
+        /* Loading spinner - Font Awesome has built-in animation */
+        .fa-spinner {
+            /* Font Awesome handles the animation */
+        }
+
+        /* Card shadow enhancement */
+        .glass-effect {
+            box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Enhanced upload area on image loaded */
+        .upload-area.has-image {
+            background: linear-gradient(135deg, rgba(220, 20, 60, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%);
+        }
+
+        /* Responsive container widths */
+        .container-responsive {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Print styles - hidden by default */
+        .print-hidden {
+            display: block;
+        }
+
+        /* Dark mode support - using separate classes */
+        .dark-mode-bg {
+            background-color: #111827;
+        }
+
+        .dark-mode-text {
+            color: #fff;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
@@ -216,19 +330,23 @@
                                 <h2 class="text-2xl font-bold text-gray-800">ID Verification</h2>
                             </div>
 
-                            <!-- ID Type Selection -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Auto-Detected ID Type (Hidden) -->
+                            <input type="hidden" asp-for="IDtype" id="document-type" />
+
+                            <!-- ID Type Display (Hidden - shown in console only) -->
+                            <div id="id-type-display" class="hidden"></div>
+
+                            <!-- ID Type Info -->
+                            <div class="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">ID Type</label>
-                                    <select asp-for="IDtype" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" id="document-type" required>
-                                        <option value="">Select Valid ID</option>
-                                        <option value="phil-id">Philippine Identification Card / National ID</option>
-                                        <option value="driver-license">Driver's License</option>
-                                    </select>
-                                    <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1"></span>
-                                    <div id="document-warning" class="text-amber-600 text-sm mt-2 hidden">
-                                        <i class="fas fa-info-circle mr-1"></i>OCR is not available for the selected document type
+                                    <div class="text-sm text-gray-600 mb-4">
+                                        <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                        <strong>Accepted IDs:</strong> National ID, Driver's License, SSS ID, UMID
+                                        <br>
+                                        <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                                        <em>The system will automatically detect your ID type</em>
                                     </div>
+                                    <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1 block"></span>
                                 </div>
 
                                 <div>
@@ -254,8 +372,9 @@
                                         </div>
                                         <div class="font-semibold text-gray-800 mb-2">Front of ID</div>
                                         <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
-                                        <input asp-for="ValidFrontID" type="file" id="file-input-front" class="hidden" accept="image/*">
-                                        <img id="image-preview-front" class="id-preview w-full max-w-xs mx-auto hidden" alt="Front ID Preview">
+                                        <div class="text-xs text-gray-400 mb-2">Accepted formats: JPG, JPEG, PNG only</div>
+                                        <input asp-for="ValidFrontID" type="file" id="file-input-front" class="hidden" accept="image/jpeg,image/jpg,image/png">
+                                        <img id="image-preview" class="id-preview w-full max-w-xs mx-auto hidden" alt="Front ID Preview">
                                         <span asp-validation-for="ValidFrontID" class="text-red-500 text-sm mt-2 block"></span>
                                     </div>
                                 </div>
@@ -268,7 +387,8 @@
                                         </div>
                                         <div class="font-semibold text-gray-800 mb-2">Back of ID</div>
                                         <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
-                                        <input asp-for="ValidBackID" type="file" id="file-input-back" class="hidden" accept="image/*">
+                                        <div class="text-xs text-gray-400 mb-2">Accepted formats: JPG, JPEG, PNG only</div>
+                                        <input asp-for="ValidBackID" type="file" id="file-input-back" class="hidden" accept="image/jpeg,image/jpg,image/png">
                                         <img id="image-preview-back" class="id-preview w-full max-w-xs mx-auto hidden" alt="Back ID Preview">
                                         <span asp-validation-for="ValidBackID" class="text-red-500 text-sm mt-2 block"></span>
                                     </div>
@@ -305,11 +425,20 @@
                                 </div>
                             </div>
 
-                            <div class="text-center">
-                                <small class="text-gray-500 text-sm">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Upload clear images of your valid ID (JPEG, PNG). Max file size: 5MB each.
-                                </small>
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-lightbulb text-blue-500 mt-0.5"></i>
+                                    <div class="text-gray-700">
+                                        <p class="font-semibold text-blue-700 mb-2">Tips for best results:</p>
+                                        <ul class="space-y-1 list-disc list-inside">
+                                            <li>Upload clear, well-lit images (JPEG or PNG format)</li>
+                                            <li>Ensure all text on the ID is readable</li>
+                                            <li>Avoid glare, shadows, or reflections</li>
+                                            <li>Maximum file size: 5MB per image</li>
+                                            <li>Supported IDs: National ID, Driver's License, SSS ID, UMID</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -445,119 +574,119 @@
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Barangay</label>
                                     <select asp-for="Barangay" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
                                         <option value="" disabled selected>--Select Barangay--</option>
-                                            <option value="Acacia">Acacia</option>
-                                            <option value="Agdao">Agdao</option>
-                                            <option value="Alambre">Alambre</option>
-                                            <option value="Alejandro Navarro">Alejandro Navarro (Lasang)</option>
-                                            <option value="Alfonso Angliongto Sr.">Alfonso Angliongto Sr.</option>
-                                            <option value="Angalan">Angalan</option>
-                                            <option value="Baguio Proper">Baguio Proper</option>
-                                            <option value="Baliok">Baliok</option>
-                                            <option value="Bangkas Heights">Bangkas Heights</option>
-                                            <option value="Baracatan">Baracatan</option>
-                                            <option value="Bato">Bato</option>
-                                            <option value="Bayabas">Bayabas</option>
-                                            <option value="Biao Escuela">Biao Escuela</option>
-                                            <option value="Biao Guianga">Biao Guianga</option>
-                                            <option value="Binugao">Binugao</option>
-                                            <option value="Bucana">Bucana</option>
-                                            <option value="Buhangin Proper">Buhangin Proper</option>
-                                            <option value="Cabantian">Cabantian</option>
-                                            <option value="Cadalian">Cadalian</option>
-                                            <option value="Calinan Proper">Calinan Proper</option>
-                                            <option value="Callawa">Callawa</option>
-                                            <option value="Camansi">Camansi</option>
-                                            <option value="Carmen">Carmen</option>
-                                            <option value="Catalunan Grande">Catalunan Grande</option>
-                                            <option value="Catalunan Pequeño">Catalunan Pequeño</option>
-                                            <option value="Catigan">Catigan</option>
-                                            <option value="Cawayan">Cawayan</option>
-                                            <option value="Centro (San Juan)">Centro (San Juan)</option>
-                                            <option value="Colosas">Colosas</option>
-                                            <option value="Communal">Communal</option>
-                                            <option value="Crossing Bayabas">Crossing Bayabas</option>
-                                            <option value="Dacudao">Dacudao</option>
-                                            <option value="Dalagdag">Dalagdag</option>
-                                            <option value="Daliao">Daliao</option>
-                                            <option value="Dalican">Dalican</option>
-                                            <option value="Datu Salumay">Datu Salumay</option>
-                                            <option value="Dominga">Dominga</option>
-                                            <option value="Eden">Eden</option>
-                                            <option value="Fatima (Benowang)">Fatima (Benowang)</option>
-                                            <option value="Gatungan">Gatungan</option>
-                                            <option value="Gov. Paciano Bangoy">Gov. Paciano Bangoy</option>
-                                            <option value="Gov. Vicente Duterte">Gov. Vicente Duterte</option>
-                                            <option value="Gumalang">Gumalang</option>
-                                            <option value="Gumitan">Gumitan</option>
-                                            <option value="Indangan">Indangan</option>
-                                            <option value="Kap. Tomas Monteverde Sr.">Kap. Tomas Monteverde Sr.</option>
-                                            <option value="Kilate">Kilate</option>
-                                            <option value="Lamanan">Lamanan</option>
-                                            <option value="Lampianao">Lampianao</option>
-                                            <option value="Langub">Langub</option>
-                                            <option value="Lapu-lapu">Lapu-lapu</option>
-                                            <option value="Leon Garcia Sr.">Leon Garcia Sr.</option>
-                                            <option value="Los Amigos">Los Amigos</option>
-                                            <option value="Lubogan">Lubogan</option>
-                                            <option value="Lumiad">Lumiad</option>
-                                            <option value="Ma-a">Ma-a</option>
-                                            <option value="Mabuhay">Mabuhay</option>
-                                            <option value="Mabuhay">Mabuhay</option>
-                                            <option value="Madapo">Madapo</option>
-                                            <option value="Magtuod">Magtuod</option>
-                                            <option value="Mahayag">Mahayag</option>
-                                            <option value="Malabog">Malabog</option>
-                                            <option value="Malagos">Malagos</option>
-                                            <option value="Malamba">Malamba</option>
-                                            <option value="Malandog">Malandog</option>
-                                            <option value="Mampising">Mampising</option>
-                                            <option value="Manambulan">Manambulan</option>
-                                            <option value="Mandug">Mandug</option>
-                                            <option value="Manuel Guianga">Manuel Guianga</option>
-                                            <option value="Mapula">Mapula</option>
-                                            <option value="Marapangi">Marapangi</option>
-                                            <option value="Marilog Proper">Marilog Proper</option>
-                                            <option value="Matina Aplaya">Matina Aplaya</option>
-                                            <option value="Matina Crossing">Matina Crossing</option>
-                                            <option value="Matina Pangi">Matina Pangi</option>
-                                            <option value="Mintal">Mintal</option>
-                                            <option value="Mudiang">Mudiang</option>
-                                            <option value="Mulig">Mulig</option>
-                                            <option value="New Carmen">New Carmen</option>
-                                            <option value="New Valencia">New Valencia</option>
-                                            <option value="Pampanga">Pampanga</option>
-                                            <option value="Panacan">Panacan</option>
-                                            <option value="Pandaitan">Pandaitan</option>
-                                            <option value="Panorama">Panorama</option>
-                                            <option value="Paquibato Proper">Paquibato Proper</option>
-                                            <option value="Paradise Embak">Paradise Embak</option>
-                                            <option value="Rafael Castillo">Rafael Castillo</option>
-                                            <option value="Salapawan">Salapawan</option>
-                                            <option value="Salaysay">Salaysay</option>
-                                            <option value="Saloy">Saloy</option>
-                                            <option value="San Antonio">San Antonio</option>
-                                            <option value="San Isidro">San Isidro</option>
-                                            <option value="Sasa">Sasa</option>
-                                            <option value="Sirib">Sirib</option>
-                                            <option value="Suawan">Suawan</option>
-                                            <option value="Tacunan">Tacunan</option>
-                                            <option value="Tagakpan">Tagakpan</option>
-                                            <option value="Tagluno">Tagluno</option>
-                                            <option value="Tagurano">Tagurano</option>
-                                            <option value="Talomo Proper">Talomo Proper</option>
-                                            <option value="Talomo River">Talomo River</option>
-                                            <option value="Tamurayan">Tamurayan</option>
-                                            <option value="Tibungco">Tibungco</option>
-                                            <option value="Tigatto">Tigatto</option>
-                                            <option value="Tungkalan">Tungkalan</option>
-                                            <option value="Ubalde">Ubalde</option>
-                                            <option value="Ugac">Ugac</option>
-                                            <option value="Ula">Ula</option>
-                                            <option value="Vicente Hizon Sr.">Vicente Hizon Sr.</option>
-                                            <option value="Waan">Waan</option>
-                                            <option value="Wangan">Wangan</option>
-                                            <option value="Wilfredo Aquino">Wilfredo Aquino</option>
-                                            <option value="Wines">Wines</option>
+                                        <option value="Acacia">Acacia</option>
+                                        <option value="Agdao">Agdao</option>
+                                        <option value="Alambre">Alambre</option>
+                                        <option value="Alejandro Navarro">Alejandro Navarro (Lasang)</option>
+                                        <option value="Alfonso Angliongto Sr.">Alfonso Angliongto Sr.</option>
+                                        <option value="Angalan">Angalan</option>
+                                        <option value="Baguio Proper">Baguio Proper</option>
+                                        <option value="Baliok">Baliok</option>
+                                        <option value="Bangkas Heights">Bangkas Heights</option>
+                                        <option value="Baracatan">Baracatan</option>
+                                        <option value="Bato">Bato</option>
+                                        <option value="Bayabas">Bayabas</option>
+                                        <option value="Biao Escuela">Biao Escuela</option>
+                                        <option value="Biao Guianga">Biao Guianga</option>
+                                        <option value="Binugao">Binugao</option>
+                                        <option value="Bucana">Bucana</option>
+                                        <option value="Buhangin Proper">Buhangin Proper</option>
+                                        <option value="Cabantian">Cabantian</option>
+                                        <option value="Cadalian">Cadalian</option>
+                                        <option value="Calinan Proper">Calinan Proper</option>
+                                        <option value="Callawa">Callawa</option>
+                                        <option value="Camansi">Camansi</option>
+                                        <option value="Carmen">Carmen</option>
+                                        <option value="Catalunan Grande">Catalunan Grande</option>
+                                        <option value="Catalunan Pequeño">Catalunan Pequeño</option>
+                                        <option value="Catigan">Catigan</option>
+                                        <option value="Cawayan">Cawayan</option>
+                                        <option value="Centro (San Juan)">Centro (San Juan)</option>
+                                        <option value="Colosas">Colosas</option>
+                                        <option value="Communal">Communal</option>
+                                        <option value="Crossing Bayabas">Crossing Bayabas</option>
+                                        <option value="Dacudao">Dacudao</option>
+                                        <option value="Dalagdag">Dalagdag</option>
+                                        <option value="Daliao">Daliao</option>
+                                        <option value="Dalican">Dalican</option>
+                                        <option value="Datu Salumay">Datu Salumay</option>
+                                        <option value="Dominga">Dominga</option>
+                                        <option value="Eden">Eden</option>
+                                        <option value="Fatima (Benowang)">Fatima (Benowang)</option>
+                                        <option value="Gatungan">Gatungan</option>
+                                        <option value="Gov. Paciano Bangoy">Gov. Paciano Bangoy</option>
+                                        <option value="Gov. Vicente Duterte">Gov. Vicente Duterte</option>
+                                        <option value="Gumalang">Gumalang</option>
+                                        <option value="Gumitan">Gumitan</option>
+                                        <option value="Indangan">Indangan</option>
+                                        <option value="Kap. Tomas Monteverde Sr.">Kap. Tomas Monteverde Sr.</option>
+                                        <option value="Kilate">Kilate</option>
+                                        <option value="Lamanan">Lamanan</option>
+                                        <option value="Lampianao">Lampianao</option>
+                                        <option value="Langub">Langub</option>
+                                        <option value="Lapu-lapu">Lapu-lapu</option>
+                                        <option value="Leon Garcia Sr.">Leon Garcia Sr.</option>
+                                        <option value="Los Amigos">Los Amigos</option>
+                                        <option value="Lubogan">Lubogan</option>
+                                        <option value="Lumiad">Lumiad</option>
+                                        <option value="Ma-a">Ma-a</option>
+                                        <option value="Mabuhay">Mabuhay</option>
+                                        <option value="Mabuhay">Mabuhay</option>
+                                        <option value="Madapo">Madapo</option>
+                                        <option value="Magtuod">Magtuod</option>
+                                        <option value="Mahayag">Mahayag</option>
+                                        <option value="Malabog">Malabog</option>
+                                        <option value="Malagos">Malagos</option>
+                                        <option value="Malamba">Malamba</option>
+                                        <option value="Malandog">Malandog</option>
+                                        <option value="Mampising">Mampising</option>
+                                        <option value="Manambulan">Manambulan</option>
+                                        <option value="Mandug">Mandug</option>
+                                        <option value="Manuel Guianga">Manuel Guianga</option>
+                                        <option value="Mapula">Mapula</option>
+                                        <option value="Marapangi">Marapangi</option>
+                                        <option value="Marilog Proper">Marilog Proper</option>
+                                        <option value="Matina Aplaya">Matina Aplaya</option>
+                                        <option value="Matina Crossing">Matina Crossing</option>
+                                        <option value="Matina Pangi">Matina Pangi</option>
+                                        <option value="Mintal">Mintal</option>
+                                        <option value="Mudiang">Mudiang</option>
+                                        <option value="Mulig">Mulig</option>
+                                        <option value="New Carmen">New Carmen</option>
+                                        <option value="New Valencia">New Valencia</option>
+                                        <option value="Pampanga">Pampanga</option>
+                                        <option value="Panacan">Panacan</option>
+                                        <option value="Pandaitan">Pandaitan</option>
+                                        <option value="Panorama">Panorama</option>
+                                        <option value="Paquibato Proper">Paquibato Proper</option>
+                                        <option value="Paradise Embak">Paradise Embak</option>
+                                        <option value="Rafael Castillo">Rafael Castillo</option>
+                                        <option value="Salapawan">Salapawan</option>
+                                        <option value="Salaysay">Salaysay</option>
+                                        <option value="Saloy">Saloy</option>
+                                        <option value="San Antonio">San Antonio</option>
+                                        <option value="San Isidro">San Isidro</option>
+                                        <option value="Sasa">Sasa</option>
+                                        <option value="Sirib">Sirib</option>
+                                        <option value="Suawan">Suawan</option>
+                                        <option value="Tacunan">Tacunan</option>
+                                        <option value="Tagakpan">Tagakpan</option>
+                                        <option value="Tagluno">Tagluno</option>
+                                        <option value="Tagurano">Tagurano</option>
+                                        <option value="Talomo Proper">Talomo Proper</option>
+                                        <option value="Talomo River">Talomo River</option>
+                                        <option value="Tamurayan">Tamurayan</option>
+                                        <option value="Tibungco">Tibungco</option>
+                                        <option value="Tigatto">Tigatto</option>
+                                        <option value="Tungkalan">Tungkalan</option>
+                                        <option value="Ubalde">Ubalde</option>
+                                        <option value="Ugac">Ugac</option>
+                                        <option value="Ula">Ula</option>
+                                        <option value="Vicente Hizon Sr.">Vicente Hizon Sr.</option>
+                                        <option value="Waan">Waan</option>
+                                        <option value="Wangan">Wangan</option>
+                                        <option value="Wilfredo Aquino">Wilfredo Aquino</option>
+                                        <option value="Wines">Wines</option>
                                     </select>
                                     <span asp-validation-for="Barangay" class="text-red-500 text-sm mt-1"></span>
                                 </div>
@@ -736,7 +865,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-     <script src="~/js/verification-ocr.js"></script>
+    <script>
+        // Pass registered user's name from ViewBag to JavaScript for name matching validation
+        window.registeredUserName = {
+            firstName: '@ViewBag.RegisteredFirstName',
+            middleName: '@ViewBag.RegisteredMiddleName',
+            lastName: '@ViewBag.RegisteredLastName',
+            suffix: '@ViewBag.RegisteredSuffix'
+        };
+        console.log('Registered User Name from Database:', window.registeredUserName);
+    </script>
+
+    <script src="~/js/verification-ocr.js"></script>
 
     <!-- Wrong ID Type Warning Modal -->
     <div class="modal fade" id="wrongIdModal" tabindex="-1" aria-labelledby="wrongIdModalLabel" aria-hidden="true">
@@ -784,7 +924,7 @@
     </div>
 
     <!-- OCR Error Modal -->
-    <div class="modal fade" id="ocrErrorModal" tabindex="-1" aria-labelledby="ocrErrorModalLabel" aria-hidden="true">
+    <div class="modal fade" id="ocrErrorModal" tabindex="-1" aria-labelledby="ocrErrorModalLabel" aria-hidden="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
                 <div class="modal-header bg-gradient-to-r from-amber-500 to-amber-600 text-white py-4 px-6 border-b-0">
@@ -871,6 +1011,58 @@
                     <div class="w-full flex flex-col sm:flex-row gap-3">
                         <button type="button" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors" data-bs-dismiss="modal">
                             Understand
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Name Mismatch Modal -->
+    <div class="modal fade" id="nameMismatchModal" tabindex="-1" aria-labelledby="nameMismatchModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                <div class="modal-header bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 border-b-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user-times text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-lg" id="nameMismatchModalLabel">Name Mismatch - Verification Blocked</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-ban text-red-500 text-2xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-lg mb-2">Identity Verification Failed</h4>
+                    <p class="text-gray-600 mb-4">
+                        The name on your ID does not match the registered account name.
+                    </p>
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-left mb-4">
+                        <div class="mb-3">
+                            <div class="text-sm font-semibold text-gray-700 mb-1">Registered Name:</div>
+                            <div id="name-mismatch-registered" class="text-sm font-bold text-gray-900"></div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-semibold text-gray-700 mb-1">Name on ID:</div>
+                            <div id="name-mismatch-extracted" class="text-sm font-bold text-red-600"></div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-left">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mt-1"></i>
+                            <div class="text-sm text-yellow-800">
+                                <strong>Important:</strong> You must use your own valid ID that matches your registered account name. Using someone else's ID is not allowed.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0">
+                    <div class="w-full flex flex-col sm:flex-row gap-3">
+                        <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors" onclick="window.location.href='/Homepage'">
+                            <i class="fas fa-home mr-2"></i>Back to Home
                         </button>
                     </div>
                 </div>
