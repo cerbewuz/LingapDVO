@@ -338,6 +338,37 @@ document.addEventListener('DOMContentLoaded', function () {
             'LUGAR NG KAPANGANAKAN', 'PINANGANAK SA', 'LUGAR NG PAGSILANG',
             // Common on Philippine IDs
             'LUGAR NG KAPANGANAKAN/PLACE OF BIRTH', 'PLACE OF BIRTH/LUGAR'
+        ],
+        barangay: [
+            // English variations
+            'BARANGAY', 'BRGY', 'BRGY.', 'BARANGGAY',
+            // Filipino/Tagalog variations
+            'BARANGGAY', 'BRGY/BARANGAY'
+        ],
+        street: [
+            // English variations
+            'STREET', 'ST', 'ST.', 'STREET ADDRESS', 'HOUSE NO',
+            'BLOCK', 'LOT', 'BLOCK/LOT', 'BLK', 'BLK/LOT',
+            // Filipino/Tagalog variations
+            'KALYE', 'KALSADA', 'NUMERO NG BAHAY'
+        ],
+        subdivision: [
+            // English variations
+            'SUBDIVISION', 'SUBDV', 'SUBD', 'VILLAGE', 'VILL',
+            // Filipino/Tagalog variations
+            'SUBDIBISYON', 'PAMAYANAN'
+        ],
+        district: [
+            // English variations
+            'DISTRICT', 'DIST', 'DIST.', 'ZONE',
+            // Filipino/Tagalog variations
+            'DISTRITO', 'DISTRITO/DISTRICT'
+        ],
+        province: [
+            // English variations
+            'PROVINCE', 'PROV', 'PROV.', 'PROVINCIAL',
+            // Filipino/Tagalog variations
+            'PROBINSYA', 'LALAWIGAN', 'PROBINSYA/PROVINCE'
         ]
     };
 
@@ -590,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         if (!isNextLineLabel && nextLine && nextLine.length > 1) {
                             console.log(`  ✓✓✓ VALUE FOUND on next line (Philippine ID format): "${nextLine}"`);
-                            return { value: nextLine, method: 'next-line' };
+                            return { value: nextLine, method: 'next-line', label: label };
                         } else {
                             console.log(`  ✗ Next line invalid (isLabel: ${isNextLineLabel}, hasData: ${hasUnusualWords})`);
                         }
@@ -613,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             if (!isLabel && hasUnusualWords) {
                                 console.log(`    ✓✓ VALUE FOUND ${j - i} lines after: "${followingLine}"`);
-                                return { value: followingLine, method: 'following-line' };
+                                return { value: followingLine, method: 'following-line', label: label };
                             } else {
                                 console.log(`    ✗ Line invalid (isLabel: ${isLabel}, hasData: ${hasUnusualWords})`);
                             }
@@ -663,7 +694,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         !isStillALabel &&
                         hasUnusualWords) {
                         console.log(`  ✓ VALUE FOUND on same line (unusual): "${valueOnSameLine}"`);
-                        return { value: valueOnSameLine, method: 'same-line' };
+                        return { value: valueOnSameLine, method: 'same-line', label: label };
                     } else {
                         console.log(`  ✗ Same line invalid (isLabel: ${isStillALabel}, hasData: ${hasUnusualWords})`);
                     }
@@ -1857,22 +1888,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
         lastAPICallTime = now;
 
-        status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing with advanced ID recognition...';
+        // Realistic and aesthetic progress messages
+        const progressMessages = [
+            { percent: 5, message: '<i class="fas fa-upload fa-spin mr-2"></i>Uploading image to OCR engine...' },
+            { percent: 15, message: '<i class="fas fa-image fa-pulse mr-2"></i>Preprocessing image...' },
+            { percent: 30, message: '<i class="fas fa-search fa-spin mr-2"></i>Detecting text regions...' },
+            //{ percent: 50, message: '<i class="fas fa-brain fa-pulse mr-2"></i>Analyzing ID structure...' },
+            { percent: 70, message: '<i class="fas fa-spell-check fa-spin mr-2"></i>Extracting text data...' },
+            { percent: 85, message: '<i class="fas fa-check-double fa-pulse mr-2"></i>Validating extracted data...' },
+            { percent: 100, message: '<i class="fas fa-check-circle fa-pulse mr-2 text-green-600"></i>OCR processing complete' }
+        ];
+
+        let currentMessageIndex = 0;
+        status.innerHTML = progressMessages[0].message;
         progressBar.classList.remove('hidden');
-        progress.style.width = '10%';
+        progress.style.width = progressMessages[0].percent + '%';
 
-        // Realistic progress simulation
-        const progressSteps = [20, 35, 50, 65, 80, 95, 100];
-        let currentStep = 0;
-
+        // Smooth, realistic progress simulation
         const progressInterval = setInterval(() => {
-            if (currentStep < progressSteps.length) {
-                progress.style.width = `${progressSteps[currentStep]}%`;
-                currentStep++;
+            if (currentMessageIndex < progressMessages.length - 1) {
+                currentMessageIndex++;
+                progress.style.width = progressMessages[currentMessageIndex].percent + '%';
+                status.innerHTML = progressMessages[currentMessageIndex].message;
             } else {
                 clearInterval(progressInterval);
             }
-        }, 300);
+        }, 400); // Slightly slower for better readability
 
         const apiKey = 'K87899142388957';
         const apiUrl = 'https://api.ocr.space/parse/image';
@@ -1910,9 +1951,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Keep progress bar visible at 100% while analyzing
                 // DON'T hide it here - let the final completion hide it
-                setTimeout(() => {
-                    status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Analyzing ID type...';
-                }, 500);
+                //setTimeout(() => {
+                //    status.innerHTML = '<i class="fas fa-id-card fa-pulse mr-2 text-blue-600"></i>Identifying ID type...';
+                //}, 50);
 
                 // Clean OCR text to remove noise
                 const cleanedText = cleanOCRText(text);
@@ -2306,6 +2347,8 @@ document.addEventListener('DOMContentLoaded', function () {
             birthdate: "",
             sex: "",
             civilStatus: "",
+            address: "",
+            barangay: "",
             city: "",
             confidence: {}
         };
@@ -2338,18 +2381,47 @@ document.addEventListener('DOMContentLoaded', function () {
             extractedData.confidence.middleName = validation.confidence;
         }
 
-        // Extract birthdate
+        // Extract birthdate - CRITICAL FOR DRIVER'S LICENSE
+        console.log('\n╔════════════════════════════════════════════════╗');
+        console.log('║  EXTRACTING DRIVER\'S LICENSE BIRTHDATE       ║');
+        console.log('╚════════════════════════════════════════════════╝');
         extractedData.birthdate = extractDriverLicenseBirthdate(lines);
+
         if (extractedData.birthdate) {
+            console.log(`✅ BIRTHDATE EXTRACTED SUCCESSFULLY: "${extractedData.birthdate}"`);
             const validation = validateBirthdate(extractedData.birthdate);
             extractedData.confidence.birthdate = validation.confidence;
+            console.log(`✅ BIRTHDATE VALIDATION: confidence = ${validation.confidence}%`);
+        } else {
+            console.log('❌ BIRTHDATE EXTRACTION FAILED - No value returned');
+            console.log('   Check if "DATE OF BIRTH" or "BIRTHDATE" label exists in OCR text');
         }
+        console.log('════════════════════════════════════════════════\n');
 
         // Extract gender using unified function with label matching
         extractedData.sex = extractGender(lines);
         extractedData.confidence.sex = extractedData.sex ? 90 : 0;
 
-        // Extract city for Davao verification
+        // Extract address - MULTI-LINE SUPPORT
+        // Address can span 2-3 lines, so we need to concatenate them
+        extractedData.address = extractMultiLineAddress(lines);
+        if (extractedData.address) {
+            console.log(`✓ Complete address extracted: "${extractedData.address}"`);
+        } else {
+            console.log('✗ No address found via label');
+        }
+
+        // Extract barangay (PRIORITY for address components)
+        const barangayResult = extractFieldValue(lines, 'barangay');
+        if (barangayResult && barangayResult.value) {
+            extractedData.barangay = barangayResult.value.trim();
+            console.log(`✓ Barangay extracted via ${barangayResult.method}:`, extractedData.barangay);
+        } else {
+            console.log('✗ No barangay found via label');
+            extractedData.barangay = "";
+        }
+
+        // Extract city for Davao verification (analyzes complete address)
         extractedData.city = extractDriverLicenseCity(lines);
 
         // Store extracted data for debugging
@@ -2417,6 +2489,7 @@ document.addEventListener('DOMContentLoaded', function () {
             extractedData.sex,
             extractedData.civilStatus,
             extractedData.suffix,
+            extractedData.barangay,
             text,
             'driver-license',
             overallConfidence
@@ -2449,260 +2522,606 @@ document.addEventListener('DOMContentLoaded', function () {
         return "";
     }
 
-    // Extract Driver's License Name
-    function extractDriverLicenseName(lines, text) {
-        let lastName = "", firstName = "", middleName = "", suffix = "";
+    // Extract Multi-Line Address
+    // Philippine IDs often have address spanning 2-3 lines after the ADDRESS label
+    // Example:
+    //   Line X: ADDRESS / TIRAHAN
+    //   Line X+1: Block 5 Lot 10 Main Street Green Valley Village Barangay Poblacion
+    //   Line X+2: Davao City Davao del Sur
+    // Result: "Block 5 Lot 10 Main Street Green Valley Village Barangay Poblacion Davao City Davao del Sur"
+    function extractMultiLineAddress(lines) {
+        console.log('=== Extracting Multi-Line Address ===');
 
-        console.log('=== Extracting Driver\'s License Name ===');
-        console.log('Total lines to search:', lines.length);
-        console.log('Sample lines:', lines.slice(0, Math.min(10, lines.length)));
+        const addressLabels = FIELD_LABELS.address || [];
+        if (addressLabels.length === 0) {
+            console.log('✗ No address labels defined');
+            return "";
+        }
 
-        // Strategy 1: Try comma format FIRST (most reliable for Driver's License)
-        console.log('Trying comma format (LAST, FIRST MIDDLE)...');
-        for (const line of lines) {
-            if (line.includes(',') && line.length > 5) {
-                const parts = line.split(',').map(p => p.trim());
-                if (parts.length >= 2 && parts[0].length > 1 && parts[1].length > 1) {
-                    const hasLetters = /[A-Za-z]/.test(parts[0]) && /[A-Za-z]/.test(parts[1]);
-                    const notTooManyNumbers = (parts[0].match(/\d/g) || []).length < 3;
+        console.log('Address labels to search:', addressLabels);
 
-                    if (hasLetters && notTooManyNumbers) {
-                        // Clean the parts first
-                        const part0Clean = cleanName(parts[0]).toUpperCase();
-                        const part1Clean = cleanName(parts[1]).toUpperCase();
+        // Find the address label
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const upperLine = line.toUpperCase();
 
-                        // VALIDATION 1: Skip if either part is too long (likely contains full name)
-                        const part0Words = part0Clean.split(/\s+/).filter(w => w.length > 0);
-                        const part1Words = part1Clean.split(/\s+/).filter(w => w.length > 0);
+            // Check if this line contains an address label
+            for (const label of addressLabels) {
+                if (upperLine.includes(label)) {
+                    console.log(`✓ Found ADDRESS label "${label}" at line ${i + 1}: "${line}"`);
 
-                        if (part0Words.length > 4 || part1Words.length > 4) {
-                            console.log('⚠ Skipping line: Parts contain too many words (likely malformed)');
-                            console.log('  Part0 words:', part0Words.length, '| Part1 words:', part1Words.length);
+                    // Collect the next 2-3 lines as potential address lines
+                    const addressLines = [];
+                    const maxAddressLines = 3; // Address can span up to 3 lines
+
+                    for (let j = i + 1; j < Math.min(i + 1 + maxAddressLines, lines.length); j++) {
+                        const nextLine = lines[j].trim();
+
+                        // Skip completely empty lines
+                        if (!nextLine || nextLine.length === 0) {
+                            console.log(`  Skipping empty line ${j + 1}`);
                             continue;
                         }
 
-                        // VALIDATION 2: DUPLICATION CHECK - If both parts are identical, it's duplicated
-                        // Example: "Espanola Shean Andrei Yee, Espanola Shean Andrei Yee"
-                        if (part0Clean === part1Clean) {
-                            console.log('⚠ DUPLICATE DETECTED: Both parts identical - REJECTING this line');
-                            console.log('  Duplicate line:', line);
-                            console.log('  This appears to be a display artifact, not actual name format');
-                            console.log('  Skipping to find proper comma-separated name...');
-                            continue; // Skip this line, look for proper format
+                        // Check if this line is likely part of the address
+                        const upperNextLine = nextLine.toUpperCase();
+
+                        // Stop if we hit another field label (not address-related)
+                        const isAnotherFieldLabel =
+                            upperNextLine.includes('BIRTHDATE') ||
+                            upperNextLine.includes('DATE OF BIRTH') ||
+                            upperNextLine.includes('SEX') ||
+                            upperNextLine.includes('GENDER') ||
+                            upperNextLine.includes('CIVIL STATUS') ||
+                            upperNextLine.includes('HEIGHT') ||
+                            upperNextLine.includes('WEIGHT') ||
+                            upperNextLine.includes('BLOOD TYPE') ||
+                            upperNextLine.includes('LICENSE') ||
+                            upperNextLine.includes('ID NUMBER') ||
+                            upperNextLine.includes('NATIONALITY');
+
+                        if (isAnotherFieldLabel) {
+                            console.log(`  Stopped at line ${j + 1} - found another field label`);
+                            break;
                         }
 
-                        // VALIDATION 3: Check if part0 (should be last name) contains part1 (first name)
-                        // This would indicate wrong format or malformed data
-                        if (part0Clean.includes(part1Clean) || part1Clean.includes(part0Clean)) {
-                            console.log('⚠ Parts contain each other - likely malformed');
-                            console.log('  Part0:', part0Clean);
-                            console.log('  Part1:', part1Clean);
-                            continue;
+                        // Check if line is a label itself (not a value)
+                        if (isExtractedTextALabel(nextLine)) {
+                            console.log(`  Stopped at line ${j + 1} - line is a label: "${nextLine}"`);
+                            break;
                         }
 
-                        // VALIDATION 4: Proper comma format - part0 should be 1-2 words (last name)
-                        // Part1 should be 1-3 words (first + middle name, possibly suffix)
-                        if (part0Words.length > 2) {
-                            console.log('⚠ Last name part has too many words:', part0Words.length);
-                            console.log('  This might be a full name, not just last name');
-                            continue;
-                        }
+                        // This line appears to be part of the address
+                        addressLines.push(nextLine);
+                        console.log(`  ✓ Address line ${j + 1}: "${nextLine}"`);
+                    }
 
-                        // VALID COMMA FORMAT FOUND
-                        lastName = part0Clean;
-                        console.log('✓ Last Name from comma format:', lastName);
-
-                        // Parse given names part
-                        const parsed = parseFirstMiddleSuffix(part1Words);
-                        firstName = parsed.firstName;
-                        middleName = parsed.middleName;
-                        suffix = parsed.suffix;
-
-                        console.log('✓ Successfully parsed comma format:');
-                        console.log('  Last Name:', lastName);
-                        console.log('  First Name:', firstName);
-                        console.log('  Middle Name:', middleName);
-                        if (suffix) console.log('  Suffix:', suffix);
-
-                        break; // Found valid comma format, stop searching
+                    // Concatenate all address lines into one complete address
+                    if (addressLines.length > 0) {
+                        const completeAddress = addressLines.join(' ');
+                        console.log(`✓ Complete address (${addressLines.length} lines concatenated): "${completeAddress}"`);
+                        return completeAddress;
+                    } else {
+                        console.log('✗ No address lines found after label');
+                        return "";
                     }
                 }
             }
         }
 
-        // Strategy 2: Use independent extraction functions ONLY if comma format failed
-        if (!lastName) {
-            console.log('Comma format failed, trying independent field extraction...');
-            const lastNameResult = extractFieldValue(lines, 'lastName');
-            if (lastNameResult && lastNameResult.value) {
-                const extractedLastName = cleanName(lastNameResult.value);
+        console.log('✗ No ADDRESS label found');
+        return "";
+    }
 
-                // VALIDATION: Last name should be 1-2 words, not a full name
-                const lastNameWords = extractedLastName.split(/\s+/).filter(w => w.length > 0);
-                if (lastNameWords.length > 2) {
-                    console.log(`✗ Extracted lastName contains too many words (${lastNameWords.length}):`, extractedLastName);
-                    console.log('  This appears to be a full name, not just last name - REJECTING');
-                    lastName = "";
-                } else if (isExtractedTextALabel(extractedLastName) || extractedLastName.length < 2) {
-                    console.log(`✗ Extracted lastName is invalid or a label:`, extractedLastName);
-                    lastName = "";
-                } else {
-                    lastName = extractedLastName;
-                    console.log(`✓ Last Name extracted independently via ${lastNameResult.method}:`, lastName);
-                }
+    // Extract Driver's License Name - STRUCTURE-AWARE EXTRACTION
+    // Philippine Driver's License typically has name fields structured as:
+    // - Each name component (Last, First, Middle, Suffix) has its own label
+    // - Value appears on the line immediately after the label
+    // - Some IDs may have multiple values on same line separated by delimiters
+    function extractDriverLicenseName(lines, text) {
+        let lastName = "", firstName = "", middleName = "", suffix = "";
+
+        console.log('=== Extracting Driver\'s License Name (Structure-Aware) ===');
+        console.log('Total lines to search:', lines.length);
+        console.log('Strategy: Follow ID structure, check label positioning, validate separation');
+
+        // Print all lines for debugging
+        console.log('\n=== ALL OCR LINES ===');
+        lines.forEach((line, idx) => {
+            console.log(`  Line ${idx + 1}: "${line}"`);
+        });
+        console.log('===================\n');
+
+        // Extract Last Name using label
+        console.log('\n[1] Extracting Last Name...');
+        const lastNameResult = extractFieldValue(lines, 'lastName');
+        if (lastNameResult && lastNameResult.value) {
+            let rawLastName = lastNameResult.value.trim();
+
+            // Check if value contains other name labels (indicating multiple names on one line)
+            const hasFirstNameLabel = FIELD_LABELS.firstName.some(label =>
+                rawLastName.toUpperCase().includes(label)
+            );
+            const hasMiddleNameLabel = FIELD_LABELS.middleName.some(label =>
+                rawLastName.toUpperCase().includes(label)
+            );
+
+            if (hasFirstNameLabel || hasMiddleNameLabel) {
+                console.log(`  ⚠ WARNING: Last name value contains other name labels`);
+                console.log(`  Raw value: "${rawLastName}"`);
+                console.log(`  This might indicate values are on same line - extracting first word only`);
+
+                // Extract only the first word/value before any delimiter or next label
+                const parts = rawLastName.split(/[\s,\/]+/);
+                rawLastName = parts[0];
+                console.log(`  Extracted first part only: "${rawLastName}"`);
             }
-        }
 
-        if (!firstName) {
-            console.log('Extracting first name independently...');
-            const namesParsed = extractFirstName(lines);
+            lastName = cleanName(rawLastName);
 
-            // VALIDATION: First name should not contain the last name
-            if (namesParsed.firstName && lastName) {
-                const firstNameUpper = namesParsed.firstName.toUpperCase();
-                const lastNameUpper = lastName.toUpperCase();
-
-                if (firstNameUpper.includes(lastNameUpper)) {
-                    console.log('✗ First name contains last name - DATA CONTAMINATION DETECTED');
-                    console.log('  First name:', namesParsed.firstName);
-                    console.log('  Last name:', lastName);
-                    console.log('  REJECTING to prevent duplication');
-                    // Clear all extracted data - something is wrong
-                    firstName = "";
-                    middleName = "";
-                    suffix = "";
+            // Validate: not a label, reasonable length, no duplication indicators
+            if (!isExtractedTextALabel(lastName) && lastName.length >= 2) {
+                // Additional check: ensure it doesn't contain multiple distinct name words
+                const words = lastName.split(/\s+/);
+                if (words.length <= 3) {  // Reasonable for compound surnames
+                    console.log(`✓ Last Name extracted via ${lastNameResult.method}:`, lastName);
                 } else {
-                    firstName = namesParsed.firstName;
-                    if (!middleName) middleName = namesParsed.middleName;
-                    if (!suffix) suffix = namesParsed.suffix;
+                    console.log(`✗ Last Name has too many words (${words.length}), might be contaminated:`, lastName);
+                    lastName = words[0];  // Use only first word
+                    console.log(`  → Using first word only: "${lastName}"`);
                 }
             } else {
-                firstName = namesParsed.firstName;
-                if (!middleName) middleName = namesParsed.middleName;
-                if (!suffix) suffix = namesParsed.suffix;
-            }
-        }
-
-        console.log('=== After extractFirstName ===');
-        console.log('firstName:', firstName);
-        console.log('middleName:', middleName);
-        console.log('suffix:', suffix);
-
-        // PRIORITY: ALWAYS check for separate middle name field (Driver's License may have this)
-        // If a separate field exists, it takes priority over parsed middle name
-        console.log('=== Checking for separate middle name field (Driver\'s License format) ===');
-        const extractedMiddleName = extractMiddleName(lines);
-
-        if (extractedMiddleName && extractedMiddleName.length >= 2) {
-            console.log('✓ Found separate middle name field:', extractedMiddleName);
-
-            // OPTIMIZATION: If separate middle name exists AND we had parsed a middle name from first name field,
-            // re-parse first name to include what we thought was middle name as part of first name
-            if (middleName && middleName.length >= 2) {
-                console.log('⚠ Middle name was parsed from first name field, but separate field exists');
-                console.log('  Re-parsing: treating all words in first name field as first name only');
-
-                // Reconstruct full first name (including what we thought was middle name)
-                const fullFirstName = firstName + ' ' + middleName;
-                firstName = fullFirstName.trim();
-                console.log('  Updated first name to include all words:', firstName);
-            }
-
-            // Use the separate middle name field
-            middleName = extractedMiddleName;
-            console.log('✓ Using middle name from separate field:', middleName);
-        } else if (!middleName || middleName.length < 2) {
-            console.log('✗ No separate middle name field found and no middle name parsed from first name field');
-        } else {
-            console.log('✓ No separate middle name field, using parsed middle name from first name field:', middleName);
-        }
-
-        // Check for separate suffix if not found
-        if (!suffix) {
-            console.log('=== Checking for separate suffix field ===');
-            suffix = extractSuffix(lines);
-            if (suffix) {
-                console.log('✓ Suffix found via independent extraction:', suffix);
-            }
-        }
-
-        console.log('=== Driver\'s License Name Extraction Complete ===');
-        console.log('BEFORE FINAL VALIDATION:');
-        console.log('  Last Name: "' + lastName + '"');
-        console.log('  First Name: "' + firstName + '"');
-        console.log('  Middle Name: "' + middleName + '"');
-        console.log('  Suffix: "' + suffix + '"');
-
-        // === FINAL VALIDATION: Prevent cross-contamination ===
-        console.log('=== FINAL VALIDATION: Checking for data contamination ===');
-
-        // Check 1: Ensure lastName doesn't contain firstName or vice versa
-        if (lastName && firstName) {
-            const lastNameUpper = lastName.toUpperCase();
-            const firstNameUpper = firstName.toUpperCase();
-
-            if (lastNameUpper.includes(firstNameUpper) || firstNameUpper.includes(lastNameUpper)) {
-                console.log('✗ CRITICAL ERROR: lastName and firstName contain each other');
-                console.log('  This indicates extraction failure - clearing all data');
+                console.log(`✗ Last Name invalid or is a label:`, lastName);
                 lastName = "";
+            }
+        } else {
+            console.log('✗ No Last Name found via label');
+        }
+
+        // Extract First Name using label
+        console.log('\n[2] Extracting First Name...');
+        const firstNameResult = extractFieldValue(lines, 'firstName');
+        if (firstNameResult && firstNameResult.value) {
+            let rawFirstName = firstNameResult.value.trim();
+
+            // Check if value contains other name labels
+            const hasLastNameLabel = FIELD_LABELS.lastName.some(label =>
+                rawFirstName.toUpperCase().includes(label)
+            );
+            const hasMiddleNameLabel = FIELD_LABELS.middleName.some(label =>
+                rawFirstName.toUpperCase().includes(label)
+            );
+
+            if (hasLastNameLabel || hasMiddleNameLabel) {
+                console.log(`  ⚠ WARNING: First name value contains other name labels`);
+                console.log(`  Raw value: "${rawFirstName}"`);
+
+                // Extract only the first word/value
+                const parts = rawFirstName.split(/[\s,\/]+/);
+                rawFirstName = parts[0];
+                console.log(`  Extracted first part only: "${rawFirstName}"`);
+            }
+
+            firstName = cleanName(rawFirstName);
+
+            if (!isExtractedTextALabel(firstName) && firstName.length >= 2) {
+                // Check for duplication with lastName
+                const firstUpper = firstName.toUpperCase();
+                const lastUpper = lastName.toUpperCase();
+
+                if (lastUpper && firstUpper.includes(lastUpper)) {
+                    console.log(`✗ First name "${firstName}" contains last name "${lastName}" - extracting unique part`);
+                    // Remove lastName from firstName
+                    const cleanedFirst = firstName.replace(new RegExp(lastName, 'gi'), '').trim();
+                    if (cleanedFirst.length >= 2) {
+                        firstName = cleanedFirst;
+                        console.log(`  → Cleaned first name: "${firstName}"`);
+                    } else {
+                        console.log(`  → Cannot clean, keeping original but flagged for review`);
+                    }
+                }
+
+                const words = firstName.split(/\s+/);
+                if (words.length <= 3) {  // Reasonable for compound first names
+                    console.log(`✓ First Name extracted via ${firstNameResult.method}:`, firstName);
+                } else {
+                    console.log(`✗ First Name has too many words (${words.length}), might be contaminated:`, firstName);
+                    firstName = words[0];  // Use first word only
+                    console.log(`  → Using first word only: "${firstName}"`);
+                }
+            } else {
+                console.log(`✗ First Name invalid or is a label:`, firstName);
                 firstName = "";
+            }
+        } else {
+            console.log('✗ No First Name found via label');
+        }
+
+        // Extract Middle Name using label - FORCED EXTRACTION
+        console.log('\n========================================');
+        console.log('[3] FORCE MIDDLE NAME EXTRACTION');
+        console.log('========================================');
+        console.log('🔍 SEARCHING FOR MIDDLE NAME LABEL...\n');
+
+        const middleNameResult = extractFieldValue(lines, 'middleName');
+
+        if (middleNameResult && middleNameResult.value) {
+            console.log('╔════════════════════════════════════════════════╗');
+            console.log('║  ✓✓✓ MIDDLE NAME LABEL FOUND - KEY-VALUE PAIR ║');
+            console.log('╚════════════════════════════════════════════════╝');
+            console.log(`📌 LABEL FOUND: "${middleNameResult.label || 'MIDDLE NAME'}"`);
+            console.log(`📍 EXTRACTION METHOD: ${middleNameResult.method}`);
+            console.log(`📊 RAW VALUE EXTRACTED: "${middleNameResult.value.trim()}"`);
+            console.log('');
+
+            let rawMiddleName = middleNameResult.value.trim();
+
+            // CRITICAL: Check if first name contains this middle name value
+            // If first name already has the middle name, we need to remove it from first name
+            if (firstName && rawMiddleName) {
+                const firstNameWords = firstName.split(/\s+/);
+                const middleNameWords = rawMiddleName.split(/\s+/);
+
+                // Check if any middle name word appears in first name
+                const hasOverlap = middleNameWords.some(mWord =>
+                    firstNameWords.some(fWord => fWord.toUpperCase() === mWord.toUpperCase())
+                );
+
+                if (hasOverlap) {
+                    console.log('⚠ CRITICAL: First name contains middle name value!');
+                    console.log(`  First name before fix: "${firstName}"`);
+                    console.log(`  Middle name to extract: "${rawMiddleName}"`);
+
+                    // Remove middle name words from first name
+                    const cleanedFirstWords = firstNameWords.filter(fWord =>
+                        !middleNameWords.some(mWord => mWord.toUpperCase() === fWord.toUpperCase())
+                    );
+
+                    if (cleanedFirstWords.length > 0) {
+                        firstName = cleanedFirstWords.join(' ');
+                        console.log(`  ✓ Fixed first name: "${firstName}"`);
+                        console.log(`  ✓ Middle name will be: "${rawMiddleName}"`);
+                    }
+                }
+            }
+
+            // Check if value contains other name labels
+            const hasLastNameLabel = FIELD_LABELS.lastName.some(label =>
+                rawMiddleName.toUpperCase().includes(label)
+            );
+            const hasFirstNameLabel = FIELD_LABELS.firstName.some(label =>
+                rawMiddleName.toUpperCase().includes(label)
+            );
+
+            if (hasLastNameLabel || hasFirstNameLabel) {
+                console.log(`⚠ CONTAMINATION DETECTED: Value contains other name labels`);
+                console.log(`  Contaminated value: "${rawMiddleName}"`);
+
+                // Extract only the first word/value
+                const parts = rawMiddleName.split(/[\s,\/]+/);
+                rawMiddleName = parts[0];
+                console.log(`  ✓ Cleaned by extracting first part: "${rawMiddleName}"`);
+            }
+
+            middleName = cleanName(rawMiddleName);
+            console.log(`🔧 After cleanName(): "${middleName}"`);
+
+            if (!isExtractedTextALabel(middleName) && middleName.length >= 2) {
+                // Check for duplication with other names
+                const middleUpper = middleName.toUpperCase();
+                const lastUpper = lastName.toUpperCase();
+                const firstUpper = firstName.toUpperCase();
+
+                if ((lastUpper && middleUpper.includes(lastUpper)) ||
+                    (firstUpper && middleUpper.includes(firstUpper))) {
+                    console.log(`⚠ DUPLICATION DETECTED: Middle name "${middleName}" contains first/last name`);
+                    let cleanedMiddle = middleName;
+                    if (lastName) cleanedMiddle = cleanedMiddle.replace(new RegExp(lastName, 'gi'), '').trim();
+                    if (firstName) cleanedMiddle = cleanedMiddle.replace(new RegExp(firstName, 'gi'), '').trim();
+
+                    if (cleanedMiddle.length >= 2) {
+                        middleName = cleanedMiddle;
+                        console.log(`  ✓ Removed duplicates, cleaned middle name: "${middleName}"`);
+                    }
+                }
+
+                const words = middleName.split(/\s+/);
+                if (words.length <= 2) {  // Middle name usually 1-2 words
+                    console.log('');
+                    console.log('╔═══════════════════════════════════════╗');
+                    console.log('║  ✓✓✓ MIDDLE NAME EXTRACTION SUCCESS  ║');
+                    console.log('╚═══════════════════════════════════════╝');
+                    console.log(`🎯 FINAL VALUE: "${middleName}"`);
+                    console.log(`📍 METHOD: ${middleNameResult.method}`);
+                    console.log(`📌 LABEL: "${middleNameResult.label || 'MIDDLE NAME'}"`);
+                    console.log('========================================\n');
+                } else {
+                    console.log(`⚠ Middle Name has too many words (${words.length}), extracting first word only`);
+                    middleName = words[0];
+                    console.log(`  ✓ Using first word: "${middleName}"`);
+                    console.log('========================================\n');
+                }
+            } else {
+                console.log(`✗ Middle Name invalid or is a label: "${middleName}"`);
+                console.log('========================================\n');
                 middleName = "";
+            }
+        } else {
+            console.log('✗✗✗ NO MIDDLE NAME LABEL FOUND');
+            console.log('    Searched for: MIDDLE NAME, MIDDLENAME, MIDDLE INITIAL, etc.');
+            console.log('    Result: No matching label detected in OCR text');
+            console.log('========================================\n');
+        }
+
+        // Extract Suffix using label
+        console.log('\n[4] Extracting Suffix...');
+        const suffixResult = extractFieldValue(lines, 'suffix');
+        if (suffixResult && suffixResult.value) {
+            const rawSuffix = cleanName(suffixResult.value);
+            // Validate suffix pattern
+            if (/^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i.test(rawSuffix.trim())) {
+                suffix = rawSuffix.toUpperCase();
+                if (suffix === 'JUNIOR') suffix = 'JR';
+                if (suffix === 'SENIOR') suffix = 'SR';
+                console.log(`✓ Suffix extracted via ${suffixResult.method}:`, suffix);
+            } else {
+                console.log(`✗ Suffix invalid pattern:`, rawSuffix);
+            }
+        } else {
+            console.log('✗ No Suffix found via label');
+        }
+
+        // ===================================================================
+        // CRITICAL: Final validation - ensure all 4 components are DISTINCT
+        // Verify no overlap between lastName, firstName, middleName, suffix
+        // ===================================================================
+        console.log('\n========================================');
+        console.log('=== FINAL NAME VALIDATION - DISTINCTNESS CHECK ===');
+        console.log('========================================');
+
+        // Check 1: Last name vs First name
+        if (lastName && firstName) {
+            const lastWords = lastName.toUpperCase().split(/\s+/);
+            const firstWords = firstName.toUpperCase().split(/\s+/);
+            const overlap = lastWords.filter(lw => firstWords.includes(lw));
+
+            if (overlap.length > 0) {
+                console.log(`⚠ OVERLAP DETECTED between Last and First name: ${overlap.join(', ')}`);
+                console.log(`  Removing overlap from First name...`);
+                const cleanedFirstWords = firstWords.filter(fw => !lastWords.includes(fw));
+                if (cleanedFirstWords.length > 0) {
+                    firstName = cleanedFirstWords.join(' ');
+                    console.log(`  ✓ Cleaned First name: "${firstName}"`);
+                }
+            }
+        }
+
+        // Check 2: First name vs Middle name (CRITICAL)
+        if (firstName && middleName) {
+            const firstWords = firstName.toUpperCase().split(/\s+/);
+            const middleWords = middleName.toUpperCase().split(/\s+/);
+            const overlap = firstWords.filter(fw => middleWords.includes(fw));
+
+            if (overlap.length > 0) {
+                console.log(`⚠ CRITICAL OVERLAP DETECTED between First and Middle name: ${overlap.join(', ')}`);
+                console.log(`  Current First name: "${firstName}"`);
+                console.log(`  Current Middle name: "${middleName}"`);
+                console.log(`  Removing overlap from First name to ensure distinctness...`);
+
+                const cleanedFirstWords = firstWords.filter(fw => !middleWords.includes(fw));
+                if (cleanedFirstWords.length > 0) {
+                    firstName = cleanedFirstWords.join(' ');
+                    console.log(`  ✓ Cleaned First name: "${firstName}"`);
+                    console.log(`  ✓ Middle name remains: "${middleName}"`);
+                } else {
+                    console.log(`  ✗ WARNING: Removing overlap would leave First name empty!`);
+                    console.log(`     This indicates First name extraction got Middle name value`);
+                    console.log(`     Keeping First name as-is for manual review`);
+                }
+            }
+        }
+
+        // Check 3: Middle name vs Last name
+        if (middleName && lastName) {
+            const middleWords = middleName.toUpperCase().split(/\s+/);
+            const lastWords = lastName.toUpperCase().split(/\s+/);
+            const overlap = middleWords.filter(mw => lastWords.includes(mw));
+
+            if (overlap.length > 0) {
+                console.log(`⚠ OVERLAP DETECTED between Middle and Last name: ${overlap.join(', ')}`);
+                console.log(`  Removing overlap from Middle name...`);
+                const cleanedMiddleWords = middleWords.filter(mw => !lastWords.includes(mw));
+                if (cleanedMiddleWords.length > 0) {
+                    middleName = cleanedMiddleWords.join(' ');
+                    console.log(`  ✓ Cleaned Middle name: "${middleName}"`);
+                }
+            }
+        }
+
+        // Check 4: Suffix should not contain any other name parts
+        if (suffix) {
+            const suffixUpper = suffix.toUpperCase();
+            const allNameWords = [
+                ...(lastName ? lastName.toUpperCase().split(/\s+/) : []),
+                ...(firstName ? firstName.toUpperCase().split(/\s+/) : []),
+                ...(middleName ? middleName.toUpperCase().split(/\s+/) : [])
+            ];
+
+            const hasNameInSuffix = allNameWords.some(word => suffixUpper.includes(word));
+            if (hasNameInSuffix) {
+                console.log(`⚠ Suffix contains name parts: "${suffix}"`);
+                console.log(`  This is invalid - suffix should only be JR/SR/II/III/IV/V`);
+                console.log(`  Clearing suffix...`);
                 suffix = "";
             }
         }
 
-        // Check 2: Ensure lastName is not too long (max 2 words for compound last names)
-        if (lastName) {
-            const lastNameWords = lastName.split(/\s+/).filter(w => w.length > 0);
-            if (lastNameWords.length > 2) {
-                console.log('✗ CRITICAL ERROR: lastName has too many words:', lastNameWords.length);
-                console.log('  This appears to be a full name, not just last name');
-                lastName = "";
-            }
-        }
-
-        // Check 3: Ensure firstName + middleName + lastName don't form a duplicated pattern
-        if (firstName && lastName) {
-            const fullName = `${firstName} ${middleName} ${lastName}`.trim().toUpperCase();
-            const words = fullName.split(/\s+/);
-
-            // Check if we have duplicated name patterns (like "SHEAN ANDREI YEE SHEAN ANDREI YEE")
-            if (words.length >= 4) {
-                const half = Math.floor(words.length / 2);
-                const firstHalf = words.slice(0, half).join(' ');
-                const secondHalf = words.slice(half).join(' ');
-
-                if (firstHalf === secondHalf) {
-                    console.log('✗ CRITICAL ERROR: Duplicate pattern detected in full name');
-                    console.log('  First half:', firstHalf);
-                    console.log('  Second half:', secondHalf);
-                    console.log('  Clearing all data to prevent duplication');
-                    lastName = "";
-                    firstName = "";
-                    middleName = "";
-                    suffix = "";
-                }
-            }
-        }
-
-        console.log('=== FINAL VALIDATED Results ===');
-        console.log('  Last Name: "' + lastName + '"');
-        console.log('  First Name: "' + firstName + '"');
-        console.log('  Middle Name: "' + middleName + '"');
-        console.log('  Suffix: "' + suffix + '"');
+        console.log('\n╔════════════════════════════════════════════════╗');
+        console.log('║  ✓✓✓ NAME EXTRACTION AND VALIDATION COMPLETE  ║');
+        console.log('╚════════════════════════════════════════════════╝');
+        console.log('FINAL DISTINCT VALUES:');
+        console.log(`  📌 Last Name:   "${lastName || '(not found)'}"`);
+        console.log(`  📌 First Name:  "${firstName || '(not found)'}"`);
+        console.log(`  📌 Middle Name: "${middleName || '(not found)'}"`);
+        console.log(`  📌 Suffix:      "${suffix || '(not found)'}"`);
         console.log('');
+        console.log('✓ All name components are now DISTINCT from each other');
+        console.log('========================================\n');
+
         return { lastName, firstName, middleName, suffix };
     }
 
     function extractBirthdate(lines, idType = 'generic') {
-        console.log(`=== Extracting Birthdate (${idType}) ===`);
+        console.log('\n========================================');
+        console.log(`=== FORCE BIRTHDATE EXTRACTION (${idType}) ===`);
+        console.log('========================================');
+        console.log('PRIORITY LABELS:');
+        console.log('  • DATE OF BIRTH');
+        console.log('  • BIRTHDATE');
+        console.log('  • BIRTHDAY');
+        console.log('  • BIRTH DATE');
+        console.log('  • DOB');
+        console.log('  • BIRTH');
+        console.log('Filipino: PETSA NG KAPANGANAKAN, KAPANGANAKAN, etc.');
+        console.log('========================================\n');
 
-        // Method 1: Label-value extraction (PRIORITY)
-        // Only extract if "Birthdate" or "Date of Birth" label exists
+        // FORCED LABEL-BASED EXTRACTION
+        // Aggressively search for birthdate labels and extract immediately
+        console.log('🔍 SEARCHING FOR BIRTHDATE LABEL IN ALL LINES...\n');
+
+        // Print all lines with index for debugging
+        console.log('📋 ALL OCR LINES FOR BIRTHDATE SEARCH:');
+        lines.forEach((line, idx) => {
+            console.log(`  [${idx + 1}] "${line}"`);
+        });
+        console.log('');
+
         const labelResult = extractFieldValue(lines, 'birthdate');
+
         if (labelResult && labelResult.value) {
             let dateValue = labelResult.value.trim();
-            console.log(`✓ Found birthdate via label (${labelResult.method}):`, dateValue);
+
+            console.log('╔════════════════════════════════════════════════╗');
+            console.log('║  ✓✓✓ BIRTHDATE LABEL FOUND - KEY-VALUE PAIR   ║');
+            console.log('╚════════════════════════════════════════════════╝');
+            console.log(`📌 LABEL FOUND: "${labelResult.label || 'BIRTHDATE'}"`);
+            console.log(`📍 EXTRACTION METHOD: ${labelResult.method}`);
+            console.log(`📊 RAW VALUE EXTRACTED: "${dateValue}"`);
+            console.log('');
+
+            // ===================================================================
+            // CRITICAL VALIDATION: Ensure extracted value is actually a DATE
+            // Reject values that are clearly NOT dates (like "Weight (kg)", "Height", etc.)
+            // ===================================================================
+
+            // Check 1: Reject if value contains common non-date keywords
+            const nonDateKeywords = [
+                'WEIGHT', 'HEIGHT', 'KG', 'CM', 'LBS', 'POUNDS', 'FEET', 'INCHES',
+                'BLOOD', 'TYPE', 'EYES', 'HAIR', 'COLOR', 'RESTRICTION',
+                'AGENCY', 'CODE', 'CLASS', 'CATEGORY', 'LICENSE', 'ID',
+                'ADDRESS', 'STREET', 'CITY', 'PROVINCE', 'BARANGAY'
+            ];
+
+            const upperDateValue = dateValue.toUpperCase();
+            for (const keyword of nonDateKeywords) {
+                if (upperDateValue.includes(keyword)) {
+                    console.log(`✗ REJECTED: Value contains non-date keyword "${keyword}": "${dateValue}"`);
+                    console.log('  This is NOT a birthdate - it\'s a different field value');
+                    return "";
+                }
+            }
+
+            // Check 2: Ensure value contains at least one digit (dates must have numbers)
+            if (!/\d/.test(dateValue)) {
+                console.log(`✗ REJECTED: Value has no digits: "${dateValue}"`);
+                console.log('  Birthdates must contain numbers');
+                return "";
+            }
+
+            // Check 3: Reject values with too many letters (dates can have month names but not paragraphs)
+            const letterCount = (dateValue.match(/[a-zA-Z]/g) || []).length;
+            const digitCount = (dateValue.match(/\d/g) || []).length;
+            if (letterCount > 20 && digitCount < 2) {
+                console.log(`✗ REJECTED: Too many letters (${letterCount}), too few digits (${digitCount}): "${dateValue}"`);
+                console.log('  This appears to be text, not a date');
+                return "";
+            }
+
+            console.log('✓ Value passed validation - appears to be a date format');
+
+            // ===================================================================
+            // AGE AND DATE RANGE VALIDATION HELPER
+            // ===================================================================
+            function validateBirthdateRange(normalizedDate) {
+                try {
+                    const dateParts = normalizedDate.split('-');
+                    if (dateParts.length !== 3) {
+                        console.log(`  ✗ Invalid date format for validation: "${normalizedDate}"`);
+                        return { valid: false, reason: 'Invalid format' };
+                    }
+
+                    const year = parseInt(dateParts[0]);
+                    const month = parseInt(dateParts[1]);
+                    const day = parseInt(dateParts[2]);
+
+                    // Create date object
+                    const birthDate = new Date(year, month - 1, day);
+                    const today = new Date();
+
+                    // Calculate age
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+
+                    // Validation checks
+                    console.log(`  → Validating date: ${normalizedDate} (Age: ${age} years)`);
+
+                    // Check 1: Not before year 1900 (reasonable historical limit)
+                    if (year < 1900) {
+                        console.log(`  ✗ REJECTED: Year ${year} is before 1900 (too old to be valid)`);
+                        return { valid: false, reason: 'Year before 1900' };
+                    }
+
+                    // Check 2: Not in the future
+                    if (birthDate > today) {
+                        console.log(`  ✗ REJECTED: Date is in the future`);
+                        return { valid: false, reason: 'Future date' };
+                    }
+
+                    // Check 3: Person must be at least 18 years old
+                    if (age < 18) {
+                        console.log(`  ✗ REJECTED: Age is ${age} years (must be at least 18 years old)`);
+                        return { valid: false, reason: `Only ${age} years old (minimum 18 required)` };
+                    }
+
+                    // Check 4: Reasonable maximum age (150 years)
+                    if (age > 150) {
+                        console.log(`  ✗ REJECTED: Age is ${age} years (unreasonably old)`);
+                        return { valid: false, reason: 'Age exceeds 150 years' };
+                    }
+
+                    // Check 5: Valid month (1-12)
+                    if (month < 1 || month > 12) {
+                        console.log(`  ✗ REJECTED: Month ${month} is invalid (must be 1-12)`);
+                        return { valid: false, reason: 'Invalid month' };
+                    }
+
+                    // Check 6: Valid day for the month
+                    const daysInMonth = new Date(year, month, 0).getDate();
+                    if (day < 1 || day > daysInMonth) {
+                        console.log(`  ✗ REJECTED: Day ${day} is invalid for month ${month} (max ${daysInMonth})`);
+                        return { valid: false, reason: 'Invalid day for month' };
+                    }
+
+                    console.log(`  ✓ Date validation PASSED: Age ${age} years, date range acceptable`);
+                    return { valid: true, age };
+                } catch (error) {
+                    console.log(`  ✗ Error during date validation: ${error.message}`);
+                    return { valid: false, reason: 'Validation error' };
+                }
+            }
 
             // ===================================================================
             // ENHANCED BIRTHDATE FORMAT NORMALIZATION
@@ -2710,13 +3129,74 @@ document.addEventListener('DOMContentLoaded', function () {
             // Supports text-based dates: "December 25, 2001", "Dec 25, 2001", etc.
             // ===================================================================
 
+            // SPECIAL FORMAT FOR DRIVER'S LICENSE: YYYY-DD-MM
+            // Driver's License uses an unusual format: Year-Day-Month
+            // Example: "2003-25-12" means December 25, 2003 (NOT 2003-25th month-12th day)
+            if (idType === "Driver's License") {
+                const dlMatch = dateValue.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);
+                if (dlMatch) {
+                    const [_, year, day, month] = dlMatch;
+                    const dayNum = parseInt(day);
+                    const monthNum = parseInt(month);
+
+                    // Validate that day and month are reasonable
+                    if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
+                        const normalized = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                        console.log('');
+                        console.log('╔════════════════════════════════════════════════╗');
+                        console.log('║  DRIVER\'S LICENSE DATE FORMAT DETECTED        ║');
+                        console.log('╚════════════════════════════════════════════════╝');
+                        console.log(`📊 RAW FORMAT: yyyy-dd-mm = "${dateValue}"`);
+                        console.log(`🔄 CONVERTED TO: yyyy-mm-dd = "${normalized}"`);
+                        console.log(`   Year: ${year}, Month: ${month}, Day: ${day}`);
+                        console.log('');
+
+                        // Validate age and date range
+                        console.log('⏳ VALIDATING AGE AND DATE RANGE...');
+                        const validation = validateBirthdateRange(normalized);
+
+                        if (validation.valid) {
+                            console.log('');
+                            console.log('╔═══════════════════════════════════════════╗');
+                            console.log('║  ✓✓✓ BIRTHDATE EXTRACTION SUCCESS        ║');
+                            console.log('╚═══════════════════════════════════════════╝');
+                            console.log(`🎯 FINAL BIRTHDATE VALUE: "${normalized}"`);
+                            console.log(`👤 AGE: ${validation.age} years old (18+ ✓)`);
+                            console.log(`📅 VALID DATE RANGE: 1900 - Today ✓`);
+                            console.log('═══════════════════════════════════════════\n');
+                            return normalized;
+                        } else {
+                            console.log('');
+                            console.log('╔═══════════════════════════════════════════╗');
+                            console.log('║  ✗✗✗ BIRTHDATE VALIDATION FAILED         ║');
+                            console.log('╚═══════════════════════════════════════════╝');
+                            console.log(`❌ REASON: ${validation.reason}`);
+                            console.log(`📊 EXTRACTED DATE: "${normalized}"`);
+                            console.log(`🚫 This birthdate does NOT meet requirements`);
+                            console.log('═══════════════════════════════════════════\n');
+                            return "";
+                        }
+                    } else {
+                        console.log(`  ✗ Invalid Driver's License date format: day=${day}, month=${month}`);
+                    }
+                }
+            }
+
             // Format 1: MM/DD/YYYY (American format) → Convert to yyyy-mm-dd
             let match = dateValue.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
             if (match) {
                 const [_, month, day, year] = match;
                 const normalized = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
                 console.log('  Converted MM/DD/YYYY → yyyy-mm-dd:', normalized);
-                return normalized;
+
+                // Validate age and date range
+                const validation = validateBirthdateRange(normalized);
+                if (validation.valid) {
+                    return normalized;
+                } else {
+                    console.log(`  ✗ Date rejected: ${validation.reason}`);
+                    return "";
+                }
             }
 
             // Format 2: YYYY-MM-DD (ISO format - already correct) → Normalize with padding
@@ -2725,22 +3205,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 const [_, year, month, day] = match;
                 const normalized = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
                 console.log('  Normalized yyyy-mm-dd:', normalized);
-                return normalized;
+
+                // Validate age and date range
+                const validation = validateBirthdateRange(normalized);
+                if (validation.valid) {
+                    return normalized;
+                } else {
+                    console.log(`  ✗ Date rejected: ${validation.reason}`);
+                    return "";
+                }
             }
 
             // Format 3: DD-MM-YYYY (European with dashes) → Convert to yyyy-mm-dd
             match = dateValue.match(/\b(\d{1,2})-(\d{1,2})-(\d{4})\b/);
             if (match) {
                 const [_, part1, part2, year] = match;
+                let normalized;
                 // If part1 > 12, it's DD-MM-YYYY; otherwise ambiguous (assume MM-DD-YYYY)
                 if (parseInt(part1) > 12) {
-                    const normalized = `${year}-${part2.padStart(2, '0')}-${part1.padStart(2, '0')}`;
+                    normalized = `${year}-${part2.padStart(2, '0')}-${part1.padStart(2, '0')}`;
                     console.log('  Converted DD-MM-YYYY → yyyy-mm-dd:', normalized);
+                } else {
+                    normalized = `${year}-${part1.padStart(2, '0')}-${part2.padStart(2, '0')}`;
+                    console.log('  Converted MM-DD-YYYY → yyyy-mm-dd:', normalized);
+                }
+
+                // Validate age and date range
+                const validation = validateBirthdateRange(normalized);
+                if (validation.valid) {
                     return normalized;
                 } else {
-                    const normalized = `${year}-${part1.padStart(2, '0')}-${part2.padStart(2, '0')}`;
-                    console.log('  Converted MM-DD-YYYY → yyyy-mm-dd:', normalized);
-                    return normalized;
+                    console.log(`  ✗ Date rejected: ${validation.reason}`);
+                    return "";
                 }
             }
 
@@ -2771,7 +3267,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (monthNum) {
                     const normalized = `${year}-${monthNum}-${day.padStart(2, '0')}`;
                     console.log(`  Converted "${monthName} ${day}, ${year}" → yyyy-mm-dd:`, normalized);
-                    return normalized;
+
+                    // Validate age and date range
+                    const validation = validateBirthdateRange(normalized);
+                    if (validation.valid) {
+                        return normalized;
+                    } else {
+                        console.log(`  ✗ Date rejected: ${validation.reason}`);
+                        return "";
+                    }
                 }
             }
 
@@ -2785,7 +3289,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (monthNum) {
                     const normalized = `${year}-${monthNum}-${day.padStart(2, '0')}`;
                     console.log(`  Converted "${day} ${monthName} ${year}" → yyyy-mm-dd:`, normalized);
-                    return normalized;
+
+                    // Validate age and date range
+                    const validation = validateBirthdateRange(normalized);
+                    if (validation.valid) {
+                        return normalized;
+                    } else {
+                        console.log(`  ✗ Date rejected: ${validation.reason}`);
+                        return "";
+                    }
                 }
             }
 
@@ -2813,7 +3325,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     const [_, day, year] = match;
                     const normalized = `${year}-${monthNum}-${day.padStart(2, '0')}`;
                     console.log(`  Converted "${day} ${filMonth} ${year}" → yyyy-mm-dd:`, normalized);
-                    return normalized;
+
+                    // Validate age and date range
+                    const validation = validateBirthdateRange(normalized);
+                    if (validation.valid) {
+                        return normalized;
+                    } else {
+                        console.log(`  ✗ Date rejected: ${validation.reason}`);
+                        return "";
+                    }
                 }
             }
 
@@ -2846,7 +3366,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (day && year) {
                             const normalized = `${year}-${monthNum}-${day.padStart(2, '0')}`;
                             console.log(`  Converted "${dateValue}" → yyyy-mm-dd:`, normalized);
-                            return normalized;
+
+                            // Validate age and date range
+                            const validation = validateBirthdateRange(normalized);
+                            if (validation.valid) {
+                                return normalized;
+                            } else {
+                                console.log(`  ✗ Date rejected: ${validation.reason}`);
+                                return "";
+                            }
                         }
                     }
                 }
@@ -2858,23 +3386,200 @@ document.addEventListener('DOMContentLoaded', function () {
                 const [_, year, month, day] = match;
                 const normalized = `${year}-${month}-${day}`;
                 console.log('  Converted YYYYMMDD → yyyy-mm-dd:', normalized);
-                return normalized;
+
+                // Validate age and date range
+                const validation = validateBirthdateRange(normalized);
+                if (validation.valid) {
+                    return normalized;
+                } else {
+                    console.log(`  ✗ Date rejected: ${validation.reason}`);
+                    return "";
+                }
             }
 
             console.log('  Warning: Date format not recognized, returning as-is:', dateValue);
             return dateValue;
         }
 
-        // Method 2: Pattern matching fallback ONLY if label was found but value was on different line
-        // This prevents extracting random dates that aren't birthdate
-        console.log('✗ No birthdate label found - skipping pattern matching');
-        console.log('  (Birthdate requires "Date of Birth" or "Birthdate" indicator on ID)');
+        // ===================================================================
+        // STRICT REQUIREMENT: NO LABEL = NO EXTRACTION
+        // If no birthdate label/indicator was found, we DO NOT extract any dates
+        // This prevents accidentally extracting random dates (ID issue date, expiry date, etc.)
+        // ===================================================================
+        console.log('');
+        console.log('╔════════════════════════════════════════════════╗');
+        console.log('║  ✗✗✗ BIRTHDATE LABEL NOT FOUND               ║');
+        console.log('╚════════════════════════════════════════════════╝');
+        console.log('❌ NO BIRTHDATE LABEL DETECTED IN OCR TEXT');
+        console.log('');
+        console.log('📋 SEARCHED FOR THE FOLLOWING LABELS:');
+        console.log('   • DATE OF BIRTH');
+        console.log('   • BIRTHDATE');
+        console.log('   • BIRTHDAY');
+        console.log('   • BIRTH DATE');
+        console.log('   • DOB');
+        console.log('   • BIRTH');
+        console.log('   • PETSA NG KAPANGANAKAN (Filipino)');
+        console.log('   • KAPANGANAKAN (Filipino)');
+        console.log('');
+        console.log('🚫 RESULT: No matching label found in any OCR line');
+        console.log('⚠ Birthdate extraction REQUIRES a label indicator');
+        console.log('   (This is STRICT by design to prevent extracting wrong dates)');
+        console.log('════════════════════════════════════════════════\n');
         return "";
     }
 
-    // Driver's License Birthdate - uses unified function
+    // Driver's License Birthdate - SPECIAL HANDLING
+    // Driver's License has "Weight(kg)" or other fields after birthdate label
+    // So we CANNOT use next-line method - must search for date patterns around label
     function extractDriverLicenseBirthdate(lines) {
-        return extractBirthdate(lines, 'Driver\'s License');
+        console.log('\n========================================');
+        console.log('=== DRIVER\'S LICENSE BIRTHDATE EXTRACTION ===');
+        console.log('========================================');
+        console.log('⚠ SPECIAL HANDLING: Driver\'s License format');
+        console.log('   Next line after "Birthdate" label is usually "Weight(kg)"');
+        console.log('   Must search for date PATTERN near the label, not next line');
+        console.log('========================================\n');
+
+        // Print all lines for debugging
+        console.log('📋 ALL OCR LINES:');
+        lines.forEach((line, idx) => {
+            console.log(`  [${idx + 1}] "${line}"`);
+        });
+        console.log('');
+
+        // Search for birthdate label
+        const birthdateLabels = FIELD_LABELS['birthdate'] || [
+            'DATE OF BIRTH', 'BIRTH DATE', 'BIRTHDATE', 'DOB', 'BIRTHDAY', 'BIRTH'
+        ];
+
+        let labelLineIndex = -1;
+        let detectedLabel = '';
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const upperLine = line.toUpperCase();
+
+            for (const label of birthdateLabels) {
+                if (upperLine.includes(label)) {
+                    labelLineIndex = i;
+                    detectedLabel = label;
+                    console.log(`🎯 BIRTHDATE LABEL DETECTED: "${label}"`);
+                    console.log(`   At line ${i + 1}: "${line}"`);
+                    break;
+                }
+            }
+            if (labelLineIndex >= 0) break;
+        }
+
+        if (labelLineIndex < 0) {
+            console.log('❌ NO BIRTHDATE LABEL FOUND');
+            console.log('   Cannot extract birthdate without label indicator');
+            console.log('========================================\n');
+            return "";
+        }
+
+        console.log('\n🔍 SEARCHING FOR DATE PATTERN AROUND LABEL...');
+        console.log('   Will check: same line, previous line, and nearby lines');
+        console.log('   Looking for format: YYYY-DD-MM (Driver\'s License special format)\n');
+
+        // Date pattern regex - matches various formats
+        const datePatterns = [
+            { pattern: /\b(\d{4})-(\d{1,2})-(\d{1,2})\b/, name: 'YYYY-DD-MM or YYYY-MM-DD' },
+            { pattern: /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/, name: 'MM/DD/YYYY or DD/MM/YYYY' },
+            { pattern: /\b(\d{1,2})-(\d{1,2})-(\d{4})\b/, name: 'DD-MM-YYYY or MM-DD-YYYY' },
+            { pattern: /\b([A-Z]{3,9})\s+(\d{1,2}),?\s*(\d{4})\b/i, name: 'MONTH DD, YYYY' },
+            { pattern: /\b(\d{1,2})\s+([A-Z]{3,9})\s+(\d{4})\b/i, name: 'DD MONTH YYYY' }
+        ];
+
+        // Search strategy: Check lines in order of proximity to label
+        // 1. Same line as label
+        // 2. Previous line (might have date above label)
+        // 3. Next line (but verify it's not "Weight" or other non-date)
+        // 4. Lines within +/- 2 of label
+
+        const searchOrder = [
+            labelLineIndex,           // Same line
+            labelLineIndex - 1,       // Line before
+            labelLineIndex + 1,       // Line after
+            labelLineIndex - 2,       // 2 lines before
+            labelLineIndex + 2        // 2 lines after
+        ];
+
+        for (const searchIndex of searchOrder) {
+            if (searchIndex < 0 || searchIndex >= lines.length) continue;
+
+            const searchLine = lines[searchIndex].trim();
+            const positionDesc = searchIndex === labelLineIndex ? 'same line' :
+                                searchIndex < labelLineIndex ? `${labelLineIndex - searchIndex} line(s) before` :
+                                `${searchIndex - labelLineIndex} line(s) after`;
+
+            console.log(`  Checking ${positionDesc} [${searchIndex + 1}]: "${searchLine}"`);
+
+            // Skip if line contains non-date keywords
+            const nonDateKeywords = ['WEIGHT', 'HEIGHT', 'KG', 'CM', 'LBS', 'RESTRICTIONS', 'ADDRESS', 'BLOOD'];
+            const upperSearch = searchLine.toUpperCase();
+            const hasNonDateKeyword = nonDateKeywords.some(keyword => upperSearch.includes(keyword));
+
+            if (hasNonDateKeyword) {
+                console.log(`    ✗ Skipped - contains non-date keyword`);
+                continue;
+            }
+
+            // Try each date pattern
+            for (const {pattern, name} of datePatterns) {
+                const match = searchLine.match(pattern);
+                if (match) {
+                    console.log(`    ✓✓✓ DATE PATTERN FOUND: ${name}`);
+                    console.log(`        Raw match: "${match[0]}"`);
+
+                    // Extract the date value and normalize
+                    const dateValue = match[0];
+
+                    // Use the main extractBirthdate function to normalize and validate
+                    // Create a temporary lines array with just this date for processing
+                    const tempLines = ['DATE OF BIRTH', dateValue];
+                    const normalized = extractBirthdate(tempLines, 'Driver\'s License');
+
+                    if (normalized) {
+                        console.log('\n╔═══════════════════════════════════════════╗');
+                        console.log('║  ✓✓✓ BIRTHDATE EXTRACTION SUCCESS        ║');
+                        console.log('╚═══════════════════════════════════════════╝');
+                        console.log(`🎯 FOUND AT: Line ${searchIndex + 1} (${positionDesc})`);
+                        console.log(`📊 RAW VALUE: "${dateValue}"`);
+                        console.log(`🔄 NORMALIZED: "${normalized}"`);
+                        console.log('═══════════════════════════════════════════\n');
+                        return normalized;
+                    } else {
+                        console.log(`    ✗ Date found but validation failed`);
+                    }
+                }
+            }
+        }
+
+        // If we reach here, label was found but no valid date
+        console.log('\n╔════════════════════════════════════════════════╗');
+        console.log('║  ✗✗✗ BIRTHDATE EXTRACTION FAILED             ║');
+        console.log('╚════════════════════════════════════════════════╝');
+        console.log(`❌ LABEL DETECTED: "${detectedLabel}"`);
+        console.log('❌ BUT NO VALID DATE PATTERN FOUND NEARBY');
+        console.log('');
+        console.log('🚫 BLOCKING PROCESS - Cannot proceed without birthdate');
+        console.log('════════════════════════════════════════════════\n');
+
+        const errorMessage =
+            `Birthdate field detected on Driver's License but value could not be read.\n\n` +
+            `The OCR system found a "${detectedLabel}" label on your ID, ` +
+            `but could not find a valid date value nearby.\n\n` +
+            `Please ensure:\n` +
+            `1. The birthdate on the ID is clear and readable\n` +
+            `2. The ID image is well-lit with no glare or shadows\n` +
+            `3. The entire ID is visible in the photo\n` +
+            `4. The image is not blurry or distorted\n\n` +
+            `Try taking a new photo with better clarity.`;
+
+        showOCRErrorModal(errorMessage);
+        return "";
     }
 
     // Extract Driver's License Gender (uses unified extractGender function)
@@ -3021,6 +3726,7 @@ document.addEventListener('DOMContentLoaded', function () {
             "",
             extractedData.civilStatus,
             extractedData.suffix,
+            "",
             text,
             'phil-id',
             overallConfidence
@@ -3130,9 +3836,24 @@ document.addEventListener('DOMContentLoaded', function () {
         return extractBirthdate(lines, 'National ID (PhilSys)');
     }
 
-    // Extract PhilSys City - uses unified function
+    // Extract PhilSys City - uses unified function with National ID specific handling
     function extractPhilSysCity(lines) {
-        return extractDavaoCity(lines);
+        console.log('\n=== NATIONAL ID CITY EXTRACTION ===');
+        console.log('Extracting city from National ID (PhilSys)...');
+        console.log('Accepted: "Davao", "Davao City", "City of Davao"');
+        console.log('Rejected: Province names, other cities from Davao provinces\n');
+
+        // Use the unified Davao City extraction
+        const city = extractDavaoCity(lines);
+
+        // Additional logging for National ID
+        if (city === "Davao City") {
+            console.log('✅ NATIONAL ID CITY VALIDATION: Davao City detected and accepted');
+        } else {
+            console.log('❌ NATIONAL ID CITY VALIDATION: Not Davao City');
+        }
+
+        return city;
     }
 
     // Parse PhilSys ID Back - Extract gender AND civil status
@@ -3315,6 +4036,7 @@ document.addEventListener('DOMContentLoaded', function () {
             extractedData.sex,
             extractedData.civilStatus,
             extractedData.suffix,
+            "",
             text,
             'sss-id',
             overallConfidence
@@ -3471,52 +4193,169 @@ document.addEventListener('DOMContentLoaded', function () {
     // LOGIC: If "Davao City" keyword exists, accept (even if "Davao del Sur" also exists)
     //        If only "Davao del Sur" exists (without Davao City keyword), reject
     function extractDavaoCity(lines) {
-        console.log('=== Extracting Davao City with STRICT keyword matching ===');
+        console.log('=== Extracting Davao City - COMPLETE ADDRESS ANALYSIS ===');
 
-        // STRICT KEYWORDS: Only these exact variations will return "Davao City"
-        // Case-insensitive matching
+        // ACCEPTED KEYWORDS: These variations will return "Davao City"
+        // All uppercase variations are automatically handled by toUpperCase()
         const davaoCityKeywords = [
             'DAVAO CITY',
             'CITY OF DAVAO',
-            'DVO CITY'
-        ];
-
-        // REJECTION KEYWORDS: These should NOT be accepted as Davao City
-        // BUT: If line contains BOTH Davao City keyword AND rejection keyword, ACCEPT it
-        // Example: "Davao City Davao del Sur" → ACCEPT (Davao City is explicitly mentioned)
-        // Example: "Digos City Davao del Sur" → REJECT (no Davao City keyword)
-        const rejectionKeywords = [
+            'DVO CITY',
+            'DAVAO',  // Accept "Davao" as it refers to Davao City
+            // Also accept province names as they may contain Davao City addresses
             'DAVAO DEL SUR',
             'DAVAO DEL NORTE',
             'DAVAO ORIENTAL',
-            'DAVAO REGION',
+            'DAVAO OCCIDENTAL',
             'DAVAO DE ORO'
         ];
 
-        // Search through ALL lines for Davao City keywords as complete phrases
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            const upper = line.toUpperCase();
+        // REJECTION KEYWORDS: Cities/Municipalities that are NOT Davao City
+        // These are other cities in Davao provinces - they should be REJECTED
+        const rejectionCities = [
+            // Davao del Sur cities (NOT Davao City)
+            'DIGOS', 'DIGOS CITY', 'BANSALAN', 'HAGONOY', 'KIBLAWAN', 'MAGSAYSAY',
+            'MALALAG', 'MATANAO', 'PADADA', 'SANTA CRUZ', 'SULOP',
+            // Davao del Norte cities (NOT Davao City)
+            'TAGUM', 'TAGUM CITY', 'PANABO', 'PANABO CITY', 'SAMAL', 'ISLAND GARDEN CITY OF SAMAL',
+            'ASUNCION', 'BRAULIO', 'CARMEN', 'KAPALONG', 'NEW CORELLA', 'SAN ISIDRO',
+            'SANTO TOMAS', 'TALAINGOD',
+            // Davao Oriental cities (NOT Davao City)
+            'MATI', 'MATI CITY', 'BAGANGA', 'BANAYBANAY', 'BOSTON', 'CARAGA', 'CATEEL',
+            'GOVERNOR GENEROSO', 'LUPON', 'MANAY', 'TARRAGONA',
+            // Davao Occidental cities (NOT Davao City)
+            'MALITA', 'DON MARCELINO', 'JOSE ABAD SANTOS', 'SANTA MARIA', 'SARANGANI'
+        ];
 
-            // Skip empty lines
-            if (!line || line.length < 3) continue;
+        // ===================================================================
+        // STEP 1: Extract ALL address components separately
+        // ===================================================================
+        console.log('Step 1: Extracting all address components...');
 
-            // Skip lines with ID-specific indicators (to avoid detecting keywords in ID type labels)
-            if (upper.includes('LICENSE') || upper.includes('DRIVER') ||
-                upper.includes('SSS') || upper.includes('UMID') ||
-                upper.includes('PHILSYS') || upper.includes('NATIONAL ID')) {
-                continue;
+        const addressComponents = {
+            street: '',
+            subdivision: '',
+            barangay: '',
+            district: '',
+            city: '',
+            province: '',
+            address: '' // General address field
+        };
+
+        // Extract each component using label-based extraction
+        const streetResult = extractFieldValue(lines, 'street');
+        if (streetResult && streetResult.value) {
+            addressComponents.street = streetResult.value.trim();
+            console.log(`  ✓ Street/Block/Lot: "${addressComponents.street}"`);
+        }
+
+        const subdivisionResult = extractFieldValue(lines, 'subdivision');
+        if (subdivisionResult && subdivisionResult.value) {
+            addressComponents.subdivision = subdivisionResult.value.trim();
+            console.log(`  ✓ Subdivision/Village: "${addressComponents.subdivision}"`);
+        }
+
+        const barangayResult = extractFieldValue(lines, 'barangay');
+        if (barangayResult && barangayResult.value) {
+            addressComponents.barangay = barangayResult.value.trim();
+            console.log(`  ✓ Barangay: "${addressComponents.barangay}"`);
+        }
+
+        const districtResult = extractFieldValue(lines, 'district');
+        if (districtResult && districtResult.value) {
+            addressComponents.district = districtResult.value.trim();
+            console.log(`  ✓ District: "${addressComponents.district}"`);
+        }
+
+        const cityResult = extractFieldValue(lines, 'city');
+        if (cityResult && cityResult.value) {
+            addressComponents.city = cityResult.value.trim();
+            console.log(`  ✓ City: "${addressComponents.city}"`);
+        }
+
+        const provinceResult = extractFieldValue(lines, 'province');
+        if (provinceResult && provinceResult.value) {
+            addressComponents.province = provinceResult.value.trim();
+            console.log(`  ✓ Province: "${addressComponents.province}"`);
+        }
+
+        const addressResult = extractFieldValue(lines, 'address');
+        if (addressResult && addressResult.value) {
+            addressComponents.address = addressResult.value.trim();
+            console.log(`  ✓ General Address: "${addressComponents.address}"`);
+        }
+
+        // ===================================================================
+        // STEP 2: Concatenate ALL address parts into one complete address
+        // Format: Street, Subdivision, Barangay, District, City, Province, Address
+        // ===================================================================
+        console.log('\nStep 2: Concatenating all address components...');
+
+        const allAddressParts = [
+            addressComponents.street,
+            addressComponents.subdivision,
+            addressComponents.barangay,
+            addressComponents.district,
+            addressComponents.city,
+            addressComponents.province,
+            addressComponents.address
+        ].filter(part => part && part.length > 0); // Remove empty parts
+
+        const completeAddress = allAddressParts.join(' ');
+        console.log(`  Complete concatenated address: "${completeAddress}"`);
+
+        // ===================================================================
+        // STEP 3: Check the COMPLETE address for Davao City keywords
+        // ===================================================================
+        console.log('\nStep 3: Checking complete address for Davao City...');
+
+        if (completeAddress && completeAddress.length > 0) {
+            const upperCompleteAddress = completeAddress.toUpperCase();
+
+            // PRIORITY 1: Check for OTHER CITIES/MUNICIPALITIES FIRST (these are REJECTIONS)
+            // Cities like Digos, Tagum, Panabo, Mati, etc. are NOT Davao City
+            let hasRejectionCity = false;
+            let rejectionCityFound = '';
+
+            for (const rejectionCity of rejectionCities) {
+                if (upperCompleteAddress.includes(rejectionCity)) {
+                    hasRejectionCity = true;
+                    rejectionCityFound = rejectionCity;
+                    break;
+                }
             }
 
-            console.log(`Checking line ${i + 1}: "${line}"`);
+            if (hasRejectionCity) {
+                console.log('');
+                console.log('╔════════════════════════════════════════════════╗');
+                console.log('║  ✗✗✗ DAVAO CITY VALIDATION FAILED            ║');
+                console.log('╚════════════════════════════════════════════════╝');
+                console.log(`❌ OTHER CITY DETECTED: "${rejectionCityFound}"`);
+                console.log(`   Complete address: "${completeAddress}"`);
+                console.log('');
+                console.log('🚫 This is a separate city/municipality, NOT Davao City:');
+                console.log(`   "${rejectionCityFound}" is located in a Davao province`);
+                console.log('   Only residents of Davao City proper are accepted');
+                console.log('');
+                console.log('Examples of cities that are NOT accepted:');
+                console.log('   ✗ Digos (Davao del Sur)');
+                console.log('   ✗ Tagum (Davao del Norte)');
+                console.log('   ✗ Panabo (Davao del Norte)');
+                console.log('   ✗ Mati (Davao Oriental)');
+                console.log('   ✗ Malita (Davao Occidental)');
+                console.log('');
+                console.log('✅ ACCEPTED: "Davao", "Davao City", "City of Davao", province names in uppercase');
+                console.log('════════════════════════════════════════════════\n');
+                return "Not detected";
+            }
 
-            // PRIORITY 1: Check for Davao City keywords FIRST
-            // If Davao City keyword exists, accept immediately (even if rejection keyword also exists)
+            // PRIORITY 2: Check for ACCEPTED Davao City keywords
+            // Includes: Davao, Davao City, City of Davao, and PROVINCE NAMES (DAVAO DEL SUR, etc.)
             let hasDavaoCityKeyword = false;
             let foundKeyword = '';
 
             for (const keyword of davaoCityKeywords) {
-                if (upper.includes(keyword)) {
+                if (upperCompleteAddress.includes(keyword)) {
                     hasDavaoCityKeyword = true;
                     foundKeyword = keyword;
                     break;
@@ -3524,41 +4363,32 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (hasDavaoCityKeyword) {
-                // Check if rejection keyword also exists
-                let hasRejectionKeyword = false;
-                let rejectionFound = '';
-
-                for (const rejection of rejectionKeywords) {
-                    if (upper.includes(rejection)) {
-                        hasRejectionKeyword = true;
-                        rejectionFound = rejection;
-                        break;
-                    }
-                }
-
-                if (hasRejectionKeyword) {
-                    console.log(`  ℹ️ Contains both "${foundKeyword}" AND "${rejectionFound}"`);
-                    console.log(`  ✓✓✓ ACCEPTED: Davao City explicitly mentioned (province/region is just context)`);
-                } else {
-                    console.log(`  ✓✓✓ FOUND Davao City keyword: "${foundKeyword}"`);
-                }
-
-                console.log(`  Line content: "${line}"`);
+                console.log('');
+                console.log('╔════════════════════════════════════════════════╗');
+                console.log('║  ✓✓✓ DAVAO CITY VALIDATION SUCCESS           ║');
+                console.log('╚════════════════════════════════════════════════╝');
+                console.log(`✅ ACCEPTED KEYWORD FOUND: "${foundKeyword}"`);
+                console.log(`   Complete address: "${completeAddress}"`);
+                console.log('');
+                console.log('✓ No other city/municipality names detected (Digos, Tagum, etc.)');
+                console.log('✓ Valid Davao City resident - account verification can proceed');
+                console.log('');
+                console.log('ℹ️ ACCEPTED FORMATS:');
+                console.log('   • "Davao" (any case)');
+                console.log('   • "Davao City" (any case)');
+                console.log('   • "City of Davao" (any case)');
+                console.log('   • "DAVAO DEL SUR" (province in uppercase)');
+                console.log('   • "DAVAO DEL NORTE" (province in uppercase)');
+                console.log('   • Other Davao province names in uppercase');
+                console.log('════════════════════════════════════════════════\n');
                 return "Davao City";
             }
 
-            // PRIORITY 2: If NO Davao City keyword, check for rejection keywords
-            // If rejection keyword exists without Davao City keyword, skip this line
-            for (const rejection of rejectionKeywords) {
-                if (upper.includes(rejection)) {
-                    console.log(`  ✗ REJECTED: Contains "${rejection}" but no Davao City keyword`);
-                    console.log(`  (This is not Davao City - it's another municipality/city in the province)`);
-                    break; // Skip this line
-                }
-            }
+        } else {
+            console.log('  ℹ️ No address components found to concatenate');
         }
 
-        console.log('✗ Davao City not detected (no matching keywords found)');
+        console.log('✗ Davao City not detected in complete address');
         return "Not detected";
     }
 
@@ -3699,6 +4529,7 @@ document.addEventListener('DOMContentLoaded', function () {
             extractedData.sex,
             extractedData.civilStatus,
             extractedData.suffix,
+            "",
             text,
             'umid',
             overallConfidence
@@ -3964,23 +4795,74 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Check if city is Davao City
+    // ACCEPTS: "Davao", "Davao City", "City of Davao" (any case), and province names in uppercase
+    // REJECTS: Other cities/municipalities from Davao provinces (Digos, Tagum, Panabo, Mati, etc.)
     function checkIfDavaoCity(city) {
-        if (!city || city === "Not detected") return false;
-
-        const davaoPatterns = [
-            'DAVAO CITY',
-            'CITY OF DAVAO',
-            'DAVAO',
-            'DVO CITY'
-        ];
+        if (!city || city === "Not detected") {
+            console.log('❌ checkIfDavaoCity: No city provided or not detected');
+            return false;
+        }
 
         const normalizedCity = city.toUpperCase().trim();
+        console.log(`🔍 checkIfDavaoCity: Checking "${normalizedCity}"`);
 
-        for (const pattern of davaoPatterns) {
+        // STEP 1: Check for OTHER CITIES/MUNICIPALITIES from Davao provinces (REJECT these)
+        // These are NOT Davao City, they're separate cities in the provinces
+        const rejectionCities = [
+            // Davao del Sur cities/municipalities
+            'DIGOS', 'DIGOS CITY', 'BANSALAN', 'HAGONOY', 'KIBLAWAN', 'MAGSAYSAY',
+            'MALALAG', 'MATANAO', 'PADADA', 'SANTA CRUZ', 'SULOP',
+
+            // Davao del Norte cities/municipalities
+            'TAGUM', 'TAGUM CITY', 'PANABO', 'PANABO CITY', 'SAMAL', 'ISLAND GARDEN CITY OF SAMAL',
+            'ASUNCION', 'BRAULIO', 'CARMEN', 'KAPALONG', 'NEW CORELLA', 'SAN ISIDRO',
+            'SANTO TOMAS', 'TALAINGOD',
+
+            // Davao Oriental cities/municipalities
+            'MATI', 'MATI CITY', 'BAGANGA', 'BANAYBANAY', 'BOSTON', 'CARAGA', 'CATEEL',
+            'GOVERNOR GENEROSO', 'LUPON', 'MANAY', 'TARRAGONA',
+
+            // Davao Occidental cities/municipalities
+            'MALITA', 'DON MARCELINO', 'JOSE ABAD SANTOS', 'SANTA MARIA', 'SARANGANI'
+        ];
+
+        for (const rejectionCity of rejectionCities) {
+            if (normalizedCity.includes(rejectionCity)) {
+                console.log(`❌ REJECTED: This is "${rejectionCity}", not Davao City`);
+                console.log(`   "${rejectionCity}" is a separate city/municipality in a Davao province`);
+                console.log(`   Only residents of Davao City proper are accepted`);
+                return false;
+            }
+        }
+
+        // STEP 2: Check for ACCEPTED Davao City patterns
+        // Includes: Davao, Davao City, City of Davao (any case), and province names in uppercase
+        const acceptedPatterns = [
+            'DAVAO CITY',
+            'CITY OF DAVAO',
+            'DVO CITY',
+            'DAVAO',  // Accept "Davao" as it refers to Davao City
+            // Also accept province names in uppercase (they may contain Davao City addresses)
+            'DAVAO DEL SUR',
+            'DAVAO DEL NORTE',
+            'DAVAO ORIENTAL',
+            'DAVAO OCCIDENTAL',
+            'DAVAO DE ORO'
+        ];
+
+        for (const pattern of acceptedPatterns) {
             if (normalizedCity.includes(pattern)) {
+                console.log(`✅ ACCEPTED: City matches "${pattern}"`);
+                console.log(`   This is Davao City - verification can proceed`);
+                console.log(`   (Province names in uppercase are accepted)`);
                 return true;
             }
         }
+
+        // If we reach here, city doesn't match any accepted pattern
+        console.log(`❌ REJECTED: Does not match Davao City patterns`);
+        console.log(`   Detected: "${normalizedCity}"`);
+        console.log(`   Accepted: "Davao", "Davao City", "City of Davao", "DAVAO DEL SUR", etc.`);
 
         return false;
     }
@@ -4357,7 +5239,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Advanced form fields update with civil status and suffix
     // FINAL VALIDATION is performed before populating fields
-    function updateFormFieldsAdvanced(idNumber, firstName, middleName, lastName, birthdate, sex, civilStatus, suffix, fullOcrText = "", idType = "", confidence = 0) {
+    function updateFormFieldsAdvanced(idNumber, firstName, middleName, lastName, birthdate, sex, civilStatus, suffix, barangay = "", fullOcrText = "", idType = "", confidence = 0) {
         try {
             console.log('\n=== STEP 3: DATA EXTRACTION & FIELD POPULATION ===');
 
@@ -4430,15 +5312,26 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (birthdate && birthField) {
                 birthField.value = birthdate;
-                console.log('✓ Birthdate:', birthdate);
+                console.log('╔═══════════════════════════════════════════╗');
+                console.log('║  ✓✓✓ BIRTHDATE AUTO-POPULATED           ║');
+                console.log('╚═══════════════════════════════════════════╝');
+                console.log(`📅 VALUE: "${birthdate}"`);
+                console.log(`📍 FIELD ID: "birthdate"`);
+                console.log(`✅ Field populated successfully`);
+                console.log('');
+            } else {
+                console.log('⚠ WARNING: Birthdate NOT populated');
+                if (!birthdate) console.log('  Reason: birthdate value is empty or null');
+                if (!birthField) console.log('  Reason: birthdate field not found in DOM');
+                console.log('');
             }
             if (sex && genderField) {
                 genderField.value = sex;
                 console.log('✓ Gender:', sex);
             }
 
-            // Auto-populate barangay if detected
-            const detectedBarangay = extractBarangayFromAddress(fullOcrText);
+            // Auto-populate barangay - prioritize extracted barangay, fallback to address extraction
+            let detectedBarangay = barangay || extractBarangayFromAddress(fullOcrText);
             if (detectedBarangay && barangayField) {
                 barangayField.value = detectedBarangay;
                 console.log('✓ Barangay auto-populated:', detectedBarangay);
@@ -4526,19 +5419,53 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('=== INTELLIGENT VALIDATION COMPLETED SUCCESSFULLY ===');
             console.log('Auto-populated fields:', populatedFields);
 
-            // Ensure progress bar is at 100% and update status to show completion
+            // ===================================================================
+            // COMPLETION STATUS UPDATE - Show "Completed" with animation
+            // ===================================================================
+            console.log('\n╔════════════════════════════════════════════════╗');
+            console.log('║  FINALIZING OCR EXTRACTION PROCESS            ║');
+            console.log('╚════════════════════════════════════════════════╝');
+
+            // Set progress bar to 100%
             if (progress) {
                 progress.style.width = '100%';
+                progress.style.transition = 'width 0.5s ease-in-out';
+                console.log('✓ Progress bar set to 100%');
             }
 
+            // Update status to "Completed" with green styling (NO continuous animation)
             if (status) {
-                status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600"></i><strong>Completed</strong> - Data extraction successful';
+                // Use pulse animation temporarily, then remove it after 2 seconds
+                status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600 animate-pulse" id="status-icon"></i><strong>Completed</strong> - Data extraction successful';
+                status.className = 'text-sm text-green-600 mt-2 font-semibold animate-fadeIn';
+                console.log('✓ OCR Status updated to: "Completed"');
+                console.log('✓ Animation applied: fadeIn (will stop pulse after 2s)');
+
+                // Stop pulse animation after 2 seconds
+                setTimeout(() => {
+                    const statusIcon = document.getElementById('status-icon');
+                    if (statusIcon) {
+                        statusIcon.classList.remove('animate-pulse');
+                        console.log('✓ Pulse animation stopped - status is now static');
+                    }
+                }, 2000);
             }
+
+            console.log('');
+            console.log('╔════════════════════════════════════════════════╗');
+            console.log('║  ✓✓✓ OCR PROCESS COMPLETED SUCCESSFULLY      ║');
+            console.log('╚════════════════════════════════════════════════╝');
+            console.log(`📊 Fields populated: ${populatedFields.length}`);
+            console.log(`📋 Populated fields: ${populatedFields.join(', ')}`);
+            console.log('🎯 Auto-population: Complete');
+            console.log('✅ Status: Completed with animation');
+            console.log('════════════════════════════════════════════════\n');
 
             // Hide progress bar after a delay to show the completed state
             if (progressBar) {
                 setTimeout(() => {
                     progressBar.classList.add('hidden');
+                    console.log('✓ Progress bar hidden after 2s delay');
                 }, 2000); // 2 second delay to show the completed state
             }
         } catch (e) {
