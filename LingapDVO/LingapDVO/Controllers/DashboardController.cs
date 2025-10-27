@@ -21,12 +21,14 @@ namespace LingapDVO.Controllers
         public readonly ApplicationDbContext context;
         private readonly IWebHostEnvironment environment;
         private readonly IConfiguration _configuration;
+        private readonly FormSubmissionSecurityService _securityService;
 
-        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration)
+        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, FormSubmissionSecurityService securityService)
         {
             this.context = context;
             this.environment = environment;
             _configuration = configuration;
+            _securityService = securityService;
         }
     
         public IActionResult Index()
@@ -174,12 +176,22 @@ namespace LingapDVO.Controllers
 
         }       
 
-        public IActionResult FillupformHospitalBill()
+        public async Task<IActionResult> FillupformHospitalBill()
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
+
+            // Get user ID
+            if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
+            {
+                return RedirectToAction("Login", "Login");
+            }
+
+            // 🔒 SECURITY: Generate form submission token
+            var token = await _securityService.GenerateSubmissionTokenAsync(userId, "HospitalBill");
+            ViewBag.SubmissionToken = token.Token;
 
             ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
             ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
@@ -436,7 +448,7 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public IActionResult FillupformHospitalBill(FillupformHospitalBillDto fillupformHospitalbilldto)
+        public async Task<IActionResult> FillupformHospitalBill(FillupformHospitalBillDto fillupformHospitalbilldto)
         {
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -448,6 +460,101 @@ namespace LingapDVO.Controllers
             // Get the user's ID filenames from session
             string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
             string userBackID = HttpContext.Session.GetString("BackID") ?? "";
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // 🔒 SECURITY VALIDATION: Check submission token (anti-duplication)
+            // ═══════════════════════════════════════════════════════════════════════
+            string patientName = $"{fillupformHospitalbilldto.Lastname}, {fillupformHospitalbilldto.Firstname} {fillupformHospitalbilldto.Middlename}";
+            string requestorName = $"{fillupformHospitalbilldto.RLastname}, {fillupformHospitalbilldto.RFirstname} {fillupformHospitalbilldto.RMiddlename}";
+
+            // Log submission attempt
+            await _securityService.LogSubmissionAttemptAsync(
+                "HospitalBill",
+                userId,
+                patientName,
+                requestorName,
+                "ATTEMPT",
+                fillupformHospitalbilldto.SubmissionToken,
+                false, // Will be updated after token validation
+                false,
+                null,
+                "Form submission attempted");
+
+            // Validate submission token
+            if (string.IsNullOrEmpty(fillupformHospitalbilldto.SubmissionToken))
+            {
+                await _securityService.LogSubmissionAttemptAsync(
+                    "HospitalBill",
+                    userId,
+                    patientName,
+                    requestorName,
+                    "BLOCKED",
+                    null,
+                    false,
+                    true,
+                    "Missing submission token - possible unauthorized submission",
+                    "Missing security token");
+
+                ModelState.AddModelError("", "Security validation failed. Please refresh the page and try again.");
+                return View(fillupformHospitalbilldto);
+            }
+
+            var (isValid, tokenReason) = await _securityService.ValidateSubmissionTokenAsync(
+                fillupformHospitalbilldto.SubmissionToken,
+                userId,
+                "HospitalBill");
+
+            if (!isValid)
+            {
+                await _securityService.LogSubmissionAttemptAsync(
+                    "HospitalBill",
+                    userId,
+                    patientName,
+                    requestorName,
+                    "BLOCKED",
+                    fillupformHospitalbilldto.SubmissionToken,
+                    false,
+                    true,
+                    $"Invalid token: {tokenReason}",
+                    tokenReason);
+
+                ModelState.AddModelError("", $"Security validation failed: {tokenReason}");
+                return View(fillupformHospitalbilldto);
+            }
+
+            // Check for duplicate submission
+            if (!DateTime.TryParse(fillupformHospitalbilldto.Dateofbirth, out DateTime dateOfBirth))
+            {
+                dateOfBirth = DateTime.MinValue;
+            }
+
+            var (isDuplicate, duplicateDetails) = await _securityService.CheckForDuplicateSubmissionAsync(
+                userId,
+                "HospitalBill",
+                patientName,
+                requestorName,
+                dateOfBirth);
+
+            if (isDuplicate)
+            {
+                await _securityService.LogSubmissionAttemptAsync(
+                    "HospitalBill",
+                    userId,
+                    patientName,
+                    requestorName,
+                    "DUPLICATE",
+                    fillupformHospitalbilldto.SubmissionToken,
+                    true,
+                    true,
+                    "Duplicate submission detected",
+                    duplicateDetails,
+                    null,
+                    true,
+                    duplicateDetails);
+
+                ModelState.AddModelError("", $"Duplicate submission detected. {duplicateDetails}");
+                return View(fillupformHospitalbilldto);
+            }
 
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
@@ -602,6 +709,28 @@ namespace LingapDVO.Controllers
                 context.FillupformHospitalBill.Add(fillupformHospitalBill);
                 context.SaveChanges();
 
+                // ═══════════════════════════════════════════════════════════════════════
+                // 🔒 SECURITY: Mark token as used and log successful submission
+                // ═══════════════════════════════════════════════════════════════════════
+                await _securityService.MarkTokenAsUsedAsync(
+                    fillupformHospitalbilldto.SubmissionToken!,
+                    fillupformHospitalBill.Id);
+
+                await _securityService.LogSubmissionAttemptAsync(
+                    "HospitalBill",
+                    userId,
+                    patientName,
+                    requestorName,
+                    "SUCCESS",
+                    fillupformHospitalbilldto.SubmissionToken,
+                    true,
+                    false,
+                    null,
+                    "Form submitted successfully",
+                    fillupformHospitalBill.Id,
+                    false,
+                    null);
+
                 // ✅ SUCCESS: Set the success flag to trigger the modal
                 ViewBag.Success = true;
 
@@ -623,6 +752,19 @@ namespace LingapDVO.Controllers
             }
             catch (DbUpdateException ex)
             {
+                // 🔒 SECURITY: Log failed submission
+                await _securityService.LogSubmissionAttemptAsync(
+                    "HospitalBill",
+                    userId,
+                    patientName,
+                    requestorName,
+                    "FAILED",
+                    fillupformHospitalbilldto.SubmissionToken,
+                    true,
+                    false,
+                    null,
+                    $"Database error: {ex.Message}");
+
                 if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
                 {
                     string message = sqlEx.Message.ToLower();
@@ -644,8 +786,21 @@ namespace LingapDVO.Controllers
                 ModelState.AddModelError("", "A database error occurred while saving your data.");
                 return View(fillupformHospitalbilldto);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // 🔒 SECURITY: Log failed submission
+                await _securityService.LogSubmissionAttemptAsync(
+                    "HospitalBill",
+                    userId,
+                    patientName,
+                    requestorName,
+                    "FAILED",
+                    fillupformHospitalbilldto.SubmissionToken,
+                    true,
+                    false,
+                    null,
+                    $"Unexpected error: {ex.Message}");
+
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
                 return View(fillupformHospitalbilldto);
             }

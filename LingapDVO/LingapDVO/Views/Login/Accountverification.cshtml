@@ -353,11 +353,11 @@
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">ID Number</label>
                                     <input asp-for="IDnumber" type="text" id="idnumber"
                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
-                                           placeholder="Enter your ID number"
+                                           placeholder="Enter your ID number (letters, numbers, dashes allowed)"
                                            required
-                                           inputmode="numeric"
-                                           pattern="[0-9]*"
-                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                           maxlength="100"
+                                           pattern="[A-Za-z0-9\-\/\s]+"
+                                           title="ID Number can contain letters, numbers, dashes, slashes, and spaces">
                                     <span asp-validation-for="IDnumber" class="text-red-500 text-sm mt-1"></span>
                                 </div>
                             </div>
@@ -590,6 +590,8 @@
                                         <option value="Biao Guianga">Biao Guianga</option>
                                         <option value="Binugao">Binugao</option>
                                         <option value="Bucana">Bucana</option>
+                                        <option value="Buhangin">Buhangin</option>
+                                        <option value="Buhangin (Pob.)">Buhangin (Pob.)</option>
                                         <option value="Buhangin Proper">Buhangin Proper</option>
                                         <option value="Cabantian">Cabantian</option>
                                         <option value="Cadalian">Cadalian</option>

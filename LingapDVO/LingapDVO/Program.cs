@@ -69,6 +69,10 @@ builder.Services.AddAuthentication(options =>
 
 // Notifications
 builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Form Submission Security Service
+builder.Services.AddScoped<FormSubmissionSecurityService>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 
