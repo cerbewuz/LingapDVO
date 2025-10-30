@@ -15,6 +15,8 @@
     <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -287,6 +289,249 @@
                 background-color: #218838;
                 border-color: #1e7e34;
             }
+
+        /* Document Preview Styles */
+        .document-preview-container {
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+            .document-preview-container:hover {
+                transform: scale(1.02);
+            }
+
+        .document-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .pdf-preview {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+            .pdf-preview:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+                transform: translateY(-2px);
+            }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: #dc143c;
+            margin-right: 1rem;
+        }
+
+        .pdf-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-filename {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .pdf-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* PDF Viewer Modal Styles */
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+        }
+
+        .pdf-viewer-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-viewer-header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pdf-viewer-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .pdf-viewer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            line-height: 1;
+        }
+
+            .pdf-viewer-close:hover {
+                color: #dc143c;
+            }
+
+        .pdf-viewer-body {
+            flex: 1;
+            background-color: #525659;
+            position: relative;
+            overflow: auto;
+        }
+
+        .pdf-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        #pdfCanvas {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            background-color: white;
+        }
+
+        .pdf-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .page-info {
+            color: white;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        .zoom-level {
+            color: white;
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pdf-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pdf-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            display: none;
+        }
+
+            .pdf-error i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+        .btn-light {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+        }
+
+            .btn-light:hover {
+                background-color: white;
+            }
+
+            .btn-light:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+        /* Image Zoom Modal */
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .zoom-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .close-zoom {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* File upload status */
+        .file-status {
+            margin-top: 5px;
+            font-size: 0.85rem;
+        }
+
+        .file-success {
+            color: var(--success-color);
+        }
+
+        .file-error {
+            color: #dc3545;
+        }
+
+        .current-file {
+            background-color: var(--primary-light);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
     </style>
 </head>
 
@@ -297,13 +542,62 @@
         <span>Back</span>
     </a>
 
+    <!-- Image Zoom Modal -->
+    <div id="zoomModal" class="zoom-modal">
+        <span class="close-zoom">&times;</span>
+        <img class="zoom-modal-content" id="zoomedImage">
+    </div>
+
+    <!-- PDF Viewer Modal -->
+    <div id="pdfViewerModal" class="pdf-viewer-modal">
+        <div class="pdf-viewer-content">
+            <div class="pdf-viewer-header">
+                <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+                <div class="pdf-controls">
+                    <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                    <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                </div>
+                <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+            </div>
+            <div class="pdf-viewer-body">
+                <div id="pdfLoading" class="pdf-loading">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading PDF document...</p>
+                </div>
+                <div id="pdfError" class="pdf-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Error loading PDF. Please try again.</p>
+                </div>
+                <div class="pdf-container">
+                    <canvas id="pdfCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container form-container">
         <div class="form-header">
             <h3>Update Request Assistance Form</h3>
             <p class="text-muted">Please review and update all required fields</p>
         </div>
 
-        <form asp-action="FillupformHospitalBilledit" enctype="multipart/form-data" method="post" id="updateForm">
+        <form asp-action="FillupformHospitalBilledit" asp-route-id="@ViewData["Id"]" method="post" enctype="multipart/form-data" id="updateForm">
+     
+
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
             <!-- RAF Number -->
@@ -337,7 +631,7 @@
 
                         <div class="col-md-3">
                             <label class="form-label">Suffix</label>
-                            <select class="form-select" asp-for="Suffix" value="@ViewData["Suffix"]">
+                            <select class="form-select" asp-for="Suffix">
                                 <option value="">-- Select Suffix --</option>
                                 <option value="None" selected="@(ViewData["Suffix"]?.ToString() == "None")">None</option>
                                 <option value="Jr." selected="@(ViewData["Suffix"]?.ToString() == "Jr.")">Jr.</option>
@@ -395,7 +689,7 @@
 
                         <div class="col-md-3">
                             <label class="form-label required-field">PhilHealth</label>
-                            <select class="form-select" asp-for="PhilHealth" value="@ViewData["PhilHealth"]">
+                            <select class="form-select" asp-for="PhilHealth">
                                 <option value="">Select option</option>
                                 <option value="Without PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "Without PhilHealth")">Without PhilHealth</option>
                                 <option value="With PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "With PhilHealth")">With PhilHealth</option>
@@ -466,7 +760,7 @@
 
                         <div class="col-md-3">
                             <label class="form-label">Suffix</label>
-                            <select class="form-select" asp-for="RSuffix" value="@ViewData["RPhilHealth"]">
+                            <select class="form-select" asp-for="RSuffix">
                                 <option value="">-- Select Suffix --</option>
                                 <option value="None" selected="@(ViewData["RSuffix"]?.ToString() == "None")">None</option>
                                 <option value="Jr." selected="@(ViewData["RSuffix"]?.ToString() == "Jr.")">Jr.</option>
@@ -658,30 +952,70 @@
                 </div>
             </div>
 
-
             <!-- Upload Section -->
             <div class="card mt-4">
                 <div class="card-header">Upload Required Documents</div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label required-field">Doctor's Prescription/Receipt</label>
+                        <label>Doctor's Prescription/Receipt</label>
+
+                        <!-- Current Document Display -->
+                        @if (ViewData["DoctorPrescription"] != null)
+                        {
+                            <div class="current-file">
+                                <strong>Current Document:</strong> @ViewData["DoctorPrescription"]
+                                @if (ViewData["DoctorPrescriptionBase64"] != null)
+                                {
+                                    <div class="mt-2">
+                                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                                        {
+                                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                                <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
+                                                <div class="pdf-info">
+                                                    <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                                    <span class="pdf-label">Click to view PDF</span>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="document-preview-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="document-preview" />
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- File Upload Section -->
                         <div class="upload-box" onclick="document.getElementById('receipt').click()">
                             <div class="upload-icon">
                                 <i class="fas fa-file-medical"></i>
                             </div>
-                            <p>Click to upload document</p>
+                            <p id="uploadText">Click to upload new document</p>
+                            <p id="fileName" class="text-success fw-bold mt-2"></p> <!-- 👈 Filename will appear here -->
                             <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
                         </div>
-                        <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none"
-                               accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'receiptPreview')">
-                        <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
 
-                        <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview" src="@(ViewData["DoctorPrescription"] != null ? Url.Content("~/DoctorPrescriptionimage/" + ViewData["DoctorPrescription"]) : "")"
-                             style="@(ViewData["DoctorPrescription"] != null ? "display: block;" : "display: none;")">
+                        <input asp-for="DoctorPrescriptionimage"
+                               type="file"
+                               id="receipt"
+                               class="d-none"
+                               accept=".png,.jpg,.jpeg,.pdf"
+                               onchange="handleFileSelect(this)">
+                        <span asp-validation-for="DoctorPrescriptionimage" ></span>
+
+                        <!-- New Document Preview -->
+                        <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
+                        <div id="fileStatus" class="file-status"></div>
                         <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
                     </div>
                 </div>
             </div>
+
+            <!-- Hidden field for RAF ID -->
+            <input type="hidden" name="Id" value="@ViewData["Id"]" />
 
             <!-- Terms and Conditions -->
             <div class="mb-4 form-check">
@@ -691,38 +1025,9 @@
 
             <!-- Submit Button -->
             <div class="text-center mt-4">
-                <button type="submit" class="btn-submit">Update Request</button>
+                <button type="submit" class="btn-submit" id="submitBtn">Update Request</button>
             </div>
         </form>
-    </div>
-
-    <!-- Image Preview Modal -->
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
-                    <div class="zoom-controls">
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="zoomOut">
-                            <i class="fas fa-search-minus"></i>
-                        </button>
-                        <span id="zoomPercentage">100%</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="zoomIn">
-                            <i class="fas fa-search-plus"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="zoomReset">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center p-0">
-                    <div id="imageContainer">
-                        <img id="modalImage" src="" class="img-fluid" alt="Enlarged Image">
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Success Modal -->
@@ -753,8 +1058,274 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Go Back Button Script
+        // PDF Viewer Variables
+        let currentPDF = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScale = 1.2;
+
+        // Image Zoom Functionality
+        function zoomImage(src) {
+            const modal = document.getElementById("zoomModal");
+            const modalImg = document.getElementById("zoomedImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        // Close zoom modal
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
+
+        // PDF Viewer Function
+        async function viewPDFInModal(fileName, fileType, displayName) {
+            const modal = document.getElementById('pdfViewerModal');
+            const title = document.getElementById('pdfViewerTitle');
+            const loading = document.getElementById('pdfLoading');
+            const errorDiv = document.getElementById('pdfError');
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            // Reset state
+            title.textContent = displayName || 'PDF Document';
+            modal.style.display = 'block';
+            loading.style.display = 'flex';
+            errorDiv.style.display = 'none';
+            canvas.style.display = 'none';
+
+            currentPDF = null;
+            currentPage = 1;
+            currentScale = 1.2;
+
+            try {
+                // Encode filename and build URL
+                const encodedFileName = encodeURIComponent(fileName);
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+
+                // Fetch PDF
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const pdfData = await response.arrayBuffer();
+
+                if (!pdfData || pdfData.byteLength === 0) {
+                    throw new Error('PDF data is empty');
+                }
+
+                // Load PDF using PDF.js
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                totalPagesSpan.textContent = totalPages;
+                currentPageSpan.textContent = currentPage;
+
+                // Update control buttons
+                updateNavigationButtons();
+
+                // Render first page
+                await renderPage(currentPage);
+
+                // Hide loading, show canvas
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+            }
+        }
+
+        // Render specific page
+        async function renderPage(pageNum) {
+            if (!currentPDF) return;
+
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+
+            try {
+                const page = await currentPDF.getPage(pageNum);
+                const viewport = page.getViewport({ scale: currentScale });
+
+                // Set canvas dimensions
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                currentPageSpan.textContent = pageNum;
+
+            } catch (error) {
+                console.error('Error rendering page:', error);
+            }
+        }
+
+        // Navigation functions
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function zoomIn() {
+            currentScale += 0.2;
+            renderPage(currentPage);
+            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.2;
+                renderPage(currentPage);
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        // Close PDF Viewer
+        function closePDFViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'none';
+
+            // Clean up
+            if (currentPDF) {
+                currentPDF.destroy();
+                currentPDF = null;
+            }
+        }
+
+        // File Upload Preview Function
+        function previewImage(input, previewId) {
+            const file = input.files[0];
+            const preview = document.getElementById(previewId);
+            const uploadBox = input.previousElementSibling;
+            const uploadText = document.getElementById('uploadText');
+            const fileStatus = document.getElementById('fileStatus');
+
+            if (file) {
+                // File validation
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const maxSize = 10 * 1024 * 1024; // 10MB
+
+                if (!validTypes.includes(file.type)) {
+                    fileStatus.innerHTML = '<span class="file-error">Invalid file type. Please upload JPG, PNG, or PDF files only.</span>';
+                    input.value = '';
+                    return;
+                }
+
+                if (file.size > maxSize) {
+                    fileStatus.innerHTML = '<span class="file-error">File size too large. Maximum size is 10MB.</span>';
+                    input.value = '';
+                    return;
+                }
+
+                // Update UI for valid file
+                fileStatus.innerHTML = '<span class="file-success">File selected: ' + file.name + '</span>';
+
+                if (uploadText) {
+                    uploadText.textContent = file.name;
+                }
+
+                if (uploadBox) {
+                    uploadBox.style.borderColor = "var(--success-color)";
+                    uploadBox.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
+                }
+
+                // Show preview for images only
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Hide preview for PDF files
+                    preview.style.display = "none";
+                }
+            } else {
+                // Reset if no file
+                preview.style.display = "none";
+                fileStatus.innerHTML = '';
+                if (uploadText) {
+                    uploadText.textContent = 'Click to upload new document';
+                }
+                if (uploadBox) {
+                    uploadBox.style.borderColor = "#ddd";
+                    uploadBox.style.backgroundColor = "#fafafa";
+                }
+            }
+        }
+
+        // Form submission handling
         document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('updateForm');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // Validate file upload
+                    const fileInput = document.getElementById('receipt');
+                    if (fileInput && fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                        const maxSize = 10 * 1024 * 1024;
+
+                        if (!validTypes.includes(file.type)) {
+                            e.preventDefault();
+                            alert('Invalid file type. Please upload JPG, PNG, or PDF files only.');
+                            return;
+                        }
+
+                        if (file.size > maxSize) {
+                            e.preventDefault();
+                            alert('File size too large. Maximum size is 10MB.');
+                            return;
+                        }
+                    }
+
+                    // Show loading state
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
+                    }
+                });
+            }
+
             const goBackBtn = document.getElementById('goBackBtn');
 
             if (goBackBtn) {
@@ -830,373 +1401,139 @@
                 });
             }
 
-            // Requestor Details Toggle
-            const toggleBtn = document.getElementById('toggleRequestorBtn');
-            const requestorSection = document.getElementById('requestorDetailsSection');
-            if (toggleBtn && requestorSection) {
-                toggleBtn.addEventListener('click', function() {
-                    const isHidden = window.getComputedStyle(requestorSection).display === 'none';
-                    if (isHidden) {
-                        requestorSection.style.display = 'block';
-                        toggleBtn.textContent = 'Hide Requestor Details';
-                        toggleBtn.classList.remove('btn-outline-primary');
-                        toggleBtn.classList.add('btn-primary');
-                    } else {
-                        requestorSection.style.display = 'none';
-                        toggleBtn.textContent = 'Show Requestor Details';
-                        toggleBtn.classList.remove('btn-primary');
-                        toggleBtn.classList.add('btn-outline-primary');
-                    }
-                });
-            }
-
-            // "I am the patient" functionality
-            const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
-            const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
-
-            if (sameAsPatientBtn && clearAutoFillBtn) {
-                // Patient form fields
-                const patientLastname = document.getElementById('Lastname');
-                const patientFirstname = document.getElementById('Firstname');
-                const patientMiddlename = document.getElementById('Middlename');
-                const patientSuffix = document.getElementById('Suffix');
-                const patientBlkLotStreet = document.getElementById('BlkLotStreet');
-                const patientSubVill = document.getElementById('SubVill');
-                const patientBrgy = document.getElementById('Brgy');
-                const patientDistrict = document.getElementById('District');
-
-                // Requestor form fields
-                const requestorLastname = document.getElementById('RLastname');
-                const requestorFirstname = document.getElementById('RFirstname');
-                const requestorMiddlename = document.getElementById('RMiddlename');
-                const requestorSuffix = document.getElementById('RSuffix');
-                const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
-                const requestorSubVill = document.getElementById('RSubVill');
-                const requestorBrgy = document.getElementById('RBrgy');
-                const requestorDistrict = document.getElementById('RDistrict');
-                const relationshipPatient = document.getElementById('RelationshipPatient');
-
-                // Store original values
-                let originalRequestorValues = {};
-                let autoFillUsed = false;
-
-                function storeOriginalValues() {
-                    const fields = [
-                        'RLastname', 'RFirstname', 'RMiddlename', 'RSuffix',
-                        'RBlkLotStreet', 'RSubVill', 'RBrgy', 'RDistrict', 'RelationshipPatient'
-                    ];
-                    originalRequestorValues = {};
-                    fields.forEach(field => {
-                        const element = document.getElementById(field);
-                        if (element) {
-                            originalRequestorValues[field] = element.value;
-                        }
-                    });
-                }
-
-                function restoreOriginalValues() {
-                    Object.keys(originalRequestorValues).forEach(field => {
-                        const element = document.getElementById(field);
-                        if (element) {
-                            element.value = originalRequestorValues[field];
-                        }
-                    });
-                }
-
-                function checkIfAllRequestorFieldsEmpty() {
-                    const requestorFields = [
-                        requestorLastname, requestorFirstname, requestorMiddlename,
-                        requestorSuffix, requestorBlkLotStreet, requestorSubVill,
-                        requestorBrgy, requestorDistrict, relationshipPatient
-                    ];
-                    return requestorFields.every(field => !field || !field.value.trim());
-                }
-
-                sameAsPatientBtn.addEventListener('click', function() {
-                    storeOriginalValues();
-                    autoFillUsed = true;
-
-                    if (patientLastname && patientLastname.value) requestorLastname.value = patientLastname.value;
-                    if (patientFirstname && patientFirstname.value) requestorFirstname.value = patientFirstname.value;
-                    if (patientMiddlename && patientMiddlename.value) requestorMiddlename.value = patientMiddlename.value;
-                    if (patientSuffix && patientSuffix.value) requestorSuffix.value = patientSuffix.value;
-                    if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
-                    if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
-                    if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
-                    if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
-                    if (relationshipPatient) relationshipPatient.value = "Self";
-
-                    sameAsPatientBtn.innerHTML = '<i class="fas fa-check-circle"></i> Details Copied!';
-                    sameAsPatientBtn.classList.remove('btn-outline-success');
-                    sameAsPatientBtn.classList.add('btn-success');
-
-                    clearAutoFillBtn.style.display = 'block';
-
-                    if (requestorSection) {
-                        requestorSection.style.display = 'block';
-                        if (toggleBtn) {
-                            toggleBtn.textContent = 'Hide Requestor Details';
-                            toggleBtn.classList.remove('btn-outline-primary');
-                            toggleBtn.classList.add('btn-primary');
-                        }
-                    }
-
-                    setTimeout(() => {
-                        sameAsPatientBtn.innerHTML = '<i class="fas fa-user-check"></i> I am the patient';
-                        sameAsPatientBtn.classList.remove('btn-success');
-                        sameAsPatientBtn.classList.add('btn-outline-success');
-                    }, 2000);
-                });
-
-                clearAutoFillBtn.addEventListener('click', function() {
-                    restoreOriginalValues();
-                    autoFillUsed = false;
-
-                    clearAutoFillBtn.innerHTML = '<i class="fas fa-check-circle"></i> Cleared!';
-                    clearAutoFillBtn.classList.remove('btn-outline-warning');
-                    clearAutoFillBtn.classList.add('btn-warning');
-
-                    setTimeout(() => {
-                        clearAutoFillBtn.innerHTML = '<i class="fas fa-eraser"></i> Clear Auto-Fill';
-                        clearAutoFillBtn.classList.remove('btn-warning');
-                        clearAutoFillBtn.classList.add('btn-outline-warning');
-
-                        const allFieldsEmpty = checkIfAllRequestorFieldsEmpty();
-                        if (allFieldsEmpty) {
-                            clearAutoFillBtn.style.display = 'none';
-                        }
-                    }, 1500);
-                });
-
-                function checkInitialState() {
-                    const anyFieldHasContent = !checkIfAllRequestorFieldsEmpty();
-                    if (anyFieldHasContent) {
-                        storeOriginalValues();
-                        autoFillUsed = true;
-                        clearAutoFillBtn.style.display = 'block';
-                    }
-                }
-
-                checkInitialState();
-            }
-
-            // Assistance Type Checkboxes
+            // Assistance Type Checkbox Handling
             const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-            const assistanceSpecs = document.querySelectorAll('.assistance-spec');
-            const assistanceReflection = document.getElementById('assistanceReflection');
-
-            assistanceSpecs.forEach(field => field.style.display = 'none');
-
-            function updateAssistanceReflection() {
-                let selectedOptions = [];
-                assistanceCheckboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const label = checkbox.nextElementSibling.textContent.trim();
-                        const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
-                        if (specField && specField.value.trim() !== '') {
-                            selectedOptions.push(`${label}: ${specField.value.trim()}`);
-                        } else {
-                            selectedOptions.push(label);
-                        }
-                    }
-                });
-                assistanceReflection.value = selectedOptions.join(', ');
-            }
-
             assistanceCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        assistanceCheckboxes.forEach(cb => {
-                            if (cb !== this) {
-                                cb.checked = false;
-                                const specField = cb.closest('.form-check').querySelector('.assistance-spec');
-                                if (specField) specField.style.display = 'none';
-                            }
-                        });
-
-                        const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                        if (specField) {
-                            specField.style.display = this.checked ? 'block' : 'none';
+                    const specInput = this.parentNode.querySelector('.assistance-spec');
+                    if (specInput) {
+                        specInput.style.display = this.checked ? 'block' : 'none';
+                        if (!this.checked) {
+                            specInput.value = '';
                         }
                     }
                     updateAssistanceReflection();
                 });
             });
 
-            assistanceSpecs.forEach(field => {
-                field.addEventListener('input', updateAssistanceReflection);
-            });
+            function updateAssistanceReflection() {
+                const selected = Array.from(assistanceCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => {
+                        const specInput = cb.parentNode.querySelector('.assistance-spec');
+                        if (specInput && specInput.value) {
+                            return cb.value + ' (' + specInput.value + ')';
+                        }
+                        return cb.value;
+                    });
+                document.getElementById('assistanceReflection').value = selected.join(', ');
+            }
 
+            // Initialize assistance reflection
             updateAssistanceReflection();
 
-            // CMO Reflection
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            const reflectionField = document.getElementById('cmoReflectionField');
-            const docCheckboxes = document.querySelectorAll('.supporting-doc');
+            // Requestor Details Toggle
+            const toggleRequestorBtn = document.getElementById('toggleRequestorBtn');
+            const requestorSection = document.getElementById('requestorDetailsSection');
 
-            function updateReflection() {
-                let parts = [];
-                if (billInput && billInput.value.trim()) {
-                    parts.push(`Bill: ${billInput.value.trim()}`);
-                }
-
-                const checkedDocs = [];
-                docCheckboxes.forEach(cb => {
-                    if (cb.checked) checkedDocs.push(cb.value);
-                });
-                if (checkedDocs.length) {
-                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                }
-
-                if (cmoNotes && cmoNotes.value.trim()) {
-                    parts.push(`Others: ${cmoNotes.value.trim()}`);
-                }
-
-                if (reflectionField) {
-                    reflectionField.value = parts.join(' , ');
-                }
-            }
-
-            if (billInput) billInput.addEventListener('input', updateReflection);
-            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
-            docCheckboxes.forEach(cb => {
-                cb.addEventListener('change', updateReflection);
-            });
-
-            updateReflection();
-
-            // Image Preview and Zoom Modal
-            const previewImages = document.querySelectorAll('.img-preview');
-            const modalImage = document.getElementById('modalImage');
-            const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-            const modalTitle = document.getElementById('imageModalLabel');
-            const imageContainer = document.getElementById('imageContainer');
-            const zoomPercentage = document.getElementById('zoomPercentage');
-            const zoomInBtn = document.getElementById('zoomIn');
-            const zoomOutBtn = document.getElementById('zoomOut');
-            const zoomResetBtn = document.getElementById('zoomReset');
-
-            let currentZoom = 1;
-            const zoomFactor = 0.1;
-            const maxZoom = 3;
-            const minZoom = 0.5;
-
-            function resetZoom() {
-                currentZoom = 1;
-                updateZoom();
-            }
-
-            function updateZoom() {
-                modalImage.style.transform = `scale(${currentZoom})`;
-                zoomPercentage.textContent = `${Math.round(currentZoom * 100)}%`;
-            }
-
-            function zoomIn() {
-                if (currentZoom < maxZoom) {
-                    currentZoom += zoomFactor;
-                    updateZoom();
-                }
-            }
-
-            function zoomOut() {
-                if (currentZoom > minZoom) {
-                    currentZoom -= zoomFactor;
-                    updateZoom();
-                }
-            }
-
-            previewImages.forEach(img => {
-                img.style.cursor = 'pointer';
-                img.addEventListener('click', function() {
-                    modalImage.src = this.src;
-                    modalTitle.textContent = this.alt || 'Image Preview';
-                    resetZoom();
-                    imageModal.show();
-                });
-            });
-
-            if (zoomInBtn) zoomInBtn.addEventListener('click', zoomIn);
-            if (zoomOutBtn) zoomOutBtn.addEventListener('click', zoomOut);
-            if (zoomResetBtn) zoomResetBtn.addEventListener('click', resetZoom);
-
-            if (imageContainer) {
-                imageContainer.addEventListener('wheel', function(e) {
-                    e.preventDefault();
-                    if (e.deltaY < 0) {
-                        zoomIn();
+            if (toggleRequestorBtn && requestorSection) {
+                toggleRequestorBtn.addEventListener('click', function() {
+                    if (requestorSection.style.display === 'none') {
+                        requestorSection.style.display = 'block';
+                        toggleRequestorBtn.textContent = 'Hide Requestor Details';
                     } else {
-                        zoomOut();
+                        requestorSection.style.display = 'none';
+                        toggleRequestorBtn.textContent = 'Show Requestor Details';
                     }
                 });
             }
 
-            // File Upload Preview
-            function previewImage(input, previewId) {
-                const file = input.files[0];
-                const preview = document.getElementById(previewId);
-                const uploadBox = input.previousElementSibling;
+            // Same as Patient Button
+            const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
+            const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
 
-                if (file) {
-                    if (file.type.startsWith("image/")) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            preview.src = e.target.result;
-                            preview.style.display = "block";
-                        };
-                        reader.readAsDataURL(file);
-                    }
+            if (sameAsPatientBtn) {
+                sameAsPatientBtn.addEventListener('click', function() {
+                    // Copy patient details to requestor details
+                    document.querySelector('input[name="RLastname"]').value = document.querySelector('input[name="Lastname"]').value;
+                    document.querySelector('input[name="RFirstname"]').value = document.querySelector('input[name="Firstname"]').value;
+                    document.querySelector('input[name="RMiddlename"]').value = document.querySelector('input[name="Middlename"]').value;
+                    document.querySelector('select[name="RSuffix"]').value = document.querySelector('select[name="Suffix"]').value;
+                    document.querySelector('input[name="RBlkLotStreet"]').value = document.querySelector('input[name="BlkLotStreet"]').value;
+                    document.querySelector('input[name="RSubVill"]').value = document.querySelector('input[name="SubVill"]').value;
+                    document.querySelector('input[name="RBrgy"]').value = document.querySelector('input[name="Brgy"]').value;
+                    document.querySelector('input[name="RDistrict"]').value = document.querySelector('input[name="District"]').value;
+                    document.querySelector('input[name="RelationshipPatient"]').value = 'Self';
 
-                    if (uploadBox) {
-                        uploadBox.querySelector('p:first-of-type').textContent = file.name;
-                        uploadBox.style.borderColor = "var(--primary-color)";
-                        uploadBox.style.backgroundColor = "var(--primary-light)";
-                    }
-                }
-            }
-
-            // Success Modal Handling
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            const successOkBtn = document.getElementById('successOkBtn');
-            const successRafNumber = document.getElementById('successRafNumber');
-            const updateForm = document.getElementById('updateForm');
-
-            // Handle form submission success
-            if (updateForm) {
-                updateForm.addEventListener('submit', function(e) {
-                    // In a real application, this would be handled by the server response
-                    // For demo purposes, we'll show the modal on form submit
-                    // You would typically check for a success response from your server
-
-                    // Uncomment the line below to prevent actual form submission for testing
-                    // e.preventDefault();
-
-                    // Show success modal after form submission
-                    // This would normally be triggered by a successful server response
-                    // For now, we'll simulate it
-                    setTimeout(function() {
-                        successRafNumber.textContent = document.getElementById('rafNumber').value;
-                        successModal.show();
-                    }, 1000);
+                    sameAsPatientBtn.style.display = 'none';
+                    clearAutoFillBtn.style.display = 'block';
                 });
             }
 
-            // Handle OK button in success modal
-            if (successOkBtn) {
-                successOkBtn.addEventListener('click', function() {
-                    successModal.hide();
-                    // Redirect to another page or refresh
-                    window.location.href = '/Home/Index'; // Change to your desired redirect URL
-                });
-            }
+            if (clearAutoFillBtn) {
+                clearAutoFillBtn.addEventListener('click', function() {
+                    // Clear requestor details
+                    document.querySelector('input[name="RLastname"]').value = '';
+                    document.querySelector('input[name="RFirstname"]').value = '';
+                    document.querySelector('input[name="RMiddlename"]').value = '';
+                    document.querySelector('select[name="RSuffix"]').value = '';
+                    document.querySelector('input[name="RBlkLotStreet"]').value = '';
+                    document.querySelector('input[name="RSubVill"]').value = '';
+                    document.querySelector('input[name="RBrgy"]').value = '';
+                    document.querySelector('input[name="RDistrict"]').value = '';
+                    document.querySelector('input[name="RelationshipPatient"]').value = '';
 
-            // Check if we should show success modal from server-side
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('success') === 'true') {
-                successRafNumber.textContent = document.getElementById('rafNumber').value;
-                successModal.show();
+                    clearAutoFillBtn.style.display = 'none';
+                    sameAsPatientBtn.style.display = 'block';
+                });
             }
         });
+
+        // Keyboard shortcuts and navigation
+        document.addEventListener('keydown', function(e) {
+            // ESC key closes modals
+            if (e.key === 'Escape') {
+                document.getElementById("zoomModal").style.display = "none";
+                closePDFViewer();
+            }
+
+            // PDF navigation when PDF viewer is open
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+
+            if (event.target == zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal) {
+                closePDFViewer();
+            }
+        }
     </script>
 </body>
 </html>

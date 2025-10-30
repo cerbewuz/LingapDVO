@@ -1,1257 +1,856 @@
 ﻿@model FillupformHospitalBillDto
 @{
     Layout = null;
+    var selectedSex = ViewData["Sex"]?.ToString();
+    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
+    var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Request Assistance Form</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <title>Hospital Bill Application - Receipt View</title>
     <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         :root {
-            --primary-color: #2c3e50;
+            --primary-color: #DC143C;
             --primary-light: #FFE6EA;
-            --primary-dark: #262626;
+            --primary-dark: #B01030;
+            --secondary-color: #2c3e50;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
         }
 
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
         }
 
-        /* Go Back button */
-        .go-back-top {
+        .go-back-btn {
             position: fixed;
-            left: clamp(12px, 3vw, 30px);
-            top: clamp(12px, 3vh, 30px);
+            left: 16px;
+            top: 16px;
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(4px, 1vw, 8px);
-            padding: clamp(12px, 2.5vh, 16px) clamp(16px, 3.5vw, 24px);
-            border-radius: clamp(20px, 5vw, 35px);
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            border: 1.5px solid rgba(220, 20, 60, 0.2);
+            border: 1px solid rgba(220, 20, 60, 0.15);
             color: #333333;
             text-decoration: none;
-            font-weight: 700;
-            font-size: clamp(14px, 2.5vw, 17px);
+            font-weight: 600;
+            font-size: 14px;
             white-space: nowrap;
-            /* Universal touch targets - always accessible */
-            min-height: 44px;
-            min-width: 44px;
-            /* Responsive scaling */
-            transform: scale(1);
+            min-height: 36px;
+            min-width: 36px;
+            transform: scale(var(--btn-scale, 1));
             transform-origin: left top;
-            /* Touch device optimizations */
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
-            /* Visibility enhancement */
-            mix-blend-mode: difference;
         }
 
-            /* Hover states */
-            .go-back-top:hover,
-            .go-back-top:focus {
+            .go-back-btn:hover,
+            .go-back-btn:focus {
                 background: #DC143C;
                 color: #ffffff;
-                box-shadow: 0 6px 25px rgba(220, 20, 60, 0.4);
-                transform: translate(-2px, -2px) scale(1.05);
+                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
                 border-color: #DC143C;
-                mix-blend-mode: normal;
             }
 
-            /* Icon styling with responsive size */
-            .go-back-top i {
-                font-size: 0.9em;
+            .go-back-btn i {
+                font-size: 13px;
                 transition: transform 0.3s ease;
-                margin-right: 2px;
+                width: 14px;
+                text-align: center;
             }
 
-            .go-back-top:hover i {
-                transform: translateX(-3px);
+            .go-back-btn:hover i {
+                transform: translateX(-2px);
             }
 
-            /* Active state for all devices - touch and mouse */
-            .go-back-top:active {
-                transform: scale(0.92);
+            .go-back-btn:active {
+                transform: scale(calc(var(--btn-scale, 1) * 0.96));
                 background: #b01030;
                 transition: transform 0.1s ease;
             }
 
-            /* Focus state for keyboard navigation */
-            .go-back-top:focus-visible {
-                outline: 3px solid #DC143C;
-                outline-offset: 3px;
+            .go-back-btn:focus-visible {
+                outline: 2px solid #DC143C;
+                outline-offset: 2px;
             }
 
-        /* Responsive letter spacing for better readability */
-        .go-back-top {
-            letter-spacing: clamp(0.2px, 0.1vw, 0.5px);
+            .go-back-btn.compact span {
+                display: none;
+            }
+
+            .go-back-btn.compact {
+                padding: 8px;
+                border-radius: 50%;
+            }
+
+        .receipt-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
-        /* Responsive border width */
-        .go-back-top {
-            border-width: clamp(1px, 0.3vw, 2px);
-        }
-
-
-        .form-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            margin-top: 2rem;
-            margin-bottom: 2rem;
-            border-top: 5px solid var(--primary-color);
-        }
-
-        .form-header {
-            color: var(--primary-color);
+        .receipt-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
             text-align: center;
+        }
+
+        .receipt-body {
+            padding: 2rem;
+        }
+
+        .receipt-section {
             margin-bottom: 2rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .section-header {
+        .section-title {
             color: var(--primary-color);
             font-weight: 600;
-            margin-top: 1.5rem;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--primary-light);
         }
 
-        .form-label {
-            font-weight: 500;
-            color: #555;
-        }
-
-        .form-control, .form-select {
-            border-radius: 5px;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #ddd;
-        }
-
-            .form-control:focus, .form-select:focus {
-                border-color: var(--primary-color);
-                box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
-            }
-
-        .btn-submit {
-            background-color: #28a745; /* Green */
-            color: white;
-            font-weight: 600;
-            padding: 10px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-            .btn-submit:hover {
-                background-color: #20c997; /* Green-blue hover */
-                transform: scale(1.05);
-            }
-
-
-        .form-check-input:checked {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .img-preview {
-            width: 100%;
-            max-width: 100%;
-            height: auto;
-            max-height: 300px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            object-fit: contain;
-            display: none;
-        }
-
-        .upload-box {
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-align: center;
-            background-color: #fafafa;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-            .upload-box:hover {
-                border-color: var(--primary-color);
-                background-color: var(--primary-light);
-            }
-
-        .upload-icon {
-            font-size: 2rem;
-            color: var(--primary-color);
+        .info-row {
+            display: flex;
             margin-bottom: 0.5rem;
         }
 
-        .required-field::after {
-            content: " *";
-            color: var(--primary-color);
+        .info-label {
+            flex: 0 0 30%;
+            font-weight: 500;
+            color: var(--secondary-color);
         }
 
-        .form-note {
+        .info-value {
+            flex: 1;
+            color: #555;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
             font-size: 0.85rem;
-            color: #666;
-            margin-top: 0.25rem;
         }
 
-        .alert-danger {
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-disapproved {
             background-color: #f8d7da;
-            border-color: #f5c6cb;
             color: #721c24;
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid transparent;
-            border-radius: 0.25rem;
         }
-    </style>
-</head>
 
-<body>
-    <!-- Go Back Button -->
-    <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
-        <i class="fas"></i> Go Back
-    </a>
-
-    <div class="container form-container">
-        <div class="form-header">
-            <h3>Request Assistance Form</h3>
-            <p class="text-muted">Please fill out all required fields to process your request</p>
-        </div>
-
-        <form asp-action="Fillupformhospitalbillview" enctype="multipart/form-data" method="post">
-
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-
-
-            <!-- Patient Details -->
-            <h5 class="section-header">Patient's Details</h5>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label required-field">Last Name</label>
-                    <input asp-for="Lastname" type="text" class="form-control"
-                           oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
-                           value="@ViewBag.Lastname" required>
-                    <span asp-validation-for="Lastname" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">First Name</label>
-                    <input asp-for="Firstname" type="text" class="form-control" value="@ViewBag.Firstname" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
-                    <span asp-validation-for="Firstname" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Middle Name</label>
-                    <input asp-for="Middlename" type="text" value="@ViewBag.Middlename" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                    <span asp-validation-for="Middlename" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Suffix</label>
-                    <select class="form-select" asp-for="Suffix">
-                        <option value="None" selected="@(ViewBag.Suffix == "None")">None</option>
-                        <option value="Jr." selected="@(ViewBag.Suffix == "Jr.")">Jr.</option>
-                        <option value="Sr." selected="@(ViewBag.Suffix == "Sr.")">Sr.</option>
-                        <option value="II" selected="@(ViewBag.Suffix == "II")">II</option>
-                        <option value="III" selected="@(ViewBag.Suffix == "III")">III</option>
-                        <option value="IV" selected="@(ViewBag.Suffix == "IV")">IV</option>
-                        <option value="V" selected="@(ViewBag.Suffix == "V")">V</option>
-                    </select>
-                    <span asp-validation-for="Suffix" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- Address -->
-            <div class="row g-3 mt-2">
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">Blk / Lot / Street</label>
-                    <input asp-for="BlkLotStreet" type="text" value="@ViewBag.BlkLotStreet" class="form-control" required>
-                    <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Sub / Vill.</label>
-                    <input asp-for="SubVill" type="text" value="@ViewBag.SubVill" class="form-control">
-                    <span asp-validation-for="SubVill" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">Brgy.</label>
-                    <input asp-for="Brgy" type="text" value="@ViewBag.Barangay" class="form-control" required>
-                    <span asp-validation-for="Brgy" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">District</label>
-                    <input asp-for="District" type="text" value="@ViewBag.District" class="form-control" required>
-                    <span asp-validation-for="District" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- Gender, PhilHealth, DOB, Age -->
-            <div class="row g-3 mt-2">
-                <div class="col-md-2">
-                    <label class="form-label required-field d-block">Sex</label>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="Sex" id="male" value="Male"
-                               @(ViewBag.Gender == "Male" ? "checked" : "") required>
-                        <label class="form-check-label" for="male">Male</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="Sex" id="female" value="Female"
-                               @(ViewBag.Gender == "Female" ? "checked" : "")>
-                        <label class="form-check-label" for="female">Female</label>
-                    </div>
-                    <span asp-validation-for="Sex" class="text-danger"></span>
-                </div>
-
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">PhilHealth</label>
-                    <select class="form-select" asp-for="PhilHealth" required>
-                        <option value="">Select option</option>
-                        <option>Without PhilHealth</option>
-                        <option>With PhilHealth</option>
-                    </select>
-                    <span asp-validation-for="PhilHealth" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">PhilHealth No. (if any)</label>
-                    <input asp-for="PhilHealthNo" type="text" class="form-control" id="philHealthInput" placeholder="XXXX-XXXX-XXXX">
-                    <span asp-validation-for="PhilHealthNo"></span>
-                </div>
-
-                <script>
-                    const philHealthInput = document.getElementById('philHealthInput');
-
-                    philHealthInput.addEventListener('input', function(e) {
-                        // Remove all non-digit characters
-                        let value = this.value.replace(/\D/g, '');
-
-                        // Add hyphens after every 4 digits
-                        if (value.length > 4) {
-                            value = value.substring(0, 4) + '-' + value.substring(4);
-                        }
-                        if (value.length > 9) {
-                            value = value.substring(0, 9) + '-' + value.substring(9);
-                        }
-
-                        // Limit to 12 digits (14 characters with hyphens)
-                        if (value.length > 14) {
-                            value = value.substring(0, 14);
-                        }
-
-                        this.value = value;
-                    });
-                </script>
-
-                <div class="col-md-2">
-                    <label class="form-label required-field">Date of Birth</label>
-                    <input value="@ViewBag.Dateofbirth" asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" required>
-                    <span asp-validation-for="Dateofbirth" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-1">
-                    <label class="form-label">Age</label>
-                    <input asp-for="Age" type="number" class="form-control" id="ageInput" readonly>
-                    <span asp-validation-for="Age" class="text-danger"></span>
-                </div>
-
-                <script>
-                    const dateOfBirth = document.getElementById('dateOfBirth');
-                    const ageInput = document.getElementById('ageInput');
-
-                    function calculateAge(dob) {
-                        if (!dob) return "";
-                        const birthDate = new Date(dob);
-                        const today = new Date();
-
-                        let age = today.getFullYear() - birthDate.getFullYear();
-                        const monthDiff = today.getMonth() - birthDate.getMonth();
-
-                        // Adjust if birthday hasn't happened yet this year
-                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                            age--;
-                        }
-                        return age;
-                    }
-
-                    // Auto-calc on page load if DOB has a value
-                    if (dateOfBirth.value) {
-                        ageInput.value = calculateAge(dateOfBirth.value);
-                    }
-
-                    // Recalc whenever DOB changes
-                    dateOfBirth.addEventListener('change', function () {
-                        ageInput.value = calculateAge(this.value);
-                    });
-                </script>
-
-            </div>
-            <br />
-            <!-- Applying for self button -->
-            <div class="mb-3">
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button"
-                            class="btn btn-outline-success transition-all duration-300 ease-in-out font-medium
-                       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-green-500/30
-                       focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
-                       active:scale-95"
-                            id="sameAsPatientBtn">
-                        <i class="bi bi-person-check"></i> I am the patient
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-outline-warning transition-all duration-300 ease-in-out font-medium
-                       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-yellow-500/30
-                       focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50
-                       active:scale-95"
-                            id="clearAutoFillBtn"
-                            style="display: none;">
-                        <i class="bi bi-eraser"></i> Clear Auto-Fill
-                    </button>
-
-                    <small class="text-muted ms-2">Click if you are applying for yourself</small>
-                </div>
-            </div>
-
-            <!-- Show requestor details -->
-            <button type="button" class="btn btn-outline-primary mb-3" id="toggleRequestorBtn">
-                Show Requestor Details
-            </button>
-
-            <!-- Wrap the Requestor Details section in a div with a unique ID -->
-            <div id="requestorDetailsSection" style="display: none;">
-
-
-                <!-- Requestor Details -->
-                <h5 class="section-header">Requestor's Details</h5>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label required-field">Last Name</label>
-                        <input asp-for="RLastname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                        <span asp-validation-for="RLastname"></span>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label required-field">First Name</label>
-                        <input asp-for="RFirstname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                        <span asp-validation-for="RFirstname"></span>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label">Middle Name</label>
-                        <input asp-for="RMiddlename" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                        <span asp-validation-for="RMiddlename"></span>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label">Suffix</label>
-                        <select class="form-select" asp-for="RSuffix">
-                            <option value="None">None</option>
-                            <option value="Jr.">Jr.</option>
-                            <option value="Sr.">Sr.</option>
-                            <option value="II">II</option>
-                            <option value="III">III</option>
-                            <option value="IV">IV</option>
-                            <option value="V">V</option>
-                        </select>
-                        <span asp-validation-for="RSuffix"></span>
-                    </div>
-                </div>
-
-                <!-- Requestor Address -->
-                <div class="row g-3 mt-2">
-                    <div class="col-md-3">
-                        <label>Blk / Lot / Street</label>
-                        <input asp-for="RBlkLotStreet" type="text" class="form-control">
-                        <span asp-validation-for="RBlkLotStreet"></span>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label">Sub / Vill.</label>
-                        <input asp-for="RSubVill" type="text" class="form-control">
-                        <span asp-validation-for="RSubVill"></span>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label>Brgy.</label>
-                        <input asp-for="RBrgy" type="text" class="form-control">
-                        <span asp-validation-for="RBrgy"></span>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label>District</label>
-                        <input asp-for="RDistrict" type="text" class="form-control">
-                        <span asp-validation-for="RDistrict"></span>
-                    </div>
-
-                </div>
-
-                <div class="row g-3 mt-2">
-                    <div class="col-md-6">
-                        <label>Relationship to Patient</label>
-                        <input asp-for="RelationshipPatient" type="text" class="form-control">
-                        <span asp-validation-for="RelationshipPatient"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label>Contact No.</label>
-                        <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
-                               placeholder="0912-345-6789 or 02-123-4567"
-                               onkeypress="return event.charCode >= 48 && event.charCode <= 57"> <!-- Blocks letters -->
-                        <span asp-validation-for="ContactNo"></span>
-                        <small class="text-muted">Format: 0912-345-6789 (mobile) or 02-123-4567 (landline)</small>
-                    </div>
-
-                    <script>
-                        const contactNoInput = document.getElementById('contactNoInput');
-
-                        contactNoInput.addEventListener('input', function(e) {
-                            // Remove all non-digit characters (extra safety)
-                            let value = this.value.replace(/\D/g, '');
-
-                            // Mobile number (09XXXXXXXXX)
-                            if (value.startsWith('09') && value.length <= 11) {
-                                if (value.length > 4) {
-                                    value = value.substring(0, 4) + '-' + value.substring(4);
-                                }
-                                if (value.length > 8) {
-                                    value = value.substring(0, 8) + '-' + value.substring(8);
-                                }
-                            }
-                            // Landline (02XXXXXXXX or area code)
-                            else if ((value.startsWith('02') || /^[1-9]\d{1}$/.test(value.substring(0,2)))) {
-                                if (value.length > 2) {
-                                    value = value.substring(0, 2) + '-' + value.substring(2);
-                                }
-                                if (value.length > 6) {
-                                    value = value.substring(0, 6) + '-' + value.substring(6);
-                                }
-                            }
-
-                            // Limit length (11 digits for mobile, 10 for landline)
-                            const maxLength = value.startsWith('09') ? 13 : 11; // Includes hyphens
-                            if (value.length > maxLength) {
-                                value = value.substring(0, maxLength);
-                            }
-
-                            this.value = value;
-                        });
-
-                        // Strict validation on blur (optional)
-                        contactNoInput.addEventListener('blur', function() {
-                            const regex = /^(09\d{2}-\d{3}-\d{4}|0[2-9]\d-\d{3}-\d{4})$/;
-                            if (this.value && !regex.test(this.value)) {
-                                alert("Please enter a valid Philippine number (e.g., 0912-345-6789 or 02-123-4567)");
-                                this.focus();
-                            }
-                        });
-                    </script>
-                </div>
-            </div>
-
-            <!-- Type of Assistance Requested Section -->
-            <h5 class="section-header">Type of Assistance Requested</h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <!-- Column 1 -->
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
-                        <label class="form-check-label" for="hospitalAssistance">Hospital Assistance</label>
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="governmentAssistance" name="TypeassistanceOptions" value="Government">
-                        <label class="form-check-label" for="governmentAssistance">Government</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="GovernmentDetails" placeholder="Specify" style="display: none;">
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="privateAssistance" name="TypeassistanceOptions" value="Private">
-                        <label class="form-check-label" for="privateAssistance">Private</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="PrivateDetails" placeholder="Specify" style="display: none;">
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="caseAssistance" name="TypeassistanceOptions" value="Case">
-                        <label class="form-check-label" for="caseAssistance">Case</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="CaseDetails" placeholder="Specify" style="display: none;">
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <!-- Column 2 -->
-
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="procedure" name="TypeassistanceOptions" value="Procedure">
-                        <label class="form-check-label" for="procedure">Procedure</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="ProcedureDetails" placeholder="Specify" style="display: none;">
-                    </div>
-
-
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="dialysis" name="TypeassistanceOptions" value="Dialysis">
-                        <label class="form-check-label" for="dialysis">Dialysis</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="DialysisDetails" placeholder="Specify" style="display: none;">
-                    </div>
-
-
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="others" name="TypeassistanceOptions" value="Others">
-                        <label class="form-check-label" for="others">Others</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="OthersDetails" placeholder="Specify" style="display: none;">
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group mt-3" style="display: none">
-                <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
-                       name="Typeassistance" placeholder="Auto-generated info..." readonly>
-                <span asp-validation-for="Typeassistance" class="text-danger"></span>
-            </div>
-
-
-
-            <!-- Upload Section -->
-            <h5 class="section-header">Upload Required Documents</h5>
-
-
-            <div class="mb-3">
-                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
-                <div class="upload-box" onclick="document.getElementById('receipt').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload document</p>
-                    <p class="form-note">Accepted formats: JPG, PNGE, etc..(Max 10MB)</p>
-                </div>
-                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')">
-                <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
-
-                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
-                <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
-            </div>
-
-            <!-- Terms and Conditions -->
-            <div class="mb-4 form-check">
-                <input class="form-check-input" type="checkbox" id="termsCheck" required>
-                <label class="form-check-label" for="termsCheck">I certify that all information provided is true and accurate</label>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="text-center mt-4">
-                <button type="submit" class="btn-submit">Submit Request</button>
-            </div>
-            <br />
-            <br />
-        </form>
-    </div>
-
-    <!-- For zooming photo -->
-    <!-- Add this modal HTML at the end of your form container but before the closing </div> -->
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
-                    <div class="zoom-controls">
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="zoomOut">
-                            <i class="bi bi-zoom-out"></i>
-                        </button>
-                        <span id="zoomPercentage">100%</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="zoomIn">
-                            <i class="bi bi-zoom-in"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="zoomReset">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center p-0">
-                    <div id="imageContainer">
-                        <img id="modalImage" src="" class="img-fluid" alt="Enlarged Image">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add this JavaScript to your existing scripts section -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Make all preview images clickable to open modal
-            const previewImages = document.querySelectorAll('.img-preview');
-            const modalImage = document.getElementById('modalImage');
-            const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-            const modalTitle = document.getElementById('imageModalLabel');
-            const imageContainer = document.getElementById('imageContainer');
-            const zoomPercentage = document.getElementById('zoomPercentage');
-            const zoomInBtn = document.getElementById('zoomIn');
-            const zoomOutBtn = document.getElementById('zoomOut');
-            const zoomResetBtn = document.getElementById('zoomReset');
-
-            // Zoom variables
-            let currentZoom = 1;
-            const zoomFactor = 0.1;
-            const maxZoom = 3;
-            const minZoom = 0.5;
-
-            // Reset zoom on modal open
-            function resetZoom() {
-                currentZoom = 1;
-                updateZoom();
+        .status-processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-claimed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .btn-receipt {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            border-radius: 5px;
+        }
+
+            .btn-receipt:hover {
+                background-color: var(--primary-dark);
+                border-color: var(--primary-dark);
+                color: white;
             }
 
-            // Apply zoom level
-            function updateZoom() {
-                modalImage.style.transform = `scale(${currentZoom})`;
-                zoomPercentage.textContent = `${Math.round(currentZoom * 100)}%`;
+        .btn-approved {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 0 0.5rem;
+        }
+
+            .btn-approved:hover {
+                background-color: #218838;
+                border-color: #1e7e34;
+                color: white;
             }
 
-            // Zoom in function
-            function zoomIn() {
-                if (currentZoom < maxZoom) {
-                    currentZoom += zoomFactor;
-                    updateZoom();
-                }
+        .btn-disapproved {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 0 0.5rem;
+        }
+
+            .btn-disapproved:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+                color: white;
             }
 
-            // Zoom out function
-            function zoomOut() {
-                if (currentZoom > minZoom) {
-                    currentZoom -= zoomFactor;
-                    updateZoom();
-                }
-            }
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
 
-            // Make images clickable
-            previewImages.forEach(img => {
-                img.style.cursor = 'pointer';
-                img.addEventListener('click', function() {
-                    modalImage.src = this.src;
-                    modalTitle.textContent = this.alt || 'Image Preview';
-                    resetZoom();
-                    imageModal.show();
-                });
-            });
+        .zoom-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
 
-            // Add zoom event listeners
-            zoomInBtn.addEventListener('click', zoomIn);
-            zoomOutBtn.addEventListener('click', zoomOut);
-            zoomResetBtn.addEventListener('click', resetZoom);
+        .close-zoom {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-            // Mouse wheel zoom
-            imageContainer.addEventListener('wheel', function(e) {
-                e.preventDefault();
-                if (e.deltaY < 0) {
-                    zoomIn();
-                } else {
-                    zoomOut();
-                }
-            });
-
-            // Pan image when dragging
-            let isDragging = false;
-            let startX, startY, translateX = 0, translateY = 0;
-
-            imageContainer.addEventListener('mousedown', function(e) {
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-                imageContainer.style.cursor = 'grabbing';
-            });
-
-            window.addEventListener('mousemove', function(e) {
-                if (!isDragging) return;
-
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-
-                // Only allow panning when zoomed in
-                if (currentZoom > 1) {
-                    modalImage.style.transform = `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`;
-                }
-            });
-
-            window.addEventListener('mouseup', function() {
-                isDragging = false;
-                imageContainer.style.cursor = 'grab';
-            });
-
-            // Allow closing modal with ESC key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    imageModal.hide();
-                }
-            });
-
-            // Reset zoom and position when modal is closed
-            document.getElementById('imageModal').addEventListener('hidden.bs.modal', function() {
-                resetZoom();
-                translateX = 0;
-                translateY = 0;
-                modalImage.style.transform = 'scale(1) translate(0, 0)';
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
-            const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
-            const toggleBtn = document.getElementById('toggleRequestorBtn');
-            const requestorSection = document.getElementById('requestorDetailsSection');
-
-            // Patient form fields
-            const patientLastname = document.getElementById('Lastname');
-            const patientFirstname = document.getElementById('Firstname');
-            const patientMiddlename = document.getElementById('Middlename');
-            const patientSuffix = document.getElementById('Suffix');
-            const patientBlkLotStreet = document.getElementById('BlkLotStreet');
-            const patientSubVill = document.getElementById('SubVill');
-            const patientBrgy = document.getElementById('Brgy');
-            const patientDistrict = document.getElementById('District');
-
-            // Requestor form fields
-            const requestorLastname = document.getElementById('RLastname');
-            const requestorFirstname = document.getElementById('RFirstname');
-            const requestorMiddlename = document.getElementById('RMiddlename');
-            const requestorSuffix = document.getElementById('RSuffix');
-            const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
-            const requestorSubVill = document.getElementById('RSubVill');
-            const requestorBrgy = document.getElementById('RBrgy');
-            const requestorDistrict = document.getElementById('RDistrict');
-            const relationshipPatient = document.getElementById('RelationshipPatient');
-
-            // Store original values to restore on clear
-            let originalRequestorValues = {};
-            let autoFillUsed = false;
-
-            // IMPROVED SHOW/HIDE TOGGLE FUNCTIONALITY
-            if (toggleBtn && requestorSection) {
-                toggleBtn.addEventListener('click', function() {
-                    // Use getComputedStyle for reliable display detection
-                    const isHidden = window.getComputedStyle(requestorSection).display === 'none';
-
-                    if (isHidden) {
-                        requestorSection.style.display = 'block';
-                        toggleBtn.textContent = 'Hide Requestor Details';
-                        toggleBtn.classList.remove('btn-outline-primary');
-                        toggleBtn.classList.add('btn-primary');
-                    } else {
-                        requestorSection.style.display = 'none';
-                        toggleBtn.textContent = 'Show Requestor Details';
-                        toggleBtn.classList.remove('btn-primary');
-                        toggleBtn.classList.add('btn-outline-primary');
-                    }
-                });
-            }
-
-            // "I am the patient" button functionality
-            sameAsPatientBtn.addEventListener('click', function() {
-                // Store original values before auto-filling
-                storeOriginalValues();
-                autoFillUsed = true;
-
-                // Auto-fill requestor details with patient information
-                if (patientLastname && patientLastname.value) requestorLastname.value = patientLastname.value;
-                if (patientFirstname && patientFirstname.value) requestorFirstname.value = patientFirstname.value;
-                if (patientMiddlename && patientMiddlename.value) requestorMiddlename.value = patientMiddlename.value;
-                if (patientSuffix && patientSuffix.value) requestorSuffix.value = patientSuffix.value;
-                if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
-                if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
-                if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
-                if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
-
-                // Set relationship to "Self"
-                if (relationshipPatient) relationshipPatient.value = "Self";
-
-                // Visual feedback with Tailwind
-                sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
-                sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
-                sameAsPatientBtn.classList.add('btn-success', 'ring-2', 'ring-green-500');
-
-                // Show clear button PERMANENTLY (never auto-hides)
-                if (clearAutoFillBtn) {
-                    clearAutoFillBtn.style.display = 'block';
-                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                    clearAutoFillBtn.classList.add('btn-outline-warning');
-                }
-
-                // Auto-show requestor section
-                if (requestorSection) {
-                    requestorSection.style.display = 'block';
-                    if (toggleBtn) {
-                        toggleBtn.textContent = 'Hide Requestor Details';
-                        toggleBtn.classList.remove('btn-outline-primary');
-                        toggleBtn.classList.add('btn-primary');
-                    }
-                }
-
-                // Reset main button after 2 seconds
-                setTimeout(() => {
-                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> I am the patient';
-                    sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
-                    sameAsPatientBtn.classList.add('btn-outline-success');
-                }, 2000);
-            });
-
-            // Clear button functionality - PERMANENT until manually clicked
-            clearAutoFillBtn.addEventListener('click', function() {
-                // Restore original values (clear all auto-filled data)
-                restoreOriginalValues();
-
-                // Reset the auto-fill flag
-                autoFillUsed = false;
-
-                // Visual feedback for clear
-                clearAutoFillBtn.innerHTML = '<i class="bi bi-check-circle"></i> Cleared!';
-                clearAutoFillBtn.classList.remove('btn-outline-warning');
-                clearAutoFillBtn.classList.add('btn-warning', 'ring-2', 'ring-yellow-500');
-
-                // Reset clear button after 1.5 seconds (but keep it visible)
-                setTimeout(() => {
-                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                    clearAutoFillBtn.classList.add('btn-outline-warning');
-
-                    // Only hide if ALL fields are empty after clearing
-                    const allFieldsEmpty = checkIfAllRequestorFieldsEmpty();
-                    if (allFieldsEmpty) {
-                        clearAutoFillBtn.style.display = 'none';
-                    }
-                    // Otherwise, keep it visible so user can clear again if needed
-                }, 1500);
-            });
-
-            // Store original values function
-            function storeOriginalValues() {
-                const fields = [
-                    'RLastname', 'RFirstname', 'RMiddlename', 'RSuffix',
-                    'RBlkLotStreet', 'RSubVill', 'RBrgy', 'RDistrict', 'RelationshipPatient'
-                ];
-
-                originalRequestorValues = {}; // Reset storage
-                fields.forEach(field => {
-                    const element = document.getElementById(field);
-                    if (element) {
-                        originalRequestorValues[field] = element.value;
-                    }
-                });
-            }
-
-            // Restore original values function
-            function restoreOriginalValues() {
-                Object.keys(originalRequestorValues).forEach(field => {
-                    const element = document.getElementById(field);
-                    if (element) {
-                        element.value = originalRequestorValues[field];
-                    }
-                });
-            }
-
-            // Check if all requestor fields are empty
-            function checkIfAllRequestorFieldsEmpty() {
-                const requestorFields = [
-                    requestorLastname, requestorFirstname, requestorMiddlename,
-                    requestorSuffix, requestorBlkLotStreet, requestorSubVill,
-                    requestorBrgy, requestorDistrict, relationshipPatient
-                ];
-
-                return requestorFields.every(field => !field || !field.value.trim());
-            }
-
-            // Smart hint with Tailwind (optional - can remove if not needed)
-            const patientFields = [patientLastname, patientFirstname, patientMiddlename];
-            patientFields.forEach(field => {
-                if (field) {
-                    field.addEventListener('input', function() {
-                        if (this.value &&
-                            requestorLastname && !requestorLastname.value &&
-                            requestorFirstname && !requestorFirstname.value &&
-                            !autoFillUsed) {
-                            sameAsPatientBtn.classList.add('ring-2', 'ring-green-500', 'animate-bounce');
-
-                            setTimeout(() => {
-                                sameAsPatientBtn.classList.remove('animate-bounce', 'ring-2', 'ring-green-500');
-                            }, 3000);
-                        }
-                    });
-                }
-            });
-
-            // Show clear button if page loads with pre-filled data
-            function checkInitialState() {
-                const anyFieldHasContent = !checkIfAllRequestorFieldsEmpty();
-                if (anyFieldHasContent) {
-                    storeOriginalValues();
-                    autoFillUsed = true;
-                    clearAutoFillBtn.style.display = 'block';
-                }
-            }
-
-            // Run initial state check
-            checkInitialState();
-        });
-    </script>
-
-    <style>
-        .img-preview {
+        .id-image-container {
             cursor: pointer;
             transition: transform 0.2s;
         }
 
-            .img-preview:hover {
-                transform: scale(1.05);
+            .id-image-container:hover {
+                transform: scale(1.02);
             }
 
-        #imageContainer {
-            overflow: hidden;
-            height: 70vh;
+        .id-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .pdf-container {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pdf-preview {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+            .pdf-preview:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+                transform: translateY(-2px);
+            }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: #dc143c;
+            margin-right: 1rem;
+        }
+
+        .pdf-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-filename {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .pdf-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+        }
+
+        .pdf-viewer-content {
             position: relative;
-            cursor: grab;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-viewer-header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pdf-viewer-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .pdf-viewer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            line-height: 1;
+        }
+
+            .pdf-viewer-close:hover {
+                color: var(--primary-color);
+            }
+
+        .pdf-viewer-body {
+            flex: 1;
+            background-color: #525659;
+            position: relative;
+            overflow: auto;
+        }
+
+        .pdf-container {
             display: flex;
             justify-content: center;
-            align-items: center;
+            padding: 20px;
+            min-height: 100%;
         }
 
-        #modalImage {
-            max-height: 100%;
-            max-width: 100%;
-            object-fit: contain;
-            transition: transform 0.2s ease-out;
-        }
-
-        .modal-content {
-            border-radius: 8px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            border-bottom: 1px solid var(--primary-light);
+        #pdfCanvas {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             background-color: white;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            display: flex;
-            align-items: center;
         }
 
-        .zoom-controls {
+        .pdf-controls {
             display: flex;
             align-items: center;
+            gap: 10px;
             margin-left: auto;
-            margin-right: 10px;
+            flex-wrap: wrap;
         }
 
-        #zoomPercentage {
-            min-width: 48px;
+        .page-info {
+            color: white;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        .zoom-level {
+            color: white;
+            font-size: 0.9rem;
+            min-width: 40px;
             text-align: center;
         }
 
-        .modal-body {
-            padding: 0;
-            background-color: #f8f9fa;
+        .pdf-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
 
-        .btn-close:focus {
-            box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
+        .pdf-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            display: none;
         }
+
+            .pdf-error i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+        .btn-light {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+        }
+
+            .btn-light:hover {
+                background-color: white;
+            }
+
+            .btn-light:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+        .comments-required {
+            border: 2px solid #dc3545 !important;
+            background-color: #fff5f5;
+        }
+
+        .status-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .comments-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .comments-modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .comments-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comments-modal-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .comments-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+            .comments-modal-close:hover {
+                color: var(--primary-color);
+            }
     </style>
-    <!-- For zooming photo -->
+</head>
+<body>
+    <!-- Go Back Button -->
+    <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>Back</span>
+    </a>
 
-    <script>
-        function previewImage(input, previewId) {
-            const file = input.files[0];
-            const preview = document.getElementById(previewId);
-            const uploadBox = input.previousElementSibling;
+    <!-- Image Zoom Modal -->
+    <div id="zoomModal" class="zoom-modal">
+        <span class="close-zoom">&times;</span>
+        <img class="zoom-modal-content" id="zoomedImage">
+    </div>
 
-            if (file) {
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = "block";
-                    };
-                    reader.readAsDataURL(file);
+    <!-- PDF Viewer Modal -->
+    <div id="pdfViewerModal" class="pdf-viewer-modal">
+        <div class="pdf-viewer-content">
+            <div class="pdf-viewer-header">
+                <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+                <div class="pdf-controls">
+                    <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                    <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                        <i class="bi bi-zoom-out"></i>
+                    </button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                        <i class="bi bi-zoom-in"></i>
+                    </button>
+                </div>
+                <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+            </div>
+            <div class="pdf-viewer-body">
+                <div id="pdfLoading" class="pdf-loading">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading PDF document...</p>
+                </div>
+                <div id="pdfError" class="pdf-error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <p>Error loading PDF. Please try again.</p>
+                </div>
+                <div class="pdf-container">
+                    <canvas id="pdfCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Modal -->
+    <div id="commentsModal" class="comments-modal">
+        <div class="comments-modal-content">
+            <div class="comments-modal-header">
+                <h5 class="comments-modal-title">Comments Required</h5>
+                <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
+            </div>
+            <div class="mb-3">
+                <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
+                <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
+                <div class="invalid-feedback">Comments are required when disapproving an application.</div>
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
+                <button type="button" class="btn btn-disapproved" onclick="submitDisapproved()">Submit Disapproved</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="receipt-container">
+        <form asp-action="Fillupformhospitalbillview" enctype="multipart/form-data" method="post" id="statusForm">
+            <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
+            <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
+
+            <div class="receipt-header">
+                <h3>Hospital Bill Application Details</h3>
+            </div>
+
+            <div class="receipt-body">
+                <!-- Patient Information -->
+                <div class="receipt-section">
+                    <div class="info-row">
+                        <div class="info-label">Application ID: @ViewData["Id"]</div>
+                    </div>
+                    <br />
+                    <h5 class="section-title">Patient Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Name:</div>
+                                <div class="info-value">
+                                    @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
+                                    @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Address:</div>
+                                <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Sex:</div>
+                                <div class="info-value">@ViewData["Sex"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Date of Birth:</div>
+                                <div class="info-value">@ViewData["Dateofbirth"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Age:</div>
+                                <div class="info-value">@ViewData["Age"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">PhilHealth:</div>
+                                <div class="info-value">@ViewData["PhilHealth"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">PhilHealth No:</div>
+                                <div class="info-value">@ViewData["PhilHealthNo"]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requestor Details -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Requestor's Details</h5>
+                    <div class="info-row">
+                        <div class="info-label">Full Name:</div>
+                        <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Address:</div>
+                        <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Relationship to Patient:</div>
+                        <div class="info-value">@ViewData["RelationshipPatient"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Contact No:</div>
+                        <div class="info-value">@ViewData["ContactNo"]</div>
+                    </div>
+                </div>
+
+                <!-- Assistance Requested -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Assistance Requested</h5>
+                    <div class="info-value">@ViewData["Typeassistance"]</div>
+                </div>
+
+                <!-- Valid ID Section -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Valid ID</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Front ID</h6>
+                            @if (ViewData["ValidfrontimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No front ID image available</p>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Back ID</h6>
+                            @if (ViewData["ValidBackimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No back ID image available</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Prescription -->
+                @if (ViewData["DoctorPrescriptionBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Doctor Prescription</h5>
+                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                            </div>
+                        }
+                    </div>
                 }
 
-                // Update upload box text
-                uploadBox.querySelector('p:first-of-type').textContent = file.name;
-                uploadBox.style.borderColor = "var(--primary-color)";
-                uploadBox.style.backgroundColor = "var(--primary-light)";
-            }
+                <!-- Medical Certificate -->
+                @if (ViewData["MedicalCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Medical Certificate</h5>
+                        @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
 
+                <!-- Death Certificate -->
+                @if (ViewData["DeathCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Death Certificate</h5>
+                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
 
-        }
-    </script>
+            </div>
+
+        </form>
+    </div>
 
     <script>
-               const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+        // Go Back Button Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const goBackBtn = document.getElementById('goBackBtn');
 
-        assistanceCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    // Uncheck all other checkboxes
-                    assistanceCheckboxes.forEach(cb => {
-                        if (cb !== this) {
-                            cb.checked = false;
-                            // Hide any specification fields for unchecked boxes
-                            const specField = cb.closest('.form-check').querySelector('.assistance-spec');
-                            if (specField) specField.style.display = 'none';
-                        }
-                    });
-
-                    // Show specification field for checked box if it exists
-                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                    if (specField) {
-                        specField.style.display = this.checked ? 'block' : 'none';
+            if (goBackBtn) {
+                function updateButton() {
+                    const viewportWidth = window.innerWidth;
+                    if (viewportWidth < 480) {
+                        goBackBtn.classList.add('compact');
+                    } else {
+                        goBackBtn.classList.remove('compact');
                     }
                 }
-                updateAssistanceReflection();
-            });
-        });
-        //1box only
 
-         document.addEventListener('DOMContentLoaded', function() {
-            // Type of Assistance Reflection
-            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-            const assistanceSpecs = document.querySelectorAll('.assistance-spec');
-            const assistanceReflection = document.getElementById('assistanceReflection');
+                function handleViewportChange() {
+                    updateButton();
+                }
 
-            // Initialize - hide all specification fields
-            assistanceSpecs.forEach(field => field.style.display = 'none');
+                updateButton();
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', handleViewportChange);
 
-            // Update reflection function
-            function updateAssistanceReflection() {
-                let selectedOptions = [];
+                goBackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.style.transition = 'transform 0.1s ease';
+                    this.style.transform = 'scale(0.95)';
 
-                assistanceCheckboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const label = checkbox.nextElementSibling.textContent.trim();
-                        const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
-
-                        if (specField && specField.value.trim() !== '') {
-                            selectedOptions.push(`${label}: ${specField.value.trim()}`);
+                    setTimeout(() => {
+                        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        this.style.transform = '';
+                        if (window.history.length > 1) {
+                            window.history.back();
                         } else {
-                            selectedOptions.push(label);
+                            window.location.href = '/';
                         }
-                    }
+                    }, 100);
                 });
-
-                assistanceReflection.value = selectedOptions.join(', ');
             }
 
-            // Add event listeners
-            assistanceCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                    if (specField) {
-                        specField.style.display = this.checked ? 'block' : 'none';
-                    }
-                    updateAssistanceReflection();
-                });
-            });
-
-            assistanceSpecs.forEach(field => {
-                field.addEventListener('input', updateAssistanceReflection);
-            });
-
-            // Initial update
-            updateAssistanceReflection();
-        });
-    </script>
-
-    <script>
-                // Go Back button functionality
-        goBackBtn.addEventListener('click', function() {
-            window.history.back();
-        });
-    </script>
-
-
-    <script>
-
-                document.addEventListener('DOMContentLoaded', function() {
-            // CMO Single Checkbox Selection
+            // CMO Reflection Auto-generation
             const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-
             cmoCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     if (this.checked) {
-                        // Uncheck all other checkboxes
                         cmoCheckboxes.forEach(cb => {
                             if (cb !== this) cb.checked = false;
                         });
                     }
-                    updateReflection(); // Update the reflection field
+                    updateReflection();
                 });
             });
-        });
-        //1 box only
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get all elements
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            const reflectionField = document.getElementById('cmoReflectionField');
-            const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-            // Update reflection function
             function updateReflection() {
-                let parts = [];
+                const billInput = document.getElementById('billAmountInput');
+                const cmoNotes = document.getElementById('cmoNotesInput');
+                const reflectionField = document.getElementById('cmoReflectionField');
+                const docCheckboxes = document.querySelectorAll('.supporting-doc');
 
-                // Add bill amount if exists
+                let parts = [];
                 if (billInput.value.trim()) {
                     parts.push(`Bill: ${billInput.value.trim()}`);
                 }
-
-                // Add checked documents
                 const checkedDocs = [];
                 docCheckboxes.forEach(cb => {
                     if (cb.checked) checkedDocs.push(cb.value);
@@ -1259,31 +858,257 @@
                 if (checkedDocs.length) {
                     parts.push(`Docs: ${checkedDocs.join(', ')}`);
                 }
-
-                // Add CMO notes if exists
                 if (cmoNotes.value.trim()) {
                     parts.push(`Others: ${cmoNotes.value.trim()}`);
                 }
-
-                // Update reflection field
                 reflectionField.value = parts.join(' , ');
             }
 
-            // Set up event listeners
-            billInput.addEventListener('input', updateReflection);
-            cmoNotes.addEventListener('input', updateReflection);
-            docCheckboxes.forEach(cb => {
-                cb.addEventListener('change', updateReflection);
-            });
-
-            // Initial update
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
             updateReflection();
         });
+
+        // Status Submission Functions
+        function submitApproved() {
+            document.getElementById('statusInput').value = 'Approved';
+            document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
+            document.getElementById('statusForm').submit();
+        }
+
+        function showCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'block';
+            document.getElementById('commentsTextarea').focus();
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'none';
+            document.getElementById('commentsTextarea').value = '';
+            document.getElementById('commentsTextarea').classList.remove('is-invalid');
+        }
+
+        function submitDisapproved() {
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            const comments = commentsTextarea.value.trim();
+
+            if (comments === '') {
+                commentsTextarea.classList.add('is-invalid');
+                commentsTextarea.focus();
+                return;
+            }
+
+            document.getElementById('statusInput').value = 'Disapproved';
+            document.getElementById('commentsInput').value = comments;
+            document.getElementById('statusForm').submit();
+        }
+
+        // PDF Viewer Variables
+        let currentPDF = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScale = 1.2;
+
+        // Image Zoom Functionality
+        function zoomImage(src) {
+            const modal = document.getElementById("zoomModal");
+            const modalImg = document.getElementById("zoomedImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        // Close zoom modal
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
+
+        // PDF Viewer Function
+        async function viewPDFInModal(fileName, fileType, displayName) {
+            const modal = document.getElementById('pdfViewerModal');
+            const title = document.getElementById('pdfViewerTitle');
+            const loading = document.getElementById('pdfLoading');
+            const errorDiv = document.getElementById('pdfError');
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            title.textContent = displayName || 'PDF Document';
+            modal.style.display = 'block';
+            loading.style.display = 'flex';
+            errorDiv.style.display = 'none';
+            canvas.style.display = 'none';
+
+            currentPDF = null;
+            currentPage = 1;
+            currentScale = 1.2;
+
+            try {
+                const encodedFileName = encodeURIComponent(fileName);
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const pdfData = await response.arrayBuffer();
+                if (!pdfData || pdfData.byteLength === 0) {
+                    throw new Error('PDF data is empty');
+                }
+
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                totalPagesSpan.textContent = totalPages;
+                currentPageSpan.textContent = currentPage;
+
+                updateNavigationButtons();
+                await renderPage(currentPage);
+
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+            }
+        }
+
+        // Render specific page
+        async function renderPage(pageNum) {
+            if (!currentPDF) return;
+
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+
+            try {
+                const page = await currentPDF.getPage(pageNum);
+                const viewport = page.getViewport({ scale: currentScale });
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                currentPageSpan.textContent = pageNum;
+
+            } catch (error) {
+                console.error('Error rendering page:', error);
+            }
+        }
+
+        // Navigation functions
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function zoomIn() {
+            currentScale += 0.2;
+            renderPage(currentPage);
+            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.2;
+                renderPage(currentPage);
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        // Close PDF Viewer
+        function closePDFViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'none';
+
+            if (currentPDF) {
+                currentPDF.destroy();
+                currentPDF = null;
+            }
+        }
+
+        // Keyboard shortcuts and navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById("zoomModal").style.display = "none";
+                closePDFViewer();
+                closeCommentsModal();
+            }
+
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+            const commentsModal = document.getElementById("commentsModal");
+
+            if (event.target == zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal) {
+                closePDFViewer();
+            }
+            if (event.target == commentsModal) {
+                closeCommentsModal();
+            }
+        }
     </script>
-
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

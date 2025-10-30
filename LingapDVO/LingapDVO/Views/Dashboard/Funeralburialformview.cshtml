@@ -1,1156 +1,856 @@
-﻿@model FuneralburialformDto
+﻿@model FillupformHospitalBillDto
 @{
     Layout = null;
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
-
 }
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Request Assistance Form</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <title>Hospital Bill Application - Receipt View</title>
     <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         :root {
             --primary-color: #DC143C;
             --primary-light: #FFE6EA;
             --primary-dark: #B01030;
+            --secondary-color: #2c3e50;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
         }
 
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
         }
 
-        /* Go Back button */
-        .go-back-top {
+        .go-back-btn {
             position: fixed;
-            left: clamp(12px, 3vw, 30px);
-            top: clamp(12px, 3vh, 30px);
+            left: 16px;
+            top: 16px;
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(4px, 1vw, 8px);
-            padding: clamp(12px, 2.5vh, 16px) clamp(16px, 3.5vw, 24px);
-            border-radius: clamp(20px, 5vw, 35px);
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            border: 1.5px solid rgba(220, 20, 60, 0.2);
+            border: 1px solid rgba(220, 20, 60, 0.15);
             color: #333333;
             text-decoration: none;
-            font-weight: 700;
-            font-size: clamp(14px, 2.5vw, 17px);
+            font-weight: 600;
+            font-size: 14px;
             white-space: nowrap;
-            /* Universal touch targets - always accessible */
-            min-height: 44px;
-            min-width: 44px;
-            /* Responsive scaling */
-            transform: scale(1);
+            min-height: 36px;
+            min-width: 36px;
+            transform: scale(var(--btn-scale, 1));
             transform-origin: left top;
-            /* Touch device optimizations */
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
-            /* Visibility enhancement */
-            mix-blend-mode: difference;
         }
 
-            /* Hover states */
-            .go-back-top:hover,
-            .go-back-top:focus {
+            .go-back-btn:hover,
+            .go-back-btn:focus {
                 background: #DC143C;
                 color: #ffffff;
-                box-shadow: 0 6px 25px rgba(220, 20, 60, 0.4);
-                transform: translate(-2px, -2px) scale(1.05);
+                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
                 border-color: #DC143C;
-                mix-blend-mode: normal;
             }
 
-            /* Icon styling with responsive size */
-            .go-back-top i {
-                font-size: 0.9em;
+            .go-back-btn i {
+                font-size: 13px;
                 transition: transform 0.3s ease;
-                margin-right: 2px;
+                width: 14px;
+                text-align: center;
             }
 
-            .go-back-top:hover i {
-                transform: translateX(-3px);
+            .go-back-btn:hover i {
+                transform: translateX(-2px);
             }
 
-            /* Active state for all devices - touch and mouse */
-            .go-back-top:active {
-                transform: scale(0.92);
+            .go-back-btn:active {
+                transform: scale(calc(var(--btn-scale, 1) * 0.96));
                 background: #b01030;
                 transition: transform 0.1s ease;
             }
 
-            /* Focus state for keyboard navigation */
-            .go-back-top:focus-visible {
-                outline: 3px solid #DC143C;
-                outline-offset: 3px;
+            .go-back-btn:focus-visible {
+                outline: 2px solid #DC143C;
+                outline-offset: 2px;
             }
 
-        /* Responsive letter spacing for better readability */
-        .go-back-top {
-            letter-spacing: clamp(0.2px, 0.1vw, 0.5px);
+            .go-back-btn.compact span {
+                display: none;
+            }
+
+            .go-back-btn.compact {
+                padding: 8px;
+                border-radius: 50%;
+            }
+
+        .receipt-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
-        /* Responsive border width */
-        .go-back-top {
-            border-width: clamp(1px, 0.3vw, 2px);
-        }
-
-        .form-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            margin-top: 2rem;
-            margin-bottom: 2rem;
-            border-top: 5px solid var(--primary-color);
-        }
-
-        .form-header {
-            color: var(--primary-color);
+        .receipt-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
             text-align: center;
+        }
+
+        .receipt-body {
+            padding: 2rem;
+        }
+
+        .receipt-section {
             margin-bottom: 2rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .section-header {
+        .section-title {
             color: var(--primary-color);
             font-weight: 600;
-            margin-top: 1.5rem;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--primary-light);
         }
 
-        .form-label {
-            font-weight: 500;
-            color: #555;
-        }
-
-        .form-control, .form-select {
-            border-radius: 5px;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #ddd;
-        }
-
-            .form-control:focus, .form-select:focus {
-                border-color: var(--primary-color);
-                box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
-            }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            padding: 0.5rem 2rem;
-            font-weight: 500;
-            border-radius: 5px;
-        }
-
-            .btn-primary:hover {
-                background-color: var(--primary-dark);
-                border-color: var(--primary-dark);
-            }
-
-        .form-check-input:checked {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .img-preview {
-            width: 100%;
-            max-width: 100%;
-            height: auto;
-            max-height: 300px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            object-fit: contain;
-            display: none;
-        }
-
-        .upload-box {
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-align: center;
-            background-color: #fafafa;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-            .upload-box:hover {
-                border-color: var(--primary-color);
-                background-color: var(--primary-light);
-            }
-
-        .upload-icon {
-            font-size: 2rem;
-            color: var(--primary-color);
+        .info-row {
+            display: flex;
             margin-bottom: 0.5rem;
         }
 
-        .required-field::after {
-            content: " *";
-            color: var(--primary-color);
+        .info-label {
+            flex: 0 0 30%;
+            font-weight: 500;
+            color: var(--secondary-color);
         }
 
-        .form-note {
+        .info-value {
+            flex: 1;
+            color: #555;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
             font-size: 0.85rem;
-            color: #666;
-            margin-top: 0.25rem;
         }
-    </style>
-</head>
 
-<body>
-    <div class="container form-container">
-        <div class="form-header">
-            <h3>Request Assistance Form</h3>
-            <p class="text-muted">Please fill out all required fields to process your request</p>
-        </div>
-
-        <form asp-action="Funeralburialformview" enctype="multipart/form-data" method="post">
-
-            <div class="mb-4 mt-3">
-                <label for="statusDropdown" class="form-label">Status</label>
-                <select class="form-select" id="statusDropdown" name="status" disabled>
-                    <option value="Pending" selected="@(ViewData["Status"]?.ToString() == "Pending")">Pending</option>
-                    <option value="Approved" selected="@(ViewData["Status"]?.ToString() == "Approved")">Approved</option>
-                    <option value="Unapproved" selected="@(ViewData["Status"]?.ToString() == "Unapproved")">Unapproved</option>
-                    <option value="Processing" selected="@(ViewData["Status"]?.ToString() == "Processing")">Processing</option>
-                    <option value="Claimed" selected="@(ViewData["Status"]?.ToString() == "Claimed")">Claimed</option>
-                </select>
-            </div>
-
-            <!-- RAF Number -->
-            <div class="mb-3">
-                <label for="rafNumber" class="form-label required-field">RAF No.</label>
-                <input readonly value="@ViewData["Id"]" type="text" class="form-control" id="rafNumber" placeholder="Enter RAF Number">
-            </div>
-
-            <!-- Patient Details -->
-            <h5 class="section-header">Patient's Details</h5>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label required-field">Last Name</label>
-                    <input value="@ViewData["Lastname"]" asp-for="Lastname" type="text" class="form-control" required disabled>
-                    <span asp-validation-for="Lastname" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">First Name</label>
-                    <input value="@ViewData["Firstname"]" asp-for="Firstname" type="text" class="form-control" required disabled>
-                    <span asp-validation-for="Firstname" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Middle Name</label>
-                    <input value="@ViewData["Middlename"]" asp-for="Middlename" type="text" class="form-control" disabled>
-                    <span asp-validation-for="Middlename" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Suffix</label>
-                    <select class="form-select" asp-for="Suffix" value="@ViewData["Suffix"]" disabled>
-                        <option value="">-- Select Suffix --</option>
-                        <option value="Jr." selected="@(ViewData["Suffix"]?.ToString() == "None")">None.</option>
-                        <option value="Jr." selected="@(ViewData["Suffix"]?.ToString() == "Jr.")">Jr.</option>
-                        <option value="Sr." selected="@(ViewData["Suffix"]?.ToString() == "Sr.")">Sr.</option>
-                        <option value="II." selected="@(ViewData["Suffix"]?.ToString() == "II.")">II.</option>
-                        <option value="III." selected="@(ViewData["Suffix"]?.ToString() == "III.")">III.</option>
-                        <option value="IV." selected="@(ViewData["Suffix"]?.ToString() == "IV.")">IV.</option>
-                        <option value="V." selected="@(ViewData["Suffix"]?.ToString() == "V.")">V.</option>
-
-                    </select>
-                    <span asp-validation-for="Suffix" class="text-danger"></span>
-                </div>
-
-            </div>
-
-            <!-- Address -->
-            <div class="row g-3 mt-2">
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">Blk / Lot / Street</label>
-                    <input value="@ViewData["BlkLotStreet"]" asp-for="BlkLotStreet" type="text" class="form-control" required disabled>
-                    <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Sub / Vill.</label>
-                    <input value="@ViewData["SubVill"]" asp-for="SubVill" type="text" class="form-control" disabled>
-                    <span asp-validation-for="SubVill" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">Brgy.</label>
-                    <input value="@ViewData["Brgy"]" asp-for="Brgy" type="text" class="form-control" required disabled>
-                    <span asp-validation-for="Brgy" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">District</label>
-                    <input value="@ViewData["District"]" asp-for="District" type="text" class="form-control" required disabled>
-                    <span asp-validation-for="District" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- Gender, PhilHealth, DOB, Age -->
-            <div class="row g-3 mt-2">
-                <div class="col-md-2">
-                    <label class="form-label required-field d-block">Sex</label>
-
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="Sex" id="male" value="Male" @(selectedSex == "Male" ? "checked" : "") required disabled>
-                        <label class="form-check-label" for="male">Male</label>
-                    </div>
-
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="Sex" id="female" value="Female" @(selectedSex == "Female" ? "checked" : "") disabled>
-                        <label class="form-check-label" for="female">Female</label>
-                    </div>
-
-                    <span asp-validation-for="Sex" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">PhilHealth</label>
-                    <select class="form-select" asp-for="PhilHealth" value="@ViewData["PhilHealth"]" disabled>
-                        <option value="">Select option</option>
-                        <option value="Without PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "Without PhilHealth")">Without PhilHealth</option>
-                        <option value="With PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "With PhilHealth")">With PhilHealth</option>
-                    </select>
-                    <span asp-validation-for="PhilHealth" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">PhilHealth No. (if any)</label>
-                    <input value="@ViewData["PhilHealthNo"]" asp-for="PhilHealthNo" type="text" class="form-control" disabled>
-                    <span asp-validation-for="PhilHealthNo"></span>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label required-field">Date of Birth</label>
-                    <input value="@ViewData["Dateofbirth"]" asp-for="Dateofbirth" type="date" class="form-control" required disabled>
-                    <span asp-validation-for="Dateofbirth" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-1">
-                    <label class="form-label">Age</label>
-                    <input value="@ViewData["Age"]" asp-for="Age" type="number" class="form-control" disabled>
-                    <span asp-validation-for="Age" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- Requestor Details -->
-            <h5 class="section-header">Requestor's Details</h5>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label required-field">Last Name</label>
-                    <input value="@ViewData["RLastname"]" asp-for="RLastname" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RLastname"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">First Name</label>
-                    <input value="@ViewData["RFirstname"]" asp-for="RFirstname" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RFirstname"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Middle Name</label>
-                    <input value="@ViewData["RMiddlename"]" asp-for="RMiddlename" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RMiddlename"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Suffix</label>
-                    <select class="form-select" asp-for="RSuffix" value="@ViewData["RPhilHealth"]" disabled>
-                        <option value="">-- Select Suffix --</option>
-                        <option value="Jr." selected="@(ViewData["RSuffix"]?.ToString() == "None.")">None.</option>
-                        <option value="Jr." selected="@(ViewData["RSuffix"]?.ToString() == "Jr.")">Jr.</option>
-                        <option value="Sr." selected="@(ViewData["RSuffix"]?.ToString() == "Sr.")">Sr.</option>
-                        <option value="II." selected="@(ViewData["RSuffix"]?.ToString() == "II")">II.</option>
-                        <option value="III." selected="@(ViewData["RSuffix"]?.ToString() == "III")">III.</option>
-                        <option value="IV." selected="@(ViewData["RSuffix"]?.ToString() == "IV")">IV.</option>
-                        <option value="V." selected="@(ViewData["RSuffix"]?.ToString() == "V")">V.</option>
-                    </select>
-                    <span asp-validation-for="RSuffix"></span>
-                </div>
-            </div>
-
-            <!-- Requestor Address -->
-            <div class="row g-3 mt-2">
-                <div class="col-md-3">
-                    <label class="form-label required-field">Blk / Lot / Street</label>
-                    <input value="@ViewData["RBlkLotStreet"]" asp-for="RBlkLotStreet" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RBlkLotStreet"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Sub / Vill.</label>
-                    <input value="@ViewData["RSubVill"]" asp-for="RSubVill" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RSubVill"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">Brgy.</label>
-                    <input value="@ViewData["RBrgy"]" asp-for="RBrgy" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RBrgy"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label required-field">District</label>
-                    <input value="@ViewData["RDistrict"]" asp-for="RDistrict" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RDistrict"></span>
-                </div>
-
-            </div>
-
-            <div class="row g-3 mt-2">
-                <div class="col-md-6">
-                    <label class="form-label required-field">Relationship to Patient</label>
-                    <input value="@ViewData["RelationshipPatient"]" asp-for="RelationshipPatient" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RelationshipPatient"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label required-field">Contact No.</label>
-                    <input value="@ViewData["ContactNo"]" asp-for="ContactNo" type="text" class="form-control" disabled>
-                    <span asp-validation-for="ContactNo"></span>
-                </div>
-            </div>
-
-            <!-- Type of Assistance Requested Section -->
-            <h5 class="section-header">Type of Assistance Requested</h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <!-- Column 1 -->
-                    <!-- Funeral Assistance -->
-                    <div class="form-check">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="funeralAssistance" name="TypeassistanceOptions" value="Funeral Assistance"
-                        @(checkedAssistance.ContainsKey("Funeral Assistance") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="funeralAssistance">Funeral Assistance</label>
-                    </div>
-
-                    <!-- Hospital Assistance -->
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance"
-                        @(checkedAssistance.ContainsKey("Hospital Assistance") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="hospitalAssistance">Hospital Assistance</label>
-                    </div>
-
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="governmentAssistance" name="TypeassistanceOptions" value="Government"
-                        @(checkedAssistance.ContainsKey("Government") ? "checked" : "") disabled />
-                        <label class="form-check-label" for="governmentAssistance">Government</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="GovernmentDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Government") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Government") ? checkedAssistance["Government"] : "")" />
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="privateAssistance" name="TypeassistanceOptions" value="Private"
-                        @(checkedAssistance.ContainsKey("Private") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="privateAssistance">Private</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="PrivateDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Private") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Private") ? checkedAssistance["Private"] : "")" />
-                    </div>
-
-
-                    <!-- Case -->
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="caseAssistance" name="TypeassistanceOptions" value="Case"
-                        @(checkedAssistance.ContainsKey("Case") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="caseAssistance">Case</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="CaseDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Case") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Case") ? checkedAssistance["Case"] : "")" />
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <!-- Column 2 -->
-                    <div class="form-check">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="medicineAssistance" name="TypeassistanceOptions" value="Medicine Assistance"
-                        @(checkedAssistance.ContainsKey("Medicine Assistance") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="medicineAssistance">Medicine Assistance</label>
-                    </div>
-
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="procedure" name="TypeassistanceOptions" value="Procedure"
-                        @(checkedAssistance.ContainsKey("Procedure") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="procedure">Procedure</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="ProcedureDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Procedure") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Procedure") ? checkedAssistance["Procedure"] : "")" />
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="laboratory" name="TypeassistanceOptions" value="Laboratory"
-                        @(checkedAssistance.ContainsKey("Laboratory") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="laboratory">Laboratory</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="LaboratoryDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Laboratory") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Laboratory") ? checkedAssistance["Laboratory"] : "")" />
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="dialysis" name="TypeassistanceOptions" value="Dialysis"
-                        @(checkedAssistance.ContainsKey("Dialysis") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="dialysis">Dialysis</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="DialysisDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Dialysis") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Dialysis") ? checkedAssistance["Dialysis"] : "")" />
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="apparatus" name="TypeassistanceOptions" value="Apparatus"
-                        @(checkedAssistance.ContainsKey("Apparatus") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="apparatus">Apparatus</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="ApparatusDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Apparatus") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Apparatus") ? checkedAssistance["Apparatus"] : "")" />
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="others" name="TypeassistanceOptions" value="Others"
-                        @(checkedAssistance.ContainsKey("Others") ? "checked" : "") disabled>
-                        <label class="form-check-label" for="others">Others</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="OthersDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Others") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Others") ? checkedAssistance["Others"] : "")" />
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="form-group mt-3">
-                <label for="assistanceReflection" class="form-label">Reflection info:</label>
-                <input type="text" class="form-control" id="assistanceReflection"
-                       name="Typeassistance" placeholder="Auto-generated info..." readonly>
-                <span asp-validation-for="Typeassistance"></span>
-            </div>
-
-            <!-- FOR CMO PERSONNEL USE ONLY Section -->
-            <div class="mt-5">
-                <h5 class="section-header">FOR CMO PERSONNEL USE ONLY</h5>
-
-                <div class="row g-3 mt-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Bill Amount:</label>
-                        <input type="text" class="form-control" id="billAmountInput" name="BillAmount"
-                               value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")" disabled>
-                    </div>
-                </div>
-
-
-
-                <div class="mt-3">
-                    <label class="form-label">Supporting Documents Attached:</label>
-                    <div class="row g-3 mt-1">
-
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input supporting-doc" type="checkbox"
-                                       id="barangayClearance" name="SupportingDocs" value="Barangay Clearance"
-                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "") disabled>
-                                <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input supporting-doc" type="checkbox"
-                                       id="hospitalBill" name="SupportingDocs" value="Hospital Bill"
-                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "") disabled>
-                                <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input supporting-doc" type="checkbox"
-                                       id="medicalCertificate" name="SupportingDocs" value="Medical Certificate"
-                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "") disabled>
-                                <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input supporting-doc" type="checkbox"
-                                       id="funeralBill" name="SupportingDocs" value="Funeral Bill"
-                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "") disabled>
-                                <label class="form-check-label" for="funeralBill">Funeral Bill</label>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input supporting-doc" type="checkbox"
-                                       id="deathCertificate" name="SupportingDocs" value="Death Certificate"
-                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "") disabled>
-                                <label class="form-check-label" for="deathCertificate">Death Certificate</label>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input supporting-doc" type="checkbox"
-                                       id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request"
-                                @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "") disabled>
-                                <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">Others:</label>
-                            <input type="text" class="form-control" id="cmoNotesInput"
-                                   placeholder="Enter notes..."
-                                   value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")" disabled>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating position-relative" style="height: 100px;">
-                            <input asp-for="Processby" type="text"
-                                   class="form-control border rounded p-3 h-100 d-flex align-items-center justify-content-center text-center"
-                                   id="processedBy"
-                                   value="@ViewData["Processby"]"
-                                   readonly
-                                   style="font-size: 1.2rem;">
-                            <span asp-validation-for="Processby" class="text-danger"></span>
-                            <label class="form-label text-center w-100 position-absolute bottom-0 start-0">Processed by:</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="ForCMOPERSONNEL" class="form-label">CMO Reflection info:</label>
-                    <input asp-for="ForCMOPERSONNEL" type="text" class="form-control" id="cmoReflectionField"
-                           name="ForCMOPERSONNEL" placeholder="Auto-generated info..." readonly
-                           value="@ViewData["ForCMOPERSONNEL"]">
-                    <span asp-validation-for="ForCMOPERSONNEL" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- Upload Section -->
-            <h5 class="section-header">Upload Required Documents</h5>
-
-            <div class="mb-3">
-                <label class="form-label required-field">Valid ID (Front)</label>
-                <div class="upload-box" onclick="document.getElementById('idFront').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload ID Front</p>
-                    <p class="form-note">Accepted formats: JPG, PNG (Max 5MB)</p>
-                </div>
-                <input asp-for="IdFrontimage" type="file" id="idFront" class="d-none" accept="image/*" onchange="previewImage(this, 'idFrontPreview')" disabled>
-                <span asp-validation-for="IdFrontimage" class="text-danger"></span>
-
-                <img id="idFrontPreview" class="img-preview mt-2" alt="Front ID Preview"
-                     src="@(ViewData["Validfrontimage"] != null ? Url.Content("~/Validimg/" + ViewData["Validfrontimage"]) : "")"
-                     style="@(ViewData["Validfrontimage"] != null ? "display: block;" : "display: none;")">
-
-            </div>
-
-
-            <div class="mb-3">
-                <label class="form-label required-field">Valid ID (Back)</label>
-                <div class="upload-box" onclick="document.getElementById('idBack').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload ID Back</p>
-                    <p class="form-note">Accepted formats: JPG, PNG (Max 5MB)</p>
-                </div>
-                <input asp-for="IdBackimage" type="file" id="idBack" class="d-none" accept="image/*" onchange="previewImage(this, 'idBackPreview')" disabled>
-                <span asp-validation-for="IdBackimage" class="text-danger"></span>
-
-                <img id="idBackPreview" class="img-preview mt-2" alt="Back ID Preview" src="@(ViewData["ValidBackimage"] != null ? Url.Content("~/Validimg/" + ViewData["ValidBackimage"]) : "")"
-                     style="@(ViewData["ValidBackimage"] != null ? "display: block;" : "display: none;")">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
-                <div class="upload-box" onclick="document.getElementById('receipt').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload document</p>
-                    <p class="form-note">Accepted formats: JPG, PNG,Etc.. (Max 10MB)</p>
-                </div>
-                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')" disabled>
-                <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
-
-                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview" src="@(ViewData["DoctorPrescription"] != null ? Url.Content("~/DoctorPrescriptionimage/" + ViewData["DoctorPrescription"]) : "")"
-                     style="@(ViewData["DoctorPrescription"] != null ? "display: block;" : "display: none;")">
-                <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
-            </div>
-
-
-
-            <!-- Funeral Contract/Receipt Upload Section -->
-            <div class="mb-3">
-                <label class="form-label required-field">Funeral Contract/Receipt</label>
-                <div class="upload-box" onclick="document.getElementById('funeralReceipt').click()">
-                    <div class="upload-icon">
-                        <i class="bi bi-card-image"></i>
-                    </div>
-                    <p>Click to upload funeral receipt</p>
-                    <p class="form-note">Accepted formats: JPG, PNG, Etc.. (Max 10MB)</p>
-                </div>
-                <input asp-for="DeathCertificateimage" type="file" id="funeralReceipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'funeralReceiptPreview')" disabled>
-                <span asp-validation-for="DeathCertificateimage" class="text-danger"></span>
-
-                <div class="text-center">
-                    <!-- Added text-center class here -->
-                    <div class="position-relative d-inline-block">
-                        <!-- Changed to d-inline-block -->
-                        <img id="funeralReceiptPreview" class="img-preview mt-2" alt="Funeral Receipt Preview"
-                             src="@(ViewData["DeathCertificate"] != null ? Url.Content("~/Funeralimg/" + ViewData["DeathCertificate"]) : "")"
-                             style="@(ViewData["DeathCertificate"] != null ? "display: block; max-width: 100%;" : "display: none; max-width: 100%;")">
-                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
-                                onclick="deleteImage('funeralReceipt', 'funeralReceiptPreview', this)"
-                                style="@(ViewData["DeathCertificate"] != null ? "display: block;" : "display: none;")">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
-            </div>
-
-            <textarea class="form-control" id="idFrontDescription" rows="8" cols="100" placeholder="Add any notes or comments about this document..." disabled>@ViewData["Comments"] </textarea>
-
-            <script>
-                // Preview image function
-                function previewImage(input, previewId) {
-                    const preview = document.getElementById(previewId);
-                    const container = preview.closest('.position-relative');
-                    const deleteBtn = container.querySelector('button');
-                    const file = input.files[0];
-
-                    if (file) {
-                        const reader = new FileReader();
-
-                        reader.onload = function (e) {
-                            preview.src = e.target.result;
-                            preview.style.display = 'block';
-                            if (deleteBtn) deleteBtn.style.display = 'block';
-                        }
-
-                        reader.readAsDataURL(file);
-                    }
-                }
-
-                // Delete image function
-                function deleteImage(inputId, previewId, button) {
-                    const input = document.getElementById(inputId);
-                    const preview = document.getElementById(previewId);
-
-                    // Clear the file input
-                    input.value = '';
-
-                    // Hide the preview and delete button
-                    preview.style.display = 'none';
-                    preview.src = '';
-                    button.style.display = 'none';
-                }
-            </script>
-            <br />
-            <br />
-            <a href="javascript:history.back()" class="btn btn-primary">Go Back</a>
-        </form>
-    </div>
-
-
-    <!-- For zooming photo -->
-    <!-- Add this modal HTML at the end of your form container but before the closing </div> -->
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
-                    <div class="zoom-controls">
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="zoomOut">
-                            <i class="bi bi-zoom-out"></i>
-                        </button>
-                        <span id="zoomPercentage">100%</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="zoomIn">
-                            <i class="bi bi-zoom-in"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="zoomReset">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center p-0">
-                    <div id="imageContainer">
-                        <img id="modalImage" src="" class="img-fluid" alt="Enlarged Image">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add this JavaScript to your existing scripts section -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Make all preview images clickable to open modal
-            const previewImages = document.querySelectorAll('.img-preview');
-            const modalImage = document.getElementById('modalImage');
-            const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-            const modalTitle = document.getElementById('imageModalLabel');
-            const imageContainer = document.getElementById('imageContainer');
-            const zoomPercentage = document.getElementById('zoomPercentage');
-            const zoomInBtn = document.getElementById('zoomIn');
-            const zoomOutBtn = document.getElementById('zoomOut');
-            const zoomResetBtn = document.getElementById('zoomReset');
-
-            // Zoom variables
-            let currentZoom = 1;
-            const zoomFactor = 0.1;
-            const maxZoom = 3;
-            const minZoom = 0.5;
-
-            // Reset zoom on modal open
-            function resetZoom() {
-                currentZoom = 1;
-                updateZoom();
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-disapproved {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-claimed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .btn-receipt {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            border-radius: 5px;
+        }
+
+            .btn-receipt:hover {
+                background-color: var(--primary-dark);
+                border-color: var(--primary-dark);
+                color: white;
             }
 
-            // Apply zoom level
-            function updateZoom() {
-                modalImage.style.transform = `scale(${currentZoom})`;
-                zoomPercentage.textContent = `${Math.round(currentZoom * 100)}%`;
+        .btn-approved {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 0 0.5rem;
+        }
+
+            .btn-approved:hover {
+                background-color: #218838;
+                border-color: #1e7e34;
+                color: white;
             }
 
-            // Zoom in function
-            function zoomIn() {
-                if (currentZoom < maxZoom) {
-                    currentZoom += zoomFactor;
-                    updateZoom();
-                }
+        .btn-disapproved {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 0 0.5rem;
+        }
+
+            .btn-disapproved:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+                color: white;
             }
 
-            // Zoom out function
-            function zoomOut() {
-                if (currentZoom > minZoom) {
-                    currentZoom -= zoomFactor;
-                    updateZoom();
-                }
-            }
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
 
-            // Make images clickable
-            previewImages.forEach(img => {
-                img.style.cursor = 'pointer';
-                img.addEventListener('click', function () {
-                    modalImage.src = this.src;
-                    modalTitle.textContent = this.alt || 'Image Preview';
-                    resetZoom();
-                    imageModal.show();
-                });
-            });
+        .zoom-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
 
-            // Add zoom event listeners
-            zoomInBtn.addEventListener('click', zoomIn);
-            zoomOutBtn.addEventListener('click', zoomOut);
-            zoomResetBtn.addEventListener('click', resetZoom);
+        .close-zoom {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-            // Mouse wheel zoom
-            imageContainer.addEventListener('wheel', function (e) {
-                e.preventDefault();
-                if (e.deltaY < 0) {
-                    zoomIn();
-                } else {
-                    zoomOut();
-                }
-            });
-
-            // Pan image when dragging
-            let isDragging = false;
-            let startX, startY, translateX = 0, translateY = 0;
-
-            imageContainer.addEventListener('mousedown', function (e) {
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-                imageContainer.style.cursor = 'grabbing';
-            });
-
-            window.addEventListener('mousemove', function (e) {
-                if (!isDragging) return;
-
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-
-                // Only allow panning when zoomed in
-                if (currentZoom > 1) {
-                    modalImage.style.transform = `scale(${currentZoom}) translate(${translateX / currentZoom}px, ${translateY / currentZoom}px)`;
-                }
-            });
-
-            window.addEventListener('mouseup', function () {
-                isDragging = false;
-                imageContainer.style.cursor = 'grab';
-            });
-
-            // Allow closing modal with ESC key
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    imageModal.hide();
-                }
-            });
-
-            // Reset zoom and position when modal is closed
-            document.getElementById('imageModal').addEventListener('hidden.bs.modal', function () {
-                resetZoom();
-                translateX = 0;
-                translateY = 0;
-                modalImage.style.transform = 'scale(1) translate(0, 0)';
-            });
-        });
-    </script>
-
-    <!-- Add these styles to your existing style section -->
-    <style>
-        .img-preview {
+        .id-image-container {
             cursor: pointer;
             transition: transform 0.2s;
         }
 
-            .img-preview:hover {
-                transform: scale(1.05);
+            .id-image-container:hover {
+                transform: scale(1.02);
             }
 
-        #imageContainer {
-            overflow: hidden;
-            height: 70vh;
+        .id-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .pdf-container {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pdf-preview {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+            .pdf-preview:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+                transform: translateY(-2px);
+            }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: #dc143c;
+            margin-right: 1rem;
+        }
+
+        .pdf-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-filename {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .pdf-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+        }
+
+        .pdf-viewer-content {
             position: relative;
-            cursor: grab;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-viewer-header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pdf-viewer-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .pdf-viewer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            line-height: 1;
+        }
+
+            .pdf-viewer-close:hover {
+                color: var(--primary-color);
+            }
+
+        .pdf-viewer-body {
+            flex: 1;
+            background-color: #525659;
+            position: relative;
+            overflow: auto;
+        }
+
+        .pdf-container {
             display: flex;
             justify-content: center;
-            align-items: center;
+            padding: 20px;
+            min-height: 100%;
         }
 
-        #modalImage {
-            max-height: 100%;
-            max-width: 100%;
-            object-fit: contain;
-            transition: transform 0.2s ease-out;
-        }
-
-        .modal-content {
-            border-radius: 8px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            border-bottom: 1px solid var(--primary-light);
+        #pdfCanvas {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             background-color: white;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            display: flex;
-            align-items: center;
         }
 
-        .zoom-controls {
+        .pdf-controls {
             display: flex;
             align-items: center;
+            gap: 10px;
             margin-left: auto;
-            margin-right: 10px;
+            flex-wrap: wrap;
         }
 
-        #zoomPercentage {
-            min-width: 48px;
+        .page-info {
+            color: white;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        .zoom-level {
+            color: white;
+            font-size: 0.9rem;
+            min-width: 40px;
             text-align: center;
         }
 
-        .modal-body {
-            padding: 0;
-            background-color: #f8f9fa;
+        .pdf-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
 
-        .btn-close:focus {
-            box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
+        .pdf-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            display: none;
         }
+
+            .pdf-error i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+        .btn-light {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+        }
+
+            .btn-light:hover {
+                background-color: white;
+            }
+
+            .btn-light:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+        .comments-required {
+            border: 2px solid #dc3545 !important;
+            background-color: #fff5f5;
+        }
+
+        .status-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .comments-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .comments-modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .comments-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comments-modal-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .comments-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+            .comments-modal-close:hover {
+                color: var(--primary-color);
+            }
     </style>
-    <!-- For zooming photo -->
+</head>
+<body>
+    <!-- Go Back Button -->
+    <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>Back</span>
+    </a>
 
-    <script>
-        function previewImage(input, previewId) {
-            const file = input.files[0];
-            const preview = document.getElementById(previewId);
-            const uploadBox = input.previousElementSibling;
+    <!-- Image Zoom Modal -->
+    <div id="zoomModal" class="zoom-modal">
+        <span class="close-zoom">&times;</span>
+        <img class="zoom-modal-content" id="zoomedImage">
+    </div>
 
-            if (file) {
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = "block";
-                    };
-                    reader.readAsDataURL(file);
+    <!-- PDF Viewer Modal -->
+    <div id="pdfViewerModal" class="pdf-viewer-modal">
+        <div class="pdf-viewer-content">
+            <div class="pdf-viewer-header">
+                <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+                <div class="pdf-controls">
+                    <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                    <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                        <i class="bi bi-zoom-out"></i>
+                    </button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                        <i class="bi bi-zoom-in"></i>
+                    </button>
+                </div>
+                <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+            </div>
+            <div class="pdf-viewer-body">
+                <div id="pdfLoading" class="pdf-loading">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading PDF document...</p>
+                </div>
+                <div id="pdfError" class="pdf-error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <p>Error loading PDF. Please try again.</p>
+                </div>
+                <div class="pdf-container">
+                    <canvas id="pdfCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Modal -->
+    <div id="commentsModal" class="comments-modal">
+        <div class="comments-modal-content">
+            <div class="comments-modal-header">
+                <h5 class="comments-modal-title">Comments Required</h5>
+                <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
+            </div>
+            <div class="mb-3">
+                <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
+                <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
+                <div class="invalid-feedback">Comments are required when disapproving an application.</div>
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
+                <button type="button" class="btn btn-disapproved" onclick="submitDisapproved()">Submit Disapproved</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="receipt-container">
+        <form asp-action="Funeralburialformview" enctype="multipart/form-data" method="post" id="statusForm">
+            <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
+            <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
+
+            <div class="receipt-header">
+                <h3>Hospital Bill Application Details</h3>
+            </div>
+
+            <div class="receipt-body">
+                <!-- Patient Information -->
+                <div class="receipt-section">
+                    <div class="info-row">
+                        <div class="info-label">Application ID: @ViewData["Id"]</div>
+                    </div>
+                    <br />
+                    <h5 class="section-title">Patient Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Name:</div>
+                                <div class="info-value">
+                                    @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
+                                    @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Address:</div>
+                                <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Sex:</div>
+                                <div class="info-value">@ViewData["Sex"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Date of Birth:</div>
+                                <div class="info-value">@ViewData["Dateofbirth"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Age:</div>
+                                <div class="info-value">@ViewData["Age"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">PhilHealth:</div>
+                                <div class="info-value">@ViewData["PhilHealth"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">PhilHealth No:</div>
+                                <div class="info-value">@ViewData["PhilHealthNo"]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requestor Details -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Requestor's Details</h5>
+                    <div class="info-row">
+                        <div class="info-label">Full Name:</div>
+                        <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Address:</div>
+                        <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Relationship to Patient:</div>
+                        <div class="info-value">@ViewData["RelationshipPatient"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Contact No:</div>
+                        <div class="info-value">@ViewData["ContactNo"]</div>
+                    </div>
+                </div>
+
+                <!-- Assistance Requested -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Assistance Requested</h5>
+                    <div class="info-value">@ViewData["Typeassistance"]</div>
+                </div>
+
+                <!-- Valid ID Section -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Valid ID</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Front ID</h6>
+                            @if (ViewData["ValidfrontimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No front ID image available</p>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Back ID</h6>
+                            @if (ViewData["ValidBackimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No back ID image available</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Prescription -->
+                @if (ViewData["DoctorPrescriptionBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Doctor Prescription</h5>
+                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                            </div>
+                        }
+                    </div>
                 }
 
-                // Update upload box text
-                uploadBox.querySelector('p:first-of-type').textContent = file.name;
-                uploadBox.style.borderColor = "var(--primary-color)";
-                uploadBox.style.backgroundColor = "var(--primary-light)";
-            }
+                <!-- Medical Certificate -->
+                @if (ViewData["MedicalCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Medical Certificate</h5>
+                        @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
 
-        }
-    </script>
+                <!-- Death Certificate -->
+                @if (ViewData["DeathCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Death Certificate</h5>
+                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+            </div>
+
+        </form>
+    </div>
 
     <script>
+        // Go Back Button Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const goBackBtn = document.getElementById('goBackBtn');
 
-        const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-
-        assistanceCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function () {
-                if (this.checked) {
-                    // Uncheck all other checkboxes
-                    assistanceCheckboxes.forEach(cb => {
-                        if (cb !== this) {
-                            cb.checked = false;
-                            // Hide any specification fields for unchecked boxes
-                            const specField = cb.closest('.form-check').querySelector('.assistance-spec');
-                            if (specField) specField.style.display = 'none';
-                        }
-                    });
-
-                    // Show specification field for checked box if it exists
-                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                    if (specField) {
-                        specField.style.display = this.checked ? 'block' : 'none';
+            if (goBackBtn) {
+                function updateButton() {
+                    const viewportWidth = window.innerWidth;
+                    if (viewportWidth < 480) {
+                        goBackBtn.classList.add('compact');
+                    } else {
+                        goBackBtn.classList.remove('compact');
                     }
                 }
-                updateAssistanceReflection();
-            });
-        });
-        //1box only
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Type of Assistance Reflection
-            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-            const assistanceSpecs = document.querySelectorAll('.assistance-spec');
-            const assistanceReflection = document.getElementById('assistanceReflection');
+                function handleViewportChange() {
+                    updateButton();
+                }
 
-            // Initialize - hide all specification fields
-            assistanceSpecs.forEach(field => field.style.display = 'none');
+                updateButton();
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', handleViewportChange);
 
-            // Update reflection function
-            function updateAssistanceReflection() {
-                let selectedOptions = [];
+                goBackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.style.transition = 'transform 0.1s ease';
+                    this.style.transform = 'scale(0.95)';
 
-                assistanceCheckboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const label = checkbox.nextElementSibling.textContent.trim();
-                        const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
-
-                        if (specField && specField.value.trim() !== '') {
-                            selectedOptions.push(`${label}: ${specField.value.trim()}`);
+                    setTimeout(() => {
+                        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        this.style.transform = '';
+                        if (window.history.length > 1) {
+                            window.history.back();
                         } else {
-                            selectedOptions.push(label);
+                            window.location.href = '/';
                         }
-                    }
+                    }, 100);
                 });
-
-                assistanceReflection.value = selectedOptions.join(', ');
             }
 
-            // Add event listeners
-            assistanceCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function () {
-                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                    if (specField) {
-                        specField.style.display = this.checked ? 'block' : 'none';
-                    }
-                    updateAssistanceReflection();
-                });
-            });
-
-            assistanceSpecs.forEach(field => {
-                field.addEventListener('input', updateAssistanceReflection);
-            });
-
-            // Initial update
-            updateAssistanceReflection();
-        });
-    </script>
-
-
-    <script>
-
-        document.addEventListener('DOMContentLoaded', function () {
-            // CMO Single Checkbox Selection
+            // CMO Reflection Auto-generation
             const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-
             cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function () {
+                checkbox.addEventListener('change', function() {
                     if (this.checked) {
-                        // Uncheck all other checkboxes
                         cmoCheckboxes.forEach(cb => {
                             if (cb !== this) cb.checked = false;
                         });
                     }
-                    updateReflection(); // Update the reflection field
+                    updateReflection();
                 });
             });
-        });
-        //1 box only
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Get all elements
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            const reflectionField = document.getElementById('cmoReflectionField');
-            const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-            // Update reflection function
             function updateReflection() {
-                let parts = [];
+                const billInput = document.getElementById('billAmountInput');
+                const cmoNotes = document.getElementById('cmoNotesInput');
+                const reflectionField = document.getElementById('cmoReflectionField');
+                const docCheckboxes = document.querySelectorAll('.supporting-doc');
 
-                // Add bill amount if exists
+                let parts = [];
                 if (billInput.value.trim()) {
                     parts.push(`Bill: ${billInput.value.trim()}`);
                 }
-
-                // Add checked documents
                 const checkedDocs = [];
                 docCheckboxes.forEach(cb => {
                     if (cb.checked) checkedDocs.push(cb.value);
@@ -1158,32 +858,257 @@
                 if (checkedDocs.length) {
                     parts.push(`Docs: ${checkedDocs.join(', ')}`);
                 }
-
-                // Add CMO notes if exists
                 if (cmoNotes.value.trim()) {
                     parts.push(`Others: ${cmoNotes.value.trim()}`);
                 }
-
-                // Update reflection field
                 reflectionField.value = parts.join(' , ');
             }
 
-            // Set up event listeners
-            billInput.addEventListener('input', updateReflection);
-            cmoNotes.addEventListener('input', updateReflection);
-            docCheckboxes.forEach(cb => {
-                cb.addEventListener('change', updateReflection);
-            });
-
-            // Initial update (to reflect any pre-loaded data)
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
             updateReflection();
         });
+
+        // Status Submission Functions
+        function submitApproved() {
+            document.getElementById('statusInput').value = 'Approved';
+            document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
+            document.getElementById('statusForm').submit();
+        }
+
+        function showCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'block';
+            document.getElementById('commentsTextarea').focus();
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'none';
+            document.getElementById('commentsTextarea').value = '';
+            document.getElementById('commentsTextarea').classList.remove('is-invalid');
+        }
+
+        function submitDisapproved() {
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            const comments = commentsTextarea.value.trim();
+
+            if (comments === '') {
+                commentsTextarea.classList.add('is-invalid');
+                commentsTextarea.focus();
+                return;
+            }
+
+            document.getElementById('statusInput').value = 'Disapproved';
+            document.getElementById('commentsInput').value = comments;
+            document.getElementById('statusForm').submit();
+        }
+
+        // PDF Viewer Variables
+        let currentPDF = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScale = 1.2;
+
+        // Image Zoom Functionality
+        function zoomImage(src) {
+            const modal = document.getElementById("zoomModal");
+            const modalImg = document.getElementById("zoomedImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        // Close zoom modal
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
+
+        // PDF Viewer Function
+        async function viewPDFInModal(fileName, fileType, displayName) {
+            const modal = document.getElementById('pdfViewerModal');
+            const title = document.getElementById('pdfViewerTitle');
+            const loading = document.getElementById('pdfLoading');
+            const errorDiv = document.getElementById('pdfError');
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            title.textContent = displayName || 'PDF Document';
+            modal.style.display = 'block';
+            loading.style.display = 'flex';
+            errorDiv.style.display = 'none';
+            canvas.style.display = 'none';
+
+            currentPDF = null;
+            currentPage = 1;
+            currentScale = 1.2;
+
+            try {
+                const encodedFileName = encodeURIComponent(fileName);
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const pdfData = await response.arrayBuffer();
+                if (!pdfData || pdfData.byteLength === 0) {
+                    throw new Error('PDF data is empty');
+                }
+
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                totalPagesSpan.textContent = totalPages;
+                currentPageSpan.textContent = currentPage;
+
+                updateNavigationButtons();
+                await renderPage(currentPage);
+
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+            }
+        }
+
+        // Render specific page
+        async function renderPage(pageNum) {
+            if (!currentPDF) return;
+
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+
+            try {
+                const page = await currentPDF.getPage(pageNum);
+                const viewport = page.getViewport({ scale: currentScale });
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                currentPageSpan.textContent = pageNum;
+
+            } catch (error) {
+                console.error('Error rendering page:', error);
+            }
+        }
+
+        // Navigation functions
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function zoomIn() {
+            currentScale += 0.2;
+            renderPage(currentPage);
+            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.2;
+                renderPage(currentPage);
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        // Close PDF Viewer
+        function closePDFViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'none';
+
+            if (currentPDF) {
+                currentPDF.destroy();
+                currentPDF = null;
+            }
+        }
+
+        // Keyboard shortcuts and navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById("zoomModal").style.display = "none";
+                closePDFViewer();
+                closeCommentsModal();
+            }
+
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+            const commentsModal = document.getElementById("commentsModal");
+
+            if (event.target == zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal) {
+                closePDFViewer();
+            }
+            if (event.target == commentsModal) {
+                closeCommentsModal();
+            }
+        }
     </script>
-
-
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

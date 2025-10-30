@@ -98,7 +98,6 @@ namespace LingapDVO.Models
         public IFormFile? IdBackimage { get; set; } 
 
 
-        [Required]
         public IFormFile? DoctorPrescriptionimage { get; set; }
 
 

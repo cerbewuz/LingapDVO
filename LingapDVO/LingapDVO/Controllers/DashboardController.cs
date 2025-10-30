@@ -213,6 +213,10 @@ namespace LingapDVO.Controllers
             return View();
         }
 
+        // ====================================
+        // COMPLETE HOSPITAL BILL CONTROLLER - WITH EMBEDDED AES ENCRYPTION HELPER
+        // ====================================
+
         // ╔═══════════════════════════════════════════════════════════════════════════╗
         // ║                    AES-256 ENCRYPTION HELPER CLASS                        ║
         // ║         Secure AES-256 Implementation using Configuration                 ║
@@ -231,9 +235,6 @@ namespace LingapDVO.Controllers
 
                 if (string.IsNullOrWhiteSpace(keyHex))
                     throw new InvalidOperationException("AES encryption key is empty");
-
-                // Log key info for debugging
-                System.Diagnostics.Debug.WriteLine($"AES Key Length: {keyHex.Length} characters");
 
                 // Convert with automatic padding
                 _aesKey = SafeConvertHexStringToByteArray(keyHex);
@@ -254,7 +255,6 @@ namespace LingapDVO.Controllers
                 if (hex.Length % 2 != 0)
                 {
                     hex = "0" + hex;
-                    System.Diagnostics.Debug.WriteLine($"Hex string padded from {hex.Length - 1} to {hex.Length} characters");
                 }
 
                 // Validate hex format
@@ -271,184 +271,157 @@ namespace LingapDVO.Controllers
                 return bytes;
             }
 
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 2: Encrypt string data using AES-256-CBC                       │
-            // │ Process:                                                             │
-            // │   1. Generate random 16-byte IV (Initialization Vector)             │
-            // │   2. Create AES cipher with 256-bit key                             │
-            // │   3. Configure CBC mode with PKCS7 padding                          │
-            // │   4. Encrypt the plaintext data                                     │
-            // │   5. Combine IV + encrypted data                                    │
-            // │   6. Return Base64-encoded result                                   │
-            // └─────────────────────────────────────────────────────────────────────┘
             public string Encrypt(string plainText)
             {
-                // Step 2.1: Convert plaintext string to bytes
                 byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
 
-                // Step 2.2: Create AES algorithm instance
                 using var aes = Aes.Create();
-
-                // Step 2.3: Set the 256-bit key from configuration (32 bytes)
                 aes.Key = _aesKey;
-
-                // Step 2.4: Generate random 128-bit IV (16 bytes) for each encryption
-                // This ensures same plaintext produces different ciphertext each time
                 aes.GenerateIV();
-
-                // Step 2.5: Set cipher mode to CBC (Cipher Block Chaining)
                 aes.Mode = CipherMode.CBC;
-
-                // Step 2.6: Set padding mode to PKCS7 (standard padding for AES)
                 aes.Padding = PaddingMode.PKCS7;
 
-                // Step 2.7: Perform the encryption operation
                 using var encryptor = aes.CreateEncryptor();
                 using var memoryStream = new MemoryStream();
 
-                // Step 2.8: Write IV at the beginning (needed for decryption)
                 memoryStream.Write(aes.IV, 0, aes.IV.Length);
 
-                // Step 2.9: Create crypto stream for encryption
                 using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
                 using (var writer = new StreamWriter(cryptoStream))
                 {
-                    // Step 2.10: Write plaintext to crypto stream (encrypts automatically)
                     writer.Write(plainText);
                 }
 
-                // Step 2.11: Get encrypted data as byte array (IV + encrypted data)
                 byte[] encryptedData = memoryStream.ToArray();
-
-                // Step 2.12: Convert to Base64 for safe storage/transmission
                 return Convert.ToBase64String(encryptedData);
             }
 
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 3: Decrypt string data using AES-256-CBC                       │
-            // │ Process:                                                             │
-            // │   1. Decode Base64 string to bytes                                  │
-            // │   2. Extract IV from first 16 bytes                                 │
-            // │   3. Extract encrypted data from remaining bytes                    │
-            // │   4. Create AES cipher with same key                                │
-            // │   5. Configure CBC mode with PKCS7 padding                          │
-            // │   6. Decrypt the data                                               │
-            // │   7. Return plaintext string                                        │
-            // └─────────────────────────────────────────────────────────────────────┘
             public string Decrypt(string encryptedText)
             {
-                // Step 3.1: Convert Base64 string back to bytes
                 byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
 
-                // Step 3.2: Create AES algorithm instance
                 using var aes = Aes.Create();
-
-                // Step 3.3: Set the same 256-bit key from configuration (32 bytes)
                 aes.Key = _aesKey;
 
-                // Step 3.4: Extract IV from first 16 bytes of encrypted data
                 byte[] iv = new byte[16];
                 Array.Copy(encryptedBytes, 0, iv, 0, 16);
                 aes.IV = iv;
 
-                // Step 3.5: Set cipher mode to CBC (same as encryption)
                 aes.Mode = CipherMode.CBC;
-
-                // Step 3.6: Set padding mode to PKCS7 (same as encryption)
                 aes.Padding = PaddingMode.PKCS7;
 
-                // Step 3.7: Perform the decryption operation
                 using var decryptor = aes.CreateDecryptor();
                 using var memoryStream = new MemoryStream(encryptedBytes, 16, encryptedBytes.Length - 16);
                 using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
                 using var reader = new StreamReader(cryptoStream);
 
-                // Step 3.8: Read decrypted plaintext from stream
                 return reader.ReadToEnd();
             }
 
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 4: Encrypt file/stream data using AES-256-CBC                  │
-            // │ Process:                                                             │
-            // │   1. Generate random 16-byte IV                                     │
-            // │   2. Create AES cipher with 256-bit key                             │
-            // │   3. Configure CBC mode with PKCS7 padding                          │
-            // │   4. Encrypt the file stream                                        │
-            // │   5. Return IV + encrypted data as byte array                       │
-            // └─────────────────────────────────────────────────────────────────────┘
             public byte[] EncryptStream(Stream inputStream)
             {
-                // Step 4.1: Create AES algorithm instance
                 using var aes = Aes.Create();
-
-                // Step 4.2: Set the 256-bit key from configuration (32 bytes)
                 aes.Key = _aesKey;
-
-                // Step 4.3: Generate random 128-bit IV (16 bytes)
                 aes.GenerateIV();
-
-                // Step 4.4: Set cipher mode to CBC
                 aes.Mode = CipherMode.CBC;
-
-                // Step 4.5: Set padding mode to PKCS7
                 aes.Padding = PaddingMode.PKCS7;
 
-                // Step 4.6: Create output stream to hold IV + encrypted data
                 using var memoryStream = new MemoryStream();
-
-                // Step 4.7: Write IV at the beginning (16 bytes)
                 memoryStream.Write(aes.IV, 0, aes.IV.Length);
 
-                // Step 4.8: Create encryptor and encrypt the input stream
                 using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
                 {
-                    // Step 4.9: Copy input stream to crypto stream (encrypts automatically)
                     inputStream.CopyTo(cryptoStream);
                 }
 
-                // Step 4.10: Return complete encrypted data (IV + ciphertext)
                 return memoryStream.ToArray();
             }
 
-            // ┌─────────────────────────────────────────────────────────────────────┐
-            // │ STEP 5: Encrypt timestamp string using AES-256-CBC                  │
-            // │ Used for generating unique encrypted filenames                      │
-            // │ Returns only the ciphertext (without IV) as Base64                  │
-            // └─────────────────────────────────────────────────────────────────────┘
             public string EncryptTimestamp(string timestamp)
             {
-                // Step 5.1: Create AES algorithm instance
                 using var aes = Aes.Create();
-
-                // Step 5.2: Set the 256-bit key from configuration
                 aes.Key = _aesKey;
-
-                // Step 5.3: Generate random IV
                 aes.GenerateIV();
-
-                // Step 5.4: Set cipher mode to CBC
                 aes.Mode = CipherMode.CBC;
-
-                // Step 5.5: Set padding mode to PKCS7
                 aes.Padding = PaddingMode.PKCS7;
 
-                // Step 5.6: Create encryptor
                 using var encryptor = aes.CreateEncryptor();
-
-                // Step 5.7: Convert timestamp to bytes
                 byte[] inputBytes = Encoding.UTF8.GetBytes(timestamp);
-
-                // Step 5.8: Encrypt timestamp bytes
                 byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
 
-                // Step 5.9: Return Base64-encoded encrypted timestamp
                 return Convert.ToBase64String(encryptedBytes);
             }
         }
 
+        // 1. DECRYPTION HELPER METHOD USING CONFIGURATION-BASED AES KEY
+        private byte[] DecryptFile(string encryptedFilePath)
+        {
+            byte[] encryptedData = System.IO.File.ReadAllBytes(encryptedFilePath);
+            using var memoryStream = new MemoryStream(encryptedData);
+
+            // Read IV from the beginning of the file (first 16 bytes)
+            byte[] iv = new byte[16];
+            memoryStream.Read(iv, 0, iv.Length);
+
+            // Use configuration-based AES helper
+            var aesHelper = new AesEncryptionHelper(_configuration);
+
+            // Get the key using reflection
+            var keyField = typeof(AesEncryptionHelper).GetField("_aesKey",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            if (keyField == null)
+                throw new InvalidOperationException("Cannot access AES key");
+
+            byte[] key = (byte[])keyField.GetValue(aesHelper);
+
+            using var aes = Aes.Create();
+            aes.Key = key;
+            aes.IV = iv;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+
+            using var decryptedStream = new MemoryStream();
+            using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
+            {
+                cryptoStream.CopyTo(decryptedStream);
+            }
+
+            return decryptedStream.ToArray();
+        }
+
+        // PDF DETECTION HELPER METHOD
+        private bool IsPdfFile(byte[] data)
+        {
+            try
+            {
+                if (data == null || data.Length < 4)
+                    return false;
+
+                // Check PDF magic number (%PDF)
+                if (data[0] == 0x25 && data[1] == 0x50 && data[2] == 0x44 && data[3] == 0x46)
+                    return true;
+
+                // Also check for PDF in text (case insensitive)
+                if (data.Length >= 1000)
+                {
+                    string beginning = Encoding.UTF8.GetString(data, 0, Math.Min(1000, data.Length));
+                    if (beginning.Contains("%PDF") || beginning.Contains("%pdf"))
+                        return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
 
         [HttpPost]
-        public async Task<IActionResult> FillupformHospitalBill(FillupformHospitalBillDto fillupformHospitalbilldto)
+        public IActionResult FillupformHospitalBill(FillupformHospitalBillDto fillupformHospitalbilldto)
         {
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -460,101 +433,6 @@ namespace LingapDVO.Controllers
             // Get the user's ID filenames from session
             string userFrontID = HttpContext.Session.GetString("FrontID") ?? "";
             string userBackID = HttpContext.Session.GetString("BackID") ?? "";
-
-            // ═══════════════════════════════════════════════════════════════════════
-            // 🔒 SECURITY VALIDATION: Check submission token (anti-duplication)
-            // ═══════════════════════════════════════════════════════════════════════
-            string patientName = $"{fillupformHospitalbilldto.Lastname}, {fillupformHospitalbilldto.Firstname} {fillupformHospitalbilldto.Middlename}";
-            string requestorName = $"{fillupformHospitalbilldto.RLastname}, {fillupformHospitalbilldto.RFirstname} {fillupformHospitalbilldto.RMiddlename}";
-
-            // Log submission attempt
-            await _securityService.LogSubmissionAttemptAsync(
-                "HospitalBill",
-                userId,
-                patientName,
-                requestorName,
-                "ATTEMPT",
-                fillupformHospitalbilldto.SubmissionToken,
-                false, // Will be updated after token validation
-                false,
-                null,
-                "Form submission attempted");
-
-            // Validate submission token
-            if (string.IsNullOrEmpty(fillupformHospitalbilldto.SubmissionToken))
-            {
-                await _securityService.LogSubmissionAttemptAsync(
-                    "HospitalBill",
-                    userId,
-                    patientName,
-                    requestorName,
-                    "BLOCKED",
-                    null,
-                    false,
-                    true,
-                    "Missing submission token - possible unauthorized submission",
-                    "Missing security token");
-
-                ModelState.AddModelError("", "Security validation failed. Please refresh the page and try again.");
-                return View(fillupformHospitalbilldto);
-            }
-
-            var (isValid, tokenReason) = await _securityService.ValidateSubmissionTokenAsync(
-                fillupformHospitalbilldto.SubmissionToken,
-                userId,
-                "HospitalBill");
-
-            if (!isValid)
-            {
-                await _securityService.LogSubmissionAttemptAsync(
-                    "HospitalBill",
-                    userId,
-                    patientName,
-                    requestorName,
-                    "BLOCKED",
-                    fillupformHospitalbilldto.SubmissionToken,
-                    false,
-                    true,
-                    $"Invalid token: {tokenReason}",
-                    tokenReason);
-
-                ModelState.AddModelError("", $"Security validation failed: {tokenReason}");
-                return View(fillupformHospitalbilldto);
-            }
-
-            // Check for duplicate submission
-            if (!DateTime.TryParse(fillupformHospitalbilldto.Dateofbirth, out DateTime dateOfBirth))
-            {
-                dateOfBirth = DateTime.MinValue;
-            }
-
-            var (isDuplicate, duplicateDetails) = await _securityService.CheckForDuplicateSubmissionAsync(
-                userId,
-                "HospitalBill",
-                patientName,
-                requestorName,
-                dateOfBirth);
-
-            if (isDuplicate)
-            {
-                await _securityService.LogSubmissionAttemptAsync(
-                    "HospitalBill",
-                    userId,
-                    patientName,
-                    requestorName,
-                    "DUPLICATE",
-                    fillupformHospitalbilldto.SubmissionToken,
-                    true,
-                    true,
-                    "Duplicate submission detected",
-                    duplicateDetails,
-                    null,
-                    true,
-                    duplicateDetails);
-
-                ModelState.AddModelError("", $"Duplicate submission detected. {duplicateDetails}");
-                return View(fillupformHospitalbilldto);
-            }
 
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
@@ -709,28 +587,6 @@ namespace LingapDVO.Controllers
                 context.FillupformHospitalBill.Add(fillupformHospitalBill);
                 context.SaveChanges();
 
-                // ═══════════════════════════════════════════════════════════════════════
-                // 🔒 SECURITY: Mark token as used and log successful submission
-                // ═══════════════════════════════════════════════════════════════════════
-                await _securityService.MarkTokenAsUsedAsync(
-                    fillupformHospitalbilldto.SubmissionToken!,
-                    fillupformHospitalBill.Id);
-
-                await _securityService.LogSubmissionAttemptAsync(
-                    "HospitalBill",
-                    userId,
-                    patientName,
-                    requestorName,
-                    "SUCCESS",
-                    fillupformHospitalbilldto.SubmissionToken,
-                    true,
-                    false,
-                    null,
-                    "Form submitted successfully",
-                    fillupformHospitalBill.Id,
-                    false,
-                    null);
-
                 // ✅ SUCCESS: Set the success flag to trigger the modal
                 ViewBag.Success = true;
 
@@ -752,19 +608,6 @@ namespace LingapDVO.Controllers
             }
             catch (DbUpdateException ex)
             {
-                // 🔒 SECURITY: Log failed submission
-                await _securityService.LogSubmissionAttemptAsync(
-                    "HospitalBill",
-                    userId,
-                    patientName,
-                    requestorName,
-                    "FAILED",
-                    fillupformHospitalbilldto.SubmissionToken,
-                    true,
-                    false,
-                    null,
-                    $"Database error: {ex.Message}");
-
                 if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
                 {
                     string message = sqlEx.Message.ToLower();
@@ -786,36 +629,28 @@ namespace LingapDVO.Controllers
                 ModelState.AddModelError("", "A database error occurred while saving your data.");
                 return View(fillupformHospitalbilldto);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // 🔒 SECURITY: Log failed submission
-                await _securityService.LogSubmissionAttemptAsync(
-                    "HospitalBill",
-                    userId,
-                    patientName,
-                    requestorName,
-                    "FAILED",
-                    fillupformHospitalbilldto.SubmissionToken,
-                    true,
-                    false,
-                    null,
-                    $"Unexpected error: {ex.Message}");
-
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
                 return View(fillupformHospitalbilldto);
             }
         }
         public IActionResult FillupformHospitalBilledit(int id)
         {
-            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
 
-          
+
+            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
             if (fillupformhospitalBill == null)
             {
                 return NotFound();
             }
 
-            // Add all form field values to ViewData
+            // Basic ViewData setup
+            ViewData["Status"] = fillupformhospitalBill.Status;
             ViewData["Id"] = fillupformhospitalBill.Id;
             ViewData["Lastname"] = fillupformhospitalBill.Lastname;
             ViewData["Firstname"] = fillupformhospitalBill.Firstname;
@@ -843,219 +678,325 @@ namespace LingapDVO.Controllers
             ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
             ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
 
-            // Type of assistance and CMO details
+            // Type of assistance
             var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
-
-            // Parse checkbox values into a Dictionary<string, string>
             var parsed = typeAssistanceRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
 
-            ViewData["CheckedAssistance"] = parsed; // Pass dictionary to the view
-
-
-            // ForCMOPERSONNEL handling
+            // CMO Personnel
             var cmoPersonnelRaw = fillupformhospitalBill.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
-
             var parsedCMO = cmoPersonnelRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
-
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
+            // ====================================
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
+            // ====================================
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, fillupformhospitalBill.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, fillupformhospitalBill.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, fillupformhospitalBill.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {fillupformhospitalBill.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - UPDATED
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, fillupformhospitalBill.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {fillupformhospitalBill.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
             ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
             ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
-
-            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
-            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
-
+            ViewData["Comments"] = fillupformhospitalBill.Comments;
 
             return View();
 
         }
 
         [HttpPost]
-        public IActionResult FillupformHospitalBilledit(int id, FillupformHospitalBillDto fillupformHospitalbilldto)
+        public IActionResult FillupformHospitalBilledit(int id, FillupformHospitalBillDto dto)
         {
-            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
-
-            if (fillupformhospitalBill == null)
+            // ✅ 1. Check user session
+            if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
+                return RedirectToAction("Login", "Login");
+            }
+
+            // ✅ 2. Get existing record
+            var existing = context.FillupformHospitalBill.Find(id);
+            if (existing == null)
+            {
+                TempData["ErrorMessage"] = "Form not found.";
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
-            if (string.IsNullOrEmpty(fillupformHospitalbilldto.PhilHealthNo))
+            // ✅ 3. Security checks
+            if (existing.UserId != userId)
             {
-                ModelState.Remove("PhilHealthNo");
+                TempData["ErrorMessage"] = "You are not authorized to edit this form.";
+                return RedirectToAction("Homepage", "Dashboard");
             }
 
-            // Remove validation requirements for images if they're not provided
-            if (fillupformHospitalbilldto.IdFrontimage == null) ModelState.Remove("IdFrontimage");
-            if (fillupformHospitalbilldto.IdBackimage == null) ModelState.Remove("IdBackimage");
-            if (fillupformHospitalbilldto.DoctorPrescriptionimage == null) ModelState.Remove("DoctorPrescriptionimage");
-            if (fillupformHospitalbilldto.DeathCertificateimage == null) ModelState.Remove("DeathCertificateimage");
+            if (existing.Status != "Pending")
+            {
+                TempData["ErrorMessage"] = "You can only edit forms that are in 'Pending' status.";
+                return RedirectToAction("Homepage", "Dashboard");
+            }
+
+            // ✅ 4. Remove validations for optional fields
+            if (string.IsNullOrEmpty(dto.PhilHealthNo))
+                ModelState.Remove("PhilHealthNo");
+
+            ModelState.Remove("IdFrontimage");
+            ModelState.Remove("IdBackimage");
+
+            // ✅ Require at least one doc ONLY if both existing docs are empty and no new upload
+            if (string.IsNullOrEmpty(existing.DoctorPrescription) &&
+                string.IsNullOrEmpty(existing.DeathCertificate) &&
+                dto.DoctorPrescriptionimage == null &&
+                dto.DeathCertificateimage == null)
+            {
+                ModelState.AddModelError("DoctorPrescriptionimage", "At least one document is required.");
+            }
 
             if (!ModelState.IsValid)
             {
-                // Populate ViewData with current image paths
-                ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
-                ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
-                ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
-                ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
-
-                return View(fillupformHospitalbilldto);
+                // Repopulate view
+                ViewData["CurrentDoctorPrescription"] = existing.DoctorPrescription;
+                ViewData["CurrentDeathCertificate"] = existing.DeathCertificate;
+                ViewData["CurrentValidFront"] = existing.Validfrontimage;
+                ViewData["CurrentValidBack"] = existing.ValidBackimage;
+                return View(dto);
             }
 
             try
             {
-                // Update text properties
-                fillupformhospitalBill.Lastname = fillupformHospitalbilldto.Lastname ?? fillupformhospitalBill.Lastname;
-                fillupformhospitalBill.Firstname = fillupformHospitalbilldto.Firstname ?? fillupformhospitalBill.Firstname;
-                fillupformhospitalBill.Middlename = fillupformHospitalbilldto.Middlename ?? fillupformhospitalBill.Middlename;
-                fillupformhospitalBill.Suffix = fillupformHospitalbilldto.Suffix ?? fillupformhospitalBill.Suffix;
-                fillupformhospitalBill.BlkLotStreet = fillupformHospitalbilldto.BlkLotStreet ?? fillupformhospitalBill.BlkLotStreet;
-                fillupformhospitalBill.SubVill = fillupformHospitalbilldto.SubVill ?? fillupformhospitalBill.SubVill;
-                fillupformhospitalBill.Brgy = fillupformHospitalbilldto.Brgy ?? fillupformhospitalBill.Brgy;
-                fillupformhospitalBill.District = fillupformHospitalbilldto.District ?? fillupformhospitalBill.District;
-                fillupformhospitalBill.Sex = fillupformHospitalbilldto.Sex ?? fillupformhospitalBill.Sex;
-                fillupformhospitalBill.PhilHealth = fillupformHospitalbilldto.PhilHealth ?? fillupformhospitalBill.PhilHealth;
-                fillupformhospitalBill.PhilHealthNo = fillupformHospitalbilldto.PhilHealthNo;
-                fillupformhospitalBill.Dateofbirth = fillupformHospitalbilldto.Dateofbirth ?? fillupformhospitalBill.Dateofbirth;
-                fillupformhospitalBill.Age = fillupformHospitalbilldto.Age ?? fillupformhospitalBill.Age;
+                var aesHelper = new AesEncryptionHelper(_configuration);
+                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
+                string safeName = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
-                // Requestor Details
-                fillupformhospitalBill.RLastname = fillupformHospitalbilldto.RLastname;
-                fillupformhospitalBill.RFirstname = fillupformHospitalbilldto.RFirstname;
-                fillupformhospitalBill.RMiddlename = fillupformHospitalbilldto.RMiddlename;
-                fillupformhospitalBill.RSuffix = fillupformHospitalbilldto.RSuffix;
-                fillupformhospitalBill.RBlkLotStreet = fillupformHospitalbilldto.RBlkLotStreet;
-                fillupformhospitalBill.RSubVill = fillupformHospitalbilldto.RSubVill;
-                fillupformhospitalBill.RBrgy = fillupformHospitalbilldto.RBrgy;
-                fillupformhospitalBill.RDistrict = fillupformHospitalbilldto.RDistrict;
-                fillupformhospitalBill.RelationshipPatient = fillupformHospitalbilldto.RelationshipPatient;
-                fillupformhospitalBill.ContactNo = fillupformHospitalbilldto.ContactNo;
-
-                // Assistance Type
-                fillupformhospitalBill.Typeassistance = fillupformHospitalbilldto.Typeassistance ?? fillupformhospitalBill.Typeassistance;
-                fillupformhospitalBill.ForCMOPERSONNEL = fillupformHospitalbilldto.ForCMOPERSONNEL;
-
-                // Handle ID Front image
-                if (fillupformHospitalbilldto.IdFrontimage != null)
+                // ✅ 5. Update Doctor Prescription (optional)
+                if (dto.DoctorPrescriptionimage != null)
                 {
-                    string newFileNameFront = DateTime.Now.ToString("yyyyMMddHHmmssfff") + Path.GetExtension(fillupformHospitalbilldto.IdFrontimage.FileName);
-                    string uploadsFolder = Path.Combine(environment.WebRootPath, "Validimg");
-                    string filePath = Path.Combine(uploadsFolder, newFileNameFront);
+                    string folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+                    Directory.CreateDirectory(folder);
 
-                    // Delete old image if exists
-                    if (!string.IsNullOrEmpty(fillupformhospitalBill.Validfrontimage))
+                    // Delete old file if exists
+                    if (!string.IsNullOrEmpty(existing.DoctorPrescription))
                     {
-                        string oldFilePath = Path.Combine(uploadsFolder, fillupformhospitalBill.Validfrontimage);
-                        if (System.IO.File.Exists(oldFilePath))
-                        {
-                            System.IO.File.Delete(oldFilePath);
-                        }
+                        string oldPath = Path.Combine(folder, existing.DoctorPrescription);
+                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    string fileName = safeName + "_prescription.enc";
+                    string filePath = Path.Combine(folder, fileName);
+
+                    using (var fs = new FileStream(filePath, FileMode.Create))
                     {
-                        fillupformHospitalbilldto.IdFrontimage.CopyTo(stream);
+                        byte[] encrypted = aesHelper.EncryptStream(dto.DoctorPrescriptionimage.OpenReadStream());
+                        fs.Write(encrypted, 0, encrypted.Length);
                     }
 
-                    fillupformhospitalBill.Validfrontimage = newFileNameFront;
+                    existing.DoctorPrescription = fileName;
                 }
 
-                // Handle ID Back image
-                if (fillupformHospitalbilldto.IdBackimage != null)
+                // ✅ 6. Update Death Certificate (optional)
+                if (dto.DeathCertificateimage != null)
                 {
-                    string newFileNameBack = DateTime.Now.ToString("yyyyMMddHHmmssfff") + Path.GetExtension(fillupformHospitalbilldto.IdBackimage.FileName);
-                    string uploadsFolder = Path.Combine(environment.WebRootPath, "Validimg");
-                    string filePath = Path.Combine(uploadsFolder, newFileNameBack);
+                    string folder = Path.Combine(environment.WebRootPath, "Funeralimg");
+                    Directory.CreateDirectory(folder);
 
-                    if (!string.IsNullOrEmpty(fillupformhospitalBill.ValidBackimage))
+                    // Delete old file if exists
+                    if (!string.IsNullOrEmpty(existing.DeathCertificate))
                     {
-                        string oldFilePath = Path.Combine(uploadsFolder, fillupformhospitalBill.ValidBackimage);
-                        if (System.IO.File.Exists(oldFilePath))
-                        {
-                            System.IO.File.Delete(oldFilePath);
-                        }
+                        string oldPath = Path.Combine(folder, existing.DeathCertificate);
+                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    string fileName = safeName + "_deathcert.enc";
+                    string filePath = Path.Combine(folder, fileName);
+
+                    using (var fs = new FileStream(filePath, FileMode.Create))
                     {
-                        fillupformHospitalbilldto.IdBackimage.CopyTo(stream);
+                        byte[] encrypted = aesHelper.EncryptStream(dto.DeathCertificateimage.OpenReadStream());
+                        fs.Write(encrypted, 0, encrypted.Length);
                     }
 
-                    fillupformhospitalBill.ValidBackimage = newFileNameBack;
+                    existing.DeathCertificate = fileName;
                 }
 
-                // Handle Doctor Prescription image
-                if (fillupformHospitalbilldto.DoctorPrescriptionimage != null)
-                {
-                    string newFileNamePrescription = DateTime.Now.ToString("yyyyMMddHHmmssfff") + Path.GetExtension(fillupformHospitalbilldto.DoctorPrescriptionimage.FileName);
-                    string uploadsFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-                    string filePath = Path.Combine(uploadsFolder, newFileNamePrescription);
+                // ✅ 7. Update text fields safely
+                existing.Lastname = dto.Lastname ?? existing.Lastname;
+                existing.Firstname = dto.Firstname ?? existing.Firstname;
+                existing.Middlename = dto.Middlename ?? existing.Middlename;
+                existing.Suffix = dto.Suffix ?? existing.Suffix;
+                existing.BlkLotStreet = dto.BlkLotStreet ?? existing.BlkLotStreet;
+                existing.SubVill = dto.SubVill ?? existing.SubVill;
+                existing.Brgy = dto.Brgy ?? existing.Brgy;
+                existing.District = dto.District ?? existing.District;
+                existing.Sex = dto.Sex ?? existing.Sex;
+                existing.PhilHealth = dto.PhilHealth ?? existing.PhilHealth;
+                existing.PhilHealthNo = dto.PhilHealthNo ?? existing.PhilHealthNo;
+                existing.Dateofbirth = dto.Dateofbirth ?? existing.Dateofbirth;
+                existing.Age = dto.Age ?? existing.Age;
 
-                    if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
-                    {
-                        string oldFilePath = Path.Combine(uploadsFolder, fillupformhospitalBill.DoctorPrescription);
-                        if (System.IO.File.Exists(oldFilePath))
-                        {
-                            System.IO.File.Delete(oldFilePath);
-                        }
-                    }
+                // ✅ Requestor details
+                existing.RLastname = dto.RLastname ?? existing.RLastname;
+                existing.RFirstname = dto.RFirstname ?? existing.RFirstname;
+                existing.RMiddlename = dto.RMiddlename ?? existing.RMiddlename;
+                existing.RSuffix = dto.RSuffix ?? existing.RSuffix;
+                existing.RBlkLotStreet = dto.RBlkLotStreet ?? existing.RBlkLotStreet;
+                existing.RSubVill = dto.RSubVill ?? existing.RSubVill;
+                existing.RBrgy = dto.RBrgy ?? existing.RBrgy;
+                existing.RDistrict = dto.RDistrict ?? existing.RDistrict;
+                existing.RelationshipPatient = dto.RelationshipPatient ?? existing.RelationshipPatient;
+                existing.ContactNo = dto.ContactNo ?? existing.ContactNo;
 
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        fillupformHospitalbilldto.DoctorPrescriptionimage.CopyTo(stream);
-                    }
+                // ✅ Assistance info
+                existing.Typeassistance = dto.Typeassistance ?? existing.Typeassistance;
+                existing.ForCMOPERSONNEL = dto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
 
-                    fillupformhospitalBill.DoctorPrescription = newFileNamePrescription;
-                }
+                // ✅ 8. Update ID images (if session updated)
+                string frontID = HttpContext.Session.GetString("FrontID") ?? "";
+                string backID = HttpContext.Session.GetString("BackID") ?? "";
+                if (!string.IsNullOrEmpty(frontID)) existing.Validfrontimage = frontID;
+                if (!string.IsNullOrEmpty(backID)) existing.ValidBackimage = backID;
 
-                // Handle Death Certificate image
-                if (fillupformHospitalbilldto.DeathCertificateimage != null)
-                {
-                    string newFileNameDeathCertificate = DateTime.Now.ToString("yyyyMMddHHmmssfff") + Path.GetExtension(fillupformHospitalbilldto.DeathCertificateimage.FileName);
-                    string uploadsFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
-                    string filePath = Path.Combine(uploadsFolder, newFileNameDeathCertificate);
+                // ✅ 9. Update timestamp properly
+                existing.CreatedAt = DateTime.Now;
 
-                    if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
-                    {
-                        string oldFilePath = Path.Combine(uploadsFolder, fillupformhospitalBill.DeathCertificate);
-                        if (System.IO.File.Exists(oldFilePath))
-                        {
-                            System.IO.File.Delete(oldFilePath);
-                        }
-                    }
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        fillupformHospitalbilldto.DeathCertificateimage.CopyTo(stream);
-                    }
-
-                    fillupformhospitalBill.DeathCertificate = newFileNameDeathCertificate;
-                }
-
+                // ✅ 10. Save changes
+                context.Entry(existing).State = EntityState.Modified;
                 context.SaveChanges();
+
+                TempData["SuccessMessage"] = "Form updated successfully!";
                 return RedirectToAction("Homepage", "Dashboard");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while saving: " + ex.Message);
+                ModelState.AddModelError("", "An error occurred while updating the form: " + ex.Message);
 
-                // Populate ViewData with current image paths
-                ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
-                ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
-                ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
-                ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
+                ViewData["CurrentDoctorPrescription"] = existing.DoctorPrescription;
+                ViewData["CurrentDeathCertificate"] = existing.DeathCertificate;
+                ViewData["CurrentValidFront"] = existing.Validfrontimage;
+                ViewData["CurrentValidBack"] = existing.ValidBackimage;
 
-                return View(fillupformHospitalbilldto);
+                return View(dto);
             }
         }
+
 
         public IActionResult FillupformHospitalBilldelete(int id)
         {
@@ -2242,27 +2183,188 @@ namespace LingapDVO.Controllers
 
         public IActionResult Fillupformhospitalbillview(int id)
         {
-
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
             {
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
 
-            ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
-            ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
-            ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
-            ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
-            ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
-            ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-            ViewBag.District = HttpContext.Session.GetString("District");
-            ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
-            ViewBag.Gender = HttpContext.Session.GetString("Gender");
-            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
+            if (fillupformhospitalBill == null)
+            {
+                return NotFound();
+            }
 
-            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
-            ViewBag.BackID = HttpContext.Session.GetString("BackID");
+            // Basic ViewData setup
+            ViewData["Status"] = fillupformhospitalBill.Status;
+            ViewData["Id"] = fillupformhospitalBill.Id;
+            ViewData["Lastname"] = fillupformhospitalBill.Lastname;
+            ViewData["Firstname"] = fillupformhospitalBill.Firstname;
+            ViewData["Middlename"] = fillupformhospitalBill.Middlename;
+            ViewData["Suffix"] = fillupformhospitalBill.Suffix;
+            ViewData["BlkLotStreet"] = fillupformhospitalBill.BlkLotStreet;
+            ViewData["SubVill"] = fillupformhospitalBill.SubVill;
+            ViewData["Brgy"] = fillupformhospitalBill.Brgy;
+            ViewData["District"] = fillupformhospitalBill.District;
+            ViewData["Sex"] = fillupformhospitalBill.Sex;
+            ViewData["PhilHealth"] = fillupformhospitalBill.PhilHealth;
+            ViewData["PhilHealthNo"] = fillupformhospitalBill.PhilHealthNo;
+            ViewData["Dateofbirth"] = fillupformhospitalBill.Dateofbirth;
+            ViewData["Age"] = fillupformhospitalBill.Age;
 
+            // Requestor details
+            ViewData["RLastname"] = fillupformhospitalBill.RLastname;
+            ViewData["RFirstname"] = fillupformhospitalBill.RFirstname;
+            ViewData["RMiddlename"] = fillupformhospitalBill.RMiddlename;
+            ViewData["RSuffix"] = fillupformhospitalBill.RSuffix;
+            ViewData["RBlkLotStreet"] = fillupformhospitalBill.RBlkLotStreet;
+            ViewData["RSubVill"] = fillupformhospitalBill.RSubVill;
+            ViewData["RBrgy"] = fillupformhospitalBill.RBrgy;
+            ViewData["RDistrict"] = fillupformhospitalBill.RDistrict;
+            ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
+            ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
+
+            // Type of assistance
+            var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
+
+            // CMO Personnel
+            var cmoPersonnelRaw = fillupformhospitalBill.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            // ====================================
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
+            // ====================================
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, fillupformhospitalBill.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, fillupformhospitalBill.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, fillupformhospitalBill.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {fillupformhospitalBill.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - UPDATED
+                if (!string.IsNullOrEmpty(fillupformhospitalBill.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, fillupformhospitalBill.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {fillupformhospitalBill.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
+            ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
+            ViewData["Comments"] = fillupformhospitalBill.Comments;
 
             return View();
         }
@@ -2276,14 +2378,13 @@ namespace LingapDVO.Controllers
 
 
             var funeralburialform = context.Funeralburialform.Find(id);
-
             if (funeralburialform == null)
             {
                 return NotFound();
             }
 
-            // Add all form field values to ViewData
-            ViewData["Status"] = funeralburialform.Status;
+            // Basic ViewData setup
+            ViewData["Status2"] = funeralburialform.Status2;
             ViewData["Id"] = funeralburialform.Id;
             ViewData["Lastname"] = funeralburialform.Lastname;
             ViewData["Firstname"] = funeralburialform.Firstname;
@@ -2311,37 +2412,148 @@ namespace LingapDVO.Controllers
             ViewData["RelationshipPatient"] = funeralburialform.RelationshipPatient;
             ViewData["ContactNo"] = funeralburialform.ContactNo;
 
-            // Type of assistance and CMO details
+            // Type of assistance
             var typeAssistanceRaw = funeralburialform.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
-
-            // Parse checkbox values into a Dictionary<string, string>
             var parsed = typeAssistanceRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
 
-            ViewData["CheckedAssistance"] = parsed; // Pass dictionary to the view
-
-
-            // ForCMOPERSONNEL handling
+            // CMO Personnel
             var cmoPersonnelRaw = funeralburialform.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
-
             var parsedCMO = cmoPersonnelRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
-
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
+            // ====================================
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
+            // ====================================
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(funeralburialform.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, funeralburialform.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(funeralburialform.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, funeralburialform.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
+                if (!string.IsNullOrEmpty(funeralburialform.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, funeralburialform.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {funeralburialform.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = funeralburialform.DoctorPrescription;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                if (!string.IsNullOrEmpty(funeralburialform.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, funeralburialform.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {funeralburialform.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = funeralburialform.DeathCertificate;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
             ViewData["Validfrontimage"] = funeralburialform.Validfrontimage;
             ViewData["ValidBackimage"] = funeralburialform.ValidBackimage;
-
-            ViewData["DoctorPrescription"] = funeralburialform.DoctorPrescription;
-            ViewData["DeathCertificate"] = funeralburialform.DeathCertificate;
             ViewData["Comments"] = funeralburialform.Comments;
-            ViewData["Processby"] = funeralburialform.Processby;
+
             return View();
         }
 
@@ -2352,82 +2564,395 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
-            {
-                return RedirectToAction("Landingpage", "Dashboard");
-            }
-
-            var medicalandlabform = context.Medicalandlabform.Find(id);
-
-            if (medicalandlabform == null)
+            var medicallabform = context.Medicalandlabform.Find(id);
+            if (medicallabform == null)
             {
                 return NotFound();
             }
 
-            // Add all form field values to ViewData
-            ViewData["Status"] = medicalandlabform.Status;
-            ViewData["Id"] = medicalandlabform.Id;
-            ViewData["Lastname"] = medicalandlabform.Lastname;
-            ViewData["Firstname"] = medicalandlabform.Firstname;
-            ViewData["Middlename"] = medicalandlabform.Middlename;
-            ViewData["Suffix"] = medicalandlabform.Suffix;
-            ViewData["BlkLotStreet"] = medicalandlabform.BlkLotStreet;
-            ViewData["SubVill"] = medicalandlabform.SubVill;
-            ViewData["Brgy"] = medicalandlabform.Brgy;
-            ViewData["District"] = medicalandlabform.District;
-            ViewData["Sex"] = medicalandlabform.Sex;
-            ViewData["PhilHealth"] = medicalandlabform.PhilHealth;
-            ViewData["PhilHealthNo"] = medicalandlabform.PhilHealthNo;
-            ViewData["Dateofbirth"] = medicalandlabform.Dateofbirth;
-            ViewData["Age"] = medicalandlabform.Age;
+            // Basic ViewData setup
+            ViewData["Status"] = medicallabform.Status;
+            ViewData["Id"] = medicallabform.Id;
+            ViewData["Lastname"] = medicallabform.Lastname;
+            ViewData["Firstname"] = medicallabform.Firstname;
+            ViewData["Middlename"] = medicallabform.Middlename;
+            ViewData["Suffix"] = medicallabform.Suffix;
+            ViewData["BlkLotStreet"] = medicallabform.BlkLotStreet;
+            ViewData["SubVill"] = medicallabform.SubVill;
+            ViewData["Brgy"] = medicallabform.Brgy;
+            ViewData["District"] = medicallabform.District;
+            ViewData["Sex"] = medicallabform.Sex;
+            ViewData["PhilHealth"] = medicallabform.PhilHealth;
+            ViewData["PhilHealthNo"] = medicallabform.PhilHealthNo;
+            ViewData["Dateofbirth"] = medicallabform.Dateofbirth;
+            ViewData["Age"] = medicallabform.Age;
 
             // Requestor details
-            ViewData["RLastname"] = medicalandlabform.RLastname;
-            ViewData["RFirstname"] = medicalandlabform.RFirstname;
-            ViewData["RMiddlename"] = medicalandlabform.RMiddlename;
-            ViewData["RSuffix"] = medicalandlabform.RSuffix;
-            ViewData["RBlkLotStreet"] = medicalandlabform.RBlkLotStreet;
-            ViewData["RSubVill"] = medicalandlabform.RSubVill;
-            ViewData["RBrgy"] = medicalandlabform.RBrgy;
-            ViewData["RDistrict"] = medicalandlabform.RDistrict;
-            ViewData["RelationshipPatient"] = medicalandlabform.RelationshipPatient;
-            ViewData["ContactNo"] = medicalandlabform.ContactNo;
+            ViewData["RLastname"] = medicallabform.RLastname;
+            ViewData["RFirstname"] = medicallabform.RFirstname;
+            ViewData["RMiddlename"] = medicallabform.RMiddlename;
+            ViewData["RSuffix"] = medicallabform.RSuffix;
+            ViewData["RBlkLotStreet"] = medicallabform.RBlkLotStreet;
+            ViewData["RSubVill"] = medicallabform.RSubVill;
+            ViewData["RBrgy"] = medicallabform.RBrgy;
+            ViewData["RDistrict"] = medicallabform.RDistrict;
+            ViewData["RelationshipPatient"] = medicallabform.RelationshipPatient;
+            ViewData["ContactNo"] = medicallabform.ContactNo;
 
-            // Type of assistance and CMO details
-            var typeAssistanceRaw = medicalandlabform.Typeassistance ?? "";
+            // Type of assistance
+            var typeAssistanceRaw = medicallabform.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
-
-            // Parse checkbox values into a Dictionary<string, string>
             var parsed = typeAssistanceRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
 
-            ViewData["CheckedAssistance"] = parsed; // Pass dictionary to the view
-
-
-            // ForCMOPERSONNEL handling
-            var cmoPersonnelRaw = medicalandlabform.ForCMOPERSONNEL ?? "";
+            // CMO Personnel
+            var cmoPersonnelRaw = medicallabform.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
-
             var parsedCMO = cmoPersonnelRaw
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Split(':', 2))
                 .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
-
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
-            ViewData["Validfrontimage"] = medicalandlabform.Validfrontimage;
-            ViewData["ValidBackimage"] = medicalandlabform.ValidBackimage;
+            // ====================================
+            // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
+            // ====================================
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
 
-            ViewData["DoctorPrescription"] = medicalandlabform.DoctorPrescription;
-            ViewData["DeathCertificate"] = medicalandlabform.DeathCertificate;
-            ViewData["Comments"] = medicalandlabform.Comments;
-            ViewData["Processby"] = medicalandlabform.Processby;
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(medicallabform.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, medicallabform.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                        debugMessages.Add("✅ Front ID decrypted");
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(medicallabform.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, medicallabform.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                        debugMessages.Add("✅ Back ID decrypted");
+                    }
+                }
+
+                // ⭐ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
+                if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
+                {
+                    string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
+                    debugMessages.Add($"📄 Doctor Prescription filename: {medicallabform.DoctorPrescription}");
+                    debugMessages.Add($"📂 Full path: {prescPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(prescPath)}");
+
+                    if (System.IO.File.Exists(prescPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedPresc = DecryptFile(prescPath);
+                            ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedPresc);
+                            ViewData["DoctorPrescription"] = medicallabform.DoctorPrescription;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedPresc);
+                            ViewData["IsDoctorPrescriptionPdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
+                }
+
+                // ⭐ MEDICAL CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
+                {
+                    string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
+                    debugMessages.Add($"📄 Medical Certificate filename: {medicallabform.MedCertificate}");
+                    debugMessages.Add($"📂 Full path: {medicalPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(medicalPath)}");
+
+                    if (System.IO.File.Exists(medicalPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedMedical = DecryptFile(medicalPath);
+                            ViewData["MedicalCertificateBase64"] = Convert.ToBase64String(decryptedMedical);
+                            ViewData["MedicalCertificate"] = medicallabform.MedCertificate;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedMedical);
+                            ViewData["IsMedicalCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Medical Certificate decrypted - {decryptedMedical.Length} bytes");
+                            debugMessages.Add($"🔍 IsMedicalCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Medical Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Medical Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Medical Certificate in database");
+                }
+
+                // ⭐ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
+                {
+                    string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
+                    debugMessages.Add($"📄 Death Certificate filename: {medicallabform.DeathCertificate}");
+                    debugMessages.Add($"📂 Full path: {deathPath}");
+                    debugMessages.Add($"📁 File exists: {System.IO.File.Exists(deathPath)}");
+
+                    if (System.IO.File.Exists(deathPath))
+                    {
+                        try
+                        {
+                            byte[] decryptedDeath = DecryptFile(deathPath);
+                            ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDeath);
+                            ViewData["DeathCertificate"] = medicallabform.DeathCertificate;
+
+                            // PDF DETECTION
+                            bool isPdf = IsPdfFile(decryptedDeath);
+                            ViewData["IsDeathCertificatePdf"] = isPdf;
+
+                            debugMessages.Add($"✅ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
+                    }
+                }
+                else
+                {
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = medicallabform.Validfrontimage;
+            ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
+            ViewData["Comments"] = medicallabform.Comments;
+
             return View();
         }
 
-   
+
+        // UPDATED ViewPDF METHOD
+        [HttpGet]
+        public IActionResult ViewPDF(string fileName, string fileType)
+        {
+            try
+            {
+                // Authentication check
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+                {
+                    return Unauthorized("Please log in to view documents");
+                }
+
+                Console.WriteLine($"🔍 ViewPDF called - FileName: {fileName}, FileType: {fileType}");
+
+                // Validate inputs
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    Console.WriteLine("❌ FileName is null or empty");
+                    return BadRequest("FileName is required");
+                }
+
+                if (string.IsNullOrEmpty(fileType))
+                {
+                    Console.WriteLine("❌ FileType is null or empty");
+                    return BadRequest("FileType is required");
+                }
+
+                // Security: Prevent directory traversal
+                string safeFileName = Path.GetFileName(fileName);
+
+                // Define the directory based on file type
+                string folderPath = fileType.ToLower() switch
+                {
+                    "doctorprescription" => Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage"),
+                    "deathcertificate" => Path.Combine(environment.WebRootPath, "Funeralimg"),
+                    "medicalcertificate" => Path.Combine(environment.WebRootPath, "MedCertificateimage"),
+                    _ => Path.Combine(environment.WebRootPath, "Validimg")
+                };
+
+                Console.WriteLine($"📁 Folder path: {folderPath}");
+
+                string encryptedFilePath = Path.Combine(folderPath, safeFileName);
+                Console.WriteLine($"📄 Full file path: {encryptedFilePath}");
+
+                // Additional security: Verify the resolved path is within the expected directory
+                string resolvedPath = Path.GetFullPath(encryptedFilePath);
+                string resolvedFolder = Path.GetFullPath(folderPath);
+                if (!resolvedPath.StartsWith(resolvedFolder))
+                {
+                    Console.WriteLine("❌ Security: Path traversal attempt detected");
+                    return BadRequest("Invalid file path");
+                }
+
+                // Check if file exists
+                if (!System.IO.File.Exists(encryptedFilePath))
+                {
+                    Console.WriteLine($"❌ File does not exist: {encryptedFilePath}");
+                    return NotFound($"File not found: {fileName}");
+                }
+
+                Console.WriteLine($"✅ File exists. Size: {new FileInfo(encryptedFilePath).Length} bytes");
+
+                // Decrypt the file USING CONFIGURATION-BASED KEY
+                byte[] decryptedBytes = DecryptFile(encryptedFilePath);
+                Console.WriteLine($"✅ File decrypted. Decrypted size: {decryptedBytes.Length} bytes");
+
+                // Verify it's actually a PDF
+                bool isPdf = IsPdfFile(decryptedBytes);
+                Console.WriteLine($"📊 Is PDF: {isPdf}");
+
+                if (!isPdf)
+                {
+                    Console.WriteLine("❌ File is not a valid PDF");
+                    return BadRequest("Only PDF files can be viewed");
+                }
+
+                // ⭐ CRITICAL: Set headers to FORCE inline viewing and PREVENT download
+                Response.Headers["Content-Disposition"] = "inline";
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
+                Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+
+                // Additional security headers to prevent download
+                Response.Headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'self'";
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
+
+                // Cache control to prevent caching of sensitive documents
+                Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private";
+                Response.Headers["Pragma"] = "no-cache";
+                Response.Headers["Expires"] = "0";
+
+                Console.WriteLine($"📤 Returning PDF for INLINE VIEWING ONLY (download disabled)");
+
+                // Return as PDF without any filename parameter
+                return File(decryptedBytes, "application/pdf");
+            }
+            catch (CryptographicException ex)
+            {
+                Console.WriteLine($"💥 DECRYPTION ERROR: {ex.Message}");
+                return BadRequest("Failed to decrypt file. Invalid encryption or corrupted file.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"💥 ERROR in ViewPDF: {ex.Message}");
+                Console.WriteLine($"💥 Stack Trace: {ex.StackTrace}");
+                return StatusCode(500, $"Error viewing PDF: {ex.Message}");
+            }
+        }
+
+
+ 
+       
+
+        // UPDATED CheckFileType METHOD
+        [HttpGet]
+        public IActionResult CheckFileType(string fileName, string fileType = "validid")
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return Unauthorized();
+            }
+
+            string folder;
+
+            switch (fileType.ToLower())
+            {
+                case "doctorprescription":
+                    folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+                    break;
+                case "deathcertificate":
+                    folder = Path.Combine(environment.WebRootPath, "Funeralimg");
+                    break;
+                case "medicalcertificate":
+                    folder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
+                    break;
+                default:
+                    folder = Path.Combine(environment.WebRootPath, "Validimg");
+                    break;
+            }
+
+            string safeFileName = Path.GetFileName(fileName);
+            string filePath = Path.Combine(folder, safeFileName);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return Json(new { exists = false, isPdf = false });
+            }
+
+            try
+            {
+                byte[] decryptedData = DecryptFile(filePath);
+                bool isPdf = IsPdfFile(decryptedData);
+
+                return Json(new
+                {
+                    exists = true,
+                    isPdf = isPdf,
+                    fileSize = decryptedData.Length
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { exists = true, isPdf = false, error = ex.Message });
+            }
+        }
+
+
+
+
 
     }
 }
