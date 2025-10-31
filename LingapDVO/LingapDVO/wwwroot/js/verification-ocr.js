@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // UMID specific
             'UMID NUMBER', 'UMID NO', 'CRN', 'CARD REFERENCE NUMBER',
             'UMID CRN'
-        ],
+        ], 
         nationality: [
             // English variations
             'NATIONALITY', 'CITIZEN', 'CITIZENSHIP',
