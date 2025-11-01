@@ -142,9 +142,12 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('  • PETSA NG KAPANGANAKAN → extracts birthdate');
     console.log('===========================================\n');
 
-    // List of known Filipino compound/double middle names and last names
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ENHANCED: List of known Filipino compound/double surnames and name particles
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Expanded list to improve detection of multi-word surnames common in the Philippines
     const COMPOUND_NAMES = [
-        // Common compound middle names (with "De/Del/Dela/Delos/De Los")
+        // === De/Dela/Del compound surnames ===
         'DE LA CRUZ', 'DELA CRUZ', 'DE LOS REYES', 'DELOS REYES',
         'DE LA ROSA', 'DELA ROSA', 'DE LA TORRE', 'DELA TORRE',
         'DE LOS SANTOS', 'DELOS SANTOS', 'DE LOS ANGELES', 'DELOS ANGELES',
@@ -152,38 +155,88 @@ document.addEventListener('DOMContentLoaded', function () {
         'DE CASTRO', 'DECASTRO', 'DE JESUS', 'DEJESUS',
         'DEL ROSARIO', 'DELROSARIO', 'DEL MUNDO', 'DELMUNDO',
         'DEL CARMEN', 'DELCARMEN', 'DEL PILAR', 'DELPILAR',
+        'DE VERA', 'DEVERA', 'DE OCAMPO', 'DEOCAMPO',
+        'DE BELEN', 'DEBELEN', 'DE SILVA', 'DESILVA',
+        'DE MESA', 'DEMESA', 'DE DIOS', 'DEDIOS',
 
-        // Santa/San compound names
+        // === Santa/San compound surnames ===
         'SANTA MARIA', 'SANTAMARIA', 'SANTA CRUZ', 'SANTACRUZ',
         'SANTA ROSA', 'SANTAROSA', 'SANTA ANA', 'SANTAANA',
         'SAN JOSE', 'SANJOSE', 'SAN JUAN', 'SANJUAN',
         'SAN PEDRO', 'SANPEDRO', 'SAN DIEGO', 'SANDIEGO',
+        'SAN AGUSTIN', 'SANAGUSTIN', 'SAN MIGUEL', 'SANMIGUEL',
+        'SAN ANDRES', 'SANANDRES', 'SAN ANTONIO', 'SANANTONIO',
 
-        // Other compound names
+        // === Villa compound surnames ===
         'VILLA NUEVA', 'VILLANUEVA', 'VILLA REAL', 'VILLAREAL',
         'VILLA MAYOR', 'VILLAMAYOR', 'VILLA VERDE', 'VILLAVERDE',
-        'MONTE MAYOR', 'MONTEMAYOR', 'MONTE REAL', 'MONTEREAL',
-        'BUEN CAMINO', 'BUENCAMINO', 'BUEN DIA', 'BUENDIA',
+        'VILLA CRUZ', 'VILLACRUZ', 'VILLA FRANCA', 'VILLAFRANCA',
+        'VILLA FLOR', 'VILLAFLOR', 'VILLA GRACIA', 'VILLAGRACIA',
 
-        // De/Del variations (standalone)
-        'DE', 'DEL', 'DELA', 'DELOS', 'DE LOS', 'DE LA'
+        // === Monte compound surnames ===
+        'MONTE MAYOR', 'MONTEMAYOR', 'MONTE REAL', 'MONTEREAL',
+        'MONTE VERDE', 'MONTEVERDE', 'MONTE NEGRO', 'MONTENEGRO',
+        'MONTE DE OCA', 'MONTEDEOCA',
+
+        // === Buen compound surnames ===
+        'BUEN CAMINO', 'BUENCAMINO', 'BUEN DIA', 'BUENDIA',
+        'BUEN ROSTRO', 'BUENROSTRO', 'BUEN ABAD', 'BUENABAD',
+        'BUEN VENTURA', 'BUENVENTURA',
+
+        // === Other common compound surnames ===
+        'LA PAZ', 'LAPAZ', 'LA TORRE', 'LATORRE',
+        'LOS BAÑOS', 'LOSBAÑOS', 'LOS SANTOS', 'LOSSANTOS',
+        'CASTILLO VERDE', 'CASTILLOVERDE',
+        'FERNANDEZ DE LEON', 'FERNANDEZDELEON',
+
+        // === Particles (used for detection) ===
+        'DE', 'DEL', 'DELA', 'DELOS', 'DE LOS', 'DE LA',
+        'SAN', 'SANTA', 'VILLA', 'MONTE', 'BUEN', 'LA', 'LOS'
     ];
 
-    // Check if a word sequence is a known compound name
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ENHANCED: Check if word sequence forms a known Filipino compound surname
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Handles exact matches, prefix matching, and particle-based detection
     function isCompoundName(words) {
         if (!words || words.length === 0) return false;
 
-        // Normalize to uppercase and join
+        // Normalize words: uppercase and trim each word
         const normalized = words.map(w => w.toUpperCase().trim()).join(' ');
 
-        // Check exact match
+        // Check for exact match in compound names list
         if (COMPOUND_NAMES.includes(normalized)) {
             return true;
         }
 
-        // Check if starts with compound name prefix
+        // Check if starts with a compound name (for longer compound variations)
+        // Example: "DE LA CRUZ MARTINEZ" starts with "DE LA CRUZ"
         for (const compound of COMPOUND_NAMES) {
             if (normalized === compound || normalized.startsWith(compound + ' ')) {
+                return true;
+            }
+        }
+
+        // NEW: Check for particle-based compound names
+        // If first word is a particle (DE, DEL, SAN, etc.) and there are 2+ words
+        // This catches compound names not in our list like "DE LEON GARCIA"
+        const particles = ['DE', 'DEL', 'DELA', 'DELOS', 'SAN', 'SANTA', 'VILLA', 'MONTE', 'BUEN', 'LA', 'LOS'];
+        if (words.length >= 2) {
+            const firstWord = words[0].toUpperCase().trim();
+            if (particles.includes(firstWord)) {
+                // Verify second word looks like a name (not a preposition)
+                const secondWord = words[1].toUpperCase().trim();
+                const prepositions = ['A', 'AN', 'THE', 'AT', 'IN', 'ON', 'OF', 'TO'];
+                if (!prepositions.includes(secondWord) && secondWord.length >= 3) {
+                    return true;
+                }
+            }
+        }
+
+        // NEW: Handle "DE LOS" or "DE LA" (2-word particles)
+        if (words.length >= 3) {
+            const firstTwo = words.slice(0, 2).map(w => w.toUpperCase().trim()).join(' ');
+            if (['DE LOS', 'DE LA'].includes(firstTwo)) {
                 return true;
             }
         }
@@ -1166,87 +1219,133 @@ document.addEventListener('DOMContentLoaded', function () {
         return "";
     }
 
-    // Parse FIRST MIDDLE SUFFIX from array of words with compound name detection
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ENHANCED: Parse First Name + Middle Name + Suffix from combined field
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Handles: compound middle names, multiple first names, suffixes, middle initials, OCR noise
     function parseFirstMiddleSuffix(words, preferAllAsFirstName = false) {
         let firstName = '';
         let middleName = '';
         let suffix = '';
 
-        if (words.length === 0) return { firstName, middleName, suffix };
-
-        console.log('Parsing first/middle/suffix from words:', words);
-        console.log('Prefer all as first name:', preferAllAsFirstName);
-
-        // Check for suffix at the end
-        const suffixPatterns = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'JUNIOR', 'SENIOR'];
-        const lastWord = words[words.length - 1].toUpperCase();
-        if (suffixPatterns.includes(lastWord)) {
-            suffix = lastWord === 'JUNIOR' ? 'JR' : (lastWord === 'SENIOR' ? 'SR' : lastWord);
-            words = words.slice(0, -1); // Remove suffix from words
-            console.log('Found suffix in name field:', suffix);
+        // Validate input
+        if (!words || words.length === 0) {
+            return { firstName, middleName, suffix };
         }
 
-        if (words.length === 0) return { firstName, middleName, suffix };
+        console.log('╔══════════════════════════════════════════════════════════╗');
+        console.log('║  PARSING: First Name + Middle Name + Suffix             ║');
+        console.log('╚══════════════════════════════════════════════════════════╝');
+        console.log('Input words:', words);
+        console.log('Prefer all as first name:', preferAllAsFirstName);
 
-        // OPTIMIZATION: If middle name exists in a separate field, treat all words as first name
-        // This supports multiple first names like "JETLANE MARSHALL" or "MARIA CLARA ROSA"
+        // === STEP 1: Check for suffix at the end ===
+        const suffixPatterns = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'JUNIOR', 'SENIOR'];
+        let workingWords = [...words];  // Create copy to avoid modifying original
+
+        const lastWord = workingWords[workingWords.length - 1].toUpperCase().replace(/\./g, '');
+        if (suffixPatterns.includes(lastWord)) {
+            // Normalize suffix (JUNIOR -> JR, SENIOR -> SR)
+            suffix = lastWord === 'JUNIOR' ? 'JR' : (lastWord === 'SENIOR' ? 'SR' : lastWord);
+            workingWords = workingWords.slice(0, -1);  // Remove suffix from working words
+            console.log(`✓ Suffix detected and removed: "${suffix}"`);
+            console.log(`  Remaining words:`, workingWords);
+        }
+
+        // === STEP 2: Handle edge case - no words left after suffix removal ===
+        if (workingWords.length === 0) {
+            console.log('✗ No name words remaining after suffix removal');
+            return { firstName: '', middleName: '', suffix };
+        }
+
+        // === STEP 3: Handle preferAllAsFirstName flag ===
+        // Used when middle name exists in a separate field
+        // Example: Given Names field="JUAN MIGUEL", Middle Name field="DELA CRUZ"
         if (preferAllAsFirstName) {
-            firstName = words.join(' ');
-            console.log(`✓ All words as first name (separate middle name field exists): "${firstName}"`);
+            firstName = workingWords.join(' ');
+            console.log(`✓ Using all words as first name (separate middle name field exists)`);
+            console.log(`  First Name: "${firstName}"`);
             return { firstName, middleName: '', suffix };
         }
 
-        // Check if last 2-3 words form a compound middle name
-        if (words.length >= 3) {
-            // Try 3 words compound (e.g., "DE LOS SANTOS")
-            const last3 = words.slice(-3);
-            if (isCompoundName(last3)) {
-                middleName = last3.join(' ');
-                firstName = words.slice(0, -3).join(' ');
+        // === STEP 4: Check for compound middle name (3 words) ===
+        // Example: "MARIA DE LOS SANTOS" -> First: "MARIA", Middle: "DE LOS SANTOS"
+        if (workingWords.length >= 4) {  // Need at least 4: 1 first + 3 middle
+            const last3Words = workingWords.slice(-3);
+            if (isCompoundName(last3Words)) {
+                middleName = last3Words.join(' ');
+                firstName = workingWords.slice(0, -3).join(' ');
                 console.log(`✓ Found 3-word compound middle name: "${middleName}"`);
-                console.log(`  First Name (multiple words): "${firstName}"`);
+                console.log(`  First Name: "${firstName}"`);
+                console.log(`  → Format: FIRST NAME(S) + COMPOUND MIDDLE NAME (3 words)`);
                 return { firstName, middleName, suffix };
             }
         }
 
-        if (words.length >= 2) {
-            // Try 2 words compound (e.g., "DELA CRUZ", "SANTA MARIA")
-            const last2 = words.slice(-2);
-            if (isCompoundName(last2)) {
-                middleName = last2.join(' ');
-                firstName = words.slice(0, -2).join(' ');
+        // === STEP 5: Check for compound middle name (2 words) ===
+        // Example: "JUAN DELA CRUZ" -> First: "JUAN", Middle: "DELA CRUZ"
+        // Example: "MARIA CLARA SANTA MARIA" -> First: "MARIA CLARA", Middle: "SANTA MARIA"
+        if (workingWords.length >= 3) {  // Need at least 3: 1 first + 2 middle
+            const last2Words = workingWords.slice(-2);
+            if (isCompoundName(last2Words)) {
+                middleName = last2Words.join(' ');
+                firstName = workingWords.slice(0, -2).join(' ');
                 console.log(`✓ Found 2-word compound middle name: "${middleName}"`);
-                console.log(`  First Name (multiple words): "${firstName}"`);
+                console.log(`  First Name: "${firstName}"`);
+                console.log(`  → Format: FIRST NAME(S) + COMPOUND MIDDLE NAME (2 words)`);
+                return { firstName, middleName, suffix };
+            }
+        }
+
+        // === STEP 6: Check for middle initial (single letter or letter with period) ===
+        // Example: "JUAN M DELA" -> First: "JUAN", Middle: "M"
+        // Example: "MARIA CLARA R" -> First: "MARIA CLARA", Middle: "R"
+        if (workingWords.length >= 2) {
+            const lastWord = workingWords[workingWords.length - 1].replace(/\./g, '');
+            if (lastWord.length === 1 && /^[A-Z]$/i.test(lastWord)) {
+                middleName = lastWord.toUpperCase();
+                firstName = workingWords.slice(0, -1).join(' ');
+                console.log(`✓ Found middle initial: "${middleName}"`);
+                console.log(`  First Name: "${firstName}"`);
+                console.log(`  → Format: FIRST NAME(S) + MIDDLE INITIAL`);
                 return { firstName, middleName, suffix };
             }
         }
 
         // ═══════════════════════════════════════════════════════════════════════
-        // STANDARD PARSING: Last word is MIDDLE NAME, rest is FIRST NAME
+        // STEP 7: STANDARD PARSING - Last word is MIDDLE NAME, rest is FIRST NAME
         // ═══════════════════════════════════════════════════════════════════════
-        // This parsing strategy correctly handles multi-word first names:
+        // This is the standard format for Philippine IDs where the "Given Names"
+        // field contains both given name(s) AND middle name together.
         //
         // Examples:
-        //   "SHEAN ANDREI YEE"        → First: "SHEAN ANDREI"    Middle: "YEE"
-        //   "JETLANE MARSHALL CRUZ"   → First: "JETLANE MARSHALL" Middle: "CRUZ"
-        //   "MARIA CLARA SANTOS"      → First: "MARIA CLARA"     Middle: "SANTOS"
-        //   "JOHN RODRIGUEZ"          → First: "JOHN"            Middle: "RODRIGUEZ"
+        //   "JUAN DELA CRUZ"           → First: "JUAN"              Middle: "DELA CRUZ" (handled above)
+        //   "SHEAN ANDREI YEE"         → First: "SHEAN ANDREI"     Middle: "YEE"
+        //   "JETLANE MARSHALL CRUZ"    → First: "JETLANE MARSHALL" Middle: "CRUZ"
+        //   "MARIA CLARA SANTOS"       → First: "MARIA CLARA"      Middle: "SANTOS"
+        //   "JOHN RODRIGUEZ"           → First: "JOHN"             Middle: "RODRIGUEZ"
+        //   "JOSE"                     → First: "JOSE"             Middle: "" (none)
         //
-        // This is the standard format for Philippine IDs where the "First Name"
-        // field contains both the given name(s) AND the middle name together.
+        // This parsing strategy correctly handles multi-word first names.
         // ═══════════════════════════════════════════════════════════════════════
-        if (words.length >= 2) {
-            middleName = words[words.length - 1];  // Last word is always middle name
-            firstName = words.slice(0, -1).join(' ');  // All other words are first name
-            console.log(`✓ Standard parsing applied (last word = middle name, rest = first name):`);
-            console.log(`  → First Name (supports multiple words): "${firstName}"`);
-            console.log(`  → Middle Name: "${middleName}"`);
-            console.log(`  ✓ This format is standard for Philippine IDs`);
+
+        if (workingWords.length >= 2) {
+            // Last word is middle name
+            middleName = workingWords[workingWords.length - 1];
+            // All other words are first name (supports multiple first names)
+            firstName = workingWords.slice(0, -1).join(' ');
+
+            console.log(`✓ Standard parsing applied:`);
+            console.log(`  → First Name: "${firstName}" (all words except last)`);
+            console.log(`  → Middle Name: "${middleName}" (last word)`);
+            console.log(`  ℹ This format is standard for Philippine IDs`);
         } else {
-            // Only one word - it's the first name, no middle name detected in this field
-            firstName = words[0];
-            console.log(`⚠ Single word detected - First Name: "${firstName}"`);
-            console.log(`⚠ No middle name found in this field (must be in separate field or missing)`);
+            // Only one word - it's the first name, no middle name detected
+            firstName = workingWords[0];
+            console.log(`⚠ Single word detected:`);
+            console.log(`  → First Name: "${firstName}"`);
+            console.log(`  → Middle Name: (none found in this field)`);
+            console.log(`  ℹ Middle name may be in a separate field or missing`);
         }
 
         return { firstName, middleName, suffix };
@@ -5277,37 +5376,58 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Helper functions
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ENHANCED: Clean name text - removes OCR noise, labels, and invalid characters
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Handles: mixed casing, extra spaces, newlines, punctuation, field labels
     function cleanName(text) {
         if (!text) return "";
 
-        // First pass: Remove label patterns before character filtering
+        // === STEP 1: Normalize whitespace and punctuation ===
+        // Handle OCR noise: multiple spaces, tabs, newlines
+        text = text.replace(/[\t\n\r]+/g, ' ');  // Replace tabs/newlines with space
+        text = text.replace(/\s+/g, ' ');         // Normalize multiple spaces to single space
+
+        // === STEP 2: Remove common label patterns (case-insensitive) ===
+        // These are field labels that sometimes get extracted with the name
         const labelPatterns = [
-            /APELYIDO[\s\/:]*/gi,
-            /APELYEDO[\s\/:]*/gi,
-            /PANGALAN[\s\/:]*/gi,
-            /NGALAN[\s\/:]*/gi,
-            /SURNAME[\s\/:]*/gi,
-            /LAST\s*NAME[\s\/:]*/gi,
-            /FIRST\s*NAME[\s\/:]*/gi,
-            /MIDDLE\s*NAME[\s\/:]*/gi,
-            /GIVEN\s*NAME[\s\/:]*/gi,
-            /FULL\s*NAME[\s\/:]*/gi,
-            /UNANG\s*PANGALAN[\s\/:]*/gi,
-            /HULING\s*PANGALAN[\s\/:]*/gi,
-            /GITNANG\s*PANGALAN[\s\/:]*/gi,
-            /BINANSAGANG[\s\/:]*/gi,
-            /KUMPLETONG[\s\/:]*/gi,
-            /BUONG[\s\/:]*/gi
+            /APELYIDO[\s\/:\-]*/gi,
+            /APELYEDO[\s\/:\-]*/gi,
+            /PANGALAN[\s\/:\-]*/gi,
+            /NGALAN[\s\/:\-]*/gi,
+            /SURNAME[\s\/:\-]*/gi,
+            /LAST\s*NAME[\s\/:\-]*/gi,
+            /FIRST\s*NAME[\s\/:\-]*/gi,
+            /MIDDLE\s*NAME[\s\/:\-]*/gi,
+            /GIVEN\s*NAME[\s\/:\-]*/gi,
+            /FULL\s*NAME[\s\/:\-]*/gi,
+            /UNANG\s*PANGALAN[\s\/:\-]*/gi,
+            /HULING\s*PANGALAN[\s\/:\-]*/gi,
+            /GITNANG\s*PANGALAN[\s\/:\-]*/gi,
+            /BINANSAGANG[\s\/:\-]*/gi,
+            /KUMPLETONG[\s\/:\-]*/gi,
+            /BUONG[\s\/:\-]*/gi,
+            /FAMILY\s*NAME[\s\/:\-]*/gi,
+            /NAME[\s\/:\-]*/gi  // Generic "NAME" label
         ];
 
         for (const pattern of labelPatterns) {
             text = text.replace(pattern, ' ');
         }
 
-        // Remove numbers and special characters, keep only letters and spaces
-        text = text.replace(/[^a-zA-ZÑñ\s]/g, " ");  // Include Ñ for Filipino names
+        // === STEP 3: Clean special characters ===
+        // Keep only: letters (including Ñ for Filipino names), spaces, and periods (for initials)
+        // Remove: numbers, most punctuation, symbols
+        text = text.replace(/[^a-zA-ZÑñ\s\.]/g, " ");
 
-        // Remove common OCR mistakes and noise words (English + Filipino labels)
+        // Handle periods: Keep them only if they appear to be initials (single letter followed by period)
+        // Example: "JUAN M. DELA CRUZ" -> keep the period, "JUAN.DELA.CRUZ" -> remove periods
+        text = text.replace(/([A-Z])\.(?=[A-Z])/g, '$1 ');  // "M.D" -> "M D"
+        text = text.replace(/([a-z])\.(?=[A-Z])/g, '$1 ');  // "m.D" -> "m D"
+        text = text.replace(/\.{2,}/g, ' ');                 // Multiple periods -> space
+
+        // === STEP 4: Remove noise words (labels that appear as separate words) ===
+        // These are common OCR artifacts and label words
         const noiseWords = [
             // English labels
             'NAME', 'SURNAME', 'FIRST', 'LAST', 'MIDDLE', 'GIVEN', 'FULL', 'COMPLETE',
@@ -5317,19 +5437,404 @@ document.addEventListener('DOMContentLoaded', function () {
             'APELYIDO', 'APELYEDO', 'PANGALAN', 'NGALAN', 'UNANG', 'HULING', 'GITNANG',
             'MGA', 'BUONG', 'KUMPLETONG', 'BINANSAGANG', 'UNA', 'GITNA',
             // Bilingual format separators
-            'NG', 'SA', 'ANG', 'NI'
+            'NG', 'SA', 'ANG', 'NI',
+            // Common OCR artifacts
+            'OF', 'THE', 'AND', 'OR', 'IN', 'AT', 'TO', 'FOR'
         ];
 
+        // Split into words and filter out noise
         const words = text.split(/\s+/).filter(word => {
-            const upperWord = word.toUpperCase();
-            // Keep word if it's longer than 1 char and not a noise word
-            return word.length > 1 && !noiseWords.includes(upperWord);
+            word = word.trim();
+            if (word.length <= 1) return false;  // Remove single characters (except handled separately)
+
+            const upperWord = word.toUpperCase().replace(/\./g, '');  // Remove periods for comparison
+
+            // Keep word if it's not in the noise list
+            return !noiseWords.includes(upperWord);
         });
 
+        // === STEP 5: Rejoin and final cleanup ===
         text = words.join(' ');
+        text = text.replace(/\s+/g, ' ').trim();  // Normalize spaces again
 
-        // Trim and normalize spaces
-        return text.replace(/\s+/g, " ").trim();
+        return text;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // NEW: Enhanced Name Format Detection Function
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Detects the format of a full name string and returns parsing hints
+    // Supports: comma-separated, space-separated, and various Philippine ID formats
+    function detectNameFormat(nameText) {
+        if (!nameText || typeof nameText !== 'string') {
+            return { format: 'unknown', confidence: 0 };
+        }
+
+        const text = nameText.trim();
+
+        // === FORMAT 1: Comma-separated (LASTNAME, FIRSTNAME MIDDLENAME) ===
+        // Example: "DELA CRUZ, JUAN MIGUEL JR."
+        // Most reliable format - commonly used in official documents
+        if (text.includes(',')) {
+            const parts = text.split(',');
+            if (parts.length === 2 && parts[0].trim().length > 0 && parts[1].trim().length > 0) {
+                return {
+                    format: 'comma-separated',
+                    confidence: 95,
+                    hint: 'Before comma = Last Name, After comma = First + Middle + Suffix'
+                };
+            }
+        }
+
+        // === FORMAT 2: Check for "lastname first name middle name" pattern ===
+        // Look for indicators: all caps, 3+ words, potential compound surname at start
+        const words = text.split(/\s+/).filter(w => w.length > 1);
+
+        if (words.length >= 3) {
+            // Check if first 2-3 words could be a compound surname
+            const first2Words = words.slice(0, 2);
+            const first3Words = words.slice(0, 3);
+
+            if (isCompoundName(first3Words)) {
+                return {
+                    format: 'compound-surname-first',
+                    confidence: 85,
+                    hint: 'First 3 words = Compound Last Name, remaining = First + Middle + Suffix'
+                };
+            }
+
+            if (isCompoundName(first2Words)) {
+                return {
+                    format: 'compound-surname-first',
+                    confidence: 85,
+                    hint: 'First 2 words = Compound Last Name, remaining = First + Middle + Suffix'
+                };
+            }
+
+            // === FORMAT 3: Standard space-separated (FIRSTNAME MIDDLENAME LASTNAME) ===
+            // Check if last 2-3 words could be compound surname
+            const last2Words = words.slice(-2);
+            const last3Words = words.slice(-3);
+
+            if (isCompoundName(last3Words)) {
+                return {
+                    format: 'compound-surname-last',
+                    confidence: 80,
+                    hint: 'Last 3 words = Compound Last Name, beginning = First + Middle'
+                };
+            }
+
+            if (isCompoundName(last2Words)) {
+                return {
+                    format: 'compound-surname-last',
+                    confidence: 80,
+                    hint: 'Last 2 words = Compound Last Name, beginning = First + Middle'
+                };
+            }
+
+            // === FORMAT 4: Simple space-separated (FIRSTNAME MIDDLENAME LASTNAME) ===
+            // Default assumption for 3+ words without compound surname
+            return {
+                format: 'space-separated',
+                confidence: 60,
+                hint: 'Likely: Beginning = First Name, Middle words = Middle Name, Last word = Last Name'
+            };
+        }
+
+        // === FORMAT 5: Two words only ===
+        if (words.length === 2) {
+            return {
+                format: 'two-words',
+                confidence: 50,
+                hint: 'Could be: First+Last or First+Middle (ambiguous)'
+            };
+        }
+
+        // === FORMAT 6: Single word ===
+        if (words.length === 1) {
+            return {
+                format: 'single-word',
+                confidence: 30,
+                hint: 'Insufficient data - only one name component found'
+            };
+        }
+
+        return { format: 'unknown', confidence: 0 };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // NEW: Enhanced Suffix Detection and Extraction
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Detects and extracts suffix from name text, handling various formats
+    function extractSuffixFromName(nameText) {
+        if (!nameText || typeof nameText !== 'string') {
+            return { suffix: '', remainingText: nameText };
+        }
+
+        // Define valid suffixes (expanded list with variations)
+        const suffixPatterns = [
+            // Roman numerals (higher numbers first to avoid mismatches)
+            { pattern: /\b(IV|V|VI|VII|VIII|IX|X)\b$/i, normalized: (m) => m.toUpperCase() },
+            { pattern: /\b(III)\b$/i, normalized: () => 'III' },
+            { pattern: /\b(II)\b$/i, normalized: () => 'II' },
+
+            // Jr/Sr with variations
+            { pattern: /\b(JR\.?|JUNIOR)\b$/i, normalized: () => 'JR' },
+            { pattern: /\b(SR\.?|SENIOR)\b$/i, normalized: () => 'SR' },
+
+            // Handle suffix with comma: "DELA CRUZ, JUAN JR."
+            { pattern: /,\s*(JR\.?|SR\.?|II|III|IV|V|JUNIOR|SENIOR)\s*$/i, normalized: (m) => {
+                const clean = m.replace(/[,\s\.]/g, '').toUpperCase();
+                if (clean === 'JUNIOR') return 'JR';
+                if (clean === 'SENIOR') return 'SR';
+                return clean;
+            }},
+        ];
+
+        let suffix = '';
+        let remainingText = nameText.trim();
+
+        // Try each pattern
+        for (const { pattern, normalized } of suffixPatterns) {
+            const match = remainingText.match(pattern);
+            if (match) {
+                suffix = normalized(match[1]);
+                remainingText = remainingText.replace(pattern, '').trim();
+
+                // Remove trailing comma if present
+                remainingText = remainingText.replace(/,\s*$/, '').trim();
+                break;
+            }
+        }
+
+        return { suffix, remainingText };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // NEW: Enhanced Full Name Parser (handles all Philippine name formats)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // This comprehensive function can parse any Philippine name format
+    // Use this when you have a single field containing the full name
+    // Example usage: const result = parsePhilippineFullName("DELA CRUZ, JUAN MIGUEL JR.");
+    function parsePhilippineFullName(fullNameText) {
+        console.log('\n╔════════════════════════════════════════════════════════════════╗');
+        console.log('║     PARSING FULL PHILIPPINE NAME (All Components)             ║');
+        console.log('╚════════════════════════════════════════════════════════════════╝');
+        console.log('Input:', fullNameText);
+
+        // Initialize result
+        let result = {
+            lastName: '',
+            firstName: '',
+            middleName: '',
+            suffix: ''
+        };
+
+        if (!fullNameText || typeof fullNameText !== 'string') {
+            console.log('✗ Invalid input');
+            return result;
+        }
+
+        // === STEP 1: Clean the input text ===
+        let cleanedText = cleanName(fullNameText);
+        console.log('Cleaned text:', cleanedText);
+
+        if (!cleanedText || cleanedText.trim().length === 0) {
+            console.log('✗ No valid text after cleaning');
+            return result;
+        }
+
+        // === STEP 2: Extract suffix first (simplifies subsequent parsing) ===
+        const { suffix, remainingText } = extractSuffixFromName(cleanedText);
+        result.suffix = suffix;
+        cleanedText = remainingText;
+
+        if (suffix) {
+            console.log(`✓ Suffix extracted: "${suffix}"`);
+            console.log(`  Remaining text: "${cleanedText}"`);
+        }
+
+        // === STEP 3: Detect name format ===
+        const formatInfo = detectNameFormat(cleanedText);
+        console.log(`\nFormat detected: ${formatInfo.format} (confidence: ${formatInfo.confidence}%)`);
+        console.log(`Hint: ${formatInfo.hint}`);
+
+        // === STEP 4: Parse based on detected format ===
+        const words = cleanedText.split(/\s+/).filter(w => w.length > 1);
+
+        switch (formatInfo.format) {
+            case 'comma-separated':
+                // Format: "DELA CRUZ, JUAN MIGUEL"
+                // Before comma = Last Name, After comma = First + Middle
+                const parts = cleanedText.split(',').map(p => p.trim());
+                result.lastName = parts[0];
+
+                if (parts[1]) {
+                    const givenNames = parts[1].split(/\s+/).filter(w => w.length > 1);
+                    const parsed = parseFirstMiddleSuffix(givenNames);
+                    result.firstName = parsed.firstName;
+                    result.middleName = parsed.middleName;
+                    // Suffix already extracted in step 2, but check if parse found one
+                    if (!result.suffix && parsed.suffix) {
+                        result.suffix = parsed.suffix;
+                    }
+                }
+
+                console.log(`✓ Comma-separated format parsed:`);
+                console.log(`  Last Name: "${result.lastName}"`);
+                console.log(`  First Name: "${result.firstName}"`);
+                console.log(`  Middle Name: "${result.middleName}"`);
+                if (result.suffix) console.log(`  Suffix: "${result.suffix}"`);
+                break;
+
+            case 'compound-surname-first':
+                // Format: "DELA CRUZ JUAN MIGUEL" or "DE LOS SANTOS MARIA CLARA"
+                // First 2-3 words = Last Name, Remaining = First + Middle
+
+                // Try 3-word compound first
+                if (words.length >= 4) {
+                    const first3 = words.slice(0, 3);
+                    if (isCompoundName(first3)) {
+                        result.lastName = first3.join(' ');
+                        const remaining = words.slice(3);
+                        const parsed = parseFirstMiddleSuffix(remaining);
+                        result.firstName = parsed.firstName;
+                        result.middleName = parsed.middleName;
+                        if (!result.suffix && parsed.suffix) result.suffix = parsed.suffix;
+
+                        console.log(`✓ 3-word compound surname (at start) parsed:`);
+                        console.log(`  Last Name: "${result.lastName}"`);
+                        console.log(`  First Name: "${result.firstName}"`);
+                        console.log(`  Middle Name: "${result.middleName}"`);
+                        if (result.suffix) console.log(`  Suffix: "${result.suffix}"`);
+                        break;
+                    }
+                }
+
+                // Try 2-word compound
+                if (words.length >= 3) {
+                    const first2 = words.slice(0, 2);
+                    if (isCompoundName(first2)) {
+                        result.lastName = first2.join(' ');
+                        const remaining = words.slice(2);
+                        const parsed = parseFirstMiddleSuffix(remaining);
+                        result.firstName = parsed.firstName;
+                        result.middleName = parsed.middleName;
+                        if (!result.suffix && parsed.suffix) result.suffix = parsed.suffix;
+
+                        console.log(`✓ 2-word compound surname (at start) parsed:`);
+                        console.log(`  Last Name: "${result.lastName}"`);
+                        console.log(`  First Name: "${result.firstName}"`);
+                        console.log(`  Middle Name: "${result.middleName}"`);
+                        if (result.suffix) console.log(`  Suffix: "${result.suffix}"`);
+                        break;
+                    }
+                }
+
+                // Fallthrough to space-separated if compound not confirmed
+                /* falls through */
+
+            case 'compound-surname-last':
+            case 'space-separated':
+                // Format: "JUAN MIGUEL DELA CRUZ" or "MARIA DE LOS SANTOS"
+                // First part = First Name, Middle part = Middle Name, Last part = Last Name
+
+                // Try 3-word compound surname at end
+                if (words.length >= 4) {
+                    const last3 = words.slice(-3);
+                    if (isCompoundName(last3)) {
+                        result.lastName = last3.join(' ');
+                        const remaining = words.slice(0, -3);
+                        const parsed = parseFirstMiddleSuffix(remaining);
+                        result.firstName = parsed.firstName;
+                        result.middleName = parsed.middleName;
+                        if (!result.suffix && parsed.suffix) result.suffix = parsed.suffix;
+
+                        console.log(`✓ 3-word compound surname (at end) parsed:`);
+                        console.log(`  First Name: "${result.firstName}"`);
+                        console.log(`  Middle Name: "${result.middleName}"`);
+                        console.log(`  Last Name: "${result.lastName}"`);
+                        if (result.suffix) console.log(`  Suffix: "${result.suffix}"`);
+                        break;
+                    }
+                }
+
+                // Try 2-word compound surname at end
+                if (words.length >= 3) {
+                    const last2 = words.slice(-2);
+                    if (isCompoundName(last2)) {
+                        result.lastName = last2.join(' ');
+                        const remaining = words.slice(0, -2);
+                        const parsed = parseFirstMiddleSuffix(remaining);
+                        result.firstName = parsed.firstName;
+                        result.middleName = parsed.middleName;
+                        if (!result.suffix && parsed.suffix) result.suffix = parsed.suffix;
+
+                        console.log(`✓ 2-word compound surname (at end) parsed:`);
+                        console.log(`  First Name: "${result.firstName}"`);
+                        console.log(`  Middle Name: "${result.middleName}"`);
+                        console.log(`  Last Name: "${result.lastName}"`);
+                        if (result.suffix) console.log(`  Suffix: "${result.suffix}"`);
+                        break;
+                    }
+                }
+
+                // Standard 3+ words: First Middle Last
+                if (words.length >= 3) {
+                    result.lastName = words[words.length - 1];
+                    const remaining = words.slice(0, -1);
+                    const parsed = parseFirstMiddleSuffix(remaining);
+                    result.firstName = parsed.firstName;
+                    result.middleName = parsed.middleName;
+                    if (!result.suffix && parsed.suffix) result.suffix = parsed.suffix;
+
+                    console.log(`✓ Standard space-separated format parsed:`);
+                    console.log(`  First Name: "${result.firstName}"`);
+                    console.log(`  Middle Name: "${result.middleName}"`);
+                    console.log(`  Last Name: "${result.lastName}"`);
+                    if (result.suffix) console.log(`  Suffix: "${result.suffix}"`);
+                } else if (words.length === 2) {
+                    // Ambiguous: could be First+Last or First+Middle
+                    // Assume First+Last (more common)
+                    result.firstName = words[0];
+                    result.lastName = words[1];
+                    console.log(`⚠ Two words only (ambiguous):`);
+                    console.log(`  Assumed: First Name + Last Name`);
+                    console.log(`  First Name: "${result.firstName}"`);
+                    console.log(`  Last Name: "${result.lastName}"`);
+                } else if (words.length === 1) {
+                    result.firstName = words[0];
+                    console.log(`⚠ Single word only:`);
+                    console.log(`  First Name: "${result.firstName}"`);
+                }
+                break;
+
+            case 'two-words':
+                // Ambiguous case
+                result.firstName = words[0];
+                result.lastName = words[1];
+                console.log(`⚠ Two-word format (ambiguous - assumed First + Last):`);
+                console.log(`  First Name: "${result.firstName}"`);
+                console.log(`  Last Name: "${result.lastName}"`);
+                break;
+
+            case 'single-word':
+                result.firstName = words[0];
+                console.log(`⚠ Single word format:`);
+                console.log(`  First Name: "${result.firstName}"`);
+                break;
+
+            default:
+                console.log(`✗ Unknown format, cannot parse reliably`);
+                break;
+        }
+
+        console.log('\n╔════════════════════════════════════════════════════════════════╗');
+        console.log('║                      PARSING COMPLETE                          ║');
+        console.log('╚════════════════════════════════════════════════════════════════╝');
+        console.log('Final result:', result);
+
+        return result;
     }
 
     function cleanText(text) {
