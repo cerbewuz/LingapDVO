@@ -11,13 +11,11 @@
 
     // Configuration
     const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
-    const WARNING_TIME = 2 * 60 * 1000; // Show warning 2 minutes before timeout
     const CHECK_INTERVAL = 30 * 1000; // Check session validity every 30 seconds
 
     let inactivityTimer = null;
-    let warningTimer = null;
     let lastActivityTime = Date.now();
-    let warningShown = false;
+    let confirmationShown = false;
     let sessionCheckInterval = null;
 
     // Initialize session timeout tracker
@@ -51,58 +49,56 @@
 
     // Reset the inactivity timer
     function resetInactivityTimer() {
+        // Don't reset if confirmation is already shown
+        if (confirmationShown) return;
+
         lastActivityTime = Date.now();
 
-        // Clear existing timers
+        // Clear existing timer
         if (inactivityTimer) {
             clearTimeout(inactivityTimer);
         }
-        if (warningTimer) {
-            clearTimeout(warningTimer);
-        }
-
-        // Hide warning if shown
-        if (warningShown) {
-            hideWarning();
-            warningShown = false;
-        }
-
-        // Set warning timer (8 minutes - shows warning 2 minutes before logout)
-        warningTimer = setTimeout(() => {
-            showWarning();
-        }, INACTIVITY_TIMEOUT - WARNING_TIME);
 
         // Set inactivity timer (10 minutes)
         inactivityTimer = setTimeout(() => {
-            logoutDueToInactivity();
+            showInactivityConfirmation();
         }, INACTIVITY_TIMEOUT);
     }
 
-    // Show warning modal before logout
-    function showWarning() {
-        if (warningShown) return;
-        warningShown = true;
+    // Show inactivity confirmation modal
+    function showInactivityConfirmation() {
+        if (confirmationShown) return;
+        confirmationShown = true;
 
-        console.log('Session Timeout: Showing inactivity warning');
+        console.log('Session Timeout: User inactive for 10 minutes - showing confirmation');
 
-        // Create warning modal
+        // Blur and disable page content
+        const mainContent = document.querySelector('body');
+        if (mainContent) {
+            mainContent.style.filter = 'blur(5px)';
+            mainContent.style.pointerEvents = 'none';
+            mainContent.style.userSelect = 'none';
+        }
+
+        // Create confirmation modal
         const modalHTML = `
-            <div id="inactivity-warning-modal" class="fixed inset-0 z-[9999] flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
-                <div class="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 p-6 animate-fade-in">
+            <div id="inactivity-confirmation-modal" class="fixed inset-0 z-[9999] flex items-center justify-center" style="background: rgba(0,0,0,0.8); pointer-events: auto;">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-8 modal-scale-in">
                     <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
-                            <i class="fas fa-exclamation-triangle text-3xl text-yellow-600"></i>
+                        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-6">
+                            <i class="fas fa-clock text-4xl text-red-600"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Session Expiring Soon</h3>
-                        <p class="text-gray-600 mb-6">
-                            You will be logged out in <strong id="warning-countdown">2:00</strong> due to inactivity.
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Session Timeout</h3>
+                        <p class="text-gray-700 mb-2 text-lg">
+                            You have been inactive for <strong>10 minutes</strong>.
                         </p>
-                        <p class="text-sm text-gray-500 mb-6">
-                            Move your mouse or press any key to stay logged in.
+                        <p class="text-gray-600 mb-8">
+                            For your security, you will now be logged out and redirected to the homepage.
                         </p>
-                        <button onclick="window.sessionTimeout.dismiss()"
-                                class="w-full bg-crimson-500 hover:bg-crimson-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300">
-                            Stay Logged In
+                        <button onclick="window.sessionTimeout.confirmLogout()"
+                                class="w-full bg-crimson-500 hover:bg-crimson-600 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Confirm Logout
                         </button>
                     </div>
                 </div>
@@ -110,95 +106,44 @@
             <style>
                 .bg-crimson-500 { background-color: #DC143C; }
                 .bg-crimson-600 { background-color: #b01030; }
-                @keyframes fade-in {
-                    from { opacity: 0; transform: scale(0.95); }
-                    to { opacity: 1; transform: scale(1); }
+                .modal-scale-in {
+                    opacity: 0;
+                    transform: scale(0.9);
+                    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
                 }
-                .animate-fade-in {
-                    animation: fade-in 0.3s ease-out;
+                #inactivity-confirmation-modal .modal-scale-in {
+                    opacity: 1;
+                    transform: scale(1);
                 }
             </style>
         `;
 
         document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-        // Start countdown
-        startWarningCountdown();
-    }
-
-    // Hide warning modal
-    function hideWarning() {
-        const modal = document.getElementById('inactivity-warning-modal');
-        if (modal) {
-            modal.remove();
-        }
-        warningShown = false;
-        console.log('Session Timeout: Warning dismissed');
-    }
-
-    // Start countdown in warning modal
-    function startWarningCountdown() {
-        const countdownElement = document.getElementById('warning-countdown');
-        if (!countdownElement) return;
-
-        let remainingSeconds = 120; // 2 minutes
-
-        const countdownInterval = setInterval(() => {
-            remainingSeconds--;
-
-            if (remainingSeconds <= 0 || !warningShown) {
-                clearInterval(countdownInterval);
-                return;
+        // Trigger animation
+        setTimeout(() => {
+            const modal = document.querySelector('#inactivity-confirmation-modal .modal-scale-in');
+            if (modal) {
+                modal.style.opacity = '1';
+                modal.style.transform = 'scale(1)';
             }
-
-            const minutes = Math.floor(remainingSeconds / 60);
-            const seconds = remainingSeconds % 60;
-            countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }, 1000);
-    }
-
-    // Logout user due to inactivity
-    function logoutDueToInactivity() {
-        console.log('Session Timeout: User inactive for 10 minutes - logging out');
+        }, 10);
 
         // Stop session check
         if (sessionCheckInterval) {
             clearInterval(sessionCheckInterval);
         }
-
-        // Show loading message
-        showLogoutMessage();
-
-        // Perform logout
-        setTimeout(() => {
-            // Clear session storage
-            sessionStorage.clear();
-
-            // Redirect to login with timeout message
-            window.location.href = '/Login?timeout=true';
-        }, 1000);
     }
 
-    // Show logout message
-    function showLogoutMessage() {
-        const messageHTML = `
-            <div id="logout-message" class="fixed inset-0 z-[9999] flex items-center justify-center" style="background: rgba(0,0,0,0.7);">
-                <div class="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 p-8 text-center">
-                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                        <i class="fas fa-sign-out-alt text-3xl text-red-600"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Logging Out...</h3>
-                    <p class="text-gray-600">
-                        You have been logged out due to inactivity.
-                    </p>
-                    <div class="mt-4">
-                        <i class="fas fa-spinner fa-spin text-3xl text-gray-400"></i>
-                    </div>
-                </div>
-            </div>
-        `;
+    // Confirm logout and redirect
+    function confirmLogout() {
+        console.log('Session Timeout: Logout confirmed - redirecting to landing page');
 
-        document.body.insertAdjacentHTML('beforeend', messageHTML);
+        // Clear session storage
+        sessionStorage.clear();
+
+        // Redirect to landing page
+        window.location.href = '/Landingpage';
     }
 
     // Check session validity with server
@@ -212,8 +157,8 @@
         .then(response => response.json())
         .then(data => {
             if (!data.isValid) {
-                console.log('Session Timeout: Server session expired - logging out');
-                logoutDueToInactivity();
+                console.log('Session Timeout: Server session expired - showing confirmation');
+                showInactivityConfirmation();
             }
         })
         .catch(error => {
@@ -232,13 +177,9 @@
 
     // Public API
     window.sessionTimeout = {
-        dismiss: function() {
-            resetInactivityTimer();
-            hideWarning();
-        },
+        confirmLogout: confirmLogout,
         manualLogout: function() {
             if (inactivityTimer) clearTimeout(inactivityTimer);
-            if (warningTimer) clearTimeout(warningTimer);
             if (sessionCheckInterval) clearInterval(sessionCheckInterval);
             console.log('Session Timeout: Manual logout initiated');
         }

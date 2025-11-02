@@ -114,10 +114,10 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 sm:gap-3">
-                        <a href="/Login/GoogleLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 border-2 border-gray-200 rounded-lg sm:rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
+                        <button type="button" onclick="showGoogleConfirmation()" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 border-2 border-gray-200 rounded-lg sm:rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
                             <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png" alt="Google" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
                             <span class="text-xs sm:text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
-                        </a>
+                        </button>
 
                         <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
                             <i class="fab fa-facebook-f text-xs sm:text-xs"></i>
@@ -735,6 +735,219 @@
             #togglePassword:hover {
                 color: #4b5563;
             }
+
+        /* Google Credential Conflict Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+        }
+
+        .modal-overlay.hide {
+            opacity: 0;
+        }
+
+        .modal-content-custom {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        .modal-overlay.show .modal-content-custom {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .modal-icon.error {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        .modal-icon.warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
     </style>
+
+    <!-- Google Credential Conflict Modal -->
+    @if (TempData["GoogleCredentialConflict"] != null)
+    {
+        <div class="modal-overlay show" id="googleConflictModal">
+            <div class="modal-content-custom">
+                <div class="text-center">
+                    <div class="modal-icon error">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">
+                        @TempData["GoogleConflictType"]
+                    </h3>
+                    <p class="text-gray-600 mb-6">
+                        @Html.Raw(TempData["GoogleConflictMessage"])
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button onclick="closeConflictModal()"
+                                class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-colors duration-200">
+                            <i class="fas fa-times mr-2"></i>Close
+                        </button>
+                        <a href="mailto:support@lingapdvo.com"
+                           class="px-6 py-3 bg-crimson-500 hover:bg-crimson-600 text-white font-semibold rounded-lg transition-colors duration-200">
+                            <i class="fas fa-envelope mr-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function closeConflictModal() {
+                const modal = document.getElementById('googleConflictModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    modal.classList.add('hide');
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 300);
+                }
+            }
+
+            // Close modal on escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeConflictModal();
+                }
+            });
+
+            // Close modal on overlay click
+            document.getElementById('googleConflictModal')?.addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeConflictModal();
+                }
+            });
+        </script>
+    }
+
+    <!-- Google Sign-In Confirmation Modal -->
+    <div class="modal-overlay" id="googleConfirmationModal" style="display: none;">
+        <div class="modal-content-custom">
+            <div class="text-center">
+                <div class="modal-icon warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">
+                    Important: Google Account Name Verification
+                </h3>
+                <div class="text-left mb-6 space-y-3">
+                    <p class="text-gray-700 font-semibold">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                        Before proceeding, please confirm:
+                    </p>
+                    <ul class="list-none space-y-2 text-gray-600 text-sm">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                            <span>The name in your Google account must be your <strong>real, legal name</strong></span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-id-card text-blue-500 mr-2 mt-1"></i>
+                            <span>Your name will be <strong>verified against a valid ID</strong> during Account Verification</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times-circle text-red-500 mr-2 mt-1"></i>
+                            <span>You <strong>cannot complete verification</strong> if your Google name doesn't match your valid ID</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-ban text-red-500 mr-2 mt-1"></i>
+                            <span>Accounts with fake or invalid names may be <strong>suspended</strong></span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="closeGoogleConfirmation()"
+                            class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-colors duration-200">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </button>
+                    <button onclick="proceedToGoogle()"
+                            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                        <i class="fas fa-check mr-2"></i>I Understand, Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showGoogleConfirmation() {
+            const modal = document.getElementById('googleConfirmationModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                // Trigger reflow to ensure transition works
+                modal.offsetHeight;
+                modal.classList.add('show');
+            }
+        }
+
+        function closeGoogleConfirmation() {
+            const modal = document.getElementById('googleConfirmationModal');
+            if (modal) {
+                modal.classList.remove('show');
+                modal.classList.add('hide');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    modal.classList.remove('hide');
+                }, 300);
+            }
+        }
+
+        function proceedToGoogle() {
+            // Redirect to Google Sign-In
+            window.location.href = '/Login/GoogleLogin';
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('googleConfirmationModal');
+                if (modal && modal.style.display === 'flex') {
+                    closeGoogleConfirmation();
+                }
+            }
+        });
+
+        // Close modal on overlay click
+        document.getElementById('googleConfirmationModal')?.addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeGoogleConfirmation();
+            }
+        });
+    </script>
 </body>
 </html>

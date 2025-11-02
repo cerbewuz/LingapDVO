@@ -99,10 +99,6 @@
             --gray-800: #343a40;
         }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 4f0e8bbc5850ea4245b4d0277c3a1de17bf3ae52
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: #f5f7fb;
@@ -118,81 +114,16 @@
             flex-wrap: wrap;
         }
 
-        /* Sidebar */
-        .sidebar {
-            width: clamp(200px, 260px, 100%);
-            min-width: 200px;
-            background: linear-gradient(180deg, var(--dark) 0%, #2d2d44 100%);
-            color: white;
-            padding: clamp(1rem, 1.5rem, 2rem) 0;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
+        /* Sidebar - Handled by sidebar.js */
 
-        .sidebar-header {
-            padding: 0 1.5rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-title {
-            display: flex;
-            align-items: center;
-            font-weight: 700;
-            font-size: clamp(1.1rem, 1.4rem, 1.6rem);
-            color: white;
-        }
-
-            .sidebar-title i {
-                color: var(--lingap-red);
-                margin-right: clamp(0.5rem, 0.75rem, 1rem);
-                font-size: clamp(1.2rem, 1.6rem, 1.8rem);
-            }
-
-        .sidebar-nav {
-            list-style: none;
-            padding: 0;
-        }
-
-            .sidebar-nav li {
-                margin-bottom: 0.5rem;
-            }
-
-            .sidebar-nav a {
-                display: flex;
-                align-items: center;
-                color: rgba(255, 255, 255, 0.8);
-                text-decoration: none;
-                padding: clamp(0.65rem, 0.85rem, 1rem) clamp(1rem, 1.5rem, 1.75rem);
-                border-radius: 0.5rem;
-                transition: all 0.2s ease;
-                font-weight: 500;
-                font-size: clamp(0.85rem, 1rem, 1.1rem);
-            }
-
-                .sidebar-nav a:hover, .sidebar-nav a.active {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: white;
-                }
-
-            .sidebar-nav i {
-                margin-right: clamp(0.5rem, 0.75rem, 1rem);
-                font-size: clamp(1rem, 1.2rem, 1.3rem);
-            }
-
-        /* Main Content */
+        /* Main Content*/
         .main-content {
             flex: 1;
             padding: clamp(0.75rem, 1.5rem, 2rem);
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            margin-left: clamp(200px, 260px, 280px);
+            margin-left: clamp(0px, calc((100vw - 768px) * 999), 260px);
+            padding-top: clamp(4rem, calc((100vw - 768px) * 999), 0.75rem);
             transition: margin-left 0.3s ease;
             min-width: 0;
         }
@@ -208,6 +139,56 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
+        }
+
+        /* Priority Notifications in Header */
+        .priority-notifications {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .priority-alert {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .priority-alert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .priority-alert.high {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+            border: 2px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .priority-alert.medium {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+            border: 2px solid rgba(243, 156, 18, 0.3);
+        }
+
+        .priority-count {
+            background: currentColor;
+            color: white;
+            border-radius: 50%;
+            min-width: 1.75rem;
+            height: 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
         }
 
         .header-title h1 {
@@ -268,25 +249,16 @@
 
         .chart-container {
             position: relative;
-<<<<<<< HEAD
-            height: 450px; /* Increased height for better visibility */
-            padding: 1.5rem; /* Increased padding */
-=======
-            height: clamp(300px, 400px, 500px);
-            padding: clamp(0.75rem, 1rem, 1.5rem);
->>>>>>> 4f0e8bbc5850ea4245b4d0277c3a1de17bf3ae52
+            height: 450px;
+            padding: 1.5rem;
         }
 
         .summary-card {
             text-align: center;
-<<<<<<< HEAD
             padding: 1.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
             border: 2px solid transparent;
-=======
-            padding: clamp(1rem, 1.5rem, 2rem);
->>>>>>> 4f0e8bbc5850ea4245b4d0277c3a1de17bf3ae52
         }
 
             .summary-card:hover {
@@ -562,35 +534,8 @@
     </div>
 
     <div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">
-                    <i class="bi bi-heart-pulse"></i>
-                    <span>LingapDVO</span>
-                </div>
-            </div>
-            <ul class="sidebar-nav">
-                <li>
-                    <a asp-route="Analyticsdashboard" class="active">
-                        <i class="bi bi-bar-chart"></i>
-                        <span>Analytics Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a asp-route="Admin">
-                        <i class="bi bi-house-door"></i>
-                        <span>Application Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a asp-controller="Login" asp-action="Logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <!-- Sidebar will be injected here by sidebar.js -->
+        <div id="sidebar-container"></div>
 
         <!-- Main Content -->
         <div class="main-content" id="mainContent">
@@ -605,12 +550,17 @@
                         <p>Click on any status card below to view detailed applications</p>
                     </div>
                 </div>
-                <div class="date-filter">
-                    <input type="date" id="startDate" class="date-input">
-                    <span class="text-muted">to</span>
-                    <input type="date" id="endDate" class="date-input">
-                    <button class="btn-custom btn-primary-custom" onclick="applyDateFilter()">Apply</button>
-                    <button class="btn-custom btn-outline-custom" onclick="resetDateFilter()">Reset</button>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                    <div class="priority-notifications" id="headerPriorityAlerts">
+                        <!-- Priority alerts will be populated by JavaScript -->
+                    </div>
+                    <div class="date-filter">
+                        <input type="date" id="startDate" class="date-input">
+                        <span class="text-muted">to</span>
+                        <input type="date" id="endDate" class="date-input">
+                        <button class="btn-custom btn-primary-custom" onclick="applyDateFilter()">Apply</button>
+                        <button class="btn-custom btn-outline-custom" onclick="resetDateFilter()">Reset</button>
+                    </div>
                 </div>
             </div>
             <div class="row g-3 mb-4" id="summaryCards">
@@ -679,6 +629,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Load sidebar and session timeout scripts -->
+    <script src="~/js/sidebar.js"></script>
+    <script src="~/js/adminsidebar.js"></script>
+    <script src="~/js/session-timeout.js"></script>
+
     <script>
         // Global variables to store chart instances and data
         let typeChart, statusChart, barangayChart;
@@ -845,6 +801,11 @@
                 updateTypeChart('doughnut');
                 updateStatusChart('doughnut');
                 updateBarangayChart();
+
+                // Update priority alerts in header using the AdminSidebar module
+                if (window.AdminSidebar && window.AdminSidebar.updateHeaderPriorityAlerts) {
+                    window.AdminSidebar.updateHeaderPriorityAlerts(filteredData.allApplications || []);
+                }
 
                 showLoading(false);
             }, 500);

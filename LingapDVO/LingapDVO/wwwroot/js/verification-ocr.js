@@ -1418,7 +1418,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const goBackBtn = document.getElementById('goBackBtn');
     if (goBackBtn) {
         goBackBtn.addEventListener('click', function () {
-            window.history.back();
+            window.location.href = '/Homepage';
         });
     }
 
@@ -1497,11 +1497,6 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('=======================================================\n');
     }
 
-    // Get extracted data as labeled key-value pairs for easy validation
-    // USE THIS FUNCTION when you need to pass extracted data for validation or field population
-    // Returns data in format: { 'Label': 'Value', ... }
-    // Example: { 'First Name': 'JETLANCE MARSHALL', 'Gender': 'Male', ... }
-    // This ensures proper matching of labels/indicators with extracted data
     function getExtractedDataLabeled(extractedData) {
         return {
             'ID Number': extractedData.idNumber || '',
@@ -5696,11 +5691,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!nameValidation.matches) {
             console.error('✗ NAME MISMATCH:', nameValidation.reason);
             showNameMismatchModal(
-                extractedData.firstName,
-                extractedData.middleName,
-                extractedData.lastName,
-                extractedData.suffix,
-                nameValidation.reason
+                nameValidation.details ? nameValidation.details.extractedName : `${extractedData.lastName}, ${extractedData.firstName} ${extractedData.middleName} ${extractedData.suffix}`.trim(),
+                nameValidation.details ? nameValidation.details.registeredName : `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName} ${registeredSuffix || ''}`.trim(),
+                nameValidation.details || {}
             );
             return;
         }

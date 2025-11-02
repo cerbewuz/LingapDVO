@@ -542,21 +542,8 @@
         }
 
         .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @@keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-
-            100% {
-                opacity: 1;
-            }
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
         }
     </style>
 </head>
@@ -885,6 +872,23 @@
 
             let currentNotifications = [];
             let lastApplicationState = null; // Track previous state to detect changes
+
+            // Pulse animation using JavaScript (replaces @keyframes)
+            const pulseElements = document.querySelectorAll('.pulse');
+            pulseElements.forEach(element => {
+                let opacity = 1;
+                let decreasing = true;
+                setInterval(() => {
+                    if (decreasing) {
+                        opacity -= 0.025;
+                        if (opacity <= 0.5) decreasing = false;
+                    } else {
+                        opacity += 0.025;
+                        if (opacity >= 1) decreasing = true;
+                    }
+                    element.style.opacity = opacity;
+                }, 50); // 50ms * 20 steps = 1000ms per half cycle = 2s full cycle
+            });
 
             // Helper function to check if a date is valid
             function isValidDate(dateString) {

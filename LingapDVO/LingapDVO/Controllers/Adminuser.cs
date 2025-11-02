@@ -4142,7 +4142,96 @@ namespace LingapDVO.Controllers
             }
         }
 
+        // Priorities page with priority system
+        public IActionResult Priorities()
+        {
+            // Prevent caching
+            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "0";
 
+            // Check session
+            if (HttpContext.Session.GetString("IsAdmin") != "true")
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            // Get all data from the database
+            var hospitalBills = context.FillupformHospitalBill
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            var medicalLabForms = context.Medicalandlabform
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            var funeralburialform = context.Funeralburialform
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            // Create and populate the view model
+            var viewModel = new CombinedFormsViewModel
+            {
+                HospitalBills = hospitalBills,
+                MedicalLabForms = medicalLabForms,
+                Funeralburialform = funeralburialform
+            };
+
+            return View(viewModel);
+        }
+
+        // Get notification count for sidebar badge
+        [HttpGet]
+        public IActionResult GetNotificationCount()
+        {
+            try
+            {
+                var now = DateTime.Now;
+
+                // Get all applications
+                var hospitalBills = context.FillupformHospitalBill.ToList();
+                var medicalLabForms = context.Medicalandlabform.ToList();
+                var funeralburialform = context.Funeralburialform.ToList();
+
+                int priorityCount = 0;
+
+                // Count hospital bills with priority (1+ hours since submission)
+                foreach (var bill in hospitalBills)
+                {
+                    var hoursSinceSubmission = (now - bill.CreatedAt).TotalHours;
+                    if (hoursSinceSubmission >= 1)
+                    {
+                        priorityCount++;
+                    }
+                }
+
+                // Count medical lab forms with priority
+                foreach (var form in medicalLabForms)
+                {
+                    var hoursSinceSubmission = (now - form.CreatedAt).TotalHours;
+                    if (hoursSinceSubmission >= 1)
+                    {
+                        priorityCount++;
+                    }
+                }
+
+                // Count funeral forms with priority
+                foreach (var form in funeralburialform)
+                {
+                    var hoursSinceSubmission = (now - form.CreatedAt).TotalHours;
+                    if (hoursSinceSubmission >= 1)
+                    {
+                        priorityCount++;
+                    }
+                }
+
+                return Json(new { count = priorityCount });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { count = 0, error = ex.Message });
+            }
+        }
 
 
     }

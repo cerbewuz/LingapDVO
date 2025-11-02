@@ -1,0 +1,620 @@
+@model LingapDVO.Models.CombinedFormsViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Applications - LingapDVO</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --processing: #9b59b6;
+            --lingap-red: #dc143c;
+            --dark: #1e1e2c;
+            --light: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-800: #343a40;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #f5f7fb;
+            color: var(--gray-800);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Main Content - Responsive without media */
+        .main-content {
+            flex: 1;
+            padding: clamp(1rem, 1.5rem, 2rem);
+            background-color: #f5f7fb;
+            margin-left: clamp(0px, calc((100vw - 768px) * 999), 260px);
+            padding-top: clamp(4rem, calc((100vw - 768px) * 999), 1rem);
+            transition: margin-left 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: clamp(1.5rem, 2rem, 2.5rem);
+            padding-bottom: clamp(0.75rem, 1rem, 1.5rem);
+            border-bottom: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title h1 {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+            font-size: clamp(1.5rem, 2rem, 2.5rem);
+        }
+
+        .page-title p {
+            color: var(--gray-600);
+            margin-bottom: 0;
+            font-size: clamp(0.9rem, 1rem, 1.1rem);
+        }
+
+        /* Priority Stats Cards */
+        .priority-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+            gap: clamp(1rem, 1.5rem, 2rem);
+            margin-bottom: clamp(1.5rem, 2rem, 2.5rem);
+        }
+
+        .priority-card {
+            background: white;
+            border-radius: clamp(0.75rem, 1rem, 1.25rem);
+            padding: clamp(1.25rem, 1.5rem, 2rem);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: clamp(0.75rem, 1rem, 1.5rem);
+            border-left: 4px solid;
+        }
+
+        .priority-card.high {
+            border-left-color: var(--danger);
+        }
+
+        .priority-card.medium {
+            border-left-color: var(--warning);
+        }
+
+        .priority-icon {
+            width: clamp(50px, 60px, 70px);
+            height: clamp(50px, 60px, 70px);
+            border-radius: clamp(10px, 12px, 14px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.5rem, 1.75rem, 2rem);
+            flex-shrink: 0;
+        }
+
+        .priority-card.high .priority-icon {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+
+        .priority-card.medium .priority-icon {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+        }
+
+        .priority-info h3 {
+            font-size: clamp(1.5rem, 1.75rem, 2rem);
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .priority-info p {
+            color: var(--gray-600);
+            margin-bottom: 0;
+            font-weight: 500;
+            font-size: clamp(0.9rem, 1rem, 1.1rem);
+        }
+
+        /* Main Card */
+        .main-card {
+            background: white;
+            border-radius: clamp(0.75rem, 1rem, 1.25rem);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: clamp(1.5rem, 2rem, 2.5rem);
+        }
+
+        .card-header {
+            padding: clamp(1.25rem, 1.5rem, 2rem);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0;
+            font-size: clamp(1.1rem, 1.3rem, 1.5rem);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: clamp(0.5rem, 1rem, 1.5rem);
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: clamp(0.4rem, 0.5rem, 0.6rem) clamp(0.75rem, 1rem, 1.25rem);
+            border-radius: 0.5rem;
+            border: 1px solid var(--gray-200);
+            background: white;
+            color: var(--gray-600);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: clamp(0.85rem, 0.95rem, 1rem);
+        }
+
+        .filter-btn:hover {
+            background: var(--gray-200);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Priorities List */
+        .priorities-list {
+            max-height: clamp(500px, 600px, 700px);
+            overflow-y: auto;
+        }
+
+        .priority-item {
+            padding: clamp(1rem, 1.25rem, 1.5rem);
+            border-bottom: 1px solid var(--gray-200);
+            transition: background 0.2s ease;
+            cursor: pointer;
+        }
+
+        .priority-item:hover {
+            background: rgba(67, 97, 238, 0.03);
+        }
+
+        .priority-item:last-child {
+            border-bottom: none;
+        }
+
+        .priority-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            gap: clamp(0.75rem, 1rem, 1.5rem);
+            flex-wrap: wrap;
+        }
+
+        .priority-title {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: clamp(1rem, 1.05rem, 1.1rem);
+            margin-bottom: 0.25rem;
+        }
+
+        .priority-applicant {
+            color: var(--gray-600);
+            font-size: clamp(0.9rem, 0.95rem, 1rem);
+        }
+
+        .priority-badge {
+            padding: clamp(0.3rem, 0.35rem, 0.4rem) clamp(0.6rem, 0.75rem, 0.9rem);
+            border-radius: 50px;
+            font-size: clamp(0.75rem, 0.8rem, 0.85rem);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .priority-badge.high {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+
+        .priority-badge.medium {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+        }
+
+        .priority-details {
+            display: flex;
+            gap: clamp(1rem, 2rem, 3rem);
+            flex-wrap: wrap;
+            color: var(--gray-600);
+            font-size: clamp(0.85rem, 0.9rem, 0.95rem);
+        }
+
+        .priority-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .priority-detail i {
+            color: var(--gray-500);
+        }
+
+        .time-elapsed {
+            font-weight: 600;
+        }
+
+        .time-elapsed.high {
+            color: var(--danger);
+        }
+
+        .time-elapsed.medium {
+            color: var(--warning);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: clamp(3rem, 4rem, 5rem) 1rem;
+            color: var(--gray-600);
+        }
+
+        .empty-state i {
+            font-size: clamp(3rem, 4rem, 5rem);
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h4 {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: clamp(1.1rem, 1.3rem, 1.5rem);
+        }
+
+        .empty-state p {
+            font-size: clamp(0.9rem, 1rem, 1.1rem);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar will be injected here by sidebar.js -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="page-title">
+                    <h1><i class="bi bi-bell"></i> Priority Applications</h1>
+                    <p>Applications requiring immediate attention</p>
+                </div>
+            </div>
+
+            <!-- Priority Stats -->
+            <div class="priority-stats">
+                <div class="priority-card high">
+                    <div class="priority-icon">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="priority-info">
+                        <h3 id="high-priority-count">0</h3>
+                        <p>High Priority (2+ hours)</p>
+                    </div>
+                </div>
+                <div class="priority-card medium">
+                    <div class="priority-icon">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                    </div>
+                    <div class="priority-info">
+                        <h3 id="medium-priority-count">0</h3>
+                        <p>Medium Priority (1-2 hours)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Priorities Card -->
+            <div class="main-card">
+                <div class="card-header">
+                    <h3 class="card-title">Priority Applications</h3>
+                    <div class="filter-controls">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="high">High Priority</button>
+                        <button class="filter-btn" data-filter="medium">Medium Priority</button>
+                    </div>
+                </div>
+                <div class="priorities-list" id="prioritiesList">
+                    <!-- Priorities will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load sidebar, admin sidebar utilities, and session timeout scripts -->
+    <script src="~/js/sidebar.js"></script>
+    <script src="~/js/adminsidebar.js"></script>
+    <script src="~/js/session-timeout.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get filter from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialFilter = urlParams.get('filter') || 'all';
+
+            // Combine all applications from the model
+            const allApplications = [];
+
+            // Add Hospital Bills
+            @foreach (var f in Model.HospitalBills)
+            {
+                <text>
+                allApplications.push({
+                    type: "Hospital Bill Assistance",
+                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                    status: "@f.Status?.ToLower()",
+                    status2: "@f.Status2?.ToLower()",
+                    status3: "@f.Status3?.ToLower()",
+                    formId: @f.Id,
+                    formType: "hospital"
+                });
+                </text>
+            }
+
+            // Add Medical Lab Forms
+            @foreach (var f in Model.MedicalLabForms)
+            {
+                <text>
+                allApplications.push({
+                    type: "Medical and Laboratory Procedure",
+                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                    status: "@f.Status?.ToLower()",
+                    status2: "@f.Status2?.ToLower()",
+                    status3: "@f.Status3?.ToLower()",
+                    formId: @f.Id,
+                    formType: "medical"
+                });
+                </text>
+            }
+
+            // Add Funeral Forms
+            @foreach (var f in Model.Funeralburialform)
+            {
+                <text>
+                allApplications.push({
+                    type: "Funeral and Burial Assistance",
+                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                    status: "@f.Status?.ToLower()",
+                    status2: "@f.Status2?.ToLower()",
+                    status3: "@f.Status3?.ToLower()",
+                    formId: @f.Id,
+                    formType: "funeral"
+                });
+                </text>
+            }
+
+            // Calculate priority applications
+            const now = new Date();
+            const priorityApplications = allApplications.map(app => {
+                const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
+
+                let priority = null;
+                if (hoursSinceSubmission >= 2) {
+                    priority = 'high';
+                } else if (hoursSinceSubmission >= 1) {
+                    priority = 'medium';
+                }
+
+                return {
+                    ...app,
+                    hoursSinceSubmission,
+                    priority
+                };
+            }).filter(app => app.priority !== null)
+              .sort((a, b) => b.hoursSinceSubmission - a.hoursSinceSubmission);
+
+            // Count priority levels
+            const highPriorityCount = priorityApplications.filter(app => app.priority === 'high').length;
+            const mediumPriorityCount = priorityApplications.filter(app => app.priority === 'medium').length;
+
+            // Update stats
+            document.getElementById('high-priority-count').textContent = highPriorityCount;
+            document.getElementById('medium-priority-count').textContent = mediumPriorityCount;
+
+            // Current filter
+            let currentFilter = initialFilter;
+
+            // Set active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === currentFilter) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Render priorities
+            function renderPriorities() {
+                const prioritiesList = document.getElementById('prioritiesList');
+                let filteredApps = priorityApplications;
+
+                if (currentFilter !== 'all') {
+                    filteredApps = priorityApplications.filter(app => app.priority === currentFilter);
+                }
+
+                if (filteredApps.length === 0) {
+                    prioritiesList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-check-circle"></i>
+                            <h4>No Priority Applications</h4>
+                            <p>All applications are up to date!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                prioritiesList.innerHTML = filteredApps.map(app => {
+                    const hours = Math.floor(app.hoursSinceSubmission);
+                    const minutes = Math.floor((app.hoursSinceSubmission - hours) * 60);
+                    const timeString = `${hours}h ${minutes}m`;
+                    const priorityLabel = app.priority === 'high' ? 'High Priority' : 'Medium Priority';
+                    const url = getApplicationUrl(app);
+
+                    return `
+                        <div class="priority-item" onclick="window.location.href='${url}'">
+                            <div class="priority-header">
+                                <div>
+                                    <div class="priority-title">${app.type}</div>
+                                    <div class="priority-applicant">${app.name}</div>
+                                </div>
+                                <span class="priority-badge ${app.priority}">
+                                    <i class="bi bi-${app.priority === 'high' ? 'exclamation-triangle-fill' : 'exclamation-circle-fill'}"></i>
+                                    ${priorityLabel}
+                                </span>
+                            </div>
+                            <div class="priority-details">
+                                <div class="priority-detail">
+                                    <i class="bi bi-clock"></i>
+                                    <span>Submitted: ${formatDate(app.createdAt)}</span>
+                                </div>
+                                <div class="priority-detail">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    <span class="time-elapsed ${app.priority}">${timeString} elapsed</span>
+                                </div>
+                                <div class="priority-detail">
+                                    <i class="bi bi-tag"></i>
+                                    <span>Status: ${getDisplayStatus(app)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Get display status
+            function getDisplayStatus(app) {
+                if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                    return 'Claimed';
+                } else if (app.status2 && app.status2.trim() !== '') {
+                    const status2 = app.status2.trim().toLowerCase();
+                    if (status2 === 'approved' || status2 === 'disapproved') {
+                        return status2.charAt(0).toUpperCase() + status2.slice(1);
+                    }
+                }
+                return app.status.charAt(0).toUpperCase() + app.status.slice(1);
+            }
+
+            // Get application URL
+            function getApplicationUrl(app) {
+                if (app.formType === "hospital") {
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                        return `/Adminuser/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
+                    } else if (app.status2 === "approved") {
+                        return `/Adminuser/FillupformHospitalBillapprovedstatus/${app.formId}`;
+                    } else if (app.status2 === "disapproved") {
+                        return `/Adminuser/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
+                    } else if (app.status === "processing") {
+                        return `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
+                    } else {
+                        return `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                    }
+                } else if (app.formType === "medical") {
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                        return `/Adminuser/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
+                    } else if (app.status2 === "approved") {
+                        return `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
+                    } else if (app.status2 === "disapproved") {
+                        return `/Adminuser/MedicalandlabformDisapprovedstatus/${app.formId}`;
+                    } else if (app.status === "processing") {
+                        return `/Adminuser/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
+                    } else {
+                        return `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                    }
+                } else if (app.formType === "funeral") {
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                        return `/Adminuser/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
+                    } else if (app.status2 === "approved") {
+                        return `/Adminuser/Funeralburialapprovedstatus/${app.formId}`;
+                    } else if (app.status2 === "disapproved") {
+                        return `/Adminuser/FuneralburialDisapprovedstatus/${app.formId}`;
+                    } else if (app.status === "processing") {
+                        return `/Adminuser/FuneralburialformUpdateprocessingstatus/${app.formId}`;
+                    } else {
+                        return `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                    }
+                }
+                return '#';
+            }
+
+            // Format date
+            function formatDate(date) {
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentFilter = this.dataset.filter;
+
+                    // Update active button
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    renderPriorities();
+                });
+            });
+
+            // Initial render
+            renderPriorities();
+
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                window.location.reload();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

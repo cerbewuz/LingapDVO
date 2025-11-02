@@ -446,7 +446,7 @@ namespace LingapDVO.Controllers
         {
             var properties = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("Homepage", "Dashboard") // always redirect here
+                RedirectUri = Url.Action("Homepage", "Dashboard") 
             };
 
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
@@ -475,14 +475,142 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // ✅ Check if user already exists
-            var existingUser = context.RegisterAcc.FirstOrDefault(u => u.Email == email);
-            RegisterAcc user;
+            // ===========================
+            // 🔐 COMPREHENSIVE CREDENTIAL VALIDATION LOGIC
+            // ===========================
 
-            if (existingUser == null)
+            // ===========================
+            // 📝 Parse Google Name (Flexible Handling)
+            // ===========================
+            string googleFullName = name ?? "";
+            string[] nameParts = googleFullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            // Handle different name formats from Google
+            string googleFirstName = "Google";
+            string googleLastName = "User";
+            string googleMiddleName = "";
+
+            if (nameParts.Length == 1)
+            {
+                // Only one name provided (e.g., "John")
+                googleFirstName = nameParts[0];
+            }
+            else if (nameParts.Length == 2)
+            {
+                // First and Last name (e.g., "John Doe")
+                googleFirstName = nameParts[0];
+                googleLastName = nameParts[1];
+            }
+            else if (nameParts.Length >= 3)
+            {
+                // First, Middle(s), and Last name (e.g., "John Lee Doe")
+                googleFirstName = nameParts[0];
+                googleLastName = nameParts[nameParts.Length - 1];
+                googleMiddleName = string.Join(" ", nameParts.Skip(1).Take(nameParts.Length - 2));
+            }
+
+            // ===========================
+            // 🔍 Check for Existing Users
+            // ===========================
+
+            // Check for existing users with same email
+            var userWithSameEmail = context.RegisterAcc.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
+
+            // Check for existing users with matching name (FLEXIBLE MATCHING)
+            // Match if First + Last names match, regardless of middle name
+            // This handles cases where:
+            // - Registered: "John Lee Cameron Doe" (First: John Lee, Middle: Cameron, Last: Doe)
+            // - Google: "John Lee Doe" (First: John Lee, Last: Doe) ✅ MATCH
+            var usersWithSameName = context.RegisterAcc
+                .Where(u => u.FirstName.ToLower() == googleFirstName.ToLower() &&
+                           u.LastName.ToLower() == googleLastName.ToLower())
+                .ToList();
+
+            // SCENARIO 1: Both email AND full name match - Allow login (existing user)
+            if (userWithSameEmail != null &&
+                usersWithSameName.Any(u => u.Id == userWithSameEmail.Id))
+            {
+                // ✅ Perfect match - existing user logging in
+                var user = userWithSameEmail;
+
+                // Store session data
+                HttpContext.Session.SetString("UserId", user.Id.ToString());
+
+                // ===========================
+                // 🔍 Check if verified
+                // ===========================
+                var verifiedUser = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+
+                if (verifiedUser != null)
+                {
+                    // ✅ Store full verified session
+                    HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
+                    HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
+                    HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
+                    HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
+                    HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
+                    HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
+                    HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
+                    HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
+                    HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
+                    HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
+                    HttpContext.Session.SetString("District", verifiedUser.District ?? "");
+                    HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
+                    HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
+                    HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
+                    HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
+                    HttpContext.Session.SetString("IsVerifiedUser", "true");
+                    HttpContext.Session.SetString("IsRegisteredUser", "true");
+                }
+                else
+                {
+                    // ⚙️ Not verified yet — store basic session info
+                    HttpContext.Session.SetString("Email", user.Email ?? "");
+                    HttpContext.Session.SetString("Username", user.Username ?? "");
+                    HttpContext.Session.SetString("IsRegisteredUser", "true");
+                    HttpContext.Session.SetString("IsVerifiedUser", "false");
+                }
+
+                // ✅ Always store Google metadata
+                HttpContext.Session.SetString("GoogleEmail", email);
+                HttpContext.Session.SetString("GoogleName", googleFullName);
+                HttpContext.Session.SetString("Username", user.Username ?? googleFullName);
+
+                // Redirect based on verification status
+                if (verifiedUser == null)
+                {
+                    return RedirectToAction("Accountverification", "Login");
+                }
+                else
+                {
+                    return RedirectToAction("Homepage", "Dashboard");
+                }
+            }
+
+            // SCENARIO 2: Email exists but different name - Block with modal
+            if (userWithSameEmail != null &&
+                !usersWithSameName.Any(u => u.Id == userWithSameEmail.Id))
+            {
+                TempData["GoogleCredentialConflict"] = "email";
+                TempData["GoogleConflictType"] = "Email Already Taken";
+                TempData["GoogleConflictMessage"] = $"The email <strong>{email}</strong> is already registered with a different name. Please use the account associated with this email or contact support if you believe this is an error.";
+                return RedirectToAction("Login", "Login");
+            }
+
+            // SCENARIO 3: Name exists but different email - Block with modal
+            if (userWithSameEmail == null && usersWithSameName.Any())
+            {
+                TempData["GoogleCredentialConflict"] = "name";
+                TempData["GoogleConflictType"] = "Name Already Taken";
+                TempData["GoogleConflictMessage"] = $"An account with the name <strong>{googleFullName}</strong> already exists with a different email address. Please use a different Google account or contact support if you believe this is an error.";
+                return RedirectToAction("Login", "Login");
+            }
+
+            // SCENARIO 4: No matches - Create new user and redirect to verification
+            if (userWithSameEmail == null && !usersWithSameName.Any())
             {
                 // ===========================
-                // 🔑 Create auto Google user with AES-256 encryption
+                // 🔑 Create new Google user with AES-256 encryption
                 // ===========================
 
                 // ✅ Generate random password (internal use only)
@@ -492,82 +620,38 @@ namespace LingapDVO.Controllers
                 var aesHelper = new AesEncryptionHelper(_configuration);
                 string encryptedPassword = aesHelper.Encrypt(generatedPassword);
 
-                user = new RegisterAcc
+                var newUser = new RegisterAcc
                 {
-                    FirstName = name?.Split(' ').FirstOrDefault() ?? "Google",
-                    MiddleName = "",
-                    LastName = name?.Split(' ').LastOrDefault() ?? "User",
+                    FirstName = googleFirstName,
+                    MiddleName = googleMiddleName,
+                    LastName = googleLastName,
                     Suffix = "",
                     Email = email,
-                    Username = name ?? "GoogleUser",
+                    Username = googleFullName,
                     Password = encryptedPassword,
                     Status = "Active"
                 };
 
-                context.RegisterAcc.Add(user);
+                context.RegisterAcc.Add(newUser);
                 context.SaveChanges();
-            }
-            else
-            {
-                user = existingUser;
-            }
 
-            // ✅ Store user ID in session
-            HttpContext.Session.SetString("UserId", user.Id.ToString());
-
-            // ===========================
-            // 🔍 Check if verified
-            // ===========================
-            var verifiedUser = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
-
-            if (verifiedUser != null)
-            {
-                // ✅ Store full verified session
-                HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
-                HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
-                HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
-                HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
-                HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
-                HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
-                HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
-                HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
-                HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
-                HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
-                HttpContext.Session.SetString("District", verifiedUser.District ?? "");
-                HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
-                HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
-                HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
-                HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
-                HttpContext.Session.SetString("IsVerifiedUser", "true");
-                HttpContext.Session.SetString("IsRegisteredUser", "true");
-            }
-            else
-            {
-                // ⚙️ Not verified yet — store basic session info
-                HttpContext.Session.SetString("Email", user.Email ?? "");
-                HttpContext.Session.SetString("Username", user.Username ?? "");
+                // Store session data for new user
+                HttpContext.Session.SetString("UserId", newUser.Id.ToString());
+                HttpContext.Session.SetString("Username", newUser.Username);
+                HttpContext.Session.SetString("Email", newUser.Email);
+                HttpContext.Session.SetString("GoogleEmail", email);
+                HttpContext.Session.SetString("GoogleName", googleFullName);
                 HttpContext.Session.SetString("IsRegisteredUser", "true");
                 HttpContext.Session.SetString("IsVerifiedUser", "false");
-            }
 
-            // ✅ Always store Google metadata
-            HttpContext.Session.SetString("GoogleEmail", email ?? "");
-            HttpContext.Session.SetString("GoogleName", name ?? "");
-            HttpContext.Session.SetString("Username", name ?? "Google User");
-
-            // ===========================
-            // 🧭 Redirect Logic
-            // ===========================
-            if (verifiedUser == null)
-            {
-                // First-time Google login or unverified user
+                // ✅ Redirect new user to Account Verification
+                TempData["WelcomeMessage"] = $"Welcome, {googleFirstName}! Please complete your account verification to access all features.";
                 return RedirectToAction("Accountverification", "Login");
             }
-            else
-            {
-                // Already verified — straight to homepage
-                return RedirectToAction("Homepage", "Dashboard");
-            }
+
+            // Fallback (should never reach here)
+            TempData["ErrorMessage"] = "An unexpected error occurred during Google sign-in. Please try again.";
+            return RedirectToAction("Login", "Login");
         }
 
         public IActionResult Login(bool timeout = false)
