@@ -407,8 +407,6 @@
                                              id="progress" style="width: 0%"></div>
                                     </div>
                                 </div>
-
-                                <div id="ocr-result" class="hidden p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down"></div>
                             </div>
 
                             <!-- Davao Verification Result -->
@@ -878,6 +876,10 @@
         console.log('Registered User Name from Database:', window.registeredUserName);
     </script>
 
+    <!-- Visual Progress Loader for OCR Processing -->
+    <script src="~/js/visual-progress-loader.js"></script>
+
+    <!-- OCR Processing and ID Verification -->
     <script src="~/js/verification-ocr.js"></script>
 
     <!-- Wrong ID Type Warning Modal -->

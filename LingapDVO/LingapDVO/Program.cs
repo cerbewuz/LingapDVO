@@ -86,10 +86,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
-// ?? Session
+// ?? Session - 10 minute inactivity timeout
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromMinutes(10); // Auto-logout after 10 minutes of inactivity
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 

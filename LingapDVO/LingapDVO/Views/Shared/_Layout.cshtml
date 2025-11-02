@@ -537,6 +537,13 @@
 
     <script src="js/main.js"></script>
 
+    <!-- Session Timeout Detection - Only load for logged-in users -->
+    @if (Context.Session.GetString("Username") != null ||
+         Context.Session.GetString("IsAdmin") != null ||
+         Context.Session.GetString("IsSuperadmin") != null)
+    {
+        <script src="~/js/session-timeout.js"></script>
+    }
 
 </body>
 

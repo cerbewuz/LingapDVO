@@ -570,11 +570,22 @@ namespace LingapDVO.Controllers
             }
         }
 
-        public IActionResult Login()
+        public IActionResult Login(bool timeout = false)
         {
+            // Handle session timeout message
+            if (timeout)
+            {
+                TempData["TimeoutMessage"] = "You have been logged out due to inactivity. If you wish to continue, you can still sign in again.";
+            }
+
             if (TempData["SuccessMessage"] != null)
             {
                 ViewBag.SuccessMessage = TempData["SuccessMessage"];
+            }
+
+            if (TempData["TimeoutMessage"] != null)
+            {
+                ViewBag.TimeoutMessage = TempData["TimeoutMessage"];
             }
 
             Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
@@ -947,6 +958,23 @@ namespace LingapDVO.Controllers
             HttpContext.Session.Clear();
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Login");
+        }
+
+        /// <summary>
+        /// Check if the user's session is still valid
+        /// Used by session-timeout.js to detect server-side session expiration
+        /// </summary>
+        [HttpGet]
+        public IActionResult CheckSession()
+        {
+            // Check if user has an active session
+            bool hasUsername = !string.IsNullOrEmpty(HttpContext.Session.GetString("Username"));
+            bool hasSuperadmin = !string.IsNullOrEmpty(HttpContext.Session.GetString("IsSuperadmin"));
+            bool hasAdmin = !string.IsNullOrEmpty(HttpContext.Session.GetString("IsAdmin"));
+
+            bool isValid = hasUsername || hasSuperadmin || hasAdmin;
+
+            return Json(new { isValid = isValid });
         }
 
         public IActionResult VerifyOTP()

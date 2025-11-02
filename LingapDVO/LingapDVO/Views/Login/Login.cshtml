@@ -25,6 +25,40 @@
             </div>
 
             <form method="post" id="loginForm" class="space-y-3 sm:space-y-4 md:space-y-4 lg:space-y-5">
+                <!-- Session Timeout Message -->
+                @if (ViewBag.TimeoutMessage != null)
+                {
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 mb-4 animate-fade-in">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-clock text-yellow-500 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-yellow-800">
+                                    @ViewBag.TimeoutMessage
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Success Message -->
+                @if (ViewBag.SuccessMessage != null)
+                {
+                    <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-4 animate-fade-in">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-green-800">
+                                    @ViewBag.SuccessMessage
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+
                 <!-- Validation Summary -->
                 <div asp-validation-summary="All"
                      id="validationSummary"

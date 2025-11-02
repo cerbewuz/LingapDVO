@@ -34,4 +34,8 @@
     <Folder Include="wwwroot\UsersImg\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\js\verification-ocr-progress-integration.js" />
+  </ItemGroup>
+
 </Project>

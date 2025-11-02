@@ -4,49 +4,6 @@
 //
 // This script performs OCR (Optical Character Recognition) on Philippine ID cards
 // and extracts data using a sophisticated KEY-VALUE PAIRING system.
-//
-// KEY-VALUE PAIRING ARCHITECTURE:
-// -------------------------------
-// 1. FIELD_LABELS constant (lines ~183-319):
-//    - Defines all possible label variations for each field (English + Filipino/Tagalog)
-//    - Example: firstName: ['FIRST NAME', 'FIRSTNAME', 'GIVEN NAME', 'PANGALAN', 'UNANG PANGALAN']
-//    - Example: gender: ['SEX', 'GENDER', 'KASARIAN', 'SEX/KASARIAN']
-//    - Comprehensive coverage for Philippine National ID, Driver's License, and UMID
-//
-// 2. extractFieldValue() function (lines ~321-420):
-//    - Searches OCR text for labels and extracts associated values
-//    - Removes bilingual label fragments (e.g., "KASARIAN/SEX: M" → extracts "M")
-//    - Handles separators: colons (:), slashes (/), dashes (-)
-//    - Returns: { value: "JOHN DOE", method: "same-line" }
-//
-// 3. Individual extraction functions:
-//    - extractFirstName(), extractGender(), extractLastName(), etc.
-//    - Each uses extractFieldValue() for consistent label-based extraction
-//
-// 4. ID-specific parsers:
-//    - parseDriverLicenseFront(), parsePhilSysFront(), parseUMIDFront()
-//    - Combine individual extraction functions into complete ID parsing
-//
-// 5. Output formatting:
-//    - formatExtractedDataWithLabels() → ["First Name: JOHN", "Gender: Male"]
-//    - getExtractedDataLabeled() → { 'First Name': 'JOHN', 'Gender': 'Male' }
-//    - logExtractedData() → Displays formatted key-value pairs in console
-//
-// EXAMPLE FLOW:
-// -------------
-// OCR Text: "FIRST NAME: JOHN DOE\nSEX: M"
-//   ↓
-// extractFieldValue(lines, 'firstName') → { value: "JOHN DOE", method: "same-line" }
-// extractGender(lines) → "Male"
-//   ↓
-// extractedData = { firstName: "JOHN DOE", sex: "Male", ... }
-//   ↓
-// logExtractedData() outputs:
-//   "First Name: JOHN DOE"
-//   "Gender: Male"
-//
-// This ensures proper matching of labels/indicators with extracted data for
-// easy parsing, validation, and field population.
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -271,16 +228,16 @@ document.addEventListener('DOMContentLoaded', function () {
             'BINANSAGANG PANGALAN'
         ],
         middleName: [
-            // English variations
-            'MIDDLE NAME', 'MIDDLENAME', 'MIDDLE INITIAL', 'MIDDLE', 'M.I.',
+            // English variations - PRIORITIZE FULL LABELS FIRST
+            'MIDDLE NAME', 'MIDDLENAME', 'MIDDLE INITIAL', 'M.I.', 'MID NAME', 'M NAME',
+            // SINGLE WORD LABELS (less specific, checked last)
+            'MIDDLE', 'GITNA',
             // Filipino/Tagalog variations
-            'GITNANG PANGALAN', 'GITNANG APELYIDO', 'GITNANG NGALAN',
+            'GITNANG PANGALAN', 'GITNANG APELYIDO', 'GITNANG NGALAN', 'GITNANG',
             // Common on Philippine IDs
             'PANGALAN (GITNA)', 'PANGALAN/MIDDLE NAME',
-            // National ID specific (PhilSys)
-            'GITNANG', 'MID NAME', 'M NAME',
             // Variations with slash
-            'MIDDLE/GITNANG', 'GITNANG/MIDDLE'
+            'MIDDLE/GITNANG', 'GITNANG/MIDDLE', 'MIDDLE NAME/GITNANG PANGALAN'
         ],
         fullName: [
             // English variations
@@ -741,45 +698,119 @@ document.addEventListener('DOMContentLoaded', function () {
                     // ===================================================================
                     // PRIORITY METHOD 1: Value on NEXT line (Philippine ID standard format)
                     // Most Philippine IDs have: Label on line X, Value on line X+1
+                    // Enhanced: If next line is a label fragment, check the line after that
+                    // CRITICAL: Aggressively reject ANY label words
                     // ===================================================================
-                    if (i + 1 < lines.length) {
-                        const nextLine = lines[i + 1].trim();
-                        console.log(`  [Method 1 - PRIORITY] Checking next line ${i + 2}: "${nextLine}"`);
+                    const singleLabelWords = ['FIRST', 'LAST', 'MIDDLE', 'GIVEN', 'SURNAME',
+                                              'NAME', 'APELYIDO', 'PANGALAN', 'GITNANG',
+                                              'UNANG', 'HULING', 'NGALAN', 'APELYEDO',
+                                              'FIRSTNAME', 'LASTNAME', 'MIDDLENAME',
+                                              'GIVENNAME', 'FAMILYNAME', 'FULLNAME'];
 
-                        // Validate: Not a label, contains unusual words (actual data)
-                        const isNextLineLabel = isExtractedTextALabel(nextLine);
-                        const hasUnusualWords = containsUnusualWords(nextLine);
+                    // Check up to 5 lines after the label to find the actual value
+                    for (let offset = 1; offset <= 5 && (i + offset) < lines.length; offset++) {
+                        const candidateLine = lines[i + offset].trim();
+                        console.log(`  [Method 1] Checking line ${i + offset + 1} (offset +${offset}): "${candidateLine}"`);
 
-                        if (!isNextLineLabel && nextLine && nextLine.length > 1) {
-                            console.log(`  ✓✓✓ VALUE FOUND on next line (Philippine ID format): "${nextLine}"`);
-                            return { value: nextLine, method: 'next-line', label: label };
-                        } else {
-                            console.log(`  ✗ Next line invalid (isLabel: ${isNextLineLabel}, hasData: ${hasUnusualWords})`);
+                        // Skip empty lines
+                        if (!candidateLine || candidateLine.length === 0) {
+                            console.log(`    ⊘ Empty line, skipping`);
+                            continue;
                         }
-                    } else {
-                        console.log(`  [Method 1] No next line available`);
+
+                        // CRITICAL CHECK 1: Reject exact label word matches
+                        const candidateUpper = candidateLine.toUpperCase().trim();
+                        const isSingleLabelWord = singleLabelWords.includes(candidateUpper);
+
+                        if (isSingleLabelWord) {
+                            console.log(`    ❌ REJECTED: "${candidateLine}" is an exact label word match`);
+                            console.log(`    → This is a LABEL, not data - skipping to next line`);
+                            continue; // Skip this line and check the next one
+                        }
+
+                        // CRITICAL CHECK 2: Reject if line contains ONLY label words
+                        const candidateWords = candidateLine.split(/\s+/);
+                        const allWordsAreLabels = candidateWords.every(word => {
+                            const upperWord = word.toUpperCase().trim();
+                            return singleLabelWords.includes(upperWord);
+                        });
+
+                        if (allWordsAreLabels) {
+                            console.log(`    ❌ REJECTED: "${candidateLine}" contains only label words`);
+                            console.log(`    → All words are labels - skipping to next line`);
+                            continue;
+                        }
+
+                        // CRITICAL CHECK 3: Validate not a label using main function
+                        const isLineLabel = isExtractedTextALabel(candidateLine);
+
+                        if (isLineLabel) {
+                            console.log(`    ✗ "${candidateLine}" is a label (isExtractedTextALabel)`);
+                            console.log(`    → Hit another field label, stopping Method 1 search`);
+                            break;
+                        }
+
+                        // CRITICAL CHECK 4: Minimum length requirement (at least 2 chars, unless single letter initial)
+                        if (candidateLine.length === 1 && !/^[A-Z]$/i.test(candidateLine)) {
+                            console.log(`    ✗ Single character "${candidateLine}" is not a valid letter`);
+                            continue;
+                        }
+
+                        // PASSED ALL CHECKS - This is the actual value
+                        console.log(`    ✓✓✓ VALUE FOUND at line ${i + offset + 1} (${offset} line(s) after label): "${candidateLine}"`);
+                        console.log(`    → Passed all validation checks - this is real data, not a label`);
+                        return { value: candidateLine, method: 'next-line', label: label };
                     }
 
+                    console.log(`  [Method 1] No valid value found in next 5 lines`);
+
+
                     // ===================================================================
-                    // METHOD 2: Value on FOLLOWING line (skip empty lines)
-                    // Some IDs have empty line between label and value
+                    // METHOD 2: Value on FOLLOWING line (extended search)
+                    // Fallback method: Check 6-10 lines after the label
+                    // This catches cases where there are multiple empty/label lines
+                    // CRITICAL: Same aggressive label rejection as Method 1
                     // ===================================================================
-                    console.log(`  [Method 2] Trying following lines (2-3 lines ahead)...`);
-                    for (let j = i + 2; j < Math.min(i + 4, lines.length); j++) {
+                    console.log(`  [Method 2] Extended search (6-10 lines ahead)...`);
+                    for (let j = i + 6; j < Math.min(i + 11, lines.length); j++) {
                         const followingLine = lines[j].trim();
                         console.log(`    Checking line ${j + 1}: "${followingLine}"`);
 
-                        if (followingLine && followingLine.length > 1) {
-                            const isLabel = isExtractedTextALabel(followingLine);
-                            const hasUnusualWords = containsUnusualWords(followingLine);
-
-                            if (!isLabel && hasUnusualWords) {
-                                console.log(`    ✓✓ VALUE FOUND ${j - i} lines after: "${followingLine}"`);
-                                return { value: followingLine, method: 'following-line', label: label };
-                            } else {
-                                console.log(`    ✗ Line invalid (isLabel: ${isLabel}, hasData: ${hasUnusualWords})`);
-                            }
+                        if (!followingLine || followingLine.length === 0) {
+                            continue;
                         }
+
+                        // CRITICAL CHECK 1: Reject exact label words
+                        const followingLineUpper = followingLine.toUpperCase().trim();
+                        const isSingleLabelWord = singleLabelWords.includes(followingLineUpper);
+
+                        if (isSingleLabelWord) {
+                            console.log(`    ❌ REJECTED: "${followingLine}" is a label word`);
+                            continue;
+                        }
+
+                        // CRITICAL CHECK 2: Reject if contains only label words
+                        const followingWords = followingLine.split(/\s+/);
+                        const allWordsAreLabels = followingWords.every(word => {
+                            return singleLabelWords.includes(word.toUpperCase().trim());
+                        });
+
+                        if (allWordsAreLabels) {
+                            console.log(`    ❌ REJECTED: "${followingLine}" contains only label words`);
+                            continue;
+                        }
+
+                        // CRITICAL CHECK 3: Not a label
+                        const isLabel = isExtractedTextALabel(followingLine);
+
+                        if (isLabel) {
+                            console.log(`    ✗ "${followingLine}" is a label, skipping`);
+                            continue;
+                        }
+
+                        // PASSED CHECKS
+                        console.log(`    ✓✓ VALUE FOUND ${j - i} lines after: "${followingLine}"`);
+                        return { value: followingLine, method: 'following-line', label: label };
                     }
 
                     // ===================================================================
@@ -1378,7 +1409,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
 
     // Allowed ID types - STRICT VALIDATION
-    const ALLOWED_ID_TYPES = ['phil-id', 'driver-license', 'umid'];
+    const ALLOWED_ID_TYPES = ['phil-id', 'driver-license', 'umid', 'sss-id'];
 
     // ID type display element
     const idTypeDisplay = document.getElementById('id-type-display');
@@ -1519,29 +1550,29 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedValue = this.value;
 
         // Enable OCR for all supported ID types OR when empty (for auto-detection)
-        if (!selectedValue || selectedValue === 'phil-id' || selectedValue === 'driver-license' || selectedValue === 'umid') {
+        if (!selectedValue || selectedValue === 'phil-id' || selectedValue === 'driver-license' || selectedValue === 'umid' || selectedValue === 'sss-id') {
             ocrEnabled = true;
-            uploadFront.classList.remove('disabled');
-            uploadBack.classList.remove('disabled');
-            documentWarning.classList.add('hidden');
+            if (uploadFront) uploadFront.classList.remove('disabled');
+            if (uploadBack) uploadBack.classList.remove('disabled');
+            if (documentWarning) documentWarning.classList.add('hidden');
 
             if (!selectedValue) {
-                status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Upload your ID - we\'ll detect the type automatically';
+                if (status) status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Upload your ID - we\'ll detect the type automatically';
             } else {
-                status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>You can now upload ID images';
+                if (status) status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>You can now upload ID images';
             }
 
             // Show Davao verification for all ID types
-            davaoVerification.classList.add('hidden');
+            if (davaoVerification) davaoVerification.classList.add('hidden');
             enableFormFields();
         } else {
             ocrEnabled = false;
-            uploadFront.classList.add('disabled');
-            uploadBack.classList.add('disabled');
-            documentWarning.classList.remove('hidden');
-            status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>OCR not available for selected document type';
-            resultBox.classList.add('hidden');
-            davaoVerification.classList.add('hidden');
+            if (uploadFront) uploadFront.classList.add('disabled');
+            if (uploadBack) uploadBack.classList.add('disabled');
+            if (documentWarning) documentWarning.classList.remove('hidden');
+            if (status) status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>OCR not available for selected document type';
+            if (resultBox) resultBox.classList.add('hidden');
+            if (davaoVerification) davaoVerification.classList.add('hidden');
             enableFormFields();
         }
     });
@@ -1605,15 +1636,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const reader = new FileReader();
         reader.onload = function (e) {
             // Show image preview immediately and replace upload box content
-            preview.src = e.target.result;
-            preview.classList.remove('hidden');
+            if (preview) {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+            }
 
             // Hide upload instructions and show preview prominently
-            const uploadContent = section.querySelector('.id-upload-content');
-            if (uploadContent) {
-                uploadContent.classList.add('preview-mode');
+            if (section) {
+                const uploadContent = section.querySelector('.id-upload-content');
+                if (uploadContent) {
+                    uploadContent.classList.add('preview-mode');
+                }
+                section.classList.add('active', 'has-image');
             }
-            section.classList.add('active', 'has-image');
 
             // Process with OCR if enabled
             if (ocrEnabled) {
@@ -1888,12 +1923,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return Math.round(similarity);
     }
 
-    // Validate name match with SIMILARITY comparison (prioritizes full name matching)
-    function validateNameMatch(extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix = "") {
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Validate Name Match - TWO-STEP VALIDATION
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // STEP 1: Check individual components (First, Middle, Last, Suffix)
+    // STEP 2: If STEP 1 fails, concatenate full names and compare (for Driver's License & SSS)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function validateNameMatch(extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix = "", idType = "") {
         // Normalize names for comparison
         const normalizeForComparison = (name) => {
             if (!name) return "";
-            return name.trim().toUpperCase().replace(/[^A-Z]/g, '');
+            return name.trim().toUpperCase().replace(/[^A-Z\s]/g, '');
         };
 
         const extractedFirst = normalizeForComparison(extractedFirstName);
@@ -1904,29 +1944,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const regFirst = normalizeForComparison(registeredFirstName);
         const regMiddle = normalizeForComparison(registeredMiddleName);
         const regLast = normalizeForComparison(registeredLastName);
+        const regSuff = normalizeForComparison(registeredSuffix || "");
 
-        console.log('=== NAME MATCHING VALIDATION - DETAILED ===');
-        console.log('Extracted Names (normalized):', { first: extractedFirst, middle: extractedMiddle, last: extractedLast, suffix: extractedSuff });
-        console.log('Registered Names (normalized):', { first: regFirst, middle: regMiddle, last: regLast });
-        console.log('Registered Names (raw):', {
-            firstName: registeredFirstName,
-            middleName: registeredMiddleName,
-            lastName: registeredLastName,
-            suffix: registeredSuffix
-        });
-
-        debugLog('NAME-MATCH-VALIDATION', {
-            extracted: { first: extractedFirst, middle: extractedMiddle, last: extractedLast, suffix: extractedSuff },
-            registered: { first: regFirst, middle: regMiddle, last: regLast }
-        });
+        console.log('\n═══════════════════════════════════════════════════════');
+        console.log('       NAME MATCHING VALIDATION (TWO-STEP)');
+        console.log('═══════════════════════════════════════════════════════');
+        console.log(`ID Type: ${idType || 'unknown'}`);
+        console.log('Extracted:', { first: extractedFirstName, middle: extractedMiddleName, last: extractedLastName, suffix: extractedSuffix });
+        console.log('Registered:', { first: registeredFirstName, middle: registeredMiddleName, last: registeredLastName, suffix: registeredSuffix });
+        console.log('');
 
         // CRITICAL: If registered name is empty, this is a configuration error
         if (!regFirst && !regMiddle && !regLast) {
-            console.error('⚠️ CRITICAL: No registered name found in database!');
-            console.error('This means ViewBag.RegisteredFirstName/MiddleName/LastName are empty');
-            console.error('Check if user is logged in and Controller is passing ViewBag correctly');
-
-            // Still block if no registered name - this is suspicious
+            console.error('✗ CRITICAL: No registered name found in database!');
             return {
                 matches: false,
                 reason: 'No registered name found in database. Please contact support.',
@@ -1935,20 +1965,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     firstMatches: false,
                     middleMatches: false,
                     lastMatches: false,
-                    firstSimilarity: 0,
-                    middleSimilarity: 0,
-                    lastSimilarity: 0,
-                    overallSimilarity: 0,
                     extractedName: `${extractedLastName}, ${extractedFirstName} ${extractedMiddleName} ${extractedSuffix}`.trim(),
                     registeredName: 'Not found in database'
                 }
             };
         }
 
-        // Calculate SIMILARITY for each name component (Last → First → Middle → Suffix order)
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 1: Check Individual Components First
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('[STEP 1] Checking individual name components...');
+
+        // Calculate similarity for each component
         const lastSimilarity = calculateSimilarity(extractedLast, regLast);
         const firstSimilarity = calculateSimilarity(extractedFirst, regFirst);
-        let middleSimilarity = 100; // Default to 100 if no middle name to compare
+        let middleSimilarity = 100; // Default to 100 if no middle name
 
         // Middle name: handle initials vs full names
         if (regMiddle && extractedMiddle) {
@@ -1971,72 +2002,142 @@ document.addEventListener('DOMContentLoaded', function () {
             middleSimilarity = 85; // One missing is acceptable
         }
 
-        // Determine if names match based on similarity threshold
+        // Suffix matching (OPTIONAL - no suffix is always acceptable)
+        let suffixMatches = true; // Default to true (suffix is optional)
+        if (extractedSuff && regSuff) {
+            // Only check if both have suffix
+            suffixMatches = extractedSuff === regSuff;
+        }
+        // If one has suffix and other doesn't, still acceptable (suffixMatches = true)
+
         const SIMILARITY_THRESHOLD = 80; // 80% similarity required
 
         const lastMatches = lastSimilarity >= SIMILARITY_THRESHOLD;
         const firstMatches = firstSimilarity >= SIMILARITY_THRESHOLD;
         const middleMatches = middleSimilarity >= SIMILARITY_THRESHOLD;
 
-        // Calculate overall similarity (weighted: Last name is most important)
-        const overallSimilarity = Math.round((lastSimilarity * 0.4 + firstSimilarity * 0.4 + middleSimilarity * 0.2));
+        console.log('  Component Similarity:');
+        console.log(`    First Name : ${firstSimilarity}% ${firstMatches ? '✓' : '✗'}`);
+        console.log(`    Middle Name: ${middleSimilarity}% ${middleMatches ? '✓' : '✗'}`);
+        console.log(`    Last Name  : ${lastSimilarity}% ${lastMatches ? '✓' : '✗'}`);
+        console.log(`    Suffix     : ${extractedSuff || regSuff ? (suffixMatches ? 'Match ✓' : 'Different') : 'N/A (Optional)'}`);
 
-        // Log name similarity scores to console for debugging
-        console.log('Name Matching Validation:', {
-            extractedName: `${extractedLastName}, ${extractedFirstName} ${extractedMiddleName}`.trim(),
-            registeredName: `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName}`.trim(),
-            similarity: {
-                lastName: `${lastSimilarity}%`,
-                firstName: `${firstSimilarity}%`,
-                middleName: `${middleSimilarity}%`,
-                overall: `${overallSimilarity}%`
-            },
-            threshold: `${SIMILARITY_THRESHOLD}%`,
-            matches: lastMatches && firstMatches && middleMatches
-        });
+        // Check if all REQUIRED components match (suffix is optional, not checked)
+        const allComponentsMatch = lastMatches && firstMatches && middleMatches;
 
-        debugLog('NAME-SIMILARITY-SCORES', {
-            last: `${lastSimilarity}% (${extractedLast} vs ${regLast})`,
-            first: `${firstSimilarity}% (${extractedFirst} vs ${regFirst})`,
-            middle: `${middleSimilarity}% (${extractedMiddle} vs ${regMiddle})`,
-            overall: `${overallSimilarity}%`
-        });
-
-        // All critical components must match
-        const allMatch = lastMatches && firstMatches && middleMatches;
-
-        if (!allMatch) {
-            let reason = 'Name mismatch: ';
-            const issues = [];
-
-            if (!lastMatches) issues.push(`Last name (${lastSimilarity}% similar)`);
-            if (!firstMatches) issues.push(`First name (${firstSimilarity}% similar)`);
-            if (!middleMatches) issues.push(`Middle name (${middleSimilarity}% similar)`);
-
-            reason += issues.join(', ');
+        if (allComponentsMatch) {
+            const overallSimilarity = Math.round((lastSimilarity * 0.4 + firstSimilarity * 0.4 + middleSimilarity * 0.2));
+            console.log(`✓ STEP 1 PASSED: All components match (${overallSimilarity}% similarity)`);
+            console.log('═══════════════════════════════════════════════════════\n');
 
             return {
-                matches: false,
-                reason: reason.trim(),
-                confidence: overallSimilarity,
-                details: {
-                    firstMatches,
-                    middleMatches,
-                    lastMatches,
-                    firstSimilarity,
-                    middleSimilarity,
-                    lastSimilarity,
-                    overallSimilarity,
-                    extractedName: `${extractedLastName}, ${extractedFirstName} ${extractedMiddleName} ${extractedSuffix}`.trim(),
-                    registeredName: `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName}`.trim()
-                }
+                matches: true,
+                reason: `Names match - Component validation (${overallSimilarity}% similarity)`,
+                confidence: overallSimilarity
             };
         }
 
+        console.log('✗ STEP 1 FAILED: Individual components do not match');
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 2: Full Name Comparison (Driver's License & SSS ID Priority)
+        // ═══════════════════════════════════════════════════════════════════════
+        const usesFullNameComparison = idType === 'driver-license' || idType === 'sss-id';
+
+        if (usesFullNameComparison) {
+            console.log('\n[STEP 2] Full name comparison (Driver\'s License / SSS ID)...');
+
+            // Concatenate full names (accept different formats)
+            // Format 1: "First Middle Last Suffix"
+            const extractedFullName1 = `${extractedFirst} ${extractedMiddle} ${extractedLast} ${extractedSuff}`.replace(/\s+/g, ' ').trim();
+            const registeredFullName1 = `${regFirst} ${regMiddle} ${regLast} ${regSuff}`.replace(/\s+/g, ' ').trim();
+
+            // Format 2: "Last First Middle Suffix"
+            const extractedFullName2 = `${extractedLast} ${extractedFirst} ${extractedMiddle} ${extractedSuff}`.replace(/\s+/g, ' ').trim();
+            const registeredFullName2 = `${regLast} ${regFirst} ${regMiddle} ${regSuff}`.replace(/\s+/g, ' ').trim();
+
+            // Format 3: "First Last" (no middle)
+            const extractedFullName3 = `${extractedFirst} ${extractedLast}`.replace(/\s+/g, ' ').trim();
+            const registeredFullName3 = `${regFirst} ${regLast}`.replace(/\s+/g, ' ').trim();
+
+            console.log('  Extracted formats:');
+            console.log(`    Format 1: "${extractedFullName1}"`);
+            console.log(`    Format 2: "${extractedFullName2}"`);
+            console.log(`    Format 3: "${extractedFullName3}"`);
+            console.log('  Registered formats:');
+            console.log(`    Format 1: "${registeredFullName1}"`);
+            console.log(`    Format 2: "${registeredFullName2}"`);
+            console.log(`    Format 3: "${registeredFullName3}"`);
+
+            // Check all format combinations
+            const fullNameSimilarity1 = calculateSimilarity(extractedFullName1, registeredFullName1);
+            const fullNameSimilarity2 = calculateSimilarity(extractedFullName2, registeredFullName2);
+            const fullNameSimilarity3 = calculateSimilarity(extractedFullName1, registeredFullName2);
+            const fullNameSimilarity4 = calculateSimilarity(extractedFullName2, registeredFullName1);
+            const fullNameSimilarity5 = calculateSimilarity(extractedFullName3, registeredFullName3);
+
+            const maxFullNameSimilarity = Math.max(
+                fullNameSimilarity1,
+                fullNameSimilarity2,
+                fullNameSimilarity3,
+                fullNameSimilarity4,
+                fullNameSimilarity5
+            );
+
+            console.log(`  Format similarities: ${fullNameSimilarity1}%, ${fullNameSimilarity2}%, ${fullNameSimilarity3}%, ${fullNameSimilarity4}%, ${fullNameSimilarity5}%`);
+            console.log(`  Max similarity: ${maxFullNameSimilarity}%`);
+
+            if (maxFullNameSimilarity >= SIMILARITY_THRESHOLD) {
+                console.log(`✓ STEP 2 PASSED: Full name match (${maxFullNameSimilarity}% similarity)`);
+                console.log('═══════════════════════════════════════════════════════\n');
+
+                return {
+                    matches: true,
+                    reason: `Names match - Full name comparison (${maxFullNameSimilarity}% similarity)`,
+                    confidence: maxFullNameSimilarity
+                };
+            }
+
+            console.log(`✗ STEP 2 FAILED: Full name similarity too low (${maxFullNameSimilarity}%)`);
+        } else {
+            console.log('\n[STEP 2] Skipped - Full name comparison not applicable for this ID type');
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FINAL RESULT: Name mismatch
+        // ═══════════════════════════════════════════════════════════════════════
+        const overallSimilarity = Math.round((lastSimilarity * 0.4 + firstSimilarity * 0.4 + middleSimilarity * 0.2));
+
+        console.log('\n✗ VALIDATION FAILED: Name does not match');
+        console.log(`  Overall component similarity: ${overallSimilarity}%`);
+        console.log('═══════════════════════════════════════════════════════\n');
+
+        let reason = 'Name mismatch: ';
+        const issues = [];
+
+        if (!lastMatches) issues.push(`Last name (${lastSimilarity}%)`);
+        if (!firstMatches) issues.push(`First name (${firstSimilarity}%)`);
+        if (!middleMatches) issues.push(`Middle name (${middleSimilarity}%)`);
+        // Suffix is optional, don't report as issue
+
+        reason += issues.join(', ');
+
         return {
-            matches: true,
-            reason: `Names match (${overallSimilarity}% similarity)`,
-            confidence: overallSimilarity
+            matches: false,
+            reason: reason.trim(),
+            confidence: overallSimilarity,
+            details: {
+                firstMatches,
+                middleMatches,
+                lastMatches,
+                suffixMatches,
+                firstSimilarity,
+                middleSimilarity,
+                lastSimilarity,
+                overallSimilarity,
+                extractedName: `${extractedLastName}, ${extractedFirstName} ${extractedMiddleName} ${extractedSuffix}`.trim(),
+                registeredName: `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName} ${registeredSuffix || ''}`.trim()
+            }
         };
     }
 
@@ -2145,7 +2246,12 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(result => {
                 clearInterval(progressInterval);
-                progress.style.width = '100%';
+                if (progress) progress.style.width = '100%';
+
+                // Set status to complete
+                if (status) {
+                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600"></i>OCR processing complete';
+                }
 
                 if (result.OCRExitCode !== 1 || !result.ParsedResults || result.ParsedResults.length === 0) {
                     throw new Error(result.ErrorMessage || 'OCR processing failed');
@@ -2217,8 +2323,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     errorMessage += '4. You are using one of these ACCEPTED IDs ONLY:\n';
                     errorMessage += '   • Philippine National ID (PhilSys)\n';
                     errorMessage += '   • Driver\'s License (LTO)\n';
-                    errorMessage += '   • UMID (Unified Multi-Purpose ID)\n\n';
-                    errorMessage += '   ❌ NOT ACCEPTED: SSS ID, PhilHealth, Senior Citizen, PWD, Postal ID, etc.\n\n';
+                    errorMessage += '   • UMID (Unified Multi-Purpose ID)\n';
+                    errorMessage += '   • SSS ID (Social Security System)\n\n';
+                    errorMessage += '   ❌ NOT ACCEPTED: PhilHealth, Senior Citizen, PWD, Postal ID, etc.\n\n';
                     errorMessage += 'Tips:\n';
                     errorMessage += '• Make sure the ID text is not blurry\n';
                     errorMessage += '• Avoid shadows and glare\n';
@@ -2248,6 +2355,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         parseUMIDFront(cleanedText);
                     } else {
                         parseUMIDBack(cleanedText);
+                    }
+                } else if (idTypeToProcess === "sss-id") {
+                    if (!isBack) {
+                        parseSSSFront(cleanedText);
                     }
                 } else {
                     console.error('✗ VALIDATION FAILED: Unknown ID type');
@@ -2298,7 +2409,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const idTypeNames = {
             'driver-license': 'Driver\'s License',
             'phil-id': 'National ID',
-            'umid': 'UMID'
+            'umid': 'UMID',
+            'sss-id': 'Social Security System'  // Official ID type name
         };
         return idTypeNames[idType] || idType;
     }
@@ -2389,43 +2501,69 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'REJECTED';
         }
 
-        // SSS ID detection (since we removed SSS support)
-        if (upperText.includes('SOCIAL SECURITY SYSTEM') ||
-            upperText.includes('SSS NUMBER') ||
-            upperText.includes('SSS ID') ||
-            (upperText.includes('SSS') && !upperText.includes('GSIS') && !upperText.includes('UMID'))) {
-            console.error('✗ REJECTED: SSS ID is not accepted');
-            showRejectedIdModal('SSS (Social Security System) ID');
-            return 'REJECTED';
-        }
-
+        // ═══════════════════════════════════════════════════════════════════════
         // === METHOD 1: STRONG KEYWORD DETECTION (High confidence) ===
-        // Check for unique, definitive keywords first
+        // ═══════════════════════════════════════════════════════════════════════
+        // Check for unique, definitive keywords first (including Filipino variations)
 
-        // UMID - Most specific keywords
-        if (upperText.includes('UMID') ||
-            upperText.includes('UNIFIED MULTI-PURPOSE') ||
-            upperText.includes('UNIFIED MULTIPURPOSE') ||
-            upperText.includes('UNIFIED ID')) {
-            console.log('✓ UMID detected (Strong keyword match)');
-            return 'umid';
+        // SSS ID detection - ACCEPTED (English + Filipino variations)
+        if (upperText.includes('SOCIAL SECURITY SYSTEM') ||
+            upperText.includes('SSS MEMBER') ||
+            upperText.includes('SSS ID') ||
+            upperText.includes('S.S.S') ||
+            upperText.includes('SISTEMA NG SEGURIDAD SOSYAL') || // Filipino
+            upperText.includes('SEGURIDAD SOSYAL') || // Filipino
+            (upperText.includes('SSS') && !upperText.includes('GSIS') && !upperText.includes('UMID') &&
+             (upperText.includes('NUMBER') || upperText.includes('CARD') || upperText.includes('MEMBER') || upperText.includes('NUMERO')))) {
+            console.log('✓ SSS ID detected (Social Security System)');
+            return 'sss-id';
         }
 
-        // PhilSys/National ID - Unique identifiers
+        // National ID / PhilSys - ACCEPTED (English + Filipino variations)
         if (upperText.includes('PHILSYS') ||
             upperText.includes('PHILIPPINE IDENTIFICATION SYSTEM') ||
             upperText.includes('PHILIPPINE IDENTIFICATION CARD') ||
-            upperText.includes('PCN')) {
-            console.log('✓ National ID detected (PhilSys keyword)');
+            upperText.includes('PHILIPPINE ID') ||
+            upperText.includes('NATIONAL ID') ||
+            upperText.includes('PAMBANSANG PAGKAKAKILANLAN') || // Filipino: "National Identity"
+            upperText.includes('PAMBANSANG ID') || // Filipino: "National ID"
+            upperText.includes('PAMBANSANG PAGKAKILANLAN') || // Alternate spelling
+            upperText.includes('PCN') || // PhilSys Card Number
+            (upperText.includes('PHILIPPINE') && upperText.includes('IDENTIFICATION')) ||
+            (upperText.includes('PAMBANSANG') && upperText.includes('PAGKAKAKILANLAN'))) {
+            console.log('✓ National ID detected (PhilSys / Pambansang Pagkakakilanlan)');
             return 'phil-id';
         }
 
-        // Driver's License - Unique identifiers
+        // UMID - ACCEPTED (English + Filipino variations)
+        if (upperText.includes('UMID') ||
+            upperText.includes('UNIFIED MULTI-PURPOSE ID') ||
+            upperText.includes('UNIFIED MULTIPURPOSE ID') ||
+            upperText.includes('UNIFIED MULTI PURPOSE ID') ||
+            upperText.includes('UNIFIED ID') ||
+            upperText.includes('UMID CARD') ||
+            upperText.includes('UNIFIED MULTIPURPOSE IDENTIFICATION') ||
+            upperText.includes('PINAG-ISANG MULTI-LAYUNING ID') || // Filipino
+            upperText.includes('PINAG ISANG MULTI LAYUNING ID') || // Filipino (no dash)
+            (upperText.includes('UNIFIED') && upperText.includes('MULTIPURPOSE'))) {
+            console.log('✓ UMID detected (Unified Multipurpose ID)');
+            return 'umid';
+        }
+
+        // Driver's License - ACCEPTED (English + Filipino variations)
         if (upperText.includes('LAND TRANSPORTATION OFFICE') ||
+            upperText.includes('DRIVER\'S LICENSE') ||
+            upperText.includes('DRIVERS LICENSE') ||
             upperText.includes('LICENSE NO') ||
             upperText.includes('RESTRICTION CODE') ||
-            (upperText.includes('LTO') && (upperText.includes('LICENSE') || upperText.includes('RESTRICTION')))) {
-            console.log('✓ Driver\'s License detected (LTO keyword)');
+            upperText.includes('LISENSYA SA PAGMAMANEHO') || // Filipino: "Driver's License"
+            upperText.includes('LISENSIYA SA PAGMAMANEHO') || // Alternate spelling
+            upperText.includes('PROFESSIONAL DRIVER') ||
+            upperText.includes('NON-PROFESSIONAL DRIVER') ||
+            upperText.includes('PROPESYONAL NA DRIVER') || // Filipino
+            upperText.includes('DI-PROPESYONAL NA DRIVER') || // Filipino
+            (upperText.includes('LTO') && (upperText.includes('LICENSE') || upperText.includes('RESTRICTION') || upperText.includes('LISENSYA')))) {
+            console.log('✓ Driver\'s License detected (LTO / Lisensya sa Pagmamaneho)');
             return 'driver-license';
         }
 
@@ -2479,13 +2617,18 @@ document.addEventListener('DOMContentLoaded', function () {
             'PHILIPPINE IDENTIFICATION': 5,
             'NATIONAL ID': 5,
             'PHILSYS NUMBER': 5,
+            'PAMBANSANG PAGKAKAKILANLAN': 5, // Filipino
+            'PAMBANSANG PAGKAKILANLAN': 5, // Filipino (alternate)
+            'PAMBANSANG ID': 5, // Filipino
             // Medium weight (3 points)
             'PSA': 3,
             'STATISTICS AUTHORITY': 3,
             'FULL NAME': 3,
+            'PHILSYS': 3,
             // Low weight (1 point)
             'REPUBLIC': 1,
-            'PHILIPPINES': 1
+            'PHILIPPINES': 1,
+            'PILIPINAS': 1 // Filipino
         };
 
         // UMID indicators (weighted)
@@ -2691,17 +2834,19 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('✗ EXTRACTION FAILED: Labels detected as values!');
             console.error('Issues:', dataValidation.issues);
 
-            resultBox.classList.remove('hidden');
-            resultBox.className = "p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700";
-            resultBox.innerHTML = `
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                <strong>Extraction Error:</strong> Cannot read ID data properly.
-                <br><small>The following issues were detected:</small>
-                <ul class="mt-2 ml-4 list-disc">
-                    ${dataValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
-                </ul>
-                <small class="block mt-2">Please ensure the ID image is clear and well-lit, then try again.</small>
-            `;
+            if (resultBox) {
+                resultBox.classList.remove('hidden');
+                resultBox.className = "p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700";
+                resultBox.innerHTML = `
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Extraction Error:</strong> Cannot read ID data properly.
+                    <br><small>The following issues were detected:</small>
+                    <ul class="mt-2 ml-4 list-disc">
+                        ${dataValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                    <small class="block mt-2">Please ensure the ID image is clear and well-lit, then try again.</small>
+                `;
+            }
             return; // STOP - Do not proceed with invalid data
         }
 
@@ -2711,7 +2856,8 @@ document.addEventListener('DOMContentLoaded', function () {
             extractedData.firstName,
             extractedData.middleName,
             extractedData.lastName,
-            extractedData.suffix
+            extractedData.suffix,
+            'driver-license' // Enable two-step validation with full name fallback
         );
 
         if (!nameValidation.matches) {
@@ -2768,6 +2914,186 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         return "";
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Helper: Check if line contains name-like words (not labels)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function containsUnusualWords(line) {
+        if (!line || line.trim().length === 0) return false;
+
+        const upperLine = line.toUpperCase().trim();
+
+        // Reject if contains label keywords
+        const labelKeywords = [
+            'SURNAME', 'GIVEN', 'MIDDLE', 'FIRST', 'LAST', 'NAME',
+            'APELYIDO', 'PANGALAN', 'GITNANG', 'UNANG', 'HULING',
+            'LICENSE', 'DRIVER', 'NUMBER', 'ADDRESS', 'BIRTHDATE',
+            'SEX', 'GENDER', 'NATIONALITY', 'RESTRICTION', 'WEIGHT',
+            'HEIGHT', 'BLOOD', 'AGENCY', 'EXPIRATION', 'REPUBLIC'
+        ];
+
+        // If line contains any label keyword, reject it
+        if (labelKeywords.some(keyword => upperLine.includes(keyword))) {
+            return false;
+        }
+
+        // Reject if contains numbers (likely ID numbers, dates, etc.)
+        if (/\d/.test(line)) {
+            return false;
+        }
+
+        // Must have at least 2 words of 2+ characters
+        const words = line.split(/\s+/).filter(w => w.length >= 2);
+        if (words.length < 2) {
+            return false;
+        }
+
+        // Accept if it looks like a name
+        return true;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Parse Driver's License Full Name into Components
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // DRIVER'S LICENSE NAME FORMAT: "Last name, First name, Middle name, Suffix"
+    //
+    // Common formats found in Philippine Driver's License:
+    // 1. "DELA CRUZ, JUAN MIGUEL JR" (comma-separated - MOST COMMON)
+    // 2. "DELA CRUZ JUAN MIGUEL JR" (space-separated)
+    // 3. "SANTOS, MARIA CLARA" (no middle name)
+    //
+    // Parsing strategy:
+    // - If comma present: Before comma = Last, After comma = First Middle Suffix
+    // - If no comma: Detect compound surnames (DELA CRUZ, SAN JOSE, etc.)
+    //
+    // Returns: { lastName, firstName, middleName, suffix }
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function parseDriverLicenseFullName(fullName) {
+        if (!fullName || fullName.trim().length === 0) {
+            return null;
+        }
+
+        console.log('[PARSING FULL NAME]');
+        console.log(`Input: "${fullName}"`);
+
+        let lastName = "", firstName = "", middleName = "", suffix = "";
+
+        // Clean the full name
+        fullName = fullName.trim();
+
+        // Check for suffix at the end
+        const words = fullName.split(/\s+/);
+        const lastWord = words[words.length - 1].toUpperCase().replace(/\./g, '');
+        const suffixPattern = /^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i;
+
+        let nameWithoutSuffix = fullName;
+        if (suffixPattern.test(lastWord)) {
+            suffix = lastWord;
+            if (suffix === 'JUNIOR') suffix = 'JR';
+            if (suffix === 'SENIOR') suffix = 'SR';
+            // Remove suffix from name
+            nameWithoutSuffix = words.slice(0, -1).join(' ');
+            console.log(`  Suffix detected: "${suffix}"`);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FORMAT 1: Comma-separated (LASTNAME, FIRSTNAME MIDDLENAME)
+        // ═══════════════════════════════════════════════════════════════════════
+        if (nameWithoutSuffix.includes(',')) {
+            console.log('  Format: LASTNAME, FIRSTNAME MIDDLENAME (comma-separated)');
+
+            const parts = nameWithoutSuffix.split(',').map(p => p.trim());
+            if (parts.length === 2) {
+                lastName = parts[0].trim();
+
+                // Parse first and middle from second part
+                const firstMiddle = parts[1].trim().split(/\s+/);
+                if (firstMiddle.length >= 2) {
+                    firstName = firstMiddle[0];
+                    middleName = firstMiddle.slice(1).join(' ');
+                } else if (firstMiddle.length === 1) {
+                    firstName = firstMiddle[0];
+                    middleName = "";
+                }
+
+                console.log(`  ✓ Last Name: "${lastName}"`);
+                console.log(`  ✓ First Name: "${firstName}"`);
+                console.log(`  ✓ Middle Name: "${middleName}"`);
+
+                return {
+                    lastName: cleanName(lastName),
+                    firstName: cleanName(firstName),
+                    middleName: cleanName(middleName),
+                    suffix
+                };
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FORMAT 2 & 3: Space-separated (need to determine order)
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('  Format: Space-separated, detecting structure...');
+
+        const nameWords = nameWithoutSuffix.split(/\s+/).filter(w => w.length > 1);
+        console.log(`  Words: ${nameWords.length} → ${nameWords.join(' ')}`);
+
+        if (nameWords.length >= 3) {
+            // Check if first words form a compound surname (e.g., "DELA CRUZ")
+            const first2Words = nameWords.slice(0, 2);
+            const first3Words = nameWords.slice(0, 3);
+
+            if (isCompoundName(first3Words) && nameWords.length >= 5) {
+                // 3-word compound last name at start
+                lastName = first3Words.join(' ');
+                firstName = nameWords[3];
+                middleName = nameWords.slice(4).join(' ');
+                console.log('  Structure: 3-word compound LAST first');
+            } else if (isCompoundName(first2Words) && nameWords.length >= 4) {
+                // 2-word compound last name at start (most common for Driver's License)
+                // Format: "DELA CRUZ JUAN MIGUEL"
+                lastName = first2Words.join(' ');
+                firstName = nameWords[2];
+                middleName = nameWords.slice(3).join(' ');
+                console.log('  Structure: 2-word compound LAST first');
+            } else {
+                // Simple format: LAST FIRST MIDDLE
+                // or: FIRST MIDDLE LAST (detect based on context)
+
+                // Default: assume LAST FIRST MIDDLE (Driver's License standard)
+                lastName = nameWords[0];
+                firstName = nameWords[1];
+                middleName = nameWords.slice(2).join(' ');
+                console.log('  Structure: Simple LAST FIRST MIDDLE');
+            }
+
+            console.log(`  ✓ Last Name: "${lastName}"`);
+            console.log(`  ✓ First Name: "${firstName}"`);
+            console.log(`  ✓ Middle Name: "${middleName}"`);
+
+            return {
+                lastName: cleanName(lastName),
+                firstName: cleanName(firstName),
+                middleName: cleanName(middleName),
+                suffix
+            };
+        } else if (nameWords.length === 2) {
+            // Only 2 words: LAST FIRST (no middle)
+            lastName = nameWords[0];
+            firstName = nameWords[1];
+            middleName = "";
+            console.log('  Structure: LAST FIRST (no middle)');
+
+            return {
+                lastName: cleanName(lastName),
+                firstName: cleanName(firstName),
+                middleName,
+                suffix
+            };
+        }
+
+        console.log('  ✗ Unable to parse name structure');
+        return null;
     }
 
     // Extract Multi-Line Address
@@ -2861,24 +3187,78 @@ document.addEventListener('DOMContentLoaded', function () {
         return "";
     }
 
-    // Extract Driver's License Name - STRUCTURE-AWARE EXTRACTION
-    // Philippine Driver's License typically has name fields structured as:
-    // - Each name component (Last, First, Middle, Suffix) has its own label
-    // - Value appears on the line immediately after the label
-    // - Some IDs may have multiple values on same line separated by delimiters
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Extract Driver's License Name
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // LOCATION: Below the label "LAST NAME, FIRST NAME, MIDDLE NAME" or similar indicator
+    // FORMAT: "Last name, First name, Middle name, Suffix" (comma-separated)
+    // EXAMPLE: "DELA CRUZ, JUAN MIGUEL JR"
+    // ═══════════════════════════════════════════════════════════════════════════════
     function extractDriverLicenseName(lines, text) {
-        let lastName = "", firstName = "", middleName = "", suffix = "";
-
-        console.log('=== Extracting Driver\'s License Name (Structure-Aware) ===');
-        console.log('Total lines to search:', lines.length);
-        console.log('Strategy: Follow ID structure, check label positioning, validate separation');
+        console.log('\n═══ DRIVER\'S LICENSE NAME EXTRACTION ═══');
+        console.log('Format: Last name, First name, Middle name, Suffix');
+        console.log('Strategy: Find name below label indicator\n');
 
         // Print all lines for debugging
-        console.log('\n=== ALL OCR LINES ===');
+        console.log('All OCR Lines:');
         lines.forEach((line, idx) => {
             console.log(`  Line ${idx + 1}: "${line}"`);
         });
-        console.log('===================\n');
+        console.log('');
+
+        // PRIORITY: Look for name below the label indicator
+        console.log('[METHOD 1] Looking for name below label indicator...');
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim().toUpperCase();
+
+            // Check if this line contains the name label indicator
+            if (line.includes('LAST NAME') || line.includes('FIRST NAME') ||
+                line.includes('SURNAME') || line.includes('APELYIDO') ||
+                (line.includes('LASTNAME') && line.includes('FIRSTNAME'))) {
+
+                console.log(`  ✓ Found label indicator at Line ${i + 1}: "${lines[i]}"`);
+
+                // Name should be in the next line(s)
+                for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+                    const nameLine = lines[j].trim();
+                    const words = nameLine.split(/\s+/).filter(w => w.length > 1);
+
+                    // Skip labels and lines that don't look like names
+                    if (!isExtractedTextALabel(nameLine) && containsUnusualWords(nameLine) && words.length >= 2) {
+                        console.log(`  ✓ Full name found at Line ${j + 1}: "${nameLine}"`);
+
+                        const parsed = parseDriverLicenseFullName(nameLine);
+                        if (parsed) {
+                            console.log(`    Last: "${parsed.lastName}", First: "${parsed.firstName}", Middle: "${parsed.middleName}", Suffix: "${parsed.suffix}"\n`);
+                            return parsed;
+                        }
+                    }
+                }
+            }
+        }
+
+        console.log('  ✗ Name not found below label indicator\n');
+
+        // FALLBACK: Check lines 6, 7, 8 for full name
+        console.log('[METHOD 2] Checking lines 6-8 as fallback...');
+        for (const idx of [5, 6, 7]) {
+            if (idx < lines.length) {
+                const line = lines[idx].trim();
+                const words = line.split(/\s+/).filter(w => w.length > 1);
+
+                if (words.length >= 2 && !isExtractedTextALabel(line) && containsUnusualWords(line)) {
+                    console.log(`  ✓ Full name found at Line ${idx + 1}: "${line}"`);
+
+                    const parsed = parseDriverLicenseFullName(line);
+                    if (parsed) {
+                        console.log(`    Last: "${parsed.lastName}", First: "${parsed.firstName}", Middle: "${parsed.middleName}", Suffix: "${parsed.suffix}"\n`);
+                        return parsed;
+                    }
+                }
+            }
+        }
+
+        console.log('  ✗ Full name not found, using component-based extraction\n');
 
         // Extract Last Name using label
         console.log('\n[1] Extracting Last Name...');
@@ -3054,7 +3434,63 @@ document.addEventListener('DOMContentLoaded', function () {
             middleName = cleanName(rawMiddleName);
             console.log(`🔧 After cleanName(): "${middleName}"`);
 
-            if (!isExtractedTextALabel(middleName) && middleName.length >= 2) {
+            // CRITICAL: Multi-layer validation to prevent label extraction
+            // This is a safety net that MUST catch any label words that slip through
+            const middleNameUpper = middleName.toUpperCase().trim();
+
+            // Layer 1: Explicit label word list (expanded)
+            const explicitLabelRejects = [
+                // English labels
+                'MIDDLE', 'MIDDLENAME', 'MIDDLE NAME', 'M.I.', 'MI', 'M.N.', 'MN',
+                'FIRST', 'FIRSTNAME', 'FIRST NAME', 'F.N.', 'FN',
+                'LAST', 'LASTNAME', 'LAST NAME', 'L.N.', 'LN',
+                'GIVEN', 'GIVENNAME', 'GIVEN NAME',
+                'SURNAME', 'FAMILY', 'FAMILYNAME', 'FAMILY NAME',
+                'NAME', 'NAMES', 'FULLNAME', 'FULL NAME',
+                // Filipino labels
+                'GITNANG', 'GITNANG PANGALAN', 'GITNANG APELYIDO',
+                'UNANG', 'UNANG PANGALAN', 'UNANG NGALAN',
+                'HULING', 'HULING PANGALAN', 'HULING APELYIDO',
+                'PANGALAN', 'APELYIDO', 'NGALAN', 'APELYEDO'
+            ];
+
+            // Layer 2: Partial match detection (if middleName contains ANY label word)
+            const containsLabelWord = explicitLabelRejects.some(label =>
+                middleNameUpper.includes(label) || label.includes(middleNameUpper)
+            );
+
+            // Layer 3: Single letter check (unless it's a valid initial like "A" or "B")
+            const isSingleLetter = middleName.length === 1 && /[A-Z]/i.test(middleName);
+
+            // Layer 4: Check if it's ONLY label words with no actual name data
+            const words = middleName.split(/\s+/);
+            const allWordsAreLabels = words.every(word => {
+                const upperWord = word.toUpperCase().trim();
+                return explicitLabelRejects.includes(upperWord) ||
+                       upperWord === 'NAME' || upperWord === 'PANGALAN' ||
+                       upperWord === 'MIDDLE' || upperWord === 'GITNA';
+            });
+
+            // Layer 5: CRITICAL - Explicitly reject standalone "MIDDLE" or "GITNA"
+            const isStandaloneLabelWord = middleNameUpper === 'MIDDLE' || middleNameUpper === 'GITNA' ||
+                                          middleNameUpper === 'GITNANG' || middleNameUpper === 'MID' ||
+                                          middleNameUpper === 'INITIAL';
+
+            if (explicitLabelRejects.includes(middleNameUpper) || containsLabelWord || allWordsAreLabels || isStandaloneLabelWord) {
+                console.log(`❌ MULTI-LAYER REJECTION: "${middleName}" failed label validation`);
+                console.log(`   → Explicit match: ${explicitLabelRejects.includes(middleNameUpper)}`);
+                console.log(`   → Contains label: ${containsLabelWord}`);
+                console.log(`   → All words are labels: ${allWordsAreLabels}`);
+                console.log(`   → Standalone label word: ${isStandaloneLabelWord}`);
+                console.log(`   → This is a LABEL/INDICATOR, not the actual middle name value`);
+                console.log(`   → Marking as empty - extraction MUST find real value`);
+                middleName = "";
+            } else if (isSingleLetter && !isValidMiddleInitial(middleName)) {
+                console.log(`⚠ WARNING: Single letter "${middleName}" detected`);
+                console.log(`   → This might be valid as a middle initial, keeping it`);
+            }
+
+            if (middleName && middleName !== "" && !isExtractedTextALabel(middleName) && middleName.length >= 1) {
                 // Check for duplication with other names
                 const middleUpper = middleName.toUpperCase();
                 const lastUpper = lastName.toUpperCase();
@@ -3089,6 +3525,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.log(`  ✓ Using first word: "${middleName}"`);
                     console.log('========================================\n');
                 }
+            } else if (middleName === "") {
+                // middleName was explicitly rejected as a label (set to "" above)
+                console.log(`✗ Middle Name was rejected as a label word`);
+                console.log('========================================\n');
             } else {
                 console.log(`✗ Middle Name invalid or is a label: "${middleName}"`);
                 console.log('========================================\n');
@@ -4239,17 +4679,19 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('✗ EXTRACTION FAILED: Labels detected as values!');
             console.error('Issues:', dataValidation.issues);
 
-            resultBox.classList.remove('hidden');
-            resultBox.className = "p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700";
-            resultBox.innerHTML = `
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                <strong>Extraction Error:</strong> Cannot read National ID data properly.
-                <br><small>The following issues were detected:</small>
-                <ul class="mt-2 ml-4 list-disc">
-                    ${dataValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
-                </ul>
-                <small class="block mt-2">Please ensure the ID image is clear and well-lit, then try again.</small>
-            `;
+            if (resultBox) {
+                resultBox.classList.remove('hidden');
+                resultBox.className = "p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700";
+                resultBox.innerHTML = `
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Extraction Error:</strong> Cannot read National ID data properly.
+                    <br><small>The following issues were detected:</small>
+                    <ul class="mt-2 ml-4 list-disc">
+                        ${dataValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                    <small class="block mt-2">Please ensure the ID image is clear and well-lit, then try again.</small>
+                `;
+            }
             return; // STOP - Do not proceed with invalid data
         }
 
@@ -4460,7 +4902,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Show result message
-        if (extractedFields.length > 0) {
+        if (extractedFields.length > 0 && resultBox) {
             resultBox.classList.remove('hidden');
             resultBox.className = "p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down";
             resultBox.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${extractedFields.join(' and ')} extracted from National ID back. Please verify.`;
@@ -4766,17 +5208,19 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('✗ EXTRACTION FAILED: Labels detected as values!');
             console.error('Issues:', dataValidation.issues);
 
-            resultBox.classList.remove('hidden');
-            resultBox.className = "p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700";
-            resultBox.innerHTML = `
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                <strong>Extraction Error:</strong> Cannot read UMID data properly.
-                <br><small>The following issues were detected:</small>
-                <ul class="mt-2 ml-4 list-disc">
-                    ${dataValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
-                </ul>
-                <small class="block mt-2">Please ensure the ID image is clear and well-lit, then try again.</small>
-            `;
+            if (resultBox) {
+                resultBox.classList.remove('hidden');
+                resultBox.className = "p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700";
+                resultBox.innerHTML = `
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Extraction Error:</strong> Cannot read UMID data properly.
+                    <br><small>The following issues were detected:</small>
+                    <ul class="mt-2 ml-4 list-disc">
+                        ${dataValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                    <small class="block mt-2">Please ensure the ID image is clear and well-lit, then try again.</small>
+                `;
+            }
             return; // STOP - Do not proceed with invalid data
         }
 
@@ -4992,9 +5436,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const genderField = document.getElementById('gender') || document.getElementById('sex');
             if (genderField) genderField.value = sex;
 
-            resultBox.classList.remove('hidden');
-            resultBox.className = "p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down";
-            resultBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Gender information extracted from UMID back. Please verify.';
+            if (resultBox) {
+                resultBox.classList.remove('hidden');
+                resultBox.className = "p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down";
+                resultBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Gender information extracted from UMID back. Please verify.';
+            }
         }
     }
 
@@ -5080,6 +5526,478 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log('✗ Gender not detected');
         return "";
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Parse SSS ID Front - COMPLETE NAME EXTRACTION
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // SSS ID EXTRACTION - SIMPLIFIED
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // IMPORTANT DATA TO EXTRACT:
+    // 1. Full name (Format: FIRSTNAME MIDDLENAME LASTNAME SUFFIX)
+    // 2. ID type name: "Social Security System"
+    // 3. SSS Number (Format: 00-0000000-0)
+    //
+    // SSS ID Characteristics:
+    // - NO explicit labels for name components
+    // - Full name appears on one line
+    // - Simple structure, no complex fields
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function parseSSSFront(text) {
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
+        console.log('\n╔═══════════════════════════════════════════════════════╗');
+        console.log('║           SSS ID EXTRACTION (SIMPLIFIED)             ║');
+        console.log('╚═══════════════════════════════════════════════════════╝');
+        console.log('Data to extract:');
+        console.log('  1. Full Name (First Middle Last Suffix)');
+        console.log('  2. ID Type: "Social Security System"');
+        console.log('  3. SSS Number');
+        console.log('');
+        console.log('Total Lines:', lines.length);
+        console.log('All Lines:');
+        lines.forEach((line, index) => {
+            console.log(`  ${index + 1}: "${line}"`);
+        });
+        console.log('═══════════════════════════════════════════════════════\n');
+
+        let extractedData = {
+            idNumber: "",
+            idType: "Social Security System", // Fixed ID type name
+            lastName: "",
+            firstName: "",
+            middleName: "",
+            suffix: "",
+            confidence: {}
+        };
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 1: Extract SSS Number (REQUIRED)
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('[STEP 1] EXTRACTING SSS NUMBER');
+        console.log('Format: 00-0000000-0 (2 digits, 7 digits, 1 digit)');
+
+        for (const line of lines) {
+            // Pattern 1: 00-0000000-0 (with dashes)
+            const sssPattern = /\b\d{2}-\d{7}-\d{1}\b/;
+            let match = line.match(sssPattern);
+
+            if (match) {
+                extractedData.idNumber = match[0];
+                console.log(`✓ SSS Number found: "${extractedData.idNumber}"`);
+                extractedData.confidence.idNumber = 95;
+                break;
+            }
+
+            // Pattern 2: 0000000000 (10 consecutive digits)
+            const sssPattern2 = /\b\d{10}\b/;
+            match = line.match(sssPattern2);
+
+            if (match) {
+                // Format it: 00-0000000-0
+                const num = match[0];
+                extractedData.idNumber = `${num.substring(0,2)}-${num.substring(2,9)}-${num.substring(9)}`;
+                console.log(`✓ SSS Number found and formatted: "${extractedData.idNumber}"`);
+                extractedData.confidence.idNumber = 90;
+                break;
+            }
+        }
+
+        if (extractedData.idNumber) {
+            console.log(`✓ SSS Number: "${extractedData.idNumber}"`);
+        } else {
+            console.log('✗ SSS Number not found');
+        }
+        console.log('');
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 2: Extract Full Name (REQUIRED)
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('[STEP 2] EXTRACTING FULL NAME');
+        console.log('Format: FIRSTNAME MIDDLENAME LASTNAME SUFFIX');
+        console.log('Strategy: Find complete name line, parse structure\n');
+
+        const nameResult = extractSSSFullName(lines);
+        if (nameResult) {
+            extractedData.firstName = nameResult.firstName;
+            extractedData.middleName = nameResult.middleName;
+            extractedData.lastName = nameResult.lastName;
+            extractedData.suffix = nameResult.suffix;
+
+            console.log('✓ NAME EXTRACTION COMPLETE:');
+            console.log(`  First Name : "${extractedData.firstName}"`);
+            console.log(`  Middle Name: "${extractedData.middleName}"`);
+            console.log(`  Last Name  : "${extractedData.lastName}"`);
+            console.log(`  Suffix     : "${extractedData.suffix}"`);
+
+            extractedData.confidence.firstName = 85;
+            extractedData.confidence.lastName = 85;
+            if (extractedData.middleName) extractedData.confidence.middleName = 80;
+        } else {
+            console.log('✗ Name extraction failed');
+        }
+        console.log('');
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 3: ID Type Confirmation
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('[STEP 3] ID TYPE CONFIRMATION');
+        console.log(`✓ ID Type: "${extractedData.idType}"`);
+        console.log('');
+
+        // Calculate overall confidence
+        const confidenceValues = Object.values(extractedData.confidence).filter(v => v > 0);
+        const overallConfidence = confidenceValues.length > 0
+            ? Math.round(confidenceValues.reduce((a, b) => a + b, 0) / confidenceValues.length)
+            : 70; // Default confidence for SSS
+
+        // Log extracted data summary
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('       SSS ID EXTRACTION SUMMARY');
+        console.log('═══════════════════════════════════════════════════════');
+        console.log(`ID Type      : ${extractedData.idType}`);
+        console.log(`SSS Number   : ${extractedData.idNumber || 'Not found'}`);
+        console.log(`Full Name    : ${extractedData.firstName} ${extractedData.middleName} ${extractedData.lastName} ${extractedData.suffix}`.trim());
+        console.log(`Confidence   : ${overallConfidence}%`);
+        console.log('═══════════════════════════════════════════════════════\n');
+
+        // Validate extracted names
+        const dataValidation = validateExtractedNames(extractedData);
+        if (!dataValidation.valid) {
+            console.error('✗ EXTRACTION FAILED: Invalid name data');
+            console.error('Issues:', dataValidation.issues);
+
+            if (resultBox) {
+                resultBox.classList.remove('hidden');
+                resultBox.className = "p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700";
+                resultBox.innerHTML = `
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Extraction Error:</strong> Cannot read SSS ID data properly.
+                    <br><small>Issues detected:</small>
+                    <ul class="mt-2 ml-4 list-disc">
+                        ${dataValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                    <small class="block mt-2">Please ensure the SSS ID image is clear and well-lit.</small>
+                `;
+            }
+            return;
+        }
+
+        // Name matching validation
+        console.log('=== SSS ID NAME MATCHING VALIDATION ===');
+        const nameValidation = validateNameMatch(
+            extractedData.firstName,
+            extractedData.middleName,
+            extractedData.lastName,
+            extractedData.suffix,
+            'sss-id' // Enable two-step validation with full name fallback
+        );
+
+        if (!nameValidation.matches) {
+            console.error('✗ NAME MISMATCH:', nameValidation.reason);
+            showNameMismatchModal(
+                extractedData.firstName,
+                extractedData.middleName,
+                extractedData.lastName,
+                extractedData.suffix,
+                nameValidation.reason
+            );
+            return;
+        }
+
+        console.log('✓ NAME MATCH VALIDATED');
+
+        // Populate form fields
+        updateFormFieldsAdvanced(
+            extractedData.idNumber,
+            extractedData.firstName,
+            extractedData.middleName,
+            extractedData.lastName,
+            "",  // birthdate (not on SSS front)
+            "",  // sex (not on SSS front)
+            "",  // civil status (not on SSS front)
+            extractedData.suffix,
+            "",  // address (not on SSS front)
+            text,
+            'sss-id',
+            overallConfidence
+        );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Extract full name from SSS ID - SIMPLIFIED
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // IMPORTANT: Full name is located BELOW "Social Security System" text
+    // Format: FIRSTNAME MIDDLENAME LASTNAME SUFFIX (no labels, all on one line)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function extractSSSFullName(lines) {
+        console.log('=== SSS Full Name Extraction ===');
+        console.log('Strategy: Find name BELOW "Social Security System" label\n');
+
+        // STEP 1: Find "Social Security System" label first
+        let sssLabelLineIndex = -1;
+        for (let i = 0; i < lines.length; i++) {
+            const upperLine = lines[i].toUpperCase();
+            if (upperLine.includes('SOCIAL SECURITY') || upperLine.includes('SSS')) {
+                sssLabelLineIndex = i;
+                console.log(`  ✓ Found SSS label at Line ${i + 1}: "${lines[i]}"`);
+                break;
+            }
+        }
+
+        // STEP 2: Extract name from lines BELOW the SSS label
+        const startIndex = sssLabelLineIndex >= 0 ? sssLabelLineIndex + 1 : 0;
+        console.log(`  → Searching for name starting from Line ${startIndex + 1}\n`);
+
+        for (let i = startIndex; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const upperLine = line.toUpperCase();
+
+            // Skip label lines
+            if (isExtractedTextALabel(line)) {
+                console.log(`  Line ${i+1}: "${line}" → LABEL, skipping`);
+                continue;
+            }
+
+            // Skip lines with SSS number
+            if (/\d{2}-\d{7}-\d{1}/.test(line) || /\d{10}/.test(line)) {
+                console.log(`  Line ${i+1}: "${line}" → SSS number, skipping`);
+                continue;
+            }
+
+            // Must have at least 2 words
+            const words = line.split(/\s+/).filter(w => w.length > 1);
+            if (words.length < 2) {
+                console.log(`  Line ${i+1}: "${line}" → Too short, skipping`);
+                continue;
+            }
+
+            // Must contain name-like characters
+            if (!/[A-Z]{2,}/.test(upperLine)) {
+                console.log(`  Line ${i+1}: "${line}" → No valid name characters, skipping`);
+                continue;
+            }
+
+            // This looks like the name line
+            console.log(`  ✓ Name found at Line ${i+1}: "${line}"`);
+
+            // Parse: FIRSTNAME MIDDLENAME LASTNAME SUFFIX
+            const parsed = parseSSSNameStructure(words);
+
+            if (parsed && parsed.lastName) {
+                console.log(`    First: "${parsed.firstName}", Middle: "${parsed.middleName}", Last: "${parsed.lastName}", Suffix: "${parsed.suffix}"`);
+                return parsed;
+            }
+        }
+
+        console.log('✗ No valid name line found');
+        return null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Parse SSS Name Structure
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // SSS ID NAME FORMAT: "First name, Middle name, Last name, Suffix"
+    //
+    // IMPORTANT CHARACTERISTICS:
+    // - NO explicit labels/indicators for name components
+    // - All components appear on ONE LINE (space-separated)
+    // - Located BELOW "Social Security System" label
+    //
+    // Format examples:
+    // • "JUAN MIGUEL SANTOS" → First: JUAN, Middle: MIGUEL, Last: SANTOS
+    // • "JUAN MIGUEL DELA CRUZ JR" → First: JUAN, Middle: MIGUEL, Last: DELA CRUZ, Suffix: JR
+    // • "MARIA CLARA JOSE SANTOS" → First: MARIA CLARA (compound), Middle: JOSE, Last: SANTOS
+    //
+    // Components to extract:
+    // 1. First name (may be compound like "MARIA CLARA")
+    // 2. Middle name (single word or initial)
+    // 3. Last name (may be compound like "DELA CRUZ", "SAN JOSE")
+    // 4. Suffix (OPTIONAL - JR, SR, II, III, IV, V - no value if not present)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function parseSSSNameStructure(words) {
+        if (!words || words.length < 2) {
+            console.log('✗ Insufficient words for SSS name parsing (need at least 2)');
+            return null;
+        }
+
+        console.log('\n═══════════════════════════════════════════════════════');
+        console.log('       PARSING SSS NAME STRUCTURE');
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('Input words:', words);
+        console.log('Total words:', words.length);
+        console.log('Format: FIRSTNAME MIDDLENAME LASTNAME SUFFIX');
+        console.log('');
+
+        let firstName = "", middleName = "", lastName = "", suffix = "";
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 1: Check for suffix at the end (OPTIONAL)
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('[STEP 1] Checking for suffix...');
+        const lastWord = words[words.length - 1].toUpperCase().replace(/\./g, '');
+        const suffixPattern = /^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i;
+
+        let workingWords = [...words];
+        if (suffixPattern.test(lastWord)) {
+            suffix = lastWord;
+            // Normalize suffix
+            if (suffix === 'JUNIOR') suffix = 'JR';
+            if (suffix === 'SENIOR') suffix = 'SR';
+            workingWords = words.slice(0, -1);
+            console.log(`✓ Suffix detected: "${suffix}"`);
+            console.log(`  Remaining words after removing suffix: ${workingWords.length}`);
+        } else {
+            console.log(`  No suffix detected (last word: "${lastWord}")`);
+        }
+        console.log('');
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 2: Parse name components (FIRSTNAME MIDDLENAME LASTNAME)
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('[STEP 2] Parsing name components...');
+        console.log(`Words to parse: ${workingWords.length} → ${workingWords.join(' ')}`);
+        console.log('');
+
+        if (workingWords.length === 3) {
+            // ═══════════════════════════════════════════════════════════════════
+            // CASE 1: Exactly 3 words → FIRSTNAME MIDDLENAME LASTNAME
+            // ═══════════════════════════════════════════════════════════════════
+            // Example: "JUAN MIGUEL SANTOS"
+            // → First: JUAN, Middle: MIGUEL, Last: SANTOS
+            firstName = workingWords[0];
+            middleName = workingWords[1];
+            lastName = workingWords[2];
+            console.log('→ CASE 1: Standard 3-word format');
+            console.log(`  First Name  : "${firstName}"`);
+            console.log(`  Middle Name : "${middleName}"`);
+            console.log(`  Last Name   : "${lastName}"`);
+        } else if (workingWords.length === 4) {
+            // ═══════════════════════════════════════════════════════════════════
+            // CASE 2: 4 words → Could be compound first OR compound last
+            // ═══════════════════════════════════════════════════════════════════
+            // Priority 1: Check for compound LAST name (more common in Philippines)
+            // Priority 2: Assume compound FIRST name if no compound last detected
+
+            const last2Words = workingWords.slice(-2);
+            if (isCompoundName(last2Words)) {
+                // Compound last name: FIRSTNAME MIDDLENAME DELA CRUZ
+                // Example: "JUAN MIGUEL DELA CRUZ"
+                // → First: JUAN, Middle: MIGUEL, Last: DELA CRUZ
+                firstName = workingWords[0];
+                middleName = workingWords[1];
+                lastName = last2Words.join(' ');
+                console.log('→ CASE 2A: Compound last name (2 words)');
+                console.log(`  First Name  : "${firstName}"`);
+                console.log(`  Middle Name : "${middleName}"`);
+                console.log(`  Last Name   : "${lastName}" (compound)`);
+            } else {
+                // Compound first name: MARIA CLARA MIDDLENAME LASTNAME
+                // Example: "MARIA CLARA JOSE SANTOS"
+                // → First: MARIA CLARA, Middle: JOSE, Last: SANTOS
+                firstName = workingWords.slice(0, 2).join(' ');
+                middleName = workingWords[2];
+                lastName = workingWords[3];
+                console.log('→ CASE 2B: Compound first name (2 words)');
+                console.log(`  First Name  : "${firstName}" (compound)`);
+                console.log(`  Middle Name : "${middleName}"`);
+                console.log(`  Last Name   : "${lastName}"`);
+            }
+        } else if (workingWords.length >= 5) {
+            // ═══════════════════════════════════════════════════════════════════
+            // CASE 3: 5+ words → Complex cases with compound names
+            // ═══════════════════════════════════════════════════════════════════
+            // Could be:
+            // - Compound first + compound last
+            // - Compound first + simple last
+            // - Simple first + compound last
+
+            const last2Words = workingWords.slice(-2);
+            const last3Words = workingWords.slice(-3);
+
+            if (isCompoundName(last3Words)) {
+                // 3-word compound last name (e.g., "FERNANDEZ DE LEON")
+                lastName = last3Words.join(' ');
+                const remaining = workingWords.slice(0, -3);
+                if (remaining.length >= 2) {
+                    middleName = remaining[remaining.length - 1];
+                    firstName = remaining.slice(0, -1).join(' ');
+                } else {
+                    firstName = remaining.join(' ');
+                    middleName = "";
+                }
+                console.log('→ CASE 3A: 3-word compound last name');
+                console.log(`  First Name  : "${firstName}"`);
+                console.log(`  Middle Name : "${middleName}"`);
+                console.log(`  Last Name   : "${lastName}" (3-word compound)`);
+            } else if (isCompoundName(last2Words)) {
+                // 2-word compound last name (e.g., "DELA CRUZ")
+                lastName = last2Words.join(' ');
+                const remaining = workingWords.slice(0, -2);
+                if (remaining.length >= 2) {
+                    middleName = remaining[remaining.length - 1];
+                    firstName = remaining.slice(0, -1).join(' ');
+                } else {
+                    firstName = remaining.join(' ');
+                    middleName = "";
+                }
+                console.log('→ CASE 3B: 2-word compound last name');
+                console.log(`  First Name  : "${firstName}" ${remaining.length > 2 ? '(compound)' : ''}`);
+                console.log(`  Middle Name : "${middleName}"`);
+                console.log(`  Last Name   : "${lastName}" (2-word compound)`);
+            } else {
+                // No compound last name - assume simple last name
+                // Middle name is second-to-last, first name is everything before
+                lastName = workingWords[workingWords.length - 1];
+                const remaining = workingWords.slice(0, -1);
+                if (remaining.length >= 2) {
+                    middleName = remaining[remaining.length - 1];
+                    firstName = remaining.slice(0, -1).join(' ');
+                } else {
+                    firstName = remaining.join(' ');
+                    middleName = "";
+                }
+                console.log('→ CASE 3C: Standard parsing (no compound last)');
+                console.log(`  First Name  : "${firstName}" (compound)`);
+                console.log(`  Middle Name : "${middleName}"`);
+                console.log(`  Last Name   : "${lastName}"`);
+            }
+        } else if (workingWords.length === 2) {
+            // ═══════════════════════════════════════════════════════════════════
+            // CASE 4: Only 2 words → FIRSTNAME LASTNAME (NO middle name)
+            // ═══════════════════════════════════════════════════════════════════
+            firstName = workingWords[0];
+            lastName = workingWords[1];
+            middleName = "";
+            console.log('→ CASE 4: Only 2 words (NO middle name)');
+            console.log(`  First Name  : "${firstName}"`);
+            console.log(`  Middle Name : (none)`);
+            console.log(`  Last Name   : "${lastName}"`);
+        } else {
+            console.log('✗ Insufficient words for name parsing (need at least 2)');
+            return null;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 3: Clean and validate extracted names
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('[STEP 3] Cleaning extracted names...');
+        firstName = cleanName(firstName);
+        middleName = cleanName(middleName);
+        lastName = cleanName(lastName);
+
+        console.log('');
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('       SSS NAME PARSING COMPLETE');
+        console.log('═══════════════════════════════════════════════════════');
+        console.log(`✓ First Name  : "${firstName}"`);
+        console.log(`✓ Middle Name : "${middleName}"`);
+        console.log(`✓ Last Name   : "${lastName}"`);
+        console.log(`✓ Suffix      : "${suffix}"`);
+        console.log('═══════════════════════════════════════════════════════');
+
+        return { firstName, middleName, lastName, suffix };
     }
 
     // Check if city is Davao City
@@ -5458,6 +6376,14 @@ document.addEventListener('DOMContentLoaded', function () {
         text = text.replace(/\s+/g, ' ').trim();  // Normalize spaces again
 
         return text;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Validate if a single letter is a valid middle initial
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function isValidMiddleInitial(letter) {
+        if (!letter || letter.length !== 1) return false;
+        return /^[A-Z]$/i.test(letter);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -6403,13 +7329,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <li><strong>Philippine National ID (PhilSys)</strong></li>
                                 <li><strong>Driver's License (LTO)</strong></li>
                                 <li><strong>UMID (Unified Multi-Purpose ID)</strong></li>
+                                <li><strong>SSS ID (Social Security System)</strong></li>
                             </ul>
                         </div>
 
                         <div class="bg-yellow-50 border border-yellow-300 p-3 rounded-lg mb-3">
                             <p class="text-sm text-yellow-800">
                                 <i class="fas fa-exclamation-triangle mr-1"></i>
-                                <strong>NOT ACCEPTED:</strong> SSS ID, PhilHealth, Senior Citizen, PWD, Postal ID, Voter's ID, TIN, Barangay ID, PRC ID, and all other IDs not listed above.
+                                <strong>NOT ACCEPTED:</strong> PhilHealth, Senior Citizen, PWD, Postal ID, Voter's ID, TIN, Barangay ID, PRC ID, and all other IDs not listed above.
                             </p>
                         </div>
 
