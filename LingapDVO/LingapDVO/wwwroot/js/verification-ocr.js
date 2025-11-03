@@ -7224,42 +7224,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Advanced form fields update with civil status and suffix
-    // FINAL VALIDATION is performed before populating fields
+    // Populates form fields with extracted ID data
     function updateFormFieldsAdvanced(idNumber, firstName, middleName, lastName, birthdate, sex, civilStatus, suffix, barangay = "", fullOcrText = "", idType = "", confidence = 0) {
         try {
             console.log('\n=== STEP 3: DATA EXTRACTION & FIELD POPULATION ===');
-
-            // ========================================
-            // FINAL VALIDATION LAYER - Validate all name fields
-            // ========================================
-            console.log('\n=== FINAL VALIDATION LAYER ===');
-            firstName = validateExtractedValue(firstName, 'First Name', true);
-            middleName = validateExtractedValue(middleName, 'Middle Name', false);
-            lastName = validateExtractedValue(lastName, 'Last Name', true);
-            suffix = validateExtractedValue(suffix, 'Suffix', false);
-
-            // Check if required fields passed validation
-            if (!firstName || !lastName) {
-                console.error('✗ VALIDATION FAILED: Required name fields are missing or invalid');
-                console.error('  First Name:', firstName || '(empty)');
-                console.error('  Last Name:', lastName || '(empty)');
-
-                const resultBox = document.getElementById('result-box');
-                if (resultBox) {
-                    resultBox.innerHTML = '<strong>Validation Error:</strong> Unable to extract valid first name and last name. Please ensure the ID is clear and try again.';
-                    resultBox.style.color = 'red';
-                }
-                return;
-            }
-            console.log('✓ VALIDATION PASSED: All required fields are valid');
-            console.log('========================================\n');
-
-            // VALIDATION 1: Check if ID type is allowed
-            if (idType && !ALLOWED_ID_TYPES.includes(idType)) {
-                console.error('Invalid ID type detected:', idType);
-                showInvalidIdTypeModal(getIdTypeName(idType));
-                return;
-            }
 
             // Update ID type display with confidence
             if (idType && confidence > 0) {
@@ -7402,7 +7370,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 resultBox.innerHTML = successMessage;
             }
 
-            console.log('=== INTELLIGENT VALIDATION COMPLETED SUCCESSFULLY ===');
+            console.log('=== FIELD POPULATION COMPLETED SUCCESSFULLY ===');
             console.log('Auto-populated fields:', populatedFields);
 
             // ===================================================================

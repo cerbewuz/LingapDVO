@@ -3395,8 +3395,6 @@ namespace LingapDVO.Controllers
         }
 
 
- 
-       
 
         // UPDATED CheckFileType METHOD
         [HttpGet]
@@ -3450,10 +3448,6 @@ namespace LingapDVO.Controllers
                 return Json(new { exists = true, isPdf = false, error = ex.Message });
             }
         }
-
-
-
-
 
     }
 }
