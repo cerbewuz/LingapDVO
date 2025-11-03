@@ -2333,6 +2333,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('✓ STEP 1 PASSED: ID Type =', getIdTypeName(idTypeToProcess));
                 console.log('===================================\n');
 
+                // === STEP 1.5: VALIDATE ID SIDE (FRONT vs BACK) ===
+                console.log('\n=== STEP 1.5: ID SIDE VALIDATION ===');
+                const detectedSide = detectIDSide(cleanedText, idTypeToProcess);
+                console.log('Upload Area:', isBack ? 'BACK' : 'FRONT');
+                console.log('Detected Side:', detectedSide);
+
+                // Validate that the correct side is uploaded in the correct upload area
+                if (detectedSide !== 'unknown') {
+                    if (!isBack && detectedSide === 'back') {
+                        // User uploaded back ID in front ID upload area
+                        console.error('✗ STEP 1.5 FAILED: Back ID uploaded in Front ID area');
+                        showIDSideMismatchModal('front', 'back', idTypeToProcess);
+                        clearUploadArea(isBack);
+                        return;
+                    } else if (isBack && detectedSide === 'front') {
+                        // User uploaded front ID in back ID upload area
+                        console.error('✗ STEP 1.5 FAILED: Front ID uploaded in Back ID area');
+                        showIDSideMismatchModal('back', 'front', idTypeToProcess);
+                        clearUploadArea(isBack);
+                        return;
+                    }
+                }
+
+                console.log('✓ STEP 1.5 PASSED: ID Side is correct');
+                console.log('===================================\n');
+
                 // === STEP 2 & 3: Parse ID, Validate Name, Extract Data ===
                 // Each parser will handle Steps 2 & 3 internally
                 if (idTypeToProcess === "driver-license") {
@@ -2408,6 +2434,353 @@ document.addEventListener('DOMContentLoaded', function () {
             'sss-id': 'Social Security System'  // Official ID type name
         };
         return idTypeNames[idType] || idType;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🔍 DETECT ID SIDE (FRONT vs BACK) - INTELLIGENT DETECTION
+    // ═══════════════════════════════════════════════════════════════════════
+    // Detects whether the uploaded ID image is a front or back side
+    // Uses weighted scoring system for accurate detection
+    function detectIDSide(text, idType) {
+        if (!text || !idType) return 'unknown';
+
+        const upperText = text.toUpperCase();
+        console.log('========================================');
+        console.log('🔍 INTELLIGENT ID SIDE DETECTION');
+        console.log('ID Type:', idType);
+        console.log('Text Length:', text.length);
+        console.log('========================================');
+
+        let frontScore = 0;
+        let backScore = 0;
+        const detectedIndicators = { front: [], back: [] };
+
+        switch (idType) {
+            case 'driver-license':
+                // Driver's License Front Indicators (weighted scoring)
+                const dlFrontIndicators = {
+                    'RESTRICTION CODE': 10,
+                    'RESTRICTION': 8,
+                    'LICENSE NO': 10,
+                    'LICENSE NUMBER': 10,
+                    'LISENSYA': 9,
+                    'GIVEN NAME': 7,
+                    'LAST NAME': 7,
+                    'APELYIDO': 7,
+                    'FIRST NAME': 7,
+                    'MIDDLE NAME': 6,
+                    'DATE OF BIRTH': 8,
+                    'NATIONALITY': 6,
+                    'WEIGHT': 5,
+                    'HEIGHT': 5,
+                    'EYES': 4,
+                    'AGENCY CODE': 7,
+                    'EXPIRATION DATE': 6,
+                    'NON-PROFESSIONAL': 8,
+                    'PROFESSIONAL': 8
+                };
+
+                // Driver's License Back Indicators
+                const dlBackIndicators = {
+                    'CONDITIONS': 10,
+                    'REMARKS': 8,
+                    'IN CASE OF EMERGENCY': 9,
+                    'NOTIFY': 7,
+                    'EMERGENCY CONTACT': 9,
+                    'BLOOD TYPE': 6
+                };
+
+                // Score front indicators
+                for (const [keyword, weight] of Object.entries(dlFrontIndicators)) {
+                    if (upperText.includes(keyword)) {
+                        frontScore += weight;
+                        detectedIndicators.front.push(keyword);
+                        console.log(`✓ Front indicator found: "${keyword}" (+${weight})`);
+                    }
+                }
+
+                // Score back indicators
+                for (const [keyword, weight] of Object.entries(dlBackIndicators)) {
+                    if (upperText.includes(keyword)) {
+                        backScore += weight;
+                        detectedIndicators.back.push(keyword);
+                        console.log(`✓ Back indicator found: "${keyword}" (+${weight})`);
+                    }
+                }
+
+                break;
+
+            case 'phil-id':
+                // National ID Front Indicators
+                const philFrontIndicators = {
+                    'PCN': 10,
+                    'PHILSYS NUMBER': 10,
+                    'PHILSYS NO': 10,
+                    'PAMBANSANG': 9,
+                    'GIVEN NAME': 7,
+                    'PANGALAN/GIVEN NAME': 8,
+                    'PANGALAN': 6,
+                    'FIRST NAME': 7,
+                    'LAST NAME': 7,
+                    'DATE OF BIRTH': 8,
+                    'KAPANGANAKAN': 8,
+                    'SEX': 6,
+                    'KASARIAN': 6,
+                    'REPUBLIC OF THE PHILIPPINES': 5
+                };
+
+                // National ID Back Indicators
+                const philBackIndicators = {
+                    'ADDRESS': 8,
+                    'TIRAHAN': 8,
+                    'PERMANENT ADDRESS': 9,
+                    'BLOOD TYPE': 9,
+                    'DUGO': 8,
+                    'MARITAL STATUS': 9,
+                    'KALAGAYAN': 8,
+                    'PLACE OF BIRTH': 7,
+                    'EMERGENCY CONTACT': 8,
+                    'MOBILE NUMBER': 6
+                };
+
+                // Score front indicators
+                for (const [keyword, weight] of Object.entries(philFrontIndicators)) {
+                    if (upperText.includes(keyword)) {
+                        frontScore += weight;
+                        detectedIndicators.front.push(keyword);
+                        console.log(`✓ Front indicator found: "${keyword}" (+${weight})`);
+                    }
+                }
+
+                // Score back indicators
+                for (const [keyword, weight] of Object.entries(philBackIndicators)) {
+                    if (upperText.includes(keyword)) {
+                        backScore += weight;
+                        detectedIndicators.back.push(keyword);
+                        console.log(`✓ Back indicator found: "${keyword}" (+${weight})`);
+                    }
+                }
+
+                break;
+
+            case 'umid':
+                // UMID Front Indicators
+                const umidFrontIndicators = {
+                    'CRN': 10,
+                    'CARD REFERENCE NUMBER': 10,
+                    'UMID NUMBER': 10,
+                    'UMID NO': 9,
+                    'FULL NAME': 7,
+                    'GIVEN NAME': 7,
+                    'SURNAME': 7,
+                    'DATE OF BIRTH': 8,
+                    'SEX': 6
+                };
+
+                // UMID Back Indicators
+                const umidBackIndicators = {
+                    'PERMANENT ADDRESS': 10,
+                    'SIGNATURE': 9,
+                    'PLACE OF BIRTH': 8,
+                    'CONTACT NUMBER': 8,
+                    'EMERGENCY CONTACT': 8,
+                    'TIN': 7,
+                    'SSS': 7,
+                    'GSIS': 7
+                };
+
+                // Score front indicators
+                for (const [keyword, weight] of Object.entries(umidFrontIndicators)) {
+                    if (upperText.includes(keyword)) {
+                        frontScore += weight;
+                        detectedIndicators.front.push(keyword);
+                        console.log(`✓ Front indicator found: "${keyword}" (+${weight})`);
+                    }
+                }
+
+                // Score back indicators
+                for (const [keyword, weight] of Object.entries(umidBackIndicators)) {
+                    if (upperText.includes(keyword)) {
+                        backScore += weight;
+                        detectedIndicators.back.push(keyword);
+                        console.log(`✓ Back indicator found: "${keyword}" (+${weight})`);
+                    }
+                }
+
+                break;
+
+            case 'sss-id':
+                // SSS ID Front Indicators
+                const sssFrontIndicators = {
+                    'SSS NUMBER': 10,
+                    'SSS NO': 10,
+                    'SS NO': 9,
+                    'MEMBER': 7,
+                    'SOCIAL SECURITY': 9,
+                    'GIVEN NAME': 7,
+                    'SURNAME': 7,
+                    'DATE OF BIRTH': 8
+                };
+
+                // SSS ID Back Indicators
+                const sssBackIndicators = {
+                    'BENEFITS': 9,
+                    'CONTRIBUTION': 9,
+                    'EMPLOYER': 8,
+                    'SIGNATURE': 8,
+                    'CONTACT': 7
+                };
+
+                // Score front indicators
+                for (const [keyword, weight] of Object.entries(sssFrontIndicators)) {
+                    if (upperText.includes(keyword)) {
+                        frontScore += weight;
+                        detectedIndicators.front.push(keyword);
+                        console.log(`✓ Front indicator found: "${keyword}" (+${weight})`);
+                    }
+                }
+
+                // Score back indicators
+                for (const [keyword, weight] of Object.entries(sssBackIndicators)) {
+                    if (upperText.includes(keyword)) {
+                        backScore += weight;
+                        detectedIndicators.back.push(keyword);
+                        console.log(`✓ Back indicator found: "${keyword}" (+${weight})`);
+                    }
+                }
+
+                break;
+
+            default:
+                console.log('❌ Unknown ID type for side detection');
+                return 'unknown';
+        }
+
+        // Determine side based on scores
+        console.log('========================================');
+        console.log('📊 DETECTION RESULTS:');
+        console.log('Front Score:', frontScore);
+        console.log('Back Score:', backScore);
+        console.log('Front Indicators:', detectedIndicators.front.join(', ') || 'None');
+        console.log('Back Indicators:', detectedIndicators.back.join(', ') || 'None');
+
+        let detectedSide = 'unknown';
+        const minScoreThreshold = 5; // Minimum score to make a determination
+
+        if (frontScore > backScore && frontScore >= minScoreThreshold) {
+            detectedSide = 'front';
+            console.log('✅ DETECTED: FRONT (Confidence: High)');
+        } else if (backScore > frontScore && backScore >= minScoreThreshold) {
+            detectedSide = 'back';
+            console.log('✅ DETECTED: BACK (Confidence: High)');
+        } else if (frontScore === backScore && frontScore >= minScoreThreshold) {
+            // If scores are equal, prefer the side with more indicators
+            if (detectedIndicators.front.length > detectedIndicators.back.length) {
+                detectedSide = 'front';
+                console.log('✅ DETECTED: FRONT (Confidence: Medium - equal scores, more indicators)');
+            } else if (detectedIndicators.back.length > detectedIndicators.front.length) {
+                detectedSide = 'back';
+                console.log('✅ DETECTED: BACK (Confidence: Medium - equal scores, more indicators)');
+            } else {
+                console.log('⚠️ DETECTED: UNKNOWN (Equal scores and indicators)');
+            }
+        } else {
+            console.log('⚠️ DETECTED: UNKNOWN (Insufficient confidence)');
+        }
+
+        console.log('========================================\n');
+        return detectedSide;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🚨 SHOW ID SIDE MISMATCH MODAL
+    // ═══════════════════════════════════════════════════════════════════════
+    // Shows an error modal when user uploads wrong ID side
+    function showIDSideMismatchModal(expectedSide, detectedSide, idType) {
+        console.error('========================================');
+        console.error('❌ ID SIDE MISMATCH DETECTED');
+        console.error('Expected Side:', expectedSide.toUpperCase());
+        console.error('Detected Side:', detectedSide.toUpperCase());
+        console.error('ID Type:', getIdTypeName(idType));
+        console.error('========================================');
+
+        const modal = document.getElementById('wrongIdModal');
+        if (!modal) {
+            alert(`❌ Wrong ID Side!\n\nYou uploaded the ${detectedSide.toUpperCase()} of your ${getIdTypeName(idType)}, but this area expects the ${expectedSide.toUpperCase()} side.\n\nPlease upload the correct side of your ID.`);
+            return;
+        }
+
+        const titleElement = document.getElementById('wrong-id-title');
+        const messageElement = document.getElementById('wrong-id-message');
+        const selectedTypeElement = document.getElementById('selected-type');
+        const detectedTypeElement = document.getElementById('detected-type');
+
+        if (titleElement) {
+            titleElement.textContent = 'Wrong ID Side Uploaded';
+        }
+
+        if (messageElement) {
+            const idTypeName = getIdTypeName(idType);
+            messageElement.innerHTML = `
+                <p class="mb-3">
+                    You uploaded the <strong class="text-red-600">${detectedSide.toUpperCase()}</strong> side of your ${idTypeName},
+                    but this upload area requires the <strong class="text-green-600">${expectedSide.toUpperCase()}</strong> side.
+                </p>
+                <p class="text-sm text-gray-700">
+                    <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                    Please flip your ID and upload the <strong>${expectedSide}</strong> side to continue with verification.
+                </p>
+            `;
+        }
+
+        if (selectedTypeElement) {
+            selectedTypeElement.textContent = `${expectedSide.charAt(0).toUpperCase() + expectedSide.slice(1)} ID (Required)`;
+        }
+
+        if (detectedTypeElement) {
+            detectedTypeElement.textContent = `${detectedSide.charAt(0).toUpperCase() + detectedSide.slice(1)} ID (Uploaded)`;
+        }
+
+        // Show modal using Bootstrap 5
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🧹 CLEAR UPLOAD AREA
+    // ═══════════════════════════════════════════════════════════════════════
+    // Clears the uploaded image and resets the upload area
+    function clearUploadArea(isBack) {
+        const fileInput = isBack ? fileBack : fileFront;
+        const preview = isBack ? imagePreviewBack : imagePreview;
+        const uploadArea = isBack ? uploadBack : uploadFront;
+
+        if (fileInput) {
+            fileInput.value = '';
+        }
+
+        if (preview) {
+            preview.src = '';
+            preview.classList.add('hidden');
+        }
+
+        if (uploadArea) {
+            const uploadContent = uploadArea.querySelector('.id-upload-content');
+            if (uploadContent) {
+                uploadContent.classList.remove('preview-mode');
+            }
+            uploadArea.classList.remove('active', 'has-image');
+        }
+
+        // Hide progress bar and reset status
+        if (progressBar) {
+            progressBar.classList.add('hidden');
+        }
+
+        if (status) {
+            status.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Please upload the correct ID side';
+            status.className = 'text-sm text-gray-600 mt-2';
+        }
     }
 
     // Enhanced ID Type Detection with Multiple Detection Methods

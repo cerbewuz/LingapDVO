@@ -80,6 +80,7 @@
     <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/admin-sidebar.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -117,7 +118,7 @@
         /* Sidebar - Handled by sidebar.js */
 
         /* Main Content*/
-        .main-content {
+        .main-content-with-sidebar {
             flex: 1;
             padding: clamp(0.75rem, 1.5rem, 2rem);
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -534,11 +535,11 @@
     </div>
 
     <div class="dashboard-container">
-        <!-- Sidebar will be injected here by sidebar.js -->
-        <div id="sidebar-container"></div>
+        <!-- Include Shared Admin Sidebar -->
+        @await Html.PartialAsync("_AdminSidebar")
 
         <!-- Main Content -->
-        <div class="main-content" id="mainContent">
+        <div class="main-content-with-sidebar" id="mainContent">
             <!-- Header -->
             <div class="dashboard-header">
                 <div style="display: flex; align-items: center;">
@@ -630,8 +631,7 @@
         </div>
     </div>
 
-    <!-- Load sidebar and session timeout scripts -->
-    <script src="~/js/sidebar.js"></script>
+    <!-- Load admin sidebar utilities and session timeout scripts -->
     <script src="~/js/adminsidebar.js"></script>
     <script src="~/js/session-timeout.js"></script>
 

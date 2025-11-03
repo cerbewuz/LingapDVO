@@ -2,13 +2,210 @@
 // ADMIN SIDEBAR AND PRIORITY ALERTS MODULE
 // ═══════════════════════════════════════════════════════════════════════════════
 // Provides shared functionality for admin pages:
+// - Burger menu toggle
+// - Responsive sidebar behavior
 // - Priority alerts in header
 // - Application priority calculation
-// - Responsive without @media queries
+// - Active page highlighting
 // ═══════════════════════════════════════════════════════════════════════════════
 
 (function() {
     'use strict';
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SIDEBAR TOGGLE FUNCTIONALITY
+    // ═══════════════════════════════════════════════════════════════════════
+
+    let isMobile = false;
+    let sidebarOpen = false;
+
+    /**
+     * Check if current viewport is mobile
+     */
+    function checkMobile() {
+        isMobile = window.innerWidth <= 768;
+        return isMobile;
+    }
+
+    /**
+     * Initialize sidebar toggle
+     */
+    function initSidebarToggle() {
+        const burgerBtn = document.getElementById('burgerMenuBtn');
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const mainContent = document.querySelector('.main-content-with-sidebar');
+
+        if (!burgerBtn || !sidebar) {
+            console.warn('Admin Sidebar: Sidebar elements not found');
+            return;
+        }
+
+        // Set initial state
+        checkMobile();
+        updateSidebarState();
+
+        // Burger button click
+        if (burgerBtn) {
+            burgerBtn.addEventListener('click', toggleSidebar);
+        }
+
+        // Overlay click (close sidebar on mobile)
+        if (overlay) {
+            overlay.addEventListener('click', closeSidebar);
+        }
+
+        // Window resize handler
+        window.addEventListener('resize', handleResize);
+
+        // Close sidebar when clicking nav links on mobile
+        const navLinks = sidebar.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (isMobile) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        console.log('Admin Sidebar: Toggle functionality initialized');
+    }
+
+    /**
+     * Toggle sidebar open/close
+     */
+    function toggleSidebar() {
+        sidebarOpen = !sidebarOpen;
+        updateSidebarState();
+    }
+
+    /**
+     * Open sidebar
+     */
+    function openSidebar() {
+        sidebarOpen = true;
+        updateSidebarState();
+    }
+
+    /**
+     * Close sidebar
+     */
+    function closeSidebar() {
+        sidebarOpen = false;
+        updateSidebarState();
+    }
+
+    /**
+     * Update sidebar visibility state
+     */
+    function updateSidebarState() {
+        const burgerBtn = document.getElementById('burgerMenuBtn');
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const mainContent = document.querySelector('.main-content-with-sidebar');
+
+        if (!sidebar) return;
+
+        checkMobile();
+
+        if (isMobile) {
+            // Mobile behavior
+            if (sidebarOpen) {
+                sidebar.classList.remove('mobile-hidden');
+                overlay?.classList.add('active');
+                burgerBtn?.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('mobile-hidden');
+                overlay?.classList.remove('active');
+                burgerBtn?.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Show burger button
+            if (burgerBtn) {
+                burgerBtn.style.display = 'flex';
+            }
+
+            // Remove desktop margins
+            if (mainContent) {
+                mainContent.classList.add('mobile-view');
+            }
+        } else {
+            // Desktop behavior - always show sidebar
+            sidebar.classList.remove('mobile-hidden');
+            sidebar.classList.add('desktop-visible');
+            overlay?.classList.remove('active');
+            burgerBtn?.classList.remove('active');
+            document.body.style.overflow = '';
+
+            // Hide burger button
+            if (burgerBtn) {
+                burgerBtn.style.display = 'none';
+            }
+
+            // Add desktop margins
+            if (mainContent) {
+                mainContent.classList.remove('mobile-view');
+            }
+        }
+    }
+
+    /**
+     * Handle window resize
+     */
+    function handleResize() {
+        const wasMobile = isMobile;
+        checkMobile();
+
+        // If switching from mobile to desktop
+        if (wasMobile && !isMobile) {
+            sidebarOpen = false;
+            updateSidebarState();
+        }
+        // If switching from desktop to mobile
+        else if (!wasMobile && isMobile) {
+            sidebarOpen = false;
+            updateSidebarState();
+        }
+    }
+
+    /**
+     * Set active navigation item based on current page
+     */
+    function setActiveNavItem() {
+        const currentPath = window.location.pathname.toLowerCase();
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+
+            const page = link.getAttribute('data-page');
+            if (page) {
+                if (currentPath.includes(page) ||
+                    (page === 'admin' && currentPath.includes('/adminuser/admin')) ||
+                    (page === 'analytics' && currentPath.includes('/analyticsdashboard')) ||
+                    (page === 'priorities' && currentPath.includes('/priorities'))) {
+                    link.classList.add('active');
+                }
+            }
+        });
+    }
+
+    /**
+     * Update priority badge count
+     */
+    function updatePriorityBadge(count) {
+        const badge = document.getElementById('priorityBadge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
 
     // ═══════════════════════════════════════════════════════════════════════
     // PRIORITY ALERTS FUNCTIONALITY
@@ -120,6 +317,15 @@
 
     // Expose functions globally for use in admin pages
     window.AdminSidebar = {
+        // Sidebar toggle functions
+        initSidebarToggle: initSidebarToggle,
+        toggleSidebar: toggleSidebar,
+        openSidebar: openSidebar,
+        closeSidebar: closeSidebar,
+        setActiveNavItem: setActiveNavItem,
+        updatePriorityBadge: updatePriorityBadge,
+
+        // Priority alert functions
         updateHeaderPriorityAlerts: updateHeaderPriorityAlerts,
         calculatePriority: calculatePriority,
         getPriorityColorClass: getPriorityColorClass,
@@ -133,10 +339,14 @@
     // Initialize on DOM ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Admin Sidebar Module: Loaded successfully');
+            initSidebarToggle();
+            setActiveNavItem();
+            console.log('Admin Sidebar Module: Loaded and initialized successfully');
         });
     } else {
-        console.log('Admin Sidebar Module: Loaded successfully');
+        initSidebarToggle();
+        setActiveNavItem();
+        console.log('Admin Sidebar Module: Loaded and initialized successfully');
     }
 
 })();

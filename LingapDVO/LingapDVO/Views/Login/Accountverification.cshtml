@@ -19,6 +19,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Go Back Button Styling -->
+    <link rel="stylesheet" href="~/css/go-back-button.css">
+
     <!--
         OCR Engine: Using OCR.space API (much better than Tesseract for IDs)
         - Free tier: 25,000 requests/month
@@ -301,13 +304,11 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
-    <!-- Go Back Button -->
-    <div class="fixed top-6 left-6 z-50 fade-in">
-        <button id="goBackBtn" class="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg border border-gray-200 hover:border-crimson-500 hover:bg-crimson-500 hover:text-black transition-all duration-300 group">
-            <i class="fas fa-arrow-left group-hover:transform group-hover:-translate-x-1 transition-transform"></i>
-            <span class="font-semibold">Go Back</span>
-        </button>
-    </div>
+    <!-- Go Back Button (Uniform) -->
+    <button id="goBackBtn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Go Back</span>
+    </button>
 
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto">
@@ -875,6 +876,9 @@
         };
         console.log('Registered User Name from Database:', window.registeredUserName);
     </script>
+
+    <!-- Go Back Button Behavior -->
+    <script src="~/js/go-back-button.js"></script>
 
     <!-- Visual Progress Loader for OCR Processing -->
     <script src="~/js/visual-progress-loader.js"></script>

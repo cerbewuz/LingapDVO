@@ -1,0 +1,209 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   UNIFORM GO BACK BUTTON STYLING
+   ═══════════════════════════════════════════════════════════════════════════════
+   Provides consistent styling across all pages with responsive behavior
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Go Back Button Container */
+#goBackBtn {
+    /* Positioning */
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+
+    /* Layout */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    /* Sizing */
+    padding: 0.75rem 1.25rem;
+
+    /* Styling */
+    background-color: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 9999px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+    /* Typography */
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #374151;
+
+    /* Interaction */
+    cursor: pointer;
+    user-select: none;
+
+    /* Animation */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Hover State */
+#goBackBtn:hover {
+    background-color: #DC143C;
+    border-color: #DC143C;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 20px 30px -10px rgba(220, 20, 60, 0.3), 0 10px 15px -5px rgba(220, 20, 60, 0.2);
+}
+
+/* Active/Click State */
+#goBackBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* Icon Animation on Hover */
+#goBackBtn:hover i {
+    transform: translateX(-3px);
+}
+
+#goBackBtn i {
+    transition: transform 0.3s ease;
+    font-size: 1rem;
+}
+
+/* Text */
+#goBackBtn span {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MOBILE SCROLL BEHAVIOR (≤768px)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Visible State (Default) */
+#goBackBtn.go-back-visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Hidden State (Scrolling Down on Mobile) */
+#goBackBtn.go-back-hidden {
+    transform: translateY(-100px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Tablet Screens (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    #goBackBtn {
+        top: 1.25rem;
+        left: 1.25rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile Screens (≤768px) */
+@media (max-width: 768px) {
+    #goBackBtn {
+        top: 1rem;
+        left: 1rem;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+        box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.15);
+    }
+
+    #goBackBtn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 15px 25px -8px rgba(220, 20, 60, 0.3);
+    }
+
+    #goBackBtn span {
+        display: inline; /* Show text on mobile */
+    }
+}
+
+/* Small Mobile Screens (≤480px) */
+@media (max-width: 480px) {
+    #goBackBtn {
+        top: 0.75rem;
+        left: 0.75rem;
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+
+    #goBackBtn i {
+        font-size: 0.9rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Focus State for Keyboard Navigation */
+#goBackBtn:focus {
+    outline: 3px solid rgba(220, 20, 60, 0.5);
+    outline-offset: 2px;
+}
+
+/* Focus Visible (Modern Browsers) */
+#goBackBtn:focus-visible {
+    outline: 3px solid rgba(220, 20, 60, 0.5);
+    outline-offset: 2px;
+}
+
+/* Disabled State */
+#goBackBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   DARK MODE SUPPORT (Optional)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+    #goBackBtn {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: #f9fafb;
+    }
+
+    #goBackBtn:hover {
+        background-color: #DC143C;
+        border-color: #DC143C;
+        color: #ffffff;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ANIMATION KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Initial Page Load Animation */
+#goBackBtn {
+    animation: slideInFromLeft 0.5s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media print {
+    #goBackBtn {
+        display: none;
+    }
+}

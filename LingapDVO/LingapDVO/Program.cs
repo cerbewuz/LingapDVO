@@ -86,12 +86,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
-// ?? Session - 10 minute inactivity timeout
+// ?? Session - 10 minute inactivity timeout with 9-minute warning
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(10); // Auto-logout after 10 minutes of inactivity
+    // Read timeout from configuration (defaults to 10 if not set)
+    var sessionTimeout = builder.Configuration.GetValue<int>("Security:Session:IdleTimeoutMinutes", 10);
+    options.IdleTimeout = TimeSpan.FromMinutes(sessionTimeout);
+
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.Name = builder.Configuration.GetValue<string>("Security:Session:CookieName", ".LingapDVO.Session");
 
     // ? Ensure cookies work for external redirect
     options.Cookie.SameSite = SameSiteMode.Lax; // Or None if using HTTPS everywhere
