@@ -10,8 +10,8 @@
     'use strict';
 
     // Configuration
-    const WARNING_TIMEOUT = 9 * 60 * 1000; // Show warning at 9 minutes
-    const FINAL_TIMEOUT = 10 * 60 * 1000; // Force logout at 10 minutes
+    const FINAL_TIMEOUT = (window.sessionTimeoutMinutes || 10) * 60 * 1000;
+    const WARNING_TIMEOUT = FINAL_TIMEOUT - 60 * 1000;
     const CHECK_INTERVAL = 30 * 1000; // Check session validity every 30 seconds
     const COUNTDOWN_INTERVAL = 1000; // Update countdown every second
 
@@ -171,6 +171,7 @@
 
     // Reset the inactivity timer
     function resetInactivityTimer() {
+        fetch('/Login/KeepAlive', { method: 'GET' }).catch(() => { });
         // Don't reset if warning is already shown (user must decide)
         if (warningShown) return;
 
@@ -312,7 +313,7 @@
         sessionStorage.clear();
 
         // Redirect to landing page
-        window.location.href = '/Landingpage';
+        window.location.href = '/Login?timeout=true';
     }
 
     // User clicked "Yes" - Stay signed in

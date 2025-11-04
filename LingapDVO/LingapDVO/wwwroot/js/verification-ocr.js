@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let ocrEnabled = true;
 
     // Debug mode for testing and calibration
-    const DEBUG_MODE = false; // Set to true to see detailed extraction logs
+    const DEBUG_MODE = false;
 
     // Store last OCR result for debugging
     let lastOCRText = "";
@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const MIN_TIME_BETWEEN_CALLS = 1000; // 1 second minimum between calls
 
     // Get registered user's name from window object (passed from ViewBag)
-    // This comes from RegisterAcc table columns: FirstName, MiddleName, LastName, Suffix
     let registeredFirstName = window.registeredUserName?.firstName || "";
     let registeredMiddleName = window.registeredUserName?.middleName || "";
     let registeredLastName = window.registeredUserName?.lastName || "";
@@ -85,26 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('Full Name:', `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName} ${registeredSuffix}`.trim());
     console.log('===========================================');
 
-    console.log('\n===========================================');
-    console.log('=== OCR LABEL RECOGNITION ===');
-    console.log('Filipino/Tagalog Label Support: ENABLED');
-    console.log('Bilingual Format Handling: ENABLED');
-    console.log('Supported ID Types:');
-    console.log('  • Philippine National ID (PhilSys)');
-    console.log('  • Driver\'s License');
-    console.log('  • UMID');
-    console.log('Label Examples:');
-    console.log('  • PANGALAN/GIVEN NAME → extracts name only');
-    console.log('  • KASARIAN/SEX: M → extracts "M" (normalized to "Male")');
-    console.log('  • PETSA NG KAPANGANAKAN → extracts birthdate');
-    console.log('===========================================\n');
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // ENHANCED: List of known Filipino compound/double surnames and name particles
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // Expanded list to improve detection of multi-word surnames common in the Philippines
+    // Enhanced: List of known Filipino compound/double surnames and name particles
     const COMPOUND_NAMES = [
-        // === De/Dela/Del compound surnames ===
+        // De/Dela/Del compound surnames
         'DE LA CRUZ', 'DELA CRUZ', 'DE LOS REYES', 'DELOS REYES',
         'DE LA ROSA', 'DELA ROSA', 'DE LA TORRE', 'DELA TORRE',
         'DE LOS SANTOS', 'DELOS SANTOS', 'DE LOS ANGELES', 'DELOS ANGELES',
@@ -116,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'DE BELEN', 'DEBELEN', 'DE SILVA', 'DESILVA',
         'DE MESA', 'DEMESA', 'DE DIOS', 'DEDIOS',
 
-        // === Santa/San compound surnames ===
+        // Santa/San compound surnames
         'SANTA MARIA', 'SANTAMARIA', 'SANTA CRUZ', 'SANTACRUZ',
         'SANTA ROSA', 'SANTAROSA', 'SANTA ANA', 'SANTAANA',
         'SAN JOSE', 'SANJOSE', 'SAN JUAN', 'SANJUAN',
@@ -124,41 +106,37 @@ document.addEventListener('DOMContentLoaded', function () {
         'SAN AGUSTIN', 'SANAGUSTIN', 'SAN MIGUEL', 'SANMIGUEL',
         'SAN ANDRES', 'SANANDRES', 'SAN ANTONIO', 'SANANTONIO',
 
-        // === Villa compound surnames ===
+        // Villa compound surnames
         'VILLA NUEVA', 'VILLANUEVA', 'VILLA REAL', 'VILLAREAL',
         'VILLA MAYOR', 'VILLAMAYOR', 'VILLA VERDE', 'VILLAVERDE',
         'VILLA CRUZ', 'VILLACRUZ', 'VILLA FRANCA', 'VILLAFRANCA',
         'VILLA FLOR', 'VILLAFLOR', 'VILLA GRACIA', 'VILLAGRACIA',
 
-        // === Monte compound surnames ===
+        // Monte compound surnames
         'MONTE MAYOR', 'MONTEMAYOR', 'MONTE REAL', 'MONTEREAL',
         'MONTE VERDE', 'MONTEVERDE', 'MONTE NEGRO', 'MONTENEGRO',
         'MONTE DE OCA', 'MONTEDEOCA',
 
-        // === Buen compound surnames ===
+        // Buen compound surnames
         'BUEN CAMINO', 'BUENCAMINO', 'BUEN DIA', 'BUENDIA',
         'BUEN ROSTRO', 'BUENROSTRO', 'BUEN ABAD', 'BUENABAD',
         'BUEN VENTURA', 'BUENVENTURA',
 
-        // === Other common compound surnames ===
+        // Other common compound surnames
         'LA PAZ', 'LAPAZ', 'LA TORRE', 'LATORRE',
         'LOS BAÑOS', 'LOSBAÑOS', 'LOS SANTOS', 'LOSSANTOS',
         'CASTILLO VERDE', 'CASTILLOVERDE',
         'FERNANDEZ DE LEON', 'FERNANDEZDELEON',
 
-        // === Particles (used for detection) ===
+        // Particles (used for detection)
         'DE', 'DEL', 'DELA', 'DELOS', 'DE LOS', 'DE LA',
         'SAN', 'SANTA', 'VILLA', 'MONTE', 'BUEN', 'LA', 'LOS'
     ];
 
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // ENHANCED: Check if word sequence forms a known Filipino compound surname
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // Handles exact matches, prefix matching, and particle-based detection
+    // Enhanced: Check if word sequence forms a known Filipino compound surname
     function isCompoundName(words) {
         if (!words || words.length === 0) return false;
 
-        // Normalize words: uppercase and trim each word
         const normalized = words.map(w => w.toUpperCase().trim()).join(' ');
 
         // Check for exact match in compound names list
@@ -166,22 +144,18 @@ document.addEventListener('DOMContentLoaded', function () {
             return true;
         }
 
-        // Check if starts with a compound name (for longer compound variations)
-        // Example: "DE LA CRUZ MARTINEZ" starts with "DE LA CRUZ"
+        // Check if starts with a compound name
         for (const compound of COMPOUND_NAMES) {
             if (normalized === compound || normalized.startsWith(compound + ' ')) {
                 return true;
             }
         }
 
-        // NEW: Check for particle-based compound names
-        // If first word is a particle (DE, DEL, SAN, etc.) and there are 2+ words
-        // This catches compound names not in our list like "DE LEON GARCIA"
+        // Check for particle-based compound names
         const particles = ['DE', 'DEL', 'DELA', 'DELOS', 'SAN', 'SANTA', 'VILLA', 'MONTE', 'BUEN', 'LA', 'LOS'];
         if (words.length >= 2) {
             const firstWord = words[0].toUpperCase().trim();
             if (particles.includes(firstWord)) {
-                // Verify second word looks like a name (not a preposition)
                 const secondWord = words[1].toUpperCase().trim();
                 const prepositions = ['A', 'AN', 'THE', 'AT', 'IN', 'ON', 'OF', 'TO'];
                 if (!prepositions.includes(secondWord) && secondWord.length >= 3) {
@@ -190,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // NEW: Handle "DE LOS" or "DE LA" (2-word particles)
+        // Handle "DE LOS" or "DE LA" (2-word particles)
         if (words.length >= 3) {
             const firstTwo = words.slice(0, 2).map(w => w.toUpperCase().trim()).join(' ');
             if (['DE LOS', 'DE LA'].includes(firstTwo)) {
@@ -201,185 +175,228 @@ document.addEventListener('DOMContentLoaded', function () {
         return false;
     }
 
-    // ========================================================================
-    // FIELD LABEL MAPPINGS - Core of Key-Value Pairing System
-    // ========================================================================
-    // This constant defines all possible labels/indicators that may appear in ID cards
-    // for each data field. Used by extractFieldValue() to find and extract data.
-    // Supports English, Filipino, and common abbreviations for maximum compatibility.
-    // ========================================================================
+    // Driver's License Compound Middle Name Validation
+    function validateDriverLicenseCompoundMiddleName(firstName, extractedMiddleName) {
+        console.log('\n╔════════════════════════════════════════════════════════════════╗');
+        console.log('║  DRIVER\'S LICENSE COMPOUND MIDDLE NAME VALIDATION            ║');
+        console.log('╚════════════════════════════════════════════════════════════════╝');
+        console.log('Input - First Name:', firstName);
+        console.log('Input - Middle Name:', extractedMiddleName);
+
+        // If no middle name or single word, return as-is
+        if (!extractedMiddleName || extractedMiddleName.trim() === '') {
+            console.log('⚠ No middle name to validate');
+            return { firstName, middleName: extractedMiddleName };
+        }
+
+        const middleWords = extractedMiddleName.split(/\s+/).filter(w => w.length > 0);
+
+        // Single word middle name - no validation needed
+        if (middleWords.length === 1) {
+            console.log('✓ Single word middle name - no compound validation needed');
+            return { firstName, middleName: extractedMiddleName };
+        }
+
+        console.log(`Middle name has ${middleWords.length} words:`, middleWords);
+
+        // Check if the entire middle name is in COMPOUND_NAMES
+        const fullMiddleNameUpper = extractedMiddleName.toUpperCase().trim();
+        const isInCompoundList = COMPOUND_NAMES.includes(fullMiddleNameUpper);
+
+        if (isInCompoundList) {
+            console.log(`✓✓✓ COMPOUND MIDDLE NAME VALID: "${extractedMiddleName}" is in COMPOUND_NAMES list`);
+            console.log('→ Keeping full compound middle name as-is');
+            return { firstName, middleName: extractedMiddleName };
+        }
+
+        console.log(`✗ "${extractedMiddleName}" is NOT in COMPOUND_NAMES list`);
+        console.log('→ This is NOT a valid compound middle name for Driver\'s License');
+
+        // Check for partial compound matches
+        let validCompoundPart = '';
+        let remainingWords = [];
+
+        // Try 3-word compound first
+        if (middleWords.length >= 3) {
+            const first3Words = middleWords.slice(0, 3);
+            const first3Compound = first3Words.join(' ').toUpperCase();
+
+            if (COMPOUND_NAMES.includes(first3Compound)) {
+                validCompoundPart = first3Words.join(' ');
+                remainingWords = middleWords.slice(3);
+                console.log(`✓ Found 3-word compound in list: "${validCompoundPart}"`);
+            }
+        }
+
+        // Try 2-word compound if no 3-word match
+        if (!validCompoundPart && middleWords.length >= 2) {
+            const first2Words = middleWords.slice(0, 2);
+            const first2Compound = first2Words.join(' ').toUpperCase();
+
+            if (COMPOUND_NAMES.includes(first2Compound)) {
+                validCompoundPart = first2Words.join(' ');
+                remainingWords = middleWords.slice(2);
+                console.log(`✓ Found 2-word compound in list: "${validCompoundPart}"`);
+            }
+        }
+
+        if (validCompoundPart) {
+            const correctedMiddleName = validCompoundPart;
+            let correctedFirstName = firstName;
+
+            if (remainingWords.length > 0) {
+                const wordsToMove = remainingWords.join(' ');
+                correctedFirstName = correctedFirstName + ' ' + wordsToMove;
+                console.log(`→ Moving non-compound words to first name: "${wordsToMove}"`);
+            }
+
+            console.log('✓ VALIDATION COMPLETE:');
+            console.log(`  Corrected First Name: "${correctedFirstName.trim()}"`);
+            console.log(`  Corrected Middle Name: "${correctedMiddleName}" (valid compound)`);
+
+            return {
+                firstName: correctedFirstName.trim(),
+                middleName: correctedMiddleName
+            };
+        }
+
+        // No valid compound found - extract last word as middle name, move rest to first name
+        console.log('⚠ No valid compound pattern found in COMPOUND_NAMES');
+        console.log('→ Extracting last word as middle name, moving rest to first name');
+
+        const actualMiddleName = middleWords[middleWords.length - 1];
+        const wordsToFirstname = middleWords.slice(0, -1).join(' ');
+
+        let correctedFirstName = firstName;
+        if (wordsToFirstname) {
+            correctedFirstName = correctedFirstName + ' ' + wordsToFirstname;
+            console.log(`→ Moving to first name: "${wordsToFirstname}"`);
+        }
+
+        console.log('✓ VALIDATION COMPLETE:');
+        console.log(`  Corrected First Name: "${correctedFirstName.trim()}"`);
+        console.log(`  Corrected Middle Name: "${actualMiddleName}" (last word only)`);
+
+        return {
+            firstName: correctedFirstName.trim(),
+            middleName: actualMiddleName
+        };
+    }
+
+    // Field Label Mappings - Core of Key-Value Pairing System
     const FIELD_LABELS = {
         lastName: [
-            // English variations
             'LAST NAME', 'LASTNAME', 'SURNAME', 'FAMILY NAME', 'LAST',
-            // Filipino/Tagalog variations
             'APELYIDO', 'APELYEDO', 'HULING PANGALAN', 'HULING NGALAN',
-            // Common on Philippine IDs
             'PANGALAN (APELYIDO)', 'APELYIDO/SURNAME'
         ],
         firstName: [
-            // English variations
             'FIRST NAME', 'FIRSTNAME', 'GIVEN NAME', 'GIVEN NAMES', 'GIVENNAME', 'FIRST',
-            // Filipino/Tagalog variations
             'PANGALAN', 'UNANG PANGALAN', 'MGA PANGALAN', 'PANGALAN (UNA)',
-            // Common on Philippine National ID
             'PANGALAN/GIVEN NAME', 'PANGALAN/NAME', 'GIVEN', 'UNANG NGALAN',
-            // UMID variations
             'BINANSAGANG PANGALAN'
         ],
         middleName: [
-            // English variations - PRIORITIZE FULL LABELS FIRST
             'MIDDLE NAME', 'MIDDLENAME', 'MIDDLE INITIAL', 'M.I.', 'MID NAME', 'M NAME',
-            // SINGLE WORD LABELS (less specific, checked last)
             'MIDDLE', 'GITNA',
-            // Filipino/Tagalog variations
             'GITNANG PANGALAN', 'GITNANG APELYIDO', 'GITNANG NGALAN', 'GITNANG',
-            // Common on Philippine IDs
             'PANGALAN (GITNA)', 'PANGALAN/MIDDLE NAME',
-            // Variations with slash
             'MIDDLE/GITNANG', 'GITNANG/MIDDLE', 'MIDDLE NAME/GITNANG PANGALAN'
         ],
         fullName: [
-            // English variations
             'FULL NAME', 'COMPLETE NAME', 'NAME', 'HOLDER NAME',
-            // Filipino/Tagalog variations
             'BUONG PANGALAN', 'KUMPLETONG PANGALAN', 'PANGALAN NG MAY-ARI',
-            // Common on Philippine IDs
             'PANGALAN/NAME', 'PANGALAN NG CARD HOLDER'
         ],
         birthdate: [
-            // English variations
             'DATE OF BIRTH', 'BIRTH DATE', 'BIRTHDATE', 'DOB', 'BIRTHDAY', 'BIRTH',
             'DATE OF BIRTH/PETSA', 'BIRTH (MM/DD/YYYY)',
-            // Filipino/Tagalog variations
             'PETSA NG KAPANGANAKAN', 'KAPANGANAKAN', 'PETSA NG PAGSILANG',
             'ARAW NG KAPANGANAKAN', 'IPINANGANAK',
-            // Common on Philippine National ID
             'KAPANGANAKAN/DATE OF BIRTH', 'PETSA/DATE'
         ],
         gender: [
-            // English variations
             'SEX', 'GENDER', 'SEX/KASARIAN',
-            // Filipino/Tagalog variations
             'KASARIAN', 'KASARIAN/SEX',
-            // Common on Philippine IDs
             'KASARIAN (SEX)', 'SEX (M/F)', 'KASARIAN/GENDER'
         ],
         address: [
-            // English variations
             'ADDRESS', 'RESIDENCE', 'RESIDENTIAL ADDRESS', 'HOME ADDRESS',
             'PRESENT ADDRESS', 'PERMANENT ADDRESS', 'STREET ADDRESS',
-            // Filipino/Tagalog variations
             'TIRAHAN', 'LUGAR', 'LUGAR NG TIRAHAN', 'TIRAHAN/ADDRESS',
             'TAHANAN', 'ADDRESS/TIRAHAN',
-            // Common on Philippine National ID
             'KASALUKUYANG TIRAHAN', 'PERMANENTENG TIRAHAN'
         ],
         city: [
-            // English variations
             'CITY', 'CITY/MUNICIPALITY', 'MUNICIPALITY', 'CITY/MUNIC',
-            // Filipino/Tagalog variations
             'LUNGSOD', 'BAYAN', 'MUNISIPALIDAD', 'LUNGSOD/BAYAN',
-            // Common on Philippine IDs
             'LUNGSOD/CITY', 'CITY OR MUNICIPALITY', 'LUNSOD/MUNISIPALIDAD'
         ],
         idNumber: [
-            // English variations
             'ID NUMBER', 'ID NO', 'ID #', 'NUMBER', 'NO.', 'ID',
-            // Driver's License specific
             'LICENSE NO', 'LICENSE NUMBER', 'DL NO', 'LICENSE #',
             'LISENSYA BLGD', 'DRIVER LICENSE NO',
-            // PhilSys/National ID specific
             'PHILSYS NUMBER', 'PSN', 'PHIL-SYS NO', 'PHILSYS NO',
             'PCN', 'NATIONAL ID NUMBER', 'NATIONAL ID NO',
-            // UMID specific
             'UMID NUMBER', 'UMID NO', 'CRN', 'CARD REFERENCE NUMBER',
             'UMID CRN'
-        ], 
+        ],
         nationality: [
-            // English variations
             'NATIONALITY', 'CITIZEN', 'CITIZENSHIP',
-            // Filipino/Tagalog variations
             'NASYONALIDAD', 'PAGKAMAMAMAYAN', 'BANSA',
-            // Common on Philippine IDs
             'NASYONALIDAD/NATIONALITY', 'CITIZENSHIP/NASYONALIDAD'
         ],
         civilStatus: [
-            // English variations
             'CIVIL STATUS', 'MARITAL STATUS', 'STATUS', 'MAR STATUS',
-            // Filipino/Tagalog variations
             'KATAYUANG SIBIL', 'LAGAY NG PAG-AASAWA', 'KATAYUAN',
             'ESTADO SIBIL',
-            // Common on Philippine National ID
             'KATAYUANG SIBIL/CIVIL STATUS', 'CIVIL STATUS/KATAYUAN'
         ],
         suffix: [
-            // English variations
             'SUFFIX', 'NAME SUFFIX', 'EXT', 'EXTENSION',
-            // Filipino/Tagalog variations
             'HULAPI', 'KARUGTONG', 'SUFFIX/HULAPI'
         ],
         bloodType: [
-            // English variations
             'BLOOD TYPE', 'BLOOD', 'BLOOD GROUP', 'BT',
-            // Filipino/Tagalog variations
             'URI NG DUGO', 'DUGO', 'BLOOD TYPE/URI NG DUGO'
         ],
         height: [
-            // English variations
             'HEIGHT', 'HT', 'HGT',
-            // Filipino/Tagalog variations
             'TAAS', 'TANGKAD', 'HEIGHT/TAAS'
         ],
         weight: [
-            // English variations
             'WEIGHT', 'WT', 'WGT',
-            // Filipino/Tagalog variations
             'TIMBANG', 'BIGAT', 'WEIGHT/TIMBANG'
         ],
         placeOfBirth: [
-            // English variations
             'PLACE OF BIRTH', 'BIRTH PLACE', 'POB', 'BIRTHPLACE',
-            // Filipino/Tagalog variations
             'LUGAR NG KAPANGANAKAN', 'PINANGANAK SA', 'LUGAR NG PAGSILANG',
-            // Common on Philippine IDs
             'LUGAR NG KAPANGANAKAN/PLACE OF BIRTH', 'PLACE OF BIRTH/LUGAR'
         ],
         barangay: [
-            // English variations
             'BARANGAY', 'BRGY', 'BRGY.', 'BARANGGAY',
-            // Filipino/Tagalog variations
             'BARANGGAY', 'BRGY/BARANGAY'
         ],
         street: [
-            // English variations
             'STREET', 'ST', 'ST.', 'STREET ADDRESS', 'HOUSE NO',
             'BLOCK', 'LOT', 'BLOCK/LOT', 'BLK', 'BLK/LOT',
-            // Filipino/Tagalog variations
             'KALYE', 'KALSADA', 'NUMERO NG BAHAY'
         ],
         subdivision: [
-            // English variations
             'SUBDIVISION', 'SUBDV', 'SUBD', 'VILLAGE', 'VILL',
-            // Filipino/Tagalog variations
             'SUBDIBISYON', 'PAMAYANAN'
         ],
         district: [
-            // English variations
             'DISTRICT', 'DIST', 'DIST.', 'ZONE',
-            // Filipino/Tagalog variations
             'DISTRITO', 'DISTRITO/DISTRICT'
         ],
         province: [
-            // English variations
             'PROVINCE', 'PROV', 'PROV.', 'PROVINCIAL',
-            // Filipino/Tagalog variations
             'PROBINSYA', 'LALAWIGAN', 'PROBINSYA/PROVINCE'
         ]
     };
 
     // Helper function to check if text contains "unusual words" (actual data, not labels)
-    // Philippine IDs have labels on top, values below - values are unusual/unique words
     function containsUnusualWords(text) {
         if (!text || text.length < 2) return false;
 
@@ -393,14 +410,12 @@ document.addEventListener('DOMContentLoaded', function () {
             'NUMBER', 'NUMERO', 'IDENTIFICATION', 'NATIONALITY', 'NACIONALIDAD'
         ];
 
-        // Check if text is mostly unusual words (actual data)
         const words = upperText.split(/\s+/).filter(w => w.length > 1);
 
         // If no words, reject
         if (words.length === 0) return false;
 
         // IMPROVED MATCHING: Use exact word matching, not substring matching
-        // This prevents false positives like "EMENDO" being rejected
         const labelWordsCount = words.filter(word => {
             // Exact match check
             if (commonLabelWords.includes(word)) {
@@ -408,7 +423,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // For longer words (6+ chars), check if they're mostly a label word
-            // This catches variations like "NAMES" or "SURNAME:"
             if (word.length >= 6) {
                 for (const label of commonLabelWords) {
                     if (label.length >= 4 && word.includes(label) && label.length >= word.length * 0.6) {
@@ -438,9 +452,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return false;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // FILTER NON-NAME WORDS (Common OCR artifacts, noise, and filler words)
-    // ═══════════════════════════════════════════════════════════════════════
+    // Filter non-name words (Common OCR artifacts, noise, and filler words)
     function isNonNameWord(word) {
         if (!word || word.trim() === '') return true;
 
@@ -506,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return true; // If not purely alphabetic, filter it out
     }
 
-    // Clean and filter name words, removing noise (COMPACT VERSION)
+    // Clean and filter name words, removing noise
     function cleanNameWords(words) {
         const cleaned = words
             .map(w => w.trim())
@@ -522,7 +534,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Helper function to check if extracted text is actually a label (should be rejected)
-    // This prevents labels like "PANGALAN", "APELYIDO" from being returned as name values
     function isExtractedTextALabel(text) {
         if (!text || text.length < 2) return true;
 
@@ -536,7 +547,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Check if text is mostly labels (more than 60% is label words)
-        // IMPROVED: Use exact matching to prevent false positives
         const words = upperText.split(/\s+/).filter(w => w.length > 1);
         const labelWords = words.filter(word => {
             // Check if this word exactly matches any label or is contained in a label as a complete word
@@ -548,7 +558,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // More lenient threshold (60% instead of 50%) to reduce false positives
         if (labelWords.length > words.length * 0.6) {
-            console.log(`    ⚠ Rejected: "${text}" is ${Math.round(labelWords.length/words.length*100)}% label words`);
+            console.log(`    ⚠ Rejected: "${text}" is ${Math.round(labelWords.length / words.length * 100)}% label words`);
             return true;
         }
 
@@ -591,7 +601,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Additional check: if ALL words in the text are exact label-only terms
-        // This is more conservative than substring replacement to avoid false positives
         const allWordsAreLabels = words.every(word => labelOnlyTerms.includes(word));
 
         if (allWordsAreLabels && words.length > 0) {
@@ -604,7 +613,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Validate extracted name data to ensure no labels are present
-    // Returns { valid: boolean, issues: string[] }
     function validateExtractedNames(extractedData) {
         const issues = [];
 
@@ -633,7 +641,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Check middleName (REQUIRED FIELD - must be present and valid)
-        // Note: Only SUFFIX is optional in Philippine IDs
         if (!extractedData.middleName || extractedData.middleName.trim() === '') {
             issues.push('Middle Name is REQUIRED but was not found - please ensure ID shows middle name clearly');
         } else if (isExtractedTextALabel(extractedData.middleName)) {
@@ -669,10 +676,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return { valid, issues };
     }
 
-    // Smart label-value extraction function - Core of Key-Value Pairing
-    // PHILIPPINE ID FORMAT: Labels are on TOP, values are BELOW
-    // Extraction priority: 1) Next-line, 2) Following-line, 3) Same-line (last resort)
-    // Returns: { value: string, method: string } or null if not found
+    // Smart label-value extraction function - Core of Key-Value Pairing System
     function extractFieldValue(lines, fieldType) {
         const labels = FIELD_LABELS[fieldType];
         if (!labels) {
@@ -695,17 +699,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.log(`✓ Found label "${label}" at line ${i + 1}: "${line}"`);
                     console.log(`  Philippine ID Format: Label is on TOP, value should be BELOW`);
 
-                    // ===================================================================
                     // PRIORITY METHOD 1: Value on NEXT line (Philippine ID standard format)
-                    // Most Philippine IDs have: Label on line X, Value on line X+1
-                    // Enhanced: If next line is a label fragment, check the line after that
-                    // CRITICAL: Aggressively reject ANY label words
-                    // ===================================================================
                     const singleLabelWords = ['FIRST', 'LAST', 'MIDDLE', 'GIVEN', 'SURNAME',
-                                              'NAME', 'APELYIDO', 'PANGALAN', 'GITNANG',
-                                              'UNANG', 'HULING', 'NGALAN', 'APELYEDO',
-                                              'FIRSTNAME', 'LASTNAME', 'MIDDLENAME',
-                                              'GIVENNAME', 'FAMILYNAME', 'FULLNAME'];
+                        'NAME', 'APELYIDO', 'PANGALAN', 'GITNANG',
+                        'UNANG', 'HULING', 'NGALAN', 'APELYEDO',
+                        'FIRSTNAME', 'LASTNAME', 'MIDDLENAME',
+                        'GIVENNAME', 'FAMILYNAME', 'FULLNAME'];
 
                     // Check up to 5 lines after the label to find the actual value
                     for (let offset = 1; offset <= 5 && (i + offset) < lines.length; offset++) {
@@ -725,7 +724,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (isSingleLabelWord) {
                             console.log(`    ❌ REJECTED: "${candidateLine}" is an exact label word match`);
                             console.log(`    → This is a LABEL, not data - skipping to next line`);
-                            continue; // Skip this line and check the next one
+                            continue;
                         }
 
                         // CRITICAL CHECK 2: Reject if line contains ONLY label words
@@ -750,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             break;
                         }
 
-                        // CRITICAL CHECK 4: Minimum length requirement (at least 2 chars, unless single letter initial)
+                        // CRITICAL CHECK 4: Minimum length requirement
                         if (candidateLine.length === 1 && !/^[A-Z]$/i.test(candidateLine)) {
                             console.log(`    ✗ Single character "${candidateLine}" is not a valid letter`);
                             continue;
@@ -764,13 +763,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     console.log(`  [Method 1] No valid value found in next 5 lines`);
 
-
-                    // ===================================================================
                     // METHOD 2: Value on FOLLOWING line (extended search)
-                    // Fallback method: Check 6-10 lines after the label
-                    // This catches cases where there are multiple empty/label lines
-                    // CRITICAL: Same aggressive label rejection as Method 1
-                    // ===================================================================
                     console.log(`  [Method 2] Extended search (6-10 lines ahead)...`);
                     for (let j = i + 6; j < Math.min(i + 11, lines.length); j++) {
                         const followingLine = lines[j].trim();
@@ -813,10 +806,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         return { value: followingLine, method: 'following-line', label: label };
                     }
 
-                    // ===================================================================
                     // METHOD 3: Value on SAME line (LAST RESORT - uncommon for Philippine IDs)
-                    // Only use if label and value are on same line (e.g., "NAME: JUAN")
-                    // ===================================================================
                     console.log(`  [Method 3 - LAST RESORT] Checking same line...`);
                     let valueOnSameLine = line
                         .replace(new RegExp(label, 'i'), '')  // Remove the label
@@ -872,19 +862,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // EXTRACT FIRST NAME (with Middle Name and Suffix parsing)
-    // ═══════════════════════════════════════════════════════════════════════
-    // Returns object with firstName, middleName, and suffix since they're often
-    // grouped together in the "First Name" field on Philippine IDs.
-    //
-    // IMPORTANT: Philippine IDs typically format names as:
-    //   LAST NAME: ESPANOLA
-    //   FIRST NAME: SHEAN ANDREI YEE  ← Contains BOTH first name AND middle name
-    //
-    // This function will automatically parse:
-    //   "SHEAN ANDREI YEE" → First: "SHEAN ANDREI", Middle: "YEE"
-    // ═══════════════════════════════════════════════════════════════════════
+    // Extract First Name (with Middle Name and Suffix parsing)
     function extractFirstName(lines) {
         console.log('\n╔════════════════════════════════════════════════╗');
         console.log('║   EXTRACTING FIRST NAME (+ Middle Name)       ║');
@@ -936,7 +914,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return { firstName: "", middleName: "", suffix: "" };
     }
 
-    // Independent extraction function for Middle Name (works like extractFieldValue)
+    // Independent extraction function for Middle Name
     function extractMiddleName(lines, alreadyParsedFromFirstName = "") {
         console.log('Extracting Middle Name independently...');
 
@@ -972,7 +950,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return "";
     }
 
-    // Independent extraction function for Suffix (works like extractFieldValue)
+    // Independent extraction function for Suffix
     function extractSuffix(lines, alreadyParsedFromFirstName = "") {
         console.log('Extracting Suffix independently...');
 
@@ -1003,8 +981,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Fallback: Try finding suffix patterns in lines (Jr, Sr, II, III, IV, V)
-        // BUT with VERY STRICT context validation to prevent false positives
+        // Fallback: Try finding suffix patterns in lines
         console.log('Label extraction failed, trying pattern search with STRICT validation...');
         const suffixPatterns = /\b(JR|SR|II|III|IV|V|JUNIOR|SENIOR)\b/i;
 
@@ -1040,7 +1017,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 // REJECTION 2: Reject if it's a Driver's License restriction code
-                // Driver's License restrictions are numbered I, II, III, etc.
                 const isRestrictionCode = /RESTRICTION|RESTRICTIONS|COND|CONDITIONS|CODE/i.test(upperLine);
                 if (isRestrictionCode) {
                     console.log('✗ Suffix found in restriction code context (Driver\'s License), rejecting');
@@ -1054,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     continue;
                 }
 
-                // REJECTION 4: Check if line contains actual name-like words (3+ letter words)
+                // REJECTION 4: Check if line contains actual name-like words
                 const nameWords = line.match(/\b[A-Z][a-z]{2,}\b/g) || [];
                 const hasMultipleNameWords = nameWords.length >= 2;
 
@@ -1065,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // REJECTION 5: For "III" specifically, require very strong name context
                 if (suffix === 'III') {
-                    // Must have at least 3 name-like words (e.g., "DELA CRUZ JOSE III")
+                    // Must have at least 3 name-like words
                     if (nameWords.length < 3) {
                         console.log('✗ "III" requires at least 3 name-like words for context, rejecting');
                         continue;
@@ -1095,7 +1071,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return "";
     }
 
-    // Independent extraction function for Civil Status (works like extractFieldValue)
+    // Independent extraction function for Civil Status
     function extractCivilStatus(lines) {
         console.log('Extracting Civil Status independently...');
 
@@ -1177,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return "";
     }
 
-    // Independent extraction function for Gender/Sex (works like extractFieldValue)
+    // Independent extraction function for Gender/Sex
     function extractGender(lines) {
         console.log('Extracting Gender/Sex independently...');
 
@@ -1218,7 +1194,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const upper = line.toUpperCase().trim();
 
             // Check for explicit gender indicators
-            // Pattern: "SEX: M", "GENDER: MALE", "M", "MALE" (standalone or with label)
             if (/\bSEX\b.*\bM\b/.test(upper) ||
                 /\bGENDER\b.*\bM\b/.test(upper) ||
                 /\bKASARIAN\b.*\bM\b/.test(upper) ||
@@ -1250,10 +1225,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return "";
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // ENHANCED: Parse First Name + Middle Name + Suffix from combined field
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // Handles: compound middle names, multiple first names, suffixes, middle initials, OCR noise
+    // Enhanced: Parse First Name + Middle Name + Suffix from combined field
     function parseFirstMiddleSuffix(words, preferAllAsFirstName = false) {
         let firstName = '';
         let middleName = '';
@@ -1290,8 +1262,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // === STEP 3: Handle preferAllAsFirstName flag ===
-        // Used when middle name exists in a separate field
-        // Example: Given Names field="JUAN MIGUEL", Middle Name field="DELA CRUZ"
         if (preferAllAsFirstName) {
             firstName = workingWords.join(' ');
             console.log(`✓ Using all words as first name (separate middle name field exists)`);
@@ -1299,38 +1269,50 @@ document.addEventListener('DOMContentLoaded', function () {
             return { firstName, middleName: '', suffix };
         }
 
-        // === STEP 4: Check for compound middle name (3 words) ===
-        // Example: "MARIA DE LOS SANTOS" -> First: "MARIA", Middle: "DE LOS SANTOS"
+        // === STEP 4: NEW LOGIC - Check for COMPOUND middle names ONLY from COMPOUND_NAMES list ===
+        console.log('=== COMPOUND MIDDLE NAME VALIDATION ===');
+        console.log('Rule: Only accept compound middle names that are in COMPOUND_NAMES list');
+        console.log('Otherwise, middle name is SINGLE word only');
+
+        // Check for 3-word compound middle name (must be in COMPOUND_NAMES)
         if (workingWords.length >= 4) {  // Need at least 4: 1 first + 3 middle
             const last3Words = workingWords.slice(-3);
+            const potentialCompound = last3Words.join(' ').toUpperCase();
+
+            console.log(`  Checking 3-word ending: "${potentialCompound}"`);
+
             if (isCompoundName(last3Words)) {
                 middleName = last3Words.join(' ');
                 firstName = workingWords.slice(0, -3).join(' ');
-                console.log(`✓ Found 3-word compound middle name: "${middleName}"`);
+                console.log(`✓✓✓ Found 3-word COMPOUND middle name from list: "${middleName}"`);
                 console.log(`  First Name: "${firstName}"`);
-                console.log(`  → Format: FIRST NAME(S) + COMPOUND MIDDLE NAME (3 words)`);
+                console.log(`  → Format: FIRST NAME(S) + COMPOUND MIDDLE NAME (3 words from list)`);
                 return { firstName, middleName, suffix };
+            } else {
+                console.log(`  ✗ "${potentialCompound}" NOT in COMPOUND_NAMES list - will use single middle name`);
             }
         }
 
-        // === STEP 5: Check for compound middle name (2 words) ===
-        // Example: "JUAN DELA CRUZ" -> First: "JUAN", Middle: "DELA CRUZ"
-        // Example: "MARIA CLARA SANTA MARIA" -> First: "MARIA CLARA", Middle: "SANTA MARIA"
+        // Check for 2-word compound middle name (must be in COMPOUND_NAMES)
         if (workingWords.length >= 3) {  // Need at least 3: 1 first + 2 middle
             const last2Words = workingWords.slice(-2);
+            const potentialCompound = last2Words.join(' ').toUpperCase();
+
+            console.log(`  Checking 2-word ending: "${potentialCompound}"`);
+
             if (isCompoundName(last2Words)) {
                 middleName = last2Words.join(' ');
                 firstName = workingWords.slice(0, -2).join(' ');
-                console.log(`✓ Found 2-word compound middle name: "${middleName}"`);
+                console.log(`✓✓✓ Found 2-word COMPOUND middle name from list: "${middleName}"`);
                 console.log(`  First Name: "${firstName}"`);
-                console.log(`  → Format: FIRST NAME(S) + COMPOUND MIDDLE NAME (2 words)`);
+                console.log(`  → Format: FIRST NAME(S) + COMPOUND MIDDLE NAME (2 words from list)`);
                 return { firstName, middleName, suffix };
+            } else {
+                console.log(`  ✗ "${potentialCompound}" NOT in COMPOUND_NAMES list - will use single middle name`);
             }
         }
 
-        // === STEP 6: Check for middle initial (single letter or letter with period) ===
-        // Example: "JUAN M DELA" -> First: "JUAN", Middle: "M"
-        // Example: "MARIA CLARA R" -> First: "MARIA CLARA", Middle: "R"
+        // === STEP 5: Check for middle initial (single letter or letter with period) ===
         if (workingWords.length >= 2) {
             const lastWord = workingWords[workingWords.length - 1].replace(/\./g, '');
             if (lastWord.length === 1 && /^[A-Z]$/i.test(lastWord)) {
@@ -1343,40 +1325,27 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════════
-        // STEP 7: STANDARD PARSING - Last word is MIDDLE NAME, rest is FIRST NAME
-        // ═══════════════════════════════════════════════════════════════════════
-        // This is the standard format for Philippine IDs where the "Given Names"
-        // field contains both given name(s) AND middle name together.
-        //
-        // Examples:
-        //   "JUAN DELA CRUZ"           → First: "JUAN"              Middle: "DELA CRUZ" (handled above)
-        //   "SHEAN ANDREI YEE"         → First: "SHEAN ANDREI"     Middle: "YEE"
-        //   "JETLANE MARSHALL CRUZ"    → First: "JETLANE MARSHALL" Middle: "CRUZ"
-        //   "MARIA CLARA SANTOS"       → First: "MARIA CLARA"      Middle: "SANTOS"
-        //   "JOHN RODRIGUEZ"           → First: "JOHN"             Middle: "RODRIGUEZ"
-        //   "JOSE"                     → First: "JOSE"             Middle: "" (none)
-        //
-        // This parsing strategy correctly handles multi-word first names.
-        // ═══════════════════════════════════════════════════════════════════════
+        // === STEP 6: STANDARD PARSING - Last word is SINGLE middle name ===
+        console.log('=== APPLYING DEFAULT PARSING ===');
+        console.log('Rule: Last word = SINGLE middle name (not in COMPOUND_NAMES)');
+        console.log('      All other words = First name');
 
         if (workingWords.length >= 2) {
-            // Last word is middle name
+            // Last word is SINGLE middle name (not compound)
             middleName = workingWords[workingWords.length - 1];
-            // All other words are first name (supports multiple first names)
+            // All other words are first name
             firstName = workingWords.slice(0, -1).join(' ');
 
             console.log(`✓ Standard parsing applied:`);
             console.log(`  → First Name: "${firstName}" (all words except last)`);
-            console.log(`  → Middle Name: "${middleName}" (last word)`);
-            console.log(`  ℹ This format is standard for Philippine IDs`);
+            console.log(`  → Middle Name: "${middleName}" (SINGLE word only - not in COMPOUND_NAMES)`);
+            console.log(`  ℹ Compound middle names only accepted if in COMPOUND_NAMES list`);
         } else {
             // Only one word - it's the first name, no middle name detected
             firstName = workingWords[0];
             console.log(`⚠ Single word detected:`);
             console.log(`  → First Name: "${firstName}"`);
             console.log(`  → Middle Name: (none found in this field)`);
-            console.log(`  ℹ Middle name may be in a separate field or missing`);
         }
 
         return { firstName, middleName, suffix };
@@ -1431,23 +1400,6 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`[OCR-${category}]`, data);
         }
     }
-
-    // ========================================================================
-    // KEY-VALUE PAIRING FUNCTIONS
-    // ========================================================================
-    // These functions ensure proper matching of labels/indicators with extracted data
-    // for easy parsing, validation, and field population.
-    //
-    // EXTRACTION FLOW:
-    // 1. extractFieldValue() finds labels in OCR text and extracts values
-    // 2. Individual extraction functions (extractFirstName, extractGender, etc.) use extractFieldValue()
-    // 3. ID-specific parsers (parseDriverLicenseFront, etc.) combine extracted fields
-    // 4. formatExtractedDataWithLabels() formats output as "Label: Value" strings
-    // 5. getExtractedDataLabeled() returns object with labeled keys for validation
-    // 6. logExtractedData() displays extracted data in labeled format
-    //
-    // This ensures consistency and traceability throughout the extraction pipeline.
-    // ========================================================================
 
     // Format extracted data with labels for easy parsing and validation
     function formatExtractedDataWithLabels(extractedData, idType = '') {
@@ -1657,10 +1609,6 @@ document.addEventListener('DOMContentLoaded', function () {
     async function preprocessAndOCR(imageSrc, preview, isBack) {
         try {
             console.log('Starting image preprocessing...');
-
-            // OCR.space handles image preprocessing automatically
-            // Just pass the original image for best results
-            // The API does: auto-rotation, deskewing, noise reduction, contrast enhancement
 
             // Load image asynchronously
             const img = await loadImage(imageSrc);
@@ -1918,12 +1866,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return Math.round(similarity);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════════
     // Validate Name Match - TWO-STEP VALIDATION
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // STEP 1: Check individual components (First, Middle, Last, Suffix)
-    // STEP 2: If STEP 1 fails, concatenate full names and compare (for Driver's License & SSS)
-    // ═══════════════════════════════════════════════════════════════════════════════
     function validateNameMatch(extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix = "", idType = "") {
         // Normalize names for comparison
         const normalizeForComparison = (name) => {
@@ -1966,9 +1909,7 @@ document.addEventListener('DOMContentLoaded', function () {
             };
         }
 
-        // ═══════════════════════════════════════════════════════════════════════
         // STEP 1: Check Individual Components First
-        // ═══════════════════════════════════════════════════════════════════════
         console.log('[STEP 1] Checking individual name components...');
 
         // Calculate similarity for each component
@@ -2034,9 +1975,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log('✗ STEP 1 FAILED: Individual components do not match');
 
-        // ═══════════════════════════════════════════════════════════════════════
         // STEP 2: Full Name Comparison (Driver's License & SSS ID Priority)
-        // ═══════════════════════════════════════════════════════════════════════
         const usesFullNameComparison = idType === 'driver-license' || idType === 'sss-id';
 
         if (usesFullNameComparison) {
@@ -2098,9 +2037,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('\n[STEP 2] Skipped - Full name comparison not applicable for this ID type');
         }
 
-        // ═══════════════════════════════════════════════════════════════════════
         // FINAL RESULT: Name mismatch
-        // ═══════════════════════════════════════════════════════════════════════
         const overallSimilarity = Math.round((lastSimilarity * 0.4 + firstSimilarity * 0.4 + middleSimilarity * 0.2));
 
         console.log('\n✗ VALIDATION FAILED: Name does not match');
@@ -2169,7 +2106,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Process image with OCR.space API (much better than Tesseract for IDs)
-    // Async function for OCR processing with error recovery
     async function processImageWithOCR(imageSrc, isBack) {
         // Rate limiting check
         const now = Date.now();
@@ -2193,7 +2129,6 @@ document.addEventListener('DOMContentLoaded', function () {
             { percent: 5, message: '<i class="fas fa-upload fa-spin mr-2"></i>Uploading image to OCR engine...' },
             { percent: 15, message: '<i class="fas fa-image fa-pulse mr-2"></i>Preprocessing image...' },
             { percent: 30, message: '<i class="fas fa-search fa-spin mr-2"></i>Detecting text regions...' },
-            //{ percent: 50, message: '<i class="fas fa-brain fa-pulse mr-2"></i>Analyzing ID structure...' },
             { percent: 70, message: '<i class="fas fa-spell-check fa-spin mr-2"></i>Extracting text data...' },
             { percent: 85, message: '<i class="fas fa-check-double fa-pulse mr-2"></i>Validating extracted data...' },
             { percent: 100, message: '<i class="fas fa-check-circle fa-pulse mr-2 text-green-600"></i>OCR processing complete' }
@@ -2253,12 +2188,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 const text = result.ParsedResults[0].ParsedText;
-
-                // Keep progress bar visible at 100% while analyzing
-                // DON'T hide it here - let the final completion hide it
-                //setTimeout(() => {
-                //    status.innerHTML = '<i class="fas fa-id-card fa-pulse mr-2 text-blue-600"></i>Identifying ID type...';
-                //}, 50);
 
                 // Clean OCR text to remove noise
                 const cleanedText = cleanOCRText(text);
@@ -2360,7 +2289,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('===================================\n');
 
                 // === STEP 2 & 3: Parse ID, Validate Name, Extract Data ===
-                // Each parser will handle Steps 2 & 3 internally
                 if (idTypeToProcess === "driver-license") {
                     if (!isBack) {
                         parseDriverLicenseFront(cleanedText);
@@ -2431,16 +2359,12 @@ document.addEventListener('DOMContentLoaded', function () {
             'driver-license': 'Driver\'s License',
             'phil-id': 'National ID',
             'umid': 'UMID',
-            'sss-id': 'Social Security System'  // Official ID type name
+            'sss-id': 'Social Security System'
         };
         return idTypeNames[idType] || idType;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // 🔍 DETECT ID SIDE (FRONT vs BACK) - INTELLIGENT DETECTION
-    // ═══════════════════════════════════════════════════════════════════════
-    // Detects whether the uploaded ID image is a front or back side
-    // Uses weighted scoring system for accurate detection
+    // DETECT ID SIDE (FRONT vs BACK) - INTELLIGENT DETECTION
     function detectIDSide(text, idType) {
         if (!text || !idType) return 'unknown';
 
@@ -2511,36 +2435,46 @@ document.addEventListener('DOMContentLoaded', function () {
                 break;
 
             case 'phil-id':
-                // National ID Front Indicators
+                // National ID Front Indicators (has names, PhilSys number, birthdate)
                 const philFrontIndicators = {
                     'PCN': 10,
                     'PHILSYS NUMBER': 10,
                     'PHILSYS NO': 10,
                     'PAMBANSANG': 9,
-                    'GIVEN NAME': 7,
-                    'PANGALAN/GIVEN NAME': 8,
-                    'PANGALAN': 6,
-                    'FIRST NAME': 7,
-                    'LAST NAME': 7,
-                    'DATE OF BIRTH': 8,
-                    'KAPANGANAKAN': 8,
-                    'SEX': 6,
-                    'KASARIAN': 6,
-                    'REPUBLIC OF THE PHILIPPINES': 5
+                    'GIVEN NAME': 9,
+                    'PANGALAN/GIVEN NAME': 9,
+                    'PANGALAN': 8,
+                    'FIRST NAME': 9,
+                    'LAST NAME': 9,
+                    'SURNAME': 9,
+                    'APELYIDO': 8,
+                    'MIDDLE NAME': 8,
+                    'DATE OF BIRTH': 10,
+                    'KAPANGANAKAN': 10,
+                    'REPUBLIC OF THE PHILIPPINES': 6,
+                    'PHILIPPINE IDENTIFICATION': 7
                 };
 
-                // National ID Back Indicators
+                // National ID Back Indicators (ONLY gender/sex and civil/marital status)
                 const philBackIndicators = {
-                    'ADDRESS': 8,
-                    'TIRAHAN': 8,
-                    'PERMANENT ADDRESS': 9,
-                    'BLOOD TYPE': 9,
-                    'DUGO': 8,
-                    'MARITAL STATUS': 9,
-                    'KALAGAYAN': 8,
-                    'PLACE OF BIRTH': 7,
-                    'EMERGENCY CONTACT': 8,
-                    'MOBILE NUMBER': 6
+                    'SEX': 10,
+                    'KASARIAN': 10,
+                    'GENDER': 10,
+                    'MARITAL STATUS': 10,
+                    'CIVIL STATUS': 10,
+                    'KALAGAYAN': 10,
+                    'MALE': 8,
+                    'FEMALE': 8,
+                    'LALAKI': 8,
+                    'BABAE': 8,
+                    'SINGLE': 7,
+                    'MARRIED': 7,
+                    'WIDOW': 7,
+                    'WIDOWED': 7,
+                    'SEPARATED': 7,
+                    'KASAL': 7,
+                    'BALO': 7,
+                    'WALANG ASAWA': 7
                 };
 
                 // Score front indicators
@@ -2692,10 +2626,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return detectedSide;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // 🚨 SHOW ID SIDE MISMATCH MODAL
-    // ═══════════════════════════════════════════════════════════════════════
-    // Shows an error modal when user uploads wrong ID side
+    // SHOW ID SIDE MISMATCH MODAL
     function showIDSideMismatchModal(expectedSide, detectedSide, idType) {
         console.error('========================================');
         console.error('❌ ID SIDE MISMATCH DETECTED');
@@ -2746,10 +2677,7 @@ document.addEventListener('DOMContentLoaded', function () {
         bootstrapModal.show();
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // 🧹 CLEAR UPLOAD AREA
-    // ═══════════════════════════════════════════════════════════════════════
-    // Clears the uploaded image and resets the upload area
+    // CLEAR UPLOAD AREA
     function clearUploadArea(isBack) {
         const fileInput = isBack ? fileBack : fileFront;
         const preview = isBack ? imagePreviewBack : imagePreview;
@@ -2869,11 +2797,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'REJECTED';
         }
 
-        // ═══════════════════════════════════════════════════════════════════════
         // === METHOD 1: STRONG KEYWORD DETECTION (High confidence) ===
-        // ═══════════════════════════════════════════════════════════════════════
-        // Check for unique, definitive keywords first (including Filipino variations)
-
         // SSS ID detection - ACCEPTED (English + Filipino variations)
         if (upperText.includes('SOCIAL SECURITY SYSTEM') ||
             upperText.includes('SSS MEMBER') ||
@@ -2882,7 +2806,7 @@ document.addEventListener('DOMContentLoaded', function () {
             upperText.includes('SISTEMA NG SEGURIDAD SOSYAL') || // Filipino
             upperText.includes('SEGURIDAD SOSYAL') || // Filipino
             (upperText.includes('SSS') && !upperText.includes('GSIS') && !upperText.includes('UMID') &&
-             (upperText.includes('NUMBER') || upperText.includes('CARD') || upperText.includes('MEMBER') || upperText.includes('NUMERO')))) {
+                (upperText.includes('NUMBER') || upperText.includes('CARD') || upperText.includes('MEMBER') || upperText.includes('NUMERO')))) {
             console.log('✓ SSS ID detected (Social Security System)');
             return 'sss-id';
         }
@@ -3162,7 +3086,6 @@ document.addEventListener('DOMContentLoaded', function () {
         extractedData.confidence.sex = extractedData.sex ? 90 : 0;
 
         // Extract address - MULTI-LINE SUPPORT
-        // Address can span 2-3 lines, so we need to concatenate them
         extractedData.address = extractMultiLineAddress(lines);
         if (extractedData.address) {
             console.log(`✓ Complete address extracted: "${extractedData.address}"`);
@@ -3562,6 +3485,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // FORMAT: "Last name, First name, Middle name, Suffix" (comma-separated)
     // EXAMPLE: "DELA CRUZ, JUAN MIGUEL JR"
     // ═══════════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Extract Driver's License Name with Compound Middle Name Validation
+    // ═══════════════════════════════════════════════════════════════════════════════
     function extractDriverLicenseName(lines, text) {
         console.log('\n═══ DRIVER\'S LICENSE NAME EXTRACTION ═══');
         console.log('Format: Last name, First name, Middle name, Suffix');
@@ -3573,6 +3499,8 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`  Line ${idx + 1}: "${line}"`);
         });
         console.log('');
+
+        let lastName = "", firstName = "", middleName = "", suffix = "";
 
         // PRIORITY: Look for name below the label indicator
         console.log('[METHOD 1] Looking for name below label indicator...');
@@ -3598,7 +3526,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         const parsed = parseDriverLicenseFullName(nameLine);
                         if (parsed) {
                             console.log(`    Last: "${parsed.lastName}", First: "${parsed.firstName}", Middle: "${parsed.middleName}", Suffix: "${parsed.suffix}"\n`);
-                            return parsed;
+
+                            // === APPLY COMPOUND MIDDLE NAME VALIDATION ===
+                            console.log('\n=== APPLYING DRIVER\'S LICENSE COMPOUND MIDDLE NAME VALIDATION ===');
+                            const validatedNames = validateDriverLicenseCompoundMiddleName(parsed.firstName, parsed.middleName);
+
+                            return {
+                                lastName: parsed.lastName,
+                                firstName: validatedNames.firstName,
+                                middleName: validatedNames.middleName,
+                                suffix: parsed.suffix
+                            };
                         }
                     }
                 }
@@ -3619,8 +3557,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     const parsed = parseDriverLicenseFullName(line);
                     if (parsed) {
-                        console.log(`    Last: "${parsed.lastName}", First: "${parsed.firstName}", Middle: "${parsed.middleName}", Suffix: "${parsed.suffix}"\n`);
-                        return parsed;
+                        console.log(`    Last: "${parsed.lastName}", First: "${parsed.firstName}", Middle: "${parsed.middleName}", Suffix: "${parsed.suffix}"`);
+
+                        // === APPLY COMPOUND MIDDLE NAME VALIDATION ===
+                        console.log('\n=== APPLYING DRIVER\'S LICENSE COMPOUND MIDDLE NAME VALIDATION ===');
+                        const validatedNames = validateDriverLicenseCompoundMiddleName(parsed.firstName, parsed.middleName);
+
+                        return {
+                            lastName: parsed.lastName,
+                            firstName: validatedNames.firstName,
+                            middleName: validatedNames.middleName,
+                            suffix: parsed.suffix
+                        };
                     }
                 }
             }
@@ -3835,14 +3783,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const allWordsAreLabels = words.every(word => {
                 const upperWord = word.toUpperCase().trim();
                 return explicitLabelRejects.includes(upperWord) ||
-                       upperWord === 'NAME' || upperWord === 'PANGALAN' ||
-                       upperWord === 'MIDDLE' || upperWord === 'GITNA';
+                    upperWord === 'NAME' || upperWord === 'PANGALAN' ||
+                    upperWord === 'MIDDLE' || upperWord === 'GITNA';
             });
 
             // Layer 5: CRITICAL - Explicitly reject standalone "MIDDLE" or "GITNA"
             const isStandaloneLabelWord = middleNameUpper === 'MIDDLE' || middleNameUpper === 'GITNA' ||
-                                          middleNameUpper === 'GITNANG' || middleNameUpper === 'MID' ||
-                                          middleNameUpper === 'INITIAL';
+                middleNameUpper === 'GITNANG' || middleNameUpper === 'MID' ||
+                middleNameUpper === 'INITIAL';
 
             if (explicitLabelRejects.includes(middleNameUpper) || containsLabelWord || allWordsAreLabels || isStandaloneLabelWord) {
                 console.log(`❌ MULTI-LAYER REJECTION: "${middleName}" failed label validation`);
@@ -3926,6 +3874,20 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('   • Verify middle name field is visible on ID');
             console.log('   • Retake photo if middle name area is blurry/obscured');
             console.log('========================================\n');
+        }
+
+        // === APPLY DRIVER'S LICENSE COMPOUND MIDDLE NAME VALIDATION ===
+        console.log('\n=== APPLYING DRIVER\'S LICENSE COMPOUND MIDDLE NAME VALIDATION ===');
+        if (middleName && middleName.trim() !== '') {
+            const validatedNames = validateDriverLicenseCompoundMiddleName(firstName, middleName);
+            firstName = validatedNames.firstName;
+            middleName = validatedNames.middleName;
+
+            console.log('=== AFTER COMPOUND VALIDATION ===');
+            console.log(`First Name: "${firstName}"`);
+            console.log(`Middle Name: "${middleName}"`);
+        } else {
+            console.log('⚠ No middle name to validate');
         }
 
         // Extract Suffix using label
@@ -4028,95 +3990,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(`  This is invalid - suffix should only be JR/SR/II/III/IV/V`);
                 console.log(`  Clearing suffix...`);
                 suffix = "";
-            }
-        }
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // FALLBACK: If name extraction failed, try detecting full name patterns
-        // ═══════════════════════════════════════════════════════════════════════
-        if (!lastName || !firstName || !middleName) {
-            console.log('\n[FALLBACK] Label-based extraction incomplete. Trying pattern detection...');
-
-            // Look for lines that might contain full names
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-
-                // Skip empty lines, labels, and address-like lines
-                if (!line || line.length < 5) continue;
-                if (isExtractedTextALabel(line)) continue;
-                if (/\d{3,}/.test(line)) continue; // Skip lines with multiple digits (likely address/ID numbers)
-                if (/DAVAO|CITY|BARANGAY|STREET|BLVD|ROAD|AVENUE/i.test(line)) continue; // Skip address lines
-
-                // Pattern 1: COMMA-SEPARATED format (LASTNAME, FIRST MIDDLE)
-                // Example: "ARABACA, JETLANCE MARSHALL CARL PLAZA"
-                if (line.includes(',')) {
-                    const parts = line.split(',').map(p => p.trim());
-                    if (parts.length === 2) {
-                        const potentialLastName = cleanName(parts[0]);
-                        const potentialGivenNames = cleanName(parts[1]);
-
-                        // Validate: both parts should be alphabetic and reasonable length
-                        if (/^[A-Z\s\-\.]+$/i.test(potentialLastName) &&
-                            /^[A-Z\s\-\.]+$/i.test(potentialGivenNames) &&
-                            potentialLastName.length >= 2 && potentialGivenNames.length >= 2) {
-
-                            console.log(`[PATTERN] Comma-separated detected: "${line}"`);
-
-                            // Extract last name
-                            if (!lastName) {
-                                lastName = potentialLastName;
-                            }
-
-                            // Parse given names (First + Middle + optional Suffix)
-                            const givenWordsRaw = potentialGivenNames.split(/\s+/).filter(w => w.length > 0);
-                            const givenWords = cleanNameWords(givenWordsRaw);
-
-                            if (givenWords.length > 0) {
-                                const parsed = parseFirstMiddleSuffix(givenWords);
-
-                                if (!firstName && parsed.firstName) firstName = parsed.firstName;
-                                if (!middleName && parsed.middleName) middleName = parsed.middleName;
-                                if (!suffix && parsed.suffix) suffix = parsed.suffix;
-
-                                console.log(`[COMMA-FORMAT] ${lastName} | ${firstName} | ${middleName} | ${suffix || 'None'}`);
-                            }
-
-                            console.log('');
-                            break; // Found valid name, stop searching
-                        }
-                    }
-                }
-
-                // Pattern 2: SPACE-SEPARATED format (FIRST MIDDLE LAST)
-                if (!lastName || !firstName || !middleName) {
-                    const wordsRaw = line.split(/\s+/).filter(w => w.length > 1);
-                    const words = cleanNameWords(wordsRaw);
-
-                    // Must have at least 3 words (First + Middle + Last) after cleaning
-                    if (words.length >= 3 && words.length <= 6) {
-                        const allAlphabetic = words.every(w => /^[A-Z\-\.]+$/i.test(w));
-
-                        if (allAlphabetic) {
-                            // For space-separated: Last word is Last Name,
-                            // Second-to-last is Middle Name, rest is First Name
-                            if (!lastName && words.length >= 1) {
-                                lastName = cleanName(words[words.length - 1]);
-                            }
-
-                            if (!middleName && words.length >= 2) {
-                                middleName = cleanName(words[words.length - 2]);
-                            }
-
-                            if (!firstName && words.length >= 3) {
-                                const firstNameWords = words.slice(0, -2);
-                                firstName = firstNameWords.join(' ');
-                            }
-
-                            console.log(`[SPACE-FORMAT] ${lastName} | ${firstName} | ${middleName} | ${suffix || 'None'}`);
-                            break; // Found valid name, stop searching
-                        }
-                    }
-                }
             }
         }
 

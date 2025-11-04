@@ -1061,6 +1061,14 @@ namespace LingapDVO.Controllers
             return Json(new { isValid = isValid });
         }
 
+        [HttpGet]
+        public IActionResult KeepAlive()
+        {
+            // Update a dummy session value to refresh timeout
+            HttpContext.Session.SetString("LastActive", DateTime.UtcNow.ToString());
+            return Json(new { ok = true });
+        }
+
         public IActionResult VerifyOTP()
         {
             return View();
