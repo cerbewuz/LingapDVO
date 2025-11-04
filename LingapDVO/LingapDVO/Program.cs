@@ -73,6 +73,9 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 // Form Submission Security Service
 builder.Services.AddScoped<FormSubmissionSecurityService>();
 
+// Session Configuration Service
+builder.Services.AddSingleton<ISessionConfigurationService, SessionConfigurationService>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 
@@ -86,16 +89,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
-// ?? Session - 10 minute inactivity timeout with 9-minute warning
+// ?? Session - Configurable inactivity timeout with warning
 builder.Services.AddSession(options =>
 {
     // Read timeout from configuration (defaults to 10 if not set)
-    var sessionTimeout = builder.Configuration.GetValue<int>("Security:Session:IdleTimeoutMinutes", 10);
+    var sessionTimeout = builder.Configuration.GetValue<int>("Session:IdleTimeoutMinutes", 10);
     options.IdleTimeout = TimeSpan.FromMinutes(sessionTimeout);
 
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.Name = builder.Configuration.GetValue<string>("Security:Session:CookieName", ".LingapDVO.Session");
+    options.Cookie.Name = builder.Configuration.GetValue<string>("Session:CookieName", ".LingapDVO.Session");
 
     // ? Ensure cookies work for external redirect
     options.Cookie.SameSite = SameSiteMode.Lax; // Or None if using HTTPS everywhere

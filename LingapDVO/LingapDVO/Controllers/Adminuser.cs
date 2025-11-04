@@ -19,12 +19,14 @@ namespace LingapDVO.Controllers
         private readonly ApplicationDbContext context;
         private readonly IWebHostEnvironment environment;
         private readonly IConfiguration _configuration;
+        private readonly ISessionConfigurationService _sessionConfig;
 
-        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration)
+        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig)
         {
             this.context = context;
             this.environment = environment;
             _configuration = configuration;
+            _sessionConfig = sessionConfig;
         }
         public IActionResult Index()
         {

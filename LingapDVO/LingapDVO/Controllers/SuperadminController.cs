@@ -12,11 +12,13 @@ namespace LingapDVO.Controllers
     {
         public readonly ApplicationDbContext context;
         private readonly IWebHostEnvironment environment;
+        private readonly ISessionConfigurationService _sessionConfig;
 
-        public SuperadminController(ApplicationDbContext context, IWebHostEnvironment environment)
+        public SuperadminController(ApplicationDbContext context, IWebHostEnvironment environment, ISessionConfigurationService sessionConfig)
         {
             this.context = context;
             this.environment = environment;
+            _sessionConfig = sessionConfig;
         }
         public IActionResult Index()
         {

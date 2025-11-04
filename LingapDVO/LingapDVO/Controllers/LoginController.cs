@@ -25,13 +25,15 @@ namespace LingapDVO.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly SmsService _smsService;
         private readonly IConfiguration _configuration;
+        private readonly ISessionConfigurationService _sessionConfig;
 
-        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, SmsService smsService, IConfiguration configuration)
+        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, SmsService smsService, IConfiguration configuration, ISessionConfigurationService sessionConfig)
         {
             this.context = context;
             this.environment = environment;
             _smsService = smsService;
             _configuration = configuration;
+            _sessionConfig = sessionConfig;
         }
 
         // ╔═══════════════════════════════════════════════════════════════════════════╗
@@ -1045,20 +1047,67 @@ namespace LingapDVO.Controllers
         }
 
         /// <summary>
+        /// Get session configuration for client-side timeout management
+        /// Returns timeout values dynamically from appsettings.json
+        /// </summary>
+        [HttpGet]
+        public IActionResult GetSessionConfig()
+        {
+            var config = _sessionConfig.GetClientConfiguration();
+            return Json(config);
+        }
+
+        /// <summary>
         /// Check if the user's session is still valid
         /// Used by session-timeout.js to detect server-side session expiration
+        /// Improved validation ensures complete session data exists
         /// </summary>
         [HttpGet]
         public IActionResult CheckSession()
         {
-            // Check if user has an active session
-            bool hasUsername = !string.IsNullOrEmpty(HttpContext.Session.GetString("Username"));
-            bool hasSuperadmin = !string.IsNullOrEmpty(HttpContext.Session.GetString("IsSuperadmin"));
-            bool hasAdmin = !string.IsNullOrEmpty(HttpContext.Session.GetString("IsAdmin"));
+            try
+            {
+                // Get all session values
+                string username = HttpContext.Session.GetString("Username");
+                string isSuperadmin = HttpContext.Session.GetString("IsSuperadmin");
+                string isAdmin = HttpContext.Session.GetString("IsAdmin");
 
-            bool isValid = hasUsername || hasSuperadmin || hasAdmin;
+                // Determine user type and validate required session data
+                bool isValidSession = false;
+                string userType = "none";
 
-            return Json(new { isValid = isValid });
+                if (!string.IsNullOrEmpty(isSuperadmin) && isSuperadmin.ToLower() == "true")
+                {
+                    // Superadmin: must have username AND superadmin flag
+                    isValidSession = !string.IsNullOrEmpty(username);
+                    userType = "superadmin";
+                }
+                else if (!string.IsNullOrEmpty(isAdmin) && isAdmin.ToLower() == "true")
+                {
+                    // Admin: must have username AND admin flag
+                    isValidSession = !string.IsNullOrEmpty(username);
+                    userType = "admin";
+                }
+                else if (!string.IsNullOrEmpty(username))
+                {
+                    // Regular user: must have username and NO admin flags
+                    isValidSession = string.IsNullOrEmpty(isAdmin) && string.IsNullOrEmpty(isSuperadmin);
+                    userType = "user";
+                }
+
+                return Json(new
+                {
+                    isValid = isValidSession,
+                    userType = userType,
+                    username = isValidSession ? username : null
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log error and return invalid session
+                System.Diagnostics.Debug.WriteLine($"CheckSession Error: {ex.Message}");
+                return Json(new { isValid = false, userType = "none", error = "Session check failed" });
+            }
         }
 
         [HttpGet]

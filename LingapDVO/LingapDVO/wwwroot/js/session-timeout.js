@@ -1,8 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// SESSION TIMEOUT AND INACTIVITY DETECTION - ASYNCHRONOUS WITH WARNING
+// SESSION TIMEOUT AND INACTIVITY DETECTION - DYNAMIC CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════════
-// Shows warning at 9 minutes, gives user option to continue or logout
-// Tracks mouse movement, keyboard input, clicks, scrolling, and touch events
+// Fetches timeout configuration dynamically from server (appsettings.json)
+// Shows warning before session expires, gives user option to continue or logout
+// Tracks meaningful user activities (not passive scrolling/hovering)
 // Automatically logs out if no response after warning timeout
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -15,6 +16,13 @@
     const CHECK_INTERVAL = 30 * 1000; // Check session validity every 30 seconds
     const COUNTDOWN_INTERVAL = 1000; // Update countdown every second
 
+    // Configuration - Will be fetched from server dynamically
+    let WARNING_TIMEOUT = 9 * 60 * 1000; // Default: 9 minutes (overridden by server config)
+    let FINAL_TIMEOUT = 10 * 60 * 1000; // Default: 10 minutes (overridden by server config)
+    let CHECK_INTERVAL = 30 * 1000; // Check session validity every 30 seconds
+    let COUNTDOWN_INTERVAL = 1000; // Update countdown every second
+    let configLoaded = false;
+
     let inactivityTimer = null;
     let warningTimer = null;
     let countdownTimer = null;
@@ -22,8 +30,49 @@
     let warningShown = false;
     let sessionCheckInterval = null;
 
+    // Fetch session configuration from server
+    async function loadSessionConfig() {
+        try {
+            console.log('Session Timeout: Fetching configuration from server...');
+            const response = await fetch('/Login/GetSessionConfig', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load session config');
+            }
+
+            const config = await response.json();
+
+            // Update timeout values from server
+            WARNING_TIMEOUT = config.warningTimeoutMs || (9 * 60 * 1000);
+            FINAL_TIMEOUT = config.idleTimeoutMs || (10 * 60 * 1000);
+            CHECK_INTERVAL = config.checkIntervalMs || (30 * 1000);
+            COUNTDOWN_INTERVAL = config.countdownIntervalMs || 1000;
+
+            configLoaded = true;
+
+            console.log('Session Timeout: Configuration loaded successfully');
+            console.log(`  ⏱️  Warning Timeout: ${config.warningTimeoutMinutes} minutes (${WARNING_TIMEOUT}ms)`);
+            console.log(`  ⏱️  Final Timeout: ${config.idleTimeoutMinutes} minutes (${FINAL_TIMEOUT}ms)`);
+            console.log(`  ⏱️  Check Interval: ${CHECK_INTERVAL}ms`);
+
+            return true;
+        } catch (error) {
+            console.error('Session Timeout: Error loading config, using defaults', error);
+            configLoaded = true; // Continue with defaults
+            return false;
+        }
+    }
+
     // Initialize session timeout tracker
-    function initSessionTimeout() {
+    async function initSessionTimeout() {
+        // Load configuration from server first
+        await loadSessionConfig();
+
         console.log('Session Timeout: Initialized with meaningful activity tracking');
         console.log('Session Timeout: Tracks transactions, navigation, form submissions only');
 
@@ -196,12 +245,16 @@
         }, FINAL_TIMEOUT);
     }
 
-    // Show session timeout warning (at 9 minutes)
+    // Show session timeout warning (dynamically calculated based on config)
     function showSessionWarning() {
         if (warningShown) return;
         warningShown = true;
 
-        console.log('Session Timeout: Showing warning at 9 minutes - user has 60 seconds to respond');
+        // Calculate remaining time based on configuration
+        const remainingMs = FINAL_TIMEOUT - WARNING_TIMEOUT;
+        let remainingSeconds = Math.floor(remainingMs / 1000);
+
+        console.log(`Session Timeout: Showing warning - user has ${remainingSeconds} seconds to respond`);
 
         // Blur and disable page content
         const mainContent = document.querySelector('body');
@@ -210,9 +263,6 @@
             mainContent.style.pointerEvents = 'none';
             mainContent.style.userSelect = 'none';
         }
-
-        // Calculate remaining time
-        let remainingSeconds = 60; // 1 minute remaining
 
         // Create warning modal
         const modalHTML = `
@@ -229,7 +279,7 @@
                         </p>
                         <div class="bg-gray-100 rounded-lg p-4 mb-6">
                             <p class="text-sm text-gray-600 mb-1">Time remaining:</p>
-                            <p id="countdown-timer" class="text-3xl font-bold text-crimson-600">60s</p>
+                            <p id="countdown-timer" class="text-3xl font-bold text-crimson-600">${remainingSeconds}s</p>
                         </div>
                         <div class="flex gap-3">
                             <button onclick="window.sessionTimeout.staySignedIn()"

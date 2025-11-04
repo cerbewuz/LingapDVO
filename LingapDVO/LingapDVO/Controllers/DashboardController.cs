@@ -22,13 +22,15 @@ namespace LingapDVO.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IConfiguration _configuration;
         private readonly FormSubmissionSecurityService _securityService;
+        private readonly ISessionConfigurationService _sessionConfig;
 
-        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, FormSubmissionSecurityService securityService)
+        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, FormSubmissionSecurityService securityService, ISessionConfigurationService sessionConfig)
         {
             this.context = context;
             this.environment = environment;
             _configuration = configuration;
             _securityService = securityService;
+            _sessionConfig = sessionConfig;
         }
     
         public IActionResult Index()
