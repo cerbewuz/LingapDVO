@@ -17,7 +17,6 @@
             background-color: #2c3e50;
         }
 
-
         .register-form {
             background: white;
             border-radius: 10px;
@@ -72,8 +71,16 @@
             box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
         }
     </style>
+
+    <!-- Go Back Button Styling -->
+    <link rel="stylesheet" href="~/css/go-back-button.css">
 </head>
 <body>
+    <!-- Go Back Button (Uniform) -->
+    <button id="goBackBtn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Go Back</span>
+    </button>
     <section class="register container-fluid">
         <div class="row min-vh-100 d-flex justify-content-center align-items-center">
             <div class="col-md-8 col-lg-6">
@@ -83,7 +90,6 @@
                         <p class="text-muted">LINGAPDVO</p>
                     </article>
                     <form asp-action="Admincreateaccount" method="post" id="registrationForm">
-
 
                         <div class="mb-3 text-start">
                             <label class="form-label fw-bold"><i class="fa-solid fa-user fa-lg me-2 cobalt-text"></i>Username</label>
@@ -165,5 +171,8 @@
             });
         });
     </script>
+
+    <!-- Go Back Button Behavior -->
+    <script src="~/js/go-back-button.js"></script>
 </body>
 </html>

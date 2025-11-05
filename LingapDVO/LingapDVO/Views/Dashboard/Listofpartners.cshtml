@@ -10,15 +10,15 @@
     <title>Our Valued Partners</title>
     <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/go-back-button.css">
 </head>
 <body>
     <div class="partners-container">
-        <!-- Go Back Button -->
-        <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
-            <i class="fas fa-arrow-left" aria-hidden="true"></i>
-            <span>Back</span>
-        </a>
-
+            <!-- Go Back Button (Uniform) -->
+    <button id="goBackBtn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Go Back</span>
+    </button>
 
         <!-- Header -->
         <div class="partners-header">
@@ -79,79 +79,6 @@
             color: var(--text-color);
             background-color: var(--light-color);
         }
-
-        /* Go Back Button */
-        .go-back-btn {
-            position: fixed;
-            left: 16px;
-            top: 16px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 8px 14px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border: 1px solid rgba(220, 20, 60, 0.15);
-            color: #333333;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            white-space: nowrap;
-            min-height: 36px;
-            min-width: 36px;
-            transform: scale(var(--btn-scale, 1));
-            transform-origin: left top;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            user-select: none;
-        }
-
-            .go-back-btn:hover,
-            .go-back-btn:focus {
-                background: #DC143C;
-                color: #ffffff;
-                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
-                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
-                border-color: #DC143C;
-            }
-
-            .go-back-btn i {
-                font-size: 13px;
-                transition: transform 0.3s ease;
-                width: 14px;
-                text-align: center;
-            }
-
-            .go-back-btn:hover i {
-                transform: translateX(-2px);
-            }
-
-            .go-back-btn:active {
-                transform: scale(calc(var(--btn-scale, 1) * 0.96));
-                background: #b01030;
-                transition: transform 0.1s ease;
-            }
-
-            .go-back-btn:focus-visible {
-                outline: 2px solid #DC143C;
-                outline-offset: 2px;
-            }
-
-            .go-back-btn.compact span {
-                display: none;
-            }
-
-            .go-back-btn.compact {
-                padding: 8px;
-                border-radius: 50%;
-            }
-
         .partners-container {
             width: 100%;
             max-width: 1200px;
@@ -261,63 +188,12 @@
         }
     </style>
 
-    <script>
-                // Go Back Button Script
-        document.addEventListener('DOMContentLoaded', function() {
-            const goBackBtn = document.getElementById('goBackBtn');
-
-            if (goBackBtn) {
-                // Responsive compact mode
-                function updateButton() {
-                    const viewportWidth = window.innerWidth;
-
-                    // Switch to compact mode on smaller screens
-                    if (viewportWidth < 480) {
-                        goBackBtn.classList.add('compact');
-                    } else {
-                        goBackBtn.classList.remove('compact');
-                    }
-                }
-
-                // Update on viewport changes
-                function handleViewportChange() {
-                    updateButton();
-                }
-
-                // Initial setup
-                updateButton();
-
-                // Listen to viewport changes
-                window.addEventListener('resize', handleViewportChange);
-                window.addEventListener('orientationchange', handleViewportChange);
-
-                // Click functionality
-                goBackBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    // Add press animation
-                    this.style.transition = 'transform 0.1s ease';
-                    this.style.transform = 'scale(0.95)';
-
-                    setTimeout(() => {
-                        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                        this.style.transform = '';
-
-                        // Navigate back or to home page
-                        if (window.history.length > 1) {
-                            window.history.back();
-                        } else {
-                            window.location.href = '/';
-                        }
-                    }, 100);
-                });
-            }
-        });
-
-
-    </script>
+    
 
     <!-- Font Awesome for the back button icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Go Back Button Behavior -->
+    <script src="~/js/go-back-button.js"></script>
 </body>
 </html>
