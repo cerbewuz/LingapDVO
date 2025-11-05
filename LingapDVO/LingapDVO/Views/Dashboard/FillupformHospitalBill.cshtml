@@ -557,7 +557,8 @@
                         <i class="bi bi-eraser"></i> Clear Auto-Fill
                     </button>
 
-                    <small class="text-muted ms-2">Click if you are applying for yourself</small>
+                    <small class="text-muted ms-2">Click "I am the requestor" if you are applying for yourself. 
+                        Click "Clear auto-fill if you clicked the button by accident."</small>
                 </div>
             </div>
 
@@ -1141,7 +1142,7 @@
 
                 // Reset main button after 2 seconds
                 setTimeout(() => {
-                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> I am the patient';
+                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> I am the requestor';
                     sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
                     sameAsPatientBtn.classList.add('btn-outline-success');
                 }, 2000);
