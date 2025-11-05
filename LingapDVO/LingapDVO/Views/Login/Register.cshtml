@@ -7,15 +7,1029 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Sign Up</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-2 sm:p-4 md:p-6">
+    <!-- Increased max-width from max-w-md to max-w-2xl for much wider form -->
+    <div class="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl p-4 sm:p-6 md:p-7 lg:p-8 border border-white/20 backdrop-blur-sm">
+            <!-- Compact Header -->
+            <div class="text-center mb-4 sm:mb-6 md:mb-7 lg:mb-8">
+                <h1 class="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-1 sm:mb-2">
+                    Create Account
+                </h1>
+            </div>
 
-    <!-- Preload critical resources -->
-    <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style">
+            <form asp-action="Register" method="post" enctype="multipart/form-data" id="registerForm" class="space-y-3 sm:space-y-4 md:space-y-4 lg:space-y-5">
 
-    <!-- Inline critical CSS -->
+                @* ═══════════════════════════════════════════════════════════════ *@
+                @* 🔒 ANTI-MANIPULATION SECURITY TOKEN (HIDDEN FIELD)             *@
+                @* ═══════════════════════════════════════════════════════════════ *@
+                <input type="hidden" asp-for="RegistrationToken" value="@ViewBag.RegistrationToken" id="registrationToken" />
+
+                <!-- First Name & Middle Name in Horizontal Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-4 lg:gap-6">
+                    <!-- First Name Field -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            First Name
+                        </label>
+                        <div class="relative">
+                            <input asp-for="FirstName"
+                                   type="text"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white"
+                                   placeholder="Enter first name"
+                                   required
+                                   autocomplete="given-name"
+                                   id="firstName">
+                        </div>
+                        <span asp-validation-for="FirstName" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Middle Name Field -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Middle Name
+                        </label>
+                        <div class="relative">
+                            <input asp-for="MiddleName"
+                                   type="text"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white"
+                                   placeholder="Enter middle name"
+                                   required
+                                   autocomplete="additional-name"
+                                   id="middleName">
+                        </div>
+                        <span asp-validation-for="MiddleName" class="text-red-500 text-xs"></span>
+                    </div>
+                </div>
+
+                <!-- Last Name & Suffix in Horizontal Layout (50% / 20% / 30%) -->
+                <div class="grid grid-cols-1 md:grid-cols-[50%_20%_30%] gap-3 sm:gap-4 md:gap-4 lg:gap-6">
+                    <!-- Last Name Field (50%) -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Last Name
+                        </label>
+                        <div class="relative">
+                            <input asp-for="LastName"
+                                   type="text"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white"
+                                   placeholder="Enter last name"
+                                   required
+                                   autocomplete="family-name"
+                                   id="lastName">
+                        </div>
+                        <span asp-validation-for="LastName" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Suffix Field (20%) -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Suffix <span class="text-gray-400 text-xs">(Optional)</span>
+                        </label>
+                        <div class="relative">
+                            <select asp-for="Suffix"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white appearance-none cursor-pointer"
+                                    autocomplete="honorific-suffix"
+                                    id="suffix">
+                                <option value="">None</option>
+                                <option value="Jr.">Jr.</option>
+                                <option value="Sr.">Sr.</option>
+                                <option value="II">II</option>
+                                <option value="III">III</option>
+                                <option value="IV">IV</option>
+                                <option value="V">V</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-3 sm:right-4 flex items-center">
+                                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Suffix" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Blank Space (30%) -->
+                    <div></div>
+                </div>
+
+                <!-- Username & Email in Horizontal Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-4 lg:gap-6">
+                    <!-- Username Field - Updated to match login form sizing -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Username
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Username"
+                                   type="text"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
+                                   placeholder=" "
+                                   required
+                                   autocomplete="username"
+                                   id="username">
+                            <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
+                                <i class="fas fa-user mr-1 sm:mr-2 text-crimson-500 text-xs"></i>Enter username
+                            </span>
+                        </div>
+                        <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Email Field - Updated to match login form sizing -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Email
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Email"
+                                   type="email"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
+                                   placeholder=" "
+                                   required
+                                   autocomplete="email"
+                                   id="email">
+                            <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
+                                <i class="fas fa-envelope mr-1 sm:mr-2 text-crimson-500 text-xs"></i>Enter email
+                            </span>
+                        </div>
+                        <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
+                    </div>
+                </div>
+
+                <!-- Password & Confirm Password in Horizontal Layout -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-4 lg:gap-6">
+                    <!-- Password Field - Updated to match login form sizing -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Password"
+                                   type="password"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-10 sm:pr-12"
+                                   placeholder="Enter your password"
+                                   required
+                                   autocomplete="new-password"
+                                   id="password">
+                            <button type="button" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="togglePassword">
+                                <i class="fas fa-eye text-xs sm:text-sm"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Confirm Password Field - Updated to match login form sizing -->
+                    <div class="space-y-1.5 sm:space-y-2">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
+                            Confirm Password
+                        </label>
+                        <div class="relative">
+                            <input type="password"
+                                   name="ConfirmPassword"
+                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-10 sm:pr-12"
+                                   placeholder="Confirm your password"
+                                   required
+                                   autocomplete="new-password"
+                                   id="confirmPassword">
+                            <button type="button" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="toggleConfirmPassword">
+                                <i class="fas fa-eye text-xs sm:text-sm"></i>
+                            </button>
+                        </div>
+                        <div id="passwordMatch" class="text-xs mt-1 hidden transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <!-- Password Requirements Tooltip with Error Message -->
+                <div id="passwordTooltip" class="hidden bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-2.5 sm:p-3 text-xs sm:text-xs text-blue-700 transition-all duration-300">
+                    <p class="font-semibold mb-1.5 sm:mb-2 text-xs sm:text-sm">Password Requirements:</p>
+                    <ul class="space-y-0.5 sm:space-y-1">
+                        <li id="rule-length" class="flex items-center gap-1.5 sm:gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span class="text-xs">At least 8 characters</span>
+                        </li>
+                        <li id="rule-uppercase" class="flex items-center gap-1.5 sm:gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span class="text-xs">One uppercase letter</span>
+                        </li>
+                        <li id="rule-lowercase" class="flex items-center gap-1.5 sm:gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span class="text-xs">One lowercase letter</span>
+                        </li>
+                        <li id="rule-number" class="flex items-center gap-1.5 sm:gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span class="text-xs">One number</span>
+                        </li>
+                        <li id="rule-symbol" class="flex items-center gap-1.5 sm:gap-2">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span class="text-xs">One special character</span>
+                        </li>
+                    </ul>
+                    <!-- Password Requirement Error Message -->
+                    <div id="passwordRequirementError" class="hidden mt-2 sm:mt-3 p-1.5 sm:p-2 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <i class="fas fa-exclamation-triangle mr-1 sm:mr-2 text-xs"></i>
+                        <span class="font-medium text-xs">Please meet all password requirements above</span>
+                    </div>
+                </div>
+
+                <!-- Social Login - Updated spacing and sizing -->
+                <div class="pt-1 sm:pt-2">
+                    <div class="flex items-center my-3 sm:my-4">
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                        <span class="px-2 sm:px-3 text-xs sm:text-xs text-gray-500 bg-white font-medium">or continue with</span>
+                        <div class="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                        <a href="/Login/GoogleLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 border-2 border-gray-200 rounded-lg sm:rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
+                            <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png" alt="Google" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+                            <span class="text-xs sm:text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
+                        </a>
+
+                        <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
+                            <i class="fab fa-facebook-f text-xs sm:text-xs"></i>
+                            <span class="text-xs sm:text-xs font-medium">Facebook</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- reCAPTCHA - Centered and updated styling -->
+                <div class="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-gray-200 flex justify-center">
+                    <div class="g-recaptcha mx-auto scale-75 sm:scale-90 md:scale-95 lg:scale-100" data-sitekey="@ViewBag.ReCaptchaSiteKey"></div>
+                </div>
+
+                <!-- Terms Agreement - Updated styling -->
+                <div class="flex items-start space-x-2 sm:space-x-3 p-2.5 sm:p-3 bg-gray-50 rounded-lg sm:rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200">
+                    <input type="checkbox" id="terms" name="terms" class="mt-0.5 accent-green-600" required>
+                    <label for="terms" class="text-xs sm:text-xs text-gray-700 flex-1 leading-relaxed cursor-pointer">
+                        I agree to the
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                    </label>
+                </div>
+
+                <!-- Submit Button - Updated to match login button sizing -->
+                <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2.5 sm:py-3 md:py-3 lg:py-3.5 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-sm md:text-base lg:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 group" id="registerButton">
+                    <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+                        <span>Sign Up</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform duration-200 text-xs sm:text-sm"></i>
+                    </span>
+                </button>
+
+                <!-- Links -->
+                <div class="text-center space-y-1.5 sm:space-y-2 pt-1 sm:pt-2">
+                    <p class="text-gray-500 text-xs sm:text-xs md:text-sm lg:text-sm">
+                        Already have an account?
+                        <a href="/Login" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 ml-1">Sign in</a>
+                    </p>
+                    <p class="text-gray-500 text-xs sm:text-xs md:text-sm lg:text-sm">
+                        <a href="/" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200">Back to Home</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable mx-2 sm:mx-auto">
+            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-gray-50">
+                <!-- Header -->
+                <div class="modal-header bg-gradient-to-r from-green-500 to-green-600 text-white py-3 sm:py-4 px-4 sm:px-6 border-b-0">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-file-contract text-white text-base sm:text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-base sm:text-lg tracking-wide" id="termsModalLabel">
+                                Terms & Privacy Policy
+                            </h5>
+                            <p class="text-green-100 text-xs sm:text-sm font-normal">Last updated: 2024</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-96 overflow-y-auto">
+                    <!-- Acceptance of Terms -->
+                    <div class="bg-white rounded-xl p-4 border border-green-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-handshake text-green-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-green-700 text-base">1. Acceptance of Terms</h6>
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            By signing up for our service, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.
+                        </p>
+                    </div>
+
+                    <!-- Data Privacy -->
+                    <div class="bg-white rounded-xl p-4 border border-blue-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-blue-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-blue-700 text-base">2. Data Privacy & Protection</h6>
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            We comply with the <strong class="text-blue-600">Data Privacy Act of 2012 (RA 10173)</strong> and ensure responsible handling of your personal data with the highest level of security and care.
+                        </p>
+                    </div>
+
+                    <!-- Data Collection -->
+                    <div class="bg-white rounded-xl p-4 border border-purple-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-database text-purple-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-purple-700 text-base">3. Purpose of Data Collection</h6>
+                        </div>
+                        <ul class="text-gray-700 text-sm space-y-2 ps-4">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-500 text-xs mt-1"></i>
+                                <span>Eligibility verification for assistance programs</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-500 text-xs mt-1"></i>
+                                <span>Contact and follow-up regarding your application</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-500 text-xs mt-1"></i>
+                                <span>Partner validation as necessary for service delivery</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Account Integrity -->
+                    <div class="bg-white rounded-xl p-4 border border-orange-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-check text-orange-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-orange-700 text-base">4. Account Integrity</h6>
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            Each individual is allowed <strong class="text-orange-600">only one account</strong>. Creating multiple or falsified accounts may result in disqualification and suspension of access to our services.
+                        </p>
+                    </div>
+
+                    <!-- Changes to Terms -->
+                    <div class="bg-white rounded-xl p-4 border border-red-100 shadow-sm">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-sync text-red-600 text-sm"></i>
+                            </div>
+                            <h6 class="font-bold text-red-700 text-base">5. Changes to Terms</h6>
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            We reserve the right to modify these Terms at any time. All updates will be posted publicly, and continued use of our services signifies acceptance of the latest terms.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer bg-gray-50 py-3 sm:py-4 px-4 sm:px-6 border-t-0">
+                    <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+                        <div class="flex items-center gap-1.5 sm:gap-2 text-gray-600 text-xs sm:text-sm">
+                            <i class="fas fa-info-circle text-blue-500 text-xs sm:text-sm"></i>
+                            <span class="text-center sm:text-left">Questions? Contact us at <a href="mailto:support@lingap.org" class="text-blue-600 font-semibold hover:underline">support@lingap.org</a></span>
+                        </div>
+                        <button type="button" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-2 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-all duration-200 shadow-sm hover:shadow-md" data-bs-dismiss="modal">
+                            I Understand
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-green-50">
+                <div class="modal-body p-5 sm:p-6 text-center">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <i class="fas fa-check text-green-600 text-2xl sm:text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h3>
+                    <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">You can now proceed to login.</p>
+                    <div class="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200">
+                        <button id="proceedToLogin" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                            Proceed to Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+            // Global variable to store the success modal instance
+        let successModal = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap modal
+            const successModalElement = document.getElementById('successModal');
+            if (successModalElement) {
+                successModal = new bootstrap.Modal(successModalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            }
+
+            // Auto-show success modal if redirected with success parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                // Small delay to ensure DOM is fully ready
+                setTimeout(() => {
+                    showSuccessModal();
+                }, 500);
+            }
+
+            // Password toggle functionality for both password fields
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+            const confirmInput = document.getElementById('confirmPassword');
+
+            // Password toggle for main password field
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="fas fa-eye text-sm"></i>' : '<i class="fas fa-eye-slash text-sm"></i>';
+                });
+            }
+
+            // Password toggle for confirm password field
+            if (toggleConfirmPassword && confirmInput) {
+                toggleConfirmPassword.addEventListener('click', function() {
+                    const type = confirmInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    confirmInput.setAttribute('type', type);
+                    this.innerHTML = type === 'password' ? '<i class="fas fa-eye text-sm"></i>' : '<i class="fas fa-eye-slash text-sm"></i>';
+                });
+            }
+
+            // Password validation rules
+            const rules = {
+                length: /.{8,}/,
+                uppercase: /[A-Z]/,
+                lowercase: /[a-z]/,
+                number: /[0-9]/,
+                symbol: /[^A-Za-z0-9]/
+            };
+
+            // Password requirements validation
+            const passwordTooltip = document.getElementById('passwordTooltip');
+            const passwordRequirementError = document.getElementById('passwordRequirementError');
+
+            function validatePasswordRequirements() {
+                if (!passwordInput) return false;
+                const val = passwordInput.value;
+
+                let allRequirementsMet = true;
+
+                Object.entries(rules).forEach(([key, regex]) => {
+                    const el = document.getElementById(`rule-${key}`);
+                    if (!el) return;
+                    const icon = el.querySelector("i");
+                    if (regex.test(val)) {
+                        icon.classList.replace("text-red-500", "text-green-500");
+                        el.classList.add("text-green-600", "font-medium");
+                    } else {
+                        icon.classList.replace("text-green-500", "text-red-500");
+                        el.classList.remove("text-green-600", "font-medium");
+                        allRequirementsMet = false;
+                    }
+                });
+
+                // Show/hide requirement error
+                if (val.length > 0 && !allRequirementsMet) {
+                    passwordRequirementError.classList.remove('hidden');
+                } else {
+                    passwordRequirementError.classList.add('hidden');
+                }
+
+                if (document.activeElement === passwordInput && val.length > 0) {
+                    passwordTooltip?.classList.remove('hidden');
+                }
+
+                return allRequirementsMet;
+            }
+
+            // Check if all password requirements are met
+            function areAllPasswordRequirementsMet() {
+                if (!passwordInput) return false;
+                const val = passwordInput.value;
+
+                return Object.values(rules).every(regex => regex.test(val));
+            }
+
+            // Password match validation - ASYNCHRONOUS VERSION
+            const matchIndicator = document.getElementById('passwordMatch');
+
+            async function validatePasswordMatch() {
+                if (!matchIndicator || !passwordInput || !confirmInput) return true;
+
+                const password = passwordInput.value;
+                const confirmPassword = confirmInput.value;
+
+                // Add a small delay to make it asynchronous and allow UI to update
+                await new Promise(resolve => setTimeout(resolve, 10));
+
+                if (confirmPassword === '') {
+                    matchIndicator.classList.add('hidden');
+                    confirmInput.classList.remove('border-red-500', 'border-green-500');
+                    return true;
+                }
+
+                if (password === confirmPassword) {
+                    confirmInput.classList.remove('border-red-500');
+                    confirmInput.classList.add('border-green-500');
+                    matchIndicator.classList.remove('hidden');
+                    matchIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> <span class="text-green-600 font-medium">Passwords match</span>';
+                    return true;
+                } else {
+                    confirmInput.classList.remove('border-green-500');
+                    confirmInput.classList.add('border-red-500');
+                    matchIndicator.classList.remove('hidden');
+                    matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Passwords do not match</span>';
+                    return false;
+                }
+            }
+
+            // Async event listeners for password validation
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function() {
+                    validatePasswordRequirements();
+                    // Trigger password match validation when password changes
+                    if (confirmInput && confirmInput.value) {
+                        validatePasswordMatch();
+                    }
+                });
+                passwordInput.addEventListener('focus', () => {
+                    if (passwordInput.value.length > 0) {
+                        passwordTooltip?.classList.remove('hidden');
+                    }
+                });
+                passwordInput.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        if (!passwordInput.matches(':focus')) {
+                            passwordTooltip?.classList.add('hidden');
+                        }
+                    }, 200);
+                });
+            }
+
+            if (confirmInput) {
+                confirmInput.addEventListener('input', function() {
+                    validatePasswordMatch();
+                });
+            }
+
+            // Floating label functionality for username and email
+            const usernameInput = document.getElementById('username');
+            const usernameLabel = usernameInput?.nextElementSibling;
+            const emailInput = document.getElementById('email');
+            const emailLabel = emailInput?.nextElementSibling;
+
+            function initializeFloatingLabel(input, label) {
+                if (!input || !label) return;
+
+                input.addEventListener('focus', function() {
+                    label.style.top = '0';
+                    label.style.fontSize = '0.75rem';
+                    label.style.color = '#10b981';
+                    label.style.transform = 'translateY(-50%)';
+                });
+
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        label.style.top = '50%';
+                        label.style.fontSize = '0.875rem';
+                        label.style.color = '#9ca3af';
+                        label.style.transform = 'translateY(-50%)';
+                    }
+                });
+
+                // Initialize label position
+                if (input.value.trim() !== '') {
+                    label.style.top = '0';
+                    label.style.fontSize = '0.75rem';
+                    label.style.color = '#10b981';
+                    label.style.transform = 'translateY(-50%)';
+                }
+            }
+
+            initializeFloatingLabel(usernameInput, usernameLabel);
+            initializeFloatingLabel(emailInput, emailLabel);
+
+            // ===========================
+            // 🔍 REAL-TIME DUPLICATE CHECKING
+            // ===========================
+
+            // Debounce function to limit API calls
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Check if email already exists
+            async function checkEmailExists(email) {
+                if (!email || email.trim() === '') return;
+
+                try {
+                    const response = await fetch(`/Login/CheckEmailExists?email=${encodeURIComponent(email)}`);
+                    const data = await response.json();
+
+                    const emailInput = document.getElementById('email');
+                    const emailValidation = emailInput.parentElement.parentElement.querySelector('.text-red-500');
+
+                    if (data.exists) {
+                        emailInput.classList.add('border-red-500');
+                        emailInput.classList.remove('border-green-500');
+                        if (emailValidation) {
+                            emailValidation.textContent = 'This email is already registered.';
+                            emailValidation.classList.remove('hidden');
+                        }
+                        return false;
+                    } else {
+                        emailInput.classList.remove('border-red-500');
+                        emailInput.classList.add('border-green-500');
+                        if (emailValidation) {
+                            emailValidation.textContent = '';
+                            emailValidation.classList.add('hidden');
+                        }
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Error checking email:', error);
+                    return true;
+                }
+            }
+
+            // Check if username already exists
+            async function checkUsernameExists(username) {
+                if (!username || username.trim() === '') return;
+
+                try {
+                    const response = await fetch(`/Login/CheckUsernameExists?username=${encodeURIComponent(username)}`);
+                    const data = await response.json();
+
+                    const usernameInput = document.getElementById('username');
+                    const usernameValidation = usernameInput.parentElement.parentElement.querySelector('.text-red-500');
+
+                    if (data.exists) {
+                        usernameInput.classList.add('border-red-500');
+                        usernameInput.classList.remove('border-green-500');
+                        if (usernameValidation) {
+                            usernameValidation.textContent = 'This username is already taken.';
+                            usernameValidation.classList.remove('hidden');
+                        }
+                        return false;
+                    } else {
+                        usernameInput.classList.remove('border-red-500');
+                        usernameInput.classList.add('border-green-500');
+                        if (usernameValidation) {
+                            usernameValidation.textContent = '';
+                            usernameValidation.classList.add('hidden');
+                        }
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Error checking username:', error);
+                    return true;
+                }
+            }
+
+            // Check if full name already exists (duplicate person check)
+            async function checkNameExists() {
+                const firstName = document.getElementById('firstName')?.value?.trim();
+                const middleName = document.getElementById('middleName')?.value?.trim();
+                const lastName = document.getElementById('lastName')?.value?.trim();
+                const suffix = document.getElementById('suffix')?.value?.trim();
+
+                // Need at least first and last name to check
+                if (!firstName || !lastName) {
+                    return true; // Can't check yet, allow to continue
+                }
+
+                try {
+                    const url = `/Login/CheckNameExists?firstName=${encodeURIComponent(firstName)}&middleName=${encodeURIComponent(middleName)}&lastName=${encodeURIComponent(lastName)}&suffix=${encodeURIComponent(suffix)}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    // Create or get the name warning container
+                    let nameWarningContainer = document.getElementById('nameWarningContainer');
+                    if (!nameWarningContainer) {
+                        // Insert warning container after the suffix field
+                        const suffixField = document.getElementById('suffix').closest('.space-y-1\\.5');
+                        nameWarningContainer = document.createElement('div');
+                        nameWarningContainer.id = 'nameWarningContainer';
+                        nameWarningContainer.className = 'col-span-full';
+                        suffixField.parentElement.insertAdjacentElement('afterend', nameWarningContainer);
+                    }
+
+                    if (data.exists) {
+                        // Exact match found - show error
+                        nameWarningContainer.innerHTML = `
+                            <div class="bg-red-50 border border-red-200 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                                <div class="flex items-start gap-2 sm:gap-3">
+                                    <i class="fas fa-exclamation-circle text-red-600 text-base sm:text-lg mt-0.5"></i>
+                                    <div class="flex-1">
+                                        <p class="text-red-800 font-semibold text-sm sm:text-base">Duplicate Account Detected</p>
+                                        <p class="text-red-700 text-xs sm:text-sm mt-1">${data.message}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        return false;
+                    } else if (data.warning) {
+                        // Similar name found - show warning
+                        nameWarningContainer.innerHTML = `
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                                <div class="flex items-start gap-2 sm:gap-3">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-base sm:text-lg mt-0.5"></i>
+                                    <div class="flex-1">
+                                        <p class="text-yellow-800 font-semibold text-sm sm:text-base">Similar Name Found</p>
+                                        <p class="text-yellow-700 text-xs sm:text-sm mt-1">${data.message}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        return true; // Allow to continue but with warning
+                    } else {
+                        // No duplicate - clear any warnings
+                        nameWarningContainer.innerHTML = '';
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Error checking name:', error);
+                    return true; // Allow to continue on error
+                }
+            }
+
+            // Debounced validation functions (wait 500ms after user stops typing)
+            const debouncedEmailCheck = debounce(checkEmailExists, 500);
+            const debouncedUsernameCheck = debounce(checkUsernameExists, 500);
+            const debouncedNameCheck = debounce(checkNameExists, 800);
+
+            // Add event listeners for real-time validation
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    debouncedEmailCheck(this.value);
+                });
+
+                // Also check on blur (when user leaves the field)
+                emailInput.addEventListener('blur', function() {
+                    checkEmailExists(this.value);
+                });
+            }
+
+            if (usernameInput) {
+                usernameInput.addEventListener('input', function() {
+                    debouncedUsernameCheck(this.value);
+                });
+
+                // Also check on blur (when user leaves the field)
+                usernameInput.addEventListener('blur', function() {
+                    checkUsernameExists(this.value);
+                });
+            }
+
+            // Add event listeners for name fields
+            const firstNameInput = document.getElementById('firstName');
+            const middleNameInput = document.getElementById('middleName');
+            const lastNameInput = document.getElementById('lastName');
+            const suffixInput = document.getElementById('suffix');
+
+            [firstNameInput, middleNameInput, lastNameInput, suffixInput].forEach(input => {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        debouncedNameCheck();
+                    });
+                    input.addEventListener('blur', function() {
+                        checkNameExists();
+                    });
+                }
+            });
+
+            // Show validation errors on page load if they exist
+            function showExistingErrors() {
+                const validationSummary = document.getElementById('validationSummary');
+
+                // Check if there are any visible validation error messages
+                const hasValidationErrors = document.querySelector('.field-validation-error') ||
+                                          document.querySelector('[class*="text-danger"]') ||
+                                          (validationSummary && validationSummary.innerHTML.trim() !== '');
+
+                if (validationSummary && hasValidationErrors) {
+                    validationSummary.classList.remove('hidden');
+
+                    // Scroll to errors if they exist
+                    setTimeout(() => {
+                        validationSummary.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }, 100);
+                }
+            }
+
+            // Call this on page load
+            showExistingErrors();
+
+          // Form submission handler - ASYNCHRONOUS VERSION
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                // Check if reCAPTCHA is available
+                if (typeof grecaptcha !== 'undefined') {
+                    const recaptchaResponse = grecaptcha.getResponse();
+                    if (!recaptchaResponse) {
+                        alert('Please complete the reCAPTCHA verification.');
+                        return false;
+                    }
+                }
+
+                // ASYNC: Check password requirements
+                const passwordRequirementsMet = areAllPasswordRequirementsMet();
+                if (!passwordRequirementsMet) {
+                    passwordTooltip.classList.remove('hidden');
+                    passwordRequirementError.classList.remove('hidden');
+
+                    // Scroll to password requirements
+                    setTimeout(() => {
+                        passwordTooltip.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }, 100);
+
+                    alert('Please meet all password requirements before submitting.');
+                    return false;
+                }
+
+                // ASYNC: Check password match
+                const passwordsMatch = await validatePasswordMatch();
+                if (!passwordsMatch) {
+                    alert('Please ensure both passwords match before submitting.');
+                    return false;
+                }
+
+                // 🔍 FINAL CHECK: Verify email and username don't exist before submission
+                const emailValue = emailInput?.value;
+                const usernameValue = usernameInput?.value;
+
+                if (emailValue) {
+                    const emailAvailable = await checkEmailExists(emailValue);
+                    if (emailAvailable === false) {
+                        alert('This email is already registered. Please use a different email.');
+                        emailInput.focus();
+                        return false;
+                    }
+                }
+
+                if (usernameValue) {
+                    const usernameAvailable = await checkUsernameExists(usernameValue);
+                    if (usernameAvailable === false) {
+                        alert('This username is already taken. Please choose a different username.');
+                        usernameInput.focus();
+                        return false;
+                    }
+                }
+
+                // 🔍 FINAL CHECK: Verify full name doesn't already exist
+                const nameIsUnique = await checkNameExists();
+                if (nameIsUnique === false) {
+                    alert('A user with this exact name already exists in our system. Each person is allowed only one account. If you believe this is an error, please contact support.');
+                    firstNameInput?.focus();
+                    return false;
+                }
+
+                const termsCheckbox = document.getElementById('terms');
+                if (!termsCheckbox?.checked) {
+                    alert('Please agree to the Terms and Conditions');
+                    return false;
+                }
+
+                // Show loading state
+                const registerButton = document.getElementById('registerButton');
+                const originalButtonText = registerButton.innerHTML;
+                if (registerButton) {
+                    registerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+                    registerButton.disabled = true;
+                }
+
+                try {
+                    // Create FormData object
+                    const formData = new FormData(registerForm);
+
+                    // Submit via AJAX
+                    const response = await fetch(registerForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Registration successful - show modal
+                        showSuccessModal();
+                    } else {
+                        // Show errors
+                        if (result.errors) {
+                            alert('Registration failed: ' + Array.from(result.errors).join('\n'));
+                        } else {
+                            alert('Registration failed. Please try again.');
+                        }
+
+                        // Reset button
+                        registerButton.innerHTML = originalButtonText;
+                        registerButton.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    alert('An error occurred during registration. Please try again.');
+
+                    // Reset button
+                    registerButton.innerHTML = originalButtonText;
+                    registerButton.disabled = false;
+                }
+            });
+        }
+
+        // Add event listener for the Proceed to Login button
+        const proceedToLoginBtn = document.getElementById('proceedToLogin');
+        if (proceedToLoginBtn) {
+            proceedToLoginBtn.addEventListener('click', function() {
+                if (successModal) {
+                    successModal.hide();
+                }
+                window.location.href = '/Login';
+            });
+        }
+        });
+
+                // Success modal functionality - make it globally accessible
+        function showSuccessModal() {
+            if (!successModal) {
+                // Initialize modal if not already done
+                const successModalElement = document.getElementById('successModal');
+                if (successModalElement) {
+                    successModal = new bootstrap.Modal(successModalElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                } else {
+                    console.error('Success modal element not found');
+                    return;
+                }
+            }
+
+            // Show the modal
+            successModal.show();
+        }
+        // Make function globally accessible
+        window.showSuccessModal = showSuccessModal;
+    </script>
+
     <style>
+        .crimson-500 {
+            color: #DC143C;
+        }
+
+        .crimson-600 {
+            color: #b01030;
+        }
+
+        .bg-crimson-500 {
+            background-color: #DC143C;
+        }
+
+        .bg-crimson-600 {
+            background-color: #b01030;
+        }
+
+        /* Custom gradient for text */
         .text-crimson-600 {
             color: #DC143C;
         }
@@ -24,494 +1038,101 @@
             color: #b01030;
         }
 
-        .accent-crimson-600 {
-            accent-color: #DC143C;
+        /* Ensure proper focus states */
+        input:focus + span {
+            top: 0 !important;
+            font-size: 0.75rem !important;
+            color: #10b981 !important;
+            transform: translateY(-50%) !important;
+        }
+
+        /* Password toggle button styles */
+        #togglePassword, #toggleConfirmPassword {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            #togglePassword:hover, #toggleConfirmPassword:hover {
+                color: #4b5563;
+            }
+
+        /* Custom scrollbar for modal */
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+            .modal-body::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+
+        /* Success Modal Centering - Fixed positioning for all screen sizes */
+        #successModal {
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        #successModal.show {
+            z-index: 1055;
+            pointer-events: auto;
+        }
+
+        /* Override Bootstrap modal display to use flexbox centering */
+        #successModal .modal-dialog {
+            width: clamp(300px, 90%, 500px);
+            max-width: 500px;
+            margin: auto;
+        }
+
+        /* Ensure modal is vertically centered on all screen sizes */
+        #successModal.modal {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #successModal.modal.fade:not(.show) {
+            opacity: 0;
+        }
+
+        #successModal.modal.show {
+            opacity: 1;
+        }
+
+        /* Scale animation */
+        #successModal.modal.fade .modal-dialog {
+            transform: scale(0.9);
+            transition: transform 0.3s ease-out;
+        }
+
+        #successModal.modal.show .modal-dialog {
+            transform: scale(1);
+        }
+
+        /* Ensure terms modal doesn't conflict */
+        #termsModal {
+            z-index: 1056;
+        }
+
+        #termsModal + .modal-backdrop {
+            z-index: 1055;
         }
     </style>
-
-    <!-- Deferred non-critical styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
-
-    <!-- Async scripts -->
-    <script src="https://cdn.tailwindcss.com" async></script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-</head>
-
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-    <!-- Loading skeleton for initial paint -->
-    <div id="loadingSkeleton" class="fixed inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
-            <div class="text-center mb-6">
-                <div class="h-8 bg-gray-200 rounded animate-pulse w-48 mx-auto mb-2"></div>
-            </div>
-            <div class="space-y-4">
-                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                    <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-                </div>
-                <div class="h-32 bg-gray-200 rounded-xl animate-pulse"></div>
-                <div class="h-12 bg-gray-200 rounded-xl animate-pulse"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Go Back Button -->
-    <a href="/" class="fixed left-4 top-4 z-50 flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-lg border border-gray-200 text-crimson-600 hover:bg-crimson-600 hover:text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 font-semibold text-sm hidden" id="backButton">
-        <i class="fas fa-arrow-left text-xs"></i>
-        <span>Home</span>
-    </a>
-
-    <!-- Register Card -->
-    <div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 backdrop-blur-sm hidden" id="registerCard">
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                Create an Account
-            </h1>
-        </div>
-
-        <form asp-action="Register" method="post" enctype="multipart/form-data" class="space-y-6" id="registerForm">
-
-            <!-- Validation Summary -->
-            <div asp-validation-summary="All"
-                 id="validationSummary"
-                 class="hidden bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm transition-opacity duration-300">
-            </div>
-
-            <!-- Username & Email -->
-            <div class="grid grid-cols-1 gap-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Username</label>
-                    <input asp-for="Username" type="text" placeholder="Enter your username" required
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all duration-200 bg-white" />
-                    <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Email Address</label>
-                    <input asp-for="Email" type="email" placeholder="you@example.com" required
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all duration-200 bg-white" />
-                    <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
-                </div>
-            </div>
-
-            <!-- Password & Confirm Password -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Password -->
-                <div class="relative">
-                    <label for="Password" class="block text-sm font-semibold text-gray-700">Password</label>
-                    <input asp-for="Password" type="password" id="password" required
-                           placeholder="Enter your password"
-                           class="w-full mt-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all duration-200" />
-                    <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
-
-                    <!-- Tooltip -->
-                    <div id="passwordTooltip"
-                         class="hidden absolute left-0 top-full mt-2 w-full md:w-72 bg-white border border-gray-300 rounded-xl shadow-lg p-4 text-sm z-20 transition-all duration-300">
-                        <p class="font-semibold mb-2 text-gray-800">Password must:</p>
-                        <ul class="space-y-1 text-gray-700">
-                            <li id="rule-lowercase" class="flex items-center gap-2">
-                                <i class="fas fa-circle text-red-500 text-xs"></i> At least one lowercase letter
-                            </li>
-                            <li id="rule-uppercase" class="flex items-center gap-2">
-                                <i class="fas fa-circle text-red-500 text-xs"></i> At least one uppercase letter
-                            </li>
-                            <li id="rule-number" class="flex items-center gap-2">
-                                <i class="fas fa-circle text-red-500 text-xs"></i> At least one number
-                            </li>
-                            <li id="rule-symbol" class="flex items-center gap-2">
-                                <i class="fas fa-circle text-red-500 text-xs"></i> At least one symbol
-                            </li>
-                            <li id="rule-length" class="flex items-center gap-2">
-                                <i class="fas fa-circle text-red-500 text-xs"></i> Minimum 8 characters
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Confirm Password -->
-                <div class="relative">
-                    <label for="confirmPassword" class="block text-sm font-semibold text-gray-700">Confirm Password</label>
-                    <input type="password" id="confirmPassword" name="ConfirmPassword" required
-                           placeholder="Re-enter your password"
-                           class="w-full mt-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all duration-200" />
-                    <div id="passwordMatch" class="mt-2 text-sm hidden transition-all duration-300"></div>
-                    <div id="confirmPasswordError" class="text-red-500 text-xs mt-1 hidden"></div>
-                </div>
-            </div>
-
-            <!-- reCAPTCHA -->
-            <div class="flex justify-center bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <div class="g-recaptcha scale-90 sm:scale-100"
-                     data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
-            </div>
-
-            <!-- Terms -->
-            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
-                <input type="checkbox" id="terms" name="terms" class="mt-1 accent-blue-600 scale-110" required>
-                <label for="terms" class="text-xs lg:text-sm text-gray-700 flex-1">
-                    I agree to the
-                    <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200"
-                       data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
-                </label>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" id="submitButton"
-                    class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
-                <span class="flex items-center justify-center gap-2">
-                    <span>Sign Up</span>
-                    <i class="fas fa-arrow-right"></i>
-                </span>
-            </button>
-
-            <!-- Redirect -->
-            <div class="text-center">
-                <p class="text-gray-500 text-sm">
-                    Already have an account?
-                    <a href="/Login" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">Sign in</a>
-                </p>
-            </div>
-        </form>
-    </div>
-
-    <!-- Terms Modal -->
-    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
-                <!-- Header -->
-                <div class="modal-header bg-gradient-to-r from-rose-400 to-rose-500 text-white py-3 px-4">
-                    <h5 class="modal-title font-semibold text-lg tracking-wide flex items-center gap-2" id="termsModalLabel">
-                        <i class="fas fa-file-contract text-white text-xl"></i>
-                        Lingap Terms & Privacy Policy
-                    </h5>
-                </div>
-                <div class="modal-body bg-rose-50 text-gray-800 leading-relaxed">
-                    <div class="space-y-4">
-                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
-                            <i class="fas fa-handshake text-rose-500"></i> 1. Acceptance of Terms
-                        </h6>
-                        <p>By signing up for Lingap, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.</p>
-                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
-                            <i class="fas fa-shield-alt text-rose-500"></i> 2. Data Privacy & Protection
-                        </h6>
-                        <p>Lingap complies with the <strong>Data Privacy Act of 2012 (RA 10173)</strong> and ensures responsible handling of your personal data with the highest level of security and care.</p>
-                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
-                            <i class="fas fa-database text-rose-500"></i> 3. Purpose of Data Collection
-                        </h6>
-                        <ul class="list-disc ps-5 text-gray-700 space-y-1">
-                            <li>Eligibility verification for Lingap programs</li>
-                            <li>Contact and follow-up regarding assistance</li>
-                            <li>Partner validation as necessary</li>
-                        </ul>
-                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
-                            <i class="fas fa-user-check text-rose-500"></i> 4. Account Integrity
-                        </h6>
-                        <p>Each individual is allowed <strong>only one account</strong>. Creating multiple or falsified accounts may result in disqualification and suspension of access.</p>
-                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
-                            <i class="fas fa-sync text-rose-500"></i> 5. Changes to Terms
-                        </h6>
-                        <p>Lingap reserves the right to modify these Terms at any time. All updates will be posted publicly, and continued use signifies acceptance of the latest terms.</p>
-                        <h6 class="fw-bold text-rose-600 flex items-center gap-2">
-                            <i class="fas fa-envelope-open-text text-rose-500"></i> 6. Questions or Concerns
-                        </h6>
-                        <p>
-                            For inquiries, you may reach out to our support team at
-                            <a href="mailto:support@lingap.org" class="text-rose-600 font-semibold hover:underline">support@lingap.org</a>.
-                        </p>
-                    </div>
-                </div>
-                <div class="modal-footer bg-rose-100 border-0">
-                    <small class="text-gray-600 me-auto">Last updated: May 2025</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Registration Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
-                <div class="modal-body p-6 text-center">
-                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check text-green-600 text-3xl"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">You are now registered</h3>
-                    <p class="text-gray-600 mb-6">Welcome to our community! You'll be redirected shortly.</p>
-                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                        <p class="text-sm text-gray-600 mb-2">Redirecting to login page in:</p>
-                        <div class="text-2xl font-bold text-green-600" id="countdown">5</div>
-                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div id="countdownBar" class="bg-green-600 h-2 rounded-full transition-all duration-1000" style="width: 100%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Deferred JavaScript -->
-    <script>
-        // Minimal initial loader
-        function initPage() {
-            // Hide loading skeleton and show content
-            const loadingSkeleton = document.getElementById('loadingSkeleton');
-            const registerCard = document.getElementById('registerCard');
-            const backButton = document.getElementById('backButton');
-
-            if (loadingSkeleton && registerCard && backButton) {
-                loadingSkeleton.classList.add('hidden');
-                registerCard.classList.remove('hidden');
-                backButton.classList.remove('hidden');
-
-                // Initialize validation visibility
-                const validationSummary = document.getElementById('validationSummary');
-                if (validationSummary && validationSummary.innerText.trim() !== "") {
-                    validationSummary.classList.remove('hidden', 'opacity-0');
-                    validationSummary.classList.add('opacity-100');
-                }
-            }
-
-            // Load Bootstrap async
-            loadBootstrap();
-        }
-
-        function loadBootstrap() {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
-            script.onload = initializeApp;
-            document.head.appendChild(script);
-        }
-
-        function initializeApp() {
-            // Check for success modal
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('registration') === 'success') {
-                showSuccessModal();
-            }
-
-            // Initialize form functionality
-            initializeFormFunctionality();
-        }
-
-        function showSuccessModal() {
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            successModal.show();
-
-            let seconds = 5;
-            const countdownElement = document.getElementById('countdown');
-            const countdownBar = document.getElementById('countdownBar');
-
-            const countdown = setInterval(function() {
-                seconds--;
-                countdownElement.textContent = seconds;
-                countdownBar.style.width = (seconds * 20) + '%';
-
-                if (seconds <= 0) {
-                    clearInterval(countdown);
-                    window.location.href = '/Login';
-                }
-            }, 1000);
-        }
-
-        // Optimized form functionality
-        function initializeFormFunctionality() {
-            const form = document.getElementById('registerForm');
-            const passwordInput = document.getElementById('password');
-            const confirmInput = document.getElementById('confirmPassword');
-
-            if (!form || !passwordInput || !confirmInput) return;
-
-            // Password validation rules
-            const rules = {
-                lowercase: /[a-z]/,
-                uppercase: /[A-Z]/,
-                number: /[0-9]/,
-                symbol: /[^A-Za-z0-9]/,
-                length: /.{8,}/
-            };
-
-            // Debounced validation
-            let typingTimer;
-            const doneTypingInterval = 300;
-
-            function validatePasswordMatch() {
-                const password = passwordInput.value;
-                const confirmPassword = confirmInput.value;
-                const matchIndicator = document.getElementById('passwordMatch');
-                const confirmError = document.getElementById('confirmPasswordError');
-
-                if (!matchIndicator || !confirmError) return;
-
-                // Reset styles
-                confirmInput.classList.remove('border-red-500', 'border-green-500');
-                matchIndicator.classList.add('hidden');
-                confirmError.classList.add('hidden');
-
-                if (confirmPassword === '') return true;
-
-                if (password === confirmPassword) {
-                    confirmInput.classList.add('border-green-500');
-                    matchIndicator.classList.remove('hidden');
-                    matchIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> <span class="text-green-600 font-medium">Passwords match</span>';
-                    return true;
-                } else {
-                    confirmInput.classList.add('border-red-500');
-                    matchIndicator.classList.remove('hidden');
-                    matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Passwords do not match</span>';
-                    confirmError.classList.remove('hidden');
-                    confirmError.innerHTML = 'Passwords do not match. Please ensure both passwords are identical.';
-                    return false;
-                }
-            }
-
-            function validatePasswordRequirements() {
-                const val = passwordInput.value;
-                const tooltip = document.getElementById('passwordTooltip');
-                if (!tooltip) return;
-
-                const checks = {
-                    lowercase: rules.lowercase.test(val),
-                    uppercase: rules.uppercase.test(val),
-                    number: rules.number.test(val),
-                    symbol: rules.symbol.test(val),
-                    length: rules.length.test(val)
-                };
-
-                // Update requirement indicators
-                Object.entries(checks).forEach(([key, passed]) => {
-                    const el = document.getElementById(`rule-${key}`);
-                    if (!el) return;
-                    const icon = el.querySelector("i");
-                    if (passed) {
-                        icon.classList.replace("text-red-500", "text-green-500");
-                        el.classList.add("text-green-600", "font-medium");
-                    } else {
-                        icon.classList.replace("text-green-500", "text-red-500");
-                        el.classList.remove("text-green-600", "font-medium");
-                    }
-                });
-
-                const allPassed = Object.values(checks).every(Boolean);
-
-                // Auto-hide tooltip if all requirements are met
-                if (allPassed) {
-                    clearTimeout(typingTimer);
-                    typingTimer = setTimeout(() => {
-                        tooltip.classList.add("opacity-0");
-                        setTimeout(() => tooltip.classList.add("hidden"), 300);
-                    }, doneTypingInterval);
-                }
-            }
-
-            // Event listeners with debouncing
-            passwordInput.addEventListener('input', () => {
-                clearTimeout(typingTimer);
-                validatePasswordRequirements();
-                if (confirmInput.value) validatePasswordMatch();
-            });
-
-            confirmInput.addEventListener('input', () => {
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(validatePasswordMatch, doneTypingInterval);
-            });
-
-            // Tooltip functionality
-            passwordInput.addEventListener('focus', () => {
-                const tooltip = document.getElementById('passwordTooltip');
-                if (tooltip) {
-                    tooltip.classList.remove("hidden", "opacity-0");
-                }
-            });
-
-            document.addEventListener('click', (e) => {
-                const tooltip = document.getElementById('passwordTooltip');
-                if (tooltip && !passwordInput.contains(e.target) && !tooltip.contains(e.target)) {
-                    tooltip.classList.add("opacity-0");
-                    setTimeout(() => tooltip.classList.add("hidden"), 300);
-                }
-            });
-
-            // Form submission
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                // Quick validation before fetch
-                const recaptchaResponse = grecaptcha.getResponse();
-                if (!recaptchaResponse) {
-                    alert('Please complete the reCAPTCHA');
-                    return;
-                }
-
-                if (passwordInput.value !== confirmInput.value) {
-                    confirmInput.focus();
-                    alert('Please ensure both passwords match before submitting.');
-                    return;
-                }
-
-                const termsCheckbox = document.getElementById('terms');
-                if (!termsCheckbox?.checked) {
-                    alert('Please agree to the terms and conditions');
-                    return;
-                }
-
-                // Submit form
-                const submitButton = document.getElementById('submitButton');
-                if (submitButton) {
-                    submitButton.disabled = true;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                }
-
-                const formData = new FormData(form);
-
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => {
-                    if (response.redirected) {
-                        if (response.url.includes('success') || response.url.includes('Login')) {
-                            showSuccessModal();
-                        } else {
-                            window.location.href = response.url;
-                        }
-                    } else {
-                        return response.text().then(html => {
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(html, 'text/html');
-                            const newForm = doc.getElementById('registerForm');
-                            if (newForm) {
-                                form.innerHTML = newForm.innerHTML;
-                                setTimeout(initializeFormFunctionality, 50);
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred during registration. Please try again.');
-                    if (submitButton) {
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = '<span class="flex items-center justify-center gap-2"><span>Sign Up</span><i class="fas fa-arrow-right"></i></span>';
-                    }
-                });
-            });
-
-            // Initialize any existing values
-            if (passwordInput.value) validatePasswordRequirements();
-            if (confirmInput.value) validatePasswordMatch();
-        }
-
-        // Start initialization when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initPage);
-        } else {
-            initPage();
-        }
-    </script>
 </body>
 </html>

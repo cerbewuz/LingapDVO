@@ -122,5 +122,13 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string Status2 { get; set; } = "";
 
+        public DateTime ClaimedAt { get; set; }
+
+        [MaxLength(100)]
+        public string Status3 { get; set; } = "";
+
+        // 🔒 SECURITY: Form submission token for anti-duplication protection
+        public string? SubmissionToken { get; set; } = "";
+
     }
 }

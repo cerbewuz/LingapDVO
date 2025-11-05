@@ -12,11 +12,13 @@ namespace LingapDVO.Controllers
     {
         public readonly ApplicationDbContext context;
         private readonly IWebHostEnvironment environment;
+        private readonly ISessionConfigurationService _sessionConfig;
 
-        public SuperadminController(ApplicationDbContext context, IWebHostEnvironment environment)
+        public SuperadminController(ApplicationDbContext context, IWebHostEnvironment environment, ISessionConfigurationService sessionConfig)
         {
             this.context = context;
             this.environment = environment;
+            _sessionConfig = sessionConfig;
         }
         public IActionResult Index()
         {
@@ -50,7 +52,7 @@ namespace LingapDVO.Controllers
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            var Register = context.Register
+            var RegisterAcc = context.RegisterAcc
               .OrderByDescending(f => f.Id)
               .ToList();
 
@@ -65,7 +67,7 @@ namespace LingapDVO.Controllers
                 HospitalBills = hospitalBills,
                 MedicalLabForms = medicalLabForms,
                 Funeralburialform = funeralburialform,
-                Register = Register,
+                RegisterAcc = RegisterAcc,
                 Adminaccount = Admin
             };
 

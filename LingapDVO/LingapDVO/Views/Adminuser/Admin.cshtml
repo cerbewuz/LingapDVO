@@ -1,14 +1,20 @@
 ﻿@model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LingapDVO Admin</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Admin Sidebar Styles -->
+    <link rel="stylesheet" href="~/css/admin-sidebar.css">
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         :root {
@@ -33,119 +39,118 @@
             color: var(--gray-800);
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
 
         .dashboard-container {
             display: flex;
             min-height: 100vh;
+            flex-wrap: wrap;
         }
 
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background: linear-gradient(180deg, var(--dark) 0%, #2d2d44 100%);
-            color: white;
-            padding: 1.5rem 0;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar-header {
-            padding: 0 1.5rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-title {
-            display: flex;
-            align-items: center;
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: white;
-        }
-
-            .sidebar-title i {
-                color: var(--lingap-red);
-                margin-right: 0.75rem;
-                font-size: 1.6rem;
-            }
-
-        .sidebar-nav {
-            list-style: none;
-            padding: 0;
-        }
-
-            .sidebar-nav li {
-                margin-bottom: 0.5rem;
-            }
-
-            .sidebar-nav a {
-                display: flex;
-                align-items: center;
-                color: rgba(255, 255, 255, 0.8);
-                text-decoration: none;
-                padding: 0.85rem 1.5rem;
-                border-radius: 0.5rem;
-                transition: all 0.2s ease;
-                font-weight: 500;
-            }
-
-                .sidebar-nav a:hover, .sidebar-nav a.active {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: white;
-                }
-
-            .sidebar-nav i {
-                margin-right: 0.75rem;
-                font-size: 1.2rem;
-            }
-
-        /* Main Content */
-        .main-content {
+        /* Main Content - Uses sidebar CSS classes */
+        .main-content-with-sidebar {
             flex: 1;
-            padding: 1.5rem;
+            padding: clamp(0.75rem, 1.5rem, 2rem);
             background-color: #f5f7fb;
+            min-width: 0;
+            width: 100%;
         }
 
         .header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            margin-bottom: clamp(1rem, 2rem, 2.5rem);
+            padding-bottom: clamp(0.5rem, 1rem, 1.5rem);
             border-bottom: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* Priority Notifications in Header */
+        .priority-notifications {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .priority-alert {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .priority-alert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .priority-alert.high {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+            border: 2px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .priority-alert.medium {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+            border: 2px solid rgba(243, 156, 18, 0.3);
+        }
+
+        .priority-count {
+            background: currentColor;
+            color: white;
+            border-radius: 50%;
+            min-width: 1.75rem;
+            height: 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
         }
 
         .page-title h1 {
             font-weight: 700;
             color: var(--dark);
             margin-bottom: 0.25rem;
-            font-size: 1.8rem;
+            font-size: clamp(1.3rem, 1.8rem, 2.2rem);
         }
 
         .page-title p {
             color: var(--gray-600);
             margin-bottom: 0;
-            font-size: 1rem;
+            font-size: clamp(0.85rem, 1rem, 1.1rem);
         }
 
         /* Stats Cards */
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: clamp(0.75rem, 1.5rem, 2rem);
+            margin-bottom: clamp(1rem, 2rem, 2.5rem);
         }
 
         .stat-card {
             background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
+            border-radius: clamp(0.75rem, 1rem, 1.25rem);
+            padding: clamp(1rem, 1.5rem, 2rem);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: none;
             display: flex;
             align-items: center;
             cursor: pointer;
+            flex-wrap: wrap;
+            gap: clamp(0.5rem, 1rem, 1.5rem);
         }
 
             .stat-card:hover {
@@ -161,7 +166,7 @@
                 border-left-color: var(--success);
             }
 
-            .stat-card.unapproved.active {
+            .stat-card.disapproved.active {
                 border-left-color: var(--danger);
             }
 
@@ -178,14 +183,15 @@
             }
 
         .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: clamp(45px, 60px, 70px);
+            height: clamp(45px, 60px, 70px);
+            border-radius: clamp(8px, 12px, 14px);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 1rem;
-            font-size: 1.75rem;
+            margin-right: 0;
+            font-size: clamp(1.25rem, 1.75rem, 2rem);
+            flex-shrink: 0;
         }
 
         .stat-card.approved .stat-icon {
@@ -193,7 +199,7 @@
             color: var(--success);
         }
 
-        .stat-card.unapproved .stat-icon {
+        .stat-card.disapproved .stat-icon {
             background: rgba(231, 76, 60, 0.15);
             color: var(--danger);
         }
@@ -214,7 +220,7 @@
         }
 
         .stat-info h3 {
-            font-size: 1.75rem;
+            font-size: clamp(1.3rem, 1.75rem, 2rem);
             font-weight: 700;
             margin-bottom: 0.25rem;
         }
@@ -223,6 +229,7 @@
             color: var(--gray-600);
             margin-bottom: 0;
             font-weight: 500;
+            font-size: clamp(0.8rem, 1rem, 1.1rem);
         }
 
         /* Main Table Card */
@@ -235,24 +242,27 @@
         }
 
         .card-header {
-            padding: 1.5rem;
+            padding: clamp(1rem, 1.5rem, 2rem);
             border-bottom: 1px solid var(--gray-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .card-title {
             font-weight: 600;
             color: var(--dark);
             margin-bottom: 0;
-            font-size: 1.3rem;
+            font-size: clamp(1.1rem, 1.3rem, 1.5rem);
         }
 
         .card-tools {
             display: flex;
-            gap: 1rem;
+            gap: clamp(0.5rem, 1rem, 1.5rem);
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .search-box {
@@ -260,11 +270,12 @@
         }
 
             .search-box input {
-                padding-left: 2.5rem;
+                padding-left: clamp(2rem, 2.5rem, 3rem);
                 border-radius: 0.5rem;
                 border: 1px solid var(--gray-200);
-                width: 250px;
-                height: 40px;
+                width: clamp(180px, 250px, 300px);
+                height: clamp(36px, 40px, 44px);
+                font-size: clamp(0.85rem, 1rem, 1.1rem);
             }
 
             .search-box i {
@@ -279,17 +290,28 @@
             border-radius: 0.5rem;
             border: 1px solid var(--gray-200);
             padding: 0.5rem;
-            width: 200px;
-            height: 40px;
+            width: clamp(150px, 200px, 250px);
+            height: clamp(36px, 40px, 44px);
+            font-size: clamp(0.85rem, 1rem, 1.1rem);
+        }
+
+        .sort-select {
+            border-radius: 0.5rem;
+            border: 1px solid var(--gray-200);
+            padding: 0.5rem;
+            width: clamp(180px, 220px, 260px);
+            height: clamp(36px, 40px, 44px);
+            font-size: clamp(0.85rem, 1rem, 1.1rem);
         }
 
         .time-filter {
             display: flex;
-            gap: 0.5rem;
+            gap: clamp(0.25rem, 0.5rem, 0.75rem);
+            flex-wrap: wrap;
         }
 
         .time-filter-btn {
-            padding: 0.5rem 1rem;
+            padding: clamp(0.4rem, 0.5rem, 0.6rem) clamp(0.75rem, 1rem, 1.25rem);
             border-radius: 0.5rem;
             border: 1px solid var(--gray-200);
             background: white;
@@ -297,6 +319,7 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-size: clamp(0.8rem, 0.9rem, 1rem);
         }
 
             .time-filter-btn:hover {
@@ -311,13 +334,15 @@
 
         /* Table Styles */
         .table-responsive {
-            max-height: 500px;
+            max-height: clamp(400px, 500px, 600px);
             overflow-y: auto;
+            overflow-x: auto;
         }
 
         .table {
             margin-bottom: 0;
             width: 100%;
+            min-width: 600px;
         }
 
             .table thead {
@@ -331,15 +356,34 @@
                 border-top: none;
                 font-weight: 600;
                 color: var(--gray-800);
-                padding: 1rem;
+                padding: clamp(0.75rem, 1rem, 1.25rem);
                 border-bottom: 1px solid var(--gray-200);
                 background-color: var(--light);
+                font-size: clamp(0.85rem, 0.95rem, 1rem);
+                cursor: pointer;
+                user-select: none;
+                transition: background-color 0.2s ease;
             }
 
+                .table th.sortable:hover {
+                    background-color: var(--gray-200);
+                }
+
+                .table th i {
+                    margin-left: 0.5rem;
+                    opacity: 0.6;
+                    transition: opacity 0.2s ease;
+                }
+
+                .table th:hover i {
+                    opacity: 1;
+                }
+
             .table td {
-                padding: 1rem;
+                padding: clamp(0.75rem, 1rem, 1.25rem);
                 vertical-align: middle;
                 border-bottom: 1px solid var(--gray-200);
+                font-size: clamp(0.85rem, 0.95rem, 1rem);
             }
 
             .table tbody tr:hover {
@@ -371,7 +415,7 @@
             color: var(--processing);
         }
 
-        .status-unapproved {
+        .status-disapproved {
             background: rgba(231, 76, 60, 0.15);
             color: var(--danger);
         }
@@ -397,16 +441,6 @@
             transition: all 0.2s ease;
             text-decoration: none;
         }
-
-        .btn-view {
-            background: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-        }
-
-            .btn-view:hover {
-                background: var(--primary);
-                color: white;
-            }
 
         .btn-edit {
             background: rgba(46, 204, 113, 0.1);
@@ -442,46 +476,40 @@
             color: var(--gray-600);
             margin-right: 0.5rem;
         }
+
+        /* Sort Indicator */
+        .sort-indicator {
+            display: inline-flex;
+            flex-direction: column;
+            margin-left: 0.5rem;
+        }
+
+        .sort-arrow {
+            line-height: 0.5;
+            opacity: 0.3;
+            transition: opacity 0.2s ease;
+        }
+
+            .sort-arrow.active {
+                opacity: 1;
+                color: var(--primary);
+            }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">
-                    <i class="bi bi-heart-pulse"></i>
-                    <span>LingapDVO</span>
-                </div>
-            </div>
-            <ul class="sidebar-nav">
-                <li>
-                    <a asp-route="Analyticsdashboard" class="active">
-                        <i class="bi bi-bar-chart"></i>
-                        <span>Analytics Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a asp-route="Admin">
-                        <i class="bi bi-house-door"></i>
-                        <span>Application Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a asp-controller="Login" asp-action="Logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+    <!-- Include Shared Admin Sidebar -->
+    @await Html.PartialAsync("_AdminSidebar")
 
+    <div class="dashboard-container">
         <!-- Main Content -->
-        <div class="main-content">
+        <div class="main-content-with-sidebar">
             <!-- Header -->
             <div class="header">
                 <div class="page-title">
                     <h1>Application Dashboard</h1>
+                </div>
+                <div class="priority-notifications" id="headerPriorityAlerts">
+                    <!-- Priority alerts will be populated by JavaScript -->
                 </div>
             </div>
 
@@ -512,13 +540,13 @@
                         <p>Approved</p>
                     </div>
                 </div>
-                <div class="stat-card unapproved" data-status="unapproved">
+                <div class="stat-card disapproved" data-status="disapproved">
                     <div class="stat-icon">
                         <i class="bi bi-x-circle"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="unapproved-count">0</h3>
-                        <p>Unapproved</p>
+                        <h3 id="disapproved-count">0</h3>
+                        <p>Disapproved</p>
                     </div>
                 </div>
                 <div class="stat-card pending" data-status="pending">
@@ -565,6 +593,16 @@
                             <option value="Medical and laboratory Procedure">Medical & Laboratory</option>
                             <option value="Funeral and burial assistance">Funeral & Burial</option>
                         </select>
+                        <select class="sort-select" id="sortSelect">
+                            <option value="date-desc">Newest First</option>
+                            <option value="date-asc">Oldest First</option>
+                            <option value="name-asc">Name A-Z</option>
+                            <option value="name-desc">Name Z-A</option>
+                            <option value="type-asc">Type A-Z</option>
+                            <option value="type-desc">Type Z-A</option>
+                            <option value="status-asc">Status A-Z</option>
+                            <option value="status-desc">Status Z-A</option>
+                        </select>
                     </div>
                 </div>
                 <div class="card-body">
@@ -572,10 +610,34 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Applicant</th>
-                                    <th>Type</th>
-                                    <th>Status</th>
-                                    <th>Date Submitted</th>
+                                    <th class="sortable" data-sort="name">
+                                        Applicant
+                                        <span class="sort-indicator">
+                                            <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                            <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                                        </span>
+                                    </th>
+                                    <th class="sortable" data-sort="type">
+                                        Type
+                                        <span class="sort-indicator">
+                                            <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                            <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                                        </span>
+                                    </th>
+                                    <th class="sortable" data-sort="status">
+                                        Status
+                                        <span class="sort-indicator">
+                                            <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                            <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                                        </span>
+                                    </th>
+                                    <th class="sortable" data-sort="date">
+                                        Date Submitted
+                                        <span class="sort-indicator">
+                                            <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                            <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                                        </span>
+                                    </th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -588,6 +650,10 @@
             </div>
         </div>
     </div>
+
+    <!-- Load admin sidebar utilities and session timeout scripts -->
+    <script src="~/js/adminsidebar.js"></script>
+    @await Html.PartialAsync("_SessionTimeout")
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -604,6 +670,7 @@
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -620,6 +687,7 @@
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -636,6 +704,7 @@
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -646,12 +715,14 @@
             const applicationsTable = document.getElementById('applicationsTable');
             const searchInput = document.getElementById('searchInput');
             const typeFilter = document.getElementById('typeFilter');
+            const sortSelect = document.getElementById('sortSelect');
             const timeFilterButtons = document.querySelectorAll('.time-filter-btn');
             const statCards = document.querySelectorAll('.stat-card');
+            const sortableHeaders = document.querySelectorAll('th.sortable');
 
             // Status count elements
             const approvedCount = document.getElementById('approved-count');
-            const unapprovedCount = document.getElementById('unapproved-count');
+            const disapprovedCount = document.getElementById('disapproved-count');
             const pendingCount = document.getElementById('pending-count');
             const processingCount = document.getElementById('processing-count');
             const claimedCount = document.getElementById('claimed-count');
@@ -661,6 +732,78 @@
             let currentTimeFilter = 'currentMonth';
             let currentTypeFilter = 'all';
             let currentSearchTerm = '';
+            let currentSort = 'date-desc';
+
+            // Function to sort applications
+            function sortApplications(applications, sortOption) {
+                const sortedApplications = [...applications];
+
+                switch (sortOption) {
+                    case 'date-asc':
+                        return sortedApplications.sort((a, b) => a.createdAt - b.createdAt);
+                    case 'date-desc':
+                        return sortedApplications.sort((a, b) => b.createdAt - a.createdAt);
+                    case 'name-asc':
+                        return sortedApplications.sort((a, b) => a.name.localeCompare(b.name));
+                    case 'name-desc':
+                        return sortedApplications.sort((a, b) => b.name.localeCompare(a.name));
+                    case 'type-asc':
+                        return sortedApplications.sort((a, b) => a.type.localeCompare(b.type));
+                    case 'type-desc':
+                        return sortedApplications.sort((a, b) => b.type.localeCompare(a.type));
+                    case 'status-asc':
+                        return sortedApplications.sort((a, b) => {
+                            const statusA = getDisplayStatus(a);
+                            const statusB = getDisplayStatus(b);
+                            return statusA.localeCompare(statusB);
+                        });
+                    case 'status-desc':
+                        return sortedApplications.sort((a, b) => {
+                            const statusA = getDisplayStatus(a);
+                            const statusB = getDisplayStatus(b);
+                            return statusB.localeCompare(statusA);
+                        });
+                    default:
+                        return sortedApplications.sort((a, b) => b.createdAt - a.createdAt);
+                }
+            }
+
+            // Helper function to get display status for sorting
+            function getDisplayStatus(app) {
+                // Priority 1: Check status3 for "claimed" status
+                if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                    return 'claimed';
+                }
+                // Priority 2: Check status2 for approved/disapproved
+                else if (app.status2 && app.status2.trim() !== '') {
+                    const status2 = app.status2.trim().toLowerCase();
+                    if (status2 === 'approved' || status2 === 'disapproved') {
+                        return status2;
+                    }
+                }
+                // Priority 3: Use original status
+                return app.status;
+            }
+
+            // Function to update sort indicators
+            function updateSortIndicators() {
+                // Reset all indicators
+                document.querySelectorAll('.sort-arrow').forEach(arrow => {
+                    arrow.classList.remove('active');
+                });
+
+                // Get the current sort field and direction
+                const [field, direction] = currentSort.split('-');
+
+                // Find the corresponding header and update its indicator
+                const header = document.querySelector(`th[data-sort="${field}"]`);
+                if (header) {
+                    const indicator = header.querySelector(`.sort-arrow[data-direction="${direction}"]`);
+                    if (indicator) {
+                        indicator.classList.add('active');
+                    }
+                }
+            }
 
             // Function to filter applications by time period
             function filterByTimePeriod(applications, period) {
@@ -686,21 +829,29 @@
                 return applications.filter(app => app.createdAt >= startDate);
             }
 
-            // Function to filter applications by status - FIXED VERSION
+            // Function to filter applications by status - UPDATED VERSION
             function filterByStatus(applications, status) {
                 if (status === 'all') return applications;
 
                 return applications.filter(app => {
-                    // For approved/unapproved statuses, ONLY check Status2 field
-                    if (status === 'approved' || status === 'unapproved') {
-                        return app.status2 && app.status2.trim() !== '' && app.status2 === status;
+                    // For claimed status, check ONLY status3 field
+                    if (status === 'claimed') {
+                        return app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed';
                     }
 
-                    // For other statuses (pending, processing, claimed), use the original Status field
-                    // But exclude applications that have Status2 with approved/unapproved values
+                    // For other statuses, EXCLUDE applications that have status3 = claimed
+                    // Then check status2 for approved/disapproved
+                    if (status === 'approved' || status === 'disapproved') {
+                        return app.status2 && app.status2.trim() !== '' &&
+                               app.status2 === status &&
+                               (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
+                    }
+
+                    // For pending/processing, use original status but exclude claimed status3
                     return app.status === status &&
+                           (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
                            (!app.status2 || app.status2.trim() === '' ||
-                            (app.status2 !== 'approved' && app.status2 !== 'unapproved'));
+                            (app.status2 !== 'approved' && app.status2 !== 'disapproved'));
                 });
             }
 
@@ -721,30 +872,34 @@
                 );
             }
 
-            // Function to update status counts based on time filter - COMPLETELY FIXED VERSION
+            // Function to update status counts based on time filter - UPDATED VERSION
             function updateStatusCounts(timePeriod) {
                 // Filter applications by time period first
                 const timeFilteredApplications = filterByTimePeriod(allApplications, timePeriod);
 
                 const statusCounts = {
                     approved: 0,
-                    unapproved: 0,
+                    disapproved: 0,
                     pending: 0,
                     processing: 0,
                     claimed: 0
                 };
 
                 timeFilteredApplications.forEach(app => {
-                    // If Status2 has approved/unapproved, count ONLY in those categories
-                    if (app.status2 && app.status2.trim() !== '') {
+                    // Check status3 FIRST for "claimed" status - if claimed, count ONLY in claimed
+                    if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                        statusCounts.claimed++;
+                    }
+                    // If NOT claimed, then check status2 for approved/disapproved
+                    else if (app.status2 && app.status2.trim() !== '') {
                         if (app.status2 === 'approved') {
                             statusCounts.approved++;
-                        } else if (app.status2 === 'unapproved') {
-                            statusCounts.unapproved++;
+                        } else if (app.status2 === 'disapproved') {
+                            statusCounts.disapproved++;
                         }
-                        // DO NOT count in processing/pending/claimed if Status2 is approved/unapproved
+                        // DO NOT count in processing/pending if Status2 is approved/disapproved
                     } else {
-                        // No Status2 or Status2 is empty, use original status
+                        // No Status2 or Status2 is empty, and no claimed status3, use original status
                         if (statusCounts.hasOwnProperty(app.status)) {
                             statusCounts[app.status]++;
                         }
@@ -753,7 +908,7 @@
 
                 // Update the count displays
                 approvedCount.textContent = statusCounts.approved;
-                unapprovedCount.textContent = statusCounts.unapproved;
+                disapprovedCount.textContent = statusCounts.disapproved;
                 pendingCount.textContent = statusCounts.pending;
                 processingCount.textContent = statusCounts.processing;
                 claimedCount.textContent = statusCounts.claimed;
@@ -796,25 +951,29 @@
                 });
             }
 
-            // Helper function to get status badge HTML - FIXED VERSION
+            // Helper function to get status badge HTML - UPDATED VERSION
             function getStatusBadge(app) {
                 let displayStatus = app.status;
                 let displayText = app.status.charAt(0).toUpperCase() + app.status.slice(1);
 
-                // Only use Status2 if it has approved or unapproved value
-                // Do NOT display Status2 if it contains "processing" or any other value
-                if (app.status2 && app.status2.trim() !== '') {
+                // Priority 1: Check status3 for "claimed" status (highest priority)
+                if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                    displayStatus = 'claimed';
+                    displayText = 'Claimed';
+                }
+                // Priority 2: Check status2 for approved/disapproved (only if NOT claimed)
+                else if (app.status2 && app.status2.trim() !== '') {
                     const status2 = app.status2.trim().toLowerCase();
-                    if (status2 === 'approved' || status2 === 'unapproved') {
+                    if (status2 === 'approved' || status2 === 'disapproved') {
                         displayStatus = status2;
                         displayText = status2.charAt(0).toUpperCase() + status2.slice(1);
                     }
-                    // If status2 has any other value (like "processing"), ignore it and use the original status
+                    // If status2 has any other value, ignore it and use the original status
                 }
 
                 const statusMap = {
                     'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approved' },
-                    'unapproved': { class: 'status-unapproved', icon: 'bi-x-circle', text: 'Unapproved' },
+                    'disapproved': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapproved' },
                     'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
                     'processing': { class: 'status-processing', icon: 'bi-gear', text: 'Processing' },
                     'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
@@ -829,36 +988,72 @@
                 `;
             }
 
-            // Helper function to get action buttons HTML
+            // Helper function to get action buttons HTML - UPDATED VERSION (show eye for claimed+disapproved)
             function getActionButtons(app) {
-                let viewUrl = '';
                 let editUrl = '';
+                let iconClass = 'bi-pencil';
+                let title = 'Update Status';
+
+                // Check if status3 is claimed AND status2 is disapproved
+                if (app.status3 && app.status3.toLowerCase() === 'claimed' &&
+                    app.status2 && app.status2.toLowerCase() === 'disapproved') {
+                    iconClass = 'bi-eye';
+                    title = 'View Details';
+                }
 
                 if (app.type === "Hospital Bill Assistance") {
-                    viewUrl = `/Superadmin/Fillupformhospitalbillview/${app.formId}`;
-
-                    // Check if status is processing
-                    if (app.status === "processing") {
+                    // Check status3 FIRST for claimed (highest priority)
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                        editUrl = `/Adminuser/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
+                    }
+                    // Then check status2 for approved/disapproved
+                    else if (app.status2 === "approved") {
+                        editUrl = `/Adminuser/FillupformHospitalBillapprovedstatus/${app.formId}`;
+                    } else if (app.status2 === "disapproved") {
+                        editUrl = `/Adminuser/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
+                    }
+                    // Then check original status
+                    else if (app.status === "processing") {
                         editUrl = `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
                     } else {
                         editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
                     }
 
                 } else if (app.type === "Medical and laboratory Procedure") {
-                    viewUrl = `/Superadmin/Medicalandlabformview/${app.formId}`;
-                    editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
-                } else {
-                    viewUrl = `/Superadmin/Funeralburialformview/${app.formId}`;
-                    editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                    // Apply the same logic for Medical forms
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                        editUrl = `/Adminuser/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
+                    }
+                    else if (app.status2 === "approved") {
+                        editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
+                    } else if (app.status2 === "disapproved") {
+                        editUrl = `/Adminuser/MedicalandlabformDisapprovedstatus/${app.formId}`;
+                    } else if (app.status === "processing") {
+                        editUrl = `/Adminuser/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
+                    } else {
+                        editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                    }
+
+                } else if (app.type === "Funeral and burial assistance") {
+                    // Apply the same logic for Funeral forms
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                        editUrl = `/Adminuser/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
+                    }
+                    else if (app.status2 === "approved") {
+                        editUrl = `/Adminuser/Funeralburialapprovedstatus/${app.formId}`;
+                    } else if (app.status2 === "disapproved") {
+                        editUrl = `/Adminuser/FuneralburialDisapprovedstatus/${app.formId}`;
+                    } else if (app.status === "processing") {
+                        editUrl = `/Adminuser/FuneralburialformUpdateprocessingstatus/${app.formId}`;
+                    } else {
+                        editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                    }
                 }
 
                 return `
                     <div class="action-buttons">
-                        <a class="btn-action btn-view" href="${viewUrl}" title="View Details">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a class="btn-action btn-edit" href="${editUrl}" title="Update Status">
-                            <i class="bi bi-pencil"></i>
+                        <a class="btn-action btn-edit" href="${editUrl}" title="${title}">
+                            <i class="bi ${iconClass}"></i>
                         </a>
                     </div>
                 `;
@@ -891,6 +1086,9 @@
 
                 // Apply search filter
                 filteredApplications = filterBySearch(filteredApplications, currentSearchTerm);
+
+                // Apply sorting
+                filteredApplications = sortApplications(filteredApplications, currentSort);
 
                 // Update table
                 renderApplicationsTable(filteredApplications);
@@ -937,11 +1135,47 @@
                 applyFilters();
             });
 
+            // Event listener for sort select
+            sortSelect.addEventListener('change', function() {
+                currentSort = this.value;
+                updateSortIndicators();
+                applyFilters();
+            });
+
+            // Event listeners for sortable headers
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortField = this.dataset.sort;
+                    let newSort = '';
+
+                    // Determine the new sort direction
+                    if (currentSort.startsWith(sortField)) {
+                        // Toggle direction if clicking the same field
+                        const currentDirection = currentSort.split('-')[1];
+                        newSort = `${sortField}-${currentDirection === 'asc' ? 'desc' : 'asc'}`;
+                    } else {
+                        // Default to descending for new field
+                        newSort = `${sortField}-desc`;
+                    }
+
+                    currentSort = newSort;
+                    sortSelect.value = newSort;
+                    updateSortIndicators();
+                    applyFilters();
+                });
+            });
+
             // Initialize the dashboard
             updateStatusCounts(currentTimeFilter);
+            updateSortIndicators();
             applyFilters();
+
+            // Update priority alerts in header
+            // Update priority alerts using the AdminSidebar module
+            if (window.AdminSidebar && window.AdminSidebar.updateHeaderPriorityAlerts) {
+                window.AdminSidebar.updateHeaderPriorityAlerts(allApplications);
+            }
         });
     </script>
 </body>
 </html>
-}

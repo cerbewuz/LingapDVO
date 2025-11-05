@@ -103,6 +103,8 @@ namespace LingapDVO.Models
 
         public IFormFile? DeathCertificateimage { get; set; }
 
+        public IFormFile? MedCertificateimage { get; set; }
+
 
         public DateTime CreatedAt { get; set; }
 
@@ -120,5 +122,14 @@ namespace LingapDVO.Models
 
         [MaxLength(100)]
         public string Status2 { get; set; } = "";
+
+        public DateTime ClaimedAt { get; set; }
+
+        [MaxLength(100)]
+        public string Status3 { get; set; } = "";
+
+        // 🔒 SECURITY: Form submission token for anti-duplication protection
+        public string? SubmissionToken { get; set; } = "";
+
     }
 }

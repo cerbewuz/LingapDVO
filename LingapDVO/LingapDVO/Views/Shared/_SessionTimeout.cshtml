@@ -1,0 +1,12 @@
+@*
+    Session Timeout Script Loader
+    Loads session-timeout.js only for authenticated users
+    Include this partial in all pages that require session timeout detection
+*@
+
+@if (Context.Session.GetString("Username") != null ||
+     Context.Session.GetString("IsAdmin") != null ||
+     Context.Session.GetString("IsSuperadmin") != null)
+{
+    <script src="~/js/session-timeout.js"></script>
+}

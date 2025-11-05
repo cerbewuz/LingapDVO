@@ -1,4 +1,4 @@
-﻿@model FillupformHospitalBillDto
+﻿@model FuneralburialformDto
 @{
     Layout = null;
 }
@@ -8,8 +8,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAF - Funeral/ Burial Assistance</title>
+    <title>RAF - Hospital Billing Assistance</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -22,34 +24,78 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Go Back button styling for upper left */
-        .go-back-top {
+        /* Go Back Button */
+        .go-back-btn {
             position: fixed;
-            left: 30px;
-            top: 30px;
+            left: 16px;
+            top: 16px;
             z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 4px;
-            padding: 8px 16px;
-            border-radius: 30px;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            border: 1px solid #DC143C;
-            color: #DC143C;
+            border: 1px solid rgba(220, 20, 60, 0.15);
+            color: #333333;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            min-height: 36px;
+            min-width: 36px;
+            transform: scale(var(--btn-scale, 1));
+            transform-origin: left top;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
         }
 
-            .go-back-top:hover, .go-back-top:focus {
+            .go-back-btn:hover,
+            .go-back-btn:focus {
                 background: #DC143C;
-                color: #fff !important;
-                box-shadow: 0 4px 16px rgba(220, 20, 60, 0.15);
-                transform: translateY(-2px);
-                text-decoration: none;
+                color: #ffffff;
+                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
+                border-color: #DC143C;
             }
+
+            .go-back-btn i {
+                font-size: 13px;
+                transition: transform 0.3s ease;
+                width: 14px;
+                text-align: center;
+            }
+
+            .go-back-btn:hover i {
+                transform: translateX(-2px);
+            }
+
+            .go-back-btn:active {
+                transform: scale(calc(var(--btn-scale, 1) * 0.96));
+                background: #b01030;
+                transition: transform 0.1s ease;
+            }
+
+            .go-back-btn:focus-visible {
+                outline: 2px solid #DC143C;
+                outline-offset: 2px;
+            }
+
+            .go-back-btn.compact span {
+                display: none;
+            }
+
+            .go-back-btn.compact {
+                padding: 8px;
+                border-radius: 50%;
+            }
+
 
         .form-container {
             background-color: white;
@@ -169,14 +215,31 @@
             border: 1px solid transparent;
             border-radius: 0.25rem;
         }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+            .alert-danger i {
+                margin-right: 0.5rem;
+            }
     </style>
 </head>
 
 <body>
     <!-- Go Back Button -->
-    <a href="javascript:void(0)" class="go-back-top" id="goBackBtn">
-        <i class="fas"></i> Go Back
+    <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>Back</span>
     </a>
+
 
     <div class="container form-container">
         <div class="form-header">
@@ -184,7 +247,7 @@
             <p class="text-muted">Please fill out all required fields to process your request</p>
         </div>
 
-        <form asp-action="FillupformHospitalBill" enctype="multipart/form-data" method="post">
+        <form asp-action="Funeralburialform" enctype="multipart/form-data" method="post">
 
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -245,7 +308,121 @@
 
                 <div class="col-md-3">
                     <label class="form-label required-field">Brgy.</label>
-                    <input asp-for="Brgy" type="text" value="@ViewBag.Barangay" class="form-control" required>
+                    <select asp-for="Brgy" class="form-control" required>
+                        <option value="">Select Barangay</option>
+                        <option value="Acacia" selected="@(ViewBag.Barangay == "Acacia")">Acacia</option>
+                        <option value="Agdao" selected="@(ViewBag.Barangay == "Agdao")">Agdao</option>
+                        <option value="Alambre" selected="@(ViewBag.Barangay == "Alambre")">Alambre</option>
+                        <option value="Alejandro Navarro" selected="@(ViewBag.Barangay == "Alejandro Navarro")">Alejandro Navarro (Lasang)</option>
+                        <option value="Alfonso Angliongto Sr." selected="@(ViewBag.Barangay == "Alfonso Angliongto Sr.")">Alfonso Angliongto Sr.</option>
+                        <option value="Angalan" selected="@(ViewBag.Barangay == "Angalan")">Angalan</option>
+                        <option value="Baguio Proper" selected="@(ViewBag.Barangay == "Baguio Proper")">Baguio Proper</option>
+                        <option value="Baliok" selected="@(ViewBag.Barangay == "Baliok")">Baliok</option>
+                        <option value="Bangkas Heights" selected="@(ViewBag.Barangay == "Bangkas Heights")">Bangkas Heights</option>
+                        <option value="Baracatan" selected="@(ViewBag.Barangay == "Baracatan")">Baracatan</option>
+                        <option value="Bato" selected="@(ViewBag.Barangay == "Bato")">Bato</option>
+                        <option value="Bayabas" selected="@(ViewBag.Barangay == "Bayabas")">Bayabas</option>
+                        <option value="Biao Escuela" selected="@(ViewBag.Barangay == "Biao Escuela")">Biao Escuela</option>
+                        <option value="Biao Guianga" selected="@(ViewBag.Barangay == "Biao Guianga")">Biao Guianga</option>
+                        <option value="Binugao" selected="@(ViewBag.Barangay == "Binugao")">Binugao</option>
+                        <option value="Bucana" selected="@(ViewBag.Barangay == "Bucana")">Bucana</option>
+                        <option value="Buhangin Proper" selected="@(ViewBag.Barangay == "Buhangin Proper")">Buhangin Proper</option>
+                        <option value="Cabantian" selected="@(ViewBag.Barangay == "Cabantian")">Cabantian</option>
+                        <option value="Cadalian" selected="@(ViewBag.Barangay == "Cadalian")">Cadalian</option>
+                        <option value="Calinan Proper" selected="@(ViewBag.Barangay == "Calinan Proper")">Calinan Proper</option>
+                        <option value="Callawa" selected="@(ViewBag.Barangay == "Callawa")">Callawa</option>
+                        <option value="Camansi" selected="@(ViewBag.Barangay == "Camansi")">Camansi</option>
+                        <option value="Carmen" selected="@(ViewBag.Barangay == "Carmen")">Carmen</option>
+                        <option value="Catalunan Grande" selected="@(ViewBag.Barangay == "Catalunan Grande")">Catalunan Grande</option>
+                        <option value="Catalunan Pequeño" selected="@(ViewBag.Barangay == "Catalunan Pequeño")">Catalunan Pequeño</option>
+                        <option value="Catigan" selected="@(ViewBag.Barangay == "Catigan")">Catigan</option>
+                        <option value="Cawayan" selected="@(ViewBag.Barangay == "Cawayan")">Cawayan</option>
+                        <option value="Centro (San Juan)" selected="@(ViewBag.Barangay == "Centro (San Juan)")">Centro (San Juan)</option>
+                        <option value="Colosas" selected="@(ViewBag.Barangay == "Colosas")">Colosas</option>
+                        <option value="Communal" selected="@(ViewBag.Barangay == "Communal")">Communal</option>
+                        <option value="Crossing Bayabas" selected="@(ViewBag.Barangay == "Crossing Bayabas")">Crossing Bayabas</option>
+                        <option value="Dacudao" selected="@(ViewBag.Barangay == "Dacudao")">Dacudao</option>
+                        <option value="Dalagdag" selected="@(ViewBag.Barangay == "Dalagdag")">Dalagdag</option>
+                        <option value="Daliao" selected="@(ViewBag.Barangay == "Daliao")">Daliao</option>
+                        <option value="Dalican" selected="@(ViewBag.Barangay == "Dalican")">Dalican</option>
+                        <option value="Datu Salumay" selected="@(ViewBag.Barangay == "Datu Salumay")">Datu Salumay</option>
+                        <option value="Dominga" selected="@(ViewBag.Barangay == "Dominga")">Dominga</option>
+                        <option value="Eden" selected="@(ViewBag.Barangay == "Eden")">Eden</option>
+                        <option value="Fatima (Benowang)" selected="@(ViewBag.Barangay == "Fatima (Benowang)")">Fatima (Benowang)</option>
+                        <option value="Gatungan" selected="@(ViewBag.Barangay == "Gatungan")">Gatungan</option>
+                        <option value="Gov. Paciano Bangoy" selected="@(ViewBag.Barangay == "Gov. Paciano Bangoy")">Gov. Paciano Bangoy</option>
+                        <option value="Gov. Vicente Duterte" selected="@(ViewBag.Barangay == "Gov. Vicente Duterte")">Gov. Vicente Duterte</option>
+                        <option value="Gumalang" selected="@(ViewBag.Barangay == "Gumalang")">Gumalang</option>
+                        <option value="Gumitan" selected="@(ViewBag.Barangay == "Gumitan")">Gumitan</option>
+                        <option value="Indangan" selected="@(ViewBag.Barangay == "Indangan")">Indangan</option>
+                        <option value="Kap. Tomas Monteverde Sr." selected="@(ViewBag.Barangay == "Kap. Tomas Monteverde Sr.")">Kap. Tomas Monteverde Sr.</option>
+                        <option value="Kilate" selected="@(ViewBag.Barangay == "Kilate")">Kilate</option>
+                        <option value="Lamanan" selected="@(ViewBag.Barangay == "Lamanan")">Lamanan</option>
+                        <option value="Lampianao" selected="@(ViewBag.Barangay == "Lampianao")">Lampianao</option>
+                        <option value="Langub" selected="@(ViewBag.Barangay == "Langub")">Langub</option>
+                        <option value="Lapu-lapu" selected="@(ViewBag.Barangay == "Lapu-lapu")">Lapu-lapu</option>
+                        <option value="Leon Garcia Sr." selected="@(ViewBag.Barangay == "Leon Garcia Sr.")">Leon Garcia Sr.</option>
+                        <option value="Los Amigos" selected="@(ViewBag.Barangay == "Los Amigos")">Los Amigos</option>
+                        <option value="Lubogan" selected="@(ViewBag.Barangay == "Lubogan")">Lubogan</option>
+                        <option value="Lumiad" selected="@(ViewBag.Barangay == "Lumiad")">Lumiad</option>
+                        <option value="Ma-a" selected="@(ViewBag.Barangay == "Ma-a")">Ma-a</option>
+                        <option value="Mabuhay" selected="@(ViewBag.Barangay == "Mabuhay")">Mabuhay</option>
+                        <option value="Madapo" selected="@(ViewBag.Barangay == "Madapo")">Madapo</option>
+                        <option value="Magtuod" selected="@(ViewBag.Barangay == "Magtuod")">Magtuod</option>
+                        <option value="Mahayag" selected="@(ViewBag.Barangay == "Mahayag")">Mahayag</option>
+                        <option value="Malabog" selected="@(ViewBag.Barangay == "Malabog")">Malabog</option>
+                        <option value="Malagos" selected="@(ViewBag.Barangay == "Malagos")">Malagos</option>
+                        <option value="Malamba" selected="@(ViewBag.Barangay == "Malamba")">Malamba</option>
+                        <option value="Malandog" selected="@(ViewBag.Barangay == "Malandog")">Malandog</option>
+                        <option value="Mampising" selected="@(ViewBag.Barangay == "Mampising")">Mampising</option>
+                        <option value="Manambulan" selected="@(ViewBag.Barangay == "Manambulan")">Manambulan</option>
+                        <option value="Mandug" selected="@(ViewBag.Barangay == "Mandug")">Mandug</option>
+                        <option value="Manuel Guianga" selected="@(ViewBag.Barangay == "Manuel Guianga")">Manuel Guianga</option>
+                        <option value="Mapula" selected="@(ViewBag.Barangay == "Mapula")">Mapula</option>
+                        <option value="Marapangi" selected="@(ViewBag.Barangay == "Marapangi")">Marapangi</option>
+                        <option value="Marilog Proper" selected="@(ViewBag.Barangay == "Marilog Proper")">Marilog Proper</option>
+                        <option value="Matina Aplaya" selected="@(ViewBag.Barangay == "Matina Aplaya")">Matina Aplaya</option>
+                        <option value="Matina Crossing" selected="@(ViewBag.Barangay == "Matina Crossing")">Matina Crossing</option>
+                        <option value="Matina Pangi" selected="@(ViewBag.Barangay == "Matina Pangi")">Matina Pangi</option>
+                        <option value="Mintal" selected="@(ViewBag.Barangay == "Mintal")">Mintal</option>
+                        <option value="Mudiang" selected="@(ViewBag.Barangay == "Mudiang")">Mudiang</option>
+                        <option value="Mulig" selected="@(ViewBag.Barangay == "Mulig")">Mulig</option>
+                        <option value="New Carmen" selected="@(ViewBag.Barangay == "New Carmen")">New Carmen</option>
+                        <option value="New Valencia" selected="@(ViewBag.Barangay == "New Valencia")">New Valencia</option>
+                        <option value="Pampanga" selected="@(ViewBag.Barangay == "Pampanga")">Pampanga</option>
+                        <option value="Panacan" selected="@(ViewBag.Barangay == "Panacan")">Panacan</option>
+                        <option value="Pandaitan" selected="@(ViewBag.Barangay == "Pandaitan")">Pandaitan</option>
+                        <option value="Panorama" selected="@(ViewBag.Barangay == "Panorama")">Panorama</option>
+                        <option value="Paquibato Proper" selected="@(ViewBag.Barangay == "Paquibato Proper")">Paquibato Proper</option>
+                        <option value="Paradise Embak" selected="@(ViewBag.Barangay == "Paradise Embak")">Paradise Embak</option>
+                        <option value="Rafael Castillo" selected="@(ViewBag.Barangay == "Rafael Castillo")">Rafael Castillo</option>
+                        <option value="Salapawan" selected="@(ViewBag.Barangay == "Salapawan")">Salapawan</option>
+                        <option value="Salaysay" selected="@(ViewBag.Barangay == "Salaysay")">Salaysay</option>
+                        <option value="Saloy" selected="@(ViewBag.Barangay == "Saloy")">Saloy</option>
+                        <option value="San Antonio" selected="@(ViewBag.Barangay == "San Antonio")">San Antonio</option>
+                        <option value="San Isidro" selected="@(ViewBag.Barangay == "San Isidro")">San Isidro</option>
+                        <option value="Sasa" selected="@(ViewBag.Barangay == "Sasa")">Sasa</option>
+                        <option value="Sirib" selected="@(ViewBag.Barangay == "Sirib")">Sirib</option>
+                        <option value="Suawan" selected="@(ViewBag.Barangay == "Suawan")">Suawan</option>
+                        <option value="Tacunan" selected="@(ViewBag.Barangay == "Tacunan")">Tacunan</option>
+                        <option value="Tagakpan" selected="@(ViewBag.Barangay == "Tagakpan")">Tagakpan</option>
+                        <option value="Tagluno" selected="@(ViewBag.Barangay == "Tagluno")">Tagluno</option>
+                        <option value="Tagurano" selected="@(ViewBag.Barangay == "Tagurano")">Tagurano</option>
+                        <option value="Talomo Proper" selected="@(ViewBag.Barangay == "Talomo Proper")">Talomo Proper</option>
+                        <option value="Talomo River" selected="@(ViewBag.Barangay == "Talomo River")">Talomo River</option>
+                        <option value="Tamurayan" selected="@(ViewBag.Barangay == "Tamurayan")">Tamurayan</option>
+                        <option value="Tibungco" selected="@(ViewBag.Barangay == "Tibungco")">Tibungco</option>
+                        <option value="Tigatto" selected="@(ViewBag.Barangay == "Tigatto")">Tigatto</option>
+                        <option value="Tungkalan" selected="@(ViewBag.Barangay == "Tungkalan")">Tungkalan</option>
+                        <option value="Ubalde" selected="@(ViewBag.Barangay == "Ubalde")">Ubalde</option>
+                        <option value="Ugac" selected="@(ViewBag.Barangay == "Ugac")">Ugac</option>
+                        <option value="Ula" selected="@(ViewBag.Barangay == "Ula")">Ula</option>
+                        <option value="Vicente Hizon Sr." selected="@(ViewBag.Barangay == "Vicente Hizon Sr.")">Vicente Hizon Sr.</option>
+                        <option value="Waan" selected="@(ViewBag.Barangay == "Waan")">Waan</option>
+                        <option value="Wangan" selected="@(ViewBag.Barangay == "Wangan")">Wangan</option>
+                        <option value="Wilfredo Aquino" selected="@(ViewBag.Barangay == "Wilfredo Aquino")">Wilfredo Aquino</option>
+                        <option value="Wines" selected="@(ViewBag.Barangay == "Wines")">Wines</option>
+                    </select>
                     <span asp-validation-for="Brgy" class="text-danger"></span>
                 </div>
 
@@ -601,21 +778,21 @@
             <!-- Upload Section -->
             <h5 class="section-header">Upload Required Documents</h5>
 
-
             <div class="mb-3">
-                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
-                <div class="upload-box" onclick="document.getElementById('receipt').click()">
+                <label class="form-label required-field">Death Certificate</label>
+                <div class="upload-box" onclick="document.getElementById('deathCertificate').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>
                     </div>
                     <p>Click to upload document</p>
-                    <p class="form-note">Accepted formats: JPG, PNGE, etc..(Max 10MB)</p>
+                    <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
                 </div>
-                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')">
-                <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
+                <input asp-for="DeathCertificateimage" type="file" id="deathCertificate" class="d-none"
+                       accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'deathCertificatePreview')">
+                <span asp-validation-for="DeathCertificateimage" class="text-danger"></span>
 
-                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
-                <p class="form-note">* Only images will be shown in preview. All formats will be accepted for upload.</p>
+                <img id="deathCertificatePreview" class="img-preview mt-2" alt="Death Certificate Preview">
+                <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
             </div>
 
             <!-- Terms and Conditions -->
@@ -663,8 +840,94 @@
         </div>
     </div>
 
-    <!-- Add this JavaScript to your existing scripts section -->
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body text-center p-4">
+                    <!-- Success Icon -->
+                    <div class="mb-3">
+                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    </div>
+
+                    <!-- Success Message -->
+                    <h5 class="modal-title text-success mb-2" id="successModalLabel">Application Submitted Successfully!</h5>
+                    <p class="text-muted mb-3">Thank you for your submission. You will be redirected to the homepage shortly.</p>
+
+                    <!-- Countdown Timer -->
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="spinner-border spinner-border-sm text-success me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <small class="text-muted">Redirecting in <span id="countdown">2</span> seconds...</small>
+                    </div>
+
+                    <!-- Manual Redirect Button -->
+                    <button type="button" class="btn btn-success btn-sm" onclick="redirectToHomepage()">
+                        Go Home Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Scripts -->
     <script>
+        // Function to show success modal and redirect
+        function showSuccessModal() {
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+
+            let countdown = 2;
+            const countdownElement = document.getElementById('countdown');
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    redirectToHomepage();
+                }
+            }, 1000);
+        }
+
+        // Function to redirect to homepage
+        function redirectToHomepage() {
+            window.location.href = '/Homepage';
+        }
+
+        // Function to check if form was submitted successfully and show modal
+        function checkFormSubmission() {
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+
+            @if (ViewBag.Success != null && ViewBag.Success == true)
+            {
+                            <text>
+                            setTimeout(() => {
+                                showSuccessModal();
+                            }, 500); // Small delay to ensure page is fully loaded
+                            </text>
+            }
+
+            // Alternative: Check for hidden field in form (if form posts to same page)
+            const formSubmitted = document.querySelector('input[name="FormSubmitted"]');
+            if (formSubmitted && formSubmitted.value === 'true') {
+                setTimeout(() => {
+                    showSuccessModal();
+                }, 500);
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            checkFormSubmission();
+        });
+    </script>
+    <script>
+
+
         document.addEventListener('DOMContentLoaded', function() {
             // Make all preview images clickable to open modal
             const previewImages = document.querySelectorAll('.img-preview');
@@ -983,6 +1246,27 @@
     </script>
 
     <style>
+        /* Success Modal Styles */
+        #successModal .modal-content {
+            border-radius: 12px;
+            border: none;
+        }
+
+        #successModal .modal-body {
+            padding: 2rem;
+        }
+
+        .modal.fade .modal-dialog {
+            transform: scale(0.8);
+            transition: transform 0.3s ease-out;
+        }
+
+        .modal.show .modal-dialog {
+            transform: scale(1);
+        }
+    </style>
+
+    <style>
         .img-preview {
             cursor: pointer;
             transition: transform 0.2s;
@@ -1150,10 +1434,58 @@
     </script>
 
     <script>
-                // Go Back button functionality
-        goBackBtn.addEventListener('click', function() {
-            window.history.back();
+                // Go Back Button Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const goBackBtn = document.getElementById('goBackBtn');
+
+            if (goBackBtn) {
+                // Responsive compact mode
+                function updateButton() {
+                    const viewportWidth = window.innerWidth;
+
+                    // Switch to compact mode on smaller screens
+                    if (viewportWidth < 480) {
+                        goBackBtn.classList.add('compact');
+                    } else {
+                        goBackBtn.classList.remove('compact');
+                    }
+                }
+
+                // Update on viewport changes
+                function handleViewportChange() {
+                    updateButton();
+                }
+
+                // Initial setup
+                updateButton();
+
+                // Listen to viewport changes
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', handleViewportChange);
+
+                // Click functionality
+                goBackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Add press animation
+                    this.style.transition = 'transform 0.1s ease';
+                    this.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        this.style.transform = '';
+
+                        // Navigate back or to home page
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 100);
+                });
+            }
         });
+
     </script>
 
 
@@ -1220,6 +1552,133 @@
 
             // Initial update
             updateReflection();
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // File validation for all file inputs
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+
+            fileInputs.forEach(input => {
+                input.addEventListener('change', function(e) {
+                    validateFile(this);
+                });
+            });
+
+            function validateFile(input) {
+                const file = input.files[0];
+                const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
+                const uploadBox = input.previousElementSibling;
+
+                if (!file) return;
+
+                // File type validation
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+
+                // Check file type
+                if (!allowedTypes.includes(file.type)) {
+                    showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
+                    return;
+                }
+
+                // Check file size
+                if (file.size > maxSize) {
+                    showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
+                    return;
+                }
+
+                // If validation passes, proceed with preview
+                clearFileError(input);
+
+                if (file.type.startsWith("image/") && previewId) {
+                    const preview = document.getElementById(previewId);
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                } else if (previewId) {
+                    // For PDF files, hide the image preview
+                    const preview = document.getElementById(previewId);
+                    preview.style.display = "none";
+                }
+
+                // Update upload box text
+                if (uploadBox) {
+                    uploadBox.querySelector('p:first-of-type').textContent = file.name;
+                    uploadBox.style.borderColor = "var(--primary-color)";
+                    uploadBox.style.backgroundColor = "var(--primary-light)";
+                }
+            }
+
+            function showFileError(input, message) {
+                // Clear the file input
+                input.value = '';
+
+                // Remove any existing error message
+                clearFileError(input);
+
+                // Create error message element
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger mt-2';
+                errorDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ${message}
+                `;
+
+                // Insert after the upload box
+                const uploadBox = input.previousElementSibling;
+                uploadBox.parentNode.insertBefore(errorDiv, uploadBox.nextSibling);
+
+                // Reset upload box styling
+                uploadBox.querySelector('p:first-of-type').textContent = 'Click to upload document';
+                uploadBox.style.borderColor = "#ddd";
+                uploadBox.style.backgroundColor = "#fafafa";
+
+                // Hide any preview
+                const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
+                if (previewId) {
+                    const preview = document.getElementById(previewId);
+                    preview.style.display = "none";
+                }
+            }
+
+            function clearFileError(input) {
+                // Remove any existing error messages
+                const existingError = input.parentNode.querySelector('.alert-danger');
+                if (existingError) {
+                    existingError.remove();
+                }
+            }
+
+            // Enhance the existing previewImage function to include validation
+            const originalPreviewImage = window.previewImage;
+            window.previewImage = function(input, previewId) {
+                const file = input.files[0];
+                if (!file) return;
+
+                // Validate before preview
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const maxSize = 10 * 1024 * 1024;
+
+                if (!allowedTypes.includes(file.type)) {
+                    showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
+                    return;
+                }
+
+                if (file.size > maxSize) {
+                    showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
+                    return;
+                }
+
+                // If validation passes, call original function
+                if (originalPreviewImage) {
+                    originalPreviewImage(input, previewId);
+                }
+            }
         });
     </script>
 

@@ -1,557 +1,584 @@
-﻿@model RegisterDto
+﻿@model RegisterAccDto
 @{
     Layout = null;
 }
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register</title>
-
-    <!-- Bootstrap CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Account</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .register-form {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .cobalt-text {
-            color: #DC143C !important;
-        }
-
-        .btn-cobalt {
-            background-color: #DC143C;
-            color: white;
-            border: none;
-        }
-
-            .btn-cobalt:hover {
-                background-color: #b01030;
-                color: white;
-            }
-
-        .password-strength {
-            height: 5px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            display: none;
-            border-radius: 5px;
-            transition: width 0.3s, background-color 0.3s;
-        }
-
-        .password-requirements {
-            font-size: 0.8rem;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
-        .requirement {
-            margin-bottom: 3px;
-            transition: color 0.3s;
-        }
-
-        .valid {
-            color: #28a745;
-        }
-
-        .invalid {
-            color: #dc3545;
-        }
-
-        .form-control:focus {
-            border-color: #DC143C;
-            box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
-        }
-
-        #imagePreview {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 50%;
-            margin-top: 10px;
-            display: none;
-            border: 2px solid #DC143C;
-        }
-
-        .phone-input-group {
-            position: relative;
-        }
-
-        .phone-prefix {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 5;
-            color: #6c757d;
-        }
-
-        .phone-input {
-            padding-left: 40px !important;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
-<body>
-    <section class="register container-fluid">
-        <div class="row min-vh-100 d-flex justify-content-center align-items-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="register-form text-center text-dark">
-                    <article class="mb-4">
-                        <h1 class="cobalt-text fw-bold"> Upadate Your Account</h1>
-                        <p class="text-muted">LINGAPDVO</p>
-                    </article>
-                    <form asp-action="Registeredit" enctype="multipart/form-data" method="post" id="registrationForm">
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div class="w-full max-w-2xl">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border border-white/20 backdrop-blur-sm">
+            <!-- Updated Header -->
+            <div class="text-center mb-6 lg:mb-8">
+                <h1 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
+                    Edit Account
+                </h1>
+                <p class="text-gray-600 text-sm">Update your account information</p>
+            </div>
 
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-user fa-lg me-2 cobalt-text"></i>Id</label>
-                            <input value="@ViewBag.Id" asp-for="Id" type="text" class="form-control" readonly>
-                            <span asp-validation-for="Id" class="text-danger"></span>
+            <form asp-action="Registeredit" method="post" enctype="multipart/form-data" id="editForm" class="space-y-4 lg:space-y-5">
+
+                <!-- Hidden field for user ID -->
+                <input type="hidden" name="Id" value="@ViewBag.Id" />
+
+                <!-- Username & Email in Horizontal Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                    <!-- Username Field -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Username
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Username"
+                                   type="text"
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white"
+                                   placeholder="Enter username"
+                                   required
+                                   autocomplete="username"
+                                   id="username"
+                                   value="@ViewBag.Username">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1 hidden">
+                                <i class="fas fa-user mr-2 text-crimson-500"></i>Enter username
+                            </span>
                         </div>
+                        <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
+                    </div>
 
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-user fa-lg me-2 cobalt-text"></i>Full Name</label>
-                            <input value="@ViewBag.Fullname" asp-for="Fullname" type="text" class="form-control" placeholder="Enter your first and last name">
-                            <span asp-validation-for="Fullname" class="text-danger"></span>
+                    <!-- Email Field -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Email
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Email"
+                                   type="email"
+                                   class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white"
+                                   placeholder="Enter email"
+                                   required
+                                   autocomplete="email"
+                                   id="email"
+                                   value="@ViewBag.Email">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1 hidden">
+                                <i class="fas fa-envelope mr-2 text-crimson-500"></i>Enter email
+                            </span>
                         </div>
+                        <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
+                    </div>
+                </div>
 
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold">
-                                <i class="fa-solid fa-user fa-lg me-2 cobalt-text"></i>Username
-                            </label>
-                            <input id="usernameInput" value="@ViewBag.Username" asp-for="Username" type="text" class="form-control" placeholder="Choose a username">
-                            <span asp-validation-for="Username" class="text-danger"></span>
-                        </div>
+                <!-- Change Password Section (Optional) -->
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700">Change Password (Optional)</h3>
+                        <button type="button" id="togglePasswordSection" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            <i class="fas fa-edit mr-1"></i>Change Password
+                        </button>
+                    </div>
 
-                        <script>
-                            document.getElementById('usernameInput').addEventListener('input', function (e) {
-                                // Remove all characters that are not letters or numbers
-                                this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
-                            });
-                        </script>
-
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-envelope fa-lg me-2 cobalt-text"></i>Email</label>
-                            <input value="@ViewBag.Email" asp-for="Email" type="email" id="email" class="form-control" placeholder="Enter your email" required>
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-phone fa-lg me-2 cobalt-text"></i>Phone Number</label>
-                            <div class="phone-input-group">
-                                <span class="phone-prefix">+63</span>
-                                <input value="@ViewBag.Phonenumber" asp-for="Phonenumber" type="tel" id="phone" class="form-control phone-input"
-                                       placeholder="9123456789" pattern="[9]\d{9}" title="Please enter a valid Philippine phone number (e.g. 9123456789)" required>
-                            </div>
-                            <small class="text-muted">Format: 9123456789 (10 digits starting with 9)</small>
-                            <span asp-validation-for="Phonenumber" class="text-danger"></span>
-                        </div>
-
-                        @if (TempData["PasswordError"] != null)
-                        {
-                            <div class="alert alert-danger">
-                                @TempData["PasswordError"]
-                            </div>
-                        }
-
-                        @if (TempData["SuccessMessage"] != null)
-                        {
-                            <div class="alert alert-success">
-                                @TempData["SuccessMessage"]
-                            </div>
-                        }
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-lock fa-lg me-2 cobalt-text"></i>Current Password</label>
-                            <input name="currentPassword" type="password" id="currentPassword" class="form-control" placeholder="Enter current password">
-                            <span class="text-danger" data-valmsg-for="CurrentPassword" data-valmsg-replace="true"></span>
-                        </div>
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-lock fa-lg me-2 cobalt-text"></i>Password</label>
-                            <input asp-for="Password" type="password" id="password" class="form-control" placeholder="Enter your password">
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                            <div class="password-strength" id="passwordStrength"></div>
-                            <div class="password-requirements">
-                                <div class="requirement" id="length"><i class="fas fa-circle"></i> At least 8 characters</div>
-                                <div class="requirement" id="uppercase"><i class="fas fa-circle"></i> At least 1 uppercase letter</div>
-                                <div class="requirement" id="lowercase"><i class="fas fa-circle"></i> At least 1 lowercase letter</div>
-                                <div class="requirement" id="number"><i class="fas fa-circle"></i> At least 1 number</div>
-                                <div class="requirement" id="special"><i class="fas fa-circle"></i> At least 1 special character</div>
-                            </div>
-                        </div>
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-lock fa-lg me-2 cobalt-text"></i>Confirm Password</label>
-                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password">
-                            <div id="passwordMatch" class="password-requirements"></div>
-                        </div>
-                        <!-- End of Added Password Fields -->
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-calendar fa-lg me-2 cobalt-text"></i>Date of Birth</label>
-                            <input value="@ViewBag.Dateofbirth" asp-for="Dateofbirth" type="date" class="form-control" required>
-                            <span asp-validation-for="Dateofbirth" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-venus-mars fa-lg me-2 cobalt-text"></i>Gender</label>
-                            <select class="form-select" asp-for="Gender" asp-items="ViewBag.GenderList"></select>
-                            <span asp-validation-for="Gender" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-home fa-lg me-2 cobalt-text"></i>Address</label>
-                            <input value="@ViewBag.Address" asp-for="Address" type="text" class="form-control" placeholder="Street, City, State, ZIP Code, Country">
-                            <span asp-validation-for="Address" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold">
-                                <i class="fa-solid fa-image fa-lg me-2 cobalt-text"></i>Profile Picture
-                            </label>
-
-                            <!-- Custom file input container -->
-                            <div class="custom-file-input-container position-relative">
-                                <!-- Hide the original file input but keep it functional -->
-                                <input asp-for="ImageFile" type="file" id="imageUpload" class="form-control visually-hidden" accept="image/*">
-
-                                <!-- Custom styled input that looks like the original but displays the filename -->
-                                <div class="custom-file-input form-control d-flex align-items-center" onclick="document.getElementById('imageUpload').click()">
-                                    <span id="fileNameDisplay" class="flex-grow-1 text-truncate">No file selected</span>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary">Browse</button>
+                    <div id="passwordSection" class="hidden space-y-4">
+                        <!-- New Password & Confirm Password in Horizontal Layout -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                            <!-- New Password Field -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700">
+                                    New Password
+                                </label>
+                                <div class="relative">
+                                    <input asp-for="Password"
+                                           type="password"
+                                           class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-12"
+                                           placeholder="Enter new password"
+                                           autocomplete="new-password"
+                                           id="newPassword">
+                                    <button type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="toggleNewPassword">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </button>
                                 </div>
+                                <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
                             </div>
 
-                            <!-- Image preview -->
-                            <img id="imagePreview"
-                                 src="@(!string.IsNullOrEmpty(ViewBag.ImageFilename) ? Url.Content("~/UsersImg/" + ViewBag.ImageFilename) : "#")"
-                                 alt="Profile Preview"
-                                 class="img-thumbnail mt-2"
-                                 style="max-width: 200px; display: block;">
-
-                            <span asp-validation-for="ImageFile" class="text-danger"></span>
-                        </div>
-
-                        <style>
-                            .custom-file-input-container {
-                                cursor: pointer;
-                            }
-
-                            .custom-file-input {
-                                height: auto;
-                                padding: 0.375rem 0.75rem;
-                            }
-
-                            .visually-hidden {
-                                position: absolute;
-                                width: 1px;
-                                height: 1px;
-                                padding: 0;
-                                margin: -1px;
-                                overflow: hidden;
-                                clip: rect(0, 0, 0, 0);
-                                white-space: nowrap;
-                                border: 0;
-                            }
-                        </style>
-
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const fileInput = document.getElementById('imageUpload');
-                                const fileNameDisplay = document.getElementById('fileNameDisplay');
-                                const preview = document.getElementById('imagePreview');
-
-                                // Initialize with existing filename if available
-                                if ("@ViewBag.ImageFilename" !== "") {
-                                    fileNameDisplay.textContent = "@ViewBag.ImageFilename";
-                                }
-
-                                fileInput.addEventListener('change', function(event) {
-                                    const file = event.target.files[0];
-
-                                    if (file) {
-                                        // Update the filename display
-                                        fileNameDisplay.textContent = file.name;
-
-                                        // Show image preview
-                                        const reader = new FileReader();
-                                        reader.onload = function(e) {
-                                            preview.src = e.target.result;
-                                        };
-                                        reader.readAsDataURL(file);
-                                    } else {
-                                        fileNameDisplay.textContent = "No file selected";
-                                        preview.src = "#";
-                                    }
-                                });
-                            });
-                        </script>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-shield-alt fa-lg me-2 cobalt-text"></i>Security Question</label>
-                            <select class="form-select" asp-for="SecurityQuestions" asp-items="ViewBag.SecurityQuestionslist"></select>
-                            <span asp-validation-for="SecurityQuestions" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label class="form-label fw-bold"><i class="fa-solid fa-key fa-lg me-2 cobalt-text"></i>Security Answer</label>
-                            <input value="@ViewBag.Securityanswer" asp-for="Securityanswer" type="text" class="form-control" placeholder="Enter your answer" required>
-                            <span asp-validation-for="Securityanswer" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <input type="checkbox" id="terms" required> I agree to the <a href="#" class="text-decoration-none cobalt-text" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
-                        </div>
-                        <button type="submit" class="btn btn-cobalt w-100 py-2 fw-bold">Update</button>
-
-                        <!-- Modal -->
-                        <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                                <div class="modal-content shadow-lg rounded-4">
-                                    <div class="modal-header bg-cobalt text-white rounded-top-4">
-                                        <h5 class="modal-title fw-bold" id="termsModalLabel">Lingap Terms & Privacy Policy</h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body p-4">
-
-                                        <h6 class="fw-bold text-cobalt">1. Acceptance of Terms</h6>
-                                        <p>By signing up for Lingap, you confirm that all information provided is accurate and that you have read, understood, and agreed to these Terms and our Privacy Policy.</p>
-
-                                        <h6 class="fw-bold text-cobalt">2. Data Privacy & Protection</h6>
-                                        <p>Lingap is committed to safeguarding your personal data. We comply with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>. Your information will only be used to verify eligibility and for program coordination. We will never sell or misuse your data.</p>
-
-                                        <h6 class="fw-bold text-cobalt">3. Purpose of Data Collection</h6>
-                                        <ul>
-                                            <li>Eligibility verification for Lingap programs</li>
-                                            <li>Contact and follow-up regarding assistance</li>
-                                            <li>Government or partner validation (as needed)</li>
-                                        </ul>
-
-                                        <h6 class="fw-bold text-cobalt">4. Account Integrity</h6>
-                                        <p>Each individual is allowed <strong>one account only</strong>. Creating multiple accounts or submitting false documents may result in permanent disqualification.</p>
-
-
-                                        <h6 class="fw-bold text-cobalt">5. Changes to Terms</h6>
-                                        <p>Lingap reserves the right to update this policy at any time. All changes will be posted publicly, and continued use of the service implies agreement with updated terms.</p>
-
-                                        <h6 class="fw-bold text-cobalt">6. Questions or Concerns</h6>
-                                        <p>If you have any questions regarding your privacy, you may contact our support team at <a href="mailto:support@lingap.org">support@lingap.org</a>.</p>
-
-                                    </div>
-                                    <div class="modal-footer justify-content-between">
-                                        <small class="text-muted">Last updated: May 2025</small>
-                                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
-                                    </div>
+                            <!-- Confirm New Password Field -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700">
+                                    Confirm New Password
+                                </label>
+                                <div class="relative">
+                                    <input type="password"
+                                           name="ConfirmNewPassword"
+                                           class="w-full px-4 py-3 lg:py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-12"
+                                           placeholder="Confirm new password"
+                                           autocomplete="new-password"
+                                           id="confirmNewPassword">
+                                    <button type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="toggleConfirmNewPassword">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </button>
                                 </div>
+                                <div id="passwordMatch" class="text-xs mt-1 hidden transition-all duration-300"></div>
                             </div>
                         </div>
 
-                        <style>
-                            .text-cobalt {
-                                color: #DC143C;
-                            }
+                        <!-- Password Requirements Tooltip -->
+                        <div id="passwordTooltip" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 transition-all duration-300">
+                            <p class="font-semibold mb-2">Password Requirements:</p>
+                            <ul class="space-y-1">
+                                <li id="rule-length" class="flex items-center gap-2">
+                                    <i class="fas fa-circle text-red-500 text-xs"></i>
+                                    <span>At least 8 characters</span>
+                                </li>
+                                <li id="rule-uppercase" class="flex items-center gap-2">
+                                    <i class="fas fa-circle text-red-500 text-xs"></i>
+                                    <span>One uppercase letter</span>
+                                </li>
+                                <li id="rule-lowercase" class="flex items-center gap-2">
+                                    <i class="fas fa-circle text-red-500 text-xs"></i>
+                                    <span>One lowercase letter</span>
+                                </li>
+                                <li id="rule-number" class="flex items-center gap-2">
+                                    <i class="fas fa-circle text-red-500 text-xs"></i>
+                                    <span>One number</span>
+                                </li>
+                                <li id="rule-symbol" class="flex items-center gap-2">
+                                    <i class="fas fa-circle text-red-500 text-xs"></i>
+                                    <span>One special character</span>
+                                </li>
+                            </ul>
+                            <div id="passwordRequirementError" class="hidden mt-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span class="font-medium">Please meet all password requirements above</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            .bg-cobalt {
-                                background-color: #DC143C;
-                            }
+                <!-- reCAPTCHA -->
+                <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 flex justify-center">
+                    <div class="g-recaptcha mx-auto" data-sitekey="6Lfdj1orAAAAAGDqwcRDBkTCHoXYx9mLDeCn7kwV"></div>
+                </div>
 
-                            .btn-cobalt {
-                                background-color: #DC143C;
-                                color: white;
-                            }
+                <!-- Submit & Action Buttons -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <button type="button" id="cancelButton" class="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 lg:py-3.5 rounded-xl font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 lg:py-3.5 rounded-xl font-semibold text-sm lg:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 group" id="updateButton">
+                        <span class="flex items-center justify-center gap-2">
+                            <span>Update Account</span>
+                            <i class="fas fa-save group-hover:scale-110 transition-transform duration-200"></i>
+                        </span>
+                    </button>
+                </div>
 
-                                .btn-cobalt:hover {
-                                    background-color: #DC143C;
-                                    color: white;
-                                }
+                <!-- Links -->
+                <div class="text-center space-y-2 pt-2">
+                    <p class="text-gray-500 text-xs lg:text-sm">
+                        <a href="/Dashboard" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200">Back to Dashboard</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                            .rounded-top-4 {
-                                border-top-left-radius: 1rem;
-                                border-top-right-radius: 1rem;
-                            }
-
-                            .rounded-4 {
-                                border-radius: 1rem;
-                            }
-                        </style>
-                    </form>
-
-                    <div class="mt-3">
-                        <a href="javascript:history.back()" class="text-decoration-none cobalt-text fw-bold">Go Back</a>
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-green-50">
+                <div class="modal-body p-6 text-center">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Update Successful!</h3>
+                    <p class="text-gray-600 mb-6">Your account information has been updated successfully.</p>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <button id="proceedToDashboard" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                            Back to Dashboard
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
+        let successModal = null;
+        let isPasswordSectionVisible = false;
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Form elements
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('confirmPassword');
-            const passwordStrength = document.getElementById('passwordStrength');
-            const registrationForm = document.getElementById('registrationForm');
-            const imageUpload = document.getElementById('imageUpload');
-            const imagePreview = document.getElementById('imagePreview');
-            const phoneInput = document.getElementById('phone');
+            // Initialize Bootstrap modal
+            const successModalElement = document.getElementById('successModal');
+            if (successModalElement) {
+                successModal = new bootstrap.Modal(successModalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            }
 
-            // Image preview functionality
-            if (imageUpload) {
-                imageUpload.addEventListener('change', function(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            imagePreview.src = e.target.result;
-                            imagePreview.style.display = 'block';
-                        }
-                        reader.readAsDataURL(file);
+            // Auto-show success modal if redirected with success parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                setTimeout(() => {
+                    showSuccessModal();
+                }, 500);
+            }
+
+            // Toggle password section visibility
+            const togglePasswordSection = document.getElementById('togglePasswordSection');
+            const passwordSection = document.getElementById('passwordSection');
+
+            if (togglePasswordSection && passwordSection) {
+                togglePasswordSection.addEventListener('click', function() {
+                    isPasswordSectionVisible = !isPasswordSectionVisible;
+                    if (isPasswordSectionVisible) {
+                        passwordSection.classList.remove('hidden');
+                        togglePasswordSection.innerHTML = '<i class="fas fa-times mr-1"></i>Cancel Password Change';
+                        togglePasswordSection.classList.remove('text-blue-600');
+                        togglePasswordSection.classList.add('text-red-600');
+                    } else {
+                        passwordSection.classList.add('hidden');
+                        togglePasswordSection.innerHTML = '<i class="fas fa-edit mr-1"></i>Change Password';
+                        togglePasswordSection.classList.remove('text-red-600');
+                        togglePasswordSection.classList.add('text-blue-600');
+                        // Clear password fields when hiding
+                        document.getElementById('newPassword').value = '';
+                        document.getElementById('confirmNewPassword').value = '';
                     }
                 });
             }
 
-            // Password strength checker
-            if (password) {
-                password.addEventListener('input', function() {
-                    const value = password.value;
-                    const requirements = {
-                        length: value.length >= 8,
-                        uppercase: /[A-Z]/.test(value),
-                        lowercase: /[a-z]/.test(value),
-                        number: /[0-9]/.test(value),
-                        special: /[^A-Za-z0-9]/.test(value)
-                    };
+            // Password toggle functionality for password fields
+            setupPasswordToggle('toggleNewPassword', 'newPassword');
+            setupPasswordToggle('toggleConfirmNewPassword', 'confirmNewPassword');
 
-                    // Update requirement indicators
-                    for (const [key, met] of Object.entries(requirements)) {
-                        const element = document.getElementById(key);
-                        if (element) {
-                            if (met) {
-                                element.classList.add('valid');
-                                element.classList.remove('invalid');
-                                element.querySelector('i').className = 'fas fa-check-circle';
-                            } else {
-                                element.classList.add('invalid');
-                                element.classList.remove('valid');
-                                element.querySelector('i').className = 'fas fa-circle';
+            function setupPasswordToggle(toggleId, inputId) {
+                const toggle = document.getElementById(toggleId);
+                const input = document.getElementById(inputId);
+
+                if (toggle && input) {
+                    toggle.addEventListener('click', function() {
+                        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                        input.setAttribute('type', type);
+                        this.innerHTML = type === 'password' ? '<i class="fas fa-eye text-sm"></i>' : '<i class="fas fa-eye-slash text-sm"></i>';
+                    });
+                }
+            }
+
+            // Password validation rules
+            const rules = {
+                length: /.{8,}/,
+                uppercase: /[A-Z]/,
+                lowercase: /[a-z]/,
+                number: /[0-9]/,
+                symbol: /[^A-Za-z0-9]/
+            };
+
+            // Password requirements validation
+            const passwordTooltip = document.getElementById('passwordTooltip');
+            const passwordRequirementError = document.getElementById('passwordRequirementError');
+            const newPasswordInput = document.getElementById('newPassword');
+
+            function validatePasswordRequirements() {
+                if (!newPasswordInput) return false;
+                const val = newPasswordInput.value;
+
+                let allRequirementsMet = true;
+
+                Object.entries(rules).forEach(([key, regex]) => {
+                    const el = document.getElementById(`rule-${key}`);
+                    if (!el) return;
+                    const icon = el.querySelector("i");
+                    if (regex.test(val)) {
+                        icon.classList.replace("text-red-500", "text-green-500");
+                        el.classList.add("text-green-600", "font-medium");
+                    } else {
+                        icon.classList.replace("text-green-500", "text-red-500");
+                        el.classList.remove("text-green-600", "font-medium");
+                        allRequirementsMet = false;
+                    }
+                });
+
+                // Show/hide requirement error
+                if (val.length > 0 && !allRequirementsMet) {
+                    passwordRequirementError.classList.remove('hidden');
+                } else {
+                    passwordRequirementError.classList.add('hidden');
+                }
+
+                if (document.activeElement === newPasswordInput && val.length > 0) {
+                    passwordTooltip?.classList.remove('hidden');
+                }
+
+                return allRequirementsMet;
+            }
+
+            function areAllPasswordRequirementsMet() {
+                if (!newPasswordInput) return true; // Return true if not changing password
+                const val = newPasswordInput.value;
+
+                // If password field is empty, requirements are met (not changing password)
+                if (val === '') return true;
+
+                return Object.values(rules).every(regex => regex.test(val));
+            }
+
+            // Password match validation
+            const matchIndicator = document.getElementById('passwordMatch');
+            const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+
+            async function validatePasswordMatch() {
+                if (!matchIndicator || !newPasswordInput || !confirmNewPasswordInput) return true;
+
+                const password = newPasswordInput.value;
+                const confirmPassword = confirmNewPasswordInput.value;
+
+                await new Promise(resolve => setTimeout(resolve, 10));
+
+                // If both fields are empty, no error
+                if (password === '' && confirmPassword === '') {
+                    matchIndicator.classList.add('hidden');
+                    confirmNewPasswordInput.classList.remove('border-red-500', 'border-green-500');
+                    return true;
+                }
+
+                // If only one field is filled, show error
+                if ((password === '' && confirmPassword !== '') || (password !== '' && confirmPassword === '')) {
+                    confirmNewPasswordInput.classList.remove('border-green-500');
+                    confirmNewPasswordInput.classList.add('border-red-500');
+                    matchIndicator.classList.remove('hidden');
+                    matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Please fill both password fields</span>';
+                    return false;
+                }
+
+                if (password === confirmPassword) {
+                    confirmNewPasswordInput.classList.remove('border-red-500');
+                    confirmNewPasswordInput.classList.add('border-green-500');
+                    matchIndicator.classList.remove('hidden');
+                    matchIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> <span class="text-green-600 font-medium">Passwords match</span>';
+                    return true;
+                } else {
+                    confirmNewPasswordInput.classList.remove('border-green-500');
+                    confirmNewPasswordInput.classList.add('border-red-500');
+                    matchIndicator.classList.remove('hidden');
+                    matchIndicator.innerHTML = '<i class="fas fa-times-circle text-red-500"></i> <span class="text-red-500 font-medium">Passwords do not match</span>';
+                    return false;
+                }
+            }
+
+            // Event listeners for password validation
+            if (newPasswordInput) {
+                newPasswordInput.addEventListener('input', function() {
+                    validatePasswordRequirements();
+                    if (confirmNewPasswordInput && confirmNewPasswordInput.value) {
+                        validatePasswordMatch();
+                    }
+                });
+                newPasswordInput.addEventListener('focus', () => {
+                    if (newPasswordInput.value.length > 0) {
+                        passwordTooltip?.classList.remove('hidden');
+                    }
+                });
+                newPasswordInput.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        if (!newPasswordInput.matches(':focus')) {
+                            passwordTooltip?.classList.add('hidden');
+                        }
+                    }, 200);
+                });
+            }
+
+            if (confirmNewPasswordInput) {
+                confirmNewPasswordInput.addEventListener('input', function() {
+                    validatePasswordMatch();
+                });
+            }
+
+            // Cancel button
+            const cancelButton = document.getElementById('cancelButton');
+            if (cancelButton) {
+                cancelButton.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+                        window.location.href = '/Dashboard';
+                    }
+                });
+            }
+
+            // Form submission handler
+            const editForm = document.getElementById('editForm');
+            if (editForm) {
+                editForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+
+                    // Check if reCAPTCHA is available
+                    if (typeof grecaptcha !== 'undefined') {
+                        const recaptchaResponse = grecaptcha.getResponse();
+                        if (!recaptchaResponse) {
+                            alert('Please complete the reCAPTCHA verification.');
+                            return false;
+                        }
+                    }
+
+                    // Validate password requirements if changing password
+                    const isChangingPassword = newPasswordInput && newPasswordInput.value !== '';
+                    if (isChangingPassword) {
+                        const passwordRequirementsMet = areAllPasswordRequirementsMet();
+                        if (!passwordRequirementsMet) {
+                            passwordTooltip.classList.remove('hidden');
+                            passwordRequirementError.classList.remove('hidden');
+                            alert('Please meet all password requirements before submitting.');
+                            return false;
+                        }
+
+                        const passwordsMatch = await validatePasswordMatch();
+                        if (!passwordsMatch) {
+                            alert('Please ensure both new passwords match before submitting.');
+                            return false;
+                        }
+                    }
+
+                    // Show loading state
+                    const updateButton = document.getElementById('updateButton');
+                    const originalButtonText = updateButton.innerHTML;
+                    if (updateButton) {
+                        updateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+                        updateButton.disabled = true;
+                    }
+
+                    try {
+                        const formData = new FormData(editForm);
+
+                        const response = await fetch(editForm.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
                             }
-                        }
-                    }
+                        });
 
-                    // Update strength meter
-                    if (passwordStrength) {
-                        const strength = Object.values(requirements).filter(met => met).length;
-                        passwordStrength.style.display = 'block';
-                        passwordStrength.style.width = (strength * 20) + '%';
+                        const result = await response.json();
 
-                        if (strength < 2) {
-                            passwordStrength.style.backgroundColor = '#dc3545';
-                        } else if (strength < 4) {
-                            passwordStrength.style.backgroundColor = '#ffc107';
+                        if (result.success) {
+                            showSuccessModal();
                         } else {
-                            passwordStrength.style.backgroundColor = '#28a745';
+                            if (result.errors) {
+                                alert('Update failed: ' + Array.from(result.errors).join('\n'));
+                            } else if (result.message) {
+                                alert('Update failed: ' + result.message);
+                            } else {
+                                alert('Update failed. Please try again.');
+                            }
+
+                            updateButton.innerHTML = originalButtonText;
+                            updateButton.disabled = false;
                         }
+                    } catch (error) {
+                        console.error('Update error:', error);
+                        alert('An error occurred during update. Please try again.');
+                        updateButton.innerHTML = originalButtonText;
+                        updateButton.disabled = false;
                     }
                 });
             }
 
-            // Confirm password checker
-            if (confirmPassword && password) {
-                confirmPassword.addEventListener('input', function() {
-                    const matchElement = document.getElementById('passwordMatch');
-                    if (matchElement) {
-                        if (confirmPassword.value === password.value && password.value.length > 0) {
-                            matchElement.innerHTML = '<i class="fas fa-check-circle valid"></i> Passwords match';
-                        } else if (password.value.length > 0) {
-                            matchElement.innerHTML = '<i class="fas fa-times-circle invalid"></i> Passwords do not match';
-                        } else {
-                            matchElement.innerHTML = '';
-                        }
+            // Success modal buttons
+            const proceedToDashboardBtn = document.getElementById('proceedToDashboard');
+            if (proceedToDashboardBtn) {
+                proceedToDashboardBtn.addEventListener('click', function() {
+                    if (successModal) {
+                        successModal.hide();
                     }
-                });
-            }
-
-            // Philippine phone number validation
-            if (phoneInput) {
-                phoneInput.addEventListener('input', function() {
-                    // Remove any non-digit characters
-                    let phoneNumber = this.value.replace(/\D/g, '');
-
-                    // Ensure it starts with 9 and has exactly 10 digits (including the 9)
-                    if (phoneNumber.length > 0 && !phoneNumber.startsWith('9')) {
-                        phoneNumber = '9' + phoneNumber;
-                    }
-
-                    // Limit to 10 digits
-                    phoneNumber = phoneNumber.substring(0, 10);
-
-                    // Update the input value (just the digits, the +63 prefix is fixed)
-                    this.value = phoneNumber;
-                });
-            }
-
-            // Form submission
-            if (registrationForm) {
-                registrationForm.addEventListener('submit', function(e) {
-                    if (password && confirmPassword) {
-                        // Validate password strength
-                        const value = password.value;
-                        const requirements = {
-                            length: value.length >= 8,
-                            uppercase: /[A-Z]/.test(value),
-                            lowercase: /[a-z]/.test(value),
-                            number: /[0-9]/.test(value),
-                            special: /[^A-Za-z0-9]/.test(value)
-                        };
-
-                        const strength = Object.values(requirements).filter(met => met).length;
-                        if (strength < 3) {
-                        alert('To update your information, you must enter your current password in all three fields: Current Password, New Password, and Confirm Password. Also, make sure your password meets at least 3 out of 5 security requirements.');
-                            e.preventDefault();
-                            return;
-                        }
-
-                        if (confirmPassword.value !== password.value) {
-                            alert('Passwords do not match.');
-                            e.preventDefault();
-                            return;
-                        }
-                    }
-
-                    if (phoneInput) {
-                        // Validate phone number (must be exactly 10 digits starting with 9)
-                        const phoneNumber = phoneInput.value;
-                        if (!/^9\d{9}$/.test(phoneNumber)) {
-                            alert('Please enter a valid Philippine phone number (10 digits starting with 9, e.g. 9123456789)');
-                            e.preventDefault();
-                            return;
-                        }
-                    }
-
-                    const termsCheckbox = document.getElementById('terms');
-                    if (termsCheckbox && !termsCheckbox.checked) {
-                        alert('You must agree to the terms and conditions.');
-                        e.preventDefault();
-                        return;
-                    }
-
-                    // If all validations pass, the form will submit normally
+                    window.location.href = '/Dashboard';
                 });
             }
         });
+
+        function showSuccessModal() {
+            if (!successModal) {
+                const successModalElement = document.getElementById('successModal');
+                if (successModalElement) {
+                    successModal = new bootstrap.Modal(successModalElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                } else {
+                    console.error('Success modal element not found');
+                    return;
+                }
+            }
+            successModal.show();
+        }
+        window.showSuccessModal = showSuccessModal;
     </script>
+
+    <style>
+        .crimson-500 {
+            color: #DC143C;
+        }
+
+        .crimson-600 {
+            color: #b01030;
+        }
+
+        .bg-crimson-500 {
+            background-color: #DC143C;
+        }
+
+        .bg-crimson-600 {
+            background-color: #b01030;
+        }
+
+        .text-crimson-600 {
+            color: #DC143C;
+        }
+
+        .hover\:text-crimson-700:hover {
+            color: #b01030;
+        }
+
+        /* Password toggle button styles */
+        #toggleNewPassword, #toggleConfirmNewPassword {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Custom scrollbar for modal */
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+            .modal-body::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+
+        /* Smooth transitions */
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+    </style>
 </body>
 </html>

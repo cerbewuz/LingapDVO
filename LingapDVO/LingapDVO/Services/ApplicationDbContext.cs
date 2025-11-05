@@ -27,5 +27,20 @@ namespace LingapDVO.Services
         public DbSet<RegisterAcc> RegisterAcc { get; set; }
 
         public DbSet<Verifyaccount> Verifyaccount { get; set; }
+
+        // newly added notifications
+        public DbSet<Notification> Notifications { get; set; }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🔒 ANTI-MANIPULATION SECURITY TABLES
+        // ═══════════════════════════════════════════════════════════════
+        public DbSet<RegistrationToken> RegistrationTokens { get; set; }
+        public DbSet<RegistrationAuditLog> RegistrationAuditLogs { get; set; }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🔒 FORM SUBMISSION ANTI-DUPLICATION SECURITY
+        // ═══════════════════════════════════════════════════════════════
+        public DbSet<FormSubmissionToken> FormSubmissionTokens { get; set; }
+        public DbSet<FormSubmissionAuditLog> FormSubmissionAuditLogs { get; set; }
     }
 }

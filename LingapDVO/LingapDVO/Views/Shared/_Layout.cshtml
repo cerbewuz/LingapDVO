@@ -537,6 +537,8 @@
 
     <script src="js/main.js"></script>
 
+    <!-- Session Timeout Detection - Only load for logged-in users -->
+    @await Html.PartialAsync("_SessionTimeout")
 
 </body>
 

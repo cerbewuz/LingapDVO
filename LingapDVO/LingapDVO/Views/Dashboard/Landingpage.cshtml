@@ -5,10 +5,10 @@
 <html lang="en">
 
 <head>
-    <title>LINGAPDVO</title>
+    <title>Lingap Online</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
     <link rel="stylesheet" href="fonts/icomoon/style.css">
 
@@ -21,94 +21,276 @@
     <link rel="stylesheet" href="fonts/flaticon/font/flaticon.css">
     <link rel="stylesheet" href="css/aos.css">
     <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
+        /* ===========================
+           ADAPTIVE NAVBAR SYSTEM
+           Automatically adjusts to section background colors
+        =========================== */
+
         h1 {
             color: antiquewhite;
-            transition: color 0.3s ease;
+            transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1), text-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transform: translateY(0);
         }
 
-        .site-navbar.is-sticky h1 {
-            color: #DC143C; /* red on scroll */
-        }
-
-        /* Optional - make buttons readable when navbar turns white */
-        .site-navbar.is-sticky .nav-btn {
-            color: black;
-            mix-blend-mode: normal; /* reset blend so text stays visible */
-        }
-
-        /* Transparent navbar with spacing */
         .site-navbar {
             background: transparent;
-            height: 80px;
-            padding-top: 14px;
-            padding-bottom: 20px;
+            height: clamp(70px, 12vw, 100px);
+            padding-top: clamp(10px, 2vw, 14px);
+            padding-bottom: clamp(14px, 3vw, 20px);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-        /* Navbar button style */
+        /* When on LIGHT background sections - Use DARK navbar for visibility */
+        .site-navbar.on-light-bg {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(220, 20, 60, 0.1);
+        }
+
+        .site-navbar.on-light-bg h1 {
+            color: #DC143C;
+            text-shadow: 0 6px 12px rgba(220, 20, 60, 0.4);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .site-navbar.on-light-bg .nav-btn {
+            color: #DC143C;
+        }
+
+        /* When on DARK background sections - Use LIGHT navbar for visibility */
+        .site-navbar.on-dark-bg {
+            background: rgba(52, 58, 64, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .site-navbar.on-dark-bg h1 {
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .site-navbar.on-dark-bg .nav-btn {
+            color: #ffffff;
+        }
+
+        /* Top of page - Transparent navbar */
+        .site-navbar.at-top {
+            background: transparent;
+        }
+
+        .site-navbar.at-top h1 {
+            color: antiquewhite;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .site-navbar.at-top .nav-btn {
+            color: #ffffff;
+        }
+
+        /* Nav Button Base Styles */
         .nav-btn {
             background: none;
             border: none;
-            font-weight: bold;
-            font-size: 18px;
-            padding: 10px 20px;
+            font-weight: 700;
+            font-size: clamp(14px, 3vw, 20px);
+            padding: clamp(10px, 2vw, 14px) clamp(18px, 3vw, 28px);
             cursor: pointer;
-            transition: all 0.3s ease;
-            color: var(--nav-text, #ffff); /* Use variable color for flexibility */
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-radius: clamp(6px, 1.5vw, 8px);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
-        /* Use mix-blend-mode for adaptive visibility */
-        .site-navbar .nav-btn {
-            mix-blend-mode: difference; /* Makes text invert depending on background brightness */
+        /* Hover states based on navbar background */
+        .site-navbar.on-light-bg .nav-btn:hover {
+            color: #ffffff;
+            background: #DC143C;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 20, 60, 0.4);
         }
 
-        /* Hover effect */
-        .nav-btn:hover {
-            color: #DC143C; /* Bright hover color (crimson red) */
-            transform: scale(1.05);
+        .site-navbar.on-dark-bg .nav-btn:hover {
+            color: #343a40;
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
         }
 
-        /* Adjust text visibility when background is bright (auto handled by blend mode) */
+        .site-navbar.at-top .nav-btn:hover {
+            color: #DC143C;
+            transform: translateY(-2px);
+            background: rgba(220, 20, 60, 0.1);
+            box-shadow: 0 4px 15px rgba(220, 20, 60, 0.2);
+        }
+
         .site-navbar,
         .nav-btn {
             isolation: isolate;
         }
 
-        .site-mobile-menu {
-            background-color: rgba(0, 0, 0, 1); /* semi-transparent black */
-            color: white; /* text inside the menu */
+        /* Navbar Brand */
+        .navbar-brand {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
-            /* Optional: style mobile links for readability */
-            .site-mobile-menu a,
-            .site-mobile-menu .nav-btn {
-                color: white;
-                font-weight: bold;
+        .site-navbar.on-light-bg .navbar-brand,
+        .site-navbar.on-dark-bg .navbar-brand {
+            transform: scale(clamp(0.85, 1.5vw, 0.95));
+        }
+
+        /* Mobile Menu Toggle Icon */
+        .site-menu-toggle {
+            transition: all 0.3s ease;
+        }
+
+        .site-menu-toggle .icon-menu {
+            color: #ffffff;
+            transition: color 0.3s ease;
+        }
+
+        .site-navbar.on-light-bg .site-menu-toggle .icon-menu {
+            color: #DC143C;
+        }
+
+        .site-navbar.on-dark-bg .site-menu-toggle .icon-menu {
+            color: #ffffff;
+        }
+
+        .site-navbar.at-top .site-menu-toggle .icon-menu {
+            color: #ffffff;
+        }
+
+        /* Mobile Menu Adaptive Colors */
+        .site-mobile-menu {
+            background-color: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            color: white;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 2000;
+        }
+
+        .site-mobile-menu a,
+        .site-mobile-menu .nav-btn {
+            color: white;
+            font-weight: 700;
+            font-size: clamp(16px, 3.5vw, 18px);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            padding: clamp(12px, 2.5vw, 14px) clamp(20px, 4vw, 24px);
+            border-radius: clamp(4px, 1vw, 6px);
+            display: block;
+        }
+
+        .site-mobile-menu a:hover,
+        .site-mobile-menu .nav-btn:hover {
+            color: #DC143C;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(clamp(3px, 1vw, 5px));
+        }
+
+        
+        .application-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #DC143C 0%, #B22222 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            padding: 16px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 8px 25px rgba(220, 20, 60, 0.4);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+        }
+
+        .application-btn i {
+            margin-right: 12px;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .application-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(220, 20, 60, 0.6);
+            color: white;
+            text-decoration: none;
+        }
+
+            .application-btn:hover i {
+                transform: scale(1.2);
             }
 
-                .site-mobile-menu a:hover,
-                .site-mobile-menu .nav-btn:hover {
-                    color: #DC143C; /* bright red hover for visibility */
-                }
+        .application-btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 20, 60, 0.5);
+        }
+
+        .application-btn {
+            animation: none; 
+        }
+
+        
+        .application-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(220, 20, 60, 0.4);
+            opacity: 0;
+            transition: opacity 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .application-btn:hover::before {
+            opacity: 1;
+            box-shadow: 0 8px 35px rgba(220, 20, 60, 0.7);
+        }
+
+        
+        .application-btn {
+            box-shadow: 0 8px 25px rgba(220, 20, 60, 0.4), 0 0 0 0 rgba(220, 20, 60, 0.7);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+            .application-btn:hover {
+                box-shadow: 0 12px 35px rgba(220, 20, 60, 0.6), 0 0 0 10px rgba(220, 20, 60, 0);
+            }
+
+        
+        .application-btn {
+            font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+            padding: clamp(14px, 3vw, 16px) clamp(28px, 4vw, 32px);
+        }
     </style>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          const navbar = document.querySelector(".site-navbar");
-
-          window.addEventListener("scroll", function() {
-            if (window.scrollY > 50) {
-              navbar.classList.add("is-sticky");
-            } else {
-              navbar.classList.remove("is-sticky");
-            }
-          });
-        });
-    </script>
 </head>
 
 <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
-  
+
     <div id="overlayer"></div>
     <div class="loader">
         <div class="spinner-border text-primary" role="status">
@@ -125,7 +307,23 @@
                     <span class="icon-close2 js-menu-toggle"></span>
                 </div>
             </div>
-            <div class="site-mobile-menu-body"></div>
+            <div class="site-mobile-menu-body">
+                <!-- Mobile menu content -->
+                <ul class="site-menu main-menu">
+                    <li>
+                        <button type="button" class="nav-btn" onclick="location.href='#home-section'">Home</button>
+                    </li>
+                    <li>
+                        <button type="button" class="nav-btn" onclick="location.href='#about-section'">About Us</button>
+                    </li>
+                    <li>
+                        <button type="button" class="nav-btn" onclick="location.href='#contact-section'">Contact</button>
+                    </li>
+                    <li>
+                        <button type="button" class="nav-btn" onclick="location.href='/Login'">Login</button>
+                    </li>
+                </ul>
+            </div>
         </div>
 
 
@@ -135,8 +333,8 @@
                 <div class="row align-items-center">
 
                     <div class="col-6 col-xl-2">
-                        <h1>                          
-                                LingapDVO                         
+                        <h1>
+                            LingapDVO
                         </h1>
                     </div>
 
@@ -159,12 +357,10 @@
                         </nav>
                     </div>
 
-
-
-
                     <div class="col-6 d-inline-block d-xl-none ml-md-0 py-3" style="position: relative; top: 3px;">
-                        <a href="#"
-                           class="site-menu-toggle js-menu-toggle float-right"><span class="icon-menu h3"></span></a>
+                        <a href="#" class="site-menu-toggle js-menu-toggle float-right">
+                            <span class="icon-menu h3"></span>
+                        </a>
                     </div>
 
                 </div>
@@ -172,15 +368,11 @@
 
         </header>
 
-
-
         <div class="site-blocks-cover overlay" style="background-image: url(images/helping.jpg);" data-aos="fade"
              id="home-section">
 
             <div class="container">
                 <div class="row align-items-center justify-content-center">
-
-
                     <div class="col-md-10 mt-lg-5 text-center">
                         <div class="single-text owl-carousel">
                             <div class="slide">
@@ -189,6 +381,11 @@
                                     ​"Nagbibigay ng pag-asa at tulong sa bawat Dabawenyong nangangailangan—accessible, may malasakit,
                                     at nakatuon sa iyong kapakanan. Danasin ang tunay na serbisyo publiko sa Lingap para sa Mahirap!"
                                 </p>
+                               
+                                <a href="#" class="application-btn" data-aos="fade-up" data-aos-delay="200">
+                                    <i class="fas fa-play-circle"></i>
+                                    Start Application
+                                </a>
                             </div>
 
                             <div class="slide">
@@ -198,6 +395,11 @@
                                     Mula sa medikal na tulong hanggang sa pangangailangang pinansyal, nandito kami upang suportahan ka.
                                     Walang maiiwan sa tunay na malasakit!"
                                 </p>
+                                <!-- FIXED: Application Button -->
+                                <a href="#" class="application-btn" data-aos="fade-up" data-aos-delay="200">
+                                    <i class="fas fa-play-circle"></i>
+                                    Start Application
+                                </a>
                             </div>
 
                             <div class="slide">
@@ -206,11 +408,14 @@
                                     "Sa Lingap para sa Mahirap, inuuna namin ang inyong kapakanan sa pamamagitan ng mabilis at maaasahang tulong
                                     medikal at pinansyal. Nandito kami upang magbigay ng suporta at malasakit sa bawat Dabawenyong nangangailangan."
                                 </p>
+                                <!-- FIXED: Application Button -->
+                                <a href="#" class="application-btn" data-aos="fade-up" data-aos-delay="200">
+                                    <i class="fas fa-play-circle"></i>
+                                    Start Application
+                                </a>
                             </div>
-
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -221,7 +426,7 @@
             </a>
         </div>
 
-
+        <!-- Rest of your content remains the same -->
         <div class="site-section cta-big-image" id="about-section">
             <div class="container">
                 <div class="row mb-5 justify-content-center">
@@ -231,7 +436,7 @@
                             Ang Lingap Program ay isang libreng serbisyong handog ng pamahalaan para sa mga nangangailangang Dabawenyo.
                             Layunin naming magbigay ng agarang tulong sa pamamagitan ng libreng serbisyong medikal, pinansyal na
                             suporta, at iba pang pangunahing pangangailangan upang mapagaan ang buhay ng bawat pamilya.
-                            Naniniwala kami na ang tunay na paglilingkod ay may kasamang malasakit, kaya’t patuloy
+                            Naniniwala kami na ang tunay na paglilingkod ay may kasamang malasakit, kaya't patuloy
                             kaming magsisikap upang walang maiiwan at bawat Dabawenyo ay mabigyan ng nararapat
                             na tulong at kalinga.
                         </p>
@@ -350,7 +555,7 @@
                         </div>
                         <div class="custom-direction">
                             <a href="#" class="custom-prev"><span><span class="icon-keyboard_backspace"></span></span></a><a href="#"
-                             class="custom-next"><span><span class="icon-keyboard_backspace"></span></span></a>
+                                                                                                                             class="custom-next"><span><span class="icon-keyboard_backspace"></span></span></a>
                         </div>
 
                     </div>
@@ -364,7 +569,7 @@
                                     kahit kailan, nang mabilis at walang abala!"
                                 </p>
 
-                             
+
                             </div>
                             <div>
                                 <h2 class="section-title mb-3">02. Makuha ang Pag-apruba</h2>
@@ -373,7 +578,7 @@
                                     maaasahang serbisyo para sa lahat ng Dabawenyo."
                                 </p>
 
-                            
+
                             </div>
                             <div>
                                 <h2 class="section-title mb-3">03. Serbisyong Direktang Hatid sa Inyo</h2>
@@ -382,7 +587,7 @@
                                     bawat Dabawenyo!"
                                 </p>
 
-                              
+
                             </div>
 
                         </div>
@@ -446,7 +651,7 @@
                                     Ang Lingap Program ay isang libreng serbisyong handog ng pamahalaan para sa mga nangangailangang Dabawenyo.
                                     Layunin naming magbigay ng agarang tulong sa pamamagitan ng libreng serbisyong medikal, pinansyal na
                                     suporta, at iba pang pangunahing pangangailangan upang mapagaan ang buhay ng bawat pamilya.
-                                    Naniniwala kami na ang tunay na paglilingkod ay may kasamang malasakit, kaya’t patuloy
+                                    Naniniwala kami na ang tunay na paglilingkod ay may kasamang malasakit, kaya't patuloy
                                     kaming magsisikap upang walang maiiwan at bawat Dabawenyo ay mabigyan ng nararapat
                                     na tulong at kalinga.
                                 </p>
@@ -482,6 +687,287 @@
         </footer>
 
     </div> <!-- .site-wrap -->
+    <!-- Application Steps Modal -->
+    <div class="application-modal" id="applicationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" id="closeModal" aria-label="Close modal"> &times;</button>
+                <h2 class="modal-title">Application Steps</h2>
+                <p class="modal-subtitle">Follow these simple steps to get started with your application</p>
+            </div>
+            <div class="modal-body">
+                <div class="step-container">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3 class="step-title">Start by creating an Account</h3>
+                            <p class="step-bisaya">Sugdan sa paghimo ug account ani nga website.</p>
+                            <p class="step-description">Begin your application journey by creating an account on our platform. This will give you access to all our services.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3 class="step-title">Login to Verify Your Account</h3>
+                            <p class="step-bisaya">"Kung ang registration nag "successful", diretso sa login para ma abri ug ma-"verify" imong account."</p>
+                            <p class="step-description">After successful registration, proceed to login to open and verify your account for secure access to our services.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3 class="step-title">Complete Account Verification</h3>
+                            <p class="step-bisaya">"I-"verify" imong account pinaagi sa pag "fill-out" sa tanan kailangan nga "fields", apil niini ang pagpasa sa imong Valid ID."</p>
+                            <p class="step-description">Verify your account by filling out all necessary fields, including submission of a Valid ID to ensure the security of your application.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3 class="step-title">Access All Services</h3>
+                            <p class="step-bisaya">"Human ma-"verified", tanan serbisyo/ tabang sama sa tabang sa Hospital Bill, tabang sa Medical/ Laboratory, ug tabang sa Funeral kay mahimo nang magamit."</p>
+                            <p class="step-description">Once verified, all services/assistance like Hospital Bill Assistance, Medical/Laboratory Assistance, and Funeral Assistance will be available for your use.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/Login" class="start-application-btn">
+                    <i class="fas fa-play-circle"></i>
+                    Start Application Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Application Modal Styles */
+        .application-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            padding: 1rem;
+        }
+
+            .application-modal.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .modal-content {
+            background: white;
+            border-radius: 1.25rem;
+            box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 56.25rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(1.875rem) scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .application-modal.active .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            background: white;
+            padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem);
+            border-radius: 1.25rem 1.25rem 0 0;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .modal-title {
+            color: #367588;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: clamp(0.5rem, 2vw, 1rem);
+            line-height: 1.1;
+            text-transform: uppercase;
+            width: 100%;
+            display: block;
+        }
+
+        .modal-subtitle {
+            color: #6c757d;
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            line-height: 1.6;
+            margin: 0;
+            max-width: clamp(280px, 80%, 600px);
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+            width: 100%;
+            display: block;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: clamp(0.5rem, 2vw, 1rem);
+            right: clamp(0.75rem, 2vw, 1.5rem);
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            color: black;
+            width: clamp(2rem, 5vw, 2.5rem);
+            height: clamp(2rem, 5vw, 2.5rem);
+            border-radius: 50%;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .modal-close:hover {
+                background: rgba(0, 0, 0, 0.2);
+                transform: rotate(90deg);
+            }
+
+        .modal-body {
+            padding: clamp(1.5rem, 4vw, 2.5rem);
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(1rem, 3vw, 2rem);
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            padding: clamp(1rem, 2.5vw, 1.5rem);
+            border-radius: 0.9375rem;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            border-left: clamp(0.1875rem, 0.4vw, 0.25rem) solid #367588;
+            flex-wrap: wrap;
+        }
+
+            .step-item:hover {
+                background: #e9ecef;
+                transform: translateX(0.3125rem);
+            }
+
+        .step-number {
+            background: #367588;
+            color: white;
+            width: clamp(2.5rem, 6vw, 3.125rem);
+            height: clamp(2.5rem, 6vw, 3.125rem);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            font-weight: bold;
+            flex-shrink: 0;
+            box-shadow: 0 0.25rem 0.9375rem rgba(54, 117, 136, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+            min-width: clamp(200px, 60%, 100%);
+        }
+
+        .step-title {
+            color: #367588;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            font-weight: 700;
+            margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
+            word-wrap: break-word;
+        }
+
+        .step-description {
+            color: #495057;
+            font-size: clamp(0.875rem, 1.8vw, 1rem);
+            line-height: 1.6;
+            margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
+            word-wrap: break-word;
+        }
+
+        .step-bisaya {
+            color: #6c757d;
+            font-size: clamp(0.875rem, 1.8vw, 1rem);
+            font-style: italic;
+            background: rgba(54, 117, 136, 0.05);
+            padding: clamp(0.5rem, 1.5vw, 0.75rem);
+            border-radius: 0.5rem;
+            border-left: clamp(0.125rem, 0.3vw, 0.1875rem) solid #367588;
+            word-wrap: break-word;
+            margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
+        }
+
+        .modal-footer {
+            padding: clamp(1rem, 2.5vw, 1.5rem) clamp(1.5rem, 4vw, 2.5rem);
+            background: #f8f9fa;
+            border-radius: 0 0 1.25rem 1.25rem;
+            text-align: center;
+            border-top: 0.0625rem solid #dee2e6;
+            flex-shrink: 0;
+        }
+
+        .start-application-btn {
+            background: linear-gradient(135deg, #367588 0%, #2a5c6b 100%);
+            color: white;
+            border: none;
+            padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2.5rem);
+            border-radius: 3.125rem;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: clamp(0.5rem, 1.5vw, 0.75rem);
+            box-shadow: 0 0.5rem 1.5rem rgba(54, 117, 136, 0.4);
+            white-space: nowrap;
+        }
+
+            .start-application-btn:hover {
+                transform: translateY(-0.1875rem);
+                box-shadow: 0 0.75rem 1.875rem rgba(54, 117, 136, 0.6);
+                color: white;
+                text-decoration: none;
+            }
+
+        html.modal-open {
+            overflow: hidden;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/jquery-ui.js"></script>
@@ -494,11 +980,141 @@
     <script src="js/jquery.fancybox.min.js"></script>
     <script src="js/jquery.sticky.js"></script>
     <script src="js/isotope.pkgd.min.js"></script>
-
-
     <script src="js/main.js"></script>
 
+    <script>
+        // Application Modal Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const applicationModal = document.getElementById('applicationModal');
+            const closeModal = document.getElementById('closeModal');
+            const applicationBtns = document.querySelectorAll('.application-btn');
 
+            // Function to open modal
+            function openApplicationModal() {
+                applicationModal.classList.add('active');
+                document.documentElement.classList.add('modal-open');
+                document.body.classList.add('modal-open');
+            }
+
+            // Function to close modal
+            function closeApplicationModal() {
+                applicationModal.classList.remove('active');
+                document.documentElement.classList.remove('modal-open');
+                document.body.classList.remove('modal-open');
+            }
+
+            // Add click event to application buttons
+            applicationBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openApplicationModal();
+                });
+            });
+
+            // Close modal when close button is clicked
+            closeModal.addEventListener('click', closeApplicationModal);
+
+            // Close modal when clicking outside the content
+            applicationModal.addEventListener('click', function(e) {
+                if (e.target === applicationModal) {
+                    closeApplicationModal();
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && applicationModal.classList.contains('active')) {
+                    closeApplicationModal();
+                }
+            });
+
+            // Prevent modal content click from closing modal
+            document.querySelector('.modal-content').addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Mobile menu toggle functionality
+            const mobileMenuToggle = document.querySelector('.js-menu-toggle');
+            const mobileMenu = document.querySelector('.site-mobile-menu');
+
+            if (mobileMenuToggle && mobileMenu) {
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mobileMenu.classList.toggle('active');
+                });
+            }
+
+            // ===========================
+            // ADAPTIVE NAVBAR COLOR SYSTEM
+            // Automatically changes navbar colors based on section backgrounds
+            // ===========================
+
+            const navbar = document.querySelector('.site-navbar');
+
+            // Define sections and their background types
+            // 'light' = light/white background section (needs dark text navbar)
+            // 'dark' = dark background section (needs light text navbar)
+            const sections = [
+                { id: 'home-section', bg: 'dark' },          // Dark background image - needs light navbar
+                { id: 'about-section', bg: 'light' },        // White background - needs dark navbar
+                { id: 'next', bg: 'light' },                 // White background - needs dark navbar
+                { id: 'contact-section', bg: 'light' }       // Light gray background - needs dark navbar
+            ];
+
+            function updateNavbarColor() {
+                const scrollPosition = window.scrollY;
+                const navbarHeight = navbar.offsetHeight;
+
+                // At the very top of the page
+                if (scrollPosition < 50) {
+                    navbar.classList.remove('on-dark-bg', 'on-light-bg');
+                    navbar.classList.add('at-top');
+                    return;
+                }
+
+                navbar.classList.remove('at-top');
+
+                // Check which section is currently in view
+                let currentSection = null;
+
+                sections.forEach(section => {
+                    const element = document.getElementById(section.id);
+                    if (element) {
+                        const rect = element.getBoundingClientRect();
+                        const sectionTop = rect.top + window.scrollY;
+                        const sectionBottom = sectionTop + element.offsetHeight;
+
+                        // Check if navbar overlaps with this section
+                        if (scrollPosition >= sectionTop - navbarHeight &&
+                            scrollPosition < sectionBottom - navbarHeight) {
+                            currentSection = section;
+                        }
+                    }
+                });
+
+                // Apply appropriate navbar style
+                if (currentSection) {
+                    if (currentSection.bg === 'dark') {
+                        // Dark section background = light navbar text
+                        navbar.classList.remove('on-light-bg');
+                        navbar.classList.add('on-dark-bg');
+                    } else {
+                        // Light section background = dark navbar text
+                        navbar.classList.remove('on-dark-bg');
+                        navbar.classList.add('on-light-bg');
+                    }
+                }
+            }
+
+            // Update navbar on scroll
+            window.addEventListener('scroll', updateNavbarColor);
+
+            // Update navbar on page load
+            updateNavbarColor();
+
+            // Update navbar on window resize (for responsive behavior)
+            window.addEventListener('resize', updateNavbarColor);
+        });
+    </script>
 </body>
-
 </html>
