@@ -3,7 +3,6 @@
 @model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
-    var agentId = Configuration["Dialogflow:AgentId"];
     bool isVerified = ViewBag.IsVerified ?? false;
 }
 <!DOCTYPE html>
@@ -840,13 +839,6 @@
             </div>
         </div>
     </main>
-
-    <!-- Chatbot -->
-    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
-    <df-messenger intent="WELCOME"
-                  chat-title="Lingap_Chatbot"
-                  agent-id="@agentId"
-                  language-code="en"></df-messenger>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
