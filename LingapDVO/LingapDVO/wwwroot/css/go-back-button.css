@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════════
-   UNIFORM GO BACK BUTTON STYLING
+   UNIFORM GO BACK BUTTON STYLING - MINIMALIST DESIGN
    ═══════════════════════════════════════════════════════════════════════════════
-   Provides consistent styling across all pages with responsive behavior
+   Consistent, clean styling that matches the paper-like form aesthetic
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 /* Go Back Button Container */
@@ -20,55 +20,55 @@
     /* Sizing */
     padding: 0.75rem 1.25rem;
 
-    /* Styling */
+    /* Styling - Minimalist Paper-like */
     background-color: #ffffff;
-    border: 2px solid #e5e7eb;
-    border-radius: 9999px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03);
 
     /* Typography */
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #374151;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: #616161;
 
     /* Interaction */
     cursor: pointer;
     user-select: none;
 
-    /* Animation */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Animation - Subtle */
+    transition: all 0.2s ease;
     transform: translateY(0);
     opacity: 1;
 }
 
-/* Hover State */
+/* Hover State - Minimal */
 #goBackBtn:hover {
-    background-color: #DC143C;
-    border-color: #DC143C;
-    color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 20px 30px -10px rgba(220, 20, 60, 0.3), 0 10px 15px -5px rgba(220, 20, 60, 0.2);
+    background-color: #fafafa;
+    border-color: #bdbdbd;
+    color: #424242;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 /* Active/Click State */
 #goBackBtn:active {
-    transform: translateY(0);
-    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.15);
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* Icon Animation on Hover */
+/* Icon - Subtle Animation on Hover */
 #goBackBtn:hover i {
-    transform: translateX(-3px);
+    transform: translateX(-2px);
 }
 
 #goBackBtn i {
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
     font-size: 1rem;
+    color: inherit;
 }
 
 /* Text */
 #goBackBtn span {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -110,12 +110,11 @@
         left: 1rem;
         padding: 0.625rem 1rem;
         font-size: 0.875rem;
-        box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
     }
 
     #goBackBtn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 15px 25px -8px rgba(220, 20, 60, 0.3);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
     }
 
     #goBackBtn span {
@@ -143,19 +142,19 @@
 
 /* Focus State for Keyboard Navigation */
 #goBackBtn:focus {
-    outline: 3px solid rgba(220, 20, 60, 0.5);
+    outline: 3px solid rgba(74, 85, 104, 0.3);
     outline-offset: 2px;
 }
 
 /* Focus Visible (Modern Browsers) */
 #goBackBtn:focus-visible {
-    outline: 3px solid rgba(220, 20, 60, 0.5);
+    outline: 3px solid rgba(74, 85, 104, 0.3);
     outline-offset: 2px;
 }
 
 /* Disabled State */
 #goBackBtn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
     pointer-events: none;
 }
@@ -166,36 +165,36 @@
 
 @media (prefers-color-scheme: dark) {
     #goBackBtn {
-        background-color: #1f2937;
-        border-color: #374151;
-        color: #f9fafb;
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
     }
 
     #goBackBtn:hover {
-        background-color: #DC143C;
-        border-color: #DC143C;
-        color: #ffffff;
+        background-color: #1a202c;
+        border-color: #2d3748;
+        color: #f7fafc;
     }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   ANIMATION KEYFRAMES
+   ANIMATION KEYFRAMES - Subtle
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-@keyframes slideInFromLeft {
+@keyframes fadeIn {
     from {
-        transform: translateX(-100px);
         opacity: 0;
+        transform: translateY(-10px);
     }
     to {
-        transform: translateX(0);
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
-/* Initial Page Load Animation */
+/* Initial Page Load Animation - Subtle */
 #goBackBtn {
-    animation: slideInFromLeft 0.5s ease-out;
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
