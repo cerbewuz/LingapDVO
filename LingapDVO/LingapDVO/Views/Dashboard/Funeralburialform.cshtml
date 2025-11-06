@@ -24,9 +24,83 @@
                 transform: scale(1.05);
             }
 
+        /* Enhanced checkbox and radio visibility */
+        .form-check-input {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
         .form-check-input:checked {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .form-check-input:checked::after {
+            content: '✓';
+            display: block;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            line-height: 1.25rem;
+        }
+
+        .form-check-input[type="radio"]:checked::after {
+            content: '●';
+            font-size: 0.8rem;
+        }
+
+        .form-check-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(220, 20, 60, 0.25);
+        }
+
+        /* Required field indicator */
+        label.required::after {
+            content: " *";
+            color: var(--primary-color);
+            font-weight: bold;
+            transition: opacity 0.3s ease;
+        }
+
+        label.required.filled::after {
+            opacity: 0;
+        }
+
+        /* Validation error styles for checkbox/radio groups */
+        .checkbox-group-error,
+        .radio-group-error {
+            border: 2px solid #dc3545 !important;
+            border-radius: 8px;
+            padding: 1rem;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .img-preview {
@@ -60,10 +134,6 @@
             font-size: 2rem;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
-        }
-
-            content: " *";
-            color: var(--primary-color);
         }
 
         .form-note {
@@ -1460,6 +1530,179 @@
 
 @section Scripts {
     <script>
+        // Enhanced Form Validation and Required Field Management
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+
+            // Add required class to all labels with required inputs
+            function initializeRequiredLabels() {
+                const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+                requiredInputs.forEach(input => {
+                    const label = input.closest('.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-md-12, .mb-3, .mb-4')?.querySelector('label');
+                    if (label && !label.classList.contains('form-check-label')) {
+                        label.classList.add('required');
+                    }
+                });
+            }
+
+            // Check if field is filled and update required indicator asynchronously
+            async function updateRequiredIndicator(input) {
+                return new Promise((resolve) => {
+                    const label = input.closest('.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-md-12, .mb-3, .mb-4')?.querySelector('label.required');
+                    if (label) {
+                        if (input.value.trim() !== '' || input.checked) {
+                            label.classList.add('filled');
+                        } else {
+                            label.classList.remove('filled');
+                        }
+                    }
+                    setTimeout(() => resolve(), 50);
+                });
+            }
+
+            // Add listeners to all form inputs
+            function attachInputListeners() {
+                const allInputs = form.querySelectorAll('input, select, textarea');
+                allInputs.forEach(input => {
+                    ['input', 'change', 'blur'].forEach(event => {
+                        input.addEventListener(event, () => updateRequiredIndicator(input));
+                    });
+                });
+            }
+
+            // Validate assistance type checkboxes (at least one must be selected)
+            function validateAssistanceCheckboxes() {
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                const checked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
+                const assistanceSection = document.querySelector('.assistance-type')?.closest('.row');
+
+                // Remove existing error message
+                const existingError = assistanceSection?.querySelector('.error-message');
+                if (existingError) existingError.remove();
+
+                if (!checked) {
+                    if (assistanceSection) {
+                        assistanceSection.classList.add('checkbox-group-error');
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message show';
+                        errorMsg.textContent = 'Please select at least one type of assistance';
+                        assistanceSection.appendChild(errorMsg);
+                    }
+                    return false;
+                } else {
+                    assistanceSection?.classList.remove('checkbox-group-error');
+                    return true;
+                }
+            }
+
+            // Validate Sex radio buttons
+            function validateSexRadio() {
+                const sexRadios = document.querySelectorAll('input[name="Sex"]');
+                const checked = Array.from(sexRadios).some(radio => radio.checked);
+                const sexSection = document.querySelector('input[name="Sex"]')?.closest('.col-md-2');
+
+                // Remove existing error message
+                const existingError = sexSection?.querySelector('.error-message');
+                if (existingError) existingError.remove();
+
+                if (!checked) {
+                    if (sexSection) {
+                        sexSection.classList.add('radio-group-error');
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message show';
+                        errorMsg.textContent = 'Please select sex';
+                        sexSection.appendChild(errorMsg);
+                    }
+                    return false;
+                } else {
+                    sexSection?.classList.remove('radio-group-error');
+                    return true;
+                }
+            }
+
+            // Add change listeners to checkboxes and radios to remove error on selection
+            function attachCheckboxRadioListeners() {
+                // Assistance checkboxes
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                assistanceCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            const assistanceSection = checkbox.closest('.row');
+                            assistanceSection?.classList.remove('checkbox-group-error');
+                            const errorMsg = assistanceSection?.querySelector('.error-message');
+                            if (errorMsg) errorMsg.remove();
+                        }
+                    });
+                });
+
+                // Sex radios
+                const sexRadios = document.querySelectorAll('input[name="Sex"]');
+                sexRadios.forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        if (radio.checked) {
+                            const sexSection = radio.closest('.col-md-2');
+                            sexSection?.classList.remove('radio-group-error');
+                            const errorMsg = sexSection?.querySelector('.error-message');
+                            if (errorMsg) errorMsg.remove();
+                        }
+                    });
+                });
+            }
+
+            // Form submission validation
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+
+                // Validate all required fields
+                const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+                requiredInputs.forEach(input => {
+                    if (input.type !== 'checkbox' && input.type !== 'radio') {
+                        if (!input.value.trim()) {
+                            input.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+                    }
+                });
+
+                // Validate assistance checkboxes
+                if (!validateAssistanceCheckboxes()) {
+                    isValid = false;
+                }
+
+                // Validate sex radio
+                if (!validateSexRadio()) {
+                    isValid = false;
+                }
+
+                // Validate terms checkbox
+                const termsCheck = document.getElementById('termsCheck');
+                if (termsCheck && !termsCheck.checked) {
+                    isValid = false;
+                    alert('Please accept the terms and conditions');
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    // Scroll to first error
+                    const firstError = form.querySelector('.is-invalid, .checkbox-group-error, .radio-group-error');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+
+            // Initialize
+            initializeRequiredLabels();
+            attachInputListeners();
+            attachCheckboxRadioListeners();
+
+            // Initial check for pre-filled values
+            const allInputs = form.querySelectorAll('input, select, textarea');
+            allInputs.forEach(input => updateRequiredIndicator(input));
+        });
+
 const philHealthInput = document.getElementById('philHealthInput');
 
                     philHealthInput.addEventListener('input', function(e) {
