@@ -1357,24 +1357,29 @@ document.addEventListener('DOMContentLoaded', function () {
         "11-B", "12-B", "13-B", "14-B", "15-B", "16-B", "17-B", "18-B", "19-B", "20-B",
         "21-C", "22-C", "23-C", "24-C", "25-C", "26-C", "27-C", "28-C", "29-C", "30-C",
         "31-D", "32-D", "33-D", "34-D", "35-D", "36-D", "37-D", "38-D", "39-D", "40-D",
-        "Agdao", "Angalan", "Bucana", "Bunawan", "Angliongto", "Baguio", "Bangkal",
-        "Buhangin", "BUHANGIN (POB.)", "Cabantian", "Communal", "Dumoy", "Ilang", "Indangan", "Lasang",
-        "Leon Garcia", "Magtuod", "Mahayag", "Matina Aplaya", "Matina Crossing",
-        "Matina Pangi", "Malagos", "Matina Biao", "New Valencia",
-        "Talomo", "Catalunan Grande", "Catalunan Pequeño", "Bato", "Balingian",
-        "Baganihan", "Baliok", "Crossing Bayabas", "Daliao", "Lampianao",
-        "Lizada", "Ma-a", "Mudiang", "Mulig", "Rafael Castillo", "Riverside",
-        "Tacunan", "Talandang", "Tawan-Tawan", "Tibungco", "Toril", "Ulas",
-        "Wilfredo Aquino",
-        "Tugbok", "Bago Aplaya", "Bago Gallera", "Bago Oshiro", "Calinan",
-        "Catigan", "Colosas", "Dacudao", "Dalag", "Dalagdag", "Daliaon Plantation",
-        "Dominga", "Eden", "Fatima", "Gumitan", "Lacson", "Lamanan", "Langub",
-        "Los Amigos", "Magsaysay", "Malabog", "Malagamot", "Mandug", "Mapula",
-        "Marilog", "Megkawayan", "New Carmen", "Pampanga", "Panacan", "Pangyan",
-        "Paquibato", "Paradise Embak", "Salaysay", "Salapawan", "San Isidro",
-        "Santo Niño", "Sibulan", "Sasa", "Sirawan", "Subasta", "Suawan",
-        "Sumimao", "Tagakpan", "Tagluno", "Tamugan", "Tapak", "Tawantawan",
-        "Tigatto", "Lubogan", "Vicente Hizon Sr.", "Wangan", "Waan", "Wines"
+        "Acacia", "Agdao", "Alambre", "Alejandro Navarro", "Alfonso Angliongto Sr.",
+        "Angalan", "Baguio Proper", "Baliok", "Bangkas Heights", "Baracatan",
+        "Bato", "Bayabas", "Biao Escuela", "Biao Guianga", "Binugao",
+        "Bucana", "Buhangin", "Buhangin (Pob.)", "Buhangin Proper", "Cabantian",
+        "Cadalian", "Calinan Proper", "Callawa", "Camansi", "Carmen",
+        "Catalunan Grande", "Catalunan Pequeño", "Catigan", "Cawayan", "Centro (San Juan)",
+        "Colosas", "Communal", "Crossing Bayabas", "Dacudao", "Dalagdag",
+        "Daliao", "Dalican", "Datu Salumay", "Dominga", "Eden",
+        "Fatima (Benowang)", "Gatungan", "Gov. Paciano Bangoy", "Gov. Vicente Duterte", "Gumalang",
+        "Gumitan", "Indangan", "Kap. Tomas Monteverde Sr.", "Kilate", "Lamanan",
+        "Lampianao", "Langub", "Lapu-lapu", "Leon Garcia Sr.", "Los Amigos",
+        "Lubogan", "Lumiad", "Ma-a", "Mabuhay", "Madapo",
+        "Magtuod", "Mahayag", "Malabog", "Malagos", "Malamba",
+        "Malandog", "Mampising", "Manambulan", "Mandug", "Manuel Guianga",
+        "Mapula", "Marapangi", "Marilog Proper", "Matina Aplaya", "Matina Crossing",
+        "Matina Pangi", "Mintal", "Mudiang", "Mulig", "New Carmen",
+        "New Valencia", "Pampanga", "Panacan", "Pandaitan", "Panorama",
+        "Paquibato Proper", "Paradise Embak", "Rafael Castillo", "Salapawan", "Salaysay",
+        "Saloy", "San Antonio", "San Isidro", "Sasa", "Sirib",
+        "Suawan", "Tacunan", "Tagakpan", "Tagluno", "Tagurano",
+        "Talomo Proper", "Talomo River", "Tamurayan", "Tibungco", "Tigatto",
+        "Tungkalan", "Ubalde", "Ugac", "Ula", "Vicente Hizon Sr.",
+        "Waan", "Wangan", "Wilfredo Aquino", "Wines"
     ];
 
     // Allowed ID types - STRICT VALIDATION
@@ -4751,8 +4756,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const searchLine = lines[searchIndex].trim();
             const positionDesc = searchIndex === labelLineIndex ? 'same line' :
-                                searchIndex < labelLineIndex ? `${labelLineIndex - searchIndex} line(s) before` :
-                                `${searchIndex - labelLineIndex} line(s) after`;
+                searchIndex < labelLineIndex ? `${labelLineIndex - searchIndex} line(s) before` :
+                    `${searchIndex - labelLineIndex} line(s) after`;
 
             console.log(`  Checking ${positionDesc} [${searchIndex + 1}]: "${searchLine}"`);
 
@@ -4767,7 +4772,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Try each date pattern
-            for (const {pattern, name} of datePatterns) {
+            for (const { pattern, name } of datePatterns) {
                 const match = searchLine.match(pattern);
                 if (match) {
                     console.log(`    ✓✓✓ DATE PATTERN FOUND: ${name}`);
@@ -5133,9 +5138,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (civilStatus) {
             console.log('✓ Civil Status extracted from back:', civilStatus);
             const civilStatusField = document.getElementById('civilstatus') ||
-                                    document.getElementById('maritalstatus') ||
-                                    document.getElementById('civil-status') ||
-                                    document.getElementById('marital-status');
+                document.getElementById('maritalstatus') ||
+                document.getElementById('civil-status') ||
+                document.getElementById('marital-status');
             if (civilStatusField) {
                 civilStatusField.value = civilStatus;
                 extractedFields.push('Civil Status');
@@ -5837,7 +5842,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (match) {
                 // Format it: 00-0000000-0
                 const num = match[0];
-                extractedData.idNumber = `${num.substring(0,2)}-${num.substring(2,9)}-${num.substring(9)}`;
+                extractedData.idNumber = `${num.substring(0, 2)}-${num.substring(2, 9)}-${num.substring(9)}`;
                 console.log(`✓ SSS Number found and formatted: "${extractedData.idNumber}"`);
                 extractedData.confidence.idNumber = 90;
                 break;
@@ -5994,31 +5999,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Skip label lines
             if (isExtractedTextALabel(line)) {
-                console.log(`  Line ${i+1}: "${line}" → LABEL, skipping`);
+                console.log(`  Line ${i + 1}: "${line}" → LABEL, skipping`);
                 continue;
             }
 
             // Skip lines with SSS number
             if (/\d{2}-\d{7}-\d{1}/.test(line) || /\d{10}/.test(line)) {
-                console.log(`  Line ${i+1}: "${line}" → SSS number, skipping`);
+                console.log(`  Line ${i + 1}: "${line}" → SSS number, skipping`);
                 continue;
             }
 
             // Must have at least 2 words
             const words = line.split(/\s+/).filter(w => w.length > 1);
             if (words.length < 2) {
-                console.log(`  Line ${i+1}: "${line}" → Too short, skipping`);
+                console.log(`  Line ${i + 1}: "${line}" → Too short, skipping`);
                 continue;
             }
 
             // Must contain name-like characters
             if (!/[A-Z]{2,}/.test(upperLine)) {
-                console.log(`  Line ${i+1}: "${line}" → No valid name characters, skipping`);
+                console.log(`  Line ${i + 1}: "${line}" → No valid name characters, skipping`);
                 continue;
             }
 
             // This looks like the name line
-            console.log(`  ✓ Name found at Line ${i+1}: "${line}"`);
+            console.log(`  ✓ Name found at Line ${i + 1}: "${line}"`);
 
             // Parse: FIRSTNAME MIDDLENAME LASTNAME SUFFIX
             const parsed = parseSSSNameStructure(words);
@@ -6748,12 +6753,14 @@ document.addEventListener('DOMContentLoaded', function () {
             { pattern: /\b(SR\.?|SENIOR)\b$/i, normalized: () => 'SR' },
 
             // Handle suffix with comma: "DELA CRUZ, JUAN JR."
-            { pattern: /,\s*(JR\.?|SR\.?|II|III|IV|V|JUNIOR|SENIOR)\s*$/i, normalized: (m) => {
-                const clean = m.replace(/[,\s\.]/g, '').toUpperCase();
-                if (clean === 'JUNIOR') return 'JR';
-                if (clean === 'SENIOR') return 'SR';
-                return clean;
-            }},
+            {
+                pattern: /,\s*(JR\.?|SR\.?|II|III|IV|V|JUNIOR|SENIOR)\s*$/i, normalized: (m) => {
+                    const clean = m.replace(/[,\s\.]/g, '').toUpperCase();
+                    if (clean === 'JUNIOR') return 'JR';
+                    if (clean === 'SENIOR') return 'SR';
+                    return clean;
+                }
+            },
         ];
 
         let suffix = '';
@@ -6896,8 +6903,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-                // Fallthrough to space-separated if compound not confirmed
-                /* falls through */
+            // Fallthrough to space-separated if compound not confirmed
+            /* falls through */
 
             case 'compound-surname-last':
             case 'space-separated':
