@@ -67,9 +67,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Notifications
-builder.Services.AddScoped<INotificationService, NotificationService>();
-
 // Form Submission Security Service
 builder.Services.AddScoped<FormSubmissionSecurityService>();
 
@@ -106,7 +103,13 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddHttpClient();
-builder.Services.AddHttpClient<SmsService>();
+builder.Services.AddHttpClient<ISmsService, SmsService>();
+builder.Services.AddScoped<ISmsService, SmsService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IMultiChannelNotificationService, MultiChannelNotificationService>();
+
+// SignalR for real-time notifications
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -220,8 +223,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-
-
-
+// SignalR Hub endpoint
+app.MapHub<LingapDVO.Hubs.NotificationHub>("/notificationHub");
 
 app.Run();

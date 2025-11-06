@@ -34,5 +34,10 @@ namespace LingapDVO.Models
         public string Username { get; set; } = "";
 
         public string? Status { get; set; } = "";
+
+        // Notification Preferences
+        public bool PreferEmailNotification { get; set; } = true;
+        public bool PreferSmsNotification { get; set; } = false;
+        public bool PreferInAppNotification { get; set; } = true;
     }
 }

@@ -20,13 +20,15 @@ namespace LingapDVO.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IConfiguration _configuration;
         private readonly ISessionConfigurationService _sessionConfig;
+        private readonly IMultiChannelNotificationService _notificationService;
 
-        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig)
+        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig, IMultiChannelNotificationService notificationService)
         {
             this.context = context;
             this.environment = environment;
             _configuration = configuration;
             _sessionConfig = sessionConfig;
+            _notificationService = notificationService;
         }
         public IActionResult Index()
         {
@@ -180,6 +182,17 @@ namespace LingapDVO.Controllers
                 fillupformhospitalBill.ProcessAt = DateTime.Now;
 
                 context.SaveChanges();
+
+                // Send multi-channel notification (In-App, SMS, Email based on preferences)
+                var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == fillupformhospitalBill.UserId);
+                var applicantName = verifyAccount?.Firstname ?? "Applicant";
+                _ = _notificationService.SendStatusChangeNotificationAsync(
+                    fillupformhospitalBill.UserId,
+                    applicantName,
+                    "HospitalBill",
+                    "Processing",
+                    fillupformhospitalBill.Id
+                );
 
                 // Get the user's info from RegisterAcc
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
@@ -361,6 +374,17 @@ namespace LingapDVO.Controllers
 
                 context.SaveChanges();
 
+                // Send multi-channel notification
+                var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == medicalandlabform.UserId);
+                var applicantName = verifyAccount?.Firstname ?? "Applicant";
+                _ = _notificationService.SendStatusChangeNotificationAsync(
+                    medicalandlabform.UserId,
+                    applicantName,
+                    "Medical",
+                    "Processing",
+                    medicalandlabform.Id
+                );
+
                 // Get user info
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == medicalandlabform.UserId);
 
@@ -538,6 +562,17 @@ namespace LingapDVO.Controllers
                 funeralburialform.ProcessAt = DateTime.Now;
 
                 context.SaveChanges();
+
+                // Send multi-channel notification
+                var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == funeralburialform.UserId);
+                var applicantName = verifyAccount?.Firstname ?? "Applicant";
+                _ = _notificationService.SendStatusChangeNotificationAsync(
+                    funeralburialform.UserId,
+                    applicantName,
+                    "Funeral",
+                    "Processing",
+                    funeralburialform.Id
+                );
 
                 // ✅ Get user info
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == funeralburialform.UserId);

@@ -1,0 +1,107 @@
+/* SignalR Notification Toasts */
+
+.toast-container {
+    z-index: 9999;
+}
+
+.notification-toast {
+    min-width: 300px;
+    max-width: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.notification-toast .toast-body {
+    padding: 15px;
+}
+
+.notification-toast .toast-body strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.notification-toast .toast-body p {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.notification-toast.bg-success {
+    background-color: #28a745 !important;
+}
+
+.notification-toast.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.notification-toast.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.notification-toast.bg-primary {
+    background-color: #007bff !important;
+}
+
+.notification-toast.bg-light {
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #dc143c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notif-count {
+    background-color: #dc143c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Notification icon styles */
+.notification-icon {
+    position: relative;
+    cursor: pointer;
+}
+
+.notification-icon:hover {
+    opacity: 0.8;
+}
+
+/* Animation for new notifications */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.notification-badge.pulse {
+    animation: pulse 0.5s ease-in-out 3;
+}

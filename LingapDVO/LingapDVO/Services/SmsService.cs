@@ -1,34 +1,63 @@
-﻿    namespace LingapDVO.Services;
+﻿using Microsoft.Extensions.Configuration;
 
-    public class SmsService
+namespace LingapDVO.Services
+{
+    public interface ISmsService
+    {
+        Task<bool> SendSmsAsync(string phoneNumber, string message);
+    }
+
+    public class SmsService : ISmsService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _apiUrl = "https://api.iprog.com/api/v1/"; // Using the provided API token
-        private readonly string _apiToken = "42f4335a0fa3dde088f8304fe2936f5a8013a2c4";
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<SmsService> _logger;
 
-        public SmsService(HttpClient httpClient)
+        public SmsService(HttpClient httpClient, IConfiguration configuration, ILogger<SmsService> logger)
         {
             _httpClient = httpClient;
+            _configuration = configuration;
+            _logger = logger;
         }
 
-        public async Task SendSmsAsync(string phoneNumber, string message, int smsProvider = 0)
+        public async Task<bool> SendSmsAsync(string phoneNumber, string message)
         {
-            var url = $"{_apiUrl}?api_token={_apiToken}" +
-                      $"&message={Uri.EscapeDataString(message)}" +
-                      $"&phone_number={phoneNumber}" +
-                      $"&sms_provider={smsProvider}";
-
-            // Send the request
-            var response = await _httpClient.PostAsync(url, null); // No body content, just query string
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                // Log the error and response details for debugging
-                var errorDetails = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to send SMS. Status Code: {response.StatusCode}, Response: {errorDetails}");
-            }
+                var apiUrl = _configuration["SMSSettings:ApiUrl"];
+                var apiKey = _configuration["SMSSettings:ApiKey"];
+                var senderId = _configuration["SMSSettings:SenderId"];
+                var defaultProvider = _configuration.GetValue<int>("SMSSettings:DefaultProvider", 0);
 
-            // Optionally, log success
-            Console.WriteLine("SMS sent successfully.");
+                if (string.IsNullOrEmpty(apiUrl) || string.IsNullOrEmpty(apiKey))
+                {
+                    _logger.LogError("SMS configuration is missing or incomplete");
+                    return false;
+                }
+
+                var url = $"{apiUrl}?api_token={apiKey}" +
+                          $"&message={Uri.EscapeDataString(message)}" +
+                          $"&phone_number={phoneNumber}" +
+                          $"&sender_id={senderId}" +
+                          $"&sms_provider={defaultProvider}";
+
+                var response = await _httpClient.PostAsync(url, null);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    _logger.LogError($"Failed to send SMS. Status Code: {response.StatusCode}, Response: {errorDetails}");
+                    return false;
+                }
+
+                _logger.LogInformation($"SMS sent successfully to {phoneNumber}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Exception occurred while sending SMS to {phoneNumber}");
+                return false;
+            }
         }
     }
+}

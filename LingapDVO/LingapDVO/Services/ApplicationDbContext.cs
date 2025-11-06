@@ -28,9 +28,6 @@ namespace LingapDVO.Services
 
         public DbSet<Verifyaccount> Verifyaccount { get; set; }
 
-        // newly added notifications
-        public DbSet<Notification> Notifications { get; set; }
-
         // ═══════════════════════════════════════════════════════════════
         // 🔒 ANTI-MANIPULATION SECURITY TABLES
         // ═══════════════════════════════════════════════════════════════

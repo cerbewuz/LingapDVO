@@ -56,54 +56,63 @@ public class NotificationsController : Controller
             // Create notifications for hospital bills
             foreach (var bill in recentHospitalBills.Take(5))
             {
-                var notificationId = $"hospital_{bill.Id}";
+                var notificationId = $"hospital_{bill.Id}_{bill.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
+
+                var (title, message, type) = GetStatusNotificationDetails("Hospital Bill Assistance", bill.Status, bill.CreatedAt);
 
                 notifications.Add(new
                 {
                     id = notificationId,
-                    title = "Hospital Bill Application",
-                    message = $"Your hospital bill assistance application was submitted on {bill.CreatedAt:MMM dd, yyyy}",
+                    title = title,
+                    message = message,
                     isRead = isRead,
                     createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    type = "application_submitted",
-                    link = "/Uploads"
+                    type = type,
+                    link = "/Uploads",
+                    status = bill.Status
                 });
             }
 
             // Create notifications for medical lab forms
             foreach (var medical in recentMedicalLabForms.Take(5))
             {
-                var notificationId = $"medical_{medical.Id}";
+                var notificationId = $"medical_{medical.Id}_{medical.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
+
+                var (title, message, type) = GetStatusNotificationDetails("Medical and Lab Assistance", medical.Status, medical.CreatedAt);
 
                 notifications.Add(new
                 {
                     id = notificationId,
-                    title = "Medical Procedure Application",
-                    message = $"Your medical procedure application was submitted on {medical.CreatedAt:MMM dd, yyyy}",
+                    title = title,
+                    message = message,
                     isRead = isRead,
                     createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    type = "application_submitted",
-                    link = "/Uploads"
+                    type = type,
+                    link = "/Uploads",
+                    status = medical.Status
                 });
             }
 
             // Create notifications for funeral forms
             foreach (var funeral in recentFuneralForms.Take(5))
             {
-                var notificationId = $"funeral_{funeral.Id}";
+                var notificationId = $"funeral_{funeral.Id}_{funeral.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
+
+                var (title, message, type) = GetStatusNotificationDetails("Funeral and Burial Assistance", funeral.Status, funeral.CreatedAt);
 
                 notifications.Add(new
                 {
                     id = notificationId,
-                    title = "Funeral Assistance Application",
-                    message = $"Your funeral assistance application was submitted on {funeral.CreatedAt:MMM dd, yyyy}",
+                    title = title,
+                    message = message,
                     isRead = isRead,
                     createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    type = "application_submitted",
-                    link = "/Uploads"
+                    type = type,
+                    link = "/Uploads",
+                    status = funeral.Status
                 });
             }
 
@@ -228,17 +237,17 @@ public class NotificationsController : Controller
 
             foreach (var bill in recentHospitalBills)
             {
-                notificationIds.Add($"hospital_{bill.Id}");
+                notificationIds.Add($"hospital_{bill.Id}_{bill.Status}");
             }
 
             foreach (var medical in recentMedicalLabForms)
             {
-                notificationIds.Add($"medical_{medical.Id}");
+                notificationIds.Add($"medical_{medical.Id}_{medical.Status}");
             }
 
             foreach (var funeral in recentFuneralForms)
             {
-                notificationIds.Add($"funeral_{funeral.Id}");
+                notificationIds.Add($"funeral_{funeral.Id}_{funeral.Status}");
             }
 
             if (!notificationIds.Any())
@@ -296,5 +305,43 @@ public class NotificationsController : Controller
             // Log error
             throw;
         }
+    }
+
+    // Helper method to get notification details based on status
+    private (string title, string message, string type) GetStatusNotificationDetails(string formType, string status, DateTime createdAt)
+    {
+        return status switch
+        {
+            "Pending" => (
+                "Application Submitted",
+                $"Your {formType} application has been submitted and is pending review. Submitted on {createdAt:MMM dd, yyyy}.",
+                "application_submitted"
+            ),
+            "Processing" => (
+                "Application Being Processed",
+                $"Your {formType} application is now being processed by our team.",
+                "application_processing"
+            ),
+            "Approved" => (
+                "Application Approved",
+                $"Good news! Your {formType} application has been approved. Please visit the office for claiming.",
+                "application_approved"
+            ),
+            "Disapproved" => (
+                "Application Disapproved",
+                $"We regret to inform you that your {formType} application has been disapproved. Please contact us for more details.",
+                "application_disapproved"
+            ),
+            "Claimed" => (
+                "Assistance Claimed",
+                $"Your {formType} has been successfully claimed. Thank you for using our service.",
+                "application_claimed"
+            ),
+            _ => (
+                "Application Update",
+                $"Your {formType} application status has been updated. Submitted on {createdAt:MMM dd, yyyy}.",
+                "status_change"
+            )
+        };
     }
 }

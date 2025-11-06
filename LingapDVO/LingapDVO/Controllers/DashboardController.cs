@@ -3451,5 +3451,57 @@ namespace LingapDVO.Controllers
             }
         }
 
+        // Notification Preferences Management
+        [HttpGet]
+        public JsonResult GetNotificationPreferences()
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Json(new { success = false, error = "User not authenticated" });
+            }
+
+            var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+            if (user == null)
+            {
+                return Json(new { success = false, error = "User not found" });
+            }
+
+            return Json(new
+            {
+                success = true,
+                preferences = new
+                {
+                    preferEmail = user.PreferEmailNotification,
+                    preferSms = user.PreferSmsNotification,
+                    preferInApp = user.PreferInAppNotification
+                }
+            });
+        }
+
+        [HttpPost]
+        public JsonResult UpdateNotificationPreferences(bool preferEmail, bool preferSms, bool preferInApp)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Json(new { success = false, error = "User not authenticated" });
+            }
+
+            var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+            if (user == null)
+            {
+                return Json(new { success = false, error = "User not found" });
+            }
+
+            user.PreferEmailNotification = preferEmail;
+            user.PreferSmsNotification = preferSms;
+            user.PreferInAppNotification = preferInApp;
+
+            context.SaveChanges();
+
+            return Json(new { success = true, message = "Notification preferences updated successfully" });
+        }
+
     }
 }
