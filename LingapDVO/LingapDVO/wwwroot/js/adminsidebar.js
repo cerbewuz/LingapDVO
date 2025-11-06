@@ -2,8 +2,9 @@
 // ADMIN SIDEBAR AND PRIORITY ALERTS MODULE
 // ═══════════════════════════════════════════════════════════════════════════════
 // Provides shared functionality for admin pages:
-// - Burger menu toggle
-// - Responsive sidebar behavior
+// - Pull arrow toggle (desktop) - Manual control
+// - Burger menu toggle (mobile)
+// - Sliding sidebar behavior
 // - Priority alerts in header
 // - Application priority calculation
 // - Active page highlighting
@@ -17,7 +18,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
     let isMobile = false;
-    let sidebarOpen = false;
+    let sidebarOpen = false; // Sidebar hidden by default
 
     /**
      * Check if current viewport is mobile
@@ -31,12 +32,13 @@
      * Initialize sidebar toggle
      */
     function initSidebarToggle() {
+        const pullArrow = document.getElementById('sidebarPullArrow');
         const burgerBtn = document.getElementById('burgerMenuBtn');
         const sidebar = document.getElementById('adminSidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const mainContent = document.querySelector('.main-content-with-sidebar');
 
-        if (!burgerBtn || !sidebar) {
+        if (!sidebar) {
             console.warn('Admin Sidebar: Sidebar elements not found');
             return;
         }
@@ -45,7 +47,12 @@
         checkMobile();
         updateSidebarState();
 
-        // Burger button click
+        // Pull arrow click (desktop manual toggle)
+        if (pullArrow) {
+            pullArrow.addEventListener('click', toggleSidebar);
+        }
+
+        // Burger button click (mobile)
         if (burgerBtn) {
             burgerBtn.addEventListener('click', toggleSidebar);
         }
@@ -71,14 +78,12 @@
                     link.classList.add('active');
                 }
 
-                // Close sidebar on mobile
-                if (isMobile) {
-                    closeSidebar();
-                }
+                // Don't auto-close sidebar - user controls it manually
+                // If user wants to close it, they can use the arrow/burger
             });
         });
 
-        console.log('Admin Sidebar: Toggle functionality initialized');
+        console.log('Admin Sidebar: Pull arrow toggle functionality initialized');
     }
 
     /**
@@ -109,6 +114,7 @@
      * Update sidebar visibility state
      */
     function updateSidebarState() {
+        const pullArrow = document.getElementById('sidebarPullArrow');
         const burgerBtn = document.getElementById('burgerMenuBtn');
         const sidebar = document.getElementById('adminSidebar');
         const overlay = document.getElementById('sidebarOverlay');
@@ -121,20 +127,25 @@
         if (isMobile) {
             // Mobile behavior
             if (sidebarOpen) {
+                sidebar.classList.add('visible');
                 sidebar.classList.remove('mobile-hidden');
                 overlay?.classList.add('active');
                 burgerBtn?.classList.add('active');
                 document.body.style.overflow = 'hidden';
             } else {
+                sidebar.classList.remove('visible');
                 sidebar.classList.add('mobile-hidden');
                 overlay?.classList.remove('active');
                 burgerBtn?.classList.remove('active');
                 document.body.style.overflow = '';
             }
 
-            // Show burger button
+            // Show burger button, hide pull arrow
             if (burgerBtn) {
                 burgerBtn.style.display = 'flex';
+            }
+            if (pullArrow) {
+                pullArrow.classList.add('mobile-hidden');
             }
 
             // Remove desktop margins
@@ -142,19 +153,30 @@
                 mainContent.classList.add('mobile-view');
             }
         } else {
-            // Desktop behavior - always show sidebar
+            // Desktop behavior - Manual control with pull arrow
+            if (sidebarOpen) {
+                sidebar.classList.add('visible');
+                pullArrow?.classList.add('open');
+            } else {
+                sidebar.classList.remove('visible');
+                pullArrow?.classList.remove('open');
+            }
+
+            // Hide mobile elements
             sidebar.classList.remove('mobile-hidden');
-            sidebar.classList.add('desktop-visible');
             overlay?.classList.remove('active');
             burgerBtn?.classList.remove('active');
             document.body.style.overflow = '';
 
-            // Hide burger button
+            // Show pull arrow, hide burger button
             if (burgerBtn) {
                 burgerBtn.style.display = 'none';
             }
+            if (pullArrow) {
+                pullArrow.classList.remove('mobile-hidden');
+            }
 
-            // Add desktop margins
+            // Desktop margins handled by user control
             if (mainContent) {
                 mainContent.classList.remove('mobile-view');
             }

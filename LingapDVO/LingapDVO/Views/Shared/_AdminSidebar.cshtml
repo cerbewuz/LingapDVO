@@ -1,9 +1,14 @@
 @* ═══════════════════════════════════════════════════════════════════════════════
    ADMIN SIDEBAR - SHARED COMPONENT
    ═══════════════════════════════════════════════════════════════════════════════
-   Responsive admin navigation sidebar with burger menu toggle
-   Used across Admin, Analytics Dashboard, and Priorities pages
+   Sliding sidebar with pull arrow toggle - Manual control
+   Hidden by default, user can show/hide using the pull arrow
    ═══════════════════════════════════════════════════════════════════════════════ *@
+
+<!-- Pull Arrow Button (Desktop) -->
+<button id="sidebarPullArrow" class="sidebar-pull-arrow" aria-label="Toggle sidebar">
+    <i class="bi bi-chevron-right"></i>
+</button>
 
 <!-- Mobile Burger Menu Button -->
 <button id="burgerMenuBtn" class="burger-menu-btn" aria-label="Toggle menu">

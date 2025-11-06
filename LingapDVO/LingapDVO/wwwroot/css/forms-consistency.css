@@ -91,7 +91,7 @@ br + button {
     display: flex;
     align-items: center;
     padding-left: 0;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem; /* Reduced from 0.75rem */
 }
 
 .form-check-label {
@@ -105,8 +105,29 @@ br + button {
 .form-check-inline {
     display: inline-flex;
     align-items: center;
-    margin-right: 1rem;
-    margin-bottom: 0.5rem;
+    margin-right: 0.75rem; /* Reduced from 1rem */
+    margin-bottom: 0.25rem; /* Reduced from 0.5rem */
+    padding-left: 0;
+}
+
+/* Sex radio buttons - Keep them closer together */
+.col-md-2 .form-check-inline,
+label[class="form-label"] + .form-check-inline {
+    margin-right: 0.5rem; /* Even closer */
+    margin-bottom: 0;
+}
+
+/* Assistance type checkboxes - Reduce spacing */
+.assistance-type {
+    margin-top: 0 !important;
+}
+
+.form-check.mt-2 {
+    margin-top: 0.5rem !important; /* Reduced from default */
+}
+
+.form-check:first-child {
+    margin-top: 0 !important;
 }
 
 /* Button consistency */
