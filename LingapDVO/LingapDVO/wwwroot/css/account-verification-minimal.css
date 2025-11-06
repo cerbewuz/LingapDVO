@@ -1,0 +1,463 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ACCOUNT VERIFICATION - MINIMALIST AESTHETIC DESIGN
+   ═══════════════════════════════════════════════════════════════════════════════
+   Overrides Tailwind styles with clean, minimal, paper-like aesthetic
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Body - Paper-like Background */
+body {
+    background: #f5f5f0 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    position: relative;
+}
+
+/* Subtle Paper Texture */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.4;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 1px,
+        rgba(0, 0, 0, 0.01) 1px,
+        rgba(0, 0, 0, 0.01) 2px
+    );
+    pointer-events: none;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Main Form Card - Paper-like */
+.glass-effect {
+    background: #fefefe !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    overflow: hidden;
+}
+
+.glass-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #616161 0%, #9e9e9e 100%);
+    z-index: 2;
+}
+
+/* Remove bright crimson colors - use muted grays */
+.crimson-500,
+.text-crimson-500 {
+    color: #616161 !important;
+}
+
+.bg-red-50 {
+    background-color: #fafafa !important;
+}
+
+.bg-green-50 {
+    background-color: #fafafa !important;
+}
+
+.bg-blue-50 {
+    background-color: #f7fafc !important;
+    border-color: #e0e0e0 !important;
+}
+
+.border-blue-200 {
+    border-color: #e0e0e0 !important;
+}
+
+.text-blue-500,
+.text-blue-700 {
+    color: #616161 !important;
+}
+
+.text-green-500 {
+    color: #48bb78 !important;
+}
+
+/* Headings - Minimal Typography */
+h1, h2, h3, h4, h5 {
+    color: #424242 !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em;
+}
+
+h1 {
+    font-size: 2rem !important;
+}
+
+h2 {
+    font-size: 1.5rem !important;
+}
+
+/* Input Fields - Clean Minimal Style */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+select,
+textarea {
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 0.375rem !important;
+    padding: 0.75rem 1rem !important;
+    transition: all 0.2s ease !important;
+    background: white !important;
+    font-size: 0.9375rem !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #9e9e9e !important;
+    box-shadow: 0 0 0 3px rgba(158, 158, 158, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    outline: none !important;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="date"]:hover,
+select:hover,
+textarea:hover {
+    border-color: #bdbdbd !important;
+}
+
+/* Remove bright focus rings */
+.focus\:border-crimson-500:focus,
+.focus\:ring-red-200:focus {
+    border-color: #9e9e9e !important;
+}
+
+.focus\:ring-2:focus {
+    box-shadow: 0 0 0 3px rgba(158, 158, 158, 0.08) !important;
+}
+
+/* Upload Areas - Minimal Style */
+.upload-area {
+    background: #fafafa !important;
+    border: 2px dashed #e0e0e0 !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.upload-area:hover {
+    background: #f5f5f5 !important;
+    border-color: #bdbdbd !important;
+}
+
+.upload-area.has-image {
+    border-color: #9e9e9e !important;
+    background: white !important;
+}
+
+/* Icon Containers - Minimal */
+.w-10.h-10,
+.w-16.h-16 {
+    background: white !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Progress Bar - Minimal */
+.bg-crimson-500 {
+    background-color: #757575 !important;
+}
+
+/* Verification Result Box - Minimal */
+#davao-verification {
+    background: #fafafa !important;
+    border-left: 3px solid #757575 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+
+#davao-verification.success-result {
+    border-left-color: #48bb78 !important;
+    background: #f0fdf4 !important;
+}
+
+#davao-verification.error-result {
+    border-left-color: #e53e3e !important;
+    background: #fff5f5 !important;
+}
+
+/* Submit Button - Minimal Dark Gray */
+button[type="submit"],
+.submit-btn {
+    background: #424242 !important;
+    color: white !important;
+    border: 1px solid #212121 !important;
+    border-radius: 0.375rem !important;
+    padding: 0.875rem 2rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+button[type="submit"]:hover,
+.submit-btn:hover {
+    background: #212121 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+button[type="submit"]:active,
+.submit-btn:active {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+button[type="submit"]:disabled,
+.submit-btn:disabled {
+    background: #e0e0e0 !important;
+    color: #9e9e9e !important;
+    border-color: #e0e0e0 !important;
+    cursor: not-allowed !important;
+}
+
+/* Modals - Minimal Design */
+.modal-content {
+    border-radius: 0.5rem !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Modal Headers - Remove Gradients */
+.modal-header.bg-gradient-to-r {
+    background: #616161 !important;
+    background-image: none !important;
+}
+
+.modal-header.bg-gradient-to-r.from-red-500,
+.modal-header.bg-gradient-to-r.from-orange-500,
+.modal-header.bg-gradient-to-r.from-amber-500 {
+    background: #616161 !important;
+    background-image: none !important;
+}
+
+/* Modal Icons - Minimal */
+.modal-header .w-10.h-10 {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+}
+
+.modal-body .w-16.h-16 {
+    background: #fafafa !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+.modal-body .bg-red-100,
+.modal-body .bg-orange-100,
+.modal-body .bg-amber-100 {
+    background: #fafafa !important;
+}
+
+.modal-body .text-red-500,
+.modal-body .text-orange-500,
+.modal-body .text-amber-500 {
+    color: #616161 !important;
+}
+
+/* Modal Alert Boxes - Minimal */
+.modal-body .bg-red-50,
+.modal-body .bg-orange-50,
+.modal-body .bg-amber-50,
+.modal-body .bg-yellow-50 {
+    background: #fafafa !important;
+    border-color: #e0e0e0 !important;
+}
+
+.modal-body .border-red-200,
+.modal-body .border-orange-200,
+.modal-body .border-amber-200,
+.modal-body .border-yellow-200 {
+    border-color: #e0e0e0 !important;
+}
+
+.modal-body .text-red-600,
+.modal-body .text-red-700,
+.modal-body .text-orange-700,
+.modal-body .text-amber-700,
+.modal-body .text-yellow-800 {
+    color: #616161 !important;
+}
+
+/* Modal Buttons - Minimal */
+.modal-footer button {
+    background: #616161 !important;
+    border: 1px solid #424242 !important;
+    border-radius: 0.375rem !important;
+}
+
+.modal-footer button:hover {
+    background: #424242 !important;
+}
+
+.bg-red-600,
+.bg-orange-600,
+.bg-amber-600,
+.bg-gray-600 {
+    background: #616161 !important;
+}
+
+.hover\:bg-red-700:hover,
+.hover\:bg-orange-700:hover,
+.hover\:bg-amber-700:hover,
+.hover\:bg-gray-700:hover {
+    background: #424242 !important;
+}
+
+/* Status Badges - Minimal */
+#davao-status-badge {
+    background: #fafafa !important;
+    color: #616161 !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+#davao-status-badge.success {
+    background: #f0fdf4 !important;
+    color: #2f855a !important;
+    border-color: #48bb78 !important;
+}
+
+#davao-status-badge.error {
+    background: #fff5f5 !important;
+    color: #c53030 !important;
+    border-color: #e53e3e !important;
+}
+
+/* Info Icons - Muted Colors */
+.text-amber-500 {
+    color: #9e9e9e !important;
+}
+
+.fas.fa-lightbulb {
+    color: #9e9e9e !important;
+}
+
+/* Smooth Animations */
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.scale-in {
+    animation: scaleIn 0.3s ease-out;
+}
+
+.slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Remove excessive rounded corners */
+.rounded-2xl,
+.rounded-3xl {
+    border-radius: 0.5rem !important;
+}
+
+.rounded-xl {
+    border-radius: 0.5rem !important;
+}
+
+.rounded-lg {
+    border-radius: 0.375rem !important;
+}
+
+.rounded-full {
+    border-radius: 0.5rem !important;
+}
+
+/* Simplify Shadows */
+.shadow-xl,
+.shadow-2xl {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Labels - Clean Typography */
+label {
+    color: #616161 !important;
+    font-weight: 500 !important;
+    font-size: 0.9375rem !important;
+}
+
+/* Validation Messages - Subtle */
+.text-red-500 {
+    color: #e53e3e !important;
+    font-size: 0.875rem !important;
+}
+
+/* Tips Box - Minimal */
+.bg-blue-50 {
+    background: #f7fafc !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.5rem !important;
+    }
+
+    h2 {
+        font-size: 1.25rem !important;
+    }
+
+    .glass-effect {
+        border-radius: 0.5rem !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body::before {
+        display: none;
+    }
+
+    .glass-effect {
+        box-shadow: none !important;
+        border: 1px solid #e0e0e0 !important;
+    }
+}
