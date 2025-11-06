@@ -86,19 +86,70 @@
         goBackBtn.classList.add('go-back-visible');
 
         // ═══════════════════════════════════════════════════════════════════════
-        // BUTTON CLICK BEHAVIOR
+        // BUTTON CLICK BEHAVIOR - CUSTOMIZABLE
         // ═══════════════════════════════════════════════════════════════════════
+        // You can customize the back button behavior using data attributes:
+        // - data-back-url: Custom URL to navigate to (e.g., data-back-url="/Dashboard")
+        // - data-back-action: Custom action ("history", "url", or "custom")
+        // - data-back-custom: Custom JavaScript function name to call
+        //
+        // Examples:
+        // <button id="goBackBtn" data-back-url="/Dashboard">Go Back</button>
+        // <button id="goBackBtn" data-back-action="history">Go Back</button>
+        // <button id="goBackBtn" data-back-custom="myCustomFunction">Go Back</button>
+        // ═══════════════════════════════════════════════════════════════════════
+
         goBackBtn.addEventListener('click', function(e) {
             e.preventDefault();
 
-            // Check if there's a previous page in history
-            if (window.history.length > 1) {
-                window.history.back();
-                console.log('Go Back Button: Navigating to previous page');
-            } else {
-                // If no history, go to homepage
-                window.location.href = '/Homepage';
-                console.log('Go Back Button: No history, redirecting to homepage');
+            // Get custom settings from data attributes
+            const backAction = goBackBtn.getAttribute('data-back-action') || 'auto';
+            const backUrl = goBackBtn.getAttribute('data-back-url');
+            const customFunctionName = goBackBtn.getAttribute('data-back-custom');
+
+            // Custom function - highest priority
+            if (customFunctionName && typeof window[customFunctionName] === 'function') {
+                console.log('Go Back Button: Calling custom function -', customFunctionName);
+                window[customFunctionName]();
+                return;
+            }
+
+            // Custom URL
+            if (backUrl) {
+                console.log('Go Back Button: Navigating to custom URL -', backUrl);
+                window.location.href = backUrl;
+                return;
+            }
+
+            // Action-based behavior
+            switch (backAction) {
+                case 'history':
+                    // Always use browser history, fallback to homepage
+                    if (window.history.length > 1) {
+                        window.history.back();
+                        console.log('Go Back Button: Navigating to previous page');
+                    } else {
+                        window.location.href = '/Homepage';
+                        console.log('Go Back Button: No history, redirecting to homepage');
+                    }
+                    break;
+
+                case 'url':
+                    // Must have data-back-url set
+                    console.warn('Go Back Button: data-back-action="url" requires data-back-url attribute');
+                    break;
+
+                case 'auto':
+                default:
+                    // Default behavior: use history, fallback to homepage
+                    if (window.history.length > 1) {
+                        window.history.back();
+                        console.log('Go Back Button: Navigating to previous page');
+                    } else {
+                        window.location.href = '/Homepage';
+                        console.log('Go Back Button: No history, redirecting to homepage');
+                    }
+                    break;
             }
         });
 
