@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════════
-   ADMIN SIDEBAR - RESPONSIVE STYLES
+   ADMIN SIDEBAR - RESPONSIVE STYLES WITH PULL ARROW
    ═══════════════════════════════════════════════════════════════════════════════
-   Modern sidebar with burger menu toggle (no @keyframes or @media queries)
-   Uses CSS variables and clamp() for responsive design
+   Sliding sidebar with pull arrow toggle - Hidden by default
+   Manual control - User decides when to show/hide
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -13,6 +13,67 @@
     --sidebar-active: #4361ee;
     --sidebar-border: rgba(255, 255, 255, 0.1);
     --transition-speed: 0.3s;
+    --arrow-size: 40px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PULL ARROW BUTTON (DESKTOP)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.sidebar-pull-arrow {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 1030;
+    width: var(--arrow-size);
+    height: calc(var(--arrow-size) * 2);
+    background: linear-gradient(90deg, #1e1e2c 0%, #2d2d44 100%);
+    border: none;
+    border-radius: 0 12px 12px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
+    transition: all var(--transition-speed) ease;
+    padding: 0;
+}
+
+.sidebar-pull-arrow:hover {
+    background: linear-gradient(90deg, #2d2d44 0%, #3d3d54 100%);
+    width: calc(var(--arrow-size) + 5px);
+    box-shadow: 3px 0 16px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-pull-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.sidebar-pull-arrow i {
+    transition: transform var(--transition-speed) ease;
+}
+
+/* Arrow rotation when sidebar is open */
+.sidebar-pull-arrow.open i {
+    transform: rotate(180deg);
+}
+
+/* Move arrow when sidebar is open */
+.sidebar-pull-arrow.open {
+    left: var(--sidebar-width);
+}
+
+/* Hide pull arrow on mobile, show burger instead */
+.sidebar-pull-arrow {
+    display: flex;
+}
+
+/* Hide on mobile using JavaScript control */
+.sidebar-pull-arrow.mobile-hidden {
+    display: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -146,6 +207,7 @@ body {
     overflow-x: hidden;
     transition: transform var(--transition-speed) ease;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%); /* Hidden by default */
 }
 
 /* Scrollbar styling */
@@ -166,14 +228,14 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
+/* Sidebar visible state (controlled by user) */
+.admin-sidebar.visible {
+    transform: translateX(0);
+}
+
 /* Mobile: Hidden by default */
 .admin-sidebar.mobile-hidden {
     transform: translateX(-100%);
-}
-
-/* Desktop: Always visible (handled by JS) */
-.admin-sidebar.desktop-visible {
-    transform: translateX(0);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
