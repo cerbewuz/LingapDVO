@@ -167,7 +167,7 @@
             <h5 class="section-header">Patient's Details</h5>
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="">Last Name</label>
+                    <label class="form-label">Last Name</label>
                     <input asp-for="Lastname" type="text" class="form-control"
                            oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                            value="@ViewBag.Lastname" required>
@@ -175,7 +175,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="">First Name</label>
+                    <label class="form-label">First Name</label>
                     <input asp-for="Firstname" type="text" class="form-control" value="@ViewBag.Firstname" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
                     <span asp-validation-for="Firstname" class="text-danger"></span>
                 </div>
@@ -203,9 +203,8 @@
 
             <!-- Address -->
             <div class="row g-3 mt-2">
-
                 <div class="col-md-3">
-                    <label class="">Blk / Lot / Street</label>
+                    <label class="form-label">Blk / Lot / Street</label>
                     <input asp-for="BlkLotStreet" type="text" value="@ViewBag.BlkLotStreet" class="form-control" required>
                     <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
                 </div>
@@ -217,8 +216,8 @@
                 </div>
 
                 <div class="col-md-3">
-    <label class="">Brgy.</label>
-    <select asp-for="Brgy" class="form-control" required>
+                    <label class="form-label">Brgy.</label>
+                    <select asp-for="Brgy" class="form-select" required>
         <option value="">Select Barangay</option>
         <option value="Acacia" selected="@(ViewBag.Barangay == "Acacia")">Acacia</option>
         <option value="Agdao" selected="@(ViewBag.Barangay == "Agdao")">Agdao</option>
@@ -337,7 +336,7 @@
 </div>
 
                 <div class="col-md-3">
-                    <label class="">District</label>
+                    <label class="form-label">District</label>
                     <input asp-for="District" type="text" value="@ViewBag.District" class="form-control" required>
                     <span asp-validation-for="District" class="text-danger"></span>
                 </div>
@@ -346,7 +345,7 @@
             <!-- Gender, PhilHealth, DOB, Age -->
             <div class="row g-3 mt-2">
                 <div class="col-md-2 col-sm-6">
-                    <label class="">Sex</label>
+                    <label class="form-label">Sex</label>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="Sex" id="male" value="Male"
                                @(ViewBag.Gender == "Male" ? "checked" : "") required>
@@ -361,7 +360,7 @@
                 </div>
 
                 <div class="col-md-3 col-sm-6">
-                    <label class="">PhilHealth</label>
+                    <label class="form-label">PhilHealth</label>
                     <select class="form-select" asp-for="PhilHealth" required>
                         <option value="">Select option</option>
                         <option>Without PhilHealth</option>
@@ -401,7 +400,7 @@
                 </script>
 
                 <div class="col-md-2 col-sm-6">
-                    <label class="">Date of Birth</label>
+                    <label class="form-label">Date of Birth</label>
                     <input value="@ViewBag.Dateofbirth" asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" required>
                     <span asp-validation-for="Dateofbirth" class="text-danger"></span>
                 </div>
@@ -443,9 +442,9 @@
                 </script>
 
             </div>
-            <br />
+
             <!-- Applying for self button -->
-            <div class="mb-3">
+            <div class="mb-3 mt-3">
                 <div class="d-flex align-items-center gap-2">
                     <button type="button"
                             class="btn btn-outline-success transition-all duration-300 ease-in-out font-medium
@@ -483,15 +482,15 @@
                 <h5 class="section-header">Requestor's Details</h5>
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="">Last Name</label>
+                        <label class="form-label">Last Name</label>
                         <input asp-for="RLastname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                        <span asp-validation-for="RLastname"></span>
+                        <span asp-validation-for="RLastname" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-3">
-                        <label class="">First Name</label>
+                        <label class="form-label">First Name</label>
                         <input asp-for="RFirstname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
-                        <span asp-validation-for="RFirstname"></span>
+                        <span asp-validation-for="RFirstname" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-3">
@@ -518,40 +517,39 @@
                 <!-- Requestor Address -->
                 <div class="row g-3 mt-2">
                     <div class="col-md-3">
-                        <label>Blk / Lot / Street</label>
+                        <label class="form-label">Blk / Lot / Street</label>
                         <input asp-for="RBlkLotStreet" type="text" class="form-control">
-                        <span asp-validation-for="RBlkLotStreet"></span>
+                        <span asp-validation-for="RBlkLotStreet" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-3">
                         <label class="form-label">Sub / Vill.</label>
                         <input asp-for="RSubVill" type="text" class="form-control">
-                        <span asp-validation-for="RSubVill"></span>
+                        <span asp-validation-for="RSubVill" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-3">
-                        <label>Brgy.</label>
+                        <label class="form-label">Brgy.</label>
                         <input asp-for="RBrgy" type="text" class="form-control">
-                        <span asp-validation-for="RBrgy"></span>
+                        <span asp-validation-for="RBrgy" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-3">
-                        <label>District</label>
+                        <label class="form-label">District</label>
                         <input asp-for="RDistrict" type="text" class="form-control">
-                        <span asp-validation-for="RDistrict"></span>
+                        <span asp-validation-for="RDistrict" class="text-danger"></span>
                     </div>
-
                 </div>
 
                 <div class="row g-3 mt-2">
                     <div class="col-md-6">
-                        <label>Relationship to Patient</label>
+                        <label class="form-label">Relationship to Patient</label>
                         <input asp-for="RelationshipPatient" type="text" class="form-control">
-                        <span asp-validation-for="RelationshipPatient"></span>
+                        <span asp-validation-for="RelationshipPatient" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label>Contact No.</label>
+                        <label class="form-label">Contact No.</label>
                         <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
                                placeholder="0912-345-6789 or 02-123-4567"
                                onkeypress="return event.charCode >= 48 && event.charCode <= 57"> <!-- Blocks letters -->
