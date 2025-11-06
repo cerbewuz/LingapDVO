@@ -1,6 +1,6 @@
 @model FillupformHospitalBillDto
 @{
-    Layout = "_ViewFormsLayout";
+    Layout = "_FormsLayout";
     ViewData["Title"] = "Application View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
