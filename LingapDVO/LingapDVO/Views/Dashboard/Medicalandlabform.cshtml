@@ -345,7 +345,7 @@
 
             <!-- Gender, PhilHealth, DOB, Age -->
             <div class="row g-3 mt-2">
-                <div class="col-md-2">
+                <div class="col-md-2 col-sm-6">
                     <label class="">Sex</label>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="Sex" id="male" value="Male"
@@ -360,7 +360,7 @@
                     <span asp-validation-for="Sex" class="text-danger"></span>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-3 col-sm-6">
                     <label class="">PhilHealth</label>
                     <select class="form-select" asp-for="PhilHealth" required>
                         <option value="">Select option</option>
@@ -370,7 +370,7 @@
                     <span asp-validation-for="PhilHealth" class="text-danger"></span>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-3 col-sm-12">
                     <label class="form-label">PhilHealth No. (if any)</label>
                     <input asp-for="PhilHealthNo" type="text" class="form-control" id="philHealthInput" placeholder="XXXX-XXXX-XXXX">
                     <span asp-validation-for="PhilHealthNo"></span>
@@ -400,13 +400,13 @@
                     });
                 </script>
 
-                <div class="col-md-2">
+                <div class="col-md-2 col-sm-6">
                     <label class="">Date of Birth</label>
                     <input value="@ViewBag.Dateofbirth" asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" required>
                     <span asp-validation-for="Dateofbirth" class="text-danger"></span>
                 </div>
 
-                <div class="col-md-1">
+                <div class="col-md-2 col-sm-6">
                     <label class="form-label">Age</label>
                     <input asp-for="Age" type="number" class="form-control" id="ageInput" readonly>
                     <span asp-validation-for="Age" class="text-danger"></span>
