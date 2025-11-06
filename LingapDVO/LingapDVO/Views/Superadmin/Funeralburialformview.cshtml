@@ -121,7 +121,6 @@
             margin-bottom: 0.5rem;
         }
 
-        .required-field::after {
             content: " *";
             color: var(--primary-color);
         }
@@ -161,7 +160,7 @@
 
             <!-- RAF Number -->
             <div class="mb-3">
-                <label for="rafNumber" class="form-label required-field">RAF No.</label>
+                <label for="rafNumber" class="">RAF No.</label>
                 <input readonly value="@ViewData["Id"]" type="text" class="form-control" id="rafNumber" placeholder="Enter RAF Number">
             </div>
 
@@ -169,13 +168,13 @@
             <h5 class="section-header">Patient's Details</h5>
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label required-field">Last Name</label>
+                    <label class="">Last Name</label>
                     <input value="@ViewData["Lastname"]" asp-for="Lastname" type="text" class="form-control" required disabled>
                     <span asp-validation-for="Lastname" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">First Name</label>
+                    <label class="">First Name</label>
                     <input value="@ViewData["Firstname"]" asp-for="Firstname" type="text" class="form-control" required disabled>
                     <span asp-validation-for="Firstname" class="text-danger"></span>
                 </div>
@@ -208,7 +207,7 @@
             <div class="row g-3 mt-2">
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">Blk / Lot / Street</label>
+                    <label class="">Blk / Lot / Street</label>
                     <input value="@ViewData["BlkLotStreet"]" asp-for="BlkLotStreet" type="text" class="form-control" required disabled>
                     <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
                 </div>
@@ -220,13 +219,13 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">Brgy.</label>
+                    <label class="">Brgy.</label>
                     <input value="@ViewData["Brgy"]" asp-for="Brgy" type="text" class="form-control" required disabled>
                     <span asp-validation-for="Brgy" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">District</label>
+                    <label class="">District</label>
                     <input value="@ViewData["District"]" asp-for="District" type="text" class="form-control" required disabled>
                     <span asp-validation-for="District" class="text-danger"></span>
                 </div>
@@ -235,7 +234,7 @@
             <!-- Gender, PhilHealth, DOB, Age -->
             <div class="row g-3 mt-2">
                 <div class="col-md-2">
-                    <label class="form-label required-field d-block">Sex</label>
+                    <label class="">Sex</label>
 
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="Sex" id="male" value="Male" @(selectedSex == "Male" ? "checked" : "") required disabled>
@@ -251,7 +250,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">PhilHealth</label>
+                    <label class="">PhilHealth</label>
                     <select class="form-select" asp-for="PhilHealth" value="@ViewData["PhilHealth"]" disabled>
                         <option value="">Select option</option>
                         <option value="Without PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "Without PhilHealth")">Without PhilHealth</option>
@@ -267,7 +266,7 @@
                 </div>
 
                 <div class="col-md-2">
-                    <label class="form-label required-field">Date of Birth</label>
+                    <label class="">Date of Birth</label>
                     <input value="@ViewData["Dateofbirth"]" asp-for="Dateofbirth" type="date" class="form-control" required disabled>
                     <span asp-validation-for="Dateofbirth" class="text-danger"></span>
                 </div>
@@ -283,13 +282,13 @@
             <h5 class="section-header">Requestor's Details</h5>
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label required-field">Last Name</label>
+                    <label class="">Last Name</label>
                     <input value="@ViewData["RLastname"]" asp-for="RLastname" type="text" class="form-control" disabled>
                     <span asp-validation-for="RLastname"></span>
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">First Name</label>
+                    <label class="">First Name</label>
                     <input value="@ViewData["RFirstname"]" asp-for="RFirstname" type="text" class="form-control" disabled>
                     <span asp-validation-for="RFirstname"></span>
                 </div>
@@ -319,7 +318,7 @@
             <!-- Requestor Address -->
             <div class="row g-3 mt-2">
                 <div class="col-md-3">
-                    <label class="form-label required-field">Blk / Lot / Street</label>
+                    <label class="">Blk / Lot / Street</label>
                     <input value="@ViewData["RBlkLotStreet"]" asp-for="RBlkLotStreet" type="text" class="form-control" disabled>
                     <span asp-validation-for="RBlkLotStreet"></span>
                 </div>
@@ -331,13 +330,13 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">Brgy.</label>
+                    <label class="">Brgy.</label>
                     <input value="@ViewData["RBrgy"]" asp-for="RBrgy" type="text" class="form-control" disabled>
                     <span asp-validation-for="RBrgy"></span>
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">District</label>
+                    <label class="">District</label>
                     <input value="@ViewData["RDistrict"]" asp-for="RDistrict" type="text" class="form-control" disabled>
                     <span asp-validation-for="RDistrict"></span>
                 </div>
@@ -346,13 +345,13 @@
 
             <div class="row g-3 mt-2">
                 <div class="col-md-6">
-                    <label class="form-label required-field">Relationship to Patient</label>
+                    <label class="">Relationship to Patient</label>
                     <input value="@ViewData["RelationshipPatient"]" asp-for="RelationshipPatient" type="text" class="form-control" disabled>
                     <span asp-validation-for="RelationshipPatient"></span>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label required-field">Contact No.</label>
+                    <label class="">Contact No.</label>
                     <input value="@ViewData["ContactNo"]" asp-for="ContactNo" type="text" class="form-control" disabled>
                     <span asp-validation-for="ContactNo"></span>
                 </div>
@@ -584,7 +583,7 @@
             <h5 class="section-header">Upload Required Documents</h5>
 
             <div class="mb-3">
-                <label class="form-label required-field">Valid ID (Front)</label>
+                <label class="">Valid ID (Front)</label>
                 <div class="upload-box" onclick="document.getElementById('idFront').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>
@@ -602,7 +601,7 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label required-field">Valid ID (Back)</label>
+                <label class="">Valid ID (Back)</label>
                 <div class="upload-box" onclick="document.getElementById('idBack').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>
@@ -618,7 +617,7 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
+                <label class="">Doctor's Prescription/Receipt</label>
                 <div class="upload-box" onclick="document.getElementById('receipt').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>
@@ -636,7 +635,7 @@
 
             <!-- Funeral Contract/Receipt Upload Section -->
             <div class="mb-3">
-                <label class="form-label required-field">Funeral Contract/Receipt</label>
+                <label class="">Funeral Contract/Receipt</label>
                 <div class="upload-box" onclick="document.getElementById('funeralReceipt').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>

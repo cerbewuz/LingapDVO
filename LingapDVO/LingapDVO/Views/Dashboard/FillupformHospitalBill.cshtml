@@ -62,7 +62,6 @@
             margin-bottom: 0.5rem;
         }
 
-        .required-field::after {
             content: " *";
             color: var(--primary-color);
         }
@@ -94,7 +93,7 @@
             <h5 class="section-header">Patient's Details</h5>
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label required-field">Last Name</label>
+                    <label class="">Last Name</label>
                     <input asp-for="Lastname" type="text" class="form-control"
                            oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                            value="@ViewBag.Lastname" required>
@@ -102,7 +101,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">First Name</label>
+                    <label class="">First Name</label>
                     <input asp-for="Firstname" type="text" class="form-control" value="@ViewBag.Firstname" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
                     <span asp-validation-for="Firstname" class="text-danger"></span>
                 </div>
@@ -132,7 +131,7 @@
             <div class="row g-3 mt-2">
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">Blk / Lot / Street</label>
+                    <label class="">Blk / Lot / Street</label>
                     <input asp-for="BlkLotStreet" type="text" value="@ViewBag.BlkLotStreet" class="form-control" required>
                     <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
                 </div>
@@ -144,7 +143,7 @@
                 </div>
 
                 <div class="col-md-3">
-    <label class="form-label required-field">Brgy.</label>
+    <label class="">Brgy.</label>
     <select asp-for="Brgy" class="form-control" required>
         <option value="">Select Barangay</option>
         <option value="Acacia" selected="@(ViewBag.Barangay == "Acacia")">Acacia</option>
@@ -264,7 +263,7 @@
 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">District</label>
+                    <label class="">District</label>
                     <input asp-for="District" type="text" value="@ViewBag.District" class="form-control" required>
                     <span asp-validation-for="District" class="text-danger"></span>
                 </div>
@@ -273,7 +272,7 @@
             <!-- Gender, PhilHealth, DOB, Age -->
             <div class="row g-3 mt-2">
                 <div class="col-md-2">
-                    <label class="form-label required-field d-block">Sex</label>
+                    <label class="">Sex</label>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="Sex" id="male" value="Male"
                                @(ViewBag.Gender == "Male" ? "checked" : "") required>
@@ -288,7 +287,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label required-field">PhilHealth</label>
+                    <label class="">PhilHealth</label>
                     <select class="form-select" asp-for="PhilHealth" required>
                         <option value="">Select option</option>
                         <option>Without PhilHealth</option>
@@ -328,7 +327,7 @@
                 </script>
 
                 <div class="col-md-2">
-                    <label class="form-label required-field">Date of Birth</label>
+                    <label class="">Date of Birth</label>
                     <input value="@ViewBag.Dateofbirth" asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" required>
                     <span asp-validation-for="Dateofbirth" class="text-danger"></span>
                 </div>
@@ -410,13 +409,13 @@
                 <h5 class="section-header">Requestor's Details</h5>
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label required-field">Last Name</label>
+                        <label class="">Last Name</label>
                         <input asp-for="RLastname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
                         <span asp-validation-for="RLastname"></span>
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label required-field">First Name</label>
+                        <label class="">First Name</label>
                         <input asp-for="RFirstname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
                         <span asp-validation-for="RFirstname"></span>
                     </div>
@@ -608,7 +607,7 @@
             <h5 class="section-header">Upload Required Documents</h5>
 
             <div class="mb-3">
-                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
+                <label class="">Doctor's Prescription/Receipt</label>
                 <div class="upload-box" onclick="document.getElementById('receipt').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>

@@ -376,19 +376,43 @@ textarea.form-control {
     color: var(--primary);
 }
 
-/* Checkboxes & Radios */
+/* Checkboxes & Radios - Enhanced Visibility */
 .form-check-input {
-    width: 1.125rem;
-    height: 1.125rem;
-    border: 1.5px solid var(--gray-400);
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--gray-500);
     cursor: pointer;
     transition: var(--transition);
+    background-color: var(--white);
+    position: relative;
+    flex-shrink: 0;
 }
 
 .form-check-input:checked {
     background-color: var(--primary);
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.08);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.15);
+}
+
+.form-check-input:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.form-check-input:hover {
+    border-color: var(--primary);
+}
+
+.form-check-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.15);
+    outline: none;
 }
 
 .form-check-label {
@@ -396,16 +420,23 @@ textarea.form-control {
     cursor: pointer;
     user-select: none;
     color: var(--gray-700);
+    font-weight: 500;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   BUTTONS - MINIMAL DESIGN
+   BUTTONS - BEAUTIFUL FUNCTIONAL DESIGN
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 .btn {
-    padding: 0.75rem 1.75rem;
-    border-radius: var(--radius);
-    font-weight: 500;
+    padding: 0.875rem 2rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
     font-size: 0.9375rem;
     transition: var(--transition);
     border: none;
@@ -416,80 +447,158 @@ textarea.form-control {
     gap: var(--spacing-sm);
     font-family: 'Inter', sans-serif;
     position: relative;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.3px;
 }
 
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn i {
+    font-size: 1.1rem;
+}
+
+/* Primary Button - General Actions */
 .btn-primary {
-    background: var(--gray-800);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: var(--white);
-    box-shadow: var(--shadow-paper-sm);
-    border: 1px solid var(--gray-900);
+    border: none;
 }
 
 .btn-primary:hover {
-    background: var(--gray-900);
-    box-shadow: var(--shadow-paper-md);
+    background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
 }
 
-.btn-primary:active {
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
+/* Secondary Button - Cancel/Go Back */
 .btn-secondary {
-    background: var(--gray-200);
+    background: var(--gray-100);
     color: var(--gray-800);
-    box-shadow: var(--shadow-paper-sm);
-    border: 1px solid var(--gray-300);
+    border: 2px solid var(--gray-300);
 }
 
 .btn-secondary:hover {
-    background: var(--gray-300);
-    box-shadow: var(--shadow-paper-md);
+    background: var(--gray-200);
+    border-color: var(--gray-400);
 }
 
-.btn-outline-primary {
-    border: 1.5px solid var(--gray-700);
-    color: var(--gray-700);
-    background: transparent;
-    font-weight: 500;
-}
-
-.btn-outline-primary:hover {
-    background: var(--gray-700);
+/* Success Button - Approve/Confirm */
+.btn-success,
+.btn-approved {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: var(--white);
+    border: none;
 }
 
-.btn-success {
-    background: var(--success);
+.btn-success:hover,
+.btn-approved:hover {
+    background: linear-gradient(135deg, #0d7f70 0%, #2dd368 100%);
+}
+
+/* Danger Button - Disapprove/Delete */
+.btn-danger,
+.btn-disapproved {
+    background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
     color: var(--white);
-    box-shadow: var(--shadow-paper-sm);
-    border: 1px solid var(--success-dark);
+    border: none;
 }
 
-.btn-success:hover {
-    background: var(--success-dark);
-    box-shadow: var(--shadow-paper-md);
+.btn-danger:hover,
+.btn-disapproved:hover {
+    background: linear-gradient(135deg, #d10866 0%, #e65a00 100%);
 }
 
+/* Warning Button - Important Actions */
 .btn-warning {
-    background: var(--warning);
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     color: var(--white);
-    box-shadow: var(--shadow-paper-sm);
-    border: 1px solid var(--warning-dark);
+    border: none;
 }
 
 .btn-warning:hover {
-    background: var(--warning-dark);
+    background: linear-gradient(135deg, #e67df0 0%, #e03f51 100%);
 }
 
-.btn-danger {
-    background: var(--error);
+/* Info Button - Print/Export */
+.btn-info,
+.btn-receipt {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: var(--white);
-    box-shadow: var(--shadow-paper-sm);
-    border: 1px solid var(--error-dark);
+    border: none;
 }
 
-.btn-danger:hover {
-    background: var(--error-dark);
+.btn-info:hover,
+.btn-receipt:hover {
+    background: linear-gradient(135deg, #3d96e8 0%, #00d9e8 100%);
+}
+
+/* Mark as Claimed Button - Special Success */
+.btn-mark-claimed {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: var(--white);
+    border: none;
+    font-weight: 700;
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+}
+
+.btn-mark-claimed:hover {
+    background: linear-gradient(135deg, #e85f88 0%, #efd02f 100%);
+}
+
+/* Submit Button - Primary Action */
+.btn-submit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white);
+    border: none;
+    font-weight: 700;
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+}
+
+.btn-submit:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
+}
+
+/* Outline Variants */
+.btn-outline-primary {
+    border: 2px solid #667eea;
+    color: #667eea;
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: #667eea;
+    color: var(--white);
+}
+
+.btn-outline-success {
+    border: 2px solid #11998e;
+    color: #11998e;
+    background: transparent;
+}
+
+.btn-outline-success:hover {
+    background: #11998e;
+    color: var(--white);
+}
+
+.btn-outline-danger {
+    border: 2px solid #ee0979;
+    color: #ee0979;
+    background: transparent;
+}
+
+.btn-outline-danger:hover {
+    background: #ee0979;
+    color: var(--white);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -641,28 +750,46 @@ textarea.form-control {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   FILE UPLOAD ZONES
+   FILE UPLOAD ZONES - LIGHT BLUE THEME
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-.upload-box {
-    border: 2px dashed var(--gray-300);
+.upload-box,
+.upload-area,
+.file-upload-zone {
+    border: 2px dashed #42a5f5;
     border-radius: var(--radius-md);
     padding: var(--spacing-2xl);
     text-align: center;
-    background: var(--gray-50);
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
     transition: var(--transition);
     cursor: pointer;
 }
 
-.upload-box:hover {
-    border-color: var(--gray-500);
-    background: var(--gray-100);
+.upload-box:hover,
+.upload-area:hover,
+.file-upload-zone:hover {
+    border-color: #1976d2;
+    background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 165, 245, 0.3);
 }
 
 .upload-icon {
-    font-size: 2.5rem;
-    color: var(--gray-500);
+    font-size: 3rem;
+    color: #1976d2;
     margin-bottom: var(--spacing-md);
+}
+
+.upload-text {
+    color: #1565c0;
+    font-weight: 600;
+    margin-top: var(--spacing-sm);
+}
+
+.upload-hint {
+    color: #1976d2;
+    font-size: 0.875rem;
+    margin-top: var(--spacing-xs);
 }
 
 .img-preview {
