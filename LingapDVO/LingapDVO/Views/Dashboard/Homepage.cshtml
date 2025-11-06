@@ -1552,6 +1552,91 @@
         });
     </script>
 
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- Account Verification Success Modal -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    @if (TempData["VerificationSuccess"] != null && (bool)TempData["VerificationSuccess"])
+    {
+        <div class="modal fade" id="verificationSuccessModal" tabindex="-1" aria-labelledby="verificationSuccessModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                    <!-- Header -->
+                    <div class="modal-header bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 border-b-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check-circle text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title font-bold text-lg" id="verificationSuccessModalLabel">Account Verified Successfully!</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="modal-body p-6 text-center">
+                        <!-- Success Icon -->
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-check-double text-green-500 text-4xl"></i>
+                        </div>
+
+                        <!-- Success Message -->
+                        <h4 class="font-bold text-gray-800 text-xl mb-3">Verification Complete!</h4>
+                        <p class="text-gray-600 mb-4">
+                            @TempData["VerificationMessage"]
+                        </p>
+
+                        <!-- Success Features List -->
+                        <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-left mb-4">
+                            <div class="flex items-start gap-2 mb-2">
+                                <i class="fas fa-check text-green-600 mt-1"></i>
+                                <div class="text-sm text-gray-700">
+                                    <strong>Identity Verified:</strong> Your account has been authenticated
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 mb-2">
+                                <i class="fas fa-check text-green-600 mt-1"></i>
+                                <div class="text-sm text-gray-700">
+                                    <strong>Forms Unlocked:</strong> You can now submit assistance requests
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-check text-green-600 mt-1"></i>
+                                <div class="text-sm text-gray-700">
+                                    <strong>Profile Complete:</strong> Your information has been saved
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-left">
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                                <div class="text-sm text-blue-800">
+                                    <strong>Next Steps:</strong> Navigate to the assistance forms section to start your application. Our team will review your request within 1-3 business days.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0 justify-center">
+                        <button type="button" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200" data-bs-dismiss="modal">
+                            <i class="fas fa-thumbs-up mr-2"></i>Got it, Thanks!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Auto-show verification success modal when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                const verificationModal = new bootstrap.Modal(document.getElementById('verificationSuccessModal'));
+                verificationModal.show();
+            });
+        </script>
+    }
+
     <script>
         // Service Reliability Notification Script with Toast
         document.addEventListener('DOMContentLoaded', function() {

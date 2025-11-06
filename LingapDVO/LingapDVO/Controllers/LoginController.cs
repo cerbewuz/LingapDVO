@@ -2017,6 +2017,12 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("BackID", verifyaccount.BackID ?? "");
                 HttpContext.Session.SetString("IsVerifiedUser", "true");
 
+                // ═══════════════════════════════════════════════════════════════
+                // ✅ SET SUCCESS FLAG FOR MODAL DISPLAY
+                // ═══════════════════════════════════════════════════════════════
+                TempData["VerificationSuccess"] = true;
+                TempData["VerificationMessage"] = "Your account has been successfully verified! You can now submit assistance requests.";
+
                 return RedirectToAction("Homepage", "Dashboard");
             }
             catch (Exception ex)
