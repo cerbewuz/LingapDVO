@@ -75,6 +75,20 @@ document.addEventListener('DOMContentLoaded', function () {
     let registeredLastName = window.registeredUserName?.lastName || "";
     let registeredSuffix = window.registeredUserName?.suffix || "";
 
+    // ═══════════════════════════════════════════════════════════════
+    // ✅ FIX: Ensure submit button is enabled by default on page load
+    // ═══════════════════════════════════════════════════════════════
+    // The submit button should be enabled by default, allowing users
+    // to submit the form manually even if OCR validation hasn't run.
+    // It will only be disabled if there's an actual validation failure.
+    const submitButton = document.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        submitButton.title = '';
+        console.log('✓ Submit button initialized as ENABLED');
+    }
+
     console.log('===========================================');
     console.log('=== REGISTERED USER NAME (from RegisterAcc table) ===');
     console.log('FirstName (column):', registeredFirstName);
@@ -7663,6 +7677,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } catch (error) {
                 console.error('Form validation error:', error);
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // ✅ FIX: Re-enable submit button when users manually fill the form
+        // ═══════════════════════════════════════════════════════════════
+        // If users choose to fill the form manually (without OCR), ensure
+        // the submit button remains enabled as they type in the fields
+        registrationForm.addEventListener('input', function() {
+            const submitBtn = document.querySelector('button[type="submit"]');
+            if (submitBtn && submitBtn.disabled) {
+                // Check if all required fields are filled
+                const requiredFields = ['IDnumber', 'lastname', 'firstname', 'Barangay'];
+                const allFilled = requiredFields.every(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    return field && field.value.trim() !== '';
+                });
+
+                // If all required fields are filled, enable the submit button
+                if (allFilled) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.title = '';
+                    console.log('✓ Submit button enabled (manual form filling detected)');
+                }
             }
         });
     }
