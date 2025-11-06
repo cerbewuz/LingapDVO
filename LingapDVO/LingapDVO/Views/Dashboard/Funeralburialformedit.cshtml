@@ -2,6 +2,30 @@
 @{
     Layout = "_FormsLayout";
     ViewData["Title"] = "Update Request Assistance Form";
+
+    // Initialize selectedSex from ViewData or Model
+    var selectedSex = ViewData["Sex"]?.ToString() ?? Model?.Sex ?? "";
+
+    // Initialize checkedAssistance dictionary
+    var checkedAssistance = new Dictionary<string, string>();
+    var typeAssistance = ViewData["Typeassistance"]?.ToString() ?? Model?.Typeassistance ?? "";
+    if (!string.IsNullOrEmpty(typeAssistance))
+    {
+        var parts = typeAssistance.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var part in parts)
+        {
+            var trimmed = part.Trim();
+            if (trimmed.Contains(":"))
+            {
+                var keyValue = trimmed.Split(new[] { ':' }, 2);
+                checkedAssistance[keyValue[0].Trim()] = keyValue[1].Trim();
+            }
+            else
+            {
+                checkedAssistance[trimmed] = trimmed;
+            }
+        }
+    }
 }
 
 @section Styles {
