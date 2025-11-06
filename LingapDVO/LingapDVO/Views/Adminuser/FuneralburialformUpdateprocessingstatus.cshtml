@@ -1,6 +1,6 @@
 @model FuneralburialformDto
 @{
-    Layout = "_FormsLayout";
+    Layout = "_AdminFormsLayout";
     ViewData["Title"] = "Application View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
