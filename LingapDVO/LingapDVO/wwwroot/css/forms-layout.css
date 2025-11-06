@@ -430,16 +430,16 @@ textarea.form-control {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   BUTTONS - BEAUTIFUL FUNCTIONAL DESIGN
+   BUTTONS - MINIMAL SIMPLE DESIGN
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 .btn {
-    padding: 0.875rem 2rem;
-    border-radius: var(--radius-md);
-    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-weight: 500;
     font-size: 0.9375rem;
     transition: var(--transition);
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -448,40 +448,39 @@ textarea.form-control {
     font-family: 'Inter', sans-serif;
     position: relative;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    letter-spacing: 0.3px;
+    box-shadow: var(--shadow-paper-sm);
 }
 
 .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-paper-md);
+    opacity: 0.9;
 }
 
 .btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-paper-sm);
 }
 
 .btn i {
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 /* Primary Button - General Actions */
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #5a67d8;
     color: var(--white);
-    border: none;
+    border-color: #5a67d8;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
+    background: #4c51bf;
+    border-color: #4c51bf;
 }
 
 /* Secondary Button - Cancel/Go Back */
 .btn-secondary {
     background: var(--gray-100);
     color: var(--gray-800);
-    border: 2px solid var(--gray-300);
+    border-color: var(--gray-300);
 }
 
 .btn-secondary:hover {
@@ -492,112 +491,116 @@ textarea.form-control {
 /* Success Button - Approve/Confirm */
 .btn-success,
 .btn-approved {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    background: #48bb78;
     color: var(--white);
-    border: none;
+    border-color: #48bb78;
 }
 
 .btn-success:hover,
 .btn-approved:hover {
-    background: linear-gradient(135deg, #0d7f70 0%, #2dd368 100%);
+    background: #38a169;
+    border-color: #38a169;
 }
 
 /* Danger Button - Disapprove/Delete */
 .btn-danger,
 .btn-disapproved {
-    background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+    background: #e53e3e;
     color: var(--white);
-    border: none;
+    border-color: #e53e3e;
 }
 
 .btn-danger:hover,
 .btn-disapproved:hover {
-    background: linear-gradient(135deg, #d10866 0%, #e65a00 100%);
+    background: #c53030;
+    border-color: #c53030;
 }
 
 /* Warning Button - Important Actions */
 .btn-warning {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: #ed8936;
     color: var(--white);
-    border: none;
+    border-color: #ed8936;
 }
 
 .btn-warning:hover {
-    background: linear-gradient(135deg, #e67df0 0%, #e03f51 100%);
+    background: #dd6b20;
+    border-color: #dd6b20;
 }
 
 /* Info Button - Print/Export */
 .btn-info,
 .btn-receipt {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: #4299e1;
     color: var(--white);
-    border: none;
+    border-color: #4299e1;
 }
 
 .btn-info:hover,
 .btn-receipt:hover {
-    background: linear-gradient(135deg, #3d96e8 0%, #00d9e8 100%);
+    background: #3182ce;
+    border-color: #3182ce;
 }
 
 /* Mark as Claimed Button - Special Success */
 .btn-mark-claimed {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    background: #48bb78;
     color: var(--white);
-    border: none;
-    font-weight: 700;
-    padding: 1rem 2.5rem;
-    font-size: 1rem;
+    border-color: #48bb78;
+    font-weight: 600;
+    padding: 0.875rem 2rem;
 }
 
 .btn-mark-claimed:hover {
-    background: linear-gradient(135deg, #e85f88 0%, #efd02f 100%);
+    background: #38a169;
+    border-color: #38a169;
 }
 
 /* Submit Button - Primary Action */
 .btn-submit {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #5a67d8;
     color: var(--white);
-    border: none;
-    font-weight: 700;
-    padding: 1rem 2.5rem;
-    font-size: 1rem;
+    border-color: #5a67d8;
+    font-weight: 600;
+    padding: 0.875rem 2rem;
 }
 
 .btn-submit:hover {
-    background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
+    background: #4c51bf;
+    border-color: #4c51bf;
 }
 
 /* Outline Variants */
 .btn-outline-primary {
-    border: 2px solid #667eea;
-    color: #667eea;
+    border: 2px solid #5a67d8;
+    color: #5a67d8;
     background: transparent;
 }
 
 .btn-outline-primary:hover {
-    background: #667eea;
+    background: #5a67d8;
     color: var(--white);
 }
 
 .btn-outline-success {
-    border: 2px solid #11998e;
-    color: #11998e;
+    border: 2px solid #48bb78;
+    color: #48bb78;
     background: transparent;
 }
 
 .btn-outline-success:hover {
-    background: #11998e;
+    background: #48bb78;
     color: var(--white);
 }
 
 .btn-outline-danger {
-    border: 2px solid #ee0979;
-    color: #ee0979;
+    border: 2px solid #e53e3e;
+    color: #e53e3e;
     background: transparent;
 }
 
 .btn-outline-danger:hover {
-    background: #ee0979;
+    background: #e53e3e;
     color: var(--white);
 }
 
