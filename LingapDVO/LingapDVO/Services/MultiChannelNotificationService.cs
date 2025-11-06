@@ -71,10 +71,10 @@ namespace LingapDVO.Services
                     var verifyAccount = await _context.Verifyaccount
                         .FirstOrDefaultAsync(v => v.UserId == userId);
 
-                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.PhoneNumber))
+                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
                         var smsMessage = $"{title}: {message}";
-                        await _smsService.SendSmsAsync(verifyAccount.PhoneNumber, smsMessage);
+                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
 

@@ -199,8 +199,7 @@ namespace LingapDVO.Controllers
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get user's first name from VerifyAccount
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    // Get user's first name from VerifyAccount (reuse existing verifyAccount variable)
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // Get email settings from configuration
@@ -390,8 +389,7 @@ namespace LingapDVO.Controllers
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // ✅ Get user's first name from VerifyAccount table
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    // ✅ Get user's first name from VerifyAccount table (reuse existing verifyAccount variable)
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // ✅ Get email settings
@@ -579,8 +577,7 @@ namespace LingapDVO.Controllers
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // ✅ Get user's first name from VerifyAccount table
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    // ✅ Get user's first name from VerifyAccount table (reuse existing verifyAccount variable)
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // ✅ Get email settings
