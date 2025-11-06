@@ -58,10 +58,20 @@
         // Window resize handler
         window.addEventListener('resize', handleResize);
 
-        // Close sidebar when clicking nav links on mobile
+        // Handle nav link clicks
         const navLinks = sidebar.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
-            link.addEventListener('click', function() {
+            link.addEventListener('click', function(e) {
+                // Only handle active state for links with data-page attribute
+                const page = link.getAttribute('data-page');
+                if (page) {
+                    // Remove active from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    // Add active to clicked link
+                    link.classList.add('active');
+                }
+
+                // Close sidebar on mobile
                 if (isMobile) {
                     closeSidebar();
                 }
@@ -177,19 +187,45 @@
         const currentPath = window.location.pathname.toLowerCase();
         const navLinks = document.querySelectorAll('.nav-link');
 
+        // Remove active class from all links first
         navLinks.forEach(link => {
             link.classList.remove('active');
+        });
 
+        // Find and set the matching link as active
+        navLinks.forEach(link => {
             const page = link.getAttribute('data-page');
-            if (page) {
-                if (currentPath.includes(page) ||
-                    (page === 'admin' && currentPath.includes('/adminuser/admin')) ||
-                    (page === 'analytics' && currentPath.includes('/analyticsdashboard')) ||
-                    (page === 'priorities' && currentPath.includes('/priorities'))) {
-                    link.classList.add('active');
-                }
+            if (!page) return; // Skip links without data-page attribute
+
+            let isActive = false;
+
+            // Match specific pages exactly to prevent false positives
+            switch(page) {
+                case 'admin':
+                    // Only match exact admin page, not analytics or priorities
+                    isActive = currentPath === '/adminuser/admin' ||
+                               currentPath.endsWith('/adminuser/admin');
+                    break;
+                case 'analytics':
+                    // Only match analytics dashboard
+                    isActive = currentPath.includes('/analyticsdashboard');
+                    break;
+                case 'priorities':
+                    // Only match priorities page
+                    isActive = currentPath.includes('/priorities');
+                    break;
+                default:
+                    // For any other pages, check if path contains the page name
+                    isActive = currentPath.includes('/' + page);
+                    break;
+            }
+
+            if (isActive) {
+                link.classList.add('active');
             }
         });
+
+        console.log('Admin Sidebar: Active navigation item set for path:', currentPath);
     }
 
     /**
