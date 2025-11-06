@@ -1886,31 +1886,32 @@ namespace LingapDVO.Controllers
             // ═══════════════════════════════════════════════════════════════
             // 🏙️ SERVER-SIDE DAVAO CITY VALIDATION
             // ═══════════════════════════════════════════════════════════════
-            // List of valid Davao City barangays
+            // List of valid Davao City barangays (matches dropdown in Accountverification.cshtml)
             var davaoBarangays = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "Acacia", "Agdao", "Alambre", "Alejandro Navarro", "Alfonso Angliongto Sr.",
         "Angalan", "Baguio Proper", "Baliok", "Bangkas Heights", "Baracatan",
         "Bato", "Bayabas", "Biao Escuela", "Biao Guianga", "Binugao",
-        "Bucana", "Buhangin Proper", "Cabantian", "Cadalian", "Calinan Proper",
-        "Callawa", "Camansi", "Carmen", "Catalunan Grande", "Catalunan Pequeño",
-        "Catigan", "Cawayan", "Centro (San Juan)", "Colosas", "Communal",
-        "Crossing Bayabas", "Dacudao", "Dalagdag", "Daliao", "Dalican",
-        "Datu Salumay", "Dominga", "Eden", "Fatima (Benowang)", "Gatungan",
-        "Gov. Paciano Bangoy", "Gov. Vicente Duterte", "Gumalang", "Gumitan",
-        "Indangan", "Kap. Tomas Monteverde Sr.", "Kilate", "Lamanan",
+        "Bucana", "Buhangin", "Buhangin (Pob.)", "Buhangin Proper", "Cabantian",
+        "Cadalian", "Calinan Proper", "Callawa", "Camansi", "Carmen",
+        "Catalunan Grande", "Catalunan Pequeño", "Catigan", "Cawayan", "Centro (San Juan)",
+        "Colosas", "Communal", "Crossing Bayabas", "Dacudao", "Dalagdag",
+        "Daliao", "Dalican", "Datu Salumay", "Dominga", "Eden",
+        "Fatima (Benowang)", "Gatungan", "Gov. Paciano Bangoy", "Gov. Vicente Duterte", "Gumalang",
+        "Gumitan", "Indangan", "Kap. Tomas Monteverde Sr.", "Kilate", "Lamanan",
         "Lampianao", "Langub", "Lapu-lapu", "Leon Garcia Sr.", "Los Amigos",
-        "Lubogan", "Lumiad", "Ma-a", "Mabuhay", "Madapo", "Magtuod",
-        "Mahayag", "Malabog", "Malagos", "Malamba", "Malandog", "Mampising",
-        "Manambulan", "Mandug", "Manuel Guianga", "Mapula", "Marapangi",
-        "Marilog Proper", "Matina Aplaya", "Matina Crossing", "Matina Pangi",
-        "Mintal", "Mudiang", "Mulig", "New Carmen", "New Valencia", "Pampanga",
-        "Panacan", "Pandaitan", "Panorama", "Paquibato Proper", "Paradise Embak",
-        "Rafael Castillo", "Salapawan", "Salaysay", "Saloy", "San Antonio",
-        "San Isidro", "Sasa", "Sirib", "Suawan", "Tacunan", "Tagakpan",
-        "Tagluno", "Tagurano", "Talomo Proper", "Talomo River", "Tamurayan",
-        "Tibungco", "Tigatto", "Tungkalan", "Ubalde", "Ugac", "Ula",
-        "Vicente Hizon Sr.", "Waan", "Wangan", "Wilfredo Aquino", "Wines"
+        "Lubogan", "Lumiad", "Ma-a", "Mabuhay", "Madapo",
+        "Magtuod", "Mahayag", "Malabog", "Malagos", "Malamba",
+        "Malandog", "Mampising", "Manambulan", "Mandug", "Manuel Guianga",
+        "Mapula", "Marapangi", "Marilog Proper", "Matina Aplaya", "Matina Crossing",
+        "Matina Pangi", "Mintal", "Mudiang", "Mulig", "New Carmen",
+        "New Valencia", "Pampanga", "Panacan", "Pandaitan", "Panorama",
+        "Paquibato Proper", "Paradise Embak", "Rafael Castillo", "Salapawan", "Salaysay",
+        "Saloy", "San Antonio", "San Isidro", "Sasa", "Sirib",
+        "Suawan", "Tacunan", "Tagakpan", "Tagluno", "Tagurano",
+        "Talomo Proper", "Talomo River", "Tamurayan", "Tibungco", "Tigatto",
+        "Tungkalan", "Ubalde", "Ugac", "Ula", "Vicente Hizon Sr.",
+        "Waan", "Wangan", "Wilfredo Aquino", "Wines"
     };
 
             if (!davaoBarangays.Contains(VerifyaccountDto.Barangay))

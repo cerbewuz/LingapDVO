@@ -1365,12 +1365,15 @@ document.addEventListener('DOMContentLoaded', function () {
         return { firstName, middleName, suffix };
     }
 
-    // Complete list of Davao City barangays (182 total)
+    // Complete list of Davao City barangays (matches dropdown in Accountverification.cshtml)
+    // Includes 116 named barangays + 40 numbered poblacion barangays = 156 total
     const DAVAO_CITY_BARANGAYS = [
+        // Numbered poblacion barangays (for OCR extraction from IDs)
         "1-A", "2-A", "3-A", "4-A", "5-A", "6-A", "7-A", "8-A", "9-A", "10-A",
         "11-B", "12-B", "13-B", "14-B", "15-B", "16-B", "17-B", "18-B", "19-B", "20-B",
         "21-C", "22-C", "23-C", "24-C", "25-C", "26-C", "27-C", "28-C", "29-C", "30-C",
         "31-D", "32-D", "33-D", "34-D", "35-D", "36-D", "37-D", "38-D", "39-D", "40-D",
+        // Named barangays (official list from dropdown)
         "Acacia", "Agdao", "Alambre", "Alejandro Navarro", "Alfonso Angliongto Sr.",
         "Angalan", "Baguio Proper", "Baliok", "Bangkas Heights", "Baracatan",
         "Bato", "Bayabas", "Biao Escuela", "Biao Guianga", "Binugao",
@@ -6366,33 +6369,42 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('✓ DAVAO CITY verification PASSED');
 
         } else {
-            // ✗ INVALID: NON-Davao City ID - BLOCK with modal
-            console.error('✗ NON-DAVAO CITY detected - BLOCKING application');
+            // ✗ WARNING: NON-Davao City detected - Show warning but allow manual entry
+            console.warn('⚠ NON-DAVAO CITY detected by OCR - Showing warning but allowing manual form entry');
 
             if (davaoVerification) {
                 davaoVerification.classList.remove('hidden');
-                davaoVerification.className = 'p-6 rounded-xl border-l-4 bg-red-50 border-red-200 slide-down visible';
+                davaoVerification.className = 'p-6 rounded-xl border-l-4 bg-yellow-50 border-yellow-400 slide-down visible';
 
-                if (davaoResultIcon) davaoResultIcon.className = 'fas fa-times-circle text-2xl mt-1 text-red-500';
-                if (davaoResultTitle) davaoResultTitle.textContent = `✗ ${idTypeName} Not From Davao City`;
+                if (davaoResultIcon) davaoResultIcon.className = 'fas fa-exclamation-triangle text-2xl mt-1 text-yellow-600';
+                if (davaoResultTitle) davaoResultTitle.textContent = `⚠ Location Verification Warning`;
                 if (davaoResultMessage) {
                     const locationText = detectedCity !== "Not detected"
                         ? `Detected location: ${detectedCity}`
                         : 'City could not be detected on the ID';
-                    davaoResultMessage.textContent = `This service is only for Davao City residents. ${locationText}.`;
+                    davaoResultMessage.textContent = `${locationText}. If you are a Davao City resident, please verify and correct your barangay selection below. Server-side validation will verify your residency.`;
                 }
                 if (davaoStatusBadge) {
-                    davaoStatusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-500 text-white';
-                    davaoStatusBadge.textContent = 'Blocked';
+                    davaoStatusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-yellow-500 text-white';
+                    davaoStatusBadge.textContent = 'Needs Verification';
                 }
             }
 
-            // CRITICAL: Disable form and show blocking modal
-            disableFormFields();
+            // ═══════════════════════════════════════════════════════════════
+            // ✅ FIX: Allow manual form entry instead of blocking completely
+            // ═══════════════════════════════════════════════════════════════
+            // Previous behavior: disableFormFields() - blocked all input
+            // New behavior: Keep form enabled, let server-side validation handle it
+            // This allows Davao City residents to proceed if OCR misread their ID
+            // and lets the controller's barangay validation make the final decision
+
+            // Keep form fields enabled for manual entry
+            enableFormFields();
+
+            // Clear OCR-populated data to force manual entry
             clearUploadedFiles();
 
-            // Show modal with detailed error
-            showNonDavaoCityModal(detectedCity, idTypeName);
+            console.log('✓ Form remains enabled for manual entry - server will validate barangay');
         }
     }
 
