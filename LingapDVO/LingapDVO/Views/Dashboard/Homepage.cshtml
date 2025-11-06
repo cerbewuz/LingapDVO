@@ -525,6 +525,9 @@
         <div class="notification-header">
             <h6 class="mb-0">Notifications</h6>
             <div>
+                <button class="btn btn-sm btn-link text-muted" id="notificationSettings" title="Notification Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
                 <button class="btn btn-sm btn-link text-muted" id="markAllRead">
                     <small>Mark all as read</small>
                 </button>
@@ -535,6 +538,58 @@
         </div>
         <div class="notification-body" id="notificationList">
             <!-- Notifications will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Notification Settings Modal -->
+    <div class="modal fade" id="notificationSettingsModal" tabindex="-1" aria-labelledby="notificationSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationSettingsModalLabel">
+                        <i class="fas fa-cog"></i> Notification Preferences
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Choose how you want to receive notifications</p>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="preferInAppNotification" checked>
+                        <label class="form-check-label" for="preferInAppNotification">
+                            <i class="fas fa-bell text-primary"></i> <strong>In-App Notifications</strong>
+                            <small class="d-block text-muted">Receive real-time notifications in the application</small>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="preferEmailNotification" checked>
+                        <label class="form-check-label" for="preferEmailNotification">
+                            <i class="fas fa-envelope text-info"></i> <strong>Email Notifications</strong>
+                            <small class="d-block text-muted">Get notified via email about status updates</small>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="preferSmsNotification">
+                        <label class="form-check-label" for="preferSmsNotification">
+                            <i class="fas fa-sms text-success"></i> <strong>SMS Notifications</strong>
+                            <small class="d-block text-muted">Receive text message alerts on your phone</small>
+                        </label>
+                    </div>
+
+                    <div class="alert alert-info mt-3" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <small>You will receive notifications when your application status changes (Pending, Processing, Approved, Disapproved, Claimed)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveNotificationSettings">
+                        <i class="fas fa-save"></i> Save Preferences
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -903,6 +958,98 @@
                 e.stopPropagation();
                 loadRealNotifications(true);
             });
+
+            // ═══════════════════════════════════════════════════════════════
+            // NOTIFICATION SETTINGS FUNCTIONALITY
+            // ═══════════════════════════════════════════════════════════════
+            const notificationSettings = document.getElementById('notificationSettings');
+            const notificationSettingsModal = new bootstrap.Modal(document.getElementById('notificationSettingsModal'));
+
+            // Open notification settings modal
+            notificationSettings.addEventListener('click', function(e) {
+                e.stopPropagation();
+                loadNotificationPreferences();
+                notificationSettingsModal.show();
+                // Close notification dropdown when opening settings
+                notificationDropdown.style.display = 'none';
+            });
+
+            // Load current notification preferences
+            async function loadNotificationPreferences() {
+                try {
+                    const response = await fetch('/Dashboard/GetNotificationPreferences');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        document.getElementById('preferInAppNotification').checked = data.preferences.preferInApp;
+                        document.getElementById('preferEmailNotification').checked = data.preferences.preferEmail;
+                        document.getElementById('preferSmsNotification').checked = data.preferences.preferSms;
+                    } else {
+                        console.error('Failed to load notification preferences');
+                    }
+                } catch (error) {
+                    console.error('Error loading notification preferences:', error);
+                }
+            }
+
+            // Save notification preferences
+            document.getElementById('saveNotificationSettings').addEventListener('click', async function() {
+                const preferInApp = document.getElementById('preferInAppNotification').checked;
+                const preferEmail = document.getElementById('preferEmailNotification').checked;
+                const preferSms = document.getElementById('preferSmsNotification').checked;
+
+                try {
+                    const response = await fetch('/Dashboard/UpdateNotificationPreferences', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            preferEmail: preferEmail,
+                            preferSms: preferSms,
+                            preferInApp: preferInApp
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Show success toast
+                        showToast('Notification preferences saved successfully!', 'success');
+                        notificationSettingsModal.hide();
+                    } else {
+                        showToast('Failed to save preferences. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error saving notification preferences:', error);
+                    showToast('An error occurred. Please try again.', 'error');
+                }
+            });
+
+            // Helper function to show toast messages
+            function showToast(message, type = 'info') {
+                const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${bgClass} border-0 position-fixed top-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000" style="z-index: 9999;">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', toastHtml);
+                const toastElement = document.body.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    this.remove();
+                });
+            }
 
             // Initialize real-time connection
             function initRealTimeConnection() {
