@@ -164,6 +164,19 @@ textarea:hover {
     background: white !important;
 }
 
+/* Hide upload area contents when image is uploaded (preview mode) */
+.id-upload-content.preview-mode > .w-16.h-16,
+.id-upload-content.preview-mode > .font-semibold,
+.id-upload-content.preview-mode > .text-gray-500,
+.id-upload-content.preview-mode > .text-xs {
+    display: none !important;
+}
+
+/* Ensure preview image is visible in preview mode */
+.id-upload-content.preview-mode .id-preview {
+    display: block !important;
+}
+
 /* Icon Containers - Minimal */
 .w-10.h-10,
 .w-16.h-16 {
