@@ -6369,42 +6369,33 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('✓ DAVAO CITY verification PASSED');
 
         } else {
-            // ✗ WARNING: NON-Davao City detected - Show warning but allow manual entry
-            console.warn('⚠ NON-DAVAO CITY detected by OCR - Showing warning but allowing manual form entry');
+            // ✗ INVALID: NON-Davao City ID - BLOCK with modal
+            console.error('✗ NON-DAVAO CITY detected - BLOCKING application');
 
             if (davaoVerification) {
                 davaoVerification.classList.remove('hidden');
-                davaoVerification.className = 'p-6 rounded-xl border-l-4 bg-yellow-50 border-yellow-400 slide-down visible';
+                davaoVerification.className = 'p-6 rounded-xl border-l-4 bg-red-50 border-red-200 slide-down visible';
 
-                if (davaoResultIcon) davaoResultIcon.className = 'fas fa-exclamation-triangle text-2xl mt-1 text-yellow-600';
-                if (davaoResultTitle) davaoResultTitle.textContent = `⚠ Location Verification Warning`;
+                if (davaoResultIcon) davaoResultIcon.className = 'fas fa-times-circle text-2xl mt-1 text-red-500';
+                if (davaoResultTitle) davaoResultTitle.textContent = `✗ ${idTypeName} Not From Davao City`;
                 if (davaoResultMessage) {
                     const locationText = detectedCity !== "Not detected"
                         ? `Detected location: ${detectedCity}`
                         : 'City could not be detected on the ID';
-                    davaoResultMessage.textContent = `${locationText}. If you are a Davao City resident, please verify and correct your barangay selection below. Server-side validation will verify your residency.`;
+                    davaoResultMessage.textContent = `This service is only for Davao City residents. ${locationText}.`;
                 }
                 if (davaoStatusBadge) {
-                    davaoStatusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-yellow-500 text-white';
-                    davaoStatusBadge.textContent = 'Needs Verification';
+                    davaoStatusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-500 text-white';
+                    davaoStatusBadge.textContent = 'Blocked';
                 }
             }
 
-            // ═══════════════════════════════════════════════════════════════
-            // ✅ FIX: Allow manual form entry instead of blocking completely
-            // ═══════════════════════════════════════════════════════════════
-            // Previous behavior: disableFormFields() - blocked all input
-            // New behavior: Keep form enabled, let server-side validation handle it
-            // This allows Davao City residents to proceed if OCR misread their ID
-            // and lets the controller's barangay validation make the final decision
-
-            // Keep form fields enabled for manual entry
-            enableFormFields();
-
-            // Clear OCR-populated data to force manual entry
+            // CRITICAL: Disable form and show blocking modal
+            disableFormFields();
             clearUploadedFiles();
 
-            console.log('✓ Form remains enabled for manual entry - server will validate barangay');
+            // Show modal with detailed error
+            showNonDavaoCityModal(detectedCity, idTypeName);
         }
     }
 
