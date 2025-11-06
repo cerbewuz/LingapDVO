@@ -1,6 +1,6 @@
 @model MedicalandlabformDto
 @{
-    Layout = "_AdminFormsLayout";
+    Layout = "_AdminClaimedLayout";
     ViewData["Title"] = "Application View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
