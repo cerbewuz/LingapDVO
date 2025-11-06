@@ -23,11 +23,11 @@ namespace LingapDVO.Controllers
     {
         public readonly ApplicationDbContext context;
         private readonly IWebHostEnvironment environment;
-        private readonly SmsService _smsService;
+        private readonly ISmsService _smsService;
         private readonly IConfiguration _configuration;
         private readonly ISessionConfigurationService _sessionConfig;
 
-        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, SmsService smsService, IConfiguration configuration, ISessionConfigurationService sessionConfig)
+        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IConfiguration configuration, ISessionConfigurationService sessionConfig)
         {
             this.context = context;
             this.environment = environment;

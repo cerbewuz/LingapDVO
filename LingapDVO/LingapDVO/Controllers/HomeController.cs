@@ -9,8 +9,8 @@ namespace LingapDVO.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly SmsService _smsService;
-    public HomeController(ILogger<HomeController> logger, SmsService smsService)
+    private readonly ISmsService _smsService;
+    public HomeController(ILogger<HomeController> logger, ISmsService smsService)
     {
         _logger = logger;
         _smsService = smsService;
