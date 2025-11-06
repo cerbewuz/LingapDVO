@@ -1,12 +1,144 @@
-@model FillupformHospitalBillDto
+﻿@model FillupformHospitalBillDto
 @{
-    Layout = "_FormsLayout";
-    ViewData["Title"] = "Hospital Billing Assistance";
+    Layout = null;
 }
+<!DOCTYPE html>
+<html lang="en">
 
-@section Styles {
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAF - Hospital Billing Assistance</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-.form-control:focus, 
+        :root {
+            --primary-color: #2c3e50;
+            --primary-light: #FFE6EA;
+            --primary-dark: #262626;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Go Back Button */
+        .go-back-btn {
+            position: fixed;
+            left: 16px;
+            top: 16px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid rgba(220, 20, 60, 0.15);
+            color: #333333;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            min-height: 36px;
+            min-width: 36px;
+            transform: scale(var(--btn-scale, 1));
+            transform-origin: left top;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+            .go-back-btn:hover,
+            .go-back-btn:focus {
+                background: #DC143C;
+                color: #ffffff;
+                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
+                border-color: #DC143C;
+            }
+
+            .go-back-btn i {
+                font-size: 13px;
+                transition: transform 0.3s ease;
+                width: 14px;
+                text-align: center;
+            }
+
+            .go-back-btn:hover i {
+                transform: translateX(-2px);
+            }
+
+            .go-back-btn:active {
+                transform: scale(calc(var(--btn-scale, 1) * 0.96));
+                background: #b01030;
+                transition: transform 0.1s ease;
+            }
+
+            .go-back-btn:focus-visible {
+                outline: 2px solid #DC143C;
+                outline-offset: 2px;
+            }
+
+            .go-back-btn.compact span {
+                display: none;
+            }
+
+            .go-back-btn.compact {
+                padding: 8px;
+                border-radius: 50%;
+            }
+
+
+        .form-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            border-top: 5px solid var(--primary-color);
+        }
+
+        .form-header {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-header {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-control, .form-select {
+            border-radius: 5px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ddd;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
+            }
 
         .btn-submit {
             background-color: #28a745; /* Green */
@@ -23,6 +155,7 @@
                 background-color: #20c997; /* Green-blue hover */
                 transform: scale(1.05);
             }
+
 
         .form-check-input:checked {
             background-color: var(--primary-color);
@@ -62,6 +195,7 @@
             margin-bottom: 0.5rem;
         }
 
+        .required-field::after {
             content: " *";
             color: var(--primary-color);
         }
@@ -72,14 +206,42 @@
             margin-top: 0.25rem;
         }
 
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+        }
+
             .alert-danger i {
                 margin-right: 0.5rem;
             }
     </style>
-}
+</head>
+
+<body>
+    <!-- Go Back Button -->
+    <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>Back</span>
+    </a>
 
 
-<div class="container form-container">
+    <div class="container form-container">
         <div class="form-header">
             <h3>Request Assistance Form</h3>
             <p class="text-muted">Please fill out all required fields to process your request</p>
@@ -89,11 +251,13 @@
 
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
+
+
             <!-- Patient Details -->
             <h5 class="section-header">Patient's Details</h5>
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="">Last Name</label>
+                    <label class="form-label required-field">Last Name</label>
                     <input asp-for="Lastname" type="text" class="form-control"
                            oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                            value="@ViewBag.Lastname" required>
@@ -101,7 +265,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="">First Name</label>
+                    <label class="form-label required-field">First Name</label>
                     <input asp-for="Firstname" type="text" class="form-control" value="@ViewBag.Firstname" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
                     <span asp-validation-for="Firstname" class="text-danger"></span>
                 </div>
@@ -131,7 +295,7 @@
             <div class="row g-3 mt-2">
 
                 <div class="col-md-3">
-                    <label class="">Blk / Lot / Street</label>
+                    <label class="form-label required-field">Blk / Lot / Street</label>
                     <input asp-for="BlkLotStreet" type="text" value="@ViewBag.BlkLotStreet" class="form-control" required>
                     <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
                 </div>
@@ -143,7 +307,7 @@
                 </div>
 
                 <div class="col-md-3">
-    <label class="">Brgy.</label>
+    <label class="form-label required-field">Brgy.</label>
     <select asp-for="Brgy" class="form-control" required>
         <option value="">Select Barangay</option>
         <option value="Acacia" selected="@(ViewBag.Barangay == "Acacia")">Acacia</option>
@@ -263,7 +427,7 @@
 </div>
 
                 <div class="col-md-3">
-                    <label class="">District</label>
+                    <label class="form-label required-field">District</label>
                     <input asp-for="District" type="text" value="@ViewBag.District" class="form-control" required>
                     <span asp-validation-for="District" class="text-danger"></span>
                 </div>
@@ -272,7 +436,7 @@
             <!-- Gender, PhilHealth, DOB, Age -->
             <div class="row g-3 mt-2">
                 <div class="col-md-2">
-                    <label class="">Sex</label>
+                    <label class="form-label required-field d-block">Sex</label>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="Sex" id="male" value="Male"
                                @(ViewBag.Gender == "Male" ? "checked" : "") required>
@@ -286,8 +450,9 @@
                     <span asp-validation-for="Sex" class="text-danger"></span>
                 </div>
 
+
                 <div class="col-md-3">
-                    <label class="">PhilHealth</label>
+                    <label class="form-label required-field">PhilHealth</label>
                     <select class="form-select" asp-for="PhilHealth" required>
                         <option value="">Select option</option>
                         <option>Without PhilHealth</option>
@@ -327,7 +492,7 @@
                 </script>
 
                 <div class="col-md-2">
-                    <label class="">Date of Birth</label>
+                    <label class="form-label required-field">Date of Birth</label>
                     <input value="@ViewBag.Dateofbirth" asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" required>
                     <span asp-validation-for="Dateofbirth" class="text-danger"></span>
                 </div>
@@ -392,8 +557,7 @@
                         <i class="bi bi-eraser"></i> Clear Auto-Fill
                     </button>
 
-                    <small class="text-muted ms-2">Click "I am the requestor" if you are applying for yourself. 
-                        Click "Clear auto-fill if you clicked the button by accident."</small>
+                    <small class="text-muted ms-2">Click if you are applying for yourself</small>
                 </div>
             </div>
 
@@ -405,17 +569,18 @@
             <!-- Wrap the Requestor Details section in a div with a unique ID -->
             <div id="requestorDetailsSection" style="display: none;">
 
+
                 <!-- Requestor Details -->
                 <h5 class="section-header">Requestor's Details</h5>
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="">Last Name</label>
+                        <label class="form-label required-field">Last Name</label>
                         <input asp-for="RLastname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
                         <span asp-validation-for="RLastname"></span>
                     </div>
 
                     <div class="col-md-3">
-                        <label class="">First Name</label>
+                        <label class="form-label required-field">First Name</label>
                         <input asp-for="RFirstname" type="text" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
                         <span asp-validation-for="RFirstname"></span>
                     </div>
@@ -571,6 +736,7 @@
                 <div class="col-md-6">
                     <!-- Column 2 -->
 
+
                     <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="checkbox"
                                id="procedure" name="TypeassistanceOptions" value="Procedure">
@@ -579,6 +745,8 @@
                                name="ProcedureDetails" placeholder="Specify" style="display: none;">
                     </div>
 
+
+
                     <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="checkbox"
                                id="dialysis" name="TypeassistanceOptions" value="Dialysis">
@@ -586,6 +754,8 @@
                         <input type="text" class="form-control mt-1 assistance-spec"
                                name="DialysisDetails" placeholder="Specify" style="display: none;">
                     </div>
+
+
 
                     <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="checkbox"
@@ -603,11 +773,14 @@
                 <span asp-validation-for="Typeassistance" class="text-danger"></span>
             </div>
 
+
+
             <!-- Upload Section -->
             <h5 class="section-header">Upload Required Documents</h5>
 
+
             <div class="mb-3">
-                <label class="">Doctor's Prescription/Receipt</label>
+                <label class="form-label required-field">Doctor's Prescription/Receipt</label>
                 <div class="upload-box" onclick="document.getElementById('receipt').click()">
                     <div class="upload-icon">
                         <i class="bi bi-card-image"></i>
@@ -754,6 +927,7 @@
         });
     </script>
     <script>
+
 
         document.addEventListener('DOMContentLoaded', function() {
             // Make all preview images clickable to open modal
@@ -1177,6 +1351,7 @@
                 uploadBox.style.backgroundColor = "var(--primary-light)";
             }
 
+
         }
     </script>
 
@@ -1255,6 +1430,62 @@
             updateAssistanceReflection();
         });
     </script>
+
+    <script>
+                // Go Back Button Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const goBackBtn = document.getElementById('goBackBtn');
+
+            if (goBackBtn) {
+                // Responsive compact mode
+                function updateButton() {
+                    const viewportWidth = window.innerWidth;
+
+                    // Switch to compact mode on smaller screens
+                    if (viewportWidth < 480) {
+                        goBackBtn.classList.add('compact');
+                    } else {
+                        goBackBtn.classList.remove('compact');
+                    }
+                }
+
+                // Update on viewport changes
+                function handleViewportChange() {
+                    updateButton();
+                }
+
+                // Initial setup
+                updateButton();
+
+                // Listen to viewport changes
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', handleViewportChange);
+
+                // Click functionality
+                goBackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Add press animation
+                    this.style.transition = 'transform 0.1s ease';
+                    this.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        this.style.transform = '';
+
+                        // Navigate back or to home page
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 100);
+                });
+            }
+        });
+
+    </script>
+
 
     <script>
 
@@ -1452,755 +1683,6 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 
-    <!-- Go Back Button Behavior -->
-    <script src="~/js/go-back-button.js"></script>
-
-@section Scripts {
-    <script>
-const philHealthInput = document.getElementById('philHealthInput');
-
-                    philHealthInput.addEventListener('input', function(e) {
-                        // Remove all non-digit characters
-                        let value = this.value.replace(/\D/g, '');
-
-                        // Add hyphens after every 4 digits
-                        if (value.length > 4) {
-                            value = value.substring(0, 4) + '-' + value.substring(4);
-                        }
-                        if (value.length > 9) {
-                            value = value.substring(0, 9) + '-' + value.substring(9);
-                        }
-
-                        // Limit to 12 digits (14 characters with hyphens)
-                        if (value.length > 14) {
-                            value = value.substring(0, 14);
-                        }
-
-                        this.value = value;
-                    });
-
-const dateOfBirth = document.getElementById('dateOfBirth');
-                    const ageInput = document.getElementById('ageInput');
-
-                    function calculateAge(dob) {
-                        if (!dob) return "";
-                        const birthDate = new Date(dob);
-                        const today = new Date();
-
-                        let age = today.getFullYear() - birthDate.getFullYear();
-                        const monthDiff = today.getMonth() - birthDate.getMonth();
-
-                        // Adjust if birthday hasn't happened yet this year
-                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                            age--;
-                        }
-                        return age;
-                    }
-
-                    // Auto-calc on page load if DOB has a value
-                    if (dateOfBirth.value) {
-                        ageInput.value = calculateAge(dateOfBirth.value);
-                    }
-
-                    // Recalc whenever DOB changes
-                    dateOfBirth.addEventListener('change', function () {
-                        ageInput.value = calculateAge(this.value);
-                    });
-
-const contactNoInput = document.getElementById('contactNoInput');
-
-                        contactNoInput.addEventListener('input', function(e) {
-                            // Remove all non-digit characters (extra safety)
-                            let value = this.value.replace(/\D/g, '');
-
-                            // Mobile number (09XXXXXXXXX)
-                            if (value.startsWith('09') && value.length <= 11) {
-                                if (value.length > 4) {
-                                    value = value.substring(0, 4) + '-' + value.substring(4);
-                                }
-                                if (value.length > 8) {
-                                    value = value.substring(0, 8) + '-' + value.substring(8);
-                                }
-                            }
-                            // Landline (02XXXXXXXX or area code)
-                            else if ((value.startsWith('02') || /^[1-9]\d{1}$/.test(value.substring(0,2)))) {
-                                if (value.length > 2) {
-                                    value = value.substring(0, 2) + '-' + value.substring(2);
-                                }
-                                if (value.length > 6) {
-                                    value = value.substring(0, 6) + '-' + value.substring(6);
-                                }
-                            }
-
-                            // Limit length (11 digits for mobile, 10 for landline)
-                            const maxLength = value.startsWith('09') ? 13 : 11; // Includes hyphens
-                            if (value.length > maxLength) {
-                                value = value.substring(0, maxLength);
-                            }
-
-                            this.value = value;
-                        });
-
-                        // Strict validation on blur (optional)
-                        contactNoInput.addEventListener('blur', function() {
-                            const regex = /^(09\d{2}-\d{3}-\d{4}|0[2-9]\d-\d{3}-\d{4})$/;
-                            if (this.value && !regex.test(this.value)) {
-                                alert("Please enter a valid Philippine number (e.g., 0912-345-6789 or 02-123-4567)");
-                                this.focus();
-                            }
-                        });
-
-// Function to show success modal and redirect
-        function showSuccessModal() {
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            successModal.show();
-
-            let countdown = 2;
-            const countdownElement = document.getElementById('countdown');
-            const countdownInterval = setInterval(() => {
-                countdown--;
-                countdownElement.textContent = countdown;
-
-                if (countdown <= 0) {
-                    clearInterval(countdownInterval);
-                    redirectToHomepage();
-                }
-            }, 1000);
-        }
-
-        // Function to redirect to homepage
-        function redirectToHomepage() {
-            window.location.href = '/Homepage';
-        }
-
-        // Function to check if form was submitted successfully and show modal
-        function checkFormSubmission() {
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const success = urlParams.get('success');
-
-            @if (ViewBag.Success != null && ViewBag.Success == true)
-            {
-                    <text>
-                    setTimeout(() => {
-                        showSuccessModal();
-                    }, 500); // Small delay to ensure page is fully loaded
-                    </text>
-            }
-
-            // Alternative: Check for hidden field in form (if form posts to same page)
-            const formSubmitted = document.querySelector('input[name="FormSubmitted"]');
-            if (formSubmitted && formSubmitted.value === 'true') {
-                setTimeout(() => {
-                    showSuccessModal();
-                }, 500);
-            }
-        }
-
-        // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            checkFormSubmission();
-        });
-
-document.addEventListener('DOMContentLoaded', function() {
-            // Make all preview images clickable to open modal
-            const previewImages = document.querySelectorAll('.img-preview');
-            const modalImage = document.getElementById('modalImage');
-            const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-            const modalTitle = document.getElementById('imageModalLabel');
-            const imageContainer = document.getElementById('imageContainer');
-            const zoomPercentage = document.getElementById('zoomPercentage');
-            const zoomInBtn = document.getElementById('zoomIn');
-            const zoomOutBtn = document.getElementById('zoomOut');
-            const zoomResetBtn = document.getElementById('zoomReset');
-
-            // Zoom variables
-            let currentZoom = 1;
-            const zoomFactor = 0.1;
-            const maxZoom = 3;
-            const minZoom = 0.5;
-
-            // Reset zoom on modal open
-            function resetZoom() {
-                currentZoom = 1;
-                updateZoom();
-            }
-
-            // Apply zoom level
-            function updateZoom() {
-                modalImage.style.transform = `scale(${currentZoom})`;
-                zoomPercentage.textContent = `${Math.round(currentZoom * 100)}%`;
-            }
-
-            // Zoom in function
-            function zoomIn() {
-                if (currentZoom < maxZoom) {
-                    currentZoom += zoomFactor;
-                    updateZoom();
-                }
-            }
-
-            // Zoom out function
-            function zoomOut() {
-                if (currentZoom > minZoom) {
-                    currentZoom -= zoomFactor;
-                    updateZoom();
-                }
-            }
-
-            // Make images clickable
-            previewImages.forEach(img => {
-                img.style.cursor = 'pointer';
-                img.addEventListener('click', function() {
-                    modalImage.src = this.src;
-                    modalTitle.textContent = this.alt || 'Image Preview';
-                    resetZoom();
-                    imageModal.show();
-                });
-            });
-
-            // Add zoom event listeners
-            zoomInBtn.addEventListener('click', zoomIn);
-            zoomOutBtn.addEventListener('click', zoomOut);
-            zoomResetBtn.addEventListener('click', resetZoom);
-
-            // Mouse wheel zoom
-            imageContainer.addEventListener('wheel', function(e) {
-                e.preventDefault();
-                if (e.deltaY < 0) {
-                    zoomIn();
-                } else {
-                    zoomOut();
-                }
-            });
-
-            // Pan image when dragging
-            let isDragging = false;
-            let startX, startY, translateX = 0, translateY = 0;
-
-            imageContainer.addEventListener('mousedown', function(e) {
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-                imageContainer.style.cursor = 'grabbing';
-            });
-
-            window.addEventListener('mousemove', function(e) {
-                if (!isDragging) return;
-
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-
-                // Only allow panning when zoomed in
-                if (currentZoom > 1) {
-                    modalImage.style.transform = `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`;
-                }
-            });
-
-            window.addEventListener('mouseup', function() {
-                isDragging = false;
-                imageContainer.style.cursor = 'grab';
-            });
-
-            // Allow closing modal with ESC key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    imageModal.hide();
-                }
-            });
-
-            // Reset zoom and position when modal is closed
-            document.getElementById('imageModal').addEventListener('hidden.bs.modal', function() {
-                resetZoom();
-                translateX = 0;
-                translateY = 0;
-                modalImage.style.transform = 'scale(1) translate(0, 0)';
-            });
-        });
-
-document.addEventListener('DOMContentLoaded', function() {
-            const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
-            const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
-            const toggleBtn = document.getElementById('toggleRequestorBtn');
-            const requestorSection = document.getElementById('requestorDetailsSection');
-
-            // Patient form fields
-            const patientLastname = document.getElementById('Lastname');
-            const patientFirstname = document.getElementById('Firstname');
-            const patientMiddlename = document.getElementById('Middlename');
-            const patientSuffix = document.getElementById('Suffix');
-            const patientBlkLotStreet = document.getElementById('BlkLotStreet');
-            const patientSubVill = document.getElementById('SubVill');
-            const patientBrgy = document.getElementById('Brgy');
-            const patientDistrict = document.getElementById('District');
-
-            // Requestor form fields
-            const requestorLastname = document.getElementById('RLastname');
-            const requestorFirstname = document.getElementById('RFirstname');
-            const requestorMiddlename = document.getElementById('RMiddlename');
-            const requestorSuffix = document.getElementById('RSuffix');
-            const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
-            const requestorSubVill = document.getElementById('RSubVill');
-            const requestorBrgy = document.getElementById('RBrgy');
-            const requestorDistrict = document.getElementById('RDistrict');
-            const relationshipPatient = document.getElementById('RelationshipPatient');
-
-            // Store original values to restore on clear
-            let originalRequestorValues = {};
-            let autoFillUsed = false;
-
-            // IMPROVED SHOW/HIDE TOGGLE FUNCTIONALITY
-            if (toggleBtn && requestorSection) {
-                toggleBtn.addEventListener('click', function() {
-                    // Use getComputedStyle for reliable display detection
-                    const isHidden = window.getComputedStyle(requestorSection).display === 'none';
-
-                    if (isHidden) {
-                        requestorSection.style.display = 'block';
-                        toggleBtn.textContent = 'Hide Requestor Details';
-                        toggleBtn.classList.remove('btn-outline-primary');
-                        toggleBtn.classList.add('btn-primary');
-                    } else {
-                        requestorSection.style.display = 'none';
-                        toggleBtn.textContent = 'Show Requestor Details';
-                        toggleBtn.classList.remove('btn-primary');
-                        toggleBtn.classList.add('btn-outline-primary');
-                    }
-                });
-            }
-
-            // "I am the patient" button functionality
-            sameAsPatientBtn.addEventListener('click', function() {
-                // Store original values before auto-filling
-                storeOriginalValues();
-                autoFillUsed = true;
-
-                // Auto-fill requestor details with patient information
-                if (patientLastname && patientLastname.value) requestorLastname.value = patientLastname.value;
-                if (patientFirstname && patientFirstname.value) requestorFirstname.value = patientFirstname.value;
-                if (patientMiddlename && patientMiddlename.value) requestorMiddlename.value = patientMiddlename.value;
-                if (patientSuffix && patientSuffix.value) requestorSuffix.value = patientSuffix.value;
-                if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
-                if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
-                if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
-                if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
-
-                // Set relationship to "Self"
-                if (relationshipPatient) relationshipPatient.value = "Self";
-
-                // Visual feedback with Tailwind
-                sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
-                sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
-                sameAsPatientBtn.classList.add('btn-success', 'ring-2', 'ring-green-500');
-
-                // Show clear button PERMANENTLY (never auto-hides)
-                if (clearAutoFillBtn) {
-                    clearAutoFillBtn.style.display = 'block';
-                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                    clearAutoFillBtn.classList.add('btn-outline-warning');
-                }
-
-                // Auto-show requestor section
-                if (requestorSection) {
-                    requestorSection.style.display = 'block';
-                    if (toggleBtn) {
-                        toggleBtn.textContent = 'Hide Requestor Details';
-                        toggleBtn.classList.remove('btn-outline-primary');
-                        toggleBtn.classList.add('btn-primary');
-                    }
-                }
-
-                // Reset main button after 2 seconds
-                setTimeout(() => {
-                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> I am the requestor';
-                    sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
-                    sameAsPatientBtn.classList.add('btn-outline-success');
-                }, 2000);
-            });
-
-            // Clear button functionality - PERMANENT until manually clicked
-            clearAutoFillBtn.addEventListener('click', function() {
-                // Restore original values (clear all auto-filled data)
-                restoreOriginalValues();
-
-                // Reset the auto-fill flag
-                autoFillUsed = false;
-
-                // Visual feedback for clear
-                clearAutoFillBtn.innerHTML = '<i class="bi bi-check-circle"></i> Cleared!';
-                clearAutoFillBtn.classList.remove('btn-outline-warning');
-                clearAutoFillBtn.classList.add('btn-warning', 'ring-2', 'ring-yellow-500');
-
-                // Reset clear button after 1.5 seconds (but keep it visible)
-                setTimeout(() => {
-                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                    clearAutoFillBtn.classList.add('btn-outline-warning');
-
-                    // Only hide if ALL fields are empty after clearing
-                    const allFieldsEmpty = checkIfAllRequestorFieldsEmpty();
-                    if (allFieldsEmpty) {
-                        clearAutoFillBtn.style.display = 'none';
-                    }
-                    // Otherwise, keep it visible so user can clear again if needed
-                }, 1500);
-            });
-
-            // Store original values function
-            function storeOriginalValues() {
-                const fields = [
-                    'RLastname', 'RFirstname', 'RMiddlename', 'RSuffix',
-                    'RBlkLotStreet', 'RSubVill', 'RBrgy', 'RDistrict', 'RelationshipPatient'
-                ];
-
-                originalRequestorValues = {}; // Reset storage
-                fields.forEach(field => {
-                    const element = document.getElementById(field);
-                    if (element) {
-                        originalRequestorValues[field] = element.value;
-                    }
-                });
-            }
-
-            // Restore original values function
-            function restoreOriginalValues() {
-                Object.keys(originalRequestorValues).forEach(field => {
-                    const element = document.getElementById(field);
-                    if (element) {
-                        element.value = originalRequestorValues[field];
-                    }
-                });
-            }
-
-            // Check if all requestor fields are empty
-            function checkIfAllRequestorFieldsEmpty() {
-                const requestorFields = [
-                    requestorLastname, requestorFirstname, requestorMiddlename,
-                    requestorSuffix, requestorBlkLotStreet, requestorSubVill,
-                    requestorBrgy, requestorDistrict, relationshipPatient
-                ];
-
-                return requestorFields.every(field => !field || !field.value.trim());
-            }
-
-            // Smart hint with Tailwind (optional - can remove if not needed)
-            const patientFields = [patientLastname, patientFirstname, patientMiddlename];
-            patientFields.forEach(field => {
-                if (field) {
-                    field.addEventListener('input', function() {
-                        if (this.value &&
-                            requestorLastname && !requestorLastname.value &&
-                            requestorFirstname && !requestorFirstname.value &&
-                            !autoFillUsed) {
-                            sameAsPatientBtn.classList.add('ring-2', 'ring-green-500', 'animate-bounce');
-
-                            setTimeout(() => {
-                                sameAsPatientBtn.classList.remove('animate-bounce', 'ring-2', 'ring-green-500');
-                            }, 3000);
-                        }
-                    });
-                }
-            });
-
-            // Show clear button if page loads with pre-filled data
-            function checkInitialState() {
-                const anyFieldHasContent = !checkIfAllRequestorFieldsEmpty();
-                if (anyFieldHasContent) {
-                    storeOriginalValues();
-                    autoFillUsed = true;
-                    clearAutoFillBtn.style.display = 'block';
-                }
-            }
-
-            // Run initial state check
-            checkInitialState();
-        });
-
-function previewImage(input, previewId) {
-            const file = input.files[0];
-            const preview = document.getElementById(previewId);
-            const uploadBox = input.previousElementSibling;
-
-            if (file) {
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = "block";
-                    };
-                    reader.readAsDataURL(file);
-                }
-
-                // Update upload box text
-                uploadBox.querySelector('p:first-of-type').textContent = file.name;
-                uploadBox.style.borderColor = "var(--primary-color)";
-                uploadBox.style.backgroundColor = "var(--primary-light)";
-            }
-
-        }
-
-const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-
-        assistanceCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    // Uncheck all other checkboxes
-                    assistanceCheckboxes.forEach(cb => {
-                        if (cb !== this) {
-                            cb.checked = false;
-                            // Hide any specification fields for unchecked boxes
-                            const specField = cb.closest('.form-check').querySelector('.assistance-spec');
-                            if (specField) specField.style.display = 'none';
-                        }
-                    });
-
-                    // Show specification field for checked box if it exists
-                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                    if (specField) {
-                        specField.style.display = this.checked ? 'block' : 'none';
-                    }
-                }
-                updateAssistanceReflection();
-            });
-        });
-        //1box only
-
-         document.addEventListener('DOMContentLoaded', function() {
-            // Type of Assistance Reflection
-            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-            const assistanceSpecs = document.querySelectorAll('.assistance-spec');
-            const assistanceReflection = document.getElementById('assistanceReflection');
-
-            // Initialize - hide all specification fields
-            assistanceSpecs.forEach(field => field.style.display = 'none');
-
-            // Update reflection function
-            function updateAssistanceReflection() {
-                let selectedOptions = [];
-
-                assistanceCheckboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const label = checkbox.nextElementSibling.textContent.trim();
-                        const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
-
-                        if (specField && specField.value.trim() !== '') {
-                            selectedOptions.push(`${label}: ${specField.value.trim()}`);
-                        } else {
-                            selectedOptions.push(label);
-                        }
-                    }
-                });
-
-                assistanceReflection.value = selectedOptions.join(', ');
-            }
-
-            // Add event listeners
-            assistanceCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                    if (specField) {
-                        specField.style.display = this.checked ? 'block' : 'none';
-                    }
-                    updateAssistanceReflection();
-                });
-            });
-
-            assistanceSpecs.forEach(field => {
-                field.addEventListener('input', updateAssistanceReflection);
-            });
-
-            // Initial update
-            updateAssistanceReflection();
-        });
-
-document.addEventListener('DOMContentLoaded', function() {
-            // CMO Single Checkbox Selection
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-
-            cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        // Uncheck all other checkboxes
-                        cmoCheckboxes.forEach(cb => {
-                            if (cb !== this) cb.checked = false;
-                        });
-                    }
-                    updateReflection(); // Update the reflection field
-                });
-            });
-        });
-        //1 box only
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get all elements
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            const reflectionField = document.getElementById('cmoReflectionField');
-            const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-            // Update reflection function
-            function updateReflection() {
-                let parts = [];
-
-                // Add bill amount if exists
-                if (billInput.value.trim()) {
-                    parts.push(`Bill: ${billInput.value.trim()}`);
-                }
-
-                // Add checked documents
-                const checkedDocs = [];
-                docCheckboxes.forEach(cb => {
-                    if (cb.checked) checkedDocs.push(cb.value);
-                });
-                if (checkedDocs.length) {
-                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                }
-
-                // Add CMO notes if exists
-                if (cmoNotes.value.trim()) {
-                    parts.push(`Others: ${cmoNotes.value.trim()}`);
-                }
-
-                // Update reflection field
-                reflectionField.value = parts.join(' , ');
-            }
-
-            // Set up event listeners
-            billInput.addEventListener('input', updateReflection);
-            cmoNotes.addEventListener('input', updateReflection);
-            docCheckboxes.forEach(cb => {
-                cb.addEventListener('change', updateReflection);
-            });
-
-            // Initial update
-            updateReflection();
-        });
-
-document.addEventListener('DOMContentLoaded', function() {
-            // File validation for all file inputs
-            const fileInputs = document.querySelectorAll('input[type="file"]');
-
-            fileInputs.forEach(input => {
-                input.addEventListener('change', function(e) {
-                    validateFile(this);
-                });
-            });
-
-            function validateFile(input) {
-                const file = input.files[0];
-                const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
-                const uploadBox = input.previousElementSibling;
-
-                if (!file) return;
-
-                // File type validation
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-                const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-
-                // Check file type
-                if (!allowedTypes.includes(file.type)) {
-                    showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
-                    return;
-                }
-
-                // Check file size
-                if (file.size > maxSize) {
-                    showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
-                    return;
-                }
-
-                // If validation passes, proceed with preview
-                clearFileError(input);
-
-                if (file.type.startsWith("image/") && previewId) {
-                    const preview = document.getElementById(previewId);
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        preview.src = e.target.result;
-                        preview.style.display = "block";
-                    };
-                    reader.readAsDataURL(file);
-                } else if (previewId) {
-                    // For PDF files, hide the image preview
-                    const preview = document.getElementById(previewId);
-                    preview.style.display = "none";
-                }
-
-                // Update upload box text
-                if (uploadBox) {
-                    uploadBox.querySelector('p:first-of-type').textContent = file.name;
-                    uploadBox.style.borderColor = "var(--primary-color)";
-                    uploadBox.style.backgroundColor = "var(--primary-light)";
-                }
-            }
-
-            function showFileError(input, message) {
-                // Clear the file input
-                input.value = '';
-
-                // Remove any existing error message
-                clearFileError(input);
-
-                // Create error message element
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'alert alert-danger mt-2';
-                errorDiv.innerHTML = `
-                    <i class="fas fa-exclamation-triangle"></i>
-                    ${message}
-                `;
-
-                // Insert after the upload box
-                const uploadBox = input.previousElementSibling;
-                uploadBox.parentNode.insertBefore(errorDiv, uploadBox.nextSibling);
-
-                // Reset upload box styling
-                uploadBox.querySelector('p:first-of-type').textContent = 'Click to upload document';
-                uploadBox.style.borderColor = "#ddd";
-                uploadBox.style.backgroundColor = "#fafafa";
-
-                // Hide any preview
-                const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
-                if (previewId) {
-                    const preview = document.getElementById(previewId);
-                    preview.style.display = "none";
-                }
-            }
-
-            function clearFileError(input) {
-                // Remove any existing error messages
-                const existingError = input.parentNode.querySelector('.alert-danger');
-                if (existingError) {
-                    existingError.remove();
-                }
-            }
-
-            // Enhance the existing previewImage function to include validation
-            const originalPreviewImage = window.previewImage;
-            window.previewImage = function(input, previewId) {
-                const file = input.files[0];
-                if (!file) return;
-
-                // Validate before preview
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-                const maxSize = 10 * 1024 * 1024;
-
-                if (!allowedTypes.includes(file.type)) {
-                    showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
-                    return;
-                }
-
-                if (file.size > maxSize) {
-                    showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
-                    return;
-                }
-
-                // If validation passes, call original function
-                if (originalPreviewImage) {
-                    originalPreviewImage(input, previewId);
-                }
-            }
-        });
-    </script>
-}
+</html>

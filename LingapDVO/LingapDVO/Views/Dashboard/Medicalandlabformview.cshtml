@@ -1,13 +1,529 @@
-@model FillupformHospitalBillDto
+﻿@model FillupformHospitalBillDto
 @{
-    Layout = "_FormsLayout";
-    ViewData["Title"] = "Application View";
+    Layout = null;
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
-<!-- Image Zoom Modal -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <title>Hospital Bill Application - Receipt View</title>
+    <link rel="icon" type="image/x-icon" href="~/lingaplogo.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #DC143C;
+            --primary-light: #FFE6EA;
+            --primary-dark: #B01030;
+            --secondary-color: #2c3e50;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        .go-back-btn {
+            position: fixed;
+            left: 16px;
+            top: 16px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid rgba(220, 20, 60, 0.15);
+            color: #333333;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            min-height: 36px;
+            min-width: 36px;
+            transform: scale(var(--btn-scale, 1));
+            transform-origin: left top;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+            .go-back-btn:hover,
+            .go-back-btn:focus {
+                background: #DC143C;
+                color: #ffffff;
+                box-shadow: 0 4px 20px rgba(220, 20, 60, 0.3);
+                transform: translateY(-1px) scale(calc(var(--btn-scale, 1) * 1.02));
+                border-color: #DC143C;
+            }
+
+            .go-back-btn i {
+                font-size: 13px;
+                transition: transform 0.3s ease;
+                width: 14px;
+                text-align: center;
+            }
+
+            .go-back-btn:hover i {
+                transform: translateX(-2px);
+            }
+
+            .go-back-btn:active {
+                transform: scale(calc(var(--btn-scale, 1) * 0.96));
+                background: #b01030;
+                transition: transform 0.1s ease;
+            }
+
+            .go-back-btn:focus-visible {
+                outline: 2px solid #DC143C;
+                outline-offset: 2px;
+            }
+
+            .go-back-btn.compact span {
+                display: none;
+            }
+
+            .go-back-btn.compact {
+                padding: 8px;
+                border-radius: 50%;
+            }
+
+        .receipt-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .receipt-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .receipt-body {
+            padding: 2rem;
+        }
+
+        .receipt-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-label {
+            flex: 0 0 30%;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        .info-value {
+            flex: 1;
+            color: #555;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-disapproved {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-claimed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .btn-receipt {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            border-radius: 5px;
+        }
+
+            .btn-receipt:hover {
+                background-color: var(--primary-dark);
+                border-color: var(--primary-dark);
+                color: white;
+            }
+
+        .btn-approved {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 0 0.5rem;
+        }
+
+            .btn-approved:hover {
+                background-color: #218838;
+                border-color: #1e7e34;
+                color: white;
+            }
+
+        .btn-disapproved {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            margin: 0 0.5rem;
+        }
+
+            .btn-disapproved:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+                color: white;
+            }
+
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .zoom-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .close-zoom {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .id-image-container {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .id-image-container:hover {
+                transform: scale(1.02);
+            }
+
+        .id-image {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .pdf-container {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pdf-preview {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+            .pdf-preview:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+                transform: translateY(-2px);
+            }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: #dc143c;
+            margin-right: 1rem;
+        }
+
+        .pdf-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-filename {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .pdf-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+        }
+
+        .pdf-viewer-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-viewer-header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pdf-viewer-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .pdf-viewer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            line-height: 1;
+        }
+
+            .pdf-viewer-close:hover {
+                color: var(--primary-color);
+            }
+
+        .pdf-viewer-body {
+            flex: 1;
+            background-color: #525659;
+            position: relative;
+            overflow: auto;
+        }
+
+        .pdf-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        #pdfCanvas {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            background-color: white;
+        }
+
+        .pdf-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .page-info {
+            color: white;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        .zoom-level {
+            color: white;
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pdf-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pdf-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            display: none;
+        }
+
+            .pdf-error i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+        .btn-light {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+        }
+
+            .btn-light:hover {
+                background-color: white;
+            }
+
+            .btn-light:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+        .comments-required {
+            border: 2px solid #dc3545 !important;
+            background-color: #fff5f5;
+        }
+
+        .status-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .comments-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .comments-modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .comments-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comments-modal-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .comments-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+            .comments-modal-close:hover {
+                color: var(--primary-color);
+            }
+    </style>
+</head>
+<body>
+    <!-- Go Back Button -->
+    <a href="#" class="go-back-btn" id="goBackBtn" role="button" aria-label="Go back to previous page" title="Go back">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>Back</span>
+    </a>
+
+    <!-- Image Zoom Modal -->
     <div id="zoomModal" class="zoom-modal">
         <span class="close-zoom">&times;</span>
         <img class="zoom-modal-content" id="zoomedImage">
@@ -272,4 +788,327 @@
         </form>
     </div>
 
-    <!-- Go Back Button Behavior -->
+    <script>
+        // Go Back Button Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const goBackBtn = document.getElementById('goBackBtn');
+
+            if (goBackBtn) {
+                function updateButton() {
+                    const viewportWidth = window.innerWidth;
+                    if (viewportWidth < 480) {
+                        goBackBtn.classList.add('compact');
+                    } else {
+                        goBackBtn.classList.remove('compact');
+                    }
+                }
+
+                function handleViewportChange() {
+                    updateButton();
+                }
+
+                updateButton();
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', handleViewportChange);
+
+                goBackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.style.transition = 'transform 0.1s ease';
+                    this.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        this.style.transform = '';
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 100);
+                });
+            }
+
+            // CMO Reflection Auto-generation
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+            cmoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        cmoCheckboxes.forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    }
+                    updateReflection();
+                });
+            });
+
+            function updateReflection() {
+                const billInput = document.getElementById('billAmountInput');
+                const cmoNotes = document.getElementById('cmoNotesInput');
+                const reflectionField = document.getElementById('cmoReflectionField');
+                const docCheckboxes = document.querySelectorAll('.supporting-doc');
+
+                let parts = [];
+                if (billInput.value.trim()) {
+                    parts.push(`Bill: ${billInput.value.trim()}`);
+                }
+                const checkedDocs = [];
+                docCheckboxes.forEach(cb => {
+                    if (cb.checked) checkedDocs.push(cb.value);
+                });
+                if (checkedDocs.length) {
+                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                }
+                if (cmoNotes.value.trim()) {
+                    parts.push(`Others: ${cmoNotes.value.trim()}`);
+                }
+                reflectionField.value = parts.join(' , ');
+            }
+
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+            updateReflection();
+        });
+
+        // Status Submission Functions
+        function submitApproved() {
+            document.getElementById('statusInput').value = 'Approved';
+            document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
+            document.getElementById('statusForm').submit();
+        }
+
+        function showCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'block';
+            document.getElementById('commentsTextarea').focus();
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'none';
+            document.getElementById('commentsTextarea').value = '';
+            document.getElementById('commentsTextarea').classList.remove('is-invalid');
+        }
+
+        function submitDisapproved() {
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            const comments = commentsTextarea.value.trim();
+
+            if (comments === '') {
+                commentsTextarea.classList.add('is-invalid');
+                commentsTextarea.focus();
+                return;
+            }
+
+            document.getElementById('statusInput').value = 'Disapproved';
+            document.getElementById('commentsInput').value = comments;
+            document.getElementById('statusForm').submit();
+        }
+
+        // PDF Viewer Variables
+        let currentPDF = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScale = 1.2;
+
+        // Image Zoom Functionality
+        function zoomImage(src) {
+            const modal = document.getElementById("zoomModal");
+            const modalImg = document.getElementById("zoomedImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        // Close zoom modal
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
+
+        // PDF Viewer Function
+        async function viewPDFInModal(fileName, fileType, displayName) {
+            const modal = document.getElementById('pdfViewerModal');
+            const title = document.getElementById('pdfViewerTitle');
+            const loading = document.getElementById('pdfLoading');
+            const errorDiv = document.getElementById('pdfError');
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            title.textContent = displayName || 'PDF Document';
+            modal.style.display = 'block';
+            loading.style.display = 'flex';
+            errorDiv.style.display = 'none';
+            canvas.style.display = 'none';
+
+            currentPDF = null;
+            currentPage = 1;
+            currentScale = 1.2;
+
+            try {
+                const encodedFileName = encodeURIComponent(fileName);
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const pdfData = await response.arrayBuffer();
+                if (!pdfData || pdfData.byteLength === 0) {
+                    throw new Error('PDF data is empty');
+                }
+
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                totalPagesSpan.textContent = totalPages;
+                currentPageSpan.textContent = currentPage;
+
+                updateNavigationButtons();
+                await renderPage(currentPage);
+
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+            }
+        }
+
+        // Render specific page
+        async function renderPage(pageNum) {
+            if (!currentPDF) return;
+
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+
+            try {
+                const page = await currentPDF.getPage(pageNum);
+                const viewport = page.getViewport({ scale: currentScale });
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                currentPageSpan.textContent = pageNum;
+
+            } catch (error) {
+                console.error('Error rendering page:', error);
+            }
+        }
+
+        // Navigation functions
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function zoomIn() {
+            currentScale += 0.2;
+            renderPage(currentPage);
+            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.2;
+                renderPage(currentPage);
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        // Close PDF Viewer
+        function closePDFViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'none';
+
+            if (currentPDF) {
+                currentPDF.destroy();
+                currentPDF = null;
+            }
+        }
+
+        // Keyboard shortcuts and navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById("zoomModal").style.display = "none";
+                closePDFViewer();
+                closeCommentsModal();
+            }
+
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+            const commentsModal = document.getElementById("commentsModal");
+
+            if (event.target == zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal) {
+                closePDFViewer();
+            }
+            if (event.target == commentsModal) {
+                closeCommentsModal();
+            }
+        }
+    </script>
+</body>
+</html>
