@@ -1551,15 +1551,182 @@
             loadPastData();
         }
 
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // REAL-TIME APPLICATION STATUS UPDATES
+        // ═══════════════════════════════════════════════════════════════════════════════
+
+        let lastUpdateData = null;
+        let isUpdating = false;
+
+        // Fetch updates from server
+        async function fetchApplicationUpdates() {
+            if (isUpdating) return; // Prevent concurrent requests
+
+            isUpdating = true;
+
+            try {
+                const response = await fetch('/Dashboard/GetApplicationUpdates', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to fetch updates:', response.statusText);
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    processUpdates(result.data);
+                    lastUpdateData = result.data;
+                } else {
+                    console.error('Update fetch failed:', result.message);
+                }
+            } catch (error) {
+                console.error('Error fetching updates:', error);
+            } finally {
+                isUpdating = false;
+            }
+        }
+
+        // Process updates and refresh UI
+        function processUpdates(data) {
+            let changesDetected = false;
+            let notifications = [];
+
+            // Check for changes in each application type
+            if (lastUpdateData) {
+                // Hospital Bills
+                data.hospitalBills.forEach(app => {
+                    const oldApp = lastUpdateData.hospitalBills.find(old => old.id === app.id);
+                    const change = detectChanges(oldApp, app, 'Hospital Bill');
+                    if (change) {
+                        changesDetected = true;
+                        notifications.push(change);
+                    }
+                });
+
+                // Medical Lab Forms
+                data.medicalLabForms.forEach(app => {
+                    const oldApp = lastUpdateData.medicalLabForms.find(old => old.id === app.id);
+                    const change = detectChanges(oldApp, app, 'Medical/Lab');
+                    if (change) {
+                        changesDetected = true;
+                        notifications.push(change);
+                    }
+                });
+
+                // Funeral Forms
+                data.funeralForms.forEach(app => {
+                    const oldApp = lastUpdateData.funeralForms.find(old => old.id === app.id);
+                    const change = detectChanges(oldApp, app, 'Funeral');
+                    if (change) {
+                        changesDetected = true;
+                        notifications.push(change);
+                    }
+                });
+
+                // Check for new applications
+                if (data.hospitalBills.length > lastUpdateData.hospitalBills.length ||
+                    data.medicalLabForms.length > lastUpdateData.medicalLabForms.length ||
+                    data.funeralForms.length > lastUpdateData.funeralForms.length) {
+                    changesDetected = true;
+                }
+            }
+
+            // Reload page if changes detected
+            if (changesDetected) {
+                console.log('Changes detected - reloading page...');
+
+                // Show notifications before reload
+                notifications.forEach(notif => {
+                    showStatusChangeNotification(notif.type, notif.status, notif.name);
+                });
+
+                // Reload page after short delay to show notifications
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        }
+
+        // Detect changes between old and new application data
+        function detectChanges(oldApp, newApp, type) {
+            if (!oldApp) return null; // New application
+
+            // Check for status changes
+            if (oldApp.status2 !== newApp.status2) {
+                return {
+                    type: type,
+                    name: `${newApp.firstname} ${newApp.lastname}`,
+                    status: newApp.status2,
+                    field: 'status2'
+                };
+            }
+
+            // Check for processing changes
+            if (!oldApp.processby && newApp.processby) {
+                return {
+                    type: type,
+                    name: `${newApp.firstname} ${newApp.lastname}`,
+                    status: 'Processing',
+                    field: 'processing'
+                };
+            }
+
+            // Check for claim status changes
+            if (oldApp.status3 !== newApp.status3 && newApp.status3) {
+                return {
+                    type: type,
+                    name: `${newApp.firstname} ${newApp.lastname}`,
+                    status: `Claimed: ${newApp.status3}`,
+                    field: 'status3'
+                };
+            }
+
+            return null;
+        }
+
+        // Show status change notification
+        function showStatusChangeNotification(type, status, name) {
+            const notification = {
+                title: `${type} Application Update`,
+                message: `${name}'s application status changed to: ${status}`,
+                type: status.toLowerCase()
+            };
+
+            showToastNotification(notification.title, notification.message);
+
+            console.log('Status Change:', notification);
+        }
+
+        // Initialize real-time updates
+        function initializeRealTimeUpdates() {
+            console.log('Real-time updates initialized');
+
+            // Fetch initial data after 2 seconds
+            setTimeout(() => {
+                fetchApplicationUpdates();
+            }, 2000);
+
+            // Poll for updates every 30 seconds
+            setInterval(() => {
+                fetchApplicationUpdates();
+            }, 30000);
+        }
+
+        // Start real-time updates when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeRealTimeUpdates();
+        });
+
         // Check for status changes when the page loads (for existing processing applications)
         setTimeout(() => {
             checkForStatusChanges();
         }, 1000);
-
-        // Real-time check for status changes (every 30 seconds)
-        setInterval(() => {
-            checkForStatusChanges();
-        }, 30000);
     </script>
 </body>
 </html>

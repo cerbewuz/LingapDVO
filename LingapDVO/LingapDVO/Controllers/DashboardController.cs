@@ -2605,6 +2605,105 @@ namespace LingapDVO.Controllers
 
         }
 
+        // API endpoint for real-time application status updates
+        [HttpGet]
+        public JsonResult GetApplicationUpdates()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+            {
+                return Json(new { success = false, message = "Unauthorized" });
+            }
+
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdString, out int userId))
+            {
+                return Json(new { success = false, message = "Invalid user" });
+            }
+
+            try
+            {
+                // Get updated data from database
+                var hospitalBills = context.FillupformHospitalBill
+                    .Where(f => f.UserId == userId)
+                    .Select(f => new
+                    {
+                        f.Id,
+                        f.Firstname,
+                        f.Middlename,
+                        f.Lastname,
+                        f.Status,
+                        f.Status2,
+                        f.Status3,
+                        f.CreatedAt,
+                        f.ProcessAt,
+                        f.Processby,
+                        f.Result,
+                        f.ClaimedAt,
+                        f.Comments
+                    })
+                    .OrderByDescending(f => f.CreatedAt)
+                    .ToList();
+
+                var medicalLabForms = context.Medicalandlabform
+                    .Where(f => f.UserId == userId)
+                    .Select(f => new
+                    {
+                        f.Id,
+                        f.Firstname,
+                        f.Middlename,
+                        f.Lastname,
+                        f.Status,
+                        f.Status2,
+                        f.Status3,
+                        f.CreatedAt,
+                        f.ProcessAt,
+                        f.Processby,
+                        f.Result,
+                        f.ClaimedAt,
+                        f.Comments
+                    })
+                    .OrderByDescending(f => f.CreatedAt)
+                    .ToList();
+
+                var funeralForms = context.Funeralburialform
+                    .Where(f => f.UserId == userId)
+                    .Select(f => new
+                    {
+                        f.Id,
+                        f.Firstname,
+                        f.Middlename,
+                        f.Lastname,
+                        f.Status,
+                        f.Status2,
+                        f.Status3,
+                        f.CreatedAt,
+                        f.ProcessAt,
+                        f.Processby,
+                        f.Result,
+                        f.ClaimedAt,
+                        f.Comments
+                    })
+                    .OrderByDescending(f => f.CreatedAt)
+                    .ToList();
+
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        hospitalBills,
+                        medicalLabForms,
+                        funeralForms
+                    },
+                    timestamp = DateTime.Now
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error fetching updates", error = ex.Message });
+            }
+        }
+
         public IActionResult Maps()
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
