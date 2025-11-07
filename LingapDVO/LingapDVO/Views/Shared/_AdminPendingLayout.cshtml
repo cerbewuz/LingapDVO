@@ -25,6 +25,9 @@
     <!-- Forms Layout Styling -->
     <link rel="stylesheet" href="~/css/forms-layout.css">
 
+    <!-- PDF.js for PDF viewing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
     <!-- Session Timeout -->
     @await Html.PartialAsync("_SessionTimeout")
 
@@ -55,6 +58,18 @@
 
     <!-- Go Back Button Behavior -->
     <script src="~/js/go-back-button.js"></script>
+
+    <!-- Security Scripts -->
+    <script src="~/js/security.js"></script>
+
+    <!-- PDF Viewer -->
+    <script src="~/js/pdf-viewer.js"></script>
+
+    <!-- Image Zoom -->
+    <script src="~/js/image-zoom.js"></script>
+
+    <!-- Admin Status Functions -->
+    <script src="~/js/admin-status-functions.js"></script>
 
     @RenderSection("Scripts", required: false)
 </body>
