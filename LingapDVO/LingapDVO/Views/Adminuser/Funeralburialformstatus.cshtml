@@ -132,15 +132,16 @@
                     <div class="info-value">@ViewData["Typeassistance"]</div>
                 </div>
 
-                <!-- Valid ID Section -->
+                <!-- Valid ID and Submitted Documents Section -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Valid ID</h5>
+                    <h5 class="section-title">Valid ID and Submitted Documents</h5>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <h6>Front ID</h6>
+                        <!-- Valid ID (Front and Back) -->
+                        <div class="col-lg-6 mb-3">
+                            <h6>Valid ID - Front</h6>
                             @if (ViewData["ValidfrontimageBase64"] != null)
                             {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                <div class="id-image-container mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
                                     <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
                                 </div>
                             }
@@ -148,9 +149,8 @@
                             {
                                 <p class="text-muted">No front ID image available</p>
                             }
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <h6>Back ID</h6>
+
+                            <h6>Valid ID - Back</h6>
                             @if (ViewData["ValidBackimageBase64"] != null)
                             {
                                 <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
@@ -162,34 +162,32 @@
                                 <p class="text-muted">No back ID image available</p>
                             }
                         </div>
+
+                        <!-- PDF Documents (Death Certificate) -->
+                        <div class="col-lg-6 mb-3">
+                            @if (ViewData["DeathCertificateBase64"] != null)
+                            {
+                                <h6>Death Certificate</h6>
+                                @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                                {
+                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                        <div class="pdf-info">
+                                            <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                            <span class="pdf-label">Click to view PDF</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                        <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                                    </div>
+                                }
+                            }
+                        </div>
                     </div>
                 </div>
-
-                <!-- Death Certificate -->
-                @if (ViewData["DeathCertificateBase64"] != null)
-                {
-                    <div class="receipt-section">
-                        <h5 class="section-title">Death Certificate</h5>
-                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
-                        {
-                            <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
-                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
-                                <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
-                            </div>
-                        }
-                    </div>
-                }
 
                 <!-- Status Section -->
                 <div class="receipt-section">
@@ -220,520 +218,3 @@
         </form>
     </div>
 
-    <script>
-        // Disable right-click context menu
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Disable text selection
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Disable keyboard shortcuts for saving, printing, etc.
-        document.addEventListener('keydown', function(e) {
-            // Disable F12 (Developer Tools)
-            if (e.key === 'F12') {
-                e.preventDefault();
-                return false;
-            }
-
-            // Disable Ctrl+S (Save)
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                return false;
-            }
-
-            // Disable Ctrl+P (Print)
-            if (e.ctrlKey && e.key === 'p') {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Add CSS to prevent text selection
-        const style = document.createElement('style');
-        style.textContent = `
-            body {
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
-        `;
-        document.head.appendChild(style);
-// ═══════════════════════════════════════════════════════════════════════════
-        // PDF.js Configuration and PDF Viewer Functions
-        // ═══════════════════════════════════════════════════════════════════════════
-
-        // Configure PDF.js worker
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-
-        // PDF Viewer Variables
-        let currentPDF = null;
-        let currentPage = 1;
-        let totalPages = 1;
-        let currentScale = 1.2;
-
-        // Image Zoom Functionality
-        function zoomImage(src) {
-            const modal = document.getElementById("zoomModal");
-            const modalImg = document.getElementById("zoomedImage");
-            if (modal && modalImg) {
-                modal.style.display = "block";
-                modalImg.src = src;
-            }
-        }
-
-        // Close zoom modal
-        const closeZoomBtn = document.querySelector(".close-zoom");
-        if (closeZoomBtn) {
-            closeZoomBtn.onclick = function() {
-                const modal = document.getElementById("zoomModal");
-                if (modal) modal.style.display = "none";
-            }
-        }
-
-        // PDF Viewer Function - CALLS ADMINUSER CONTROLLER
-        async function viewPDFInModal(fileName, fileType, displayName) {
-            const modal = document.getElementById('pdfViewerModal');
-            const title = document.getElementById('pdfViewerTitle');
-            const loading = document.getElementById('pdfLoading');
-            const errorDiv = document.getElementById('pdfError');
-            const canvas = document.getElementById('pdfCanvas');
-            const currentPageSpan = document.getElementById('currentPage');
-            const totalPagesSpan = document.getElementById('totalPages');
-            const zoomLevelSpan = document.getElementById('zoomLevel');
-
-            if (!modal || !canvas) {
-                console.error('PDF viewer elements not found');
-                return;
-            }
-
-            const context = canvas.getContext('2d');
-
-            // Reset state
-            if (title) title.textContent = displayName || 'PDF Document';
-            modal.style.display = 'block';
-            if (loading) loading.style.display = 'flex';
-            if (errorDiv) errorDiv.style.display = 'none';
-            canvas.style.display = 'none';
-
-            currentPDF = null;
-            currentPage = 1;
-            currentScale = 1.2;
-
-            try {
-                // Encode filename and build URL - IMPORTANT: Uses Adminuser controller
-                const encodedFileName = encodeURIComponent(fileName);
-                const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
-
-                console.log('Fetching PDF from:', url);
-
-                // Fetch PDF
-                const response = await fetch(url);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const pdfData = await response.arrayBuffer();
-
-                if (!pdfData || pdfData.byteLength === 0) {
-                    throw new Error('PDF data is empty');
-                }
-
-                console.log('PDF data loaded, size:', pdfData.byteLength);
-
-                // Load PDF using PDF.js
-                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-                currentPDF = await loadingTask.promise;
-
-                totalPages = currentPDF.numPages;
-                if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
-                if (currentPageSpan) currentPageSpan.textContent = currentPage;
-
-                // Update control buttons
-                updateNavigationButtons();
-
-                // Render first page
-                await renderPage(currentPage);
-
-                // Hide loading, show canvas
-                if (loading) loading.style.display = 'none';
-                canvas.style.display = 'block';
-                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-                if (loading) loading.style.display = 'none';
-                if (errorDiv) {
-                    errorDiv.style.display = 'block';
-                    const errorMsg = errorDiv.querySelector('p');
-                    if (errorMsg) errorMsg.textContent = \`Error loading PDF: \${error.message}\`;
-                }
-            }
-        }
-
-        // Render specific page
-        async function renderPage(pageNum) {
-            if (!currentPDF) return;
-
-            const canvas = document.getElementById('pdfCanvas');
-            const context = canvas.getContext('2d');
-            const currentPageSpan = document.getElementById('currentPage');
-
-            try {
-                const page = await currentPDF.getPage(pageNum);
-                const viewport = page.getViewport({ scale: currentScale });
-
-                // Set canvas dimensions
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                // Render PDF page
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-
-                await page.render(renderContext).promise;
-                if (currentPageSpan) currentPageSpan.textContent = pageNum;
-
-            } catch (error) {
-                console.error('Error rendering page:', error);
-            }
-        }
-
-        // Navigation functions
-        function nextPage() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderPage(currentPage);
-                updateNavigationButtons();
-            }
-        }
-
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPage(currentPage);
-                updateNavigationButtons();
-            }
-        }
-
-        function zoomIn() {
-            currentScale += 0.2;
-            renderPage(currentPage);
-            const zoomLevelSpan = document.getElementById('zoomLevel');
-            if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-        }
-
-        function zoomOut() {
-            if (currentScale > 0.5) {
-                currentScale -= 0.2;
-                renderPage(currentPage);
-                const zoomLevelSpan = document.getElementById('zoomLevel');
-                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-            }
-        }
-
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-
-            if (prevBtn) prevBtn.disabled = currentPage <= 1;
-            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
-        }
-
-        // Close PDF Viewer
-        function closePDFViewer() {
-            const modal = document.getElementById('pdfViewerModal');
-            if (modal) modal.style.display = 'none';
-
-            // Clean up
-            if (currentPDF) {
-                currentPDF.destroy();
-                currentPDF = null;
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const pdfModal = document.getElementById('pdfViewerModal');
-            const zoomModal = document.getElementById('zoomModal');
-
-            if (event.target == pdfModal) {
-                closePDFViewer();
-            }
-            if (event.target == zoomModal) {
-                zoomModal.style.display = 'none';
-            }
-        }
-    </script>
-
-    <!-- Go Back Button Behavior -->
-
-@section Scripts {
-    <script>
-// Disable right-click context menu
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Disable text selection
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
-
-        // Disable keyboard shortcuts for saving, printing, etc.
-        document.addEventListener('keydown', function(e) {
-            // Disable F12 (Developer Tools)
-            if (e.key === 'F12') {
-                e.preventDefault();
-                return false;
-            }
-
-            // Disable Ctrl+S (Save)
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                return false;
-            }
-
-            // Disable Ctrl+P (Print)
-            if (e.ctrlKey && e.key === 'p') {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Add CSS to prevent text selection
-        const style = document.createElement('style');
-        style.textContent = `
-            body {
-                -webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
-        `;
-        document.head.appendChild(style);
-// ═══════════════════════════════════════════════════════════════════════════
-        // PDF.js Configuration and PDF Viewer Functions
-        // ═══════════════════════════════════════════════════════════════════════════
-
-        // Configure PDF.js worker
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-
-        // PDF Viewer Variables
-        let currentPDF = null;
-        let currentPage = 1;
-        let totalPages = 1;
-        let currentScale = 1.2;
-
-        // Image Zoom Functionality
-        function zoomImage(src) {
-            const modal = document.getElementById("zoomModal");
-            const modalImg = document.getElementById("zoomedImage");
-            if (modal && modalImg) {
-                modal.style.display = "block";
-                modalImg.src = src;
-            }
-        }
-
-        // Close zoom modal
-        const closeZoomBtn = document.querySelector(".close-zoom");
-        if (closeZoomBtn) {
-            closeZoomBtn.onclick = function() {
-                const modal = document.getElementById("zoomModal");
-                if (modal) modal.style.display = "none";
-            }
-        }
-
-        // PDF Viewer Function - CALLS ADMINUSER CONTROLLER
-        async function viewPDFInModal(fileName, fileType, displayName) {
-            const modal = document.getElementById('pdfViewerModal');
-            const title = document.getElementById('pdfViewerTitle');
-            const loading = document.getElementById('pdfLoading');
-            const errorDiv = document.getElementById('pdfError');
-            const canvas = document.getElementById('pdfCanvas');
-            const currentPageSpan = document.getElementById('currentPage');
-            const totalPagesSpan = document.getElementById('totalPages');
-            const zoomLevelSpan = document.getElementById('zoomLevel');
-
-            if (!modal || !canvas) {
-                console.error('PDF viewer elements not found');
-                return;
-            }
-
-            const context = canvas.getContext('2d');
-
-            // Reset state
-            if (title) title.textContent = displayName || 'PDF Document';
-            modal.style.display = 'block';
-            if (loading) loading.style.display = 'flex';
-            if (errorDiv) errorDiv.style.display = 'none';
-            canvas.style.display = 'none';
-
-            currentPDF = null;
-            currentPage = 1;
-            currentScale = 1.2;
-
-            try {
-                // Encode filename and build URL - IMPORTANT: Uses Adminuser controller
-                const encodedFileName = encodeURIComponent(fileName);
-                const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
-
-                console.log('Fetching PDF from:', url);
-
-                // Fetch PDF
-                const response = await fetch(url);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const pdfData = await response.arrayBuffer();
-
-                if (!pdfData || pdfData.byteLength === 0) {
-                    throw new Error('PDF data is empty');
-                }
-
-                console.log('PDF data loaded, size:', pdfData.byteLength);
-
-                // Load PDF using PDF.js
-                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-                currentPDF = await loadingTask.promise;
-
-                totalPages = currentPDF.numPages;
-                if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
-                if (currentPageSpan) currentPageSpan.textContent = currentPage;
-
-                // Update control buttons
-                updateNavigationButtons();
-
-                // Render first page
-                await renderPage(currentPage);
-
-                // Hide loading, show canvas
-                if (loading) loading.style.display = 'none';
-                canvas.style.display = 'block';
-                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-                if (loading) loading.style.display = 'none';
-                if (errorDiv) {
-                    errorDiv.style.display = 'block';
-                    const errorMsg = errorDiv.querySelector('p');
-                    if (errorMsg) errorMsg.textContent = \`Error loading PDF: \${error.message}\`;
-                }
-            }
-        }
-
-        // Render specific page
-        async function renderPage(pageNum) {
-            if (!currentPDF) return;
-
-            const canvas = document.getElementById('pdfCanvas');
-            const context = canvas.getContext('2d');
-            const currentPageSpan = document.getElementById('currentPage');
-
-            try {
-                const page = await currentPDF.getPage(pageNum);
-                const viewport = page.getViewport({ scale: currentScale });
-
-                // Set canvas dimensions
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                // Render PDF page
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-
-                await page.render(renderContext).promise;
-                if (currentPageSpan) currentPageSpan.textContent = pageNum;
-
-            } catch (error) {
-                console.error('Error rendering page:', error);
-            }
-        }
-
-        // Navigation functions
-        function nextPage() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderPage(currentPage);
-                updateNavigationButtons();
-            }
-        }
-
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPage(currentPage);
-                updateNavigationButtons();
-            }
-        }
-
-        function zoomIn() {
-            currentScale += 0.2;
-            renderPage(currentPage);
-            const zoomLevelSpan = document.getElementById('zoomLevel');
-            if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-        }
-
-        function zoomOut() {
-            if (currentScale > 0.5) {
-                currentScale -= 0.2;
-                renderPage(currentPage);
-                const zoomLevelSpan = document.getElementById('zoomLevel');
-                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-            }
-        }
-
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-
-            if (prevBtn) prevBtn.disabled = currentPage <= 1;
-            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
-        }
-
-        // Close PDF Viewer
-        function closePDFViewer() {
-            const modal = document.getElementById('pdfViewerModal');
-            if (modal) modal.style.display = 'none';
-
-            // Clean up
-            if (currentPDF) {
-                currentPDF.destroy();
-                currentPDF = null;
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const pdfModal = document.getElementById('pdfViewerModal');
-            const zoomModal = document.getElementById('zoomModal');
-
-            if (event.target == pdfModal) {
-                closePDFViewer();
-            }
-            if (event.target == zoomModal) {
-                zoomModal.style.display = 'none';
-            }
-        }
-    </script>
-}
