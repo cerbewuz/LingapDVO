@@ -11,91 +11,91 @@ namespace LingapDVO.Models
         [ForeignKey("User")]
         public int UserId { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Lastname { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Firstname { get; set; } = "";
 
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Middlename { get; set; } = "";
 
 
-        [MaxLength(100)]
+        [MaxLength(10)]
         public string Suffix { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string BlkLotStreet { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string SubVill { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string Brgy { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string District { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(10)]
         public string Sex { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(30)]
         public string PhilHealth { get; set; } = "";
 
 
-        [MaxLength(100)]
+        [MaxLength(15)]
         public string? PhilHealthNo { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(20)]
         public string Dateofbirth { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(10)]
         public string Age { get; set; } = "";
 
         //Patient's Details
 
 
         //Requestor's Details
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string? RLastname { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string? RFirstname { get; set; } = "";
 
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string? RMiddlename { get; set; } = "";
 
 
-        [MaxLength(100)]
+        [MaxLength(10)]
         public string? RSuffix { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string? RBlkLotStreet { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string? RSubVill { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string? RBrgy { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(30)]
         public string? RDistrict { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(40)]
         public string? RelationshipPatient { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(12)]
         public string? ContactNo { get; set; } = "";
 
         //Requestor's Details
 
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Typeassistance { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string? ForCMOPERSONNEL { get; set; } = "";
 
 
@@ -119,10 +119,10 @@ namespace LingapDVO.Models
         public DateTime ProcessAt { get; set; }
 
 
-        [MaxLength(100)]
+        [MaxLength(20)]
         public string Status { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(820)]
         public string Processby { get; set; } = "";
 
         public string? Comments { get; set; } = "";
@@ -130,12 +130,12 @@ namespace LingapDVO.Models
         public DateTime Result { get; set; }
 
 
-        [MaxLength(100)]
+        [MaxLength(20)]
         public string Status2 { get; set; } = "";
 
         public DateTime ClaimedAt { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(20)]
         public string Status3 { get; set; } = "";
 
 
