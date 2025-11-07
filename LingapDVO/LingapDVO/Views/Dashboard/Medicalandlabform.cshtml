@@ -472,7 +472,7 @@
                        focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
                        active:scale-95"
                             id="sameAsPatientBtn">
-                        <i class="bi bi-person-check"></i> I am the patient
+                        <i class="bi bi-person-check"></i> I am the requestor
                     </button>
 
                     <button type="button"
@@ -2097,7 +2097,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Reset main button after 2 seconds
                 setTimeout(() => {
-                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> I am the patient';
+                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> I am the requestor';
                     sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
                     sameAsPatientBtn.classList.add('btn-outline-success');
                 }, 2000);
