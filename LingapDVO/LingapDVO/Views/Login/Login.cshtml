@@ -9,10 +9,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In</title>
     <link rel="icon" type="image/x-icon" href="~/Icon/lingaplogo.ico">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+    <!-- Inline Critical CSS (replaces Tailwind CDN for production) -->
+    <link rel="stylesheet" href="~/css/login-styles.css" asp-append-version="true">
 </head>
 <body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-2 sm:p-4 md:p-6">
     <div class="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
@@ -25,23 +27,6 @@
             </div>
 
             <form method="post" id="loginForm" class="space-y-3 sm:space-y-4 md:space-y-4 lg:space-y-5">
-                <!-- Session Timeout Message -->
-                @if (ViewBag.TimeoutMessage != null)
-                {
-                    <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 mb-4 animate-fade-in">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-clock text-yellow-500 text-xl"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-yellow-800">
-                                    @ViewBag.TimeoutMessage
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                }
-
                 <!-- Success Message -->
                 @if (ViewBag.SuccessMessage != null)
                 {
@@ -67,37 +52,36 @@
 
                 <!-- Username/Email Field - Compact -->
                 <div class="space-y-1.5 sm:space-y-2">
-                    <label class="block text-xs sm:text-sm font-semibold text-gray-700">
-                        Username or Email
-                    </label>
                     <div class="relative">
                         <input asp-for="Username"
                                type="text"
-                               class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
+                               class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white"
                                placeholder=" "
                                required
                                autocomplete="username"
                                id="usernameOrEmail">
-                        <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
-                            <i class="fas fa-user mr-1 sm:mr-2 text-crimson-500 text-xs"></i>Enter your username or email
-                        </span>
+                        <label for="usernameOrEmail" class="floating-label">
+                            <i class="fas fa-user"></i>
+                            <span>Enter your username or email</span>
+                        </label>
                     </div>
                     <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
                 </div>
 
                 <!-- Password Field - Compact -->
                 <div class="space-y-1.5 sm:space-y-2">
-                    <label class="block text-xs sm:text-sm font-semibold text-gray-700">
-                        Password
-                    </label>
                     <div class="relative">
                         <input asp-for="Password"
                                type="password"
-                               class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-10 sm:pr-12"
-                               placeholder="Enter your password"
+                               class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white pr-10 sm:pr-12"
+                               placeholder=" "
                                required
                                autocomplete="current-password"
                                id="password">
+                        <label for="password" class="floating-label">
+                            <i class="fas fa-lock"></i>
+                            <span>Enter your password</span>
+                        </label>
                         <button type="button" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="togglePassword">
                             <i class="fas fa-eye text-xs sm:text-sm"></i>
                         </button>
@@ -119,7 +103,7 @@
                             <span class="text-xs sm:text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
                         </button>
 
-                        <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
+                        <a href="/FacebookLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
                             <i class="fab fa-facebook-f text-xs sm:text-xs"></i>
                             <span class="text-xs sm:text-xs font-medium">Facebook</span>
                         </a>
@@ -154,29 +138,40 @@
     </div>
 
     <!-- Success Animation Modal -->
-    <div id="successModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden px-4">
-        <div class="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center shadow-2xl w-full max-w-xs sm:max-w-sm">
-            <div class="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4" id="successIcon">
-                <i class="fas fa-check text-green-600 text-xl sm:text-2xl"></i>
+    <div id="successModal" class="modal-overlay-enhanced">
+        <div class="modal-content-enhanced modal-success">
+            <div class="modal-icon-wrapper success-icon-wrapper" id="successIconWrapper">
+                <div class="success-checkmark">
+                    <div class="check-icon">
+                        <span class="icon-line line-tip"></span>
+                        <span class="icon-line line-long"></span>
+                        <div class="icon-circle"></div>
+                        <div class="icon-fix"></div>
+                    </div>
+                </div>
             </div>
-            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Login Successful!</h3>
-            <p class="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4" id="redirectMessage">Redirecting...</p>
-            <div class="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
-                <div id="progressBar" class="h-1.5 sm:h-2 rounded-full bg-green-500 transition-all duration-500 ease-out" style="width: 0%"></div>
+            <h3 class="modal-title">Login Successful!</h3>
+            <p class="modal-message" id="redirectMessage">Redirecting...</p>
+            <div class="progress-container">
+                <div id="progressBar" class="progress-bar"></div>
             </div>
         </div>
     </div>
 
     <!-- Error Modal -->
-    <div id="errorModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden px-4">
-        <div class="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center shadow-2xl w-full max-w-xs sm:max-w-sm">
-            <div class="w-14 h-14 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <i class="fas fa-exclamation-triangle text-red-600 text-xl sm:text-2xl"></i>
+    <div id="errorModal" class="modal-overlay-enhanced">
+        <div class="modal-content-enhanced modal-error">
+            <div class="modal-icon-wrapper error-icon-wrapper">
+                <div class="error-x-mark">
+                    <span class="error-line error-line-left"></span>
+                    <span class="error-line error-line-right"></span>
+                    <div class="error-circle"></div>
+                </div>
             </div>
-            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2" id="errorModalTitle">Login Failed</h3>
-            <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6" id="errorModalMessage">An error occurred during login.</p>
-            <button type="button" class="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base shadow-sm hover:shadow-md transition-all duration-200" id="errorModalButton">
-                Try Again
+            <h3 class="modal-title" id="errorModalTitle">Login Failed</h3>
+            <p class="modal-message" id="errorModalMessage">An error occurred during login.</p>
+            <button type="button" class="modal-button modal-button-error" id="errorModalButton">
+                <i class="fas fa-redo-alt mr-2"></i>Try Again
             </button>
         </div>
     </div>
@@ -206,23 +201,6 @@
                 }
             }
 
-            // Create pulsing animation using JavaScript
-            function startPulseAnimation() {
-                const successIcon = document.getElementById('successIcon');
-                let opacity = 1;
-                let direction = -1;
-
-                function pulse() {
-                    opacity += direction * 0.03;
-                    if (opacity <= 0.7 || opacity >= 1) {
-                        direction *= -1;
-                    }
-                    successIcon.style.opacity = opacity;
-                    requestAnimationFrame(pulse);
-                }
-                pulse();
-            }
-
             // Show success modal and redirect
             function showSuccessAndRedirect(redirectUrl, userType) {
                 const successModal = document.getElementById('successModal');
@@ -239,11 +217,8 @@
 
                 redirectMessage.textContent = message;
 
-                // Show modal
-                successModal.classList.remove('hidden');
-
-                // Start pulsing animation
-                startPulseAnimation();
+                // Show modal with enhanced animation
+                successModal.classList.add('show');
 
                 // Animate progress bar
                 let progress = 0;
@@ -267,8 +242,8 @@
                 errorModalTitle.textContent = title;
                 errorModalMessage.textContent = message;
 
-                // Show modal
-                errorModal.classList.remove('hidden');
+                // Show modal with enhanced animation
+                errorModal.classList.add('show');
 
                 // Reset reCAPTCHA when error modal is shown
                 grecaptcha.reset();
@@ -276,13 +251,20 @@
 
             // Close error modal when button is clicked
             document.getElementById('errorModalButton').addEventListener('click', function() {
-                document.getElementById('errorModal').classList.add('hidden');
+                const errorModal = document.getElementById('errorModal');
+                errorModal.classList.remove('show');
+                setTimeout(() => {
+                    errorModal.classList.add('hide');
+                }, 300);
             });
 
             // Close error modal when clicking outside
             document.getElementById('errorModal').addEventListener('click', function(e) {
                 if (e.target === this) {
-                    this.classList.add('hidden');
+                    this.classList.remove('show');
+                    setTimeout(() => {
+                        this.classList.add('hide');
+                    }, 300);
                 }
             });
 
@@ -367,59 +349,82 @@
                 }
             });
 
-            // Enhanced input validation
-            const inputs = document.querySelectorAll('input[required]');
+            // Enhanced input validation with color state management
+            const inputs = document.querySelectorAll('.floating-input');
 
             inputs.forEach(input => {
-                input.addEventListener('blur', function() {
-                    if (this.value.trim() === '') {
-                        this.style.borderColor = '#ef4444';
+                const label = input.nextElementSibling;
+
+                // On input - show success state when typing valid content
+                input.addEventListener('input', function() {
+                    if (this.value.trim() !== '') {
+                        // User is typing - show success state
+                        this.classList.remove('error');
+                        this.classList.add('success');
+
+                        if (label && label.classList.contains('floating-label')) {
+                            label.classList.remove('error');
+                            label.classList.add('success', 'active');
+                        }
                     } else {
-                        this.style.borderColor = '#10b981';
+                        // Field is empty - remove all states
+                        this.classList.remove('error', 'success');
+
+                        if (label && label.classList.contains('floating-label')) {
+                            label.classList.remove('error', 'success', 'active');
+                        }
                     }
                 });
 
-                input.addEventListener('input', function() {
-                    if (this.checkValidity() && this.value.trim() !== '') {
-                        this.style.borderColor = '#10b981';
+                // On blur - validate and show error if empty
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        // Show error state for empty field
+                        this.classList.remove('success');
+                        this.classList.add('error');
+
+                        if (label && label.classList.contains('floating-label')) {
+                            label.classList.remove('success', 'active');
+                            label.classList.add('error');
+                        }
                     } else {
-                        this.style.borderColor = '';
+                        // Keep success state for filled field
+                        this.classList.remove('error');
+                        this.classList.add('success');
+
+                        if (label && label.classList.contains('floating-label')) {
+                            label.classList.remove('error');
+                            label.classList.add('success', 'active');
+                        }
                     }
                 });
+
+                // On focus - remove error state and show focus styling
+                input.addEventListener('focus', function() {
+                    if (this.classList.contains('error')) {
+                        this.classList.remove('error');
+
+                        if (label && label.classList.contains('floating-label')) {
+                            label.classList.remove('error');
+                            label.classList.add('active');
+                        }
+                    }
+                });
+            });
+
+            // Initialize floating labels for fields with values
+            document.querySelectorAll('.floating-input').forEach(input => {
+                const label = input.nextElementSibling;
+                if (input.value.trim() !== '' && label && label.classList.contains('floating-label')) {
+                    label.classList.add('active', 'success');
+                    input.classList.add('success');
+                }
             });
 
             // Auto-focus on first input
             const firstInput = document.getElementById('usernameOrEmail');
             if (firstInput && firstInput.value === '') {
                 setTimeout(() => firstInput.focus(), 100);
-            }
-
-            // Floating label functionality
-            const usernameInput = document.getElementById('usernameOrEmail');
-            const usernameLabel = usernameInput.nextElementSibling;
-
-            usernameInput.addEventListener('focus', function() {
-                usernameLabel.style.top = '0';
-                usernameLabel.style.fontSize = '0.75rem';
-                usernameLabel.style.color = '#10b981';
-                usernameLabel.style.transform = 'translateY(-50%)';
-            });
-
-            usernameInput.addEventListener('blur', function() {
-                if (this.value.trim() === '') {
-                    usernameLabel.style.top = '50%';
-                    usernameLabel.style.fontSize = '0.875rem';
-                    usernameLabel.style.color = '#9ca3af';
-                    usernameLabel.style.transform = 'translateY(-50%)';
-                }
-            });
-
-            // Initialize label position
-            if (usernameInput.value.trim() !== '') {
-                usernameLabel.style.top = '0';
-                usernameLabel.style.fontSize = '0.75rem';
-                usernameLabel.style.color = '#10b981';
-                usernameLabel.style.transform = 'translateY(-50%)';
             }
         });
 
@@ -435,395 +440,162 @@
         function onRecaptchaExpired() {
             console.log('reCAPTCHA token expired');
         }
+
+        // Suppress Google reCAPTCHA storage warnings (expected behavior with tracking prevention)
+        // This is a known issue when browsers block third-party cookies
+        window.addEventListener('error', function(e) {
+            // Suppress reCAPTCHA storage access errors (privacy feature, not a bug)
+            if (e.message && e.message.includes('storage') && e.message.includes('google.com')) {
+                e.preventDefault();
+                return false;
+            }
+        }, true);
+
+        // Suppress console warnings about storage access (informational only)
+        const originalConsoleWarn = console.warn;
+        console.warn = function(...args) {
+            const message = args[0];
+            if (typeof message === 'string' && message.includes('storage') && message.includes('google.com')) {
+                // Silently ignore storage warnings from Google domains
+                return;
+            }
+            originalConsoleWarn.apply(console, args);
+        };
     </script>
 
-    <!--New Script for Notifications-->
+    <!-- Session Timeout Toast Notification -->
     <script>
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-
-        // Notification functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const notificationButton = document.getElementById('notificationButton');
-            const notificationDropdown = document.getElementById('notificationDropdown');
-            const notificationBadge = document.getElementById('notificationBadge');
-            const notificationList = document.getElementById('notificationList');
-            const markAllRead = document.getElementById('markAllRead');
+            // Check if there's a session timeout message
+            const timeoutMessage = '@ViewBag.TimeoutMessage';
 
-            let isDropdownOpen = false;
-            let notificationCheckInterval;
-
-            // Toggle notification dropdown
-            notificationButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                isDropdownOpen = !isDropdownOpen;
-                notificationDropdown.style.display = isDropdownOpen ? 'block' : 'none';
-
-                if (isDropdownOpen) {
-                    loadNotifications();
-                    startRealTimeUpdates();
-                } else {
-                    stopRealTimeUpdates();
-                }
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function() {
-                if (isDropdownOpen) {
-                    notificationDropdown.style.display = 'none';
-                    isDropdownOpen = false;
-                    stopRealTimeUpdates();
-                }
-            });
-
-            // Mark all as read
-            markAllRead.addEventListener('click', function(e) {
-                e.stopPropagation();
-                markAllNotificationsAsRead();
-            });
-
-            // Real-time update functions
-            function startRealTimeUpdates() {
-                // Check for new notifications every 10 seconds when dropdown is open
-                notificationCheckInterval = setInterval(loadNotifications, 10000);
+            // If session timeout occurred, show toast notification
+            if (timeoutMessage && timeoutMessage.trim() !== '') {
+                showSessionTimeoutToast();
             }
-
-            function stopRealTimeUpdates() {
-                if (notificationCheckInterval) {
-                    clearInterval(notificationCheckInterval);
-                }
-            }
-
-            // Load notifications from server asynchronously
-            async function loadNotifications() {
-                try {
-                    const response = await fetch('/api/notifications/user-notifications', {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include' // Important for session cookies
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const notifications = await response.json();
-                    updateNotificationUI(notifications);
-
-                    // Also update the badge count
-                    updateUnreadCount();
-                } catch (error) {
-                    console.error('Error loading notifications:', error);
-                    // Show offline or error state
-                    showErrorState();
-                }
-            }
-
-            // Update unread count asynchronously
-            async function updateUnreadCount() {
-                try {
-                    const response = await fetch('/api/notifications/unread-count', {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include'
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        const unreadCount = result.count;
-
-                        if (unreadCount > 0) {
-                            notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-                            notificationBadge.style.display = 'flex';
-                        } else {
-                            notificationBadge.style.display = 'none';
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error updating unread count:', error);
-                }
-            }
-
-            // Mark notification as read asynchronously
-            async function markNotificationAsRead(notificationId) {
-                try {
-                    const response = await fetch(`/api/notifications/mark-as-read/${notificationId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include'
-                    });
-
-                    if (response.ok) {
-                        // Reload notifications to reflect the change
-                        await loadNotifications();
-                    }
-                } catch (error) {
-                    console.error('Error marking notification as read:', error);
-                }
-            }
-
-            // Mark all notifications as read asynchronously
-            async function markAllNotificationsAsRead() {
-                try {
-                    const response = await fetch('/api/notifications/mark-all-read', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include'
-                    });
-
-                    if (response.ok) {
-                        // Reload notifications and update badge
-                        await loadNotifications();
-                        await updateUnreadCount();
-
-                        // Show success feedback
-                        showTempMessage('All notifications marked as read');
-                    }
-                } catch (error) {
-                    console.error('Error marking all notifications as read:', error);
-                    showTempMessage('Error marking notifications as read', true);
-                }
-            }
-
-            function updateNotificationUI(notifications) {
-                notificationList.innerHTML = '';
-
-                if (!notifications || notifications.length === 0) {
-                    notificationList.innerHTML = `
-                        <div class="notification-empty">
-                            <i class="fas fa-bell-slash fa-2x mb-2"></i>
-                            <p>No notifications</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                notifications.forEach(notification => {
-                    const notificationItem = document.createElement('div');
-                    notificationItem.className = `notification-item ${notification.isRead ? '' : 'unread'}`;
-                    notificationItem.innerHTML = `
-                        <div class="notification-title">${escapeHtml(notification.title)}</div>
-                        <div class="notification-message">${escapeHtml(notification.message)}</div>
-                        <div class="notification-time">${formatTime(notification.createdAt)}</div>
-                    `;
-
-                    notificationItem.addEventListener('click', async function() {
-                        if (!notification.isRead) {
-                            await markNotificationAsRead(notification.id);
-                        }
-
-                        // Navigate to relevant page if needed
-                        if (notification.link) {
-                            window.location.href = notification.link;
-                        }
-                    });
-
-                    notificationList.appendChild(notificationItem);
-                });
-            }
-
-            function showErrorState() {
-                notificationList.innerHTML = `
-                    <div class="notification-empty">
-                        <i class="fas fa-wifi-slash fa-2x mb-2"></i>
-                        <p>Unable to load notifications</p>
-                        <button class="btn btn-sm btn-primary mt-2" onclick="loadNotifications()">Retry</button>
-                    </div>
-                `;
-            }
-
-            function showTempMessage(message, isError = false) {
-                const tempDiv = document.createElement('div');
-                tempDiv.className = `notification-item ${isError ? 'bg-danger text-white' : 'bg-success text-white'}`;
-                tempDiv.innerHTML = `
-                    <div class="notification-message">${message}</div>
-                `;
-
-                notificationList.prepend(tempDiv);
-
-                setTimeout(() => {
-                    tempDiv.remove();
-                }, 3000);
-            }
-
-            function formatTime(dateString) {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-
-                if (diffInMinutes < 1) return 'Just now';
-                if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-                if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
-                return `${Math.floor(diffInMinutes / 1440)}d ago`;
-            }
-
-            function escapeHtml(unsafe) {
-                return unsafe
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            }
-
-            // Initialize notification system
-            updateUnreadCount(); // Load badge count on page load
-
-            // Poll for new notifications every 30 seconds (even when dropdown is closed)
-            setInterval(updateUnreadCount, 30000);
         });
-    </script>
 
-    <style>
-        .crimson-500 {
-            color: #DC143C;
-        }
-
-        .crimson-600 {
-            color: #b01030;
-        }
-
-        .bg-crimson-500 {
-            background-color: #DC143C;
-        }
-
-        .bg-crimson-600 {
-            background-color: #b01030;
-        }
-
-        /* Custom gradient for text */
-        .text-crimson-600 {
-            color: #DC143C;
-        }
-
-        .hover\:text-crimson-700:hover {
-            color: #b01030;
-        }
-
-        /* Ensure proper focus states */
-        input:focus + span {
-            top: 0 !important;
-            font-size: 0.75rem !important;
-            color: #10b981 !important;
-            transform: translateY(-50%) !important;
-        }
-
-        /* Password toggle button styles */
-        #togglePassword {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-            #togglePassword:hover {
-                color: #4b5563;
+        function showSessionTimeoutToast() {
+            // Create toast container if it doesn't exist
+            let toastContainer = document.getElementById('sessionToastContainer');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'sessionToastContainer';
+                toastContainer.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 10000;
+                    max-width: 400px;
+                `;
+                document.body.appendChild(toastContainer);
             }
 
-        /* Google Credential Conflict Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = 'session-timeout-toast';
+            toast.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 12px;
+                    padding: 20px;
+                    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+                    color: white;
+                    animation: slideInRight 0.5s ease-out, fadeOut 0.5s ease-in 4.5s;
+                    min-width: 350px;
+                ">
+                    <div style="display: flex; align-items: start; gap: 15px;">
+                        <div style="
+                            background: rgba(255, 255, 255, 0.2);
+                            border-radius: 50%;
+                            width: 48px;
+                            height: 48px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            flex-shrink: 0;
+                        ">
+                            <i class="fas fa-clock" style="font-size: 24px;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; font-size: 16px; margin-bottom: 5px;">
+                                <strong>Session Stopped due to Inactivity</strong>
+                            </div>
+                            <div style="font-size: 14px; opacity: 0.95; line-height: 1.4;">
+                                You have been signed out due to inactivity.
+                            </div>
+                        </div>
+                        <button onclick="this.closest('.session-timeout-toast').remove()"
+                                style="
+                                    background: rgba(255, 255, 255, 0.2);
+                                    border: none;
+                                    color: white;
+                                    width: 28px;
+                                    height: 28px;
+                                    border-radius: 50%;
+                                    cursor: pointer;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    transition: background 0.2s;
+                                    flex-shrink: 0;
+                                "
+                                onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                                onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div style="
+                        margin-top: 15px;
+                        height: 4px;
+                        background: rgba(255, 255, 255, 0.2);
+                        border-radius: 2px;
+                        overflow: hidden;
+                    ">
+                        <div style="
+                            height: 100%;
+                            background: rgba(255, 255, 255, 0.8);
+                            width: 100%;
+                            animation: shrinkProgress 5s linear;
+                        "></div>
+                    </div>
+                </div>
+            `;
 
-        .modal-overlay.show {
-            opacity: 1;
-        }
+            toastContainer.appendChild(toast);
 
-        .modal-overlay.hide {
-            opacity: 0;
+            // Auto-remove toast after 5 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 5000);
         }
-
-        .modal-content-custom {
-            background: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-        }
-
-        .modal-overlay.show .modal-content-custom {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .modal-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 1rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-        }
-
-        .modal-icon.error {
-            background: rgba(231, 76, 60, 0.1);
-            color: #e74c3c;
-        }
-
-        .modal-icon.warning {
-            background: rgba(255, 193, 7, 0.1);
-            color: #ffc107;
-        }
-    </style>
+    </script>
 
     <!-- Google Credential Conflict Modal -->
     @if (TempData["GoogleCredentialConflict"] != null)
     {
-        <div class="modal-overlay show" id="googleConflictModal">
-            <div class="modal-content-custom">
-                <div class="text-center">
-                    <div class="modal-icon error">
-                        <i class="fas fa-exclamation-circle"></i>
+        <div class="modal-overlay-enhanced show" id="googleConflictModal">
+            <div class="modal-content-enhanced modal-warning">
+                <div class="modal-icon-wrapper warning-icon-wrapper">
+                    <div class="warning-icon-animated">
+                        <span class="warning-exclamation">!</span>
+                        <div class="warning-circle"></div>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">
-                        @TempData["GoogleConflictType"]
-                    </h3>
-                    <p class="text-gray-600 mb-6">
-                        @Html.Raw(TempData["GoogleConflictMessage"])
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                        <button onclick="closeConflictModal()"
-                                class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-colors duration-200">
-                            <i class="fas fa-times mr-2"></i>Close
-                        </button>
-                        <a href="mailto:support@lingapdvo.com"
-                           class="px-6 py-3 bg-crimson-500 hover:bg-crimson-600 text-white font-semibold rounded-lg transition-colors duration-200">
-                            <i class="fas fa-envelope mr-2"></i>Contact Support
-                        </a>
-                    </div>
+                </div>
+                <h3 class="modal-title text-xl sm:text-2xl">
+                    @TempData["GoogleConflictType"]
+                </h3>
+                <p class="modal-message mb-5 sm:mb-6">
+                    @Html.Raw(TempData["GoogleConflictMessage"])
+                </p>
+                <div class="modal-actions">
+                    <button onclick="closeConflictModal()" class="modal-button modal-button-secondary">
+                        <i class="fas fa-times mr-2"></i>Close
+                    </button>
+                    <a href="mailto:support@lingapdvo.com" class="modal-button modal-button-primary">
+                        <i class="fas fa-envelope mr-2"></i>Contact Support
+                    </a>
                 </div>
             </div>
         </div>
@@ -857,49 +629,48 @@
     }
 
     <!-- Google Sign-In Confirmation Modal -->
-    <div class="modal-overlay" id="googleConfirmationModal" style="display: none;">
-        <div class="modal-content-custom">
-            <div class="text-center">
-                <div class="modal-icon warning">
+    <div class="modal-overlay-enhanced" id="googleConfirmationModal" style="display: none;">
+        <div class="modal-content-enhanced modal-info">
+            <div class="modal-icon-wrapper info-icon-wrapper">
+                <div class="info-icon-animated">
                     <i class="fas fa-exclamation-triangle"></i>
+                    <div class="info-circle"></div>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">
-                    Important: Google Account Name Verification
-                </h3>
-                <div class="text-left mb-6 space-y-3">
-                    <p class="text-gray-700 font-semibold">
-                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                        Before proceeding, please confirm:
-                    </p>
-                    <ul class="list-none space-y-2 text-gray-600 text-sm">
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
-                            <span>The name in your Google account must be your <strong>real, legal name</strong></span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-id-card text-blue-500 mr-2 mt-1"></i>
-                            <span>Your name will be <strong>verified against a valid ID</strong> during Account Verification</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-times-circle text-red-500 mr-2 mt-1"></i>
-                            <span>You <strong>cannot complete verification</strong> if your Google name doesn't match your valid ID</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-ban text-red-500 mr-2 mt-1"></i>
-                            <span>Accounts with fake or invalid names may be <strong>suspended</strong></span>
-                        </li>
-                    </ul>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <button onclick="closeGoogleConfirmation()"
-                            class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-colors duration-200">
-                        <i class="fas fa-times mr-2"></i>Cancel
-                    </button>
-                    <button onclick="proceedToGoogle()"
-                            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200">
-                        <i class="fas fa-check mr-2"></i>I Understand, Continue
-                    </button>
-                </div>
+            </div>
+            <h3 class="modal-title text-lg sm:text-xl mb-3 sm:mb-4">
+                Important: Google Account Name Verification
+            </h3>
+            <div class="modal-content-scrollable">
+                <p class="modal-subtitle">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    Before proceeding, please confirm:
+                </p>
+                <ul class="modal-list">
+                    <li class="modal-list-item">
+                        <i class="fas fa-check-circle text-green-500"></i>
+                        <span>The name in your Google account must be your <strong>real, legal name</strong></span>
+                    </li>
+                    <li class="modal-list-item">
+                        <i class="fas fa-id-card text-blue-500"></i>
+                        <span>Your name will be <strong>verified against a valid ID</strong> during Account Verification</span>
+                    </li>
+                    <li class="modal-list-item">
+                        <i class="fas fa-times-circle text-red-500"></i>
+                        <span>You <strong>cannot complete verification</strong> if your Google name doesn't match your valid ID</span>
+                    </li>
+                    <li class="modal-list-item">
+                        <i class="fas fa-ban text-red-500"></i>
+                        <span>Accounts with fake or invalid names may be <strong>suspended</strong></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeGoogleConfirmation()" class="modal-button modal-button-secondary">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button onclick="proceedToGoogle()" class="modal-button modal-button-success">
+                    <i class="fas fa-check mr-2"></i>I Understand, Continue
+                </button>
             </div>
         </div>
     </div>
@@ -929,7 +700,7 @@
 
         function proceedToGoogle() {
             // Redirect to Google Sign-In
-            window.location.href = '/Login/GoogleLogin';
+            window.location.href = '/GoogleLogin';
         }
 
         // Close modal on escape key

@@ -17,7 +17,7 @@ namespace LingapDVO.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -754,43 +754,6 @@ namespace LingapDVO.Migrations
                     b.ToTable("Medicalandlabform");
                 });
 
-            modelBuilder.Entity("LingapDVO.Models.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Link")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("LingapDVO.Models.Register", b =>
                 {
                     b.Property<int>("Id")
@@ -906,6 +869,15 @@ namespace LingapDVO.Migrations
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
+
+                    b.Property<bool>("PreferEmailNotification")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("PreferInAppNotification")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("PreferSmsNotification")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
@@ -1293,16 +1265,6 @@ namespace LingapDVO.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("SecurityQuestions")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Securityanswer")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("SubVill")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1319,17 +1281,6 @@ namespace LingapDVO.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Verifyaccount");
-                });
-
-            modelBuilder.Entity("LingapDVO.Models.Notification", b =>
-                {
-                    b.HasOne("LingapDVO.Models.RegisterAcc", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

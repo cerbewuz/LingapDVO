@@ -4,53 +4,6 @@
     ViewData["Title"] = "Application View";
 }
 
-<!-- Image Zoom Modal -->
-<div id="zoomModal" class="zoom-modal">
-    <span class="close-zoom">&times;</span>
-    <img class="zoom-modal-content" id="zoomedImage">
-</div>
-
-<!-- PDF Viewer Modal -->
-<div id="pdfViewerModal" class="pdf-viewer-modal">
-    <div class="pdf-viewer-content">
-        <div class="pdf-viewer-header">
-            <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
-            <div class="pdf-controls">
-                <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
-                    <i class="bi bi-chevron-left"></i> Previous
-                </button>
-                <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
-                <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
-                    Next <i class="bi bi-chevron-right"></i>
-                </button>
-                <button class="btn btn-sm btn-light" onclick="zoomOut()">
-                    <i class="bi bi-zoom-out"></i>
-                </button>
-                <span class="zoom-level" id="zoomLevel">100%</span>
-                <button class="btn btn-sm btn-light" onclick="zoomIn()">
-                    <i class="bi bi-zoom-in"></i>
-                </button>
-            </div>
-            <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
-        </div>
-        <div class="pdf-viewer-body">
-            <div id="pdfLoading" class="pdf-loading">
-                <div class="spinner-border text-light" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p>Loading PDF document...</p>
-            </div>
-            <div id="pdfError" class="pdf-error">
-                <i class="bi bi-exclamation-triangle"></i>
-                <p>Error loading PDF. Please try again.</p>
-            </div>
-            <div class="pdf-container">
-                <canvas id="pdfCanvas"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="receipt-container">
         <form asp-action="FillupformHospitalBillUpdatestatus" method="post">
             <div class="receipt-header">
@@ -235,4 +188,5 @@
             </div>
         </form>
     </div>
+
 

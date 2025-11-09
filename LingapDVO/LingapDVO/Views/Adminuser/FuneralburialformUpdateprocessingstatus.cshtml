@@ -2,57 +2,8 @@
 @{
     Layout = "_AdminProcessingLayout";
     ViewData["Title"] = "Application View";
-    var selectedSex = ViewData["Sex"]?.ToString();
-    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
-
-<!-- Image Zoom Modal -->
-    <div id="zoomModal" class="zoom-modal">
-        <span class="close-zoom">&times;</span>
-        <img class="zoom-modal-content" id="zoomedImage">
-    </div>
-
-    <!-- PDF Viewer Modal -->
-    <div id="pdfViewerModal" class="pdf-viewer-modal">
-        <div class="pdf-viewer-content">
-            <div class="pdf-viewer-header">
-                <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
-                <div class="pdf-controls">
-                    <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
-                        <i class="bi bi-chevron-left"></i> Previous
-                    </button>
-                    <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
-                    <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
-                        Next <i class="bi bi-chevron-right"></i>
-                    </button>
-                    <button class="btn btn-sm btn-light" onclick="zoomOut()">
-                        <i class="bi bi-zoom-out"></i>
-                    </button>
-                    <span class="zoom-level" id="zoomLevel">100%</span>
-                    <button class="btn btn-sm btn-light" onclick="zoomIn()">
-                        <i class="bi bi-zoom-in"></i>
-                    </button>
-                </div>
-                <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
-            </div>
-            <div class="pdf-viewer-body">
-                <div id="pdfLoading" class="pdf-loading">
-                    <div class="spinner-border text-light" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p>Loading PDF document...</p>
-                </div>
-                <div id="pdfError" class="pdf-error">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <p>Error loading PDF. Please try again.</p>
-                </div>
-                <div class="pdf-container">
-                    <canvas id="pdfCanvas"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Comments Modal -->
     <div id="commentsModal" class="comments-modal">
@@ -313,4 +264,290 @@
             </div>
         </form>
     </div>
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // PDF Viewer Variables
+        let currentPDF = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScale = 1.2;
 
+        // Image Zoom Functionality
+        function zoomImage(src) {
+            const modal = document.getElementById("zoomModal");
+            const modalImg = document.getElementById("zoomedImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        // Close zoom modal
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
+
+        // PDF Viewer Function
+        async function viewPDFInModal(fileName, fileType, displayName) {
+            const modal = document.getElementById('pdfViewerModal');
+            const title = document.getElementById('pdfViewerTitle');
+            const loading = document.getElementById('pdfLoading');
+            const errorDiv = document.getElementById('pdfError');
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            title.textContent = displayName || 'PDF Document';
+            modal.style.display = 'block';
+            loading.style.display = 'flex';
+            errorDiv.style.display = 'none';
+            canvas.style.display = 'none';
+
+            currentPDF = null;
+            currentPage = 1;
+            currentScale = 1.2;
+
+            try {
+                const encodedFileName = encodeURIComponent(fileName);
+                const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const pdfData = await response.arrayBuffer();
+                if (!pdfData || pdfData.byteLength === 0) {
+                    throw new Error('PDF data is empty');
+                }
+
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                totalPagesSpan.textContent = totalPages;
+                currentPageSpan.textContent = currentPage;
+
+                updateNavigationButtons();
+                await renderPage(currentPage);
+
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+            }
+        }
+
+        // Render specific page
+        async function renderPage(pageNum) {
+            if (!currentPDF) return;
+
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+
+            try {
+                const page = await currentPDF.getPage(pageNum);
+                const viewport = page.getViewport({ scale: currentScale });
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                currentPageSpan.textContent = pageNum;
+
+            } catch (error) {
+                console.error('Error rendering page:', error);
+            }
+        }
+
+        // Navigation functions
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function zoomIn() {
+            currentScale += 0.2;
+            renderPage(currentPage);
+            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.2;
+                renderPage(currentPage);
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        // Close PDF Viewer
+        function closePDFViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'none';
+
+            if (currentPDF) {
+                currentPDF.destroy();
+                currentPDF = null;
+            }
+        }
+
+        // Status Submission Functions
+        function submitApproved() {
+            document.getElementById('statusInput').value = 'Approved';
+            document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
+            document.getElementById('statusForm').submit();
+        }
+
+        function showCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'block';
+            document.getElementById('commentsTextarea').focus();
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'none';
+            document.getElementById('commentsTextarea').value = '';
+            document.getElementById('commentsTextarea').classList.remove('is-invalid');
+        }
+
+        function submitDisapproved() {
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            const comments = commentsTextarea.value.trim();
+
+            if (comments === '') {
+                commentsTextarea.classList.add('is-invalid');
+                commentsTextarea.focus();
+                return;
+            }
+
+            document.getElementById('statusInput').value = 'Disapproved';
+            document.getElementById('commentsInput').value = comments;
+            document.getElementById('statusForm').submit();
+        }
+
+        // CMO Reflection Auto-generation
+        document.addEventListener('DOMContentLoaded', function() {
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+            cmoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        cmoCheckboxes.forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    }
+                    updateReflection();
+                });
+            });
+
+            function updateReflection() {
+                const billInput = document.getElementById('billAmountInput');
+                const cmoNotes = document.getElementById('cmoNotesInput');
+                const reflectionField = document.getElementById('cmoReflectionField');
+                const docCheckboxes = document.querySelectorAll('.supporting-doc');
+
+                let parts = [];
+                if (billInput.value.trim()) {
+                    parts.push(`Bill: ${billInput.value.trim()}`);
+                }
+                const checkedDocs = [];
+                docCheckboxes.forEach(cb => {
+                    if (cb.checked) checkedDocs.push(cb.value);
+                });
+                if (checkedDocs.length) {
+                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                }
+                if (cmoNotes.value.trim()) {
+                    parts.push(`Others: ${cmoNotes.value.trim()}`);
+                }
+                reflectionField.value = parts.join(' , ');
+            }
+
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+            updateReflection();
+        });
+
+        // Keyboard shortcuts and navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById("zoomModal").style.display = "none";
+                closePDFViewer();
+                closeCommentsModal();
+            }
+
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+            const commentsModal = document.getElementById("commentsModal");
+
+            if (event.target == zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal) {
+                closePDFViewer();
+            }
+            if (event.target == commentsModal) {
+                closeCommentsModal();
+            }
+        }
+    </script>
+}

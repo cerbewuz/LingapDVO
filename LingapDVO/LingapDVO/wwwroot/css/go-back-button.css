@@ -1,0 +1,70 @@
+﻿/* go-back-button.css - Enhanced with fixed positioning */
+.go-back-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 999;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #007bff;
+    color: white !important;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+    .go-back-btn i {
+        font-size: 16px;
+        transition: transform 0.3s ease;
+    }
+
+    .go-back-btn:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 86, 179, 0.4);
+        color: white !important;
+        text-decoration: none;
+    }
+
+    .go-back-btn:hover i {
+        transform: translateX(-3px);
+    }
+
+    .go-back-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0, 86, 179, 0.3);
+    }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .go-back-btn {
+        top: 15px;
+        left: 15px;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .go-back-btn i {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .go-back-btn {
+        top: 10px;
+        left: 10px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .go-back-btn i {
+        font-size: 12px;
+    }
+}

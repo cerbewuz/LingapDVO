@@ -39,10 +39,10 @@
 <body>
     <div class="forms-layout-wrapper">
         <!-- Go Back Button -->
-        <button id="goBackBtn" data-back-url="/Admin">
+        <a href="#" class="go-back-btn" data-url="/Admin">
             <i class="fas fa-arrow-left"></i>
-            <span>Go Back</span>
-        </button>
+            <span>Back</span>
+        </a>
 
         <div class="form-container">
             @RenderBody()
@@ -64,9 +64,6 @@
 
     <!-- Security Scripts -->
     <script src="~/js/security.js"></script>
-
-    <!-- PDF Viewer -->
-    <script src="~/js/pdf-viewer.js"></script>
 
     <!-- Image Zoom -->
     <script src="~/js/image-zoom.js"></script>

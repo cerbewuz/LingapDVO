@@ -35,9 +35,12 @@ namespace LingapDVO.Models
 
         public string? Status { get; set; } = "";
 
+        [MaxLength(500)]
+        public string? Profilepicture { get; set; } = "";
+
         // Notification Preferences
         public bool PreferEmailNotification { get; set; } = true;
-        public bool PreferSmsNotification { get; set; } = false;
+        public bool PreferSmsNotification { get; set; } = true;
         public bool PreferInAppNotification { get; set; } = true;
     }
 }

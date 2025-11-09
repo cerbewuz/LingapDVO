@@ -1888,6 +1888,179 @@ document.addEventListener('DOMContentLoaded', function () {
         return Math.round(similarity);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STRICT LETTER-BY-LETTER NAME MATCHING LAYER
+    // Final validation layer that performs character-by-character comparison
+    // ═══════════════════════════════════════════════════════════════════════════
+    function performStrictNameMatching(extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix,
+                                        registeredFirstName, registeredMiddleName, registeredLastName, registeredSuffix) {
+
+        console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+        console.log('║     STRICT LETTER-BY-LETTER NAME MATCHING (FINAL LAYER)      ║');
+        console.log('╚═══════════════════════════════════════════════════════════════╝');
+
+        // Normalize function - strict: only uppercase letters, remove all special chars and spaces
+        const strictNormalize = (name) => {
+            if (!name) return "";
+            return name.trim().toUpperCase().replace(/[^A-Z]/g, '');
+        };
+
+        // Normalize all name components
+        const extFirst = strictNormalize(extractedFirstName);
+        const extMiddle = strictNormalize(extractedMiddleName);
+        const extLast = strictNormalize(extractedLastName);
+        const extSuffix = strictNormalize(extractedSuffix);
+
+        const regFirst = strictNormalize(registeredFirstName);
+        const regMiddle = strictNormalize(registeredMiddleName);
+        const regLast = strictNormalize(registeredLastName);
+        const regSuffix = strictNormalize(registeredSuffix || "");
+
+        console.log('📊 Normalized Comparison:');
+        console.log('┌─────────────────────────────────────────────────────────────┐');
+        console.log('│ Component    │ Extracted         │ Registered        │ Match │');
+        console.log('├─────────────────────────────────────────────────────────────┤');
+
+        // Letter-by-letter comparison function
+        const letterByLetterMatch = (str1, str2, componentName) => {
+            // Empty strings handling
+            if (!str1 && !str2) {
+                console.log(`│ ${componentName.padEnd(12)} │ ${'(empty)'.padEnd(17)} │ ${'(empty)'.padEnd(17)} │   ✓   │`);
+                return { matches: true, reason: 'Both empty', details: '' };
+            }
+
+            if (!str1 || !str2) {
+                const missing = !str1 ? 'extracted' : 'registered';
+                console.log(`│ ${componentName.padEnd(12)} │ ${(str1 || '(empty)').padEnd(17)} │ ${(str2 || '(empty)').padEnd(17)} │   ✗   │`);
+                return {
+                    matches: false,
+                    reason: `${componentName} missing in ${missing}`,
+                    details: `Expected: "${str2 || 'N/A'}", Got: "${str1 || 'N/A'}"`
+                };
+            }
+
+            // Exact match check
+            if (str1 === str2) {
+                console.log(`│ ${componentName.padEnd(12)} │ ${str1.padEnd(17)} │ ${str2.padEnd(17)} │   ✓   │`);
+                return { matches: true, reason: 'Exact match', details: '' };
+            }
+
+            // Letter-by-letter comparison
+            const minLen = Math.min(str1.length, str2.length);
+            const maxLen = Math.max(str1.length, str2.length);
+            let matchingChars = 0;
+            let firstMismatchPos = -1;
+            let mismatchDetails = [];
+
+            for (let i = 0; i < maxLen; i++) {
+                const char1 = str1[i] || '';
+                const char2 = str2[i] || '';
+
+                if (char1 === char2 && char1 !== '') {
+                    matchingChars++;
+                } else if (firstMismatchPos === -1) {
+                    firstMismatchPos = i;
+                    mismatchDetails.push(`Position ${i + 1}: got '${char1 || 'END'}' expected '${char2 || 'END'}'`);
+                } else if (mismatchDetails.length < 3) {
+                    mismatchDetails.push(`Position ${i + 1}: got '${char1 || 'END'}' expected '${char2 || 'END'}'`);
+                }
+            }
+
+            const matchPercentage = (matchingChars / maxLen) * 100;
+
+            // Display comparison
+            const displayStr1 = str1.length > 17 ? str1.substring(0, 14) + '...' : str1;
+            const displayStr2 = str2.length > 17 ? str2.substring(0, 14) + '...' : str2;
+            console.log(`│ ${componentName.padEnd(12)} │ ${displayStr1.padEnd(17)} │ ${displayStr2.padEnd(17)} │   ✗   │`);
+
+            return {
+                matches: false,
+                reason: `Letter mismatch at position ${firstMismatchPos + 1}`,
+                details: mismatchDetails.join('; '),
+                matchPercentage: Math.round(matchPercentage),
+                expectedLength: str2.length,
+                actualLength: str1.length
+            };
+        };
+
+        // Perform strict matching for each component
+        const lastNameResult = letterByLetterMatch(extLast, regLast, 'Last Name');
+        const firstNameResult = letterByLetterMatch(extFirst, regFirst, 'First Name');
+        const middleNameResult = letterByLetterMatch(extMiddle, regMiddle, 'Middle Name');
+
+        // Suffix is optional - only check if both exist
+        let suffixResult = { matches: true, reason: 'Suffix optional', details: '' };
+        if (extSuffix && regSuffix) {
+            suffixResult = letterByLetterMatch(extSuffix, regSuffix, 'Suffix');
+        } else if (extSuffix || regSuffix) {
+            console.log(`│ ${'Suffix'.padEnd(12)} │ ${(extSuffix || '(none)').padEnd(17)} │ ${(regSuffix || '(none)').padEnd(17)} │   ~   │`);
+            suffixResult = { matches: true, reason: 'Suffix optional (one empty)', details: '' };
+        }
+
+        console.log('└─────────────────────────────────────────────────────────────┘');
+
+        // Check if all required components match
+        const allMatch = lastNameResult.matches && firstNameResult.matches && middleNameResult.matches;
+
+        if (allMatch) {
+            console.log('\n✅ STRICT VALIDATION PASSED - All name components match letter-by-letter');
+            console.log('   ├─ Last Name : ✓ EXACT MATCH');
+            console.log('   ├─ First Name: ✓ EXACT MATCH');
+            console.log('   ├─ Middle Name: ✓ EXACT MATCH');
+            if (extSuffix || regSuffix) {
+                console.log(`   └─ Suffix    : ${suffixResult.matches ? '✓ MATCH' : '~ OPTIONAL (ignored)'}`);
+            }
+            console.log('╚═══════════════════════════════════════════════════════════════╝\n');
+
+            return {
+                passed: true,
+                confidence: 100,
+                message: 'All name components match exactly (letter-by-letter validation)'
+            };
+        }
+
+        // Collect all mismatches
+        const mismatches = [];
+        const mismatchDetails = [];
+
+        if (!lastNameResult.matches) {
+            mismatches.push('Last Name');
+            mismatchDetails.push(`Last Name: ${lastNameResult.details}`);
+            console.log(`   ❌ Last Name : ${lastNameResult.reason}`);
+            console.log(`      └─ ${lastNameResult.details}`);
+        }
+
+        if (!firstNameResult.matches) {
+            mismatches.push('First Name');
+            mismatchDetails.push(`First Name: ${firstNameResult.details}`);
+            console.log(`   ❌ First Name: ${firstNameResult.reason}`);
+            console.log(`      └─ ${firstNameResult.details}`);
+        }
+
+        if (!middleNameResult.matches) {
+            mismatches.push('Middle Name');
+            mismatchDetails.push(`Middle Name: ${middleNameResult.details}`);
+            console.log(`   ❌ Middle Name: ${middleNameResult.reason}`);
+            console.log(`      └─ ${middleNameResult.details}`);
+        }
+
+        console.log('\n❌ STRICT VALIDATION FAILED - Name components do not match exactly');
+        console.log(`   Failed components: ${mismatches.join(', ')}`);
+        console.log('╚═══════════════════════════════════════════════════════════════╝\n');
+
+        return {
+            passed: false,
+            confidence: 0,
+            message: `Letter-by-letter mismatch in: ${mismatches.join(', ')}`,
+            failedComponents: mismatches,
+            details: mismatchDetails,
+            lastNameResult,
+            firstNameResult,
+            middleNameResult,
+            suffixResult
+        };
+    }
+
     // Validate Name Match - TWO-STEP VALIDATION
     function validateNameMatch(extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix = "", idType = "") {
         // Normalize names for comparison
@@ -1988,10 +2161,47 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`✓ STEP 1 PASSED: All components match (${overallSimilarity}% similarity)`);
             console.log('═══════════════════════════════════════════════════════\n');
 
+            // ═══════════════════════════════════════════════════════════════════════════
+            // FINAL STRICT VALIDATION LAYER - Letter-by-letter matching
+            // Even if similarity is high, perform exact character comparison
+            // ═══════════════════════════════════════════════════════════════════════════
+            console.log('⚠️  Proceeding to FINAL STRICT VALIDATION before accepting match...\n');
+
+            const strictResult = performStrictNameMatching(
+                extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix,
+                registeredFirstName, registeredMiddleName, registeredLastName, registeredSuffix
+            );
+
+            if (!strictResult.passed) {
+                // Strict validation failed - reject the match
+                console.error('❌ FINAL VALIDATION FAILED - Strict letter-by-letter matching rejected the match');
+                console.error(`   Reason: ${strictResult.message}`);
+                console.error(`   Failed components: ${strictResult.failedComponents.join(', ')}`);
+
+                return {
+                    matches: false,
+                    reason: `Strict validation failed: ${strictResult.message}`,
+                    confidence: 0,
+                    strictValidation: strictResult,
+                    details: {
+                        firstMatches: false,
+                        middleMatches: false,
+                        lastMatches: false,
+                        extractedName: `${extractedLastName}, ${extractedFirstName} ${extractedMiddleName} ${extractedSuffix}`.trim(),
+                        registeredName: `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName} ${registeredSuffix || ''}`.trim(),
+                        strictValidationDetails: strictResult.details
+                    }
+                };
+            }
+
+            // Both similarity check AND strict validation passed
+            console.log('✅ ALL VALIDATIONS PASSED - Both similarity and strict letter-by-letter matching succeeded');
+
             return {
                 matches: true,
-                reason: `Names match - Component validation (${overallSimilarity}% similarity)`,
-                confidence: overallSimilarity
+                reason: `Names match - Component validation (${overallSimilarity}% similarity) + Strict letter-by-letter validation`,
+                confidence: overallSimilarity,
+                strictValidation: strictResult
             };
         }
 
@@ -2047,10 +2257,47 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(`✓ STEP 2 PASSED: Full name match (${maxFullNameSimilarity}% similarity)`);
                 console.log('═══════════════════════════════════════════════════════\n');
 
+                // ═══════════════════════════════════════════════════════════════════════════
+                // FINAL STRICT VALIDATION LAYER - Letter-by-letter matching
+                // Even if full name similarity is high, perform exact character comparison
+                // ═══════════════════════════════════════════════════════════════════════════
+                console.log('⚠️  Proceeding to FINAL STRICT VALIDATION before accepting match...\n');
+
+                const strictResult = performStrictNameMatching(
+                    extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix,
+                    registeredFirstName, registeredMiddleName, registeredLastName, registeredSuffix
+                );
+
+                if (!strictResult.passed) {
+                    // Strict validation failed - reject the match
+                    console.error('❌ FINAL VALIDATION FAILED - Strict letter-by-letter matching rejected the match');
+                    console.error(`   Reason: ${strictResult.message}`);
+                    console.error(`   Failed components: ${strictResult.failedComponents.join(', ')}`);
+
+                    return {
+                        matches: false,
+                        reason: `Strict validation failed: ${strictResult.message}`,
+                        confidence: 0,
+                        strictValidation: strictResult,
+                        details: {
+                            firstMatches: false,
+                            middleMatches: false,
+                            lastMatches: false,
+                            extractedName: `${extractedLastName}, ${extractedFirstName} ${extractedMiddleName} ${extractedSuffix}`.trim(),
+                            registeredName: `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName} ${registeredSuffix || ''}`.trim(),
+                            strictValidationDetails: strictResult.details
+                        }
+                    };
+                }
+
+                // Both full name similarity AND strict validation passed
+                console.log('✅ ALL VALIDATIONS PASSED - Both full name similarity and strict letter-by-letter matching succeeded');
+
                 return {
                     matches: true,
-                    reason: `Names match - Full name comparison (${maxFullNameSimilarity}% similarity)`,
-                    confidence: maxFullNameSimilarity
+                    reason: `Names match - Full name comparison (${maxFullNameSimilarity}% similarity) + Strict letter-by-letter validation`,
+                    confidence: maxFullNameSimilarity,
+                    strictValidation: strictResult
                 };
             }
 
@@ -5438,11 +5685,14 @@ document.addEventListener('DOMContentLoaded', function () {
             extractedData.confidence.middleName = validation.confidence;
         }
 
-        // Extract birthdate
+        // Extract birthdate (UMID uses instant extraction - no validation needed)
         extractedData.birthdate = extractUMIDBirthdate(lines);
         if (extractedData.birthdate) {
-            const validation = validateBirthdate(extractedData.birthdate);
-            extractedData.confidence.birthdate = validation.confidence;
+            // For UMID, set high confidence since it's the only date on the card
+            extractedData.confidence.birthdate = 95;
+            console.log(`✓ UMID birthdate extracted and set: ${extractedData.birthdate}`);
+        } else {
+            console.log('✗ No birthdate extracted from UMID');
         }
 
         // Extract gender using unified function with label matching
@@ -5676,10 +5926,85 @@ document.addEventListener('DOMContentLoaded', function () {
         return { lastName, firstName, middleName, suffix };
     }
 
-    // Extract UMID Birthdate - Using label-value extraction
-    // UMID Birthdate - uses unified function
+    // Extract UMID Birthdate - Instant extraction without validation
+    // UMID only has one date (birthdate) in YYYY/MM/DD format, so we grab it immediately
+    // BYPASSES all label-based extraction and validation - just gets the date directly
     function extractUMIDBirthdate(lines) {
-        return extractBirthdate(lines, 'UMID');
+        console.log('\n╔════════════════════════════════════════════════╗');
+        console.log('║   UMID BIRTHDATE EXTRACTION (INSTANT MODE)    ║');
+        console.log('╚════════════════════════════════════════════════╝');
+        console.log('UMID has only ONE date: the birthdate in YYYY/MM/DD format');
+        console.log('Strategy: Direct regex pattern match - BYPASS all validation');
+        console.log('Note: UMID format often has "SEX M DATE OF BIRTH 1968/06/13" on one line');
+        console.log(`Total lines to search: ${lines.length}\n`);
+
+        // Log all lines for debugging
+        console.log('📋 All OCR lines:');
+        lines.forEach((line, idx) => {
+            console.log(`  [${idx + 1}] "${line}"`);
+        });
+        console.log('');
+
+        // UMID date pattern: YYYY/MM/DD
+        const umidDatePattern = /\b(\d{4})\/(\d{2})\/(\d{2})\b/;
+
+        // DIRECT EXTRACTION - Search through ALL text, not just clean lines
+        // Join all lines into one text block to catch dates even in mixed-label lines
+        const fullText = lines.join(' ');
+        console.log('🔍 Searching in full text (all lines combined)...\n');
+
+        const match = fullText.match(umidDatePattern);
+
+        if (match) {
+            const birthdate = match[0];
+            console.log('╔════════════════════════════════════════════════╗');
+            console.log('║         ✓✓✓ BIRTHDATE FOUND ✓✓✓              ║');
+            console.log('╚════════════════════════════════════════════════╝');
+            console.log(`📅 Extracted date pattern: "${birthdate}"`);
+            console.log(`📝 Context: ...${fullText.substring(Math.max(0, match.index - 30), match.index + 40)}...`);
+
+            // Convert YYYY/MM/DD to YYYY-MM-DD (database format)
+            const normalizedDate = birthdate.replace(/\//g, '-');
+            console.log(`✅ Normalized to database format: "${normalizedDate}"`);
+            console.log('🚀 Returning birthdate IMMEDIATELY');
+            console.log('⚡ BYPASSED: Label validation, field extraction, age checks');
+            console.log('✓ Reason: UMID only contains ONE date = birthdate');
+            console.log('════════════════════════════════════════════════\n');
+
+            return normalizedDate;
+        }
+
+        // Fallback: Try line-by-line if full text search failed
+        console.log('⚠️ Full text search failed, trying line-by-line...\n');
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const lineMatch = line.match(umidDatePattern);
+
+            if (lineMatch) {
+                const birthdate = lineMatch[0];
+                console.log('╔════════════════════════════════════════════════╗');
+                console.log('║         ✓✓✓ BIRTHDATE FOUND ✓✓✓              ║');
+                console.log('╚════════════════════════════════════════════════╝');
+                console.log(`📍 Found at line ${i + 1}`);
+                console.log(`📝 Full line: "${line}"`);
+                console.log(`📅 Extracted: "${birthdate}"`);
+
+                // Convert YYYY/MM/DD to YYYY-MM-DD (database format)
+                const normalizedDate = birthdate.replace(/\//g, '-');
+                console.log(`✅ Normalized to database format: "${normalizedDate}"`);
+                console.log('🚀 Returning birthdate immediately');
+                console.log('════════════════════════════════════════════════\n');
+
+                return normalizedDate;
+            }
+        }
+
+        console.log('╔════════════════════════════════════════════════╗');
+        console.log('║      ✗✗✗ NO BIRTHDATE FOUND ✗✗✗              ║');
+        console.log('╚════════════════════════════════════════════════╝');
+        console.log('❌ No YYYY/MM/DD pattern found in any line');
+        console.log('⚠️  Returning empty string\n');
+        return "";
     }
 
     // Extract UMID City - Using label-value extraction

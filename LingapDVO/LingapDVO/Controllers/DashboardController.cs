@@ -70,15 +70,28 @@ namespace LingapDVO.Controllers
                 // ✅ Convert session UserId (string) → int
                 int.TryParse(userIdString, out userId);
                 ViewBag.Username = HttpContext.Session.GetString("Username");
-                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
+
+                // Get profile picture from database
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+                ViewBag.Profilepicture = user?.Profilepicture ?? "";
             }
             else if (isAuthenticated)
             {
                 string username = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
                                    ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
                                    ?? "User";
-                ViewBag.Username = username; 
-                ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
+                ViewBag.Username = username;
+
+                // Get profile picture from database if userId is available
+                if (userId > 0)
+                {
+                    var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+                    ViewBag.Profilepicture = user?.Profilepicture ?? "";
+                }
+                else
+                {
+                    ViewBag.Profilepicture = "";
+                }
             }
 
             // ✅ Check if user has completed verification
@@ -139,28 +152,67 @@ namespace LingapDVO.Controllers
               return RedirectToAction("Landingpage", "Dashboard");
              }
 
-             ViewBag.Id = HttpContext.Session.GetString("UserId");
-             ViewBag.IDnumber = HttpContext.Session.GetString("IDnumber");
-             ViewBag.IDtype = HttpContext.Session.GetString("IDtype");
-             ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
-             ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
-             ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
-             ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
-             ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
-             ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
-             ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-             ViewBag.District = HttpContext.Session.GetString("District");
-             ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+             // Get UserId from session
+             var userIdString = HttpContext.Session.GetString("UserId");
+             if (int.TryParse(userIdString, out int userId))
+             {
+                 // Fetch data from VerifyAccount table
+                 var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
 
+                 if (verifyAccount != null)
+                 {
+                     // Use data from VerifyAccount table (most up-to-date)
+                     ViewBag.IDnumber = verifyAccount.IDnumber ?? "";
+                     ViewBag.IDtype = verifyAccount.IDtype ?? "";
+                     ViewBag.Firstname = verifyAccount.Firstname ?? "";
+                     ViewBag.Middlename = verifyAccount.Middlename ?? "";
+                     ViewBag.Lastname = verifyAccount.Lastname ?? "";
+                     ViewBag.Suffix = verifyAccount.Suffix ?? "";
+                     ViewBag.BlkLotStreet = verifyAccount.BlkLotStreet ?? "";
+                     ViewBag.SubVill = verifyAccount.SubVill ?? "";
+                     ViewBag.District = verifyAccount.District ?? "";
+                     ViewBag.Barangay = verifyAccount.Barangay ?? "";
+                     ViewBag.Dateofbirth = verifyAccount.Dateofbirth ?? "";
+                     ViewBag.Gender = verifyAccount.Gender ?? "";
+                     ViewBag.CivilStatus = verifyAccount.CivilStatus ?? "";
+                     ViewBag.Phonenumber = verifyAccount.Phonenumber ?? "";
+                 }
+                 else
+                 {
+                     // Fallback to session if VerifyAccount doesn't exist
+                     ViewBag.IDnumber = HttpContext.Session.GetString("IDnumber");
+                     ViewBag.IDtype = HttpContext.Session.GetString("IDtype");
+                     ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+                     ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+                     ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+                     ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+                     ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+                     ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+                     ViewBag.District = HttpContext.Session.GetString("District");
+                     ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+                     ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+                     ViewBag.Gender = HttpContext.Session.GetString("Gender");
+                     ViewBag.CivilStatus = HttpContext.Session.GetString("CivilStatus");
+                     ViewBag.Phonenumber = HttpContext.Session.GetString("Phonenumber");
+                 }
+             }
 
-
+             ViewBag.Id = userIdString;
              ViewBag.Username = HttpContext.Session.GetString("Username");
              ViewBag.Email = HttpContext.Session.GetString("Email");
-             ViewBag.Phonenumber = HttpContext.Session.GetString("Phonenumber");          
-             ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
-             ViewBag.Gender = HttpContext.Session.GetString("Gender");
              ViewBag.SecurityQuestions = HttpContext.Session.GetString("SecurityQuestions");
-        
+
+             // Get profile picture from database
+             if (int.TryParse(userIdString, out int userIdForPicture))
+             {
+                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userIdForPicture);
+                 ViewBag.Profilepicture = user?.Profilepicture ?? "";
+             }
+             else
+             {
+                 ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
+             }
+
              ViewBag.GenderList = new SelectList(new List<string> { "Male", "Female" }, ViewBag.Gender);
              ViewBag.SecurityQuestionslist = new SelectList(
                    new List<string> {
@@ -176,7 +228,150 @@ namespace LingapDVO.Controllers
                  return View();
 
 
-        }       
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+                {
+                    return Json(new { success = false, message = "User not logged in" });
+                }
+
+                if (profilePicture == null || profilePicture.Length == 0)
+                {
+                    return Json(new { success = false, message = "No file uploaded" });
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var extension = Path.GetExtension(profilePicture.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return Json(new { success = false, message = "Invalid file type. Only JPG, PNG, and GIF are allowed." });
+                }
+
+                // Validate file size (5MB max)
+                if (profilePicture.Length > 5 * 1024 * 1024)
+                {
+                    return Json(new { success = false, message = "File size must be less than 5MB" });
+                }
+
+                var userIdString = HttpContext.Session.GetString("UserId");
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return Json(new { success = false, message = "Invalid user ID" });
+                }
+
+                // Create profile pictures directory if it doesn't exist
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ProfilePictures");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                // Generate unique filename
+                var uniqueFileName = $"{userId}_{Guid.NewGuid()}{extension}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save the file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await profilePicture.CopyToAsync(fileStream);
+                }
+
+                // Update database
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+                if (user != null)
+                {
+                    // Delete old profile picture if exists
+                    if (!string.IsNullOrEmpty(user.Profilepicture))
+                    {
+                        var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.Profilepicture.TrimStart('/'));
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            System.IO.File.Delete(oldFilePath);
+                        }
+                    }
+
+                    // Update with new profile picture path
+                    user.Profilepicture = $"/ProfilePictures/{uniqueFileName}";
+                    context.SaveChanges();
+
+                    // Update session
+                    HttpContext.Session.SetString("Profilepicture", user.Profilepicture);
+
+                    Console.WriteLine($"✅ Profile picture updated for user {userId}: {user.Profilepicture}");
+
+                    return Json(new { success = true, message = "Profile picture uploaded successfully", profilePictureUrl = user.Profilepicture });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "User not found" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error uploading profile picture: {ex.Message}");
+                return Json(new { success = false, message = "An error occurred while uploading the profile picture" });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult RemoveProfilePicture()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+                {
+                    return Json(new { success = false, message = "User not logged in" });
+                }
+
+                var userIdString = HttpContext.Session.GetString("UserId");
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return Json(new { success = false, message = "Invalid user ID" });
+                }
+
+                // Get user from database
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+                if (user != null)
+                {
+                    // Delete old picture file if exists
+                    if (!string.IsNullOrEmpty(user.Profilepicture))
+                    {
+                        var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.Profilepicture.TrimStart('/'));
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            System.IO.File.Delete(oldFilePath);
+                            Console.WriteLine($"✅ Deleted old profile picture file: {oldFilePath}");
+                        }
+                    }
+
+                    // Remove profile picture from database
+                    user.Profilepicture = null;
+                    context.SaveChanges();
+
+                    // Remove from session
+                    HttpContext.Session.Remove("Profilepicture");
+
+                    Console.WriteLine($"✅ Profile picture removed for user {userId}");
+
+                    return Json(new { success = true, message = "Profile picture removed successfully" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "User not found" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error removing profile picture: {ex.Message}");
+                return Json(new { success = false, message = "An error occurred while removing the profile picture" });
+            }
+        }
 
         public async Task<IActionResult> FillupformHospitalBill()
         {

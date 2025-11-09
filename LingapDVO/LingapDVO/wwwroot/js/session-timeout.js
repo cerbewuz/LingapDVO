@@ -7,524 +7,93 @@
 // Automatically logs out if no response after warning timeout
 // ═══════════════════════════════════════════════════════════════════════════════
 
-(function() {
+(function () {
     'use strict';
 
-    // Configuration
-    const FINAL_TIMEOUT = (window.sessionTimeoutMinutes || 10) * 60 * 1000;
-    const WARNING_TIMEOUT = FINAL_TIMEOUT - 60 * 1000;
-    const CHECK_INTERVAL = 30 * 1000; // Check session validity every 30 seconds
-    const COUNTDOWN_INTERVAL = 1000; // Update countdown every second
+    // ====== CONFIGURATION ======
+    const SESSION_TIMEOUT_MINUTES = 15; // change as needed
+    const KEEP_ALIVE_INTERVAL_MINUTES = 5;
+    const LOGOUT_URL = '/Login/Logout';
+    const KEEP_ALIVE_URL = '/Login/KeepAlive';
 
-    // Configuration - Will be fetched from server dynamically
-    let WARNING_TIMEOUT = 9 * 60 * 1000; // Default: 9 minutes (overridden by server config)
-    let FINAL_TIMEOUT = 10 * 60 * 1000; // Default: 10 minutes (overridden by server config)
-    let CHECK_INTERVAL = 30 * 1000; // Check session validity every 30 seconds
-    let COUNTDOWN_INTERVAL = 1000; // Update countdown every second
-    let configLoaded = false;
-
+    // ====== STATE ======
     let inactivityTimer = null;
-    let warningTimer = null;
-    let countdownTimer = null;
-    let lastActivityTime = Date.now();
-    let warningShown = false;
-    let sessionCheckInterval = null;
+    let keepAliveTimer = null;
+    let isKeepAliveRequest = false;
 
-    // Fetch session configuration from server
-    async function loadSessionConfig() {
-        try {
-            console.log('Session Timeout: Fetching configuration from server...');
-            const response = await fetch('/Login/GetSessionConfig', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+    // ====== CORE FUNCTIONS ======
 
-            if (!response.ok) {
-                throw new Error('Failed to load session config');
-            }
-
-            const config = await response.json();
-
-            // Update timeout values from server
-            WARNING_TIMEOUT = config.warningTimeoutMs || (9 * 60 * 1000);
-            FINAL_TIMEOUT = config.idleTimeoutMs || (10 * 60 * 1000);
-            CHECK_INTERVAL = config.checkIntervalMs || (30 * 1000);
-            COUNTDOWN_INTERVAL = config.countdownIntervalMs || 1000;
-
-            configLoaded = true;
-
-            console.log('Session Timeout: Configuration loaded successfully');
-            console.log(`  ⏱️  Warning Timeout: ${config.warningTimeoutMinutes} minutes (${WARNING_TIMEOUT}ms)`);
-            console.log(`  ⏱️  Final Timeout: ${config.idleTimeoutMinutes} minutes (${FINAL_TIMEOUT}ms)`);
-            console.log(`  ⏱️  Check Interval: ${CHECK_INTERVAL}ms`);
-
-            return true;
-        } catch (error) {
-            console.error('Session Timeout: Error loading config, using defaults', error);
-            configLoaded = true; // Continue with defaults
-            return false;
-        }
+    function logoutUser() {
+        console.warn('Session timeout reached. Logging out user...');
+        window.location.href = LOGOUT_URL;
     }
 
-    // Initialize session timeout tracker
-    async function initSessionTimeout() {
-        // Load configuration from server first
-        await loadSessionConfig();
-
-        console.log('Session Timeout: Initialized with meaningful activity tracking');
-        console.log('Session Timeout: Tracks transactions, navigation, form submissions only');
-
-        // Track MEANINGFUL user activities only (no passive scrolling/mouse movement)
-        trackMeaningfulActivities();
-
-        // Start the inactivity timer
-        resetInactivityTimer();
-
-        // Start periodic session check
-        startSessionCheck();
-
-        console.log('Session Timeout: Meaningful activity tracking started');
-    }
-
-    // Track only meaningful user activities (transactions, navigation, forms)
-    function trackMeaningfulActivities() {
-        console.log('===========================================');
-        console.log('MEANINGFUL ACTIVITY TRACKING ENABLED');
-        console.log('===========================================');
-        console.log('Tracked Activities:');
-        console.log('  ✓ Page Navigation (clicking links)');
-        console.log('  ✓ Form Submissions');
-        console.log('  ✓ Button Clicks (submit, save, etc.)');
-        console.log('  ✓ Input Field Interactions (typing in forms)');
-        console.log('  ✓ File Uploads');
-        console.log('  ✓ AJAX Requests (API calls)');
-        console.log('-------------------------------------------');
-        console.log('NOT Tracked (Passive):');
-        console.log('  ✗ Mouse movements');
-        console.log('  ✗ Scrolling');
-        console.log('  ✗ Hovering');
-        console.log('  ✗ Reading without interaction');
-        console.log('===========================================\n');
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // 1. TRACK PAGE NAVIGATION (Link Clicks)
-        // ═══════════════════════════════════════════════════════════════════════
-        document.addEventListener('click', function(e) {
-            // Skip if warning is shown
-            if (warningShown) return;
-
-            const target = e.target.closest('a, button[type="button"], button[type="submit"]');
-
-            if (target) {
-                // Check if it's a navigation link or meaningful button
-                if (target.tagName === 'A' && target.href && !target.href.startsWith('javascript:')) {
-                    console.log('📍 Activity: Page navigation → ' + target.href);
-                    resetInactivityTimer();
-                } else if (target.tagName === 'BUTTON') {
-                    const buttonText = target.textContent.trim().toLowerCase();
-                    // Only count meaningful buttons (not close/cancel/etc)
-                    const meaningfulButtons = ['submit', 'save', 'update', 'delete', 'send', 'confirm', 'proceed', 'apply', 'upload', 'download'];
-                    if (meaningfulButtons.some(keyword => buttonText.includes(keyword))) {
-                        console.log('🔘 Activity: Button clicked → ' + target.textContent.trim());
-                        resetInactivityTimer();
-                    }
-                }
-            }
-        }, true);
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // 2. TRACK FORM SUBMISSIONS
-        // ═══════════════════════════════════════════════════════════════════════
-        document.addEventListener('submit', function(e) {
-            if (warningShown) return;
-
-            const form = e.target;
-            const formName = form.name || form.id || 'unnamed form';
-            console.log('📝 Activity: Form submitted → ' + formName);
-            resetInactivityTimer();
-        }, true);
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // 3. TRACK INPUT FIELD INTERACTIONS (Typing in forms)
-        // ═══════════════════════════════════════════════════════════════════════
-        let inputTimer = null;
-        document.addEventListener('input', function(e) {
-            if (warningShown) return;
-
-            const target = e.target;
-            // Only track meaningful inputs (text fields, textareas, selects)
-            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-                // Debounce: only reset timer if user has been typing for 3 seconds
-                clearTimeout(inputTimer);
-                inputTimer = setTimeout(() => {
-                    const fieldName = target.name || target.id || target.placeholder || 'input field';
-                    console.log('⌨️  Activity: User typing in → ' + fieldName);
-                    resetInactivityTimer();
-                }, 3000); // 3-second debounce
-            }
-        }, true);
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // 4. TRACK FILE UPLOADS
-        // ═══════════════════════════════════════════════════════════════════════
-        document.addEventListener('change', function(e) {
-            if (warningShown) return;
-
-            const target = e.target;
-            if (target.tagName === 'INPUT' && target.type === 'file' && target.files.length > 0) {
-                console.log('📤 Activity: File uploaded → ' + target.files[0].name);
-                resetInactivityTimer();
-            }
-        }, true);
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // 5. TRACK AJAX/FETCH REQUESTS (API Calls)
-        // ═══════════════════════════════════════════════════════════════════════
-        // Intercept fetch API
-        const originalFetch = window.fetch;
-        window.fetch = function(...args) {
-            if (!warningShown) {
-                const url = typeof args[0] === 'string' ? args[0] : args[0].url;
-                console.log('🌐 Activity: API request → ' + url);
-                resetInactivityTimer();
-            }
-            return originalFetch.apply(this, args);
-        };
-
-        // Intercept XMLHttpRequest
-        const originalXHROpen = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function(method, url) {
-            if (!warningShown) {
-                this.addEventListener('loadstart', function() {
-                    console.log('🌐 Activity: XHR request → ' + url);
-                    resetInactivityTimer();
-                });
-            }
-            return originalXHROpen.apply(this, arguments);
-        };
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // 6. TRACK VISIBILITY CHANGES (Tab switching back to page)
-        // ═══════════════════════════════════════════════════════════════════════
-        document.addEventListener('visibilitychange', function() {
-            if (!warningShown && document.visibilityState === 'visible') {
-                console.log('👁️  Activity: User returned to tab');
-                resetInactivityTimer();
-            }
-        });
-
-        console.log('✅ All meaningful activity trackers initialized');
-    }
-
-    // Reset the inactivity timer
     function resetInactivityTimer() {
-        fetch('/Login/KeepAlive', { method: 'GET' }).catch(() => { });
-        // Don't reset if warning is already shown (user must decide)
-        if (warningShown) return;
+        clearTimeout(inactivityTimer);
 
-        lastActivityTime = Date.now();
-
-        // Clear existing timers
-        if (warningTimer) {
-            clearTimeout(warningTimer);
-        }
-        if (inactivityTimer) {
-            clearTimeout(inactivityTimer);
-        }
-
-        // Set warning timer (9 minutes)
-        warningTimer = setTimeout(() => {
-            showSessionWarning();
-        }, WARNING_TIMEOUT);
-
-        // Set final logout timer (10 minutes)
         inactivityTimer = setTimeout(() => {
-            forceLogout();
-        }, FINAL_TIMEOUT);
+            console.warn('User inactive for too long — logging out.');
+            logoutUser();
+        }, SESSION_TIMEOUT_MINUTES * 60 * 1000);
+
+        // Send keep-alive request safely (no recursion)
+        if (!isKeepAliveRequest) {
+            isKeepAliveRequest = true;
+            originalFetch(KEEP_ALIVE_URL, { method: 'GET' })
+                .catch(() => { /* ignore network errors */ })
+                .finally(() => { isKeepAliveRequest = false; });
+        }
     }
 
-    // Show session timeout warning (dynamically calculated based on config)
-    function showSessionWarning() {
-        if (warningShown) return;
-        warningShown = true;
-
-        // Calculate remaining time based on configuration
-        const remainingMs = FINAL_TIMEOUT - WARNING_TIMEOUT;
-        let remainingSeconds = Math.floor(remainingMs / 1000);
-
-        console.log(`Session Timeout: Showing warning - user has ${remainingSeconds} seconds to respond`);
-
-        // Blur and disable page content
-        const mainContent = document.querySelector('body');
-        if (mainContent) {
-            mainContent.style.filter = 'blur(5px)';
-            mainContent.style.pointerEvents = 'none';
-            mainContent.style.userSelect = 'none';
-        }
-
-        // Create warning modal
-        const modalHTML = `
-            <div id="session-warning-modal" class="fixed inset-0 z-[9999] flex items-center justify-center" style="background: rgba(0,0,0,0.8); pointer-events: auto;">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-8 modal-scale-in">
-                    <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-yellow-100 mb-6">
-                            <i class="fas fa-exclamation-triangle text-4xl text-yellow-600"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Session Timeout Warning</h3>
-                        <p class="text-gray-700 mb-4 text-lg leading-relaxed">
-                            Your session is about to expire due to inactivity.<br>
-                            Would you like to stay signed in?
-                        </p>
-                        <div class="bg-gray-100 rounded-lg p-4 mb-6">
-                            <p class="text-sm text-gray-600 mb-1">Time remaining:</p>
-                            <p id="countdown-timer" class="text-3xl font-bold text-crimson-600">${remainingSeconds}s</p>
-                        </div>
-                        <div class="flex gap-3">
-                            <button onclick="window.sessionTimeout.staySignedIn()"
-                                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                <i class="fas fa-check mr-2"></i>
-                                Yes
-                            </button>
-                            <button onclick="window.sessionTimeout.logout()"
-                                    class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                <i class="fas fa-times mr-2"></i>
-                                No
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <style>
-                .modal-scale-in {
-                    opacity: 0;
-                    transform: scale(0.9);
-                    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-                }
-                #session-warning-modal .modal-scale-in {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-                .text-crimson-600 {
-                    color: #DC143C;
-                }
-            </style>
-        `;
-
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-        // Trigger animation
-        setTimeout(() => {
-            const modal = document.querySelector('#session-warning-modal .modal-scale-in');
-            if (modal) {
-                modal.style.opacity = '1';
-                modal.style.transform = 'scale(1)';
+    function startKeepAlive() {
+        clearInterval(keepAliveTimer);
+        keepAliveTimer = setInterval(() => {
+            if (!isKeepAliveRequest) {
+                isKeepAliveRequest = true;
+                originalFetch(KEEP_ALIVE_URL, { method: 'GET' })
+                    .catch(() => { })
+                    .finally(() => { isKeepAliveRequest = false; });
             }
-        }, 10);
+        }, KEEP_ALIVE_INTERVAL_MINUTES * 60 * 1000);
+    }
 
-        // Start countdown
-        const countdownElement = document.getElementById('countdown-timer');
-        countdownTimer = setInterval(() => {
-            remainingSeconds--;
-            if (countdownElement) {
-                countdownElement.textContent = remainingSeconds + 's';
+    // ====== EVENT LISTENERS ======
 
-                // Change color as time runs out
-                if (remainingSeconds <= 10) {
-                    countdownElement.style.color = '#DC143C'; // Crimson
-                } else if (remainingSeconds <= 30) {
-                    countdownElement.style.color = '#F59E0B'; // Amber
-                }
+    const activityEvents = ['click', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    activityEvents.forEach(evt => {
+        window.addEventListener(evt, () => resetInactivityTimer());
+    });
+
+    // ====== FETCH INTERCEPTOR ======
+
+    const originalFetch = window.fetch;
+
+    window.fetch = async function (resource, config) {
+        try {
+            const url = (typeof resource === 'string') ? resource : resource.url;
+
+            // Log activity (optional)
+            console.log('🌐 Activity: API request →', url);
+
+            // Skip timer reset for keep-alive requests to prevent recursion
+            if (url && url.includes(KEEP_ALIVE_URL)) {
+                return originalFetch.apply(this, arguments);
             }
 
-            if (remainingSeconds <= 0) {
-                clearInterval(countdownTimer);
-            }
-        }, COUNTDOWN_INTERVAL);
-    }
+            // Normal requests reset inactivity timer
+            resetInactivityTimer();
 
-    // Force logout (called at 10 minutes if no response)
-    function forceLogout() {
-        console.log('Session Timeout: Force logout - no response to warning');
-
-        // Clear countdown if still running
-        if (countdownTimer) {
-            clearInterval(countdownTimer);
-        }
-
-        // Remove warning modal if present
-        const warningModal = document.getElementById('session-warning-modal');
-        if (warningModal) {
-            warningModal.remove();
-        }
-
-        // Clear session storage
-        sessionStorage.clear();
-
-        // Redirect to landing page
-        window.location.href = '/Login?timeout=true';
-    }
-
-    // User clicked "Yes" - Stay signed in
-    function staySignedIn() {
-        console.log('Session Timeout: User chose to stay signed in - extending session');
-
-        // Clear countdown timer
-        if (countdownTimer) {
-            clearInterval(countdownTimer);
-        }
-
-        // Remove warning modal
-        const warningModal = document.getElementById('session-warning-modal');
-        if (warningModal) {
-            warningModal.remove();
-        }
-
-        // Restore page interaction
-        const mainContent = document.querySelector('body');
-        if (mainContent) {
-            mainContent.style.filter = 'none';
-            mainContent.style.pointerEvents = 'auto';
-            mainContent.style.userSelect = 'auto';
-        }
-
-        // Reset warning flag
-        warningShown = false;
-
-        // Reset all timers - this extends the session
-        resetInactivityTimer();
-
-        // Show brief confirmation
-        showBriefConfirmation('Session extended!', 'success');
-    }
-
-    // User clicked "No" - Logout
-    function logout() {
-        console.log('Session Timeout: User chose to logout - redirecting to landing page');
-
-        // Clear countdown timer
-        if (countdownTimer) {
-            clearInterval(countdownTimer);
-        }
-
-        // Clear all timers
-        if (warningTimer) clearTimeout(warningTimer);
-        if (inactivityTimer) clearTimeout(inactivityTimer);
-        if (sessionCheckInterval) clearInterval(sessionCheckInterval);
-
-        // Clear session storage
-        sessionStorage.clear();
-
-        // Redirect to landing page
-        window.location.href = '/Landingpage';
-    }
-
-    // Show brief confirmation message
-    function showBriefConfirmation(message, type) {
-        const bgColor = type === 'success' ? '#10B981' : '#3B82F6';
-        const icon = type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
-
-        const confirmationHTML = `
-            <div id="session-confirmation" style="position: fixed; top: 20px; right: 20px; z-index: 10000; background: ${bgColor}; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; animation: slideInRight 0.3s ease-out;">
-                <i class="fas ${icon} text-2xl"></i>
-                <span class="font-semibold text-lg">${message}</span>
-            </div>
-            <style>
-                @keyframes slideInRight {
-                    from {
-                        transform: translateX(400px);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-                @keyframes slideOutRight {
-                    from {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                    to {
-                        transform: translateX(400px);
-                        opacity: 0;
-                    }
-                }
-            </style>
-        `;
-
-        document.body.insertAdjacentHTML('beforeend', confirmationHTML);
-
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            const confirmation = document.getElementById('session-confirmation');
-            if (confirmation) {
-                confirmation.style.animation = 'slideOutRight 0.3s ease-out';
-                setTimeout(() => confirmation.remove(), 300);
-            }
-        }, 3000);
-    }
-
-    // Check session validity with server
-    function checkSessionValidity() {
-        // Don't check if warning is already shown
-        if (warningShown) return;
-
-        fetch('/Login/CheckSession', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.isValid) {
-                console.log('Session Timeout: Server session expired - showing warning');
-                showSessionWarning();
-            }
-        })
-        .catch(error => {
-            console.error('Session Timeout: Error checking session:', error);
-        });
-    }
-
-    // Start periodic session checking
-    function startSessionCheck() {
-        sessionCheckInterval = setInterval(() => {
-            checkSessionValidity();
-        }, CHECK_INTERVAL);
-
-        console.log('Session Timeout: Periodic session check started (every 30 seconds)');
-    }
-
-    // Public API
-    window.sessionTimeout = {
-        staySignedIn: staySignedIn,
-        logout: logout,
-        manualLogout: function() {
-            if (warningTimer) clearTimeout(warningTimer);
-            if (inactivityTimer) clearTimeout(inactivityTimer);
-            if (countdownTimer) clearInterval(countdownTimer);
-            if (sessionCheckInterval) clearInterval(sessionCheckInterval);
-            console.log('Session Timeout: Manual logout initiated');
+            // Proceed with original fetch
+            return originalFetch.apply(this, arguments);
+        } catch (err) {
+            console.error('Fetch interception error:', err);
+            throw err;
         }
     };
 
-    // Initialize on DOM ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initSessionTimeout);
-    } else {
-        initSessionTimeout();
-    }
+    // ====== INITIALIZATION ======
 
-    // Log when page is about to unload
-    window.addEventListener('beforeunload', () => {
-        if (warningTimer) clearTimeout(warningTimer);
-        if (inactivityTimer) clearTimeout(inactivityTimer);
-        if (countdownTimer) clearInterval(countdownTimer);
-        if (sessionCheckInterval) clearInterval(sessionCheckInterval);
-    });
-
-    console.log('Session Timeout: Module loaded successfully');
+    console.log('🕒 Session timeout manager initialized.');
+    resetInactivityTimer();
+    startKeepAlive();
 })();

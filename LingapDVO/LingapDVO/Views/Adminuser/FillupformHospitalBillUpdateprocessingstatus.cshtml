@@ -1,7 +1,6 @@
 @model FillupformHospitalBillDto
 @{
     Layout = "_AdminProcessingLayout";
-    ViewData["Title"] = "Application View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new Dictionary<string, string>();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
@@ -797,6 +796,9 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
         // PDF Viewer Variables
         let currentPDF = null;
         let currentPage = 1;

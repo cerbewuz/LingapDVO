@@ -2,57 +2,8 @@
 @{
     Layout = "_AdminApprovedLayout";
     ViewData["Title"] = "Application View";
-    var selectedSex = ViewData["Sex"]?.ToString();
-    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
-
-<!-- Image Zoom Modal -->
-    <div id="zoomModal" class="zoom-modal">
-        <span class="close-zoom">&times;</span>
-        <img class="zoom-modal-content" id="zoomedImage">
-    </div>
-
-    <!-- PDF Viewer Modal -->
-    <div id="pdfViewerModal" class="pdf-viewer-modal">
-        <div class="pdf-viewer-content">
-            <div class="pdf-viewer-header">
-                <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
-                <div class="pdf-controls">
-                    <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
-                        <i class="bi bi-chevron-left"></i> Previous
-                    </button>
-                    <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
-                    <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
-                        Next <i class="bi bi-chevron-right"></i>
-                    </button>
-                    <button class="btn btn-sm btn-light" onclick="zoomOut()">
-                        <i class="bi bi-zoom-out"></i>
-                    </button>
-                    <span class="zoom-level" id="zoomLevel">100%</span>
-                    <button class="btn btn-sm btn-light" onclick="zoomIn()">
-                        <i class="bi bi-zoom-in"></i>
-                    </button>
-                </div>
-                <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
-            </div>
-            <div class="pdf-viewer-body">
-                <div id="pdfLoading" class="pdf-loading">
-                    <div class="spinner-border text-light" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p>Loading PDF document...</p>
-                </div>
-                <div id="pdfError" class="pdf-error">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <p>Error loading PDF. Please try again.</p>
-                </div>
-                <div class="pdf-container">
-                    <canvas id="pdfCanvas"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="receipt-container">
         <form asp-action="FillupformHospitalBillapprovedstatus" enctype="multipart/form-data" method="post">
@@ -314,3 +265,52 @@
             </div>
         </form>
     </div>
+@section Scripts {
+    <script>
+        // CMO Reflection Auto-generation
+        document.addEventListener('DOMContentLoaded', function() {
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+            cmoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        cmoCheckboxes.forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    }
+                    updateReflection();
+                });
+            });
+
+            function updateReflection() {
+                const billInput = document.getElementById('billAmountInput');
+                const cmoNotes = document.getElementById('cmoNotesInput');
+                const reflectionField = document.getElementById('cmoReflectionField');
+                const docCheckboxes = document.querySelectorAll('.supporting-doc');
+
+                let parts = [];
+                if (billInput && billInput.value.trim()) {
+                    parts.push(`Bill: ${billInput.value.trim()}`);
+                }
+                const checkedDocs = [];
+                docCheckboxes.forEach(cb => {
+                    if (cb.checked) checkedDocs.push(cb.value);
+                });
+                if (checkedDocs.length) {
+                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                }
+                if (cmoNotes && cmoNotes.value.trim()) {
+                    parts.push(`Others: ${cmoNotes.value.trim()}`);
+                }
+                if (reflectionField) {
+                    reflectionField.value = parts.join(' , ');
+                }
+            }
+
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+            updateReflection();
+        });
+    </script>
+}

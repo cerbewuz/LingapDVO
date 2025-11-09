@@ -11,7 +11,9 @@ namespace LingapDVO.Models
         [Required, MaxLength(100)]
         public string IDtype { get; set; } = "";
 
-        [Required, MaxLength(100)]
+        [Required]
+        [MaxLength(100)]
+        [RegularExpression(@"^[A-Za-z0-9\-]+$", ErrorMessage = "ID number can only contain letters, numbers, and dashes")]
         public string IDnumber { get; set; } = "";
 
         [Required]
@@ -32,7 +34,7 @@ namespace LingapDVO.Models
         public string Lastname { get; set; } = "";
 
         [MaxLength(100)]
-        public string Suffix { get; set; } = "";
+        public string? Suffix { get; set; }
 
         [Required, MaxLength(100)]
         public string Gender { get; set; } = "";

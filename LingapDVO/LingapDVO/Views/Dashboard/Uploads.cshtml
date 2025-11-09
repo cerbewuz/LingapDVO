@@ -12,6 +12,10 @@
     <link rel="icon" type="image/x-icon" href="~/Icon/lingaplogo.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Go Back Button CSS -->
+    <link rel="stylesheet" href="~/css/go-back-button.css">
+
     <style>
         :root {
             --primary-color: #4361ee;
@@ -34,33 +38,6 @@
             padding: 0;
             line-height: 1.5;
         }
-
-        .go-back-top {
-            position: fixed;
-            left: 20px;
-            top: 20px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s;
-            cursor: pointer;
-            border: 1px solid #e2e8f0;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-            .go-back-top:hover {
-                background: var(--primary-color);
-                color: white;
-                border-color: var(--primary-color);
-            }
 
         .container {
             padding: 1rem;
@@ -572,11 +549,13 @@
     </style>
 </head>
 <body>
-    <a href="javascript:void(0)" class="go-back-top" id="goBackBtn" data-back-url="/Homepage">
-        <i class="fas fa-arrow-left"></i> Back
+    <!-- Go Back Button -->
+    <a href="#" class="go-back-btn" data-url="/Homepage">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back</span>
     </a>
 
-    <div class="container" style="margin-top: 60px;">
+    <div class="container" style="margin-top: 80px;">
         <div class="header">
             <h2>Application Tracking</h2>
             <p>Track the status of all your assistance applications in one place</p>
@@ -1122,6 +1101,10 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Go Back Button Script -->
+    <script src="~/js/go-back-button.js"></script>
+
     <script>
         // Past Data Feature
         const pastDataToggle = document.getElementById('pastDataToggle');
@@ -1413,7 +1396,7 @@
                     <td>${app.resultDate ? formatDate(app.resultDate) : '-'}</td>
                     <td>${app.claimedDate ? formatDate(app.claimedDate) : '-'}</td>
                     <td>
-                        ${app.id ? `<a href="/Dashboard/Fillupformhospitalbillview/${app.id}" class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
+                        ${app.id ? `<a href="/Fillupformhospitalbillview/${app.id}" class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
                             <i class="fas fa-eye"></i> View
                         </a>` : ''}
                     </td>

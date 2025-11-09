@@ -125,8 +125,14 @@
             min-height: 100vh;
             margin-left: clamp(0px, calc((100vw - 768px) * 999), 260px);
             padding-top: clamp(4rem, calc((100vw - 768px) * 999), 0.75rem);
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.3s ease, width 0.3s ease;
             min-width: 0;
+            width: auto;
+        }
+
+        /* When sidebar is hidden, expand content to full width */
+        .main-content-with-sidebar.sidebar-hidden {
+            margin-left: 0;
         }
 
         .dashboard-header {

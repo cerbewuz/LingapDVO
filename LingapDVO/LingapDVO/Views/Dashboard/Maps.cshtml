@@ -85,11 +85,11 @@
     </style>
 </head>
 <body>
-        <!-- Go Back Button (Uniform) -->
-    <button id="goBackBtn" data-back-url="/Homepage">
+    <!-- Go Back Button -->
+    <a href="#" class="go-back-btn" data-url="/Homepage">
         <i class="fas fa-arrow-left"></i>
-        <span>Go Back</span>
-    </button>
+        <span>Back</span>
+    </a>
 
     <!-- Hero Section -->
     <section class="hero-section">
@@ -260,14 +260,7 @@
 
     <!-- Go Back Button Behavior -->
     <script src="~/js/go-back-button.js"></script>
-    
 
-    <script>
-            // Go Back button functionality
-        goBackBtn.addEventListener('click', function() {
-            window.history.back();
-        });
-    </script>
     <script>
         // Function to handle locating all pharmacies
         function locateAllPharmacies() {

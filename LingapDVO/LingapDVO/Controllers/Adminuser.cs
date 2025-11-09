@@ -3461,122 +3461,20 @@ namespace LingapDVO.Controllers
                 fillupformhospitalBill.Result = DateTime.Now;
                 context.SaveChanges();
 
-                // Get user info from RegisterAcc table
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == fillupformhospitalBill.UserId);
-
-                // ✅ Send automatic email only if user exists and has an email
-                if (user != null && !string.IsNullOrEmpty(user.Email))
+                // Send multi-channel notification (In-App, SMS, Email based on preferences)
+                var status = fillupformHospitalbilldto.Status2?.Trim();
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approved", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase)))
                 {
-                    // Get user's first name from AccountVerification table
-                    var accountVerification = context.Verifyaccount
-                        .FirstOrDefault(av => av.UserId == fillupformhospitalBill.UserId);
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == fillupformhospitalBill.UserId);
+                    var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
-                    string userFirstName = "Valued Applicant";
-
-                    if (accountVerification != null && !string.IsNullOrEmpty(accountVerification.Firstname))
-                    {
-                        userFirstName = accountVerification.Firstname;
-                    }
-                    else if (!string.IsNullOrEmpty(user.Username))
-                    {
-                        // Fallback to username if first name not found in AccountVerification
-                        userFirstName = user.Username;
-                    }
-
-                    var status = fillupformHospitalbilldto.Status2?.Trim().ToLower();
-                    var fromEmail = _configuration["EmailSettings:FromEmail"];
-                    var fromName = _configuration["EmailSettings:FromName"];
-                    var fromPassword = _configuration["EmailSettings:FromPassword"];
-
-                    if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                        throw new ArgumentException("Email settings are missing.");
-
-                    var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, userFirstName);
-
-                    string subject;
-                    string body;
-
-                    if (status == "approved")
-                    {
-                        // ✅ Approved message
-                        subject = "Hospital Bill Assistance Application Approved - LINGAP DVO";
-                        body = $@"
-                                Dear {userFirstName},
-
-                                We are pleased to inform you that your Hospital Bill Assistance Application has been successfully approved.
-
-                                APPLICATION DETAILS:
-                                • Application Type: Hospital Bill Assistance
-                                • Date Approved: {DateTime.Now:MMMM dd, yyyy}
-
-                                REMARKS:
-                                {fillupformHospitalbilldto.Comments ?? "Your application has met all the necessary requirements and has been processed accordingly."}
-
-                                NEXT STEPS:
-                                Our team will coordinate with the concerned healthcare facility regarding the financial assistance. You may expect further communication from either our office or the hospital administration within the next 3-5 working days.
-
-                                Should you require any clarification or have additional inquiries, please do not hesitate to contact our support team at [Support Email/Phone Number].
-
-                                We are committed to supporting you through this process and hope this assistance provides you with the relief needed during this time.
-
-                                Sincerely,
-                                {fromName}
-                                LINGAP DVO Medical Assistance Program";
-                                                    }
-                                                    else if (status == "disapproved")
-                                                    {
-                                                        // ❌ Unapproved message – same structure, but message adjusted and Comments prioritized
-                                                        subject = "Hospital Bill Assistance Application Update - LINGAP DVO";
-                                                        body = $@"
-                                Dear {userFirstName},
-
-                                We would like to inform you that your Hospital Bill Assistance Application was not approved.
-
-                                APPLICATION DETAILS:
-                                • Application Type: Hospital Bill Assistance
-                                • Date Reviewed: {DateTime.Now:MMMM dd, yyyy}
-
-                                REMARKS:
-                                {fillupformHospitalbilldto.Comments ?? "Please contact our office for further clarification regarding this decision."}
-
-                                NEXT STEPS:
-                                If you wish to clarify the result or provide additional supporting documents, please contact our support team at [Support Email/Phone Number] within the next few working days.
-
-                                We remain committed to assisting applicants and encourage you to stay in touch with our office for future programs or available assistance.
-
-                                Sincerely,
-                                {fromName}
-                                LINGAP DVO Medical Assistance Program";
-                    }
-                    else
-                    {
-                        // Skip sending for other statuses
-                        subject = null;
-                        body = null;
-                    }
-
-                    if (!string.IsNullOrEmpty(subject))
-                    {
-                        var smtp = new SmtpClient
-                        {
-                            Host = "smtp.gmail.com",
-                            Port = 587,
-                            EnableSsl = true,
-                            DeliveryMethod = SmtpDeliveryMethod.Network,
-                            UseDefaultCredentials = false,
-                            Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                        };
-
-                        using (var message = new MailMessage(fromAddress, toAddress)
-                        {
-                            Subject = subject,
-                            Body = body
-                        })
-                        {
-                            smtp.Send(message);
-                        }
-                    }
+                    _ = _notificationService.SendStatusChangeNotificationAsync(
+                        fillupformhospitalBill.UserId,
+                        applicantName,
+                        "HospitalBill",
+                        status,
+                        fillupformhospitalBill.Id
+                    );
                 }
 
                 TempData["SuccessMessage"] = "Hospital bill status updated successfully.";
@@ -3612,123 +3510,20 @@ namespace LingapDVO.Controllers
                 medicallabform.Result = DateTime.Now;
                 context.SaveChanges();
 
-                // Get user info from RegisterAcc table
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == medicallabform.UserId);
-
-                // ✅ Send automatic email only if user exists and has an email
-                if (user != null && !string.IsNullOrEmpty(user.Email))
+                // Send multi-channel notification (In-App, SMS, Email based on preferences)
+                var status = medicalandlabformDto.Status2?.Trim();
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approved", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase)))
                 {
-                    // Get user's first name from AccountVerification table
-                    var accountVerification = context.Verifyaccount
-                        .FirstOrDefault(av => av.UserId == medicallabform.UserId);
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == medicallabform.UserId);
+                    var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
-                    string userFirstName = "Valued Applicant";
-
-                    if (accountVerification != null && !string.IsNullOrEmpty(accountVerification.Firstname))
-                    {
-                        userFirstName = accountVerification.Firstname;
-                    }
-                    else if (!string.IsNullOrEmpty(user.Username))
-                    {
-                        // Fallback to username if first name not found in AccountVerification
-                        userFirstName = user.Username;
-                    }
-
-                    var status = medicalandlabformDto.Status2?.Trim().ToLower();
-                    var fromEmail = _configuration["EmailSettings:FromEmail"];
-                    var fromName = _configuration["EmailSettings:FromName"];
-                    var fromPassword = _configuration["EmailSettings:FromPassword"];
-
-                    if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                        throw new ArgumentException("Email settings are missing.");
-
-                    var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, userFirstName);
-
-                    string subject;
-                    string body;
-
-                    if (status == "approved")
-                    {
-                        // ✅ Approved message
-                        subject = "Medical Assistance Application Approved - LINGAP DVO";
-                        body = $@"
-                                Dear {userFirstName},
-
-                                We are pleased to inform you that your Medical Assistance Application has been successfully approved.
-
-                                APPLICATION DETAILS:
-                                • Application Type: Medical Assistance
-                                • Date Approved: {DateTime.Now:MMMM dd, yyyy}
-
-                                REMARKS:
-                                {medicalandlabformDto.Comments ?? "Your application has met all the necessary requirements and has been processed accordingly."}
-
-                                NEXT STEPS:
-                                Our team will coordinate with the concerned healthcare facility regarding the financial assistance. You may expect further communication from either our office or the hospital administration within the next 3–5 working days.
-
-                                Should you require any clarification or have additional inquiries, please do not hesitate to contact our support team at [Support Email/Phone Number].
-
-                                We are committed to supporting you through this process and hope this assistance provides you with the relief needed during this time.
-
-                                Sincerely,
-                                {fromName}
-                                LINGAP DVO Medical Assistance Program";
-                                                    }
-                                                    else if (status == "disapproved")
-                                                    {
-                                                        // ❌ Unapproved message – same structure but prioritizes comments
-                                                        subject = "Medical Assistance Application Update - LINGAP DVO";
-                                                        body = $@"
-                                Dear {userFirstName},
-
-                                We would like to inform you that your Medical Assistance Application was not approved.
-
-                                APPLICATION DETAILS:
-                                • Application Type: Medical Assistance
-                                • Date Reviewed: {DateTime.Now:MMMM dd, yyyy}
-
-                                REMARKS:
-                                {medicalandlabformDto.Comments ?? "Please contact our office for further clarification regarding this decision."}
-
-                                NEXT STEPS:
-                                If you wish to clarify the result or provide additional supporting documents, please contact our support team at [Support Email/Phone Number] within the next few working days.
-
-                                We remain committed to assisting applicants and encourage you to stay in touch with our office for future programs or available assistance.
-
-                                Sincerely,
-                                {fromName}
-                                LINGAP DVO Medical Assistance Program";
-                    }
-                    else
-                    {
-                        // Skip sending for other statuses
-                        subject = null;
-                        body = null;
-                    }
-
-                    // ✅ Send email only if applicable
-                    if (!string.IsNullOrEmpty(subject))
-                    {
-                        var smtp = new SmtpClient
-                        {
-                            Host = "smtp.gmail.com",
-                            Port = 587,
-                            EnableSsl = true,
-                            DeliveryMethod = SmtpDeliveryMethod.Network,
-                            UseDefaultCredentials = false,
-                            Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                        };
-
-                        using (var message = new MailMessage(fromAddress, toAddress)
-                        {
-                            Subject = subject,
-                            Body = body
-                        })
-                        {
-                            smtp.Send(message);
-                        }
-                    }
+                    _ = _notificationService.SendStatusChangeNotificationAsync(
+                        medicallabform.UserId,
+                        applicantName,
+                        "Medical",
+                        status,
+                        medicallabform.Id
+                    );
                 }
 
                 TempData["SuccessMessage"] = "Medical assistance status updated successfully.";
@@ -3755,7 +3550,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // ✅ Update record
+                // Update record
                 funeralburialform.Status2 = funeralburialformDto.Status2;
                 funeralburialform.ForCMOPERSONNEL = funeralburialformDto.ForCMOPERSONNEL;
                 funeralburialform.Comments = funeralburialformDto.Comments;
@@ -3763,122 +3558,20 @@ namespace LingapDVO.Controllers
                 funeralburialform.Result = DateTime.Now;
                 context.SaveChanges();
 
-                // ✅ Get user info from RegisterAcc table
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == funeralburialform.UserId);
-
-                if (user != null && !string.IsNullOrEmpty(user.Email))
+                // Send multi-channel notification (In-App, SMS, Email based on preferences)
+                var status = funeralburialformDto.Status2?.Trim();
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approved", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase)))
                 {
-                    // ✅ Get user's first name from Verifyaccount table
-                    var accountVerification = context.Verifyaccount
-                        .FirstOrDefault(av => av.UserId == funeralburialform.UserId);
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == funeralburialform.UserId);
+                    var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
-                    string userFirstName = "Valued Applicant";
-
-                    if (accountVerification != null && !string.IsNullOrEmpty(accountVerification.Firstname))
-                    {
-                        userFirstName = accountVerification.Firstname;
-                    }
-                    else if (!string.IsNullOrEmpty(user.Username))
-                    {
-                        userFirstName = user.Username;
-                    }
-
-                    // ✅ Load email configuration
-                    var fromEmail = _configuration["EmailSettings:FromEmail"];
-                    var fromName = _configuration["EmailSettings:FromName"];
-                    var fromPassword = _configuration["EmailSettings:FromPassword"];
-
-                    if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                        throw new ArgumentException("Email settings are missing.");
-
-                    var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, userFirstName);
-
-                    string subject;
-                    string body;
-
-                    var status = funeralburialformDto.Status2?.Trim().ToLower();
-
-                    if (status == "approved")
-                    {
-                        // ✅ Approved message
-                        subject = "Funeral Assistance Application Approved - LINGAP DVO";
-                        body = $@"
-                        Dear {userFirstName},
-
-                        We are pleased to inform you that your Funeral Assistance Application has been successfully approved.
-
-                        APPLICATION DETAILS:
-                        • Application Type: Funeral Assistance
-                        • Date Approved: {DateTime.Now:MMMM dd, yyyy}
-
-                        REMARKS:
-                        {funeralburialformDto.Comments ?? "Your application has met all the necessary requirements and has been processed accordingly."}
-
-                        NEXT STEPS:
-                        Our team will coordinate with the concerned funeral home or facility regarding the financial assistance. You may expect further communication from our office within the next 3–5 working days.
-
-                        Should you require any clarification or have additional inquiries, please do not hesitate to contact our support team at [Support Email/Phone Number].
-
-                        We are committed to supporting you through this process and hope this assistance brings you some relief during this time.
-
-                        Sincerely,
-                        {fromName}
-                        LINGAP DVO Funeral Assistance Program";
-                    }
-                    else if (status == "disapproved")
-                    {
-                        // ❌ Unapproved message
-                        subject = "Funeral Assistance Application Update - LINGAP DVO";
-                        body = $@"
-                        Dear {userFirstName},
-
-                        We would like to inform you that your Funeral Assistance Application was not approved.
-
-                        APPLICATION DETAILS:
-                        • Application Type: Funeral Assistance
-                        • Date Reviewed: {DateTime.Now:MMMM dd, yyyy}
-
-                        REMARKS:
-                        {funeralburialformDto.Comments ?? "Please contact our office for further clarification regarding this decision."}
-
-                        NEXT STEPS:
-                        If you wish to clarify the result or provide additional supporting documents, please contact our support team at [Support Email/Phone Number] within the next few working days.
-
-                        We remain committed to assisting applicants and encourage you to stay in touch with our office for future programs or available assistance.
-
-                        Sincerely,
-                        {fromName}
-                        LINGAP DVO Funeral Assistance Program";
-                    }
-                    else
-                    {
-                        subject = null;
-                        body = null;
-                    }
-
-                    // ✅ Send email only if applicable
-                    if (!string.IsNullOrEmpty(subject))
-                    {
-                        var smtp = new SmtpClient
-                        {
-                            Host = "smtp.gmail.com",
-                            Port = 587,
-                            EnableSsl = true,
-                            DeliveryMethod = SmtpDeliveryMethod.Network,
-                            UseDefaultCredentials = false,
-                            Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                        };
-
-                        using (var message = new MailMessage(fromAddress, toAddress)
-                        {
-                            Subject = subject,
-                            Body = body
-                        })
-                        {
-                            smtp.Send(message);
-                        }
-                    }
+                    _ = _notificationService.SendStatusChangeNotificationAsync(
+                        funeralburialform.UserId,
+                        applicantName,
+                        "Funeral",
+                        status,
+                        funeralburialform.Id
+                    );
                 }
 
                 TempData["SuccessMessage"] = "Funeral assistance status updated successfully.";

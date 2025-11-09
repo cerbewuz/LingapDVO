@@ -55,6 +55,14 @@
             background-color: #f5f7fb;
             min-width: 0;
             width: 100%;
+            margin-left: clamp(0px, calc((100vw - 768px) * 999), 260px);
+            padding-top: clamp(4rem, calc((768px - 100vw) * 999), 0.75rem);
+            transition: margin-left 0.3s ease, width 0.3s ease;
+        }
+
+        /* When sidebar is hidden, expand content to full width */
+        .main-content-with-sidebar.sidebar-hidden {
+            margin-left: 0;
         }
 
         .header {
@@ -1004,49 +1012,49 @@
                 if (app.type === "Hospital Bill Assistance") {
                     // Check status3 FIRST for claimed (highest priority)
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/Adminuser/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
+                        editUrl = `/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
                     }
                     // Then check status2 for approved/disapproved
                     else if (app.status2 === "approved") {
-                        editUrl = `/Adminuser/FillupformHospitalBillapprovedstatus/${app.formId}`;
+                        editUrl = `/FillupformHospitalBillapprovedstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        editUrl = `/Adminuser/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
+                        editUrl = `/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
                     }
                     // Then check original status
                     else if (app.status === "processing") {
-                        editUrl = `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        editUrl = `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                        editUrl = `/FillupformHospitalBillUpdatestatus/${app.formId}`;
                     }
 
                 } else if (app.type === "Medical and laboratory Procedure") {
                     // Apply the same logic for Medical forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/Adminuser/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
+                        editUrl = `/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
                     }
                     else if (app.status2 === "approved") {
-                        editUrl = `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
+                        editUrl = `/Medicalandlabformapprovedsstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        editUrl = `/Adminuser/MedicalandlabformDisapprovedstatus/${app.formId}`;
+                        editUrl = `/MedicalandlabformDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        editUrl = `/Adminuser/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        editUrl = `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                        editUrl = `/Medicalandlabformstatus/${app.formId}`;
                     }
 
                 } else if (app.type === "Funeral and burial assistance") {
                     // Apply the same logic for Funeral forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/Adminuser/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
+                        editUrl = `/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
                     }
                     else if (app.status2 === "approved") {
-                        editUrl = `/Adminuser/Funeralburialapprovedstatus/${app.formId}`;
+                        editUrl = `/Funeralburialapprovedstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        editUrl = `/Adminuser/FuneralburialDisapprovedstatus/${app.formId}`;
+                        editUrl = `/FuneralburialDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        editUrl = `/Adminuser/FuneralburialformUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/FuneralburialformUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        editUrl = `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                        editUrl = `/Funeralburialformstatus/${app.formId}`;
                     }
                 }
 

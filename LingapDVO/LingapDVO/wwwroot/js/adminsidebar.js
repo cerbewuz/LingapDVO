@@ -157,9 +157,17 @@
             if (sidebarOpen) {
                 sidebar.classList.add('visible');
                 pullArrow?.classList.add('open');
+                // Remove sidebar-hidden class when sidebar is open
+                if (mainContent) {
+                    mainContent.classList.remove('sidebar-hidden');
+                }
             } else {
                 sidebar.classList.remove('visible');
                 pullArrow?.classList.remove('open');
+                // Add sidebar-hidden class when sidebar is closed
+                if (mainContent) {
+                    mainContent.classList.add('sidebar-hidden');
+                }
             }
 
             // Hide mobile elements

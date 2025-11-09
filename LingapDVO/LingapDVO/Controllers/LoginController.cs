@@ -24,14 +24,16 @@ namespace LingapDVO.Controllers
         public readonly ApplicationDbContext context;
         private readonly IWebHostEnvironment environment;
         private readonly ISmsService _smsService;
+        private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ISessionConfigurationService _sessionConfig;
 
-        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IConfiguration configuration, ISessionConfigurationService sessionConfig)
+        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IEmailService emailService, IConfiguration configuration, ISessionConfigurationService sessionConfig)
         {
             this.context = context;
             this.environment = environment;
             _smsService = smsService;
+            _emailService = emailService;
             _configuration = configuration;
             _sessionConfig = sessionConfig;
         }
@@ -56,7 +58,7 @@ namespace LingapDVO.Controllers
                     throw new InvalidOperationException("AES encryption key is empty");
 
                 // Log key info for debugging
-                System.Diagnostics.Debug.WriteLine($"AES Key Length: {keyHex.Length} characters");
+                Console.WriteLine($"⚠️ AES Key Length: {keyHex.Length} characters");
 
                 // Convert with automatic padding
                 _aesKey = SafeConvertHexStringToByteArray(keyHex);
@@ -77,7 +79,7 @@ namespace LingapDVO.Controllers
                 if (hex.Length % 2 != 0)
                 {
                     hex = "0" + hex;
-                    System.Diagnostics.Debug.WriteLine($"Hex string padded from {hex.Length - 1} to {hex.Length} characters");
+                    Console.WriteLine($"⚠️ Hex string padded from {hex.Length - 1} to {hex.Length} characters");
                 }
 
                 // Validate hex format
@@ -409,6 +411,7 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                 HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
                 HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
+                HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
                 HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
                 HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
                 HttpContext.Session.SetString("IsVerifiedUser", "true");
@@ -559,6 +562,7 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                     HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
                     HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
+                    HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
                     HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
                     HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
                     HttpContext.Session.SetString("IsVerifiedUser", "true");
@@ -778,7 +782,7 @@ namespace LingapDVO.Controllers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"reCAPTCHA verification error: {ex.Message}");
+                Console.WriteLine($"⚠️ reCAPTCHA verification error: {ex.Message}");
                 if (IsAjaxRequest())
                 {
                     return Json(new
@@ -937,6 +941,7 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                             HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
                             HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
+                            HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
                             HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
                             HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
                             HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
@@ -1105,7 +1110,7 @@ namespace LingapDVO.Controllers
             catch (Exception ex)
             {
                 // Log error and return invalid session
-                System.Diagnostics.Debug.WriteLine($"CheckSession Error: {ex.Message}");
+                Console.WriteLine($"⚠️ CheckSession Error: {ex.Message}");
                 return Json(new { isValid = false, userType = "none", error = "Session check failed" });
             }
         }
@@ -1304,6 +1309,70 @@ namespace LingapDVO.Controllers
             return "Unknown";
         }
 
+        /// <summary>
+        /// Generate HTML body for welcome email
+        /// </summary>
+        private string GenerateWelcomeEmailBody(string firstName, string username)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #dc143c; color: white; padding: 30px 20px; text-align: center; border-radius: 5px 5px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 28px; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .content h2 {{ color: #dc143c; margin-top: 0; }}
+        .info-box {{ background-color: white; padding: 15px; border-left: 4px solid #dc143c; margin: 20px 0; }}
+        .button {{ display: inline-block; padding: 12px 30px; background-color: #dc143c; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 5px 5px; }}
+        .list {{ margin: 15px 0; padding-left: 20px; }}
+        .list li {{ margin: 8px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>Welcome to LingapDVO!</h1>
+        </div>
+        <div class='content'>
+            <h2>Hello, {firstName}!</h2>
+            <p>Thank you for registering with LingapDVO. We're excited to have you join our community!</p>
+
+            <div class='info-box'>
+                <strong>Your Account Details:</strong><br>
+                Username: <strong>{username}</strong><br>
+                Email: You're receiving this message at your registered email address
+            </div>
+
+            <h3>Next Steps:</h3>
+            <ul class='list'>
+                <li><strong>Complete Account Verification:</strong> Please complete your account verification to access all features and submit assistance applications.</li>
+                <li><strong>Update Your Profile:</strong> Add your personal information and contact details.</li>
+                <li><strong>Apply for Assistance:</strong> Once verified, you can apply for various financial assistance programs.</li>
+            </ul>
+
+            <p>LingapDVO provides financial assistance for:</p>
+            <ul class='list'>
+                <li>Hospital Bills</li>
+                <li>Medical and Laboratory Services</li>
+                <li>Funeral and Burial Services</li>
+            </ul>
+
+            <a href='https://localhost:7035/Login' class='button'>Login to Your Account</a>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO - Davao City Government</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+            <p>If you did not create this account, please contact our support team immediately.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+
         // ===========================
         // 🔍 REAL-TIME DUPLICATE CHECKING API ENDPOINTS
         // ===========================
@@ -1434,7 +1503,7 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public IActionResult Register(RegisterAccDto registerAccDto)
+        public async Task<IActionResult> Register(RegisterAccDto registerAccDto)
         {
             // ═══════════════════════════════════════════════════════════════
             // 🔒 ANTI-MANIPULATION SECURITY LAYER 1: TOKEN VALIDATION
@@ -1670,7 +1739,12 @@ namespace LingapDVO.Controllers
                 }
 
                 // 🔎 Check for duplicate full name (exact match)
-                var normalizedSuffix = registerAccDto.Suffix?.Trim().ToLower() ?? "";
+                // Normalize suffix: treat "None" or "none" as empty/null
+                var normalizedSuffix = string.IsNullOrWhiteSpace(registerAccDto.Suffix) ||
+                                      registerAccDto.Suffix.Equals("None", StringComparison.OrdinalIgnoreCase)
+                                      ? ""
+                                      : registerAccDto.Suffix.Trim().ToLower();
+
                 bool duplicateName = context.RegisterAcc.Any(u =>
                     u.FirstName.ToLower() == registerAccDto.FirstName.Trim().ToLower() &&
                     u.MiddleName.ToLower() == registerAccDto.MiddleName.Trim().ToLower() &&
@@ -1695,12 +1769,18 @@ namespace LingapDVO.Controllers
                 var aesHelper = new AesEncryptionHelper(_configuration);
                 string encryptedPassword = aesHelper.Encrypt(registerAccDto.Password);
 
+                // Normalize suffix before saving: treat "None" as null
+                string? suffixToSave = string.IsNullOrWhiteSpace(registerAccDto.Suffix) ||
+                                       registerAccDto.Suffix.Equals("None", StringComparison.OrdinalIgnoreCase)
+                                       ? null
+                                       : registerAccDto.Suffix.Trim();
+
                 var registercacc = new RegisterAcc
                 {
                     FirstName = registerAccDto.FirstName,
                     MiddleName = registerAccDto.MiddleName,
                     LastName = registerAccDto.LastName,
-                    Suffix = registerAccDto.Suffix,
+                    Suffix = suffixToSave,
                     Email = registerAccDto.Email,
                     Username = registerAccDto.Username,
                     Password = encryptedPassword,
@@ -1726,6 +1806,21 @@ namespace LingapDVO.Controllers
                 auditLog.RegisteredUserId = registercacc.Id;
                 context.RegistrationAuditLogs.Add(auditLog);
                 context.SaveChanges();
+
+                // ═══════════════════════════════════════════════════════════════
+                // 📧 SEND WELCOME EMAIL
+                // ═══════════════════════════════════════════════════════════════
+                try
+                {
+                    string welcomeEmailSubject = "Welcome to LingapDVO!";
+                    string welcomeEmailBody = GenerateWelcomeEmailBody(registerAccDto.FirstName, registerAccDto.Username);
+                    await _emailService.SendEmailAsync(registerAccDto.Email, welcomeEmailSubject, welcomeEmailBody);
+                }
+                catch (Exception emailEx)
+                {
+                    // Log email error but don't fail registration
+                    Console.WriteLine($"⚠️ Failed to send welcome email: {emailEx.Message}");
+                }
 
                 // ✅ SUCCESS: Return JSON for AJAX
                 if (IsAjaxRequest())
@@ -1809,28 +1904,27 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public IActionResult Accountverification(VerifyaccountDto VerifyaccountDto)
+        public async Task<IActionResult> Accountverification(VerifyaccountDto VerifyaccountDto)
         {
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
             {
+                Console.WriteLine("⚠️ USER NOT LOGGED IN - Redirecting to Login");
                 // If user is not logged in, redirect to login page
                 return RedirectToAction("Login", "Login");
             }
 
-            // ═══════════════════════════════════════════════════════════════
-            // 🔍 CHECK FOR DUPLICATE VERIFICATION
-            // ═══════════════════════════════════════════════════════════════
+            // Check for duplicate verification
             var existingVerification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
             if (existingVerification != null)
             {
+                Console.WriteLine("⚠️ DUPLICATE VERIFICATION ATTEMPT - User already verified");
                 ModelState.AddModelError("", "Your account has already been verified. You cannot verify again.");
+                TempData["ErrorMessage"] = "Your account has already been verified. You cannot verify again.";
                 return View(VerifyaccountDto);
             }
 
-            // ═══════════════════════════════════════════════════════════════
-            // 🔍 NAME MATCHING VALIDATION (ID vs Registered Account)
-            // ═══════════════════════════════════════════════════════════════
+            // Name matching validation (ID vs Registered Account)
             var registeredUser = context.RegisterAcc.FirstOrDefault(r => r.Id == userId);
             if (registeredUser == null)
             {
@@ -1853,15 +1947,6 @@ namespace LingapDVO.Controllers
             string idMiddleName = NormalizePhilippineName(VerifyaccountDto.Middlename ?? "");
             string idLastName = NormalizePhilippineName(VerifyaccountDto.Lastname ?? "");
 
-            // Debug logging (you can remove this in production)
-            Console.WriteLine($"=== NAME VALIDATION DEBUG ===");
-            Console.WriteLine($"Registered: {registeredUser.FirstName} {registeredUser.LastName}");
-            Console.WriteLine($"Registered (normalized): {regFirstName} {regLastName}");
-            Console.WriteLine($"ID: {VerifyaccountDto.Firstname} {VerifyaccountDto.Lastname}");
-            Console.WriteLine($"ID (normalized): {idFirstName} {idLastName}");
-            Console.WriteLine($"First Name Match: {regFirstName == idFirstName}");
-            Console.WriteLine($"Last Name Match: {regLastName == idLastName}");
-
             // Check if names match (allow some flexibility for middle names)
             bool firstNameMatches = !string.IsNullOrEmpty(regFirstName) &&
                                    !string.IsNullOrEmpty(idFirstName) &&
@@ -1874,18 +1959,22 @@ namespace LingapDVO.Controllers
             // Validation fails if either first name or last name doesn't match
             if (!firstNameMatches || !lastNameMatches)
             {
-                ModelState.AddModelError("", "Name does not match with the registered name. Please use your own valid ID.");
-                TempData["ErrorMessage"] = "Name does not match with the registered name. Please use your own valid ID.";
+                string errorMessage = $"Name mismatch: Your registered name is '{registeredUser.FirstName} {registeredUser.LastName}' but the ID shows '{VerifyaccountDto.Firstname} {VerifyaccountDto.Lastname}'. Please use your own valid ID.";
+                ModelState.AddModelError("", errorMessage);
+                TempData["ErrorMessage"] = errorMessage;
 
-                // Log the mismatch for debugging
-                Console.WriteLine($"❌ NAME VALIDATION FAILED: Registered='{regFirstName} {regLastName}' vs ID='{idFirstName} {idLastName}'");
+                Console.WriteLine($"⚠️ NAME VALIDATION FAILED: Registered='{regFirstName} {regLastName}' vs ID='{idFirstName} {idLastName}'");
+
+                // Pass registered user info back to view for comparison
+                ViewBag.RegisteredFirstName = registeredUser.FirstName;
+                ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+                ViewBag.RegisteredLastName = registeredUser.LastName;
+                ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
 
                 return View(VerifyaccountDto);
             }
 
-            // ═══════════════════════════════════════════════════════════════
-            // 🏙️ SERVER-SIDE DAVAO CITY VALIDATION
-            // ═══════════════════════════════════════════════════════════════
+            // Server-side Davao City validation
             // List of valid Davao City barangays (matches dropdown in Accountverification.cshtml)
             var davaoBarangays = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
@@ -1916,9 +2005,18 @@ namespace LingapDVO.Controllers
 
             if (!davaoBarangays.Contains(VerifyaccountDto.Barangay))
             {
-                ModelState.AddModelError("Barangay",
-                    "This service is only available for Davao City residents. " +
-                    "Please select a valid Davao City barangay.");
+                string barangayError = $"Invalid barangay: '{VerifyaccountDto.Barangay}'. This service is only available for Davao City residents. Please select a valid Davao City barangay from the dropdown.";
+                ModelState.AddModelError("Barangay", barangayError);
+                TempData["ErrorMessage"] = barangayError;
+
+                Console.WriteLine($"⚠️ BARANGAY VALIDATION FAILED: '{VerifyaccountDto.Barangay}' is not in the approved list");
+
+                // Pass registered user info back to view for comparison
+                ViewBag.RegisteredFirstName = registeredUser.FirstName;
+                ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+                ViewBag.RegisteredLastName = registeredUser.LastName;
+                ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
+
                 return View(VerifyaccountDto);
             }
 
@@ -1929,7 +2027,24 @@ namespace LingapDVO.Controllers
                 ModelState.AddModelError("ValidBackID", "Back ID image is required");
 
             if (!ModelState.IsValid)
+            {
+                // Log all validation errors for debugging
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        Console.WriteLine($"⚠️ VALIDATION ERROR: {error.ErrorMessage}");
+                    }
+                }
+
+                // Pass registered user info back to view for comparison
+                ViewBag.RegisteredFirstName = registeredUser.FirstName;
+                ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+                ViewBag.RegisteredLastName = registeredUser.LastName;
+                ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
+
                 return View(VerifyaccountDto);
+            }
 
             try
             {
@@ -1973,6 +2088,12 @@ namespace LingapDVO.Controllers
                 // ==========================
                 // 🗃 Save to Database
                 // ==========================
+                // Normalize suffix: treat "None", "none", empty, or whitespace as empty string (database doesn't allow NULL)
+                string normalizedSuffix = string.IsNullOrWhiteSpace(VerifyaccountDto.Suffix) ||
+                                          VerifyaccountDto.Suffix.Equals("None", StringComparison.OrdinalIgnoreCase)
+                                          ? ""
+                                          : VerifyaccountDto.Suffix.Trim();
+
                 Verifyaccount verifyaccount = new Verifyaccount()
                 {
                     UserId = userId,
@@ -1983,7 +2104,7 @@ namespace LingapDVO.Controllers
                     Lastname = VerifyaccountDto.Lastname,
                     Firstname = VerifyaccountDto.Firstname,
                     Middlename = VerifyaccountDto.Middlename,
-                    Suffix = VerifyaccountDto.Suffix,
+                    Suffix = normalizedSuffix,
                     Gender = VerifyaccountDto.Gender,
                     Dateofbirth = VerifyaccountDto.Dateofbirth,
                     BlkLotStreet = VerifyaccountDto.BlkLotStreet,
@@ -1991,15 +2112,13 @@ namespace LingapDVO.Controllers
                     Barangay = VerifyaccountDto.Barangay,
                     District = VerifyaccountDto.District,
                     Phonenumber = VerifyaccountDto.Phonenumber,
-                    CivilStatus = VerifyaccountDto.CivilStatus,
+                    CivilStatus = VerifyaccountDto.CivilStatus
                 };
 
                 context.Verifyaccount.Add(verifyaccount);
                 context.SaveChanges();
 
-                // ═══════════════════════════════════════════════════════════════
-                //  UPDATE SESSION WITH VERIFIED USER DATA
-                // ═══════════════════════════════════════════════════════════════
+                // Update session with verified user data
                 HttpContext.Session.SetString("IDtype", verifyaccount.IDtype ?? "");
                 HttpContext.Session.SetString("IDnumber", verifyaccount.IDnumber ?? "");
                 HttpContext.Session.SetString("Firstname", verifyaccount.Firstname ?? "");
@@ -2013,17 +2132,49 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("District", verifyaccount.District ?? "");
                 HttpContext.Session.SetString("Barangay", verifyaccount.Barangay ?? "");
                 HttpContext.Session.SetString("CivilStatus", verifyaccount.CivilStatus ?? "");
+                HttpContext.Session.SetString("Phonenumber", verifyaccount.Phonenumber ?? "");
                 HttpContext.Session.SetString("FrontID", verifyaccount.FrontID ?? "");
                 HttpContext.Session.SetString("BackID", verifyaccount.BackID ?? "");
                 HttpContext.Session.SetString("IsVerifiedUser", "true");
 
-                // ═══════════════════════════════════════════════════════════════
-                // ✅ SET SUCCESS FLAG FOR MODAL DISPLAY
-                // ═══════════════════════════════════════════════════════════════
-                TempData["VerificationSuccess"] = true;
-                TempData["VerificationMessage"] = "Your account has been successfully verified! You can now submit assistance requests.";
+                // Send verification success SMS (if user preference enabled)
+                try
+                {
+                    // Check if user has SMS notifications enabled
+                    if (registeredUser.PreferSmsNotification)
+                    {
+                        if (!string.IsNullOrEmpty(verifyaccount.Phonenumber))
+                        {
 
-                return RedirectToAction("Homepage", "Dashboard");
+                            string successSmsMessage = $"Congratulations {verifyaccount.Firstname}!\n\n" +
+                                                       $"Your LingapDVO account has been successfully verified!\n\n" +
+                                                       $"You can now:\n" +
+                                                       $"✓ Apply for Hospital Bill Assistance\n" +
+                                                       $"✓ Apply for Medical/Lab Assistance\n" +
+                                                       $"✓ Apply for Funeral/Burial Assistance\n\n" +
+                                                       $"Login now to get started!\n\n" +
+                                                       $"- LingapDVO, Davao City";
+
+                            bool smsSent = await _smsService.SendSmsAsync(verifyaccount.Phonenumber, successSmsMessage);
+
+                            if (!smsSent)
+                            {
+                                Console.WriteLine("⚠️ SMS sending failed but verification completed");
+                            }
+                        }
+                    }
+                }
+                catch (Exception smsEx)
+                {
+                    // Log SMS error but don't fail verification
+                    Console.WriteLine($"⚠️ Failed to send verification SMS: {smsEx.Message}");
+                }
+
+                // Set success flag for modal display on the verification page
+                ViewBag.VerificationSuccess = true;
+                ViewBag.VerificationMessage = "Your account has been successfully verified! You can now submit assistance requests.";
+
+                return View(VerifyaccountDto);
             }
             catch (Exception ex)
             {

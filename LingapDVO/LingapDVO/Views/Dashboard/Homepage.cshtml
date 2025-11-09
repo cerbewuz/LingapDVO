@@ -612,7 +612,7 @@
                                     }
                                     else
                                     {
-                                        <img src="~/UsersImg/@ViewBag.Profilepicture" alt="Profile" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+                                        <img src="@ViewBag.Profilepicture" alt="Profile" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #5B9BD5;">
                                     }
                                     <div>
                                         <h1 class="lead mb-0">
@@ -645,7 +645,7 @@
                                 }
                                 else
                                 {
-                                    <a asp-route="Accountverification" class="btn btn-link text-warning">
+                                    <a href="/Accountverification" class="btn btn-link text-warning">
                                         <i class="fas fa-exclamation-triangle" title="Complete Verification"></i>
                                     </a>
                                 }
@@ -664,7 +664,7 @@
                                 <!-- Profile Management -->
                                 @if (isVerified)
                                 {
-                                    <a asp-route="Userprofile" class="btn btn-link text-muted">
+                                    <a href="/Userprofile" class="btn btn-link text-muted">
                                         <i class="fas fa-user" title="Profile"></i>
                                     </a>
                                 }
@@ -697,7 +697,7 @@
                                         <small class="text-muted">Complete verification to access Hospital Bill, Medical Procedures, and Funeral Assistance services.</small>
                                     </div>
                                 </div>
-                                <a asp-route="Accountverification" class="btn btn-sm btn-warning">
+                                <a href="/Accountverification" class="btn btn-sm btn-warning">
                                     <i class="fas fa-user-check me-1"></i>Verify Now
                                 </a>
                             </div>
@@ -712,7 +712,7 @@
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
-                                    <a asp-route="FillupformHospitalBill" class="text-decoration-none">
+                                    <a href="/FillupformHospitalBill" class="text-decoration-none">
                                         <div class="service-card">
                                             <div class="service-icon">
                                                 <i class="fas fa-hospital"></i>
@@ -738,7 +738,7 @@
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
-                                    <a asp-route="Medicalandlabform" class="text-decoration-none">
+                                    <a href="/Medicalandlabform" class="text-decoration-none">
                                         <div class="service-card">
                                             <div class="service-icon">
                                                 <i class="fas fa-microscope"></i>
@@ -764,7 +764,7 @@
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
-                                    <a asp-route="Funeralburialform" class="text-decoration-none">
+                                    <a href="/Funeralburialform" class="text-decoration-none">
                                         <div class="service-card">
                                             <div class="service-icon">
                                                 <i class="fas fa-monument"></i>
@@ -790,7 +790,7 @@
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
-                                    <a asp-route="Uploads" class="text-decoration-none">
+                                    <a href="/Uploads" class="text-decoration-none">
                                         <div class="service-card">
                                             <div class="service-icon">
                                                 <i class="fas fa-history"></i>
@@ -814,7 +814,7 @@
 
                             <!-- Service 5 - Locate Facilities -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-route="Maps" class="text-decoration-none">
+                                <a href="/Maps" class="text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-map-marker-alt"></i>
@@ -827,7 +827,7 @@
 
                             <!-- Service 6 - Partner Directory -->
                             <div class="col-md-6 col-lg-4">
-                                <a asp-route="Listofpartners" class="text-decoration-none">
+                                <a href="/Listofpartners" class="text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-hands-helping"></i>
@@ -846,6 +846,10 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SignalR for Real-time Notifications -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+
     <script>
         // Initialize tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -1053,13 +1057,78 @@
 
             // Initialize real-time connection
             function initRealTimeConnection() {
-                // Check for application status updates every 10 seconds
+                // Initialize SignalR connection for real-time updates
+                initSignalRConnection();
+
+                // Check for application status updates every 10 seconds (fallback)
                 setInterval(() => {
                     checkForStatusChanges();
                 }, 10000);
 
                 // Initial load
                 loadRealNotifications();
+            }
+
+            // Initialize SignalR Connection for Real-time Notifications
+            function initSignalRConnection() {
+                try {
+                    const connection = new signalR.HubConnectionBuilder()
+                        .withUrl("/notificationHub")
+                        .withAutomaticReconnect()
+                        .configureLogging(signalR.LogLevel.Information)
+                        .build();
+
+                    // Handle status update notifications
+                    connection.on("ReceiveStatusUpdate", function (message) {
+                        console.log("SignalR: Received status update:", message);
+                        // Refresh notifications when status updates
+                        loadRealNotifications(false);
+
+                        // Show toast notification
+                        showToast(message, 'info');
+                    });
+
+                    // Handle new application notifications
+                    connection.on("ReceiveNotification", function (title, message, type) {
+                        console.log("SignalR: Received notification:", title, message, type);
+                        // Refresh notifications
+                        loadRealNotifications(false);
+
+                        // Show toast notification
+                        showToast(`${title}: ${message}`, type || 'info');
+                    });
+
+                    // Start connection
+                    connection.start()
+                        .then(function () {
+                            console.log("SignalR: Connected successfully to notification hub");
+                            // Update real-time indicator
+                            if (realTimeIndicator) {
+                                realTimeIndicator.style.backgroundColor = 'var(--success)';
+                            }
+                        })
+                        .catch(function (err) {
+                            console.error("SignalR: Connection error:", err.toString());
+                            // Keep polling as fallback
+                        });
+
+                    // Handle reconnection
+                    connection.onreconnected((connectionId) => {
+                        console.log("SignalR: Reconnected with connection ID:", connectionId);
+                        loadRealNotifications(false);
+                    });
+
+                    // Handle disconnection
+                    connection.onclose((error) => {
+                        console.log("SignalR: Connection closed", error);
+                        if (realTimeIndicator) {
+                            realTimeIndicator.style.backgroundColor = 'var(--warning)';
+                        }
+                    });
+
+                } catch (error) {
+                    console.error("SignalR: Initialization error:", error);
+                }
             }
 
             // Check for status changes and generate notifications
@@ -1554,79 +1623,85 @@
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- Account Verification Success Modal -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
     @if (TempData["VerificationSuccess"] != null && (bool)TempData["VerificationSuccess"])
     {
         <div class="modal fade" id="verificationSuccessModal" tabindex="-1" aria-labelledby="verificationSuccessModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
-                    <!-- Header -->
-                    <div class="modal-header bg-gradient-to-r from-green-500 to-green-600 text-white py-4 px-6 border-b-0">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                                <i class="fas fa-check-circle text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h5 class="modal-title font-bold text-lg" id="verificationSuccessModalLabel">Account Verified Successfully!</h5>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Body -->
-                    <div class="modal-body p-6 text-center">
-                        <!-- Success Icon -->
-                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-check-double text-green-500 text-4xl"></i>
+                <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-green-50 via-white to-emerald-50">
+                    <!-- Compact Body -->
+                    <div class="modal-body p-8 text-center">
+                        <!-- Success Icon with Animation -->
+                        <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg" style="animation: scaleIn 0.5s ease-out;">
+                            <i class="fas fa-check text-white text-3xl"></i>
                         </div>
 
                         <!-- Success Message -->
-                        <h4 class="font-bold text-gray-800 text-xl mb-3">Verification Complete!</h4>
-                        <p class="text-gray-600 mb-4">
-                            @TempData["VerificationMessage"]
+                        <h4 class="font-bold text-gray-800 text-xl mb-2">Verification Complete!</h4>
+                        <p class="text-gray-600 text-sm mb-6">
+                            Your account has been successfully verified. You're all set to access our assistance programs!
                         </p>
 
-                        <!-- Success Features List -->
-                        <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-left mb-4">
-                            <div class="flex items-start gap-2 mb-2">
-                                <i class="fas fa-check text-green-600 mt-1"></i>
-                                <div class="text-sm text-gray-700">
-                                    <strong>Identity Verified:</strong> Your account has been authenticated
+                        <!-- Quick Guide Section -->
+                        <div class="bg-white rounded-xl p-4 mb-6 text-left shadow-sm border border-green-100">
+                            <h6 class="font-semibold text-gray-800 text-sm mb-3 flex items-center gap-2">
+                                <i class="fas fa-hand-holding-heart text-green-600"></i>
+                                Available Assistance Programs
+                            </h6>
+                            <div class="space-y-2">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-hospital text-green-600 text-xs mt-1"></i>
+                                    <span class="text-xs text-gray-700">Hospital Bill Assistance</span>
                                 </div>
-                            </div>
-                            <div class="flex items-start gap-2 mb-2">
-                                <i class="fas fa-check text-green-600 mt-1"></i>
-                                <div class="text-sm text-gray-700">
-                                    <strong>Forms Unlocked:</strong> You can now submit assistance requests
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-pills text-green-600 text-xs mt-1"></i>
+                                    <span class="text-xs text-gray-700">Medical & Laboratory Assistance</span>
                                 </div>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-check text-green-600 mt-1"></i>
-                                <div class="text-sm text-gray-700">
-                                    <strong>Profile Complete:</strong> Your information has been saved
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-praying-hands text-green-600 text-xs mt-1"></i>
+                                    <span class="text-xs text-gray-700">Funeral & Burial Assistance</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Info Box -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-left">
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-info-circle text-blue-600 mt-1"></i>
-                                <div class="text-sm text-blue-800">
-                                    <strong>Next Steps:</strong> Navigate to the assistance forms section to start your application. Our team will review your request within 1-3 business days.
-                                </div>
-                            </div>
+                        <!-- Next Steps -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-6 text-left border border-blue-100">
+                            <h6 class="font-semibold text-gray-800 text-sm mb-2 flex items-center gap-2">
+                                <i class="fas fa-route text-blue-600"></i>
+                                How to Apply
+                            </h6>
+                            <ol class="text-xs text-gray-700 space-y-1 ml-4 list-decimal">
+                                <li>Click on "Uploads" in the menu</li>
+                                <li>Choose your needed assistance type</li>
+                                <li>Fill out the form completely</li>
+                                <li>Upload required documents</li>
+                                <li>Submit and wait for review (1-3 business days)</li>
+                            </ol>
                         </div>
-                    </div>
 
-                    <!-- Footer -->
-                    <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0 justify-center">
-                        <button type="button" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200" data-bs-dismiss="modal">
-                            <i class="fas fa-thumbs-up mr-2"></i>Got it, Thanks!
+                        <!-- Action Button -->
+                        <button type="button" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200" data-bs-dismiss="modal">
+                            <i class="fas fa-arrow-right mr-2"></i>Get Started
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <style>
+            @@keyframes scaleIn {
+                0% {
+                    transform: scale(0);
+                    opacity: 0;
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+        </style>
 
         <script>
             // Auto-show verification success modal when page loads

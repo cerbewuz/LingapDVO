@@ -61,13 +61,6 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string District { get; set; } = "";
 
-
-
-        [MaxLength(100)]
-        public string SecurityQuestions { get; set; } = "";
-        [MaxLength(100)]
-        public string Securityanswer { get; set; } = "";
-
         [MaxLength(100)]
         public string Phonenumber { get; set; } = "";
 

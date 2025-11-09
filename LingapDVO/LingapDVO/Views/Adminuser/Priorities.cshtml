@@ -51,7 +51,13 @@
             background-color: #f5f7fb;
             margin-left: clamp(0px, calc((100vw - 768px) * 999), 260px);
             padding-top: clamp(4rem, calc((100vw - 768px) * 999), 1rem);
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.3s ease, width 0.3s ease;
+            width: auto;
+        }
+
+        /* When sidebar is hidden, expand content to full width */
+        .main-content-with-sidebar.sidebar-hidden {
+            margin-left: 0;
         }
 
         .header {
@@ -309,6 +315,16 @@
         .empty-state p {
             font-size: clamp(0.9rem, 1rem, 1.1rem);
         }
+
+        /* Pulse animation for real-time indicator */
+        @@keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
     </style>
 </head>
 <body>
@@ -544,39 +560,39 @@
             function getApplicationUrl(app) {
                 if (app.formType === "hospital") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        return `/Adminuser/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
+                        return `/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
                     } else if (app.status2 === "approved") {
-                        return `/Adminuser/FillupformHospitalBillapprovedstatus/${app.formId}`;
+                        return `/FillupformHospitalBillapprovedstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        return `/Adminuser/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
+                        return `/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/Adminuser/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
+                        return `/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        return `/Adminuser/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                        return `/FillupformHospitalBillUpdatestatus/${app.formId}`;
                     }
                 } else if (app.formType === "medical") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        return `/Adminuser/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
+                        return `/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
                     } else if (app.status2 === "approved") {
-                        return `/Adminuser/Medicalandlabformapprovedsstatus/${app.formId}`;
+                        return `/Medicalandlabformapprovedsstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        return `/Adminuser/MedicalandlabformDisapprovedstatus/${app.formId}`;
+                        return `/MedicalandlabformDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/Adminuser/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
+                        return `/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        return `/Adminuser/Medicalandlabformstatus/${app.formId}`;
+                        return `/Medicalandlabformstatus/${app.formId}`;
                     }
                 } else if (app.formType === "funeral") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        return `/Adminuser/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
+                        return `/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
                     } else if (app.status2 === "approved") {
-                        return `/Adminuser/Funeralburialapprovedstatus/${app.formId}`;
+                        return `/Funeralburialapprovedstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        return `/Adminuser/FuneralburialDisapprovedstatus/${app.formId}`;
+                        return `/FuneralburialDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/Adminuser/FuneralburialformUpdateprocessingstatus/${app.formId}`;
+                        return `/FuneralburialformUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        return `/Adminuser/Funeralburialformstatus/${app.formId}`;
+                        return `/Funeralburialformstatus/${app.formId}`;
                     }
                 }
                 return '#';
@@ -610,11 +626,81 @@
             // Initial render
             renderPriorities();
 
-            // Auto-refresh every 30 seconds
+            // Initialize SignalR for real-time updates
+            initSignalRConnection();
+
+            // Auto-refresh every 30 seconds (fallback if SignalR fails)
             setInterval(() => {
-                window.location.reload();
+                renderPriorities(); // Re-render instead of full page reload for smoother UX
             }, 30000);
         });
+
+        // Initialize SignalR Connection for Real-time Priority Updates
+        function initSignalRConnection() {
+            try {
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/notificationHub")
+                    .withAutomaticReconnect()
+                    .configureLogging(signalR.LogLevel.Information)
+                    .build();
+
+                // Handle new application submissions
+                connection.on("ReceiveNewApplication", function (applicationType, formId) {
+                    console.log("SignalR: New application received:", applicationType, formId);
+                    // Reload page to show new priority application
+                    window.location.reload();
+                });
+
+                // Handle status updates that might affect priorities
+                connection.on("ReceiveStatusUpdate", function (message) {
+                    console.log("SignalR: Status update received:", message);
+                    // Re-render priorities to reflect status changes
+                    window.location.reload();
+                });
+
+                // Handle priority-specific notifications
+                connection.on("ReceivePriorityUpdate", function (message) {
+                    console.log("SignalR: Priority update received:", message);
+                    window.location.reload();
+                });
+
+                // Start connection
+                connection.start()
+                    .then(function () {
+                        console.log("SignalR: Connected successfully to notification hub (Admin Priorities)");
+                        // Add visual indicator that real-time is active
+                        const header = document.querySelector('.page-title p');
+                        if (header) {
+                            header.innerHTML = 'Real-time monitoring active <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem; animation: pulse 2s infinite;"></i>';
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error("SignalR: Connection error:", err.toString());
+                        // Fallback to polling
+                    });
+
+                // Handle reconnection
+                connection.onreconnected((connectionId) => {
+                    console.log("SignalR: Reconnected with connection ID:", connectionId);
+                    window.location.reload();
+                });
+
+                // Handle disconnection
+                connection.onclose((error) => {
+                    console.log("SignalR: Connection closed", error);
+                    const header = document.querySelector('.page-title p');
+                    if (header) {
+                        header.innerHTML = 'Connection lost - using fallback updates <i class="bi bi-exclamation-triangle-fill text-warning"></i>';
+                    }
+                });
+
+            } catch (error) {
+                console.error("SignalR: Initialization error:", error);
+            }
+        }
     </script>
+
+    <!-- SignalR for Real-time Notifications -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
 </body>
 </html>

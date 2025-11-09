@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="~/css/login-styles.css" asp-append-version="true">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-2 sm:p-4 md:p-6">
@@ -119,42 +120,38 @@
 
                 <!-- Username & Email in Horizontal Layout -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-4 lg:gap-6">
-                    <!-- Username Field - Updated to match login form sizing -->
+                    <!-- Username Field - Enhanced with floating label -->
                     <div class="space-y-1.5 sm:space-y-2">
-                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
-                            Username
-                        </label>
                         <div class="relative">
                             <input asp-for="Username"
                                    type="text"
-                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
+                                   class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white"
                                    placeholder=" "
                                    required
                                    autocomplete="username"
                                    id="username">
-                            <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
-                                <i class="fas fa-user mr-1 sm:mr-2 text-crimson-500 text-xs"></i>Enter username
-                            </span>
+                            <label for="username" class="floating-label">
+                                <i class="fas fa-user"></i>
+                                <span>Enter username</span>
+                            </label>
                         </div>
                         <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
                     </div>
 
-                    <!-- Email Field - Updated to match login form sizing -->
+                    <!-- Email Field - Enhanced with floating label -->
                     <div class="space-y-1.5 sm:space-y-2">
-                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
-                            Email
-                        </label>
                         <div class="relative">
                             <input asp-for="Email"
                                    type="email"
-                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white placeholder-transparent"
+                                   class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white"
                                    placeholder=" "
                                    required
                                    autocomplete="email"
                                    id="email">
-                            <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-400 transition-all duration-200 pointer-events-none bg-white px-1">
-                                <i class="fas fa-envelope mr-1 sm:mr-2 text-crimson-500 text-xs"></i>Enter email
-                            </span>
+                            <label for="email" class="floating-label">
+                                <i class="fas fa-envelope"></i>
+                                <span>Enter email</span>
+                            </label>
                         </div>
                         <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
                     </div>
@@ -162,40 +159,42 @@
 
                 <!-- Password & Confirm Password in Horizontal Layout -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-4 lg:gap-6">
-                    <!-- Password Field - Updated to match login form sizing -->
+                    <!-- Password Field - Enhanced with floating label -->
                     <div class="space-y-1.5 sm:space-y-2">
-                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
-                            Password
-                        </label>
                         <div class="relative">
                             <input asp-for="Password"
                                    type="password"
-                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-10 sm:pr-12"
-                                   placeholder="Enter your password"
+                                   class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white pr-10 sm:pr-12"
+                                   placeholder=" "
                                    required
                                    autocomplete="new-password"
                                    id="password">
-                            <button type="button" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="togglePassword">
+                            <label for="password" class="floating-label">
+                                <i class="fas fa-lock"></i>
+                                <span>Enter your password</span>
+                            </label>
+                            <button type="button" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none z-10" id="togglePassword">
                                 <i class="fas fa-eye text-xs sm:text-sm"></i>
                             </button>
                         </div>
                         <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
                     </div>
 
-                    <!-- Confirm Password Field - Updated to match login form sizing -->
+                    <!-- Confirm Password Field - Enhanced with floating label -->
                     <div class="space-y-1.5 sm:space-y-2">
-                        <label class="block text-xs sm:text-sm font-semibold text-gray-700">
-                            Confirm Password
-                        </label>
                         <div class="relative">
                             <input type="password"
                                    name="ConfirmPassword"
-                                   class="w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-white pr-10 sm:pr-12"
-                                   placeholder="Confirm your password"
+                                   class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white pr-10 sm:pr-12"
+                                   placeholder=" "
                                    required
                                    autocomplete="new-password"
                                    id="confirmPassword">
-                            <button type="button" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="toggleConfirmPassword">
+                            <label for="confirmPassword" class="floating-label">
+                                <i class="fas fa-lock"></i>
+                                <span>Confirm your password</span>
+                            </label>
+                            <button type="button" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none z-10" id="toggleConfirmPassword">
                                 <i class="fas fa-eye text-xs sm:text-sm"></i>
                             </button>
                         </div>
@@ -244,12 +243,12 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 sm:gap-3">
-                        <a href="/Login/GoogleLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 border-2 border-gray-200 rounded-lg sm:rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
+                        <a href="/GoogleLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 border-2 border-gray-200 rounded-lg sm:rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group">
                             <img src="https://www.gstatic.com/images/branding/product/2x/googleg_64dp.png" alt="Google" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
                             <span class="text-xs sm:text-xs font-medium text-gray-600 group-hover:text-green-700">Google</span>
                         </a>
 
-                        <a href="/Login/FacebookLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
+                        <a href="/FacebookLogin" class="flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 group shadow-sm">
                             <i class="fab fa-facebook-f text-xs sm:text-xs"></i>
                             <span class="text-xs sm:text-xs font-medium">Facebook</span>
                         </a>
@@ -407,21 +406,34 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
+    <!-- Success Modal - Enhanced -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-white to-green-50">
+            <div class="modal-content-enhanced-register border-0">
                 <div class="modal-body p-5 sm:p-6 text-center">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                        <i class="fas fa-check text-green-600 text-2xl sm:text-3xl"></i>
+                    <div class="modal-icon-wrapper-register mx-auto mb-4 sm:mb-5">
+                        <div class="success-checkmark">
+                            <div class="check-icon">
+                                <span class="icon-line line-tip"></span>
+                                <span class="icon-line line-long"></span>
+                                <div class="icon-circle"></div>
+                                <div class="icon-fix"></div>
+                            </div>
+                        </div>
                     </div>
                     <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h3>
-                    <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">You can now proceed to login.</p>
-                    <div class="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200">
-                        <button id="proceedToLogin" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
-                            Proceed to Login
-                        </button>
+                    <p class="text-sm sm:text-base text-gray-600 mb-4">Your account has been created.</p>
+
+                    <!-- Redirect Message and Progress Bar -->
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600 mb-3">Redirecting to login page in <span id="countdown">3</span> seconds...</p>
+
+                        <!-- Loading Bar Container -->
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div id="progressBar" class="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-100" style="width: 0%"></div>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -429,6 +441,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    @* <script>
+        document.getElementById("proceedToLogin").addEventListener("click", function() {
+            window.location.href = "/Login"; 
+        });
+    </script> *@
     <script>
             // Global variable to store the success modal instance
         let successModal = null;
@@ -593,42 +610,37 @@
                 });
             }
 
-            // Floating label functionality for username and email
-            const usernameInput = document.getElementById('username');
-            const usernameLabel = usernameInput?.nextElementSibling;
-            const emailInput = document.getElementById('email');
-            const emailLabel = emailInput?.nextElementSibling;
+            // Enhanced floating label functionality with validation states
+            const floatingInputs = document.querySelectorAll('.floating-input');
 
-            function initializeFloatingLabel(input, label) {
-                if (!input || !label) return;
+            floatingInputs.forEach(input => {
+                const label = input.nextElementSibling;
 
-                input.addEventListener('focus', function() {
-                    label.style.top = '0';
-                    label.style.fontSize = '0.75rem';
-                    label.style.color = '#10b981';
-                    label.style.transform = 'translateY(-50%)';
-                });
-
-                input.addEventListener('blur', function() {
-                    if (this.value.trim() === '') {
-                        label.style.top = '50%';
-                        label.style.fontSize = '0.875rem';
-                        label.style.color = '#9ca3af';
-                        label.style.transform = 'translateY(-50%)';
+                // On input - show success state when typing valid content
+                input.addEventListener('input', function() {
+                    if (this.value.trim() !== '') {
+                        if (label && label.classList.contains('floating-label')) {
+                            label.classList.add('active');
+                        }
+                    } else {
+                        if (label && label.classList.contains('floating-label')) {
+                            label.classList.remove('active', 'success', 'error');
+                        }
                     }
                 });
 
-                // Initialize label position
-                if (input.value.trim() !== '') {
-                    label.style.top = '0';
-                    label.style.fontSize = '0.75rem';
-                    label.style.color = '#10b981';
-                    label.style.transform = 'translateY(-50%)';
-                }
-            }
+                // On blur - validate
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() !== '' && label && label.classList.contains('floating-label')) {
+                        label.classList.add('active');
+                    }
+                });
 
-            initializeFloatingLabel(usernameInput, usernameLabel);
-            initializeFloatingLabel(emailInput, emailLabel);
+                // Initialize labels for pre-filled fields
+                if (input.value.trim() !== '' && label && label.classList.contains('floating-label')) {
+                    label.classList.add('active');
+                }
+            });
 
             // ===========================
             // 🔍 REAL-TIME DUPLICATE CHECKING
@@ -786,6 +798,10 @@
             const debouncedEmailCheck = debounce(checkEmailExists, 500);
             const debouncedUsernameCheck = debounce(checkUsernameExists, 500);
             const debouncedNameCheck = debounce(checkNameExists, 800);
+
+            // Get input elements
+            const emailInput = document.getElementById('email');
+            const usernameInput = document.getElementById('username');
 
             // Add event listeners for real-time validation
             if (emailInput) {
@@ -977,16 +993,6 @@
             });
         }
 
-        // Add event listener for the Proceed to Login button
-        const proceedToLoginBtn = document.getElementById('proceedToLogin');
-        if (proceedToLoginBtn) {
-            proceedToLoginBtn.addEventListener('click', function() {
-                if (successModal) {
-                    successModal.hide();
-                }
-                window.location.href = '/Login';
-            });
-        }
         });
 
                 // Success modal functionality - make it globally accessible
@@ -1007,45 +1013,46 @@
 
             // Show the modal
             successModal.show();
+
+            // Start countdown and progress bar animation
+            let timeLeft = 3;
+            const countdownElement = document.getElementById('countdown');
+            const progressBar = document.getElementById('progressBar');
+
+            // Update progress bar smoothly
+            let progress = 0;
+            const totalDuration = 3000; // 3 seconds in milliseconds
+            const interval = 30; // Update every 30ms for smooth animation
+            const increment = (100 / totalDuration) * interval;
+
+            const progressInterval = setInterval(() => {
+                progress += increment;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                }
+                progressBar.style.width = progress + '%';
+            }, interval);
+
+            // Countdown timer
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                if (countdownElement) {
+                    countdownElement.textContent = timeLeft;
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    // Redirect to login page
+                    window.location.href = '/Login';
+                }
+            }, 1000);
         }
         // Make function globally accessible
         window.showSuccessModal = showSuccessModal;
     </script>
 
     <style>
-        .crimson-500 {
-            color: #DC143C;
-        }
-
-        .crimson-600 {
-            color: #b01030;
-        }
-
-        .bg-crimson-500 {
-            background-color: #DC143C;
-        }
-
-        .bg-crimson-600 {
-            background-color: #b01030;
-        }
-
-        /* Custom gradient for text */
-        .text-crimson-600 {
-            color: #DC143C;
-        }
-
-        .hover\:text-crimson-700:hover {
-            color: #b01030;
-        }
-
-        /* Ensure proper focus states */
-        input:focus + span {
-            top: 0 !important;
-            font-size: 0.75rem !important;
-            color: #10b981 !important;
-            transform: translateY(-50%) !important;
-        }
-
         /* Password toggle button styles */
         #togglePassword, #toggleConfirmPassword {
             background: none;
@@ -1059,9 +1066,69 @@
             justify-content: center;
         }
 
-            #togglePassword:hover, #toggleConfirmPassword:hover {
-                color: #4b5563;
+        #togglePassword:hover, #toggleConfirmPassword:hover {
+            color: #4b5563;
+        }
+
+        /* Register-specific Modal Styles */
+        .modal-content-enhanced-register {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+        }
+
+        .modal-icon-wrapper-register {
+            width: 4.5rem;
+            height: 4.5rem;
+            position: relative;
+        }
+
+        @@media (min-width: 640px) {
+            .modal-icon-wrapper-register {
+                width: 5rem;
+                height: 5rem;
             }
+        }
+
+        /* Modal Button for Register */
+        .modal-button-register {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-button-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+        }
+
+        .modal-button-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -2px rgba(16, 185, 129, 0.4);
+        }
+
+        .modal-button-success:active {
+            transform: translateY(0);
+        }
+
+        /* Modal Animation */
+        #successModal.modal.fade .modal-dialog {
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #successModal.modal.show .modal-dialog {
+            transform: scale(1);
+        }
 
         /* Custom scrollbar for modal */
         .modal-body::-webkit-scrollbar {
@@ -1084,13 +1151,17 @@
 
         /* Success Modal Centering - Fixed positioning for all screen sizes */
         #successModal {
-            z-index: -1;
-            pointer-events: none;
+            display: none;
         }
 
         #successModal.show {
-            z-index: 1055;
-            pointer-events: auto;
+            display: flex !important;
+            z-index: 1060;
+        }
+
+        /* Success modal backdrop should be behind the modal content */
+        .modal-backdrop {
+            z-index: 1059;
         }
 
         /* Override Bootstrap modal display to use flexbox centering */
@@ -1098,21 +1169,30 @@
             width: clamp(300px, 90%, 500px);
             max-width: 500px;
             margin: auto;
+            position: relative;
+            z-index: 1061;
+        }
+
+        /* Ensure modal content is above backdrop */
+        #successModal .modal-content-enhanced-register {
+            position: relative;
+            z-index: 1062;
         }
 
         /* Ensure modal is vertically centered on all screen sizes */
-        #successModal.modal {
-            display: flex !important;
+        #successModal.show {
             align-items: center;
             justify-content: center;
         }
 
-        #successModal.modal.fade:not(.show) {
+        #successModal.fade:not(.show) {
             opacity: 0;
+            display: none;
         }
 
-        #successModal.modal.show {
+        #successModal.show {
             opacity: 1;
+            display: flex !important;
         }
 
         /* Scale animation */
@@ -1130,7 +1210,7 @@
             z-index: 1056;
         }
 
-        #termsModal + .modal-backdrop {
+        #termsModal ~ .modal-backdrop {
             z-index: 1055;
         }
     </style>
