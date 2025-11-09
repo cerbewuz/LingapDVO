@@ -624,7 +624,7 @@
         <div class="card mt-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>Requestor's Details</span>
-                <button type="button" class="btn btn-outline-primary btn-sm" id="toggleRequestorBtn">
+                <button type="button" class="btn btn-outline-primary btn-sm" id="toggleRequestorBtn" >
                     Show Requestor Details
                 </button>
             </div>
@@ -1426,23 +1426,28 @@
         // Initial reflection update
         updateAssistanceReflection();
 
-        // Requestor Details Toggle
-        const toggleRequestorBtn = document.getElementById('toggleRequestorBtn');
-        const requestorSection = document.getElementById('requestorDetailsSection');
+        document.addEventListener('DOMContentLoaded', function() {
+            const requestorSection = document.getElementById('requestorDetailsSection');
+            const toggleRequestorBtn = document.getElementById('toggleRequestorBtn');
 
-        if (toggleRequestorBtn && requestorSection) {
-            toggleRequestorBtn.addEventListener('click', function() {
-                if (requestorSection.style.display === 'none') {
-                    requestorSection.style.display = 'block';
-                    toggleRequestorBtn.textContent = 'Hide Requestor Details';
-                } else {
-                    requestorSection.style.display = 'none';
-                    toggleRequestorBtn.textContent = 'Show Requestor Details';
-                }
-            });
-        }
+            if (requestorSection && toggleRequestorBtn) {
+                // Hide the requestor section on page load
+                requestorSection.style.display = 'none';
+                toggleRequestorBtn.textContent = 'Show Requestor Details';
 
-        // Same as Patient Button
+                // Toggle visibility when button is clicked
+                toggleRequestorBtn.addEventListener('click', function() {
+                    if (requestorSection.style.display === 'none') {
+                        requestorSection.style.display = 'block';
+                        toggleRequestorBtn.textContent = 'Hide Requestor Details';
+                    } else {
+                        requestorSection.style.display = 'none';
+                        toggleRequestorBtn.textContent = 'Show Requestor Details';
+                    }
+                });
+            }
+        });
+                // Same as Patient Button
         const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
         const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
 

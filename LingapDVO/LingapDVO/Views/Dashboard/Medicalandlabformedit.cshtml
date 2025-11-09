@@ -1401,21 +1401,27 @@
         updateAssistanceReflection();
 
         // Requestor Details Toggle
-        const toggleRequestorBtn = document.getElementById('toggleRequestorBtn');
-        const requestorSection = document.getElementById('requestorDetailsSection');
+      document.addEventListener('DOMContentLoaded', function() {
+            const requestorSection = document.getElementById('requestorDetailsSection');
+            const toggleRequestorBtn = document.getElementById('toggleRequestorBtn');
 
-        if (toggleRequestorBtn && requestorSection) {
-            toggleRequestorBtn.addEventListener('click', function() {
-                if (requestorSection.style.display === 'none') {
-                    requestorSection.style.display = 'block';
-                    toggleRequestorBtn.textContent = 'Hide Requestor Details';
-                } else {
-                    requestorSection.style.display = 'none';
-                    toggleRequestorBtn.textContent = 'Show Requestor Details';
-                }
-            });
-        }
+            if (requestorSection && toggleRequestorBtn) {
+                // Hide the requestor section on page load
+                requestorSection.style.display = 'none';
+                toggleRequestorBtn.textContent = 'Show Requestor Details';
 
+                // Toggle visibility when button is clicked
+                toggleRequestorBtn.addEventListener('click', function() {
+                    if (requestorSection.style.display === 'none') {
+                        requestorSection.style.display = 'block';
+                        toggleRequestorBtn.textContent = 'Hide Requestor Details';
+                    } else {
+                        requestorSection.style.display = 'none';
+                        toggleRequestorBtn.textContent = 'Show Requestor Details';
+                    }
+                });
+            }
+        });
         // Same as Patient Button
         const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
         const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
