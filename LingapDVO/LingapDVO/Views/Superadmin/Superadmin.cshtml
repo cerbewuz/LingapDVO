@@ -428,7 +428,7 @@
                                 <i class="fas fa-cross"></i>
                             </div>
                             <div>
-                                <div class="stats-value">@Model.Funeralburialform.Count</div>
+                                <div class="stats-value">@Model.FuneralAssistance.Count</div>
                                 <div class="stats-label">Funeral</div>
                             </div>
                         </div>
@@ -789,9 +789,9 @@
                 <div class="card-container">
                     <h3 class="section-title">Funeral and burial assistance</h3>
 
-                    @if (Model.Funeralburialform.Any())
+                    @if (Model.FuneralAssistance.Any())
                     {
-                        @foreach (var file in Model.Funeralburialform)
+                        @foreach (var file in Model.FuneralAssistance)
                         {
                             <div class="file-item">
                                 <div class="d-flex align-items-center">

@@ -703,7 +703,7 @@
             }
 
             // Add Funeral Forms
-            @foreach (var f in Model.Funeralburialform)
+            @foreach (var f in Model.FuneralAssistance)
             {
                     <text>
                     allApplications.push({
@@ -1012,34 +1012,34 @@
                 if (app.type === "Hospital Bill Assistance") {
                     // Check status3 FIRST for claimed (highest priority)
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
+                        editUrl = `/HospitalAssistanceUpdatestatuClaimeddocs/${app.formId}`;
                     }
                     // Then check status2 for approved/disapproved
                     else if (app.status2 === "approved") {
-                        editUrl = `/FillupformHospitalBillapprovedstatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceapprovedstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        editUrl = `/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceDisapprovedstatus/${app.formId}`;
                     }
                     // Then check original status
                     else if (app.status === "processing") {
-                        editUrl = `/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        editUrl = `/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceUpdatestatus/${app.formId}`;
                     }
 
                 } else if (app.type === "Medical and laboratory Procedure") {
                     // Apply the same logic for Medical forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
+                        editUrl = `/OtherAssistancestatusUpdateClaimeddocs/${app.formId}`;
                     }
                     else if (app.status2 === "approved") {
-                        editUrl = `/Medicalandlabformapprovedsstatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceapprovedsstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        editUrl = `/MedicalandlabformDisapprovedstatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        editUrl = `/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        editUrl = `/Medicalandlabformstatus/${app.formId}`;
+                        editUrl = `/OtherAssistancestatus/${app.formId}`;
                     }
 
                 } else if (app.type === "Funeral and burial assistance") {
@@ -1052,9 +1052,9 @@
                     } else if (app.status2 === "disapproved") {
                         editUrl = `/FuneralburialDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        editUrl = `/FuneralburialformUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        editUrl = `/Funeralburialformstatus/${app.formId}`;
+                        editUrl = `/FuneralAssistancestatus/${app.formId}`;
                     }
                 }
 

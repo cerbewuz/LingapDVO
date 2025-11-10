@@ -8,5 +8,194 @@
      Context.Session.GetString("IsAdmin") != null ||
      Context.Session.GetString("IsSuperadmin") != null)
 {
+    <!-- Session Warning Modal -->
+    <div id="sessionWarningModal" class="session-modal" style="display: none;">
+        <div class="session-modal-overlay"></div>
+        <div class="session-modal-content">
+            <div class="session-modal-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="session-modal-title">Session Timeout Warning</h3>
+            <p class="session-modal-message">
+                Your session will expire in <span id="sessionCountdown" class="session-countdown">2:00</span> due to inactivity.
+            </p>
+            <p class="session-modal-submessage">
+                Would you like to continue your session?
+            </p>
+            <div class="session-modal-buttons">
+                <button id="continueSessionBtn" class="session-btn session-btn-primary">
+                    <i class="fas fa-check"></i> Continue Session
+                </button>
+                <button id="logoutNowBtn" class="session-btn session-btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> Logout Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .session-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .session-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .session-modal-content {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: slideInDown 0.4s ease-out;
+        }
+
+        .session-modal-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .session-modal-icon i {
+            font-size: 40px;
+            color: white;
+        }
+
+        .session-modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 16px;
+        }
+
+        .session-modal-message {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .session-countdown {
+            display: inline-block;
+            font-weight: 700;
+            font-size: 20px;
+            color: #667eea;
+            min-width: 60px;
+        }
+
+        .session-modal-submessage {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 32px;
+        }
+
+        .session-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .session-btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .session-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .session-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+
+        .session-btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .session-btn-secondary:hover {
+            background: #cbd5e0;
+            transform: translateY(-1px);
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @@keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @@media (max-width: 640px) {
+            .session-modal-content {
+                padding: 32px 24px;
+            }
+
+            .session-modal-title {
+                font-size: 20px;
+            }
+
+            .session-modal-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .session-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+
     <script src="~/js/session-timeout.js"></script>
 }

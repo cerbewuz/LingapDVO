@@ -1,4 +1,4 @@
-﻿using LingapDVO.Models;
+using LingapDVO.Models;
 using LingapDVO.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -38,17 +38,17 @@ public class NotificationsController : Controller
             var readNotificationIds = GetReadNotificationIdsFromSession(userId);
 
             // Check for recent form submissions (last 7 days)
-            var recentHospitalBills = context.FillupformHospitalBill
+            var recentHospitalBills = context.HospitalAssistance
                 .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            var recentMedicalLabForms = context.Medicalandlabform
+            var recentMedicalLabForms = context.OtherAssistance
                 .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            var recentFuneralForms = context.Funeralburialform
+            var recentFuneralForms = context.FuneralAssistance
                 .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
@@ -217,19 +217,19 @@ public class NotificationsController : Controller
         try
         {
             // Get recent forms (same logic as GetUserNotifications but without read check)
-            var recentHospitalBills = context.FillupformHospitalBill
+            var recentHospitalBills = context.HospitalAssistance
                 .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .Take(5)
                 .ToList();
 
-            var recentMedicalLabForms = context.Medicalandlabform
+            var recentMedicalLabForms = context.OtherAssistance
                 .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .Take(5)
                 .ToList();
 
-            var recentFuneralForms = context.Funeralburialform
+            var recentFuneralForms = context.FuneralAssistance
                 .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .Take(5)

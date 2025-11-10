@@ -1,4 +1,4 @@
-﻿@model LingapDVO.Models.CombinedFormsViewModel
+@model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
 }
@@ -15,6 +15,9 @@
 
     <!-- Go Back Button CSS -->
     <link rel="stylesheet" href="~/css/go-back-button.css">
+
+    <!-- Session Timeout -->
+    @await Html.PartialAsync("_SessionTimeout")
 
     <style>
         :root {
@@ -635,7 +638,7 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="funeral-tab" data-bs-toggle="tab" data-bs-target="#funeral" type="button">
                         <i class="fas fa-monument me-1"></i>Funeral
-                        <span class="badge bg-primary ms-1">@Model.Funeralburialform.Count</span>
+                        <span class="badge bg-primary ms-1">@Model.FuneralAssistance.Count</span>
                     </button>
                 </li>
             </ul>
@@ -767,15 +770,15 @@
 
                                 <!-- Action Buttons -->
                                 <div class="application-actions">
-                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="Fillupformhospitalbillview" asp-route-id="@doc.Id">
+                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="HospitalAssistanceview" asp-route-id="@doc.Id">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                     @if (doc.Status?.ToLower() != "processing" && doc.Status?.ToLower() != "unapproved")
                                     {
-                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="FillupformHospitalBilledit" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="HospitalAssistanceedit" asp-route-id="@doc.Id">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
-                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="FillupformHospitalBilldelete" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="HospitalAssistancedelete" asp-route-id="@doc.Id">
                                             <i class="fas fa-trash-alt"></i> Remove
                                         </a>
                                     }
@@ -919,15 +922,15 @@
 
                                 <!-- Action Buttons -->
                                 <div class="application-actions">
-                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="Medicalandlabformview" asp-route-id="@doc.Id">
+                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="OtherAssistanceview" asp-route-id="@doc.Id">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                     @if (doc.Status?.ToLower() != "processing" && doc.Status?.ToLower() != "unapproved")
                                     {
-                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="Medicalandlabformedit" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="OtherAssistanceedit" asp-route-id="@doc.Id">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
-                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="Medicalandlabformedelete" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="OtherAssistanceedelete" asp-route-id="@doc.Id">
                                             <i class="fas fa-trash-alt"></i> Remove
                                         </a>
                                     }
@@ -949,7 +952,7 @@
             <!-- Funeral Tab -->
             <div class="tab-pane fade" id="funeral" role="tabpanel">
                 @{
-                    var funeralForms = Model.Funeralburialform.OrderByDescending(f => f.CreatedAt).ToList();
+                    var funeralForms = Model.FuneralAssistance.OrderByDescending(f => f.CreatedAt).ToList();
                 }
                 @if (funeralForms.Any())
                 {
@@ -1071,15 +1074,15 @@
 
                                 <!-- Action Buttons -->
                                 <div class="application-actions">
-                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="Funeralburialformview" asp-route-id="@doc.Id">
+                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="FuneralAssistanceview" asp-route-id="@doc.Id">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                     @if (doc.Status?.ToLower() != "processing" && doc.Status?.ToLower() != "unapproved")
                                     {
-                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="Funeralburialformedit" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="FuneralAssistanceedit" asp-route-id="@doc.Id">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
-                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="Funeralburialformedelete" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="FuneralAssistanceedelete" asp-route-id="@doc.Id">
                                             <i class="fas fa-trash-alt"></i> Remove
                                         </a>
                                     }
@@ -1396,7 +1399,7 @@
                     <td>${app.resultDate ? formatDate(app.resultDate) : '-'}</td>
                     <td>${app.claimedDate ? formatDate(app.claimedDate) : '-'}</td>
                     <td>
-                        ${app.id ? `<a href="/Fillupformhospitalbillview/${app.id}" class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
+                        ${app.id ? `<a href="/HospitalAssistanceview/${app.id}" class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
                             <i class="fas fa-eye"></i> View
                         </a>` : ''}
                     </td>
@@ -1534,9 +1537,9 @@
             loadPastData();
         }
 
-        // ═══════════════════════════════════════════════════════════════════════════════
+        // -------------------------------------------------------------------------------
         // REAL-TIME APPLICATION STATUS UPDATES
-        // ═══════════════════════════════════════════════════════════════════════════════
+        // -------------------------------------------------------------------------------
 
         let lastUpdateData = null;
         let isUpdating = false;

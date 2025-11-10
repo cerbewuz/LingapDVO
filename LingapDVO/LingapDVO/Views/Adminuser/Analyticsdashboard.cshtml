@@ -34,7 +34,7 @@
     }
 
     // Process Funeral Forms - they are all "Funeral and Burial Assistance"
-    foreach (var form in Model.Funeralburialform)
+    foreach (var form in Model.FuneralAssistance)
     {
         if (!string.IsNullOrEmpty(form.Brgy))
         {
@@ -754,7 +754,7 @@
             }
 
             // Add Funeral Forms following Admin.cshtml pattern
-            @foreach (var f in Model.Funeralburialform)
+            @foreach (var f in Model.FuneralAssistance)
             {
                     <text>
                     allApplications.push({
@@ -776,7 +776,7 @@
                 allApplications: allApplications,
                 hospitalBills: @Html.Raw(Json.Serialize(Model.HospitalBills)),
                 medicalLabForms: @Html.Raw(Json.Serialize(Model.MedicalLabForms)),
-                funeralForms: @Html.Raw(Json.Serialize(Model.Funeralburialform))
+                funeralForms: @Html.Raw(Json.Serialize(Model.FuneralAssistance))
             };
 
             console.log('Initial data loaded following Admin.cshtml pattern:', originalData);

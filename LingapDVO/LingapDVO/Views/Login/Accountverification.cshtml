@@ -24,11 +24,14 @@
 
     <!-- Go Back Button Styles -->
     <link rel="stylesheet" href="~/css/go-back-button.css">
+
+    <!-- Session Timeout -->
+    @await Html.PartialAsync("_SessionTimeout")
 </head>
 
 <body>
-        <!-- Go Back Button (Uniform) - Redirects to Login page -->
-    <button id="goBackBtn" data-back-url="/Login">
+    <!-- Go Back Button (Uniform) - Redirects to Login page -->
+    <button class="go-back-btn" data-url="/Login">
         <i class="fas fa-arrow-left"></i>
         <span>Go Back</span>
     </button>
@@ -893,8 +896,5 @@
             });
         </script>
     }
-
-    <!-- Go Back Button Script -->
-    <script src="~/js/go-back-button.js"></script>
 </body>
 </html>

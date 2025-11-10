@@ -12,11 +12,11 @@ namespace LingapDVO.Services
 
         public DbSet<Register> Register { get; set; }
 
-        public DbSet<FillupformHospitalBill> FillupformHospitalBill { get; set; }
+        public DbSet<HospitalAssistance> HospitalAssistance { get; set; }
 
-        public DbSet<Medicalandlabform> Medicalandlabform { get; set; }
+        public DbSet<OtherAssistance> OtherAssistance { get; set; }
 
-        public DbSet<Funeralburialform> Funeralburialform { get; set; }
+        public DbSet<FuneralAssistance> FuneralAssistance { get; set; }
 
         public DbSet<Adminaccount> Adminaccount { get; set; }
 

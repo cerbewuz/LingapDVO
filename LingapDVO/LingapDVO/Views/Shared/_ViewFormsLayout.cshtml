@@ -42,7 +42,24 @@
         </a>
 
         <div class="form-container">
-            @RenderBody()
+            <!-- Official Form Header -->
+            <div class="official-form-header">
+                <div class="header-content-flex">
+                    <div class="header-logo">
+                        <img src="~/Icon/lingaplogo.png" alt="Lingap Logo" class="lingap-logo">
+                    </div>
+                    <div class="header-text">
+                        <h1 class="header-title">Lingap Para sa Mahirap</h1>
+                        <p class="header-subtitle">City of Davao</p>
+                        <h2 class="header-form-title">View Assistance Form</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <div class="form-content-wrapper">
+                @RenderBody()
+            </div>
         </div>
     </div>
 

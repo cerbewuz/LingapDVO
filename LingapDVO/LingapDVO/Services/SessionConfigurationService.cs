@@ -9,14 +9,19 @@ namespace LingapDVO.Services
     public interface ISessionConfigurationService
     {
         /// <summary>
-        /// Gets the idle timeout in minutes from configuration
+        /// Gets the idle timeout in minutes from configuration (force logout time)
         /// </summary>
         int IdleTimeoutMinutes { get; }
 
         /// <summary>
-        /// Gets the warning timeout in minutes (default: IdleTimeout - 1)
+        /// Gets the warning timeout in minutes (when to show warning modal)
         /// </summary>
         int WarningTimeoutMinutes { get; }
+
+        /// <summary>
+        /// Gets the keep-alive interval in minutes (periodic session refresh)
+        /// </summary>
+        int KeepAliveIntervalMinutes { get; }
 
         /// <summary>
         /// Gets the cookie name from configuration
@@ -38,22 +43,28 @@ namespace LingapDVO.Services
             _configuration = configuration;
         }
 
-        public int IdleTimeoutMinutes => _configuration.GetValue<int>("Session:IdleTimeoutMinutes", 10);
+        public int IdleTimeoutMinutes => _configuration.GetValue<int>("Security:Session:IdleTimeoutMinutes", 12);
 
-        public int WarningTimeoutMinutes => _configuration.GetValue<int>("Session:WarningTimeoutMinutes", IdleTimeoutMinutes - 1);
+        public int WarningTimeoutMinutes => _configuration.GetValue<int>("Security:Session:WarningTimeoutMinutes", 10);
 
-        public string CookieName => _configuration.GetValue<string>("Session:CookieName", ".LingapDVO.Session");
+        public int KeepAliveIntervalMinutes => _configuration.GetValue<int>("Security:Session:KeepAliveIntervalMinutes", 5);
+
+        public string CookieName => _configuration.GetValue<string>("Security:Session:CookieName", ".LingapDVO.Session");
 
         public object GetClientConfiguration()
         {
+            var warningTime = WarningTimeoutMinutes;
+            var forceLogoutTime = IdleTimeoutMinutes;
+            var countdownDuration = (forceLogoutTime - warningTime) * 60; // in seconds
+
             return new
             {
-                idleTimeoutMinutes = IdleTimeoutMinutes,
-                warningTimeoutMinutes = WarningTimeoutMinutes,
-                idleTimeoutMs = IdleTimeoutMinutes * 60 * 1000,
-                warningTimeoutMs = WarningTimeoutMinutes * 60 * 1000,
-                checkIntervalMs = 30 * 1000, // 30 seconds
-                countdownIntervalMs = 1000 // 1 second
+                warningTimeMinutes = warningTime,
+                forceLogoutMinutes = forceLogoutTime,
+                countdownDurationSeconds = countdownDuration,
+                keepAliveIntervalMinutes = KeepAliveIntervalMinutes,
+                logoutUrl = "/Login/Logout",
+                keepAliveUrl = "/Login/KeepAlive"
             };
         }
     }

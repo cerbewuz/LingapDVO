@@ -1,0 +1,208 @@
+@model HospitalAssistanceDto
+@{
+    Layout = "_AdminClaimedLayout";
+    ViewData["Title"] = "Application View";
+}
+
+    <div class="receipt-container">
+        <form asp-action="FuneralburialformUpdateprocessingstatus" enctype="multipart/form-data" method="post">
+            <div class="receipt-header">
+                <h3>Hospital Bill Application Details</h3>
+
+            </div>
+
+            <div class="receipt-body">
+
+                <!-- Patient Information -->
+                <div class="receipt-section">
+                    <div class="info-row">
+                        <div class="info-label">Application ID:@ViewData["Id"]</div>
+                    </div>
+                    <br />
+                    <h5 class="section-title">Patient Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Name:</div>
+                                <div class="info-value">
+                                    @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
+                                    @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Address:</div>
+                                <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Sex:</div>
+                                <div class="info-value">@ViewData["Sex"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Date of Birth:</div>
+                                <div class="info-value">@ViewData["Dateofbirth"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Age:</div>
+                                <div class="info-value">@ViewData["Age"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">PhilHealth:</div>
+                                <div class="info-value">@ViewData["PhilHealth"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">PhilHealth No:</div>
+                                <div class="info-value">@ViewData["PhilHealthNo"]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requestor Details -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Requestor's Details</h5>
+                    <div class="info-row">
+                        <div class="info-label">Full Name:</div>
+                        <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Address:</div>
+                        <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Relationship to Patient:</div>
+                        <div class="info-value">@ViewData["RelationshipPatient"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Contact No:</div>
+                        <div class="info-value">@ViewData["ContactNo"]</div>
+                    </div>
+                </div>
+
+                <!-- Assistance Requested -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Assistance Requested</h5>
+                    <div class="info-value">@ViewData["Typeassistance"]</div>
+                </div>
+
+                <!-- CMO Section -->
+
+                <div class="receipt-section">
+                    <h5 class="section-title">CMO Section</h5>
+                    <div class="info-value">@ViewData["Typeassistance"]</div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="receipt-section">
+                    <label for="idFrontDescription" class="form-label">Description / Comments</label>
+                    <textarea class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
+                    <span asp-validation-for="Comments" class="text-danger"></span>
+                </div>
+
+                <!-- Valid ID and Submitted Documents Section -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Valid ID and Submitted Documents</h5>
+                    <div class="row">
+                        <!-- Valid ID (Front and Back) -->
+                        <div class="col-lg-6 mb-3">
+                            <h6>Valid ID - Front</h6>
+                            @if (ViewData["ValidfrontimageBase64"] != null)
+                            {
+                                <div class="id-image-container mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No front ID image available</p>
+                            }
+
+                            <h6>Valid ID - Back</h6>
+                            @if (ViewData["ValidBackimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No back ID image available</p>
+                            }
+                        </div>
+
+                        <!-- PDF Documents (Doctor Prescription / Medical Certificate) -->
+                        <div class="col-lg-6 mb-3">
+                            @if (ViewData["DoctorPrescriptionBase64"] != null)
+                            {
+                                <h6>Doctor Prescription</h6>
+                                @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                                {
+                                    <div class="pdf-preview mb-3" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                        <div class="pdf-info">
+                                            <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                            <span class="pdf-label">Click to view PDF</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="id-image-container mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                        <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                                    </div>
+                                }
+                            }
+
+                            @if (ViewData["MedicalCertificateBase64"] != null)
+                            {
+                                <h6>Medical Certificate</h6>
+                                @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                                {
+                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                        <div class="pdf-info">
+                                            <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                            <span class="pdf-label">Click to view PDF</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                        <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Section -->
+                <div class="receipt-section">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="section-title mb-0">Request Status</h5>
+                        <!-- Remove this entire line -->
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Current Status:</div>
+                        <div class="info-value">
+                            <span class="status-badge status-@(ViewData["Status3"]?.ToString()?.ToLower())">
+                                @ViewData["Status3"]
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Remove the entire edit-field section -->
+                </div>
+            </div>
+
+            <div class="receipt-footer">
+
+                <div class="view-mode">
+                    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                </div>
+            </div>
+        </form>
+    </div>
+

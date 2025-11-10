@@ -62,6 +62,14 @@
             overlay.addEventListener('click', closeSidebar);
         }
 
+        // Prevent sidebar from closing when clicking inside it
+        if (sidebar) {
+            sidebar.addEventListener('click', function(e) {
+                // Stop event from bubbling to overlay or other handlers
+                e.stopPropagation();
+            });
+        }
+
         // Window resize handler
         window.addEventListener('resize', handleResize);
 
@@ -76,10 +84,13 @@
                     navLinks.forEach(l => l.classList.remove('active'));
                     // Add active to clicked link
                     link.classList.add('active');
+
+                    console.log('Admin Sidebar: Navigation link clicked, sidebar remains open');
                 }
 
-                // Don't auto-close sidebar - user controls it manually
-                // If user wants to close it, they can use the arrow/burger
+                // IMPORTANT: Don't auto-close sidebar - user controls it manually
+                // Sidebar will only close when user clicks the pull arrow (desktop) or burger button (mobile)
+                // This ensures the sidebar stays in its current state after navigation
             });
         });
 

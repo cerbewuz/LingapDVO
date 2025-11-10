@@ -1,4 +1,4 @@
-﻿using iText.Commons.Actions.Data;
+using iText.Commons.Actions.Data;
 using LingapDVO.Models;
 using LingapDVO.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -40,15 +40,15 @@ namespace LingapDVO.Controllers
 
 
             // Get all data from the database without filtering by userId
-            var hospitalBills = context.FillupformHospitalBill
+            var hospitalBills = context.HospitalAssistance
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            var medicalLabForms = context.Medicalandlabform
+            var medicalLabForms = context.OtherAssistance
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            var funeralburialform = context.Funeralburialform
+            var FuneralAssistance = context.FuneralAssistance
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
@@ -66,7 +66,7 @@ namespace LingapDVO.Controllers
             {
                 HospitalBills = hospitalBills,
                 MedicalLabForms = medicalLabForms,
-                Funeralburialform = funeralburialform,
+                FuneralAssistance = FuneralAssistance,
                 RegisterAcc = RegisterAcc,
                 Adminaccount = Admin
             };
@@ -75,7 +75,7 @@ namespace LingapDVO.Controllers
             return View(viewModel);
         }
 
-        public IActionResult Fillupformhospitalbillview(int id)
+        public IActionResult HospitalAssistanceview(int id)
         {
 
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
@@ -83,45 +83,45 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
-            var fillupformhospitalBill = context.FillupformHospitalBill.Find(id);
+            var HospitalAssistance = context.HospitalAssistance.Find(id);
 
 
-            if (fillupformhospitalBill == null)
+            if (HospitalAssistance == null)
             {
                 return NotFound();
             }
 
             // Add all form field values to ViewData
-            ViewData["Status"] = fillupformhospitalBill.Status;
-            ViewData["Id"] = fillupformhospitalBill.Id;
-            ViewData["Lastname"] = fillupformhospitalBill.Lastname;
-            ViewData["Firstname"] = fillupformhospitalBill.Firstname;
-            ViewData["Middlename"] = fillupformhospitalBill.Middlename;
-            ViewData["Suffix"] = fillupformhospitalBill.Suffix;
-            ViewData["BlkLotStreet"] = fillupformhospitalBill.BlkLotStreet;
-            ViewData["SubVill"] = fillupformhospitalBill.SubVill;
-            ViewData["Brgy"] = fillupformhospitalBill.Brgy;
-            ViewData["District"] = fillupformhospitalBill.District;
-            ViewData["Sex"] = fillupformhospitalBill.Sex;
-            ViewData["PhilHealth"] = fillupformhospitalBill.PhilHealth;
-            ViewData["PhilHealthNo"] = fillupformhospitalBill.PhilHealthNo;
-            ViewData["Dateofbirth"] = fillupformhospitalBill.Dateofbirth;
-            ViewData["Age"] = fillupformhospitalBill.Age;
+            ViewData["Status"] = HospitalAssistance.Status;
+            ViewData["Id"] = HospitalAssistance.Id;
+            ViewData["Lastname"] = HospitalAssistance.Lastname;
+            ViewData["Firstname"] = HospitalAssistance.Firstname;
+            ViewData["Middlename"] = HospitalAssistance.Middlename;
+            ViewData["Suffix"] = HospitalAssistance.Suffix;
+            ViewData["BlkLotStreet"] = HospitalAssistance.BlkLotStreet;
+            ViewData["SubVill"] = HospitalAssistance.SubVill;
+            ViewData["Brgy"] = HospitalAssistance.Brgy;
+            ViewData["District"] = HospitalAssistance.District;
+            ViewData["Sex"] = HospitalAssistance.Sex;
+            ViewData["PhilHealth"] = HospitalAssistance.PhilHealth;
+            ViewData["PhilHealthNo"] = HospitalAssistance.PhilHealthNo;
+            ViewData["Dateofbirth"] = HospitalAssistance.Dateofbirth;
+            ViewData["Age"] = HospitalAssistance.Age;
 
             // Requestor details
-            ViewData["RLastname"] = fillupformhospitalBill.RLastname;
-            ViewData["RFirstname"] = fillupformhospitalBill.RFirstname;
-            ViewData["RMiddlename"] = fillupformhospitalBill.RMiddlename;
-            ViewData["RSuffix"] = fillupformhospitalBill.RSuffix;
-            ViewData["RBlkLotStreet"] = fillupformhospitalBill.RBlkLotStreet;
-            ViewData["RSubVill"] = fillupformhospitalBill.RSubVill;
-            ViewData["RBrgy"] = fillupformhospitalBill.RBrgy;
-            ViewData["RDistrict"] = fillupformhospitalBill.RDistrict;
-            ViewData["RelationshipPatient"] = fillupformhospitalBill.RelationshipPatient;
-            ViewData["ContactNo"] = fillupformhospitalBill.ContactNo;
+            ViewData["RLastname"] = HospitalAssistance.RLastname;
+            ViewData["RFirstname"] = HospitalAssistance.RFirstname;
+            ViewData["RMiddlename"] = HospitalAssistance.RMiddlename;
+            ViewData["RSuffix"] = HospitalAssistance.RSuffix;
+            ViewData["RBlkLotStreet"] = HospitalAssistance.RBlkLotStreet;
+            ViewData["RSubVill"] = HospitalAssistance.RSubVill;
+            ViewData["RBrgy"] = HospitalAssistance.RBrgy;
+            ViewData["RDistrict"] = HospitalAssistance.RDistrict;
+            ViewData["RelationshipPatient"] = HospitalAssistance.RelationshipPatient;
+            ViewData["ContactNo"] = HospitalAssistance.ContactNo;
 
             // Type of assistance and CMO details
-            var typeAssistanceRaw = fillupformhospitalBill.Typeassistance ?? "";
+            var typeAssistanceRaw = HospitalAssistance.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
 
             // Parse checkbox values into a Dictionary<string, string>
@@ -134,7 +134,7 @@ namespace LingapDVO.Controllers
 
 
             // ForCMOPERSONNEL handling
-            var cmoPersonnelRaw = fillupformhospitalBill.ForCMOPERSONNEL ?? "";
+            var cmoPersonnelRaw = HospitalAssistance.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
 
             var parsedCMO = cmoPersonnelRaw
@@ -144,63 +144,63 @@ namespace LingapDVO.Controllers
 
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
-            ViewData["Validfrontimage"] = fillupformhospitalBill.Validfrontimage;
-            ViewData["ValidBackimage"] = fillupformhospitalBill.ValidBackimage;
+            ViewData["Validfrontimage"] = HospitalAssistance.Validfrontimage;
+            ViewData["ValidBackimage"] = HospitalAssistance.ValidBackimage;
 
-            ViewData["DoctorPrescription"] = fillupformhospitalBill.DoctorPrescription;
-            ViewData["DeathCertificate"] = fillupformhospitalBill.DeathCertificate;
-            ViewData["Comments"] = fillupformhospitalBill.Comments;
-            ViewData["Processby"] = fillupformhospitalBill.Processby;
+            ViewData["DoctorPrescription"] = HospitalAssistance.DoctorPrescription;
+            ViewData["DeathCertificate"] = HospitalAssistance.DeathCertificate;
+            ViewData["Comments"] = HospitalAssistance.Comments;
+            ViewData["Processby"] = HospitalAssistance.Processby;
 
 
             return View();
         }
 
-        public IActionResult Funeralburialformview(int id)
+        public IActionResult FuneralAssistanceview(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
                 return RedirectToAction("Superadmin", "Superadmin");
             }
 
-            var  funeralburialform = context.Funeralburialform.Find(id);
+            var  FuneralAssistance = context.FuneralAssistance.Find(id);
     
-            if ( funeralburialform == null)
+            if ( FuneralAssistance == null)
             {
                 return NotFound();
             }
 
             // Add all form field values to ViewData
-            ViewData["Status"] =  funeralburialform.Status;
-            ViewData["Id"] =  funeralburialform.Id;
-            ViewData["Lastname"] =  funeralburialform.Lastname;
-            ViewData["Firstname"] =  funeralburialform.Firstname;
-            ViewData["Middlename"] =  funeralburialform.Middlename;
-            ViewData["Suffix"] =  funeralburialform.Suffix;
-            ViewData["BlkLotStreet"] =  funeralburialform.BlkLotStreet;
-            ViewData["SubVill"] =  funeralburialform.SubVill;
-            ViewData["Brgy"] =  funeralburialform.Brgy;
-            ViewData["District"] =  funeralburialform.District;
-            ViewData["Sex"] =  funeralburialform.Sex;
-            ViewData["PhilHealth"] =  funeralburialform.PhilHealth;
-            ViewData["PhilHealthNo"] =  funeralburialform.PhilHealthNo;
-            ViewData["Dateofbirth"] =  funeralburialform.Dateofbirth;
-            ViewData["Age"] =  funeralburialform.Age;
+            ViewData["Status"] =  FuneralAssistance.Status;
+            ViewData["Id"] =  FuneralAssistance.Id;
+            ViewData["Lastname"] =  FuneralAssistance.Lastname;
+            ViewData["Firstname"] =  FuneralAssistance.Firstname;
+            ViewData["Middlename"] =  FuneralAssistance.Middlename;
+            ViewData["Suffix"] =  FuneralAssistance.Suffix;
+            ViewData["BlkLotStreet"] =  FuneralAssistance.BlkLotStreet;
+            ViewData["SubVill"] =  FuneralAssistance.SubVill;
+            ViewData["Brgy"] =  FuneralAssistance.Brgy;
+            ViewData["District"] =  FuneralAssistance.District;
+            ViewData["Sex"] =  FuneralAssistance.Sex;
+            ViewData["PhilHealth"] =  FuneralAssistance.PhilHealth;
+            ViewData["PhilHealthNo"] =  FuneralAssistance.PhilHealthNo;
+            ViewData["Dateofbirth"] =  FuneralAssistance.Dateofbirth;
+            ViewData["Age"] =  FuneralAssistance.Age;
 
             // Requestor details
-            ViewData["RLastname"] =  funeralburialform.RLastname;
-            ViewData["RFirstname"] =  funeralburialform.RFirstname;
-            ViewData["RMiddlename"] =  funeralburialform.RMiddlename;
-            ViewData["RSuffix"] =  funeralburialform.RSuffix;
-            ViewData["RBlkLotStreet"] =  funeralburialform.RBlkLotStreet;
-            ViewData["RSubVill"] =  funeralburialform.RSubVill;
-            ViewData["RBrgy"] =  funeralburialform.RBrgy;
-            ViewData["RDistrict"] =  funeralburialform.RDistrict;
-            ViewData["RelationshipPatient"] =  funeralburialform.RelationshipPatient;
-            ViewData["ContactNo"] =  funeralburialform.ContactNo;
+            ViewData["RLastname"] =  FuneralAssistance.RLastname;
+            ViewData["RFirstname"] =  FuneralAssistance.RFirstname;
+            ViewData["RMiddlename"] =  FuneralAssistance.RMiddlename;
+            ViewData["RSuffix"] =  FuneralAssistance.RSuffix;
+            ViewData["RBlkLotStreet"] =  FuneralAssistance.RBlkLotStreet;
+            ViewData["RSubVill"] =  FuneralAssistance.RSubVill;
+            ViewData["RBrgy"] =  FuneralAssistance.RBrgy;
+            ViewData["RDistrict"] =  FuneralAssistance.RDistrict;
+            ViewData["RelationshipPatient"] =  FuneralAssistance.RelationshipPatient;
+            ViewData["ContactNo"] =  FuneralAssistance.ContactNo;
 
             // Type of assistance and CMO details
-            var typeAssistanceRaw =  funeralburialform.Typeassistance ?? "";
+            var typeAssistanceRaw =  FuneralAssistance.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
 
             // Parse checkbox values into a Dictionary<string, string>
@@ -213,7 +213,7 @@ namespace LingapDVO.Controllers
 
 
             // ForCMOPERSONNEL handling
-            var cmoPersonnelRaw =  funeralburialform.ForCMOPERSONNEL ?? "";
+            var cmoPersonnelRaw =  FuneralAssistance.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
 
             var parsedCMO = cmoPersonnelRaw
@@ -223,61 +223,61 @@ namespace LingapDVO.Controllers
 
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
-            ViewData["Validfrontimage"] =  funeralburialform.Validfrontimage;
-            ViewData["ValidBackimage"] =  funeralburialform.ValidBackimage;
+            ViewData["Validfrontimage"] =  FuneralAssistance.Validfrontimage;
+            ViewData["ValidBackimage"] =  FuneralAssistance.ValidBackimage;
 
-            ViewData["DoctorPrescription"] =  funeralburialform.DoctorPrescription;
-            ViewData["DeathCertificate"] =  funeralburialform.DeathCertificate;
-            ViewData["Comments"] =  funeralburialform.Comments;
-            ViewData["Processby"] =  funeralburialform.Processby;
+            ViewData["DoctorPrescription"] =  FuneralAssistance.DoctorPrescription;
+            ViewData["DeathCertificate"] =  FuneralAssistance.DeathCertificate;
+            ViewData["Comments"] =  FuneralAssistance.Comments;
+            ViewData["Processby"] =  FuneralAssistance.Processby;
             return View();
         }
 
-        public IActionResult Medicalandlabformview(int id)
+        public IActionResult OtherAssistanceview(int id)
         {
 
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
                 return RedirectToAction("Superadmin", "Superadmin");
             }
-            var    medicalandlabform = context.Medicalandlabform.Find(id);
+            var    OtherAssistance = context.OtherAssistance.Find(id);
 
-            if (   medicalandlabform == null)
+            if (   OtherAssistance == null)
             {
                 return NotFound();
             }
 
             // Add all form field values to ViewData
-            ViewData["Status"] =    medicalandlabform.Status;
-            ViewData["Id"] =    medicalandlabform.Id;
-            ViewData["Lastname"] =    medicalandlabform.Lastname;
-            ViewData["Firstname"] =    medicalandlabform.Firstname;
-            ViewData["Middlename"] =    medicalandlabform.Middlename;
-            ViewData["Suffix"] =    medicalandlabform.Suffix;
-            ViewData["BlkLotStreet"] =    medicalandlabform.BlkLotStreet;
-            ViewData["SubVill"] =    medicalandlabform.SubVill;
-            ViewData["Brgy"] =    medicalandlabform.Brgy;
-            ViewData["District"] =    medicalandlabform.District;
-            ViewData["Sex"] =    medicalandlabform.Sex;
-            ViewData["PhilHealth"] =    medicalandlabform.PhilHealth;
-            ViewData["PhilHealthNo"] =    medicalandlabform.PhilHealthNo;
-            ViewData["Dateofbirth"] =    medicalandlabform.Dateofbirth;
-            ViewData["Age"] =    medicalandlabform.Age;
+            ViewData["Status"] =    OtherAssistance.Status;
+            ViewData["Id"] =    OtherAssistance.Id;
+            ViewData["Lastname"] =    OtherAssistance.Lastname;
+            ViewData["Firstname"] =    OtherAssistance.Firstname;
+            ViewData["Middlename"] =    OtherAssistance.Middlename;
+            ViewData["Suffix"] =    OtherAssistance.Suffix;
+            ViewData["BlkLotStreet"] =    OtherAssistance.BlkLotStreet;
+            ViewData["SubVill"] =    OtherAssistance.SubVill;
+            ViewData["Brgy"] =    OtherAssistance.Brgy;
+            ViewData["District"] =    OtherAssistance.District;
+            ViewData["Sex"] =    OtherAssistance.Sex;
+            ViewData["PhilHealth"] =    OtherAssistance.PhilHealth;
+            ViewData["PhilHealthNo"] =    OtherAssistance.PhilHealthNo;
+            ViewData["Dateofbirth"] =    OtherAssistance.Dateofbirth;
+            ViewData["Age"] =    OtherAssistance.Age;
 
             // Requestor details
-            ViewData["RLastname"] =    medicalandlabform.RLastname;
-            ViewData["RFirstname"] =    medicalandlabform.RFirstname;
-            ViewData["RMiddlename"] =    medicalandlabform.RMiddlename;
-            ViewData["RSuffix"] =    medicalandlabform.RSuffix;
-            ViewData["RBlkLotStreet"] =    medicalandlabform.RBlkLotStreet;
-            ViewData["RSubVill"] =    medicalandlabform.RSubVill;
-            ViewData["RBrgy"] =    medicalandlabform.RBrgy;
-            ViewData["RDistrict"] =    medicalandlabform.RDistrict;
-            ViewData["RelationshipPatient"] =    medicalandlabform.RelationshipPatient;
-            ViewData["ContactNo"] =    medicalandlabform.ContactNo;
+            ViewData["RLastname"] =    OtherAssistance.RLastname;
+            ViewData["RFirstname"] =    OtherAssistance.RFirstname;
+            ViewData["RMiddlename"] =    OtherAssistance.RMiddlename;
+            ViewData["RSuffix"] =    OtherAssistance.RSuffix;
+            ViewData["RBlkLotStreet"] =    OtherAssistance.RBlkLotStreet;
+            ViewData["RSubVill"] =    OtherAssistance.RSubVill;
+            ViewData["RBrgy"] =    OtherAssistance.RBrgy;
+            ViewData["RDistrict"] =    OtherAssistance.RDistrict;
+            ViewData["RelationshipPatient"] =    OtherAssistance.RelationshipPatient;
+            ViewData["ContactNo"] =    OtherAssistance.ContactNo;
 
             // Type of assistance and CMO details
-            var typeAssistanceRaw =    medicalandlabform.Typeassistance ?? "";
+            var typeAssistanceRaw =    OtherAssistance.Typeassistance ?? "";
             ViewData["Typeassistance"] = typeAssistanceRaw;
 
             // Parse checkbox values into a Dictionary<string, string>
@@ -290,7 +290,7 @@ namespace LingapDVO.Controllers
 
 
             // ForCMOPERSONNEL handling
-            var cmoPersonnelRaw =    medicalandlabform.ForCMOPERSONNEL ?? "";
+            var cmoPersonnelRaw =    OtherAssistance.ForCMOPERSONNEL ?? "";
             ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
 
             var parsedCMO = cmoPersonnelRaw
@@ -300,13 +300,13 @@ namespace LingapDVO.Controllers
 
             ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
 
-            ViewData["Validfrontimage"] =    medicalandlabform.Validfrontimage;
-            ViewData["ValidBackimage"] =    medicalandlabform.ValidBackimage;
+            ViewData["Validfrontimage"] =    OtherAssistance.Validfrontimage;
+            ViewData["ValidBackimage"] =    OtherAssistance.ValidBackimage;
 
-            ViewData["DoctorPrescription"] =    medicalandlabform.DoctorPrescription;
-            ViewData["DeathCertificate"] =    medicalandlabform.DeathCertificate;
-            ViewData["Comments"] =    medicalandlabform.Comments;
-            ViewData["Processby"] =    medicalandlabform.Processby;
+            ViewData["DoctorPrescription"] =    OtherAssistance.DoctorPrescription;
+            ViewData["DeathCertificate"] =    OtherAssistance.DeathCertificate;
+            ViewData["Comments"] =    OtherAssistance.Comments;
+            ViewData["Processby"] =    OtherAssistance.Processby;
             return View();
         }
 
@@ -357,7 +357,7 @@ namespace LingapDVO.Controllers
             }
             else
             {
-                // Password not being changed — skip validation
+                // Password not being changed � skip validation
                 ModelState.Remove("Password");
                 ModelState.Remove("ConfirmPassword");
             }

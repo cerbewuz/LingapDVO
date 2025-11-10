@@ -1,4 +1,4 @@
-﻿@{
+@{
     Layout = null;
 }
 
@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="~/css/go-back-button.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- Session Timeout -->
+    @await Html.PartialAsync("_SessionTimeout")
+
     <style>
         :root {
             --primary-color: #DC143C;
@@ -252,7 +256,7 @@
     <!-- Footer -->
     <footer class="bg-light mt-5 py-4">
         <div class="container text-center">
-            <p class="text-muted mb-0">© 2023 Healthcare Locator. All rights reserved.</p>
+            <p class="text-muted mb-0">� 2023 Healthcare Locator. All rights reserved.</p>
         </div>
     </footer>
 

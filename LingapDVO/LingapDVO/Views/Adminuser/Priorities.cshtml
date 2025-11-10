@@ -429,7 +429,7 @@
             }
 
             // Add Funeral Forms
-            @foreach (var f in Model.Funeralburialform)
+            @foreach (var f in Model.FuneralAssistance)
             {
                 <text>
                 allApplications.push({
@@ -560,27 +560,27 @@
             function getApplicationUrl(app) {
                 if (app.formType === "hospital") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        return `/FillupformHospitalBillUpdatestatuClaimeddocs/${app.formId}`;
+                        return `/HospitalAssistanceUpdatestatuClaimeddocs/${app.formId}`;
                     } else if (app.status2 === "approved") {
-                        return `/FillupformHospitalBillapprovedstatus/${app.formId}`;
+                        return `/HospitalAssistanceapprovedstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        return `/FillupformHospitalBillDisapprovedstatus/${app.formId}`;
+                        return `/HospitalAssistanceDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/FillupformHospitalBillUpdateprocessingstatus/${app.formId}`;
+                        return `/HospitalAssistanceUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        return `/FillupformHospitalBillUpdatestatus/${app.formId}`;
+                        return `/HospitalAssistanceUpdatestatus/${app.formId}`;
                     }
                 } else if (app.formType === "medical") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        return `/MedicalandlabformstatusUpdateClaimeddocs/${app.formId}`;
+                        return `/OtherAssistancestatusUpdateClaimeddocs/${app.formId}`;
                     } else if (app.status2 === "approved") {
-                        return `/Medicalandlabformapprovedsstatus/${app.formId}`;
+                        return `/OtherAssistanceapprovedsstatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        return `/MedicalandlabformDisapprovedstatus/${app.formId}`;
+                        return `/OtherAssistanceDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/MedicalandlabformUpdateprocessingstatus/${app.formId}`;
+                        return `/OtherAssistanceUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        return `/Medicalandlabformstatus/${app.formId}`;
+                        return `/OtherAssistancestatus/${app.formId}`;
                     }
                 } else if (app.formType === "funeral") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
@@ -590,9 +590,9 @@
                     } else if (app.status2 === "disapproved") {
                         return `/FuneralburialDisapprovedstatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/FuneralburialformUpdateprocessingstatus/${app.formId}`;
+                        return `/FuneralAssistanceUpdateprocessingstatus/${app.formId}`;
                     } else {
-                        return `/Funeralburialformstatus/${app.formId}`;
+                        return `/FuneralAssistancestatus/${app.formId}`;
                     }
                 }
                 return '#';

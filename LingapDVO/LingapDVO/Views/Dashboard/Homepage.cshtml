@@ -1,4 +1,4 @@
-﻿@using Microsoft.Extensions.Configuration
+@using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
 @model LingapDVO.Models.CombinedFormsViewModel
 @{
@@ -503,6 +503,9 @@
             transition: opacity 1s ease-in-out;
         }
     </style>
+
+    <!-- Session Timeout -->
+    @await Html.PartialAsync("_SessionTimeout")
 </head>
 <body>
     <!-- Real-time Indicator -->
@@ -712,7 +715,7 @@
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
-                                    <a href="/FillupformHospitalBill" class="text-decoration-none">
+                                    <a href="/HospitalAssistance" class="text-decoration-none">
                                         <div class="service-card">
                                             <div class="service-icon">
                                                 <i class="fas fa-hospital"></i>
@@ -738,7 +741,7 @@
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
-                                    <a href="/Medicalandlabform" class="text-decoration-none">
+                                    <a href="/OtherAssistance" class="text-decoration-none">
                                         <div class="service-card">
                                             <div class="service-icon">
                                                 <i class="fas fa-microscope"></i>
@@ -764,7 +767,7 @@
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
-                                    <a href="/Funeralburialform" class="text-decoration-none">
+                                    <a href="/FuneralAssistance" class="text-decoration-none">
                                         <div class="service-card">
                                             <div class="service-icon">
                                                 <i class="fas fa-monument"></i>
@@ -963,9 +966,9 @@
                 loadRealNotifications(true);
             });
 
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             // NOTIFICATION SETTINGS FUNCTIONALITY
-            // ═══════════════════════════════════════════════════════════════
+            // ---------------------------------------------------------------
             const notificationSettings = document.getElementById('notificationSettings');
             const notificationSettingsModal = new bootstrap.Modal(document.getElementById('notificationSettingsModal'));
 
@@ -1335,7 +1338,7 @@
                         return {
                             hospitalBills: @Json.Serialize(Model.HospitalBills),
                             medicalForms: @Json.Serialize(Model.MedicalLabForms),
-                            funeralForms: @Json.Serialize(Model.Funeralburialform)
+                            funeralForms: @Json.Serialize(Model.FuneralAssistance)
                         };
                     }
                 } catch (error) {
@@ -1344,7 +1347,7 @@
                     return {
                         hospitalBills: @Json.Serialize(Model.HospitalBills),
                         medicalForms: @Json.Serialize(Model.MedicalLabForms),
-                        funeralForms: @Json.Serialize(Model.Funeralburialform)
+                        funeralForms: @Json.Serialize(Model.FuneralAssistance)
                     };
                 }
             }
@@ -1621,7 +1624,7 @@
         });
     </script>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- --------------------------------------------------------------- -->
     <!-- Account Verification Success Modal -->
     @if (TempData["VerificationSuccess"] != null && (bool)TempData["VerificationSuccess"])
     {
@@ -1715,7 +1718,7 @@
     <script>
         // Service Reliability Notification Script with Toast
         document.addEventListener('DOMContentLoaded', function() {
-            const hasApplications = @(Model.HospitalBills.Any() || Model.MedicalLabForms.Any() || Model.Funeralburialform.Any() ? "true" : "false");
+            const hasApplications = @(Model.HospitalBills.Any() || Model.MedicalLabForms.Any() || Model.FuneralAssistance.Any() ? "true" : "false");
 
             if (hasApplications) {
                 setTimeout(() => {

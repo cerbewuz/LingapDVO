@@ -1054,12 +1054,30 @@ namespace LingapDVO.Controllers
         /// <summary>
         /// Get session configuration for client-side timeout management
         /// Returns timeout values dynamically from appsettings.json
+        /// This endpoint provides centralized configuration from Program.cs
         /// </summary>
         [HttpGet]
         public IActionResult GetSessionConfig()
         {
-            var config = _sessionConfig.GetClientConfiguration();
-            return Json(config);
+            try
+            {
+                var config = _sessionConfig.GetClientConfiguration();
+                return Json(config);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ GetSessionConfig Error: {ex.Message}");
+                // Return default configuration on error
+                return Json(new
+                {
+                    warningTimeMinutes = 10,
+                    forceLogoutMinutes = 12,
+                    countdownDurationSeconds = 120,
+                    keepAliveIntervalMinutes = 5,
+                    logoutUrl = "/Login/Logout",
+                    keepAliveUrl = "/Login/KeepAlive"
+                });
+            }
         }
 
         /// <summary>
