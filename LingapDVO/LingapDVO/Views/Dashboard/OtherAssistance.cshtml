@@ -431,7 +431,7 @@
                     <option value="Camansi">Camansi</option>
                     <option value="Carmen">Carmen</option>
                     <option value="Catalunan Grande">Catalunan Grande</option>
-                    <option value="Catalunan Pequeño">Catalunan Pequeño</option>
+                    <option value="Catalunan Pequeï¿½o">Catalunan Pequeï¿½o</option>
                     <option value="Catigan">Catigan</option>
                     <option value="Cawayan">Cawayan</option>
                     <option value="Centro (San Juan)">Centro (San Juan)</option>
@@ -547,7 +547,7 @@
 
             <div class="col-md-3 col-sm-6">
                 <label class="form-label">PhilHealth</label>
-                <select class="form-select" asp-for="PhilHealth" required>
+                <select class="form-select" asp-for="PhilHealth" id="philHealthSelect" required>
                     <option value="">Select option</option>
                     <option>Without PhilHealth</option>
                     <option>With PhilHealth</option>
@@ -563,7 +563,9 @@
 
             <script>
                 const philHealthInput = document.getElementById('philHealthInput');
+                const philHealthSelect = document.getElementById('philHealthSelect');
 
+                // Format PhilHealth number with hyphens
                 philHealthInput.addEventListener('input', function(e) {
                     // Remove all non-digit characters
                     let value = this.value.replace(/\D/g, '');
@@ -583,11 +585,26 @@
 
                     this.value = value;
                 });
+
+                // Handle conditional PhilHealth No. validation
+                philHealthSelect.addEventListener('change', function() {
+                    if (this.value === 'Without PhilHealth') {
+                        // Remove required attribute and clear the field
+                        philHealthInput.removeAttribute('required');
+                        philHealthInput.value = '';
+                    } else if (this.value === 'With PhilHealth') {
+                        // Add required attribute when "With PhilHealth" is selected
+                        philHealthInput.setAttribute('required', 'required');
+                    } else {
+                        // Default: remove required for empty selection
+                        philHealthInput.removeAttribute('required');
+                    }
+                });
             </script>
 
             <div class="col-md-2 col-sm-6">
                 <label class="form-label">Date of Birth</label>
-                <input value="@ViewBag.Dateofbirth" asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" required>
+                <input asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" placeholder="MM/DD/YYYY" required>
                 <span asp-validation-for="Dateofbirth" class="text-danger"></span>
             </div>
 
@@ -639,32 +656,25 @@
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
                        id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
-                <label class="form-check-label" for="hospitalAssistance">Hospital Assistance</label>
+                <label class="form-check-label" for="hospitalAssistance">Medicine Assistance</label>
             </div>
 
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
-                       id="governmentAssistance" name="TypeassistanceOptions" value="Government">
-                <label class="form-check-label" for="governmentAssistance">Government</label>
+                       id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
+                <label class="form-check-label" for="hospitalAssistance">Procedure</label>
                 <input type="text" class="form-control mt-1 assistance-spec"
                        name="GovernmentDetails" placeholder="Specify" style="display: none;">
             </div>
 
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
-                       id="privateAssistance" name="TypeassistanceOptions" value="Private">
-                <label class="form-check-label" for="privateAssistance">Private</label>
+                       id="governmentAssistance" name="TypeassistanceOptions" value="Government">
+                <label class="form-check-label" for="governmentAssistance">Laboratory</label>
                 <input type="text" class="form-control mt-1 assistance-spec"
-                       name="PrivateDetails" placeholder="Specify" style="display: none;">
+                       name="GovernmentDetails" placeholder="Specify" style="display: none;">
             </div>
 
-            <div class="form-check mt-2">
-                <input class="form-check-input assistance-type" type="checkbox"
-                       id="caseAssistance" name="TypeassistanceOptions" value="Case">
-                <label class="form-check-label" for="caseAssistance">Case</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="CaseDetails" placeholder="Specify" style="display: none;">
-            </div>
         </div>
 
         <div class="col-md-6">
@@ -673,17 +683,9 @@
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
                        id="procedure" name="TypeassistanceOptions" value="Procedure">
-                <label class="form-check-label" for="procedure">Procedure</label>
+                <label class="form-check-label" for="procedure">Apparatus</label>
                 <input type="text" class="form-control mt-1 assistance-spec"
                        name="ProcedureDetails" placeholder="Specify" style="display: none;">
-            </div>
-
-            <div class="form-check mt-2">
-                <input class="form-check-input assistance-type" type="checkbox"
-                       id="dialysis" name="TypeassistanceOptions" value="Dialysis">
-                <label class="form-check-label" for="dialysis">Dialysis</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="DialysisDetails" placeholder="Specify" style="display: none;">
             </div>
 
             <div class="form-check mt-2">
@@ -999,7 +1001,7 @@
         const relationshipPatient = document.getElementById('RelationshipPatient');
 
         // Store original values to restore on clear
-        let originalRequestorValues = {};
+        let originalPatientValues = {};
         let autoFillUsed = false;
 
         // IMPROVED SHOW/HIDE TOGGLE FUNCTIONALITY
@@ -1030,15 +1032,15 @@
             }
             autoFillUsed = true;
 
-            // Auto-fill requestor details with patient information
-            if (patientLastname && patientLastname.value) requestorLastname.value = patientLastname.value;
-            if (patientFirstname && patientFirstname.value) requestorFirstname.value = patientFirstname.value;
-            if (patientMiddlename && patientMiddlename.value) requestorMiddlename.value = patientMiddlename.value;
-            if (patientSuffix && patientSuffix.value) requestorSuffix.value = patientSuffix.value;
-            if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
-            if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
-            if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
-            if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
+            // Auto-fill patient details with requestor information
+            if (requestorLastname && requestorLastname.value) patientLastname.value = requestorLastname.value;
+            if (requestorFirstname && requestorFirstname.value) patientFirstname.value = requestorFirstname.value;
+            if (requestorMiddlename && requestorMiddlename.value) patientMiddlename.value = requestorMiddlename.value;
+            if (requestorSuffix && requestorSuffix.value) patientSuffix.value = requestorSuffix.value;
+            if (requestorBlkLotStreet && requestorBlkLotStreet.value) patientBlkLotStreet.value = requestorBlkLotStreet.value;
+            if (requestorSubVill && requestorSubVill.value) patientSubVill.value = requestorSubVill.value;
+            if (requestorBrgy && requestorBrgy.value) patientBrgy.value = requestorBrgy.value;
+            if (requestorDistrict && requestorDistrict.value) patientDistrict.value = requestorDistrict.value;
 
             // Set relationship to "Self"
             if (relationshipPatient) relationshipPatient.value = "Self";
@@ -1094,7 +1096,7 @@
                 clearAutoFillBtn.classList.add('btn-outline-warning');
 
                 // Only hide if ALL fields are empty after clearing
-                const allFieldsEmpty = checkIfAllRequestorFieldsEmpty();
+                const allFieldsEmpty = checkIfAllPatientFieldsEmpty();
                 if (allFieldsEmpty) {
                     clearAutoFillBtn.style.display = 'none';
                 }
@@ -1105,48 +1107,48 @@
         // Store original values function
         function storeOriginalValues() {
             const fields = [
-                'RLastname', 'RFirstname', 'RMiddlename', 'RSuffix',
-                'RBlkLotStreet', 'RSubVill', 'RBrgy', 'RDistrict', 'RelationshipPatient'
+                'Lastname', 'Firstname', 'Middlename', 'Suffix',
+                'BlkLotStreet', 'SubVill', 'Brgy', 'District'
             ];
 
-            originalRequestorValues = {}; // Reset storage
+            originalPatientValues = {}; // Reset storage
             fields.forEach(field => {
                 const element = document.getElementById(field);
                 if (element) {
-                    originalRequestorValues[field] = element.value;
+                    originalPatientValues[field] = element.value;
                 }
             });
         }
 
         // Restore original values function
         function restoreOriginalValues() {
-            Object.keys(originalRequestorValues).forEach(field => {
+            Object.keys(originalPatientValues).forEach(field => {
                 const element = document.getElementById(field);
                 if (element) {
-                    element.value = originalRequestorValues[field];
+                    element.value = originalPatientValues[field];
                 }
             });
         }
 
-        // Check if all requestor fields are empty
-        function checkIfAllRequestorFieldsEmpty() {
-            const requestorFields = [
-                requestorLastname, requestorFirstname, requestorMiddlename,
-                requestorSuffix, requestorBlkLotStreet, requestorSubVill,
-                requestorBrgy, requestorDistrict, relationshipPatient
+        // Check if all patient fields are empty
+        function checkIfAllPatientFieldsEmpty() {
+            const patientFieldsList = [
+                patientLastname, patientFirstname, patientMiddlename,
+                patientSuffix, patientBlkLotStreet, patientSubVill,
+                patientBrgy, patientDistrict
             ];
 
-            return requestorFields.every(field => !field || !field.value.trim());
+            return patientFieldsList.every(field => !field || !field.value.trim());
         }
 
         // Smart hint with Tailwind (optional - can remove if not needed)
-        const patientFields = [patientLastname, patientFirstname, patientMiddlename];
-        patientFields.forEach(field => {
+        const requestorFields = [requestorLastname, requestorFirstname, requestorMiddlename];
+        requestorFields.forEach(field => {
             if (field) {
                 field.addEventListener('input', function() {
                     if (this.value &&
-                        requestorLastname && !requestorLastname.value &&
-                        requestorFirstname && !requestorFirstname.value &&
+                        patientLastname && !patientLastname.value &&
+                        patientFirstname && !patientFirstname.value &&
                         !autoFillUsed) {
                         sameAsPatientBtn.classList.add('ring-2', 'ring-green-500', 'animate-bounce');
 
@@ -1160,7 +1162,7 @@
 
         // Show clear button if page loads with pre-filled data
         function checkInitialState() {
-            const anyFieldHasContent = !checkIfAllRequestorFieldsEmpty();
+            const anyFieldHasContent = !checkIfAllPatientFieldsEmpty();
             if (anyFieldHasContent) {
                 storeOriginalValues();
                 autoFillUsed = true;

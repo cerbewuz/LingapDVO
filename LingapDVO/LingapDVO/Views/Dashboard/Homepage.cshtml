@@ -711,7 +711,7 @@
                     <div class="mb-5">
                         <h3 class="section-title">SERVICES OFFERED</h3>
                         <div class="row g-4">
-                            <!-- Service 1 - Hospital Bill Assistance -->
+                            <!-- Service 1 - Hospital Assistance -->
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
@@ -720,7 +720,7 @@
                                             <div class="service-icon">
                                                 <i class="fas fa-hospital"></i>
                                             </div>
-                                            <h5 class="service-title">Hospital Bill Assistance</h5>
+                                            <h5 class="service-title">Hospital Assistance</h5>
                                             <p class="service-description">Private hospital bill support and financial aid</p>
                                         </div>
                                     </a>
@@ -731,39 +731,13 @@
                                         <div class="service-icon">
                                             <i class="fas fa-hospital"></i>
                                         </div>
-                                        <h5 class="service-title">Hospital Bill Assistance</h5>
+                                        <h5 class="service-title">Hospital Assistance</h5>
                                         <p class="service-description">Private hospital bill support and financial aid</p>
                                     </div>
                                 }
                             </div>
 
-                            <!-- Service 2 - Medical Procedures -->
-                            <div class="col-md-6 col-lg-4">
-                                @if (isVerified)
-                                {
-                                    <a href="/OtherAssistance" class="text-decoration-none">
-                                        <div class="service-card">
-                                            <div class="service-icon">
-                                                <i class="fas fa-microscope"></i>
-                                            </div>
-                                            <h5 class="service-title">Medical Procedures</h5>
-                                            <p class="service-description">Private hospital laboratory procedures</p>
-                                        </div>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
-                                        <div class="service-icon">
-                                            <i class="fas fa-microscope"></i>
-                                        </div>
-                                        <h5 class="service-title">Medical Procedures</h5>
-                                        <p class="service-description">Private hospital laboratory procedures</p>
-                                    </div>
-                                }
-                            </div>
-
-                            <!-- Service 3 - Funeral Assistance -->
+                            <!-- Service 2 - Funeral Assistance -->
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
@@ -785,6 +759,32 @@
                                         </div>
                                         <h5 class="service-title">Funeral Assistance</h5>
                                         <p class="service-description">Burial and funeral support services</p>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Service 3 - Other Assistance -->
+                            <div class="col-md-6 col-lg-4">
+                                @if (isVerified)
+                                {
+                                    <a href="/OtherAssistance" class="text-decoration-none">
+                                        <div class="service-card">
+                                            <div class="service-icon">
+                                                <i class="fas fa-microscope"></i>
+                                            </div>
+                                            <h5 class="service-title">Other Assistance</h5>
+                                            <p class="service-description">Other assistance</p>
+                                        </div>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                        <div class="service-icon">
+                                            <i class="fas fa-microscope"></i>
+                                        </div>
+                                        <h5 class="service-title">Other Assistance</h5>
+                                        <p class="service-description">Other assistance</p>
                                     </div>
                                 }
                             </div>
@@ -822,8 +822,8 @@
                                         <div class="service-icon">
                                             <i class="fas fa-map-marker-alt"></i>
                                         </div>
-                                        <h5 class="service-title">Locate Facilities</h5>
-                                        <p class="service-description">Find offices, hospitals, and pharmacies</p>
+                                        <h5 class="service-title">Branches Nearby</h5>
+                                        <p class="service-description">Find satellite near you</p>
                                     </div>
                                 </a>
                             </div>
@@ -1715,7 +1715,7 @@
         </script>
     }
 
-    <script>
+    @* <script>
         // Service Reliability Notification Script with Toast
         document.addEventListener('DOMContentLoaded', function() {
             const hasApplications = @(Model.HospitalBills.Any() || Model.MedicalLabForms.Any() || Model.FuneralAssistance.Any() ? "true" : "false");
@@ -1750,6 +1750,6 @@
                 }, 1000);
             }
         });
-    </script>
+    </script> *@
 </body>
 </html>

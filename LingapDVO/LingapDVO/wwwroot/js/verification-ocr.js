@@ -6687,7 +6687,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     davaoStatusBadge.textContent = 'Verified';
                 }
             }
-
             // Enable form fields for valid ID
             enableFormFields();
 
@@ -8081,7 +8080,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return 'Commands listed above';
         }
     };
-
     console.log('%c✅ Account Verification OCR Initialized', 'color: #32cd32; font-weight: bold; font-size: 14px;');
     console.log('%c🚀 Using OCR.space API - Superior ID recognition', 'color: #3b82f6; font-size: 12px;');
     console.log('%c🔍 Debug Tools: Type OCRDebug.help() for commands', 'color: gray; font-size: 11px;');
