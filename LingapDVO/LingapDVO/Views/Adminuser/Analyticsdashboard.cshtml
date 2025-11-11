@@ -6,7 +6,7 @@
     var barangayDetailedData = new Dictionary<string, Dictionary<string, int>>();
 
     // Process Hospital Bills - they have TypeAssistance field
-    foreach (var bill in Model.HospitalBills)
+    foreach (var bill in Model.HospitalAssistance)
     {
         if (!string.IsNullOrEmpty(bill.Brgy) && !string.IsNullOrEmpty(bill.Typeassistance))
         {
@@ -20,7 +20,7 @@
     }
 
     // Process Medical Lab Forms - they have TypeAssistance field
-    foreach (var form in Model.MedicalLabForms)
+    foreach (var form in Model.OtherAssistance)
     {
         if (!string.IsNullOrEmpty(form.Brgy) && !string.IsNullOrEmpty(form.Typeassistance))
         {
@@ -716,7 +716,7 @@
             const allApplications = [];
 
             // Add Hospital Bills following Admin.cshtml pattern
-            @foreach (var f in Model.HospitalBills)
+            @foreach (var f in Model.HospitalAssistance)
             {
                     <text>
                     allApplications.push({
@@ -735,11 +735,11 @@
             }
 
             // Add Medical Lab Forms following Admin.cshtml pattern
-            @foreach (var f in Model.MedicalLabForms)
+            @foreach (var f in Model.OtherAssistance)
             {
                     <text>
                     allApplications.push({
-                        type: "Medical and laboratory Procedure",
+                        type: "Medical and Laboratory Procedure",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -758,7 +758,7 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Funeral and burial assistance",
+                        type: "Funeral and Burial Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -774,8 +774,8 @@
 
             originalData = {
                 allApplications: allApplications,
-                hospitalBills: @Html.Raw(Json.Serialize(Model.HospitalBills)),
-                medicalLabForms: @Html.Raw(Json.Serialize(Model.MedicalLabForms)),
+                hospitalBills: @Html.Raw(Json.Serialize(Model.HospitalAssistance)),
+                medicalLabForms: @Html.Raw(Json.Serialize(Model.OtherAssistance)),
                 funeralForms: @Html.Raw(Json.Serialize(Model.FuneralAssistance))
             };
 
@@ -1006,8 +1006,8 @@
 
             applications.forEach(app => {
                 if (app.type === "Hospital Bill Assistance") counts.hospital++;
-                else if (app.type === "Medical and laboratory Procedure") counts.medical++;
-                else if (app.type === "Funeral and burial assistance") counts.funeral++;
+                else if (app.type === "Medical and Laboratory Procedure") counts.medical++;
+                else if (app.type === "Funeral and Burial Assistance") counts.funeral++;
             });
 
             return [counts.hospital, counts.medical, counts.funeral];

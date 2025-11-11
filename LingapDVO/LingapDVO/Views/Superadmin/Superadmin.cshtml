@@ -402,7 +402,7 @@
                                 <i class="fas fa-hospital"></i>
                             </div>
                             <div>
-                                <div class="stats-value">@Model.HospitalBills.Count</div>
+                                <div class="stats-value">@Model.HospitalAssistance.Count</div>
                                 <div class="stats-label">Hospital Bills</div>
                             </div>
                         </div>
@@ -415,7 +415,7 @@
                                 <i class="fas fa-microscope"></i>
                             </div>
                             <div>
-                                <div class="stats-value">@Model.MedicalLabForms.Count</div>
+                                <div class="stats-value">@Model.OtherAssistance.Count</div>
                                 <div class="stats-label">Medical/Lab</div>
                             </div>
                         </div>
@@ -441,7 +441,7 @@
                                 <i class="fas fa-users"></i>
                             </div>
                             <div>
-                                <div class="stats-value">@Model.HospitalBills.Count(f => f.Status?.ToLower() == "pending")</div>
+                                <div class="stats-value">@Model.HospitalAssistance.Count(f => f.Status?.ToLower() == "pending")</div>
                                 <div class="stats-label">Pending Requests</div>
                             </div>
                         </div>
@@ -614,9 +614,9 @@
                 <div class="card-container">
                     <h3 class="section-title">Hospital Bill Assistance</h3>
 
-                    @if (Model.HospitalBills.Any())
+                    @if (Model.HospitalAssistance.Any())
                     {
-                        @foreach (var file in Model.HospitalBills)
+                        @foreach (var file in Model.HospitalAssistance)
                         {
                             <div class="file-item">
                                 <div class="d-flex align-items-center">
@@ -677,7 +677,7 @@
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li>
-                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="Fillupformhospitalbillview" asp-route-id="@file.Id">
+                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="HospitalAssistanceview" asp-route-id="@file.Id">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
                                             </li>                                 
@@ -701,11 +701,11 @@
             <!-- Medical and Lab Forms Section -->
             <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-tab">
                 <div class="card-container">
-                    <h3 class="section-title">Medical and laboratory Procedure</h3>
+                    <h3 class="section-title">Medical and Laboratory Procedure</h3>
 
-                    @if (Model.MedicalLabForms.Any())
+                    @if (Model.OtherAssistance.Any())
                     {
-                        @foreach (var file in Model.MedicalLabForms)
+                        @foreach (var file in Model.OtherAssistance)
                         {
                             <div class="file-item">
                                 <div class="d-flex align-items-center">
@@ -764,7 +764,7 @@
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li>
-                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="Medicalandlabformview" asp-route-id="@file.Id">
+                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="OtherAssistanceview" asp-route-id="@file.Id">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
                                             </li>           
@@ -787,7 +787,7 @@
             <!-- Funeralform Section -->
             <div class="tab-pane fade" id="funeral" role="tabpanel" aria-labelledby="funeral-tab">
                 <div class="card-container">
-                    <h3 class="section-title">Funeral and burial assistance</h3>
+                    <h3 class="section-title">Funeral and Burial Assistance</h3>
 
                     @if (Model.FuneralAssistance.Any())
                     {
@@ -852,7 +852,7 @@
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li>
-                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="Funeralburialformview" asp-route-id="@file.Id">
+                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="FuneralAssistanceview" asp-route-id="@file.Id">
                                                     <i class="fas fa-eye"></i>View
                                                 </a>
                                             </li>  

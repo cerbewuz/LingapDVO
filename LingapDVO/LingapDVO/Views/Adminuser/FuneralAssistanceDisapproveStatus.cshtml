@@ -1,23 +1,24 @@
-@model HospitalAssistanceDto
+@model FuneralAssistanceDto
 @{
-    Layout = "_AdminPendingLayout";
+    Layout = "_AdminDisapprovedLayout";
     ViewData["Title"] = "Application View";
 }
 
-<div class="receipt-container">
-        <form asp-action="HospitalAssistanceUpdatestatus" method="post">
+    <div class="receipt-container">
+        <form asp-action="FuneralAssistanceDisapproveStatus" enctype="multipart/form-data" method="post">
             <div class="receipt-header">
                 <h3>Hospital Bill Application Details</h3>
+
             </div>
 
             <div class="receipt-body">
+
                 <!-- Patient Information -->
                 <div class="receipt-section">
                     <div class="info-row">
-                        <div class="info-label">Application ID:</div>
-                        <div class="info-value">@ViewData["Id"]</div>
+                        <div class="info-label">Application ID:@ViewData["Id"]</div>
                     </div>
-
+                    <br />
                     <h5 class="section-title">Patient Information</h5>
                     <div class="row">
                         <div class="col-md-6">
@@ -28,6 +29,7 @@
                                     @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
                                 </div>
                             </div>
+
                             <div class="info-row">
                                 <div class="info-label">Address:</div>
                                 <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
@@ -85,6 +87,20 @@
                     <div class="info-value">@ViewData["Typeassistance"]</div>
                 </div>
 
+                <!-- CMO Section -->
+
+                <div class="receipt-section">
+                    <h5 class="section-title">CMO Section</h5>
+                    <div class="info-value">@ViewData["Typeassistance"]</div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="receipt-section">
+                    <label for="idFrontDescription" class="form-label">Description / Comments</label>
+                    <textarea class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
+                    <span asp-validation-for="Comments" class="text-danger"></span>
+                </div>
+
                 <!-- Valid ID and Submitted Documents Section -->
                 <div class="receipt-section">
                     <h5 class="section-title">Valid ID and Submitted Documents</h5>
@@ -116,46 +132,25 @@
                             }
                         </div>
 
-                        <!-- PDF Documents (Doctor Prescription / Medical Certificate) -->
+                        <!-- PDF Documents (Death Certificate) -->
                         <div class="col-lg-6 mb-3">
-                            @if (ViewData["DoctorPrescriptionBase64"] != null)
+                            @if (ViewData["DeathCertificateBase64"] != null)
                             {
-                                <h6>Doctor Prescription</h6>
-                                @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                                <h6>Death Certificate</h6>
+                                @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                                 {
-                                    <div class="pdf-preview mb-3" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
                                         <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
                                         <div class="pdf-info">
-                                            <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                            <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
                                             <span class="pdf-label">Click to view PDF</span>
                                         </div>
                                     </div>
                                 }
                                 else
                                 {
-                                    <div class="id-image-container mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
-                                        <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
-                                    </div>
-                                }
-                            }
-
-                            @if (ViewData["MedicalCertificateBase64"] != null)
-                            {
-                                <h6>Medical Certificate</h6>
-                                @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
-                                {
-                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
-                                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                        <div class="pdf-info">
-                                            <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
-                                            <span class="pdf-label">Click to view PDF</span>
-                                        </div>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
-                                        <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                                    <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                        <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
                                     </div>
                                 }
                             }
@@ -165,28 +160,27 @@
 
                 <!-- Status Section -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Request Status</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="section-title mb-0">Request Status</h5>
+                        <!-- Remove this entire line -->
+                    </div>
                     <div class="info-row">
                         <div class="info-label">Current Status:</div>
                         <div class="info-value">
-                            <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
-                                @ViewData["Status"]
+                            <span class="status-badge status-@(ViewData["Status2"]?.ToString()?.ToLower())">
+                                @ViewData["Status2"]
                             </span>
                         </div>
                     </div>
-                    <input type="hidden" name="status2" value="Processing" />
+                    <!-- Remove the entire edit-field section -->
                 </div>
             </div>
 
             <div class="receipt-footer">
-                <button type="submit" class="btn btn-process">
-                    <i class="bi bi-gear-fill"></i>Process Application
-                </button>
-                <button type="button" class="btn btn-receipt" onclick="window.print()">
-                    <i class="bi bi-printer"></i> Print Receipt
-                </button>
+
+                <div class="view-mode">
+                    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                </div>
             </div>
         </form>
     </div>
-
-

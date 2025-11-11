@@ -34,7 +34,6 @@
             flex-shrink: 0;
             appearance: auto;
             -webkit-appearance: auto;
-            -moz-appearance: auto;
         }
 
         .form-check-input:checked {
@@ -174,7 +173,7 @@
 
 <form asp-action="HospitalAssistance" enctype="multipart/form-data" method="post">
 
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
         <!-- Requestor Details -->
         <h5 class="section-header">Requestor's Details</h5>
@@ -696,18 +695,17 @@
                 <label class="form-check-label" for="termsCheck">I certify that all information provided is true and accurate</label>
             </div>
 
-            <!-- Submit Button -->
-            <div class="text-center mt-4">
-                <button type="submit" class="btn-submit">Submit Request</button>
-            </div>
-            <br />
-            <br />
-        </form>
-    </div>
+        <!-- Submit Button -->
+        <div class="text-center mt-4">
+            <button type="submit" class="btn-submit">Submit Request</button>
+        </div>
+        <br />
+        <br />
+</form>
 
-    <!-- For zooming photo -->
-    <!-- Add this modal HTML at the end of your form container but before the closing </div> -->
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
+<!-- For zooming photo -->
+<!-- Add this modal HTML at the end of your form container but before the closing </div> -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1517,6 +1515,7 @@
             }
         });
     </script>
+}
 
 @section Scripts {
     <script>

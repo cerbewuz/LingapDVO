@@ -334,7 +334,7 @@
                     <h3 class="section-title">Hospital Bill Assistance (Private Hospital)</h3>
 
                     @{
-                        var approvedHospitalBills = Model.HospitalBills.Where(f => f.Status?.ToLower() == "approved").ToList();
+                        var approvedHospitalBills = Model.HospitalAssistance.Where(f => f.Status?.ToLower() == "approved").ToList();
                     }
                     @if (approvedHospitalBills.Any())
                     {
@@ -387,7 +387,7 @@
                     <h3 class="section-title">Medical and laboratory Procedure(Private Hospital)</h3>
 
                     @{
-                        var approvedMedicalForms = Model.MedicalLabForms.Where(f => f.Status?.ToLower() == "approved").ToList();
+                        var approvedMedicalForms = Model.OtherAssistance.Where(f => f.Status?.ToLower() == "approved").ToList();
                     }
                     @if (approvedMedicalForms.Any())
                     {

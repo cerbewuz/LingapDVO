@@ -1336,8 +1336,8 @@
                     } else {
                         // If server returns error, use the data from the model
                         return {
-                            hospitalBills: @Json.Serialize(Model.HospitalBills),
-                            medicalForms: @Json.Serialize(Model.MedicalLabForms),
+                            hospitalBills: @Json.Serialize(Model.HospitalAssistance),
+                            medicalForms: @Json.Serialize(Model.OtherAssistance),
                             funeralForms: @Json.Serialize(Model.FuneralAssistance)
                         };
                     }
@@ -1345,8 +1345,8 @@
                     console.error('Error fetching applications:', error);
                     // Use model data as fallback
                     return {
-                        hospitalBills: @Json.Serialize(Model.HospitalBills),
-                        medicalForms: @Json.Serialize(Model.MedicalLabForms),
+                        hospitalBills: @Json.Serialize(Model.HospitalAssistance),
+                        medicalForms: @Json.Serialize(Model.OtherAssistance),
                         funeralForms: @Json.Serialize(Model.FuneralAssistance)
                     };
                 }
@@ -1626,7 +1626,7 @@
 
     <!-- --------------------------------------------------------------- -->
     <!-- Account Verification Success Modal -->
-    @if (TempData["VerificationSuccess"] != null && (bool)TempData["VerificationSuccess"])
+    @if (TempData["VerificationSuccess"] != null && TempData["VerificationSuccess"] is bool verificationSuccess && verificationSuccess)
     {
         <div class="modal fade" id="verificationSuccessModal" tabindex="-1" aria-labelledby="verificationSuccessModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
@@ -1718,7 +1718,7 @@
     @* <script>
         // Service Reliability Notification Script with Toast
         document.addEventListener('DOMContentLoaded', function() {
-            const hasApplications = @(Model.HospitalBills.Any() || Model.MedicalLabForms.Any() || Model.FuneralAssistance.Any() ? "true" : "false");
+            const hasApplications = @(Model.HospitalAssistance.Any() || Model.OtherAssistance.Any() || Model.FuneralAssistance.Any() ? "true" : "false");
 
             if (hasApplications) {
                 setTimeout(() => {

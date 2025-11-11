@@ -131,8 +131,8 @@ namespace LingapDVO.Controllers
 
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalBills = hospitalBills,
-                MedicalLabForms = medicalLabForms,
+                HospitalAssistance = hospitalBills,
+                OtherAssistance = medicalLabForms,
                 FuneralAssistance = FuneralAssistance
             };
 
@@ -416,8 +416,8 @@ namespace LingapDVO.Controllers
         // ====================================
 
         // +---------------------------------------------------------------------------+
-        // ¦                    AES-256 ENCRYPTION HELPER CLASS                        ¦
-        // ¦         Secure AES-256 Implementation using Configuration                 ¦
+        // ï¿½                    AES-256 ENCRYPTION HELPER CLASS                        ï¿½
+        // ï¿½         Secure AES-256 Implementation using Configuration                 ï¿½
         // +---------------------------------------------------------------------------+
         private class AesEncryptionHelper
         {
@@ -2813,8 +2813,8 @@ namespace LingapDVO.Controllers
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalBills = hospitalBills,
-                MedicalLabForms = medicalLabForms,
+                HospitalAssistance = hospitalBills,
+                OtherAssistance = medicalLabForms,
                 FuneralAssistance = FuneralAssistance //
             };
 
@@ -2950,8 +2950,8 @@ namespace LingapDVO.Controllers
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalBills = hospitalBills,
-                MedicalLabForms = medicalLabForms
+                HospitalAssistance = hospitalBills,
+                OtherAssistance = medicalLabForms
             };
 
             // Pass the view model to the view
@@ -2991,8 +2991,8 @@ namespace LingapDVO.Controllers
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalBills = hospitalBills,
-                MedicalLabForms = medicalLabForms,
+                HospitalAssistance = hospitalBills,
+                OtherAssistance = medicalLabForms,
                 FuneralAssistance = FuneralAssistance //
             };
 

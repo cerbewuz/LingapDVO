@@ -395,7 +395,7 @@
             const allApplications = [];
 
             // Add Hospital Bills
-            @foreach (var f in Model.HospitalBills)
+            @foreach (var f in Model.HospitalAssistance)
             {
                 <text>
                 allApplications.push({
@@ -412,7 +412,7 @@
             }
 
             // Add Medical Lab Forms
-            @foreach (var f in Model.MedicalLabForms)
+            @foreach (var f in Model.OtherAssistance)
             {
                 <text>
                 allApplications.push({
@@ -560,39 +560,39 @@
             function getApplicationUrl(app) {
                 if (app.formType === "hospital") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        return `/HospitalAssistanceUpdatestatuClaimeddocs/${app.formId}`;
+                        return `/HospitalAssistanceClaimStatus/${app.formId}`;
                     } else if (app.status2 === "approved") {
-                        return `/HospitalAssistanceapprovedstatus/${app.formId}`;
+                        return `/HospitalAssistanceApproveStatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        return `/HospitalAssistanceDisapprovedstatus/${app.formId}`;
+                        return `/HospitalAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/HospitalAssistanceUpdateprocessingstatus/${app.formId}`;
+                        return `/HospitalAssistanceProcessingStatus/${app.formId}`;
                     } else {
-                        return `/HospitalAssistanceUpdatestatus/${app.formId}`;
+                        return `/HospitalAssistancePendingStatus/${app.formId}`;
                     }
                 } else if (app.formType === "medical") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        return `/OtherAssistancestatusUpdateClaimeddocs/${app.formId}`;
+                        return `/OtherAssistanceClaimStatus/${app.formId}`;
                     } else if (app.status2 === "approved") {
-                        return `/OtherAssistanceapprovedsstatus/${app.formId}`;
+                        return `/OtherAssistanceApproveStatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        return `/OtherAssistanceDisapprovedstatus/${app.formId}`;
+                        return `/OtherAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/OtherAssistanceUpdateprocessingstatus/${app.formId}`;
+                        return `/OtherAssistanceProcessingStatus/${app.formId}`;
                     } else {
-                        return `/OtherAssistancestatus/${app.formId}`;
+                        return `/OtherAssistancePendingStatus/${app.formId}`;
                     }
                 } else if (app.formType === "funeral") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        return `/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
+                        return `/FuneralAssistanceClaimStatus/${app.formId}`;
                     } else if (app.status2 === "approved") {
-                        return `/Funeralburialapprovedstatus/${app.formId}`;
+                        return `/FuneralAssistanceApproveStatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        return `/FuneralburialDisapprovedstatus/${app.formId}`;
+                        return `/FuneralAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/FuneralAssistanceUpdateprocessingstatus/${app.formId}`;
+                        return `/FuneralAssistanceProcessingStatus/${app.formId}`;
                     } else {
-                        return `/FuneralAssistancestatus/${app.formId}`;
+                        return `/FuneralAssistancePendingStatus/${app.formId}`;
                     }
                 }
                 return '#';

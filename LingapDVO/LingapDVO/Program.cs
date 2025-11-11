@@ -192,7 +192,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "route-uploads",
     pattern: "Uploads",
-    defaults: new { controller = "Dashboard", action = "Eligibilitychecking" });
+    defaults: new { controller = "Dashboard", action = "Uploads" });
 
 app.MapControllerRoute(
     name: "route-maps",
@@ -208,11 +208,6 @@ app.MapControllerRoute(
     name: "route-history",
     pattern: "History",
     defaults: new { controller = "Dashboard", action = "History" });
-
-app.MapControllerRoute(
-    name: "route-eligibilitychecking",
-    pattern: "Eligibilitychecking",
-    defaults: new { controller = "Dashboard", action = "Eligibilitychecking" });
 
 // Dashboard Forms Routes
 app.MapControllerRoute(
@@ -293,81 +288,81 @@ app.MapControllerRoute(
 
 // Admin Hospital Bill Status Routes
 app.MapControllerRoute(
-    name: "route-admin-hospitalbill-update",
-    pattern: "HospitalAssistanceUpdatestatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "HospitalAssistanceUpdatestatus" });
+    name: "route-admin-hospitalbill-pending",
+    pattern: "HospitalAssistancePendingStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "HospitalAssistancePendingStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-hospitalbill-processing",
-    pattern: "HospitalAssistanceUpdateprocessingstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "HospitalAssistanceUpdateprocessingstatus" });
+    pattern: "HospitalAssistanceProcessingStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "HospitalAssistanceProcessingStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-hospitalbill-approved",
-    pattern: "HospitalAssistanceapprovedstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "HospitalAssistanceapprovedstatus" });
+    pattern: "HospitalAssistanceApproveStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "HospitalAssistanceApproveStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-hospitalbill-disapproved",
-    pattern: "HospitalAssistanceDisapprovedstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "HospitalAssistanceDisapprovedstatus" });
+    pattern: "HospitalAssistanceDisapproveStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "HospitalAssistanceDisapproveStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-hospitalbill-claimed",
-    pattern: "HospitalAssistanceUpdatestatuClaimeddocs/{id?}",
-    defaults: new { controller = "Adminuser", action = "HospitalAssistanceUpdatestatuClaimeddocs" });
+    pattern: "HospitalAssistanceClaimStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "HospitalAssistanceClaimStatus" });
 
 // Admin Medical Lab Status Routes
 app.MapControllerRoute(
-    name: "route-admin-medicallab-status",
-    pattern: "OtherAssistancestatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "OtherAssistancestatus" });
+    name: "route-admin-medicallab-pending",
+    pattern: "OtherAssistancePendingStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "OtherAssistancePendingStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-medicallab-processing",
-    pattern: "OtherAssistanceUpdateprocessingstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "OtherAssistanceUpdateprocessingstatus" });
+    pattern: "OtherAssistanceProcessingStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "OtherAssistanceProcessingStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-medicallab-approved",
-    pattern: "OtherAssistanceapprovedsstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "OtherAssistanceapprovedsstatus" });
+    pattern: "OtherAssistanceApproveStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "OtherAssistanceApproveStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-medicallab-disapproved",
-    pattern: "OtherAssistanceDisapprovedstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "OtherAssistanceDisapprovedstatus" });
+    pattern: "OtherAssistanceDisapproveStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "OtherAssistanceDisapproveStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-medicallab-claimed",
-    pattern: "OtherAssistancestatusUpdateClaimeddocs/{id?}",
-    defaults: new { controller = "Adminuser", action = "OtherAssistancestatusUpdateClaimeddocs" });
+    pattern: "OtherAssistanceClaimStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "OtherAssistanceClaimStatus" });
 
 // Admin Funeral Burial Status Routes
 app.MapControllerRoute(
-    name: "route-admin-FuneralAssistance-status",
-    pattern: "FuneralAssistancestatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "FuneralAssistancestatus" });
+    name: "route-admin-FuneralAssistance-pending",
+    pattern: "FuneralAssistancePendingStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "FuneralAssistancePendingStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-FuneralAssistance-processing",
-    pattern: "FuneralAssistanceUpdateprocessingstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "FuneralAssistanceUpdateprocessingstatus" });
+    pattern: "FuneralAssistanceProcessingStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "FuneralAssistanceProcessingStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-FuneralAssistance-approved",
-    pattern: "FuneralAssistanceapprovedstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "FuneralAssistanceapprovedstatus" });
+    pattern: "FuneralAssistanceApproveStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "FuneralAssistanceApproveStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-FuneralAssistance-disapproved",
-    pattern: "FuneralAssistanceDisapprovedstatus/{id?}",
-    defaults: new { controller = "Adminuser", action = "FuneralAssistanceDisapprovedstatus" });
+    pattern: "FuneralAssistanceDisapproveStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "FuneralAssistanceDisapproveStatus" });
 
 app.MapControllerRoute(
     name: "route-admin-FuneralAssistance-claimed",
-    pattern: "FuneralAssistanceapprovedstatusUpdateClaimeddocs/{id?}",
-    defaults: new { controller = "Adminuser", action = "FuneralAssistanceapprovedstatusUpdateClaimeddocs" });
+    pattern: "FuneralAssistanceClaimStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "FuneralAssistanceClaimStatus" });
 
 // Superadmin Controller Routes
 app.MapControllerRoute(

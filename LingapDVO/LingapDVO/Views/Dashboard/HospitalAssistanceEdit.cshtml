@@ -1,0 +1,361 @@
+@model HospitalAssistanceDto
+@{
+    Layout = "_EditFormsLayout";
+    ViewData["Title"] = "Edit Hospital Assistance";
+}
+
+@section Styles {
+    <style>
+        .form-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #dc143c;
+        }
+
+        .btn-submit {
+            background-color: #28a745;
+            color: white;
+            font-weight: 600;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #20c997;
+            transform: scale(1.05);
+        }
+
+        .img-preview {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 300px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .upload-box {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #fafafa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-box:hover {
+            border-color: #dc143c;
+            background-color: #fff5f5;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: #dc143c;
+            margin-bottom: 0.5rem;
+        }
+
+        .current-file {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-check-input:checked {
+            background-color: #dc143c;
+            border-color: #dc143c;
+        }
+
+        .form-check-input:focus {
+            border-color: #dc143c;
+            box-shadow: 0 0 0 0.2rem rgba(220, 20, 60, 0.15);
+        }
+    </style>
+}
+
+<form asp-action="HospitalAssistanceEdit" enctype="multipart/form-data" method="post">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <!-- Patient Information -->
+    <div class="form-section">
+        <h5 class="section-header">Patient Information</h5>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Last Name</label>
+                <input asp-for="Lastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
+                <span asp-validation-for="Lastname" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">First Name</label>
+                <input asp-for="Firstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
+                <span asp-validation-for="Firstname" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Middle Name</label>
+                <input asp-for="Middlename" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                <span asp-validation-for="Middlename" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Suffix</label>
+                <select class="form-select" asp-for="Suffix">
+                    <option value="None">None</option>
+                    <option value="Jr.">Jr.</option>
+                    <option value="Sr.">Sr.</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                </select>
+                <span asp-validation-for="Suffix" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-3">
+                <label class="form-label">Blk / Lot / Street</label>
+                <input asp-for="BlkLotStreet" type="text" class="form-control" required>
+                <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Sub / Vill.</label>
+                <input asp-for="SubVill" type="text" class="form-control">
+                <span asp-validation-for="SubVill" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Barangay</label>
+                <input asp-for="Brgy" type="text" class="form-control" required>
+                <span asp-validation-for="Brgy" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">District</label>
+                <input asp-for="District" type="text" class="form-control" required>
+                <span asp-validation-for="District" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-3">
+                <label class="form-label">Date of Birth</label>
+                <input asp-for="Dateofbirth" type="date" class="form-control" required>
+                <span asp-validation-for="Dateofbirth" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Age</label>
+                <input asp-for="Age" type="number" class="form-control" required>
+                <span asp-validation-for="Age" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Sex</label>
+                <select asp-for="Sex" class="form-select" required>
+                    <option value="">Select Sex</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <span asp-validation-for="Sex" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">PhilHealth</label>
+                <select asp-for="PhilHealth" class="form-select" required>
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+                <span asp-validation-for="PhilHealth" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <label class="form-label">PhilHealth Number (if applicable)</label>
+                <input asp-for="PhilHealthNo" type="text" class="form-control">
+                <span asp-validation-for="PhilHealthNo" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requestor Information -->
+    <div class="form-section">
+        <h5 class="section-header">Requestor's Details</h5>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Last Name</label>
+                <input asp-for="RLastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                <span asp-validation-for="RLastname" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">First Name</label>
+                <input asp-for="RFirstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                <span asp-validation-for="RFirstname" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Middle Name</label>
+                <input asp-for="RMiddlename" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                <span asp-validation-for="RMiddlename"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Suffix</label>
+                <select class="form-select" asp-for="RSuffix">
+                    <option value="None">None</option>
+                    <option value="Jr.">Jr.</option>
+                    <option value="Sr.">Sr.</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                </select>
+                <span asp-validation-for="RSuffix"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-3">
+                <label class="form-label">Blk / Lot / Street</label>
+                <input asp-for="RBlkLotStreet" type="text" class="form-control">
+                <span asp-validation-for="RBlkLotStreet" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Sub / Vill.</label>
+                <input asp-for="RSubVill" type="text" class="form-control">
+                <span asp-validation-for="RSubVill" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Barangay</label>
+                <input asp-for="RBrgy" type="text" class="form-control">
+                <span asp-validation-for="RBrgy" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">District</label>
+                <input asp-for="RDistrict" type="text" class="form-control">
+                <span asp-validation-for="RDistrict" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <label class="form-label">Relationship to Patient</label>
+                <input asp-for="RelationshipPatient" type="text" class="form-control">
+                <span asp-validation-for="RelationshipPatient" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Contact No.</label>
+                <input asp-for="ContactNo" type="text" class="form-control">
+                <span asp-validation-for="ContactNo"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assistance Type -->
+    <div class="form-section">
+        <h5 class="section-header">Type of Assistance</h5>
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label class="form-label">Assistance Type</label>
+                <input asp-for="Typeassistance" type="text" class="form-control">
+                <span asp-validation-for="Typeassistance" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Uploads -->
+    <div class="form-section">
+        <h5 class="section-header">Required Documents</h5>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Valid ID (Front)</label>
+                <input type="file" asp-for="IdFrontimage" class="form-control" accept="image/*,.pdf">
+                @if (Model?.IdFrontimage != null)
+                {
+                    <div class="current-file">
+                        <i class="bi bi-file-check"></i> Current file uploaded
+                        <small class="text-muted d-block">Upload a new file to replace</small>
+                    </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Valid ID (Back)</label>
+                <input type="file" asp-for="IdBackimage" class="form-control" accept="image/*,.pdf">
+                @if (Model?.IdBackimage != null)
+                {
+                    <div class="current-file">
+                        <i class="bi bi-file-check"></i> Current file uploaded
+                        <small class="text-muted d-block">Upload a new file to replace</small>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Doctor Prescription (Optional)</label>
+                <input type="file" asp-for="DoctorPrescriptionimage" class="form-control" accept="image/*,.pdf">
+                @if (Model?.DoctorPrescriptionimage != null)
+                {
+                    <div class="current-file">
+                        <i class="bi bi-file-check"></i> Current file uploaded
+                        <small class="text-muted d-block">Upload a new file to replace</small>
+                    </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Death Certificate (if applicable)</label>
+                <input type="file" asp-for="DeathCertificateimage" class="form-control" accept="image/*,.pdf">
+                @if (Model?.DeathCertificateimage != null)
+                {
+                    <div class="current-file">
+                        <i class="bi bi-file-check"></i> Current file uploaded
+                        <small class="text-muted d-block">Upload a new file to replace</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center mt-4 mb-4">
+        <button type="submit" class="btn btn-submit">
+            <i class="bi bi-save"></i> Save Changes
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

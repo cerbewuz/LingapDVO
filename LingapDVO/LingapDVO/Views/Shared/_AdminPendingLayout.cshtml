@@ -16,7 +16,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
-    <!-- Google Fonts - Inter & Poppins -->
+    <!-- Google Fonts - Times New Roman & Arial are system fonts, but adding as fallback -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Go Back Button -->
@@ -24,6 +24,9 @@
 
     <!-- Forms Layout Styling -->
     <link rel="stylesheet" href="~/css/forms-layout.css">
+
+    <!-- Forms Consistency (Alignment & Spacing) -->
+    <link rel="stylesheet" href="~/css/forms-consistency.css">
 
     <!-- Modal Styles -->
     <link rel="stylesheet" href="~/css/modal-styles.css">
@@ -87,6 +90,65 @@
 
     <!-- Admin Status Functions -->
     <script src="~/js/admin-status-functions.js"></script>
+
+    <!-- Required Field Validation Warnings -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add required field validation on form submit
+            const forms = document.querySelectorAll('form');
+
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const requiredFields = form.querySelectorAll('[required]');
+                    let hasError = false;
+
+                    requiredFields.forEach(field => {
+                        if (!field.value || field.value.trim() === '') {
+                            hasError = true;
+                            const label = field.closest('.col-md-3, .col-md-4, .col-md-6, .col-md-12, .form-group')?.querySelector('.form-label');
+                            const fieldName = label ? label.textContent.replace('*', '').trim() : 'This field';
+
+                            // Highlight the field
+                            field.classList.add('is-invalid');
+
+                            // Show alert for first empty required field
+                            if (hasError) {
+                                alert(`Warning: ${fieldName} is required. Please fill in all required fields marked with (*)`);
+                                field.focus();
+                                e.preventDefault();
+                                return false;
+                            }
+                        } else {
+                            field.classList.remove('is-invalid');
+                        }
+                    });
+
+                    if (hasError) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+
+                // Real-time validation feedback
+                const requiredFields = form.querySelectorAll('[required]');
+                requiredFields.forEach(field => {
+                    field.addEventListener('blur', function() {
+                        if (!this.value || this.value.trim() === '') {
+                            this.classList.add('is-invalid');
+                        } else {
+                            this.classList.remove('is-invalid');
+                        }
+                    });
+
+                    field.addEventListener('input', function() {
+                        if (this.value && this.value.trim() !== '') {
+                            this.classList.remove('is-invalid');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 
     @RenderSection("Scripts", required: false)
 </body>

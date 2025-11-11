@@ -68,8 +68,8 @@ namespace LingapDVO.Controllers
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalBills = hospitalBills,
-                MedicalLabForms = medicalLabForms,
+                HospitalAssistance = hospitalBills,
+                OtherAssistance = medicalLabForms,
                 FuneralAssistance = FuneralAssistance
             };
 
@@ -78,7 +78,7 @@ namespace LingapDVO.Controllers
         }
 
 
-        public IActionResult HospitalAssistanceUpdatestatus(int id)
+        public IActionResult HospitalAssistancePendingStatus(int id)
         {
 
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
@@ -162,7 +162,7 @@ namespace LingapDVO.Controllers
 
         //renvic edit sa grammar
         [HttpPost]
-        public IActionResult HospitalAssistanceupdatestatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
+        public IActionResult HospitalAssistancePendingStatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
         {
             var HospitalAssistance = context.HospitalAssistance.Find(id);
 
@@ -221,9 +221,9 @@ namespace LingapDVO.Controllers
                 Your Hospital Bill Assistance application is now being processed.
 
                 APPLICATION DETAILS:
-                • Application Type: Hospital Bill Assistance
-                • Status: Processing
-                • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                ï¿½ Application Type: Hospital Bill Assistance
+                ï¿½ Status: Processing
+                ï¿½ Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
                 REMARKS:
                 {HospitalAssistanceDto.Comments ?? "N/A"}
@@ -264,7 +264,7 @@ namespace LingapDVO.Controllers
 
 
 
-        public IActionResult OtherAssistancestatus(int id)
+        public IActionResult OtherAssistancePendingStatus(int id)
         {
 
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
@@ -411,9 +411,9 @@ namespace LingapDVO.Controllers
                     Your Medical and Laboratory Assistance application is now being processed.
 
                     APPLICATION DETAILS:
-                    • Application Type: Medical and Laboratory Assistance
-                    • Status: Processing
-                    • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                    ï¿½ Application Type: Medical and Laboratory Assistance
+                    ï¿½ Status: Processing
+                    ï¿½ Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
                     REMARKS:
                     {OtherAssistanceDto.Comments ?? "N/A"}
@@ -454,7 +454,7 @@ namespace LingapDVO.Controllers
 
 
 
-        public IActionResult FuneralAssistancestatus(int id)
+        public IActionResult FuneralAssistancePendingStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -599,9 +599,9 @@ namespace LingapDVO.Controllers
                                 Your Funeral and Burial Assistance application is now being processed.
 
                                 APPLICATION DETAILS:
-                                • Application Type: Funeral and Burial Assistance
-                                • Status: Processing
-                                • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                                ï¿½ Application Type: Funeral and Burial Assistance
+                                ï¿½ Status: Processing
+                                ï¿½ Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
                                 REMARKS:
                                 {FuneralAssistanceDto.Comments ?? "N/A"}
@@ -659,8 +659,8 @@ namespace LingapDVO.Controllers
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalBills = hospitalBills,
-                MedicalLabForms = medicalLabForms,
+                HospitalAssistance = hospitalBills,
+                OtherAssistance = medicalLabForms,
                 FuneralAssistance = FuneralAssistance
             };
 
@@ -672,8 +672,8 @@ namespace LingapDVO.Controllers
         // ====================================
 
         // +---------------------------------------------------------------------------+
-        // ¦                    AES-256 ENCRYPTION HELPER CLASS                        ¦
-        // ¦         Secure AES-256 Implementation using Configuration                 ¦
+        // ï¿½                    AES-256 ENCRYPTION HELPER CLASS                        ï¿½
+        // ï¿½         Secure AES-256 Implementation using Configuration                 ï¿½
         // +---------------------------------------------------------------------------+
         private class AesEncryptionHelper
         {
@@ -870,7 +870,7 @@ namespace LingapDVO.Controllers
         }
 
         // 2. MAIN VIEW METHOD - UPDATED TO USE CONFIGURATION-BASED KEY
-        public IActionResult HospitalAssistanceUpdateprocessingstatus(int id)
+        public IActionResult HospitalAssistanceProcessingStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -1057,7 +1057,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-        public IActionResult OtherAssistanceUpdateprocessingstatus(int id)
+        public IActionResult OtherAssistanceProcessingStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -1283,7 +1283,7 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-        public IActionResult FuneralAssistanceUpdateprocessingstatus(int id)
+        public IActionResult FuneralAssistanceProcessingStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -1471,7 +1471,7 @@ namespace LingapDVO.Controllers
         }
 
         //for approving statuses
-        public IActionResult HospitalAssistanceapprovedstatus(int id)
+        public IActionResult HospitalAssistanceApproveStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -1658,7 +1658,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-        public IActionResult Funeralburialapprovedstatus(int id)
+        public IActionResult FuneralAssistanceApproveStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -1845,7 +1845,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-        public IActionResult OtherAssistanceapprovedsstatus(int id)
+        public IActionResult OtherAssistanceApproveStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -2073,7 +2073,7 @@ namespace LingapDVO.Controllers
         }
 
         //For not approved statuses
-        public IActionResult HospitalAssistanceDisapprovedstatus(int id)
+        public IActionResult HospitalAssistanceDisapproveStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -2260,7 +2260,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-        public IActionResult FuneralburialDisapprovedstatus(int id)
+        public IActionResult FuneralAssistanceDisapproveStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -2447,7 +2447,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-        public IActionResult OtherAssistanceDisapprovedstatus(int id)
+        public IActionResult OtherAssistanceDisapproveStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -2678,7 +2678,7 @@ namespace LingapDVO.Controllers
 
 
         //Claimed statuses
-        public IActionResult HospitalAssistanceUpdatestatuClaimeddocs(int id)
+        public IActionResult HospitalAssistanceClaimStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -2865,7 +2865,7 @@ namespace LingapDVO.Controllers
             return View();
         }
 
-        public IActionResult OtherAssistancestatusUpdateClaimeddocs(int id)
+        public IActionResult OtherAssistanceClaimStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -3091,7 +3091,7 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-        public IActionResult FuneralburialapprovedstatusUpdateClaimeddocs(int id)
+        public IActionResult FuneralAssistanceClaimStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -3441,7 +3441,7 @@ namespace LingapDVO.Controllers
 
         //approving and unpproving status
         [HttpPost]
-        public IActionResult HospitalAssistanceUpdateprocessingstatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
+        public IActionResult HospitalAssistanceProcessingStatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
         {
             var HospitalAssistance = context.HospitalAssistance.Find(id);
 
@@ -3588,7 +3588,7 @@ namespace LingapDVO.Controllers
 
         // ? For Approved Statuses to Claimed
         [HttpPost]
-        public IActionResult HospitalAssistanceapprovedstatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
+        public IActionResult HospitalAssistanceApproveStatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
         {
             var HospitalAssistance = context.HospitalAssistance.Find(id);
 
@@ -3638,10 +3638,10 @@ namespace LingapDVO.Controllers
                         We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
                         APPLICATION DETAILS:
-                        • Application Type: Hospital Bill Assistance
-                        • Status: Claimed
-                        • Processed By: {HospitalAssistanceDto.Processby ?? "LINGAP Personnel"}
-                        • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                        ï¿½ Application Type: Hospital Bill Assistance
+                        ï¿½ Status: Claimed
+                        ï¿½ Processed By: {HospitalAssistanceDto.Processby ?? "LINGAP Personnel"}
+                        ï¿½ Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
                         REMARKS:
                         {HospitalAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
@@ -3733,10 +3733,10 @@ namespace LingapDVO.Controllers
                             We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
                             APPLICATION DETAILS:
-                            • Application Type: Medical and Laboratory Assistance
-                            • Status: Claimed
-                            • Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
-                            • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                            ï¿½ Application Type: Medical and Laboratory Assistance
+                            ï¿½ Status: Claimed
+                            ï¿½ Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
+                            ï¿½ Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
                             REMARKS:
                             {OtherAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
@@ -3826,9 +3826,9 @@ namespace LingapDVO.Controllers
                             We are pleased to inform you that your LINGAP Funeral Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
                             APPLICATION DETAILS:
-                            • Application Type: Funeral Assistance  
-                            • Status: Claimed  
-                            • Processed By: {FuneralAssistanceDto.Processby ?? "LINGAP Personnel"}
+                            ï¿½ Application Type: Funeral Assistance  
+                            ï¿½ Status: Claimed  
+                            ï¿½ Processed By: {FuneralAssistanceDto.Processby ?? "LINGAP Personnel"}
 
                             REMARKS:
                             {FuneralAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
@@ -3899,8 +3899,8 @@ namespace LingapDVO.Controllers
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalBills = hospitalBills,
-                MedicalLabForms = medicalLabForms,
+                HospitalAssistance = hospitalBills,
+                OtherAssistance = medicalLabForms,
                 FuneralAssistance = FuneralAssistance
             };
 

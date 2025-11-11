@@ -669,7 +669,7 @@
             const allApplications = [];
 
             // Add Hospital Bills
-            @foreach (var f in Model.HospitalBills)
+            @foreach (var f in Model.HospitalAssistance)
             {
                     <text>
                     allApplications.push({
@@ -686,11 +686,11 @@
             }
 
             // Add Medical Lab Forms
-            @foreach (var f in Model.MedicalLabForms)
+            @foreach (var f in Model.OtherAssistance)
             {
                     <text>
                     allApplications.push({
-                        type: "Medical and laboratory Procedure",
+                        type: "Medical and Laboratory Procedure",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -707,7 +707,7 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Funeral and burial assistance",
+                        type: "Funeral and Burial Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -1012,49 +1012,49 @@
                 if (app.type === "Hospital Bill Assistance") {
                     // Check status3 FIRST for claimed (highest priority)
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/HospitalAssistanceUpdatestatuClaimeddocs/${app.formId}`;
+                        editUrl = `/HospitalAssistanceClaimStatus/${app.formId}`;
                     }
                     // Then check status2 for approved/disapproved
                     else if (app.status2 === "approved") {
-                        editUrl = `/HospitalAssistanceapprovedstatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceApproveStatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        editUrl = `/HospitalAssistanceDisapprovedstatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceDisapproveStatus/${app.formId}`;
                     }
                     // Then check original status
                     else if (app.status === "processing") {
-                        editUrl = `/HospitalAssistanceUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceProcessingStatus/${app.formId}`;
                     } else {
-                        editUrl = `/HospitalAssistanceUpdatestatus/${app.formId}`;
+                        editUrl = `/HospitalAssistancePendingStatus/${app.formId}`;
                     }
 
-                } else if (app.type === "Medical and laboratory Procedure") {
+                } else if (app.type === "Medical and Laboratory Procedure") {
                     // Apply the same logic for Medical forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/OtherAssistancestatusUpdateClaimeddocs/${app.formId}`;
+                        editUrl = `/OtherAssistanceClaimStatus/${app.formId}`;
                     }
                     else if (app.status2 === "approved") {
-                        editUrl = `/OtherAssistanceapprovedsstatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceApproveStatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        editUrl = `/OtherAssistanceDisapprovedstatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        editUrl = `/OtherAssistanceUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceProcessingStatus/${app.formId}`;
                     } else {
-                        editUrl = `/OtherAssistancestatus/${app.formId}`;
+                        editUrl = `/OtherAssistancePendingStatus/${app.formId}`;
                     }
 
-                } else if (app.type === "Funeral and burial assistance") {
+                } else if (app.type === "Funeral and Burial Assistance") {
                     // Apply the same logic for Funeral forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/FuneralburialapprovedstatusUpdateClaimeddocs/${app.formId}`;
+                        editUrl = `/FuneralAssistanceClaimStatus/${app.formId}`;
                     }
                     else if (app.status2 === "approved") {
-                        editUrl = `/Funeralburialapprovedstatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceApproveStatus/${app.formId}`;
                     } else if (app.status2 === "disapproved") {
-                        editUrl = `/FuneralburialDisapprovedstatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
-                        editUrl = `/FuneralAssistanceUpdateprocessingstatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceProcessingStatus/${app.formId}`;
                     } else {
-                        editUrl = `/FuneralAssistancestatus/${app.formId}`;
+                        editUrl = `/FuneralAssistancePendingStatus/${app.formId}`;
                     }
                 }
 

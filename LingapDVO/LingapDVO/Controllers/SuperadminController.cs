@@ -64,8 +64,8 @@ namespace LingapDVO.Controllers
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalBills = hospitalBills,
-                MedicalLabForms = medicalLabForms,
+                HospitalAssistance = hospitalBills,
+                OtherAssistance = medicalLabForms,
                 FuneralAssistance = FuneralAssistance,
                 RegisterAcc = RegisterAcc,
                 Adminaccount = Admin
@@ -357,7 +357,7 @@ namespace LingapDVO.Controllers
             }
             else
             {
-                // Password not being changed — skip validation
+                // Password not being changed ï¿½ skip validation
                 ModelState.Remove("Password");
                 ModelState.Remove("ConfirmPassword");
             }

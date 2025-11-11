@@ -1,43 +1,69 @@
-@model FuneralAssistanceDto
+@model OtherAssistanceDto
 @{
-    Layout = "_AdminProcessingLayout";
+    Layout = "_AdminApprovedLayout";
     ViewData["Title"] = "Application View";
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
-    <!-- Comments Modal -->
-    <div id="commentsModal" class="comments-modal">
-        <div class="comments-modal-content">
-            <div class="comments-modal-header">
-                <h5 class="comments-modal-title">Comments Required</h5>
-                <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
+<!-- Image Zoom Modal -->
+    <div id="zoomModal" class="zoom-modal">
+        <span class="close-zoom">&times;</span>
+        <img class="zoom-modal-content" id="zoomedImage">
+    </div>
+
+    <!-- PDF Viewer Modal -->
+    <div id="pdfViewerModal" class="pdf-viewer-modal">
+        <div class="pdf-viewer-content">
+            <div class="pdf-viewer-header">
+                <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+                <div class="pdf-controls">
+                    <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                    <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                        <i class="bi bi-zoom-out"></i>
+                    </button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                        <i class="bi bi-zoom-in"></i>
+                    </button>
+                </div>
+                <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
             </div>
-            <div class="mb-3">
-                <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
-                <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
-                <div class="invalid-feedback">Comments are required when disapproving an application.</div>
-            </div>
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
-                <button type="button" class="btn btn-disapproved" onclick="submitDisapproved()">Submit Disapproval</button>
+            <div class="pdf-viewer-body">
+                <div id="pdfLoading" class="pdf-loading">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading PDF document...</p>
+                </div>
+                <div id="pdfError" class="pdf-error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <p>Error loading PDF. Please try again.</p>
+                </div>
+                <div class="pdf-container">
+                    <canvas id="pdfCanvas"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="receipt-container">
-        <form asp-action="FuneralAssistanceUpdateprocessingstatus" enctype="multipart/form-data" method="post" id="statusForm">
-            <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
-            <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
-
+        <form asp-action="OtherAssistanceApproveStatus" enctype="multipart/form-data" method="post">
             <div class="receipt-header">
                 <h3>Hospital Bill Application Details</h3>
             </div>
 
             <div class="receipt-body">
+
                 <!-- Patient Information -->
                 <div class="receipt-section">
                     <div class="info-row">
-                        <div class="info-label">Application ID: @ViewData["Id"]</div>
+                        <div class="info-label">Application ID:@ViewData["Id"]</div>
                     </div>
                     <br />
                     <h5 class="section-title">Patient Information</h5>
@@ -50,6 +76,7 @@
                                     @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
                                 </div>
                             </div>
+
                             <div class="info-row">
                                 <div class="info-label">Address:</div>
                                 <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
@@ -176,7 +203,8 @@
                 <!-- Comments Section -->
                 <div class="receipt-section">
                     <label for="idFrontDescription" class="form-label">Description / Comments</label>
-                    <textarea class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application..." readonly>@ViewData["Comments"]</textarea>
+                    <textarea asp-for="Comments" class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
+                    <span asp-validation-for="Comments" class="text-danger"></span>
                 </div>
 
                 <!-- Valid ID and Submitted Documents Section -->
@@ -210,25 +238,46 @@
                             }
                         </div>
 
-                        <!-- PDF Documents (Death Certificate) -->
+                        <!-- PDF Documents (Doctor Prescription / Medical Certificate) -->
                         <div class="col-lg-6 mb-3">
-                            @if (ViewData["DeathCertificateBase64"] != null)
+                            @if (ViewData["DoctorPrescriptionBase64"] != null)
                             {
-                                <h6>Death Certificate</h6>
-                                @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                                <h6>Doctor Prescription</h6>
+                                @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                                 {
-                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                    <div class="pdf-preview mb-3" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
                                         <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
                                         <div class="pdf-info">
-                                            <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                            <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
                                             <span class="pdf-label">Click to view PDF</span>
                                         </div>
                                     </div>
                                 }
                                 else
                                 {
-                                    <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
-                                        <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                                    <div class="id-image-container mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                        <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                                    </div>
+                                }
+                            }
+
+                            @if (ViewData["MedicalCertificateBase64"] != null)
+                            {
+                                <h6>Medical Certificate</h6>
+                                @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                                {
+                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                        <div class="pdf-info">
+                                            <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                            <span class="pdf-label">Click to view PDF</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                        <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
                                     </div>
                                 }
                             }
@@ -242,18 +291,16 @@
                     <div class="info-row">
                         <div class="info-label">Current Status:</div>
                         <div class="info-value">
-                            <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
-                                @ViewData["Status"]
+                            <span class="status-badge status-@(ViewData["Status2"]?.ToString()?.ToLower())">
+                                @ViewData["Status2"]
                             </span>
                         </div>
                     </div>
 
-                    <div class="status-buttons">
-                        <button type="button" class="btn btn-approved" onclick="submitApproved()">
-                            <i class="bi bi-check-circle"></i> Approve
-                        </button>
-                        <button type="button" class="btn btn-disapproved" onclick="showCommentsModal()">
-                            <i class="bi bi-x-circle"></i> Disapprove
+                    <!-- Mark as Claimed Button -->
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-mark-claimed" onclick="markAsClaimed()">
+                            <i class="bi bi-check-circle me-2"></i>Mark as Claim
                         </button>
                     </div>
                 </div>
@@ -261,6 +308,7 @@
 
             <div class="receipt-footer">
                 <button type="button" class="btn btn-receipt" onclick="window.print()">Print Receipt</button>
+                <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
             </div>
         </form>
     </div>
