@@ -1259,7 +1259,7 @@
                                             <div class="timeline-content">
                                                 <h6>Being Reviewed</h6>
                                                 <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Checked by: <strong>@doc.Processby</strong></p>
+                                                <p class="timeline-description">Checked by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
                                     }
@@ -1287,16 +1287,16 @@
                                                 <h6>Decision</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Your request is: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Your request is<span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
-                                                    <p class="timeline-description mt-2"><strong>Note:</strong> @doc.Comments</p>
+                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
                                                 }
                                             </div>
                                         </div>
 
-                                        <!-- Step 4: Claimed Status (Only show if approved) -->
+                                        <!-- Step 4: Claim Status (Only show if approved) -->
                                         @if (doc.Status2 == "Approved")
                                         {
                                             @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
@@ -1309,7 +1309,7 @@
                                                         <h6>Claimed</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            You received: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            You received <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1439,11 +1439,11 @@
                                                 <h6>Decision</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Your request is: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Your request is<span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
-                                                    <p class="timeline-description mt-2"><strong>Note:</strong> @doc.Comments</p>
+                                                    <p class="timeline-description mt-2"><strong>Note</strong> @doc.Comments</p>
                                                 }
                                             </div>
                                         </div>
@@ -1461,7 +1461,7 @@
                                                         <h6>Claimed</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            You received: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            You received<span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1563,7 +1563,7 @@
                                             <div class="timeline-content">
                                                 <h6>Being Reviewed</h6>
                                                 <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Checked by: <strong>@doc.Processby</strong></p>
+                                                <p class="timeline-description">Checked by<strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
                                     }
@@ -1591,7 +1591,7 @@
                                                 <h6>Decision</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Your request is: <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Your request is<span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
@@ -1613,7 +1613,7 @@
                                                         <h6>Claimed</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            You received: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            You received<span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
                                                         </p>
                                                     </div>
                                                 </div>
