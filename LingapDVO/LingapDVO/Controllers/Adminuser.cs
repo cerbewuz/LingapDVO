@@ -3283,8 +3283,11 @@ namespace LingapDVO.Controllers
         {
             try
             {
-                // Authentication check
-                if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+                // Authentication check - allow both user and admin access
+                var userId = HttpContext.Session.GetString("UserId");
+                var adminId = HttpContext.Session.GetString("AdminFullname");
+
+                if (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(adminId))
                 {
                     return Unauthorized("Please log in to view documents");
                 }

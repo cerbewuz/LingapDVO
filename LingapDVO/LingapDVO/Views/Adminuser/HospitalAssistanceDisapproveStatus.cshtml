@@ -1,6 +1,7 @@
 @model HospitalAssistanceDto
 @{
     Layout = "_AdminDisapprovedLayout";
+    ViewData["Title"] = "Hospital Assistance Disapproval View";
 }
 
 <style>
@@ -720,17 +721,9 @@
 
 <div class="receipt-container">
     <form asp-action="HospitalAssistanceDisapproveStatus" enctype="multipart/form-data" method="post">
-        <div class="receipt-header">
-            <h3>Hospital Bill Application Details</h3>
-        </div>
-
         <div class="receipt-body">
             <!-- Patient Information -->
             <div class="receipt-section">
-                <div class="info-row">
-                    <div class="info-label">Application ID: @ViewData["Id"]</div>
-                </div>
-                <br />
                 <h5 class="section-title">Patient Information</h5>
                 <div class="row">
                     <div class="col-md-6">

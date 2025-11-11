@@ -6,6 +6,275 @@
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
+<style>
+    /* Remove borders since layout already has them */
+    .receipt-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .receipt-header {
+        border: none !important;
+    }
+
+    .receipt-body {
+        padding: 1.5rem 0 !important;
+    }
+
+    .zoom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 50px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .zoom-modal-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    .close-zoom {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .id-image-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .id-image-container:hover {
+            transform: scale(1.02);
+        }
+
+    .id-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background-color: #f8f9fa;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+    }
+
+    .pdf-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .pdf-preview {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        background-color: var(--light-gray);
+        transition: all 0.3s ease;
+    }
+
+        .pdf-preview:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+    .pdf-icon {
+        font-size: 3rem;
+        color: #dc143c;
+        margin-right: 1rem;
+    }
+
+    .pdf-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-filename {
+        font-weight: 600;
+        color: var(--secondary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .pdf-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .pdf-viewer-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.95);
+    }
+
+    .pdf-viewer-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-viewer-header {
+        background-color: #333;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .pdf-viewer-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .pdf-viewer-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 0 0.5rem;
+        line-height: 1;
+    }
+
+        .pdf-viewer-close:hover {
+            color: var(--primary-color);
+        }
+
+    .pdf-viewer-body {
+        flex: 1;
+        background-color: #525659;
+        position: relative;
+        overflow: auto;
+    }
+
+    .pdf-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        min-height: 100%;
+    }
+
+    #pdfCanvas {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        background-color: white;
+    }
+
+    .pdf-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        flex-wrap: wrap;
+    }
+
+    .page-info {
+        color: white;
+        font-size: 0.9rem;
+        margin: 0 10px;
+    }
+
+    .zoom-level {
+        color: white;
+        font-size: 0.9rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .pdf-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        display: none;
+    }
+
+        .pdf-error i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+</style>
+<!-- Image Zoom Modal -->
+<div id="zoomModal" class="zoom-modal">
+    <span class="close-zoom">&times;</span>
+    <img class="zoom-modal-content" id="zoomedImage">
+</div>
+
+<!-- PDF Viewer Modal -->
+<div id="pdfViewerModal" class="pdf-viewer-modal">
+    <div class="pdf-viewer-content">
+        <div class="pdf-viewer-header">
+            <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+            <div class="pdf-controls">
+                <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+                <span class="zoom-level" id="zoomLevel">100%</span>
+                <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
+            </div>
+            <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+        </div>
+        <div class="pdf-viewer-body">
+            <div id="pdfLoading" class="pdf-loading">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading PDF document...</p>
+            </div>
+            <div id="pdfError" class="pdf-error">
+                <i class="bi bi-exclamation-triangle"></i>
+                <p>Error loading PDF. Please try again.</p>
+            </div>
+            <div class="pdf-container">
+                <canvas id="pdfCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="receipt-container">
     <form asp-action="HospitalAssistanceView" enctype="multipart/form-data" method="post" id="statusForm">
@@ -82,116 +351,119 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- Valid ID Section -->
+            <!-- Valid ID and Submitted Documents Section -->
             <div class="receipt-section">
-                <h5 class="section-title">Valid ID</h5>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <h6>Front ID</h6>
-                        @if (ViewData["ValidfrontimageBase64"] != null)
-                        {
-                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
-                                <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
-                            </div>
-                        }
-                        else
-                        {
-                            <p class="text-muted">No front ID image available</p>
-                        }
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <h6>Back ID</h6>
-                        @if (ViewData["ValidBackimageBase64"] != null)
-                        {
-                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
-                                <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
-                            </div>
-                        }
-                        else
-                        {
-                            <p class="text-muted">No back ID image available</p>
-                        }
+                <!-- Valid ID Section -->
+                <div class="receipt-section">
+                    <h5 class="section-title">Valid ID</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Front ID</h6>
+                            @if (ViewData["ValidfrontimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No front ID image available</p>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Back ID</h6>
+                            @if (ViewData["ValidBackimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No back ID image available</p>
+                            }
+                        </div>
                     </div>
                 </div>
+
+                <!-- Doctor Prescription -->
+                @if (ViewData["DoctorPrescriptionBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Doctor Prescription</h5>
+                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Medical Certificate -->
+                @if (ViewData["MedicalCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Medical Certificate</h5>
+                        @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Death Certificate -->
+                @if (ViewData["DeathCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Death Certificate</h5>
+                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
             </div>
-
-            <!-- Doctor Prescription -->
-            @if (ViewData["DoctorPrescriptionBase64"] != null)
-            {
-                <div class="receipt-section">
-                    <h5 class="section-title">Doctor Prescription</h5>
-                    @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
-                    {
-                        <div class="pdf-container">
-                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
-                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                <div class="pdf-info">
-                                    <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                    <span class="pdf-label">Click to view PDF</span>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
-                            <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
-                        </div>
-                    }
-                </div>
-            }
-
-            <!-- Medical Certificate -->
-            @if (ViewData["MedicalCertificateBase64"] != null)
-            {
-                <div class="receipt-section">
-                    <h5 class="section-title">Medical Certificate</h5>
-                    @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
-                    {
-                        <div class="pdf-container">
-                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
-                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                <div class="pdf-info">
-                                    <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
-                                    <span class="pdf-label">Click to view PDF</span>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
-                            <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
-                        </div>
-                    }
-                </div>
-            }
-
-            <!-- Death Certificate -->
-            @if (ViewData["DeathCertificateBase64"] != null)
-            {
-                <div class="receipt-section">
-                    <h5 class="section-title">Death Certificate</h5>
-                    @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
-                    {
-                        <div class="pdf-container">
-                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
-                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                <div class="pdf-info">
-                                    <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                    <span class="pdf-label">Click to view PDF</span>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
-                            <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
-                        </div>
-                    }
-                </div>
-            }
 
         </div>
 
@@ -248,7 +520,7 @@
 
             try {
                 const encodedFileName = encodeURIComponent(fileName);
-                const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
 
                 const response = await fetch(url);
                 if (!response.ok) {

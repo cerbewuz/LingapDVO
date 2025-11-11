@@ -1,7 +1,6 @@
 ﻿// ============================================================================
 // ACCOUNT VERIFICATION - OCR DATA EXTRACTION WITH KEY-VALUE PAIRING
 // ============================================================================
-//
 // This script performs OCR (Optical Character Recognition) on Philippine ID cards
 // and extracts data using a sophisticated KEY-VALUE PAIRING system.
 // ============================================================================

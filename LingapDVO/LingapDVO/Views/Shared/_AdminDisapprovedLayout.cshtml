@@ -49,16 +49,21 @@
 
         <div class="form-container">
             <!-- Official Form Header -->
-            <div class="official-form-header">
-                <div class="header-content-flex">
-                    <div class="header-logo">
-                        <img src="~/Icon/lingaplogo.png" alt="Lingap Logo" class="lingap-logo">
+            <div class="official-form-header relative bg-white shadow p-4">
+                <div class="header-content-flex flex items-center justify-center">
+                    <div class="header-logo mr-4">
+                        <img src="~/Icon/lingaplogo.png" alt="Lingap Logo" class="lingap-logo w-20 h-20">
                     </div>
-                    <div class="header-text">
-                        <h1 class="header-title">Lingap Para sa Mahirap</h1>
-                        <p class="header-subtitle">City of Davao</p>
-                        <h2 class="header-form-title">Disapproved Assistance Form</h2>
+                    <div class="header-text text-center">
+                        <h1 class="header-title text-2xl font-bold">Lingap Para sa Mahirap</h1>
+                        <p class="header-subtitle text-lg">City of Davao</p>
+                        <h2 class="header-form-title text-xl font-semibold">View Assistance Form</h2>
                     </div>
+                </div>
+
+                <!-- Moved outside, positioned bottom-left -->
+                <div class="info-row absolute bottom-2 left-4 text-sm text-gray-700">
+                    <div class="info-label">Application ID: @ViewData["Id"]</div>
                 </div>
             </div>
 
