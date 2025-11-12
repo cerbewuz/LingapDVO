@@ -83,7 +83,7 @@ namespace LingapDVO.Models
         //Requestor's Details
 
 
-        [Required]
+        // No Type of Assistance required for Funeral Assistance
         public string Typeassistance { get; set; } = "";
 
 

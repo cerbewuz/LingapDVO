@@ -2794,6 +2794,9 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            // Pass userId to ViewBag for SignalR/tracking
+            ViewBag.UserId = userId;
+
             // Get data from database filtered by userId
             var hospitalBills = context.HospitalAssistance
                 .Where(f => f.UserId == userId)
@@ -3821,6 +3824,99 @@ namespace LingapDVO.Controllers
             context.SaveChanges();
 
             return Json(new { success = true, message = "Notification preferences updated successfully" });
+        }
+
+        // API endpoint to get user's applications for real-time status checking
+        [HttpGet]
+        public IActionResult GetUserApplications()
+        {
+            try
+            {
+                var userIdString = HttpContext.Session.GetString("UserId");
+                bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+
+                if (string.IsNullOrEmpty(userIdString) && !isAuthenticated)
+                {
+                    return Json(new { success = false, error = "User not authenticated" });
+                }
+
+                int userId = 0;
+                if (!string.IsNullOrEmpty(userIdString))
+                {
+                    int.TryParse(userIdString, out userId);
+                }
+                else if (isAuthenticated)
+                {
+                    var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(userIdClaim))
+                    {
+                        int.TryParse(userIdClaim, out userId);
+                    }
+                }
+
+                if (userId == 0)
+                {
+                    return Json(new { success = false, error = "Invalid user ID" });
+                }
+
+                // Get user's applications
+                var hospitalBills = context.HospitalAssistance
+                    .Where(f => f.UserId == userId)
+                    .OrderByDescending(f => f.CreatedAt)
+                    .Select(h => new
+                    {
+                        h.Id,
+                        h.Status,
+                        h.Status2,
+                        h.Status3,
+                        h.CreatedAt,
+                        h.ProcessAt,
+                        Type = "Hospital"
+                    })
+                    .ToList();
+
+                var medicalForms = context.OtherAssistance
+                    .Where(f => f.UserId == userId)
+                    .OrderByDescending(f => f.CreatedAt)
+                    .Select(m => new
+                    {
+                        m.Id,
+                        m.Status,
+                        m.Status2,
+                        m.Status3,
+                        m.CreatedAt,
+                        m.ProcessAt,
+                        Type = "Medical"
+                    })
+                    .ToList();
+
+                var funeralForms = context.FuneralAssistance
+                    .Where(f => f.UserId == userId)
+                    .OrderByDescending(f => f.CreatedAt)
+                    .Select(f => new
+                    {
+                        f.Id,
+                        f.Status,
+                        f.Status2,
+                        f.Status3,
+                        f.CreatedAt,
+                        f.ProcessAt,
+                        Type = "Funeral"
+                    })
+                    .ToList();
+
+                return Json(new
+                {
+                    success = true,
+                    hospitalBills = hospitalBills,
+                    medicalForms = medicalForms,
+                    funeralForms = funeralForms
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
         }
 
     }

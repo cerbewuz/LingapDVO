@@ -1,0 +1,27 @@
+
+                // Auto-fill Gender from ViewBag (VerifyAccount)
+                const userGender = '@ViewBag.Gender';
+                if (userGender) {
+                    const maleRadio = document.getElementById('male');
+                    const femaleRadio = document.getElementById('female');
+
+                    if (userGender.toLowerCase() === 'male' && maleRadio) {
+                        maleRadio.checked = true;
+                    } else if (userGender.toLowerCase() === 'female' && femaleRadio) {
+                        femaleRadio.checked = true;
+                    }
+                }
+
+                // Auto-fill Date of Birth from ViewBag (VerifyAccount)
+                const userDateOfBirth = '@ViewBag.Dateofbirth';
+                const dateOfBirthField = document.getElementById('dateOfBirth');
+                if (userDateOfBirth && dateOfBirthField) {
+                    // Format date if needed (ensure it's in yyyy-MM-dd format for input[type="date"])
+                    dateOfBirthField.value = userDateOfBirth;
+
+                    // Trigger age calculation
+                    const ageField = document.getElementById('ageInput');
+                    if (ageField) {
+                        ageField.value = calculateAge(userDateOfBirth);
+                    }
+                }

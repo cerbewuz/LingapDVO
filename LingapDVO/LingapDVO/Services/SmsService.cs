@@ -93,7 +93,7 @@ namespace LingapDVO.Services
                 else
                 {
                     _logger.LogWarning($"⚠️ SMS API returned success status code but unexpected response: {responseContent}");
-                    return true; // Still consider it success if status code is 200
+                    return true; 
                 }
             }
             catch (Exception ex)

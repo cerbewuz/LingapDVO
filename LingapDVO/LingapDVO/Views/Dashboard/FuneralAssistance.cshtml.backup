@@ -1,4 +1,4 @@
-@model FuneralAssistanceDto
+@model HospitalAssistanceDto
 @{
     Layout = "_InputFormsLayout";
     ViewData["Title"] = "Funeral Assistance";
@@ -94,7 +94,8 @@
             opacity: 0;
         }
 
-        /* Validation error styles for radio groups */
+        /* Validation error styles for checkbox/radio groups */
+        .checkbox-group-error,
         .radio-group-error {
             border: 2px solid #dc3545 !important;
             border-radius: 8px;
@@ -516,11 +517,11 @@
                 <div class="col-md-2 col-sm-6">
                     <label class="form-label">Sex</label>
                     <div class="form-check form-check-inline">
-                        <input asp-for="Sex" class="form-check-input" type="radio" id="male" value="Male" required>
+                        <input class="form-check-input" type="radio" name="Sex" id="male" value="Male" required>
                         <label class="form-check-label" for="male">Male</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input asp-for="Sex" class="form-check-input" type="radio" id="female" value="Female">
+                        <input class="form-check-input" type="radio" name="Sex" id="female" value="Female">
                         <label class="form-check-label" for="female">Female</label>
                     </div>
                     <span asp-validation-for="Sex" class="text-danger"></span>
@@ -971,7 +972,7 @@
                 if (requestorBlkLotStreet && requestorBlkLotStreet.value) patientBlkLotStreet.value = requestorBlkLotStreet.value;
                 if (requestorSubVill && requestorSubVill.value) patientSubVill.value = requestorSubVill.value;
                 if (requestorBrgy && requestorBrgy.value) patientBrgy.value = patientBrgy.value;
-                if (requestorDistrict && requestorDistrict.value) patientDistrict.value = patientDistrict.value;
+                if (requestorDistrict && requestorDistrict.value) patientDistrict.value = requestorDistrict.value;// Auto-fill Gender from ViewBag (VerifyAccount)nconst userGender = '@ViewBag.Gender';nif (userGender) {n    const maleRadio = document.getElementById('male');n    const femaleRadio = document.getElementById('female');nn    if (userGender.toLowerCase() === 'male' && maleRadio) {n        maleRadio.checked = true;n    } else if (userGender.toLowerCase() === 'female' && femaleRadio) {n        femaleRadio.checked = true;n    }n}nn// Auto-fill Date of Birth from ViewBag (VerifyAccount)nconst userDateOfBirth = '@ViewBag.Dateofbirth';nconst dateOfBirthField = document.getElementById('dateOfBirth');nif (userDateOfBirth && dateOfBirthField) {n    dateOfBirthField.value = userDateOfBirth;nn    // Trigger age calculationn    const ageField = document.getElementById('ageInput');n    if (ageField) {n        ageField.value = calculateAge(userDateOfBirth);n    }n}nn// Set relationship to "Self"nif (relationshipPatient) relationshipPatient.value = "Self";
 
                 // Auto-fill Gender from ViewBag (VerifyAccount)
                 const userGender = '@ViewBag.Gender';
@@ -999,21 +1000,6 @@
                         ageField.value = calculateAge(userDateOfBirth);
                     }
                 }
-
-                // Auto-fill Barangay from ViewBag (VerifyAccount)
-                const userBarangay = '@ViewBag.Barangay';
-                if (userBarangay && patientBrgy) {
-                    patientBrgy.value = userBarangay;
-                }
-
-                // Auto-fill District from ViewBag (VerifyAccount)
-                const userDistrict = '@ViewBag.District';
-                if (userDistrict && patientDistrict) {
-                    patientDistrict.value = userDistrict;
-                }
-
-                // Set relationship to "Self"
-                if (relationshipPatient) relationshipPatient.value = "Self";
 
                 // Visual feedback with Tailwind
                 sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
@@ -1098,18 +1084,6 @@
                         element.value = originalPatientValues[field];
                     }
                 });
-
-                // Clear gender radio buttons
-                const maleRadio = document.getElementById('male');
-                const femaleRadio = document.getElementById('female');
-                if (maleRadio) maleRadio.checked = false;
-                if (femaleRadio) femaleRadio.checked = false;
-
-                // Clear date of birth and age
-                const dateOfBirthField = document.getElementById('dateOfBirth');
-                const ageField = document.getElementById('ageInput');
-                if (dateOfBirthField) dateOfBirthField.value = '';
-                if (ageField) ageField.value = '';
             }
 
             // Check if all patient fields are empty
@@ -1265,7 +1239,147 @@
         }
     </script>
 
+    <script>
+               const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
 
+        assistanceCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Uncheck all other checkboxes
+                    assistanceCheckboxes.forEach(cb => {
+                        if (cb !== this) {
+                            cb.checked = false;
+                            // Hide any specification fields for unchecked boxes
+                            const specField = cb.closest('.form-check').querySelector('.assistance-spec');
+                            if (specField) specField.style.display = 'none';
+                        }
+                    });
+
+                    // Show specification field for checked box if it exists
+                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
+                    if (specField) {
+                        specField.style.display = this.checked ? 'block' : 'none';
+                    }
+                }
+                updateAssistanceReflection();
+            });
+        });
+        //1box only
+
+         document.addEventListener('DOMContentLoaded', function() {
+            // Type of Assistance Reflection
+            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+            const assistanceSpecs = document.querySelectorAll('.assistance-spec');
+            const assistanceReflection = document.getElementById('assistanceReflection');
+
+            // Initialize - hide all specification fields
+            assistanceSpecs.forEach(field => field.style.display = 'none');
+
+            // Update reflection function
+            function updateAssistanceReflection() {
+                let selectedOptions = [];
+
+                assistanceCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const label = checkbox.nextElementSibling.textContent.trim();
+                        const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
+
+                        if (specField && specField.value.trim() !== '') {
+                            selectedOptions.push(`${label}: ${specField.value.trim()}`);
+                        } else {
+                            selectedOptions.push(label);
+                        }
+                    }
+                });
+
+                assistanceReflection.value = selectedOptions.join(', ');
+            }
+
+            // Add event listeners
+            assistanceCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
+                    if (specField) {
+                        specField.style.display = this.checked ? 'block' : 'none';
+                    }
+                    updateAssistanceReflection();
+                });
+            });
+
+            assistanceSpecs.forEach(field => {
+                field.addEventListener('input', updateAssistanceReflection);
+            });
+
+            // Initial update
+            updateAssistanceReflection();
+        });
+    </script>
+
+    <script>
+
+                document.addEventListener('DOMContentLoaded', function() {
+            // CMO Single Checkbox Selection
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+
+            cmoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Uncheck all other checkboxes
+                        cmoCheckboxes.forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    }
+                    updateReflection(); // Update the reflection field
+                });
+            });
+        });
+        //1 box only
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all elements
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            const reflectionField = document.getElementById('cmoReflectionField');
+            const docCheckboxes = document.querySelectorAll('.supporting-doc');
+
+            // Update reflection function
+            function updateReflection() {
+                let parts = [];
+
+                // Add bill amount if exists
+                if (billInput.value.trim()) {
+                    parts.push(`Bill: ${billInput.value.trim()}`);
+                }
+
+                // Add checked documents
+                const checkedDocs = [];
+                docCheckboxes.forEach(cb => {
+                    if (cb.checked) checkedDocs.push(cb.value);
+                });
+                if (checkedDocs.length) {
+                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                }
+
+                // Add CMO notes if exists
+                if (cmoNotes.value.trim()) {
+                    parts.push(`Others: ${cmoNotes.value.trim()}`);
+                }
+
+                // Update reflection field
+                reflectionField.value = parts.join(' , ');
+            }
+
+            // Set up event listeners
+            billInput.addEventListener('input', updateReflection);
+            cmoNotes.addEventListener('input', updateReflection);
+            docCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updateReflection);
+            });
+
+            // Initial update
+            updateReflection();
+        });
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1393,7 +1507,7 @@
             }
         });
     </script>
-
+}
 
 @section Scripts {
     <script>
@@ -1437,6 +1551,30 @@
                 });
             }
 
+            // Validate assistance type checkboxes (at least one must be selected)
+            function validateAssistanceCheckboxes() {
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                const checked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
+                const assistanceSection = document.querySelector('.assistance-type')?.closest('.row');
+
+                // Remove existing error message
+                const existingError = assistanceSection?.querySelector('.error-message');
+                if (existingError) existingError.remove();
+
+                if (!checked) {
+                    if (assistanceSection) {
+                        assistanceSection.classList.add('checkbox-group-error');
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message show';
+                        errorMsg.textContent = 'Please select at least one type of assistance';
+                        assistanceSection.appendChild(errorMsg);
+                    }
+                    return false;
+                } else {
+                    assistanceSection?.classList.remove('checkbox-group-error');
+                    return true;
+                }
+            }
 
             // Validate Sex radio buttons
             function validateSexRadio() {
@@ -1463,8 +1601,21 @@
                 }
             }
 
-            // Add change listeners to radios to remove error on selection
-            function attachRadioListeners() {
+            // Add change listeners to checkboxes and radios to remove error on selection
+            function attachCheckboxRadioListeners() {
+                // Assistance checkboxes
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                assistanceCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            const assistanceSection = checkbox.closest('.row');
+                            assistanceSection?.classList.remove('checkbox-group-error');
+                            const errorMsg = assistanceSection?.querySelector('.error-message');
+                            if (errorMsg) errorMsg.remove();
+                        }
+                    });
+                });
+
                 // Sex radios
                 const sexRadios = document.querySelectorAll('input[name="Sex"]');
                 sexRadios.forEach(radio => {
@@ -1496,6 +1647,11 @@
                     }
                 });
 
+                // Validate assistance checkboxes
+                if (!validateAssistanceCheckboxes()) {
+                    isValid = false;
+                }
+
                 // Validate sex radio
                 if (!validateSexRadio()) {
                     isValid = false;
@@ -1511,7 +1667,7 @@
                 if (!isValid) {
                     e.preventDefault();
                     // Scroll to first error
-                    const firstError = form.querySelector('.is-invalid, .radio-group-error');
+                    const firstError = form.querySelector('.is-invalid, .checkbox-group-error, .radio-group-error');
                     if (firstError) {
                         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
@@ -1521,7 +1677,7 @@
             // Initialize
             initializeRequiredLabels();
             attachInputListeners();
-            attachRadioListeners();
+            attachCheckboxRadioListeners();
 
             // Initial check for pre-filled values
             const allInputs = form.querySelectorAll('input, select, textarea');
@@ -1856,10 +2012,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
                 if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
                 if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
-                if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
-
-                // Set relationship to "Self"
-                if (relationshipPatient) relationshipPatient.value = "Self";
+                if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;// Auto-fill Gender from ViewBag (VerifyAccount)nconst userGender = '@ViewBag.Gender';nif (userGender) {n    const maleRadio = document.getElementById('male');n    const femaleRadio = document.getElementById('female');nn    if (userGender.toLowerCase() === 'male' && maleRadio) {n        maleRadio.checked = true;n    } else if (userGender.toLowerCase() === 'female' && femaleRadio) {n        femaleRadio.checked = true;n    }n}nn// Auto-fill Date of Birth from ViewBag (VerifyAccount)nconst userDateOfBirth = '@ViewBag.Dateofbirth';nconst dateOfBirthField = document.getElementById('dateOfBirth');nif (userDateOfBirth && dateOfBirthField) {n    dateOfBirthField.value = userDateOfBirth;nn    // Trigger age calculationn    const ageField = document.getElementById('ageInput');n    if (ageField) {n        ageField.value = calculateAge(userDateOfBirth);n    }n}nn// Set relationship to "Self"nif (relationshipPatient) relationshipPatient.value = "Self";
 
                 // Visual feedback with Tailwind
                 sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
@@ -1944,18 +2097,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         element.value = originalPatientValues[field];
                     }
                 });
-
-                // Clear gender radio buttons
-                const maleRadio = document.getElementById('male');
-                const femaleRadio = document.getElementById('female');
-                if (maleRadio) maleRadio.checked = false;
-                if (femaleRadio) femaleRadio.checked = false;
-
-                // Clear date of birth and age
-                const dateOfBirthField = document.getElementById('dateOfBirth');
-                const ageField = document.getElementById('ageInput');
-                if (dateOfBirthField) dateOfBirthField.value = '';
-                if (ageField) ageField.value = '';
             }
 
             // Check if all patient fields are empty
@@ -2025,6 +2166,142 @@ function previewImage(input, previewId) {
 
         }
 
+const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+
+        assistanceCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Uncheck all other checkboxes
+                    assistanceCheckboxes.forEach(cb => {
+                        if (cb !== this) {
+                            cb.checked = false;
+                            // Hide any specification fields for unchecked boxes
+                            const specField = cb.closest('.form-check').querySelector('.assistance-spec');
+                            if (specField) specField.style.display = 'none';
+                        }
+                    });
+
+                    // Show specification field for checked box if it exists
+                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
+                    if (specField) {
+                        specField.style.display = this.checked ? 'block' : 'none';
+                    }
+                }
+                updateAssistanceReflection();
+            });
+        });
+        //1box only
+
+         document.addEventListener('DOMContentLoaded', function() {
+            // Type of Assistance Reflection
+            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+            const assistanceSpecs = document.querySelectorAll('.assistance-spec');
+            const assistanceReflection = document.getElementById('assistanceReflection');
+
+            // Initialize - hide all specification fields
+            assistanceSpecs.forEach(field => field.style.display = 'none');
+
+            // Update reflection function
+            function updateAssistanceReflection() {
+                let selectedOptions = [];
+
+                assistanceCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const label = checkbox.nextElementSibling.textContent.trim();
+                        const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
+
+                        if (specField && specField.value.trim() !== '') {
+                            selectedOptions.push(`${label}: ${specField.value.trim()}`);
+                        } else {
+                            selectedOptions.push(label);
+                        }
+                    }
+                });
+
+                assistanceReflection.value = selectedOptions.join(', ');
+            }
+
+            // Add event listeners
+            assistanceCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const specField = this.closest('.form-check').querySelector('.assistance-spec');
+                    if (specField) {
+                        specField.style.display = this.checked ? 'block' : 'none';
+                    }
+                    updateAssistanceReflection();
+                });
+            });
+
+            assistanceSpecs.forEach(field => {
+                field.addEventListener('input', updateAssistanceReflection);
+            });
+
+            // Initial update
+            updateAssistanceReflection();
+        });
+
+document.addEventListener('DOMContentLoaded', function() {
+            // CMO Single Checkbox Selection
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+
+            cmoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Uncheck all other checkboxes
+                        cmoCheckboxes.forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    }
+                    updateReflection(); // Update the reflection field
+                });
+            });
+        });
+        //1 box only
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all elements
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            const reflectionField = document.getElementById('cmoReflectionField');
+            const docCheckboxes = document.querySelectorAll('.supporting-doc');
+
+            // Update reflection function
+            function updateReflection() {
+                let parts = [];
+
+                // Add bill amount if exists
+                if (billInput.value.trim()) {
+                    parts.push(`Bill: ${billInput.value.trim()}`);
+                }
+
+                // Add checked documents
+                const checkedDocs = [];
+                docCheckboxes.forEach(cb => {
+                    if (cb.checked) checkedDocs.push(cb.value);
+                });
+                if (checkedDocs.length) {
+                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                }
+
+                // Add CMO notes if exists
+                if (cmoNotes.value.trim()) {
+                    parts.push(`Others: ${cmoNotes.value.trim()}`);
+                }
+
+                // Update reflection field
+                reflectionField.value = parts.join(' , ');
+            }
+
+            // Set up event listeners
+            billInput.addEventListener('input', updateReflection);
+            cmoNotes.addEventListener('input', updateReflection);
+            docCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updateReflection);
+            });
+
+            // Initial update
+            updateReflection();
+        });
 
 document.addEventListener('DOMContentLoaded', function() {
             // File validation for all file inputs
@@ -2152,3 +2429,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     </script>
 }
+

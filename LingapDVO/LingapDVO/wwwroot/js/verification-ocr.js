@@ -2341,29 +2341,168 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
-    // Extract barangay from address text
-    function extractBarangayFromAddress(text) {
-        if (!text) return null;
+    // Extract barangay from position before "Davao City" in address
+    function extractBarangayFromAddressPosition(address) {
+        if (!address) {
+            console.log('   ⚠️ extractBarangayFromAddressPosition: address is null or empty');
+            return null;
+        }
 
-        const upperText = text.toUpperCase();
+        const cleanAddress = address.trim();
+        const upperAddress = cleanAddress.toUpperCase();
 
-        // Try to find a match in our barangay list
-        for (const barangay of DAVAO_CITY_BARANGAYS) {
+        console.log('📍 Extracting barangay from position before "Davao City"...');
+        console.log(`   Full Address: "${cleanAddress}"`);
+
+        // List of Davao City variations to look for
+        const davaoCityVariations = [
+            'DAVAO CITY',
+            'DAVAO',
+            'DAVAO CITY, PHILIPPINES',
+            'DAVAO CITY PHILIPPINES',
+            'DAVAO, PHILIPPINES'
+        ];
+
+        // Find which variation exists in the address
+        let davaoCityPattern = null;
+        let davaoCityIndex = -1;
+
+        for (const variation of davaoCityVariations) {
+            const index = upperAddress.indexOf(variation);
+            if (index !== -1) {
+                davaoCityPattern = variation;
+                davaoCityIndex = index;
+                console.log(`   ✓ Found "${variation}" at position ${index}`);
+                break;
+            }
+        }
+
+        if (davaoCityIndex === -1) {
+            console.log('   ✗ "Davao City" not found in address');
+            return null;
+        }
+
+        // Extract text before "Davao City"
+        const textBeforeDavao = cleanAddress.substring(0, davaoCityIndex).trim();
+        console.log(`   → Text before Davao City: "${textBeforeDavao}"`);
+
+        if (!textBeforeDavao) {
+            console.log('   ✗ No text found before Davao City');
+            return null;
+        }
+
+        // Split by common separators (comma, dash, etc.)
+        const parts = textBeforeDavao.split(/[,\-|\/]/);
+        console.log(`   → Split into ${parts.length} part(s):`, parts.map(p => `"${p.trim()}"`));
+
+        // Get the last part (closest to Davao City = most likely the barangay)
+        const lastPart = parts[parts.length - 1].trim();
+        console.log(`   → Last part (barangay candidate): "${lastPart}"`);
+
+        if (!lastPart) {
+            console.log('   ✗ Last part is empty');
+            return null;
+        }
+
+        // Match this against our barangay list
+        const upperLastPart = lastPart.toUpperCase();
+
+        // Search for exact or close match in barangay list
+        const sortedBarangays = [...DAVAO_CITY_BARANGAYS].sort((a, b) => b.length - a.length);
+
+        for (const barangay of sortedBarangays) {
             const upperBarangay = barangay.toUpperCase();
 
-            // Check for exact match
-            if (upperText.includes(upperBarangay)) {
+            // Remove common prefixes for matching
+            let cleanedLastPart = upperLastPart
+                .replace(/^BRGY\.?\s*/i, '')
+                .replace(/^BARANGAY\s*/i, '')
+                .trim();
+
+            // Exact match
+            if (cleanedLastPart === upperBarangay) {
+                console.log(`   ✓✓✓ EXACT MATCH: "${barangay}"`);
+                return barangay;
+            }
+
+            // Contains match (the candidate contains the barangay name)
+            if (cleanedLastPart.includes(upperBarangay)) {
+                console.log(`   ✓✓ CONTAINS MATCH: "${barangay}"`);
+                return barangay;
+            }
+
+            // Reverse: barangay contains the candidate (for abbreviated names)
+            if (upperBarangay.includes(cleanedLastPart) && cleanedLastPart.length >= 4) {
+                console.log(`   ✓ PARTIAL MATCH: "${barangay}" contains "${cleanedLastPart}"`);
+                return barangay;
+            }
+        }
+
+        console.log('   ⚠️ No matching barangay found in list, but candidate exists');
+        console.log(`   → Candidate: "${lastPart}"`);
+
+        return null;
+    }
+
+    // Extract barangay from address text (full text search)
+    function extractBarangayFromAddress(text) {
+        if (!text) {
+            console.log('   ⚠️ extractBarangayFromAddress: text is null or empty');
+            return null;
+        }
+
+        // Clean and normalize the text
+        const cleanText = text.trim();
+        const upperText = cleanText.toUpperCase();
+
+        console.log('🔍 Searching for barangay in text...');
+        console.log(`   Text: "${cleanText}"`);
+        console.log('   Text length:', cleanText.length);
+        console.log(`   Total barangays to check: ${DAVAO_CITY_BARANGAYS.length}`);
+
+        // Try to find a match in our barangay list
+        // Search for longer names first to avoid partial matches
+        const sortedBarangays = [...DAVAO_CITY_BARANGAYS].sort((a, b) => b.length - a.length);
+
+        let matchesFound = [];
+
+        for (const barangay of sortedBarangays) {
+            const upperBarangay = barangay.toUpperCase();
+
+            // Check for exact word match (with word boundaries)
+            const escapedBarangay = upperBarangay.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const wordBoundaryPattern = new RegExp(`\\b${escapedBarangay}\\b`);
+
+            if (wordBoundaryPattern.test(upperText)) {
+                console.log(`   ✓✓✓ MATCH FOUND (word boundary): "${barangay}"`);
                 return barangay;
             }
 
             // Check for match with common abbreviations
             const withBrgy = `BRGY ${upperBarangay}`;
+            const withBrgyDot = `BRGY. ${upperBarangay}`;
             const withBarangay = `BARANGAY ${upperBarangay}`;
 
-            if (upperText.includes(withBrgy) || upperText.includes(withBarangay)) {
+            if (upperText.includes(withBrgy) || upperText.includes(withBrgyDot) || upperText.includes(withBarangay)) {
+                console.log(`   ✓✓✓ MATCH FOUND (with prefix): "${barangay}"`);
                 return barangay;
             }
+
+            // Check for substring match (record for debugging)
+            if (upperText.includes(upperBarangay)) {
+                matchesFound.push(barangay);
+            }
         }
+
+        // If we have substring matches, return the first one (longest due to sorting)
+        if (matchesFound.length > 0) {
+            console.log(`   ✓ Found ${matchesFound.length} substring match(es): ${matchesFound.join(', ')}`);
+            console.log(`   → Returning longest match: "${matchesFound[0]}"`);
+            return matchesFound[0];
+        }
+
+        console.log('   ✗ No matching Davao City barangay found in text');
+        console.log('   💡 Tip: Check if the text contains a valid Davao City barangay name');
 
         debugLog('BARANGAY-EXTRACTION', {
             searchText: text,
@@ -3362,14 +3501,91 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Extract barangay (PRIORITY for address components)
-        const barangayResult = extractFieldValue(lines, 'barangay');
-        if (barangayResult && barangayResult.value) {
-            extractedData.barangay = barangayResult.value.trim();
-            console.log(`✓ Barangay extracted via ${barangayResult.method}:`, extractedData.barangay);
-        } else {
-            console.log('✗ No barangay found via label');
-            extractedData.barangay = "";
+        // Driver's licenses typically don't have "BARANGAY" label, so search through address text
+        console.log('\n╔════════════════════════════════════════════════╗');
+        console.log('║   EXTRACTING BARANGAY (Driver\'s License)      ║');
+        console.log('╚════════════════════════════════════════════════╝');
+        console.log('Strategy: Extract barangay from position before "Davao City" in address');
+        console.log('');
+
+        let detectedBarangay = null;
+
+        // PRIORITY 1: Extract from position before "Davao City" (MOST RELIABLE for driver's license)
+        if (extractedData.address) {
+            console.log('🎯 Priority 1: Positional extraction (before "Davao City")...');
+            console.log(`   Address: "${extractedData.address}"`);
+            detectedBarangay = extractBarangayFromAddressPosition(extractedData.address);
+
+            if (detectedBarangay) {
+                console.log(`   ✓✓✓ BARANGAY FOUND via position: "${detectedBarangay}"`);
+            } else {
+                console.log('   ⚠️ Positional extraction failed, trying full text search...');
+            }
         }
+
+        // PRIORITY 2: Full text search in extracted address (fallback)
+        if (!detectedBarangay && extractedData.address) {
+            console.log('🔍 Priority 2: Full text search in address...');
+            detectedBarangay = extractBarangayFromAddress(extractedData.address);
+
+            if (detectedBarangay) {
+                console.log(`   ✓✓ BARANGAY FOUND in address: "${detectedBarangay}"`);
+            } else {
+                console.log('   ✗ No barangay found in extracted address');
+            }
+        }
+
+        // PRIORITY 3: Try label-based extraction (rare but possible)
+        if (!detectedBarangay) {
+            console.log('🔍 Priority 3: Trying label-based extraction...');
+            const barangayResult = extractFieldValue(lines, 'barangay');
+            if (barangayResult && barangayResult.value) {
+                detectedBarangay = barangayResult.value.trim();
+                console.log(`   ✓ Barangay found via label (${barangayResult.method}): "${detectedBarangay}"`);
+            } else {
+                console.log('   ✗ No barangay label found (expected for driver\'s license)');
+            }
+        }
+
+        // PRIORITY 4: Search through ALL OCR text as last resort
+        if (!detectedBarangay) {
+            console.log('🔍 Priority 4: Searching entire OCR text...');
+            const fullText = text || lines.join(' ');
+            console.log(`   Full text length: ${fullText.length} characters`);
+
+            // Try positional extraction on full text first
+            detectedBarangay = extractBarangayFromAddressPosition(fullText);
+
+            // If still not found, try full text search
+            if (!detectedBarangay) {
+                detectedBarangay = extractBarangayFromAddress(fullText);
+            }
+
+            if (detectedBarangay) {
+                console.log(`   ✓ Barangay found in full OCR text: "${detectedBarangay}"`);
+            } else {
+                console.log('   ✗ No matching Davao City barangay found in entire OCR text');
+            }
+        }
+
+        // Set the extracted barangay
+        if (detectedBarangay) {
+            extractedData.barangay = detectedBarangay;
+            console.log('');
+            console.log('╔════════════════════════════════════════════════╗');
+            console.log(`║  ✓✓✓ BARANGAY SUCCESSFULLY EXTRACTED          ║`);
+            console.log('╚════════════════════════════════════════════════╝');
+            console.log(`📍 VALUE: "${detectedBarangay}"`);
+            console.log('');
+        } else {
+            extractedData.barangay = "";
+            console.log('');
+            console.log('⚠️  WARNING: No barangay could be extracted');
+            console.log('   This may not be a Davao City address');
+            console.log('   💡 Check console logs to see what was found in address');
+            console.log('');
+        }
+        console.log('--- End Barangay Extraction ---\n');
 
         // Extract city for Davao verification (analyzes complete address)
         extractedData.city = extractDriverLicenseCity(lines);
@@ -3698,6 +3914,78 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         // Check if this line is likely part of the address
                         const upperNextLine = nextLine.toUpperCase();
+
+                        // ===============================================================
+                        // CRITICAL: Stop if we hit NAME-related labels
+                        // ===============================================================
+                        const isNameLabel =
+                            upperNextLine.includes('LAST NAME') ||
+                            upperNextLine.includes('FIRST NAME') ||
+                            upperNextLine.includes('MIDDLE NAME') ||
+                            upperNextLine.includes('FULL NAME') ||
+                            upperNextLine.includes('SURNAME') ||
+                            upperNextLine.includes('GIVEN NAME') ||
+                            upperNextLine.includes('APELYIDO') ||
+                            upperNextLine.includes('PANGALAN') ||
+                            upperNextLine.includes('LASTNAME') ||
+                            upperNextLine.includes('FIRSTNAME') ||
+                            upperNextLine.includes('MIDDLENAME') ||
+                            upperNextLine.includes('FULLNAME') ||
+                            upperNextLine.includes('HOLDER NAME') ||
+                            upperNextLine.includes('NAME OF');
+
+                        if (isNameLabel) {
+                            console.log(`  ❌ STOPPED at line ${j + 1} - NAME label detected: "${nextLine}"`);
+                            console.log(`     This prevents name data from contaminating address`);
+                            break;
+                        }
+
+                        // ===============================================================
+                        // CRITICAL: Reject lines that look like person names
+                        // ===============================================================
+                        // Characteristics of names on IDs:
+                        // - Usually 1-4 words
+                        // - All uppercase letters
+                        // - No numbers, special chars except hyphens/spaces
+                        // - Not too long (names are typically < 50 chars)
+                        const isLikelyName = (text) => {
+                            const cleanText = text.trim();
+
+                            // Name patterns: all caps, 1-4 words, no numbers
+                            const wordCount = cleanText.split(/\s+/).length;
+                            const hasNumbers = /\d/.test(cleanText);
+                            const hasSpecialChars = /[^A-Z\s\-']/.test(cleanText.toUpperCase());
+                            const isAllCaps = cleanText === cleanText.toUpperCase();
+                            const hasComma = cleanText.includes(','); // Name format: "LAST, FIRST MIDDLE"
+
+                            // Likely a name if:
+                            // - 1-4 words, all caps, no numbers, has comma (e.g., "DELA CRUZ, JUAN")
+                            // - OR 1-3 words, all caps, no numbers, no special chars
+                            if (hasComma && wordCount >= 2 && wordCount <= 5 && !hasNumbers) {
+                                return true;
+                            }
+
+                            if (wordCount >= 1 && wordCount <= 3 && isAllCaps && !hasNumbers && !hasSpecialChars) {
+                                // But NOT if it contains address keywords
+                                const addressKeywords = ['STREET', 'ST', 'BLVD', 'AVENUE', 'AVE', 'ROAD', 'RD',
+                                    'BLOCK', 'LOT', 'BLK', 'BARANGAY', 'BRGY', 'CITY', 'DAVAO',
+                                    'SUBDIVISION', 'VILLAGE', 'PUROK', 'SITIO', 'ZONE', 'DISTRICT'];
+                                const upperText = cleanText.toUpperCase();
+                                const hasAddressKeyword = addressKeywords.some(kw => upperText.includes(kw));
+
+                                if (!hasAddressKeyword && cleanText.length < 50) {
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        };
+
+                        if (isLikelyName(nextLine)) {
+                            console.log(`  ❌ REJECTED line ${j + 1} - looks like a person name: "${nextLine}"`);
+                            console.log(`     Skipping to avoid name contamination in address`);
+                            continue; // Skip this line but continue looking for address lines
+                        }
 
                         // Stop if we hit another field label (not address-related)
                         const isAnotherFieldLabel =
@@ -5427,26 +5715,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Extract Davao City
-    // Unified city extraction for ALL ID types (Driver's License, National ID, UMID)
-    // STRICT: Only accepts specific Davao City keywords as complete phrases
-    // LOGIC: If "Davao City" keyword exists, accept (even if "Davao del Sur" also exists)
-    //        If only "Davao del Sur" exists (without Davao City keyword), reject
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // UNIFIED DAVAO CITY EXTRACTION - ALL ID TYPES (Driver's License, National ID, UMID)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // POSITION-AGNOSTIC VALIDATION:
+    //   - Accepts if "Davao City", "City of Davao", "DVO City", or "Davao" appears
+    //     ANYWHERE in the complete concatenated address (across all lines)
+    //   - Position doesn't matter - can be in first line, middle, or last line
+    //   - Multi-line addresses are fully concatenated before searching
+    //
+    // DRIVER'S LICENSE PRIORITY SEARCH (NEW):
+    //   - Specifically searches lines 20-25 of OCR text (typical address location on DL)
+    //   - This range typically contains the ADDRESS section on Philippine Driver's Licenses
+    //   - If "Davao City" is found in lines 20-25, prioritizes this section
+    //   - Ensures accurate detection even if address is in a specific position
+    //   - Example line 20-25 content: "123 Main St | Brgy Poblacion | Davao City"
+    //
+    // MULTI-LINE ADDRESS SUPPORT (especially for Driver's License):
+    //   - Extracts address components from separate fields (street, barangay, city, etc.)
+    //   - Extracts multi-line addresses that span 2-3 lines after ADDRESS label
+    //   - Concatenates ALL components into single string for comprehensive search
+    //   - Example: "123 Main St" + "Brgy Poblacion" + "Davao City" = full address
+    //
+    // NAME CONTAMINATION PREVENTION:
+    //   - Filters out person names that may appear near address fields
+    //   - Detects and rejects name patterns (e.g., "DELA CRUZ, JUAN" or "MARIA SANTOS")
+    //   - Stops address extraction if NAME labels are encountered
+    //   - Validates each address component to ensure it's not a person name
+    //   - Ensures only legitimate address data is concatenated
+    //
+    // REJECTION LOGIC:
+    //   - Rejects if OTHER cities are detected (Digos, Tagum, Panabo, Mati, etc.)
+    //   - Even if address contains Davao province name, still rejects if another city found
+    //
+    // ACCEPTED KEYWORD VARIATIONS (case-insensitive):
+    //   ✓ "Davao City"      ✓ "city of davao"    ✓ "DAVAO CITY"
+    //   ✓ "City of Davao"   ✓ "DVO City"         ✓ "Davao"
+    // ═══════════════════════════════════════════════════════════════════════════════
     function extractDavaoCity(lines) {
         console.log('=== Extracting Davao City - COMPLETE ADDRESS ANALYSIS ===');
 
+        // ===================================================================
         // ACCEPTED KEYWORDS: These variations will return "Davao City"
+        // ===================================================================
+        // IMPORTANT: These keywords can appear ANYWHERE in the concatenated address
+        // Position doesn't matter - as long as one of these appears in the full
+        // address text (across all lines), the ID will be ACCEPTED
         // All uppercase variations are automatically handled by toUpperCase()
         const davaoCityKeywords = [
-            'DAVAO CITY',
-            'CITY OF DAVAO',
-            'DVO CITY',
-            'DAVAO',  // Accept "Davao" as it refers to Davao City
-            // Also accept province names as they may contain Davao City addresses
-            'DAVAO DEL SUR',
-            'DAVAO DEL NORTE',
-            'DAVAO ORIENTAL',
-            'DAVAO OCCIDENTAL',
-            'DAVAO DE ORO'
+            'DAVAO CITY',      // Most common format
+            'CITY OF DAVAO',   // Official format
+            'DVO CITY',        // Common abbreviation
+            'DAVAO'            // Accept standalone "Davao" (refers to Davao City)
         ];
 
         // REJECTION KEYWORDS: Cities/Municipalities that are NOT Davao City
@@ -5525,28 +5845,165 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // ===================================================================
-        // STEP 2: Concatenate ALL address parts into one complete address
+        // STEP 1.5: Extract multi-line address (especially for Driver's License)
+        // Driver's License often has address spanning multiple lines after ADDRESS label
+        // ===================================================================
+        console.log('\nStep 1.5: Extracting multi-line address for Driver\'s License...');
+
+        const multiLineAddress = extractMultiLineAddress(lines);
+        if (multiLineAddress && multiLineAddress.length > 0) {
+            console.log(`  ✓ Multi-line address extracted: "${multiLineAddress}"`);
+            // If we have a multi-line address and no general address was found, use it
+            if (!addressComponents.address || addressComponents.address.length === 0) {
+                addressComponents.address = multiLineAddress;
+                console.log(`  ✓ Using multi-line address as general address`);
+            }
+        } else {
+            console.log('  ℹ️ No multi-line address found');
+        }
+
+        // ===================================================================
+        // STEP 2: Validate and filter address components to remove name contamination
+        // ===================================================================
+        console.log('\nStep 2: Validating address components (removing name contamination)...');
+
+        // Helper function to detect if text looks like a person name
+        const looksLikeName = (text) => {
+            if (!text) return false;
+            const cleanText = text.trim();
+            const wordCount = cleanText.split(/\s+/).length;
+            const hasNumbers = /\d/.test(cleanText);
+            const hasComma = cleanText.includes(',');
+            const isAllCaps = cleanText === cleanText.toUpperCase();
+
+            // Common name patterns
+            if (hasComma && wordCount >= 2 && wordCount <= 5 && !hasNumbers) {
+                console.log(`  ⚠️  "${text}" looks like name format (has comma, 2-5 words, no numbers)`);
+                return true;
+            }
+
+            if (wordCount >= 1 && wordCount <= 3 && isAllCaps && !hasNumbers && cleanText.length < 50) {
+                const addressKeywords = ['STREET', 'ST', 'BLVD', 'AVE', 'ROAD', 'RD',
+                    'BLOCK', 'LOT', 'BLK', 'BARANGAY', 'BRGY', 'CITY', 'DAVAO',
+                    'SUBDIVISION', 'VILLAGE', 'PUROK', 'SITIO', 'ZONE', 'DISTRICT',
+                    'POBLACION', 'MATINA', 'BUHANGIN', 'TORIL', 'TALOMO', 'CALINAN',
+                    'DEL', 'SUR', 'NORTE', 'ORIENTAL', 'OCCIDENTAL'];
+                const upperText = cleanText.toUpperCase();
+                const hasAddressKeyword = addressKeywords.some(kw => upperText.includes(kw));
+
+                if (!hasAddressKeyword) {
+                    console.log(`  ⚠️  "${text}" looks like name (1-3 words, all caps, no address keywords)`);
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        // Filter out components that look like names
+        const validatedComponents = {
+            street: addressComponents.street,
+            subdivision: addressComponents.subdivision,
+            barangay: addressComponents.barangay,
+            district: addressComponents.district,
+            city: addressComponents.city,
+            province: addressComponents.province,
+            address: addressComponents.address
+        };
+
+        // Validate each component
+        Object.keys(validatedComponents).forEach(key => {
+            const value = validatedComponents[key];
+            if (value && looksLikeName(value)) {
+                console.log(`  ❌ REMOVED ${key}: "${value}" (detected as name, not address)`);
+                validatedComponents[key] = '';
+            }
+        });
+
+        // ===================================================================
+        // STEP 3: Concatenate validated address parts into one complete address
         // Format: Street, Subdivision, Barangay, District, City, Province, Address
         // ===================================================================
-        console.log('\nStep 2: Concatenating all address components...');
+        console.log('\nStep 3: Concatenating validated address components...');
 
         const allAddressParts = [
-            addressComponents.street,
-            addressComponents.subdivision,
-            addressComponents.barangay,
-            addressComponents.district,
-            addressComponents.city,
-            addressComponents.province,
-            addressComponents.address
+            validatedComponents.street,
+            validatedComponents.subdivision,
+            validatedComponents.barangay,
+            validatedComponents.district,
+            validatedComponents.city,
+            validatedComponents.province,
+            validatedComponents.address
         ].filter(part => part && part.length > 0); // Remove empty parts
 
-        const completeAddress = allAddressParts.join(' ');
+        let completeAddress = allAddressParts.join(' ');
         console.log(`  Complete concatenated address: "${completeAddress}"`);
 
         // ===================================================================
-        // STEP 3: Check the COMPLETE address for Davao City keywords
+        // STEP 4: Priority search in lines 20-25 (Driver's License address section)
         // ===================================================================
-        console.log('\nStep 3: Checking complete address for Davao City...');
+        console.log('\nStep 4: Priority search in lines 20-25 (Driver\'s License typical address location)...');
+
+        let addressFromLines20to25 = '';
+        if (lines.length >= 20) {
+            const startLine = 19; // 0-indexed, so line 20 is index 19
+            const endLine = Math.min(24, lines.length - 1); // 0-indexed, so line 25 is index 24
+
+            console.log(`  Extracting lines ${startLine + 1} to ${endLine + 1} from OCR text...`);
+
+            const targetLines = [];
+            for (let i = startLine; i <= endLine; i++) {
+                if (lines[i] && lines[i].trim().length > 0) {
+                    targetLines.push(lines[i].trim());
+                    console.log(`    Line ${i + 1}: "${lines[i].trim()}"`);
+                }
+            }
+
+            if (targetLines.length > 0) {
+                addressFromLines20to25 = targetLines.join(' ');
+                console.log(`  ✓ Concatenated lines 20-25: "${addressFromLines20to25}"`);
+
+                // Check if this section contains Davao City
+                const upperSection = addressFromLines20to25.toUpperCase();
+                const hasDavaoInSection =
+                    upperSection.includes('DAVAO CITY') ||
+                    upperSection.includes('CITY OF DAVAO') ||
+                    upperSection.includes('DVO CITY') ||
+                    upperSection.includes('DAVAO');
+
+                if (hasDavaoInSection) {
+                    console.log('  ✅ DAVAO CITY FOUND in lines 20-25! Prioritizing this section.');
+                    // If we have Davao City in this section, prioritize it
+                    if (!completeAddress || completeAddress.length === 0) {
+                        completeAddress = addressFromLines20to25;
+                    } else {
+                        // Append to existing address for comprehensive search
+                        completeAddress = completeAddress + ' ' + addressFromLines20to25;
+                        console.log('  ℹ️ Appending lines 20-25 to complete address for comprehensive search');
+                    }
+                } else {
+                    console.log('  ℹ️ No Davao City keywords found in lines 20-25');
+                }
+            } else {
+                console.log('  ℹ️ No content found in lines 20-25 range');
+            }
+        } else {
+            console.log(`  ℹ️ OCR text only has ${lines.length} lines, cannot check lines 20-25`);
+        }
+
+        // ===================================================================
+        // STEP 5: Fallback - scan all raw OCR lines if no address found
+        // ===================================================================
+        if (!completeAddress || completeAddress.length === 0) {
+            console.log('\nStep 5: No labeled address found, scanning all raw OCR lines...');
+            completeAddress = lines.join(' ');
+            console.log(`  Using all OCR text: "${completeAddress.substring(0, 200)}..."`);
+        }
+
+        // ===================================================================
+        // STEP 6: Check the COMPLETE address for Davao City keywords
+        // ===================================================================
+        console.log('\nStep 6: Checking complete address for Davao City...');
 
         if (completeAddress && completeAddress.length > 0) {
             const upperCompleteAddress = completeAddress.toUpperCase();
@@ -5606,19 +6063,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('╔════════════════════════════════════════════════╗');
                 console.log('║  ✓✓✓ DAVAO CITY VALIDATION SUCCESS           ║');
                 console.log('╚════════════════════════════════════════════════╝');
-                console.log(`✅ ACCEPTED KEYWORD FOUND: "${foundKeyword}"`);
+                console.log(`✅ KEYWORD FOUND: "${foundKeyword}" (detected anywhere in address)`);
                 console.log(`   Complete address: "${completeAddress}"`);
                 console.log('');
                 console.log('✓ No other city/municipality names detected (Digos, Tagum, etc.)');
                 console.log('✓ Valid Davao City resident - account verification can proceed');
                 console.log('');
-                console.log('ℹ️ ACCEPTED FORMATS:');
-                console.log('   • "Davao" (any case)');
-                console.log('   • "Davao City" (any case)');
-                console.log('   • "City of Davao" (any case)');
-                console.log('   • "DAVAO DEL SUR" (province in uppercase)');
-                console.log('   • "DAVAO DEL NORTE" (province in uppercase)');
-                console.log('   • Other Davao province names in uppercase');
+                console.log('ℹ️ ACCEPTED KEYWORDS (position-agnostic):');
+                console.log('   • "Davao City" - can appear anywhere in address');
+                console.log('   • "City of Davao" - can appear anywhere in address');
+                console.log('   • "DVO City" - can appear anywhere in address');
+                console.log('   • "Davao" - can appear anywhere in address');
+                console.log('');
+                console.log('ℹ️ MULTI-LINE SUPPORT:');
+                console.log('   All address lines are concatenated and searched together');
+                console.log('   "Davao City" will be detected even if split across lines');
                 console.log('════════════════════════════════════════════════\n');
                 return "Davao City";
             }

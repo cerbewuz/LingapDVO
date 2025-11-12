@@ -1084,6 +1084,11 @@
             }
         }
 
+        .status-badge {
+            margin-left: 8px;
+            padding-left: 6px;
+        }
+
         /* Extra Large Screens (1440px and above) */
         @@media (min-width: 1440px) {
             .container {
@@ -1128,7 +1133,18 @@
     <a href="/Homepage" class="go-back-top go-back-btn" id="goBackBtn" data-url="/Homepage">
         <i class="fas fa-arrow-left"></i> Back
     </a>
-    <div class="filler" style="margin-top:70px;">
+
+    <!-- Real-time Connection Status Indicator -->
+    <div id="connection-status" style="position: fixed; top: 70px; right: 20px; z-index: 1000; padding: 8px 16px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+        <small class="text-muted"><i class="bi bi-circle-fill text-secondary"></i> Initializing...</small>
+    </div>
+
+    <!-- Alert Container for Delay Notifications -->
+    <div id="alert-container" class="container" style="margin-top: 120px; max-width: 1200px;">
+        <!-- Delay notifications will appear here -->
+    </div>
+
+    <div class="filler" style="margin-top:20px;">
         </div>
     @* <div class="container" style="margin-top: 60px;">
         <div class="header">
@@ -1286,9 +1302,12 @@
                                             <div class="timeline-content">
                                                 <h6>Decision</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">
-                                                    Your request is<span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
-                                                </p>
+                                            <p class="timeline-description text-gray-700 leading-relaxed">
+                                                Your request is <span class="status-badge status-@(doc.Status2.ToLower()) ml-1">@doc.Status2</span>
+                                            </p>
+
+
+
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
                                                     <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
@@ -1439,7 +1458,7 @@
                                                 <h6>Decision</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Your request is<span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Your request is <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
@@ -2303,5 +2322,55 @@
 
     <!-- Session Timeout -->
     @await Html.PartialAsync("_SessionTimeout")
+
+    <!-- SignalR for Real-time Tracking -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+
+    <!-- Real-time Upload Tracking with Delay Notifications -->
+    <script>
+        // Set current user ID for tracking
+        window.currentUserId = '@ViewBag.UserId';
+
+        // Set user applications for delay tracking
+        window.userApplications = [
+            @foreach (var f in Model.HospitalAssistance)
+            {
+                <text>
+                {
+                    formId: @f.Id,
+                    type: "Hospital Bill Assistance",
+                    status: "@f.Status?.ToLower()",
+                    createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
+                    userId: '@ViewBag.UserId'
+                },
+                </text>
+            }
+            @foreach (var f in Model.OtherAssistance)
+            {
+                <text>
+                {
+                    formId: @f.Id,
+                    type: "Medical and Laboratory Procedure",
+                    status: "@f.Status?.ToLower()",
+                    createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
+                    userId: '@ViewBag.UserId'
+                },
+                </text>
+            }
+            @foreach (var f in Model.FuneralAssistance)
+            {
+                <text>
+                {
+                    formId: @f.Id,
+                    type: "Funeral and Burial Assistance",
+                    status: "@f.Status?.ToLower()",
+                    createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
+                    userId: '@ViewBag.UserId'
+                },
+                </text>
+            }
+        ];
+    </script>
+    <script src="~/js/upload-tracking.js"></script>
 </body>
 </html>

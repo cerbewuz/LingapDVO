@@ -136,6 +136,20 @@
             font-size: clamp(1.5rem, 1.75rem, 2rem);
             font-weight: 700;
             margin-bottom: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .priority-info h3.pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @@keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
         }
 
         .priority-info p {
@@ -349,7 +363,7 @@
                         <i class="bi bi-exclamation-triangle-fill"></i>
                     </div>
                     <div class="priority-info">
-                        <h3 id="high-priority-count">0</h3>
+                        <h3 id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</h3>
                         <p>High Priority (2+ hours)</p>
                     </div>
                 </div>
@@ -358,7 +372,7 @@
                         <i class="bi bi-exclamation-circle-fill"></i>
                     </div>
                     <div class="priority-info">
-                        <h3 id="medium-priority-count">0</h3>
+                        <h3 id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</h3>
                         <p>Medium Priority (1-2 hours)</p>
                     </div>
                 </div>
@@ -384,6 +398,32 @@
     <!-- Load admin sidebar utilities and session timeout scripts -->
     <script src="~/js/adminsidebar.js"></script>
     @await Html.PartialAsync("_SessionTimeout")
+
+    <script>
+        // Initialize sidebar badge with current priority count
+        document.addEventListener('DOMContentLoaded', function() {
+            const totalCount = @(ViewBag.TotalPriorityCount ?? 0);
+            console.log('[Priorities] Initializing sidebar badge with total count:', totalCount);
+
+            if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
+                window.AdminSidebar.updatePriorityBadge(totalCount);
+                console.log('[Priorities] Sidebar badge updated via AdminSidebar module');
+            } else {
+                // Fallback: update badge directly
+                const badge = document.getElementById('priorityBadge');
+                if (badge) {
+                    if (totalCount > 0) {
+                        badge.textContent = totalCount;
+                        badge.style.display = 'inline-block';
+                        console.log('[Priorities] Sidebar badge updated directly:', totalCount);
+                    } else {
+                        badge.style.display = 'none';
+                        console.log('[Priorities] Sidebar badge hidden (no priority items)');
+                    }
+                }
+            }
+        });
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -445,33 +485,63 @@
                 </text>
             }
 
-            // Calculate priority applications
+            // Calculate priority applications (ONLY for Pending applications)
             const now = new Date();
-            const priorityApplications = allApplications.map(app => {
-                const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
+            const priorityApplications = allApplications
+                .filter(app => app.status === 'pending') // Only count pending applications
+                .map(app => {
+                    const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
 
-                let priority = null;
-                if (hoursSinceSubmission >= 2) {
-                    priority = 'high';
-                } else if (hoursSinceSubmission >= 1) {
-                    priority = 'medium';
-                }
+                    let priority = null;
+                    if (hoursSinceSubmission >= 2) {
+                        priority = 'high';
+                    } else if (hoursSinceSubmission >= 1) {
+                        priority = 'medium';
+                    }
 
-                return {
-                    ...app,
-                    hoursSinceSubmission,
-                    priority
-                };
-            }).filter(app => app.priority !== null)
-              .sort((a, b) => b.hoursSinceSubmission - a.hoursSinceSubmission);
+                    return {
+                        ...app,
+                        hoursSinceSubmission,
+                        priority
+                    };
+                })
+                .filter(app => app.priority !== null)
+                .sort((a, b) => b.hoursSinceSubmission - a.hoursSinceSubmission);
 
             // Count priority levels
             const highPriorityCount = priorityApplications.filter(app => app.priority === 'high').length;
             const mediumPriorityCount = priorityApplications.filter(app => app.priority === 'medium').length;
 
-            // Update stats
-            document.getElementById('high-priority-count').textContent = highPriorityCount;
-            document.getElementById('medium-priority-count').textContent = mediumPriorityCount;
+            // Update stats - Use server-provided counts if available, otherwise use calculated counts
+            const serverHighCount = @(ViewBag.HighPriorityCount ?? 0);
+            const serverMediumCount = @(ViewBag.MediumPriorityCount ?? 0);
+
+            console.log('[Priorities] Server counts - High:', serverHighCount, 'Medium:', serverMediumCount);
+            console.log('[Priorities] Calculated counts - High:', highPriorityCount, 'Medium:', mediumPriorityCount);
+            console.log('[Priorities] Total pending applications:', allApplications.filter(app => app.status === 'pending').length);
+            console.log('[Priorities] Priority applications:', priorityApplications.length);
+
+            // Always use server counts as they are the source of truth
+            const finalHighCount = serverHighCount;
+            const finalMediumCount = serverMediumCount;
+
+            const highCountElement = document.getElementById('high-priority-count');
+            const mediumCountElement = document.getElementById('medium-priority-count');
+
+            // Update counts and add pulse animation
+            if (highCountElement) {
+                highCountElement.textContent = finalHighCount;
+                highCountElement.classList.add('pulse');
+                setTimeout(() => highCountElement.classList.remove('pulse'), 500);
+            }
+
+            if (mediumCountElement) {
+                mediumCountElement.textContent = finalMediumCount;
+                mediumCountElement.classList.add('pulse');
+                setTimeout(() => mediumCountElement.classList.remove('pulse'), 500);
+            }
+
+            console.log('[Priorities] Final displayed counts - High:', finalHighCount, 'Medium:', finalMediumCount);
 
             // Current filter
             let currentFilter = initialFilter;
@@ -702,5 +772,8 @@
 
     <!-- SignalR for Real-time Notifications -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+
+    <!-- Real-time Priority System with Animated Counters -->
+    <script src="~/js/priority-realtime.js"></script>
 </body>
 </html>
