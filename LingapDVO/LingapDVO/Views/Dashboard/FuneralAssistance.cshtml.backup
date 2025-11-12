@@ -1,7 +1,7 @@
 @model HospitalAssistanceDto
 @{
     Layout = "_InputFormsLayout";
-    ViewData["Title"] = "Hospital Billing Assistance";
+    ViewData["Title"] = "Funeral Assistance";
 }
 
 @section Styles {
@@ -171,7 +171,7 @@
     </style>
 }
 
-<form asp-action="HospitalAssistance" enctype="multipart/form-data" method="post">
+<form asp-action="FuneralAssistance" enctype="multipart/form-data" method="post">
 
     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -413,7 +413,7 @@
                         <option value="Camansi">Camansi</option>
                         <option value="Carmen">Carmen</option>
                         <option value="Catalunan Grande">Catalunan Grande</option>
-                        <option value="Catalunan Pequeño">Catalunan Pequeño</option>
+                        <option value="Catalunan Peque�o">Catalunan Peque�o</option>
                         <option value="Catigan">Catigan</option>
                         <option value="Cawayan">Cawayan</option>
                         <option value="Centro (San Juan)">Centro (San Juan)</option>
@@ -629,39 +629,7 @@
             </div>
             <!-- End Patient Details Section wrapper -->
             </div>
-
-            <!-- Type of Assistance Requested Section -->
-            <h5 class="section-header">Type of Assistance Requested</h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <!-- Column 1 -->
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="governmentAssistance" name="TypeassistanceOptions" value="Government">
-                        <label class="form-check-label" for="governmentAssistance">Government</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="GovernmentDetails" placeholder="Specify" style="display: none;">
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="privateAssistance" name="TypeassistanceOptions" value="Private">
-                        <label class="form-check-label" for="privateAssistance">Private</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="PrivateDetails" placeholder="Specify" style="display: none;">
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="caseAssistance" name="TypeassistanceOptions" value="Case">
-                        <label class="form-check-label" for="caseAssistance">Case</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="CaseDetails" placeholder="Specify" style="display: none;">
-                    </div>
-                </div>
-                  
-                </div>
-            </div>
+            
 
             <div class="form-group mt-3" style="display: none">
                 <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
@@ -1003,11 +971,8 @@
                 if (requestorSuffix && requestorSuffix.value) patientSuffix.value = requestorSuffix.value;
                 if (requestorBlkLotStreet && requestorBlkLotStreet.value) patientBlkLotStreet.value = requestorBlkLotStreet.value;
                 if (requestorSubVill && requestorSubVill.value) patientSubVill.value = requestorSubVill.value;
-                if (requestorBrgy && requestorBrgy.value) patientBrgy.value = requestorBrgy.value;
-                if (requestorDistrict && requestorDistrict.value) patientDistrict.value = requestorDistrict.value;
-
-                // Set relationship to "Self"
-                if (relationshipPatient) relationshipPatient.value = "Self";
+                if (requestorBrgy && requestorBrgy.value) patientBrgy.value = patientBrgy.value;
+                if (requestorDistrict && requestorDistrict.value) patientDistrict.value = requestorDistrict.value;// Auto-fill Gender from ViewBag (VerifyAccount)nconst userGender = '@ViewBag.Gender';nif (userGender) {n    const maleRadio = document.getElementById('male');n    const femaleRadio = document.getElementById('female');nn    if (userGender.toLowerCase() === 'male' && maleRadio) {n        maleRadio.checked = true;n    } else if (userGender.toLowerCase() === 'female' && femaleRadio) {n        femaleRadio.checked = true;n    }n}nn// Auto-fill Date of Birth from ViewBag (VerifyAccount)nconst userDateOfBirth = '@ViewBag.Dateofbirth';nconst dateOfBirthField = document.getElementById('dateOfBirth');nif (userDateOfBirth && dateOfBirthField) {n    dateOfBirthField.value = userDateOfBirth;nn    // Trigger age calculationn    const ageField = document.getElementById('ageInput');n    if (ageField) {n        ageField.value = calculateAge(userDateOfBirth);n    }n}nn// Set relationship to "Self"nif (relationshipPatient) relationshipPatient.value = "Self";
 
                 // Auto-fill Gender from ViewBag (VerifyAccount)
                 const userGender = '@ViewBag.Gender';
@@ -1034,18 +999,6 @@
                     if (ageField) {
                         ageField.value = calculateAge(userDateOfBirth);
                     }
-                }
-
-                // Auto-fill Barangay from ViewBag (VerifyAccount)
-                const userBarangay = '@ViewBag.Barangay';
-                if (userBarangay && patientBrgy) {
-                    patientBrgy.value = userBarangay;
-                }
-
-                // Auto-fill District from ViewBag (VerifyAccount)
-                const userDistrict = '@ViewBag.District';
-                if (userDistrict && patientDistrict) {
-                    patientDistrict.value = userDistrict;
                 }
 
                 // Visual feedback with Tailwind
@@ -1131,18 +1084,6 @@
                         element.value = originalPatientValues[field];
                     }
                 });
-
-                // Clear gender radio buttons
-                const maleRadio = document.getElementById('male');
-                const femaleRadio = document.getElementById('female');
-                if (maleRadio) maleRadio.checked = false;
-                if (femaleRadio) femaleRadio.checked = false;
-
-                // Clear date of birth and age
-                const dateOfBirthField = document.getElementById('dateOfBirth');
-                const ageField = document.getElementById('ageInput');
-                if (dateOfBirthField) dateOfBirthField.value = '';
-                if (ageField) ageField.value = '';
             }
 
             // Check if all patient fields are empty
@@ -1566,7 +1507,7 @@
             }
         });
     </script>
-
+}
 
 @section Scripts {
     <script>
@@ -2032,7 +1973,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const relationshipPatient = document.getElementById('RelationshipPatient');
 
             // Store original values to restore on clear
-            let originalPatientValues = {};
+            let originalRequestorValues = {};
             let autoFillUsed = false;
 
             // IMPROVED SHOW/HIDE TOGGLE FUNCTIONALITY
@@ -2071,10 +2012,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
                 if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
                 if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
-                if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
-
-                // Set relationship to "Self"
-                if (relationshipPatient) relationshipPatient.value = "Self";
+                if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;// Auto-fill Gender from ViewBag (VerifyAccount)nconst userGender = '@ViewBag.Gender';nif (userGender) {n    const maleRadio = document.getElementById('male');n    const femaleRadio = document.getElementById('female');nn    if (userGender.toLowerCase() === 'male' && maleRadio) {n        maleRadio.checked = true;n    } else if (userGender.toLowerCase() === 'female' && femaleRadio) {n        femaleRadio.checked = true;n    }n}nn// Auto-fill Date of Birth from ViewBag (VerifyAccount)nconst userDateOfBirth = '@ViewBag.Dateofbirth';nconst dateOfBirthField = document.getElementById('dateOfBirth');nif (userDateOfBirth && dateOfBirthField) {n    dateOfBirthField.value = userDateOfBirth;nn    // Trigger age calculationn    const ageField = document.getElementById('ageInput');n    if (ageField) {n        ageField.value = calculateAge(userDateOfBirth);n    }n}nn// Set relationship to "Self"nif (relationshipPatient) relationshipPatient.value = "Self";
 
                 // Visual feedback with Tailwind
                 sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
@@ -2159,18 +2097,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         element.value = originalPatientValues[field];
                     }
                 });
-
-                // Clear gender radio buttons
-                const maleRadio = document.getElementById('male');
-                const femaleRadio = document.getElementById('female');
-                if (maleRadio) maleRadio.checked = false;
-                if (femaleRadio) femaleRadio.checked = false;
-
-                // Clear date of birth and age
-                const dateOfBirthField = document.getElementById('dateOfBirth');
-                const ageField = document.getElementById('ageInput');
-                if (dateOfBirthField) dateOfBirthField.value = '';
-                if (ageField) ageField.value = '';
             }
 
             // Check if all patient fields are empty
@@ -2326,7 +2252,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (cb !== this) cb.checked = false;
                         });
                     }
-                    updateReflection(); 
+                    updateReflection(); // Update the reflection field
                 });
             });
         });
@@ -2503,3 +2429,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     </script>
 }
+

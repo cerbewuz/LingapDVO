@@ -2165,13 +2165,13 @@ namespace LingapDVO.Controllers
                         {
 
                             string successSmsMessage = $"Congratulations {verifyaccount.Firstname}!\n\n" +
-                                                       $"Your LingapDVO account has been successfully verified!\n\n" +
+                                                       $"Your LingapDvo Online account has been successfully verified!\n\n" +
                                                        $"You can now:\n" +
-                                                       $"✓ Apply for Hospital Bill Assistance\n" +
-                                                       $"✓ Apply for Medical/Lab Assistance\n" +
-                                                       $"✓ Apply for Funeral/Burial Assistance\n\n" +
+                                                       $"1.) Apply for Hospital Bill Assistance\n" +
+                                                       $"2.) Apply for Funeral/Burial Assistance\n" +
+                                                       $"3.) Apply for Other Accepted Assistance\n\n" +
                                                        $"Login now to get started!\n\n" +
-                                                       $"- LingapDVO, Davao City";
+                                                       $"LingapDvo Automated SMS Message";
 
                             bool smsSent = await _smsService.SendSmsAsync(verifyaccount.Phonenumber, successSmsMessage);
 

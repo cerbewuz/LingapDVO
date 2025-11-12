@@ -1330,10 +1330,26 @@
             async function getRealApplicationData() {
                 try {
                     // Try to get application data from the server
-                    const response = await fetch('/Applications/GetUserApplications');
+                    const response = await fetch('/Dashboard/GetUserApplications');
                     if (response.ok) {
-                        return await response.json();
+                        const data = await response.json();
+                        if (data.success) {
+                            return {
+                                hospitalBills: data.hospitalBills,
+                                medicalForms: data.medicalForms,
+                                funeralForms: data.funeralForms
+                            };
+                        } else {
+                            console.error('API returned error:', data.error);
+                            // Use model data as fallback
+                            return {
+                                hospitalBills: @Json.Serialize(Model.HospitalAssistance),
+                                medicalForms: @Json.Serialize(Model.OtherAssistance),
+                                funeralForms: @Json.Serialize(Model.FuneralAssistance)
+                            };
+                        }
                     } else {
+                        console.error('HTTP error:', response.status);
                         // If server returns error, use the data from the model
                         return {
                             hospitalBills: @Json.Serialize(Model.HospitalAssistance),

@@ -35,17 +35,95 @@ namespace LingapDVO.Hubs
         }
 
         /// <summary>
+        /// Update priority counts for admin dashboard (real-time)
+        /// </summary>
+        public async Task UpdatePriorityCounts(int highPriority, int mediumPriority, int totalPriority)
+        {
+            await Clients.Group("AdminUsers").SendAsync("ReceivePriorityCountUpdate", new
+            {
+                highPriority = highPriority,
+                mediumPriority = mediumPriority,
+                totalPriority = totalPriority,
+                timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Notify admin of new priority application
+        /// </summary>
+        public async Task NotifyNewPriorityApplication(string applicationType, string applicantName, string priority, int formId)
+        {
+            await Clients.Group("AdminUsers").SendAsync("ReceiveNewPriorityApplication", new
+            {
+                applicationType = applicationType,
+                applicantName = applicantName,
+                priority = priority,
+                formId = formId,
+                timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Notify user about application delay (medium/high priority)
+        /// </summary>
+        public async Task NotifyUserDelay(int userId, string priority, double hoursElapsed, string applicationType)
+        {
+            await Clients.Group($"User_{userId}").SendAsync("ReceiveDelayNotification", new
+            {
+                priority = priority,
+                hoursElapsed = hoursElapsed,
+                applicationType = applicationType,
+                message = GetDelayMessage(priority, hoursElapsed),
+                timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Update application status in real-time
+        /// </summary>
+        public async Task UpdateApplicationStatus(int userId, int formId, string status, string applicationType)
+        {
+            await Clients.Group($"User_{userId}").SendAsync("ReceiveStatusUpdate", new
+            {
+                formId = formId,
+                status = status,
+                applicationType = applicationType,
+                timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
+        /// Broadcast to all admin users
+        /// </summary>
+        public async Task BroadcastToAdmins(string message, string type = "info")
+        {
+            await Clients.Group("AdminUsers").SendAsync("ReceiveAdminBroadcast", new
+            {
+                message = message,
+                type = type,
+                timestamp = DateTime.UtcNow
+            });
+        }
+
+        /// <summary>
         /// Called when a client connects
         /// </summary>
         public override async Task OnConnectedAsync()
         {
             // Get the userId from the connection (if authenticated)
             var userId = Context.User?.FindFirst("UserId")?.Value;
+            var userRole = Context.User?.FindFirst("UserRole")?.Value;
 
             if (!string.IsNullOrEmpty(userId))
             {
                 // Add to a group with their userId for targeted messaging
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userId}");
+            }
+
+            // Add admin users to AdminUsers group for priority notifications
+            if (!string.IsNullOrEmpty(userRole) && (userRole == "Admin" || userRole == "SuperAdmin"))
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, "AdminUsers");
             }
 
             await base.OnConnectedAsync();
@@ -57,13 +135,37 @@ namespace LingapDVO.Hubs
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var userId = Context.User?.FindFirst("UserId")?.Value;
+            var userRole = Context.User?.FindFirst("UserRole")?.Value;
 
             if (!string.IsNullOrEmpty(userId))
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"User_{userId}");
             }
 
+            if (!string.IsNullOrEmpty(userRole) && (userRole == "Admin" || userRole == "SuperAdmin"))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, "AdminUsers");
+            }
+
             await base.OnDisconnectedAsync(exception);
+        }
+
+        /// <summary>
+        /// Get delay message based on priority level
+        /// </summary>
+        private string GetDelayMessage(string priority, double hoursElapsed)
+        {
+            if (priority == "high")
+            {
+                return $"Your application has been pending for {Math.Floor(hoursElapsed)} hours. " +
+                       "We apologize for the delay. Our team is working on it with high priority and will process it as soon as possible.";
+            }
+            else if (priority == "medium")
+            {
+                return $"Your application has been pending for over an hour. " +
+                       "Don't worry! It's in our queue and will be reviewed shortly.";
+            }
+            return "";
         }
     }
 }

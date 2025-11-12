@@ -410,6 +410,42 @@
     };
 
     // ═══════════════════════════════════════════════════════════════════════
+    // SIGNALR INTEGRATION FOR REAL-TIME BADGE UPDATES
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Initialize SignalR connection for real-time badge updates (admin only)
+     */
+    function initializeBadgeSignalR() {
+        // Only initialize if SignalR is available and user is on admin pages
+        if (typeof signalR === 'undefined') {
+            console.log('Admin Sidebar: SignalR not loaded, skipping real-time badge updates');
+            return;
+        }
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .withAutomaticReconnect([0, 2000, 5000, 10000])
+            .configureLogging(signalR.LogLevel.Warning)
+            .build();
+
+        // Listen for sidebar badge updates
+        connection.on("UpdateSidebarBadge", function (data) {
+            console.log('Admin Sidebar: Badge update received:', data.count);
+            updatePriorityBadge(data.count);
+        });
+
+        // Start connection
+        connection.start()
+            .then(function () {
+                console.log('Admin Sidebar: Real-time badge updates connected');
+            })
+            .catch(function (error) {
+                console.warn('Admin Sidebar: Could not connect for badge updates:', error);
+            });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // AUTO-INITIALIZATION
     // ═══════════════════════════════════════════════════════════════════════
 
@@ -418,11 +454,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             initSidebarToggle();
             setActiveNavItem();
+            initializeBadgeSignalR();
             console.log('Admin Sidebar Module: Loaded and initialized successfully');
         });
     } else {
         initSidebarToggle();
         setActiveNavItem();
+        initializeBadgeSignalR();
         console.log('Admin Sidebar Module: Loaded and initialized successfully');
     }
 

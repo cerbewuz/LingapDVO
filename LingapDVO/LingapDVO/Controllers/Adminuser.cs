@@ -21,14 +21,16 @@ namespace LingapDVO.Controllers
         private readonly IConfiguration _configuration;
         private readonly ISessionConfigurationService _sessionConfig;
         private readonly IMultiChannelNotificationService _notificationService;
+        private readonly PriorityTrackingService _priorityService;
 
-        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig, IMultiChannelNotificationService notificationService)
+        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig, IMultiChannelNotificationService notificationService, PriorityTrackingService priorityService)
         {
             this.context = context;
             this.environment = environment;
             _configuration = configuration;
             _sessionConfig = sessionConfig;
             _notificationService = notificationService;
+            _priorityService = priorityService;
         }
         public IActionResult Index()
         {
@@ -3873,7 +3875,7 @@ namespace LingapDVO.Controllers
         }
 
         // Priorities page with priority system
-        public IActionResult Priorities()
+        public async Task<IActionResult> Priorities()
         {
             // Prevent caching
             Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
@@ -3898,6 +3900,14 @@ namespace LingapDVO.Controllers
             var FuneralAssistance = context.FuneralAssistance
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
+
+            // Get priority counts
+            var (highPriority, mediumPriority, totalPriority) = await _priorityService.GetPriorityCountsAsync();
+
+            // Pass counts to view via ViewBag
+            ViewBag.HighPriorityCount = highPriority;
+            ViewBag.MediumPriorityCount = mediumPriority;
+            ViewBag.TotalPriorityCount = totalPriority;
 
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel

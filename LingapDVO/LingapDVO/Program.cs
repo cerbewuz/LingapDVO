@@ -109,6 +109,12 @@ builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMultiChannelNotificationService, MultiChannelNotificationService>();
 
+// Priority Tracking Service
+builder.Services.AddScoped<PriorityTrackingService>();
+
+// Priority Background Service (periodic checks)
+builder.Services.AddHostedService<PriorityBackgroundService>();
+
 // SignalR for real-time notifications
 builder.Services.AddSignalR();
 

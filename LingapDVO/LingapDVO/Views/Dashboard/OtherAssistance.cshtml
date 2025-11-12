@@ -655,24 +655,14 @@
             <!-- Column 1 -->
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
-                       id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
-                <label class="form-check-label" for="hospitalAssistance">Medicine Assistance</label>
+                       id="medicineAssistance" name="TypeassistanceOptions" value="Medicine Assistance">
+                <label class="form-check-label" for="medicineAssistance">Medicine Assistance</label>
             </div>
 
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
-                       id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
-                <label class="form-check-label" for="hospitalAssistance">Procedure</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="GovernmentDetails" placeholder="Specify" style="display: none;">
-            </div>
-
-            <div class="form-check mt-2">
-                <input class="form-check-input assistance-type" type="checkbox"
-                       id="governmentAssistance" name="TypeassistanceOptions" value="Government">
-                <label class="form-check-label" for="governmentAssistance">Laboratory</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="GovernmentDetails" placeholder="Specify" style="display: none;">
+                       id="laboratoryAssistance" name="TypeassistanceOptions" value="Laboratory">
+                <label class="form-check-label" for="laboratoryAssistance">Laboratory</label>
             </div>
 
         </div>
@@ -682,18 +672,14 @@
 
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
-                       id="procedure" name="TypeassistanceOptions" value="Procedure">
-                <label class="form-check-label" for="procedure">Apparatus</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="ProcedureDetails" placeholder="Specify" style="display: none;">
+                       id="apparatusAssistance" name="TypeassistanceOptions" value="Apparatus">
+                <label class="form-check-label" for="apparatusAssistance">Apparatus</label>
             </div>
 
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
                        id="others" name="TypeassistanceOptions" value="Others">
                 <label class="form-check-label" for="others">Others</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="OthersDetails" placeholder="Specify" style="display: none;">
             </div>
         </div>
     </div>
@@ -737,7 +723,6 @@
     <br />
     <br />
 </form>
-</div>
 
 <!-- For zooming photo -->
 <!-- Add this modal HTML at the end of your form container but before the closing </div> -->
@@ -1045,6 +1030,45 @@
             // Set relationship to "Self"
             if (relationshipPatient) relationshipPatient.value = "Self";
 
+            // Auto-fill Gender from ViewBag (VerifyAccount)
+            const userGender = '@ViewBag.Gender';
+            if (userGender) {
+                const maleRadio = document.getElementById('male');
+                const femaleRadio = document.getElementById('female');
+
+                if (userGender.toLowerCase() === 'male' && maleRadio) {
+                    maleRadio.checked = true;
+                } else if (userGender.toLowerCase() === 'female' && femaleRadio) {
+                    femaleRadio.checked = true;
+                }
+            }
+
+            // Auto-fill Date of Birth from ViewBag (VerifyAccount)
+            const userDateOfBirth = '@ViewBag.Dateofbirth';
+            const dateOfBirthField = document.getElementById('dateOfBirth');
+            if (userDateOfBirth && dateOfBirthField) {
+                // Format date if needed (ensure it's in yyyy-MM-dd format for input[type="date"])
+                dateOfBirthField.value = userDateOfBirth;
+
+                // Trigger age calculation
+                const ageField = document.getElementById('ageInput');
+                if (ageField) {
+                    ageField.value = calculateAge(userDateOfBirth);
+                }
+            }
+
+            // Auto-fill Barangay from ViewBag (VerifyAccount)
+            const userBarangay = '@ViewBag.Barangay';
+            if (userBarangay && patientBrgy) {
+                patientBrgy.value = userBarangay;
+            }
+
+            // Auto-fill District from ViewBag (VerifyAccount)
+            const userDistrict = '@ViewBag.District';
+            if (userDistrict && patientDistrict) {
+                patientDistrict.value = userDistrict;
+            }
+
             // Visual feedback with Tailwind
             sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
             sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
@@ -1128,6 +1152,18 @@
                     element.value = originalPatientValues[field];
                 }
             });
+
+            // Clear gender radio buttons
+            const maleRadio = document.getElementById('male');
+            const femaleRadio = document.getElementById('female');
+            if (maleRadio) maleRadio.checked = false;
+            if (femaleRadio) femaleRadio.checked = false;
+
+            // Clear date of birth and age
+            const dateOfBirthField = document.getElementById('dateOfBirth');
+            const ageField = document.getElementById('ageInput');
+            if (dateOfBirthField) dateOfBirthField.value = '';
+            if (ageField) ageField.value = '';
         }
 
         // Check if all patient fields are empty
