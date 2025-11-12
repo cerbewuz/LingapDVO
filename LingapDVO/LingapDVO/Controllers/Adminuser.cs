@@ -350,7 +350,7 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public IActionResult OtherAssistancestatus(int id, OtherAssistanceDto OtherAssistanceDto)
+        public IActionResult OtherAssistancePendingStatus(int id, OtherAssistanceDto OtherAssistanceDto) // ← Change method name
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -391,10 +391,10 @@ namespace LingapDVO.Controllers
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // ? Get user's first name from VerifyAccount table (reuse existing verifyAccount variable)
+                    // Get user's first name from VerifyAccount table
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
-                    // ? Get email settings
+                    // Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
@@ -402,31 +402,31 @@ namespace LingapDVO.Controllers
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
                         throw new ArgumentException("Email settings are missing.");
 
-                    // ? Prepare email content
+                    // Prepare email content
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
                     string subject = "Medical and Laboratory Assistance Update - LINGAP DVO";
                     string body = $@"
-                    Dear {firstName},
+            Dear {firstName},
 
-                    Your Medical and Laboratory Assistance application is now being processed.
+            Your Medical and Laboratory Assistance application is now being processed.
 
-                    APPLICATION DETAILS:
-                    � Application Type: Medical and Laboratory Assistance
-                    � Status: Processing
-                    � Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+            APPLICATION DETAILS:
+            • Application Type: Medical and Laboratory Assistance
+            • Status: Processing
+            • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                    REMARKS:
-                    {OtherAssistanceDto.Comments ?? "N/A"}
+            REMARKS:
+            {OtherAssistanceDto.Comments ?? "N/A"}
 
-                    Thank you for your patience. We will notify you once your application status has been updated.
+            Thank you for your patience. We will notify you once your application status has been updated.
 
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Medical Assistance Program";
+            Sincerely,
+            {fromName}
+            LINGAP DVO Medical Assistance Program";
 
-                    // ? Send email
+                    // Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -538,7 +538,7 @@ namespace LingapDVO.Controllers
 
         // Renvic edit sa grammar
         [HttpPost]
-        public IActionResult FuneralAssistancestatus(int id, FuneralAssistanceDto FuneralAssistanceDto)
+        public IActionResult FuneralAssistancePendingStatus(int id, FuneralAssistanceDto FuneralAssistanceDto) // ← Change method name
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
             {
@@ -596,23 +596,23 @@ namespace LingapDVO.Controllers
 
                     string subject = "Funeral and Burial Assistance Update - LINGAP DVO";
                     string body = $@"
-                                Dear {firstName},
+            Dear {firstName},
 
-                                Your Funeral and Burial Assistance application is now being processed.
+            Your Funeral and Burial Assistance application is now being processed.
 
-                                APPLICATION DETAILS:
-                                � Application Type: Funeral and Burial Assistance
-                                � Status: Processing
-                                � Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+            APPLICATION DETAILS:
+            • Application Type: Funeral and Burial Assistance
+            • Status: Processing
+            • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                                REMARKS:
-                                {FuneralAssistanceDto.Comments ?? "N/A"}
+            REMARKS:
+            {FuneralAssistanceDto.Comments ?? "N/A"}
 
-                                Thank you for your patience. We will notify you once your application status has been updated.
+            Thank you for your patience. We will notify you once your application status has been updated.
 
-                                Sincerely,
-                                {fromName}
-                                LINGAP DVO Funeral and Burial Assistance Program";
+            Sincerely,
+            {fromName}
+            LINGAP DVO Funeral and Burial Assistance Program";
 
                     // ? Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -641,7 +641,6 @@ namespace LingapDVO.Controllers
                 return View(FuneralAssistanceDto);
             }
         }
-
 
         public IActionResult Analyticsdashboard()
         {
@@ -3443,7 +3442,7 @@ namespace LingapDVO.Controllers
             }
         }
 
-
+        //111
         //approving and unpproving status
         [HttpPost]
         public IActionResult HospitalAssistanceProcessingStatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
@@ -3480,22 +3479,129 @@ namespace LingapDVO.Controllers
                         status,
                         HospitalAssistance.Id
                     );
+
+                    // ✅ ADDED EMAIL FEATURE
+                    // Get the user's info from RegisterAcc
+                    var user = context.RegisterAcc.FirstOrDefault(u => u.Id == HospitalAssistance.UserId);
+
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        // Get user's first name from VerifyAccount
+                        var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
+                        // Get email settings from configuration
+                        var fromEmail = _configuration["EmailSettings:FromEmail"];
+                        var fromName = _configuration["EmailSettings:FromName"];
+                        var fromPassword = _configuration["EmailSettings:FromPassword"];
+
+                        if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
+                            throw new ArgumentException("Email settings are missing.");
+
+                        // Compose the email based on status
+                        var fromAddress = new MailAddress(fromEmail, fromName);
+                        var toAddress = new MailAddress(user.Email, firstName);
+
+                        string subject = "";
+                        string body = "";
+
+                        if (status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+                        {
+                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approved - LINGAP DVO";
+                            body = $@"
+                            Dear {firstName},
+
+                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVED.
+
+                            APPLICATION DETAILS:
+                            • Application Type: Hospital Bill Assistance
+                            • Application ID: {HospitalAssistance.Id}
+                            • Status: Approved
+                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Processed By: {HospitalAssistanceDto.Processby}
+
+                            REMARKS:
+                            {HospitalAssistanceDto.Comments ?? "No additional remarks provided."}
+
+                            NEXT STEPS:
+                            Please visit our office to complete the necessary documentation and receive your assistance.
+
+                            Thank you for choosing LINGAP DVO. We are committed to supporting your healthcare needs.
+
+                            Sincerely,
+                            {fromName}
+                            LINGAP DVO Medical Assistance Program
+
+                            Note: This is an automated email. Please do not reply to this message.";
+                                                    }
+                                                    else if (status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase))
+                                                    {
+                                                        subject = "Update on Your Hospital Bill Assistance Application - LINGAP DVO";
+                                                        body = $@"
+                            Dear {firstName},
+
+                            After careful review, we regret to inform you that your Hospital Bill Assistance application has been DISAPPROVED.
+
+                            APPLICATION DETAILS:
+                            • Application Type: Hospital Bill Assistance
+                            • Application ID: {HospitalAssistance.Id}
+                            • Status: Disapproved
+                            • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Processed By: {HospitalAssistanceDto.Processby}
+
+                            REMARKS:
+                            {HospitalAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
+
+                            If you have questions or would like to discuss this decision further, please visit our office during business hours.
+
+                            We appreciate your understanding.
+
+                            Sincerely,
+                            {fromName}
+                            LINGAP DVO Medical Assistance Program
+
+                            Note: This is an automated email. Please do not reply to this message.";
+                        }
+
+                        // Send the email safely
+                        using (var smtp = new SmtpClient("smtp.gmail.com", 587)
+                        {
+                            EnableSsl = true,
+                            DeliveryMethod = SmtpDeliveryMethod.Network,
+                            UseDefaultCredentials = false,
+                            Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                        })
+                        using (var message = new MailMessage(fromAddress, toAddress)
+                        {
+                            Subject = subject,
+                            Body = body,
+                            IsBodyHtml = false
+                        })
+                        {
+                            smtp.Send(message);
+                        }
+
+                        // Log email sent successfully
+                        Console.WriteLine($"Status update email sent to {user.Email} for application {HospitalAssistance.Id} - Status: {status}");
+                    }
                 }
 
-                TempData["SuccessMessage"] = "Hospital bill status updated successfully.";
+                TempData["SuccessMessage"] = $"Hospital bill status updated to '{HospitalAssistanceDto.Status2}' and notifications sent successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
             {
+                // Log the error
+                Console.WriteLine($"Error in HospitalAssistanceProcessingStatus: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
                 ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
                 return View(HospitalAssistanceDto);
             }
         }
 
 
-
         [HttpPost]
-        public IActionResult OtherAssistanceUpdateprocessingstatus(int id, OtherAssistanceDto OtherAssistanceDto)
+        public IActionResult OtherAssistanceProcessingStatus(int id, OtherAssistanceDto OtherAssistanceDto)
         {
             var medicallabform = context.OtherAssistance.Find(id);
 
@@ -3529,21 +3635,128 @@ namespace LingapDVO.Controllers
                         status,
                         medicallabform.Id
                     );
+
+                    // ✅ ADDED EMAIL FEATURE
+                    // Get the user's info from RegisterAcc
+                    var user = context.RegisterAcc.FirstOrDefault(u => u.Id == medicallabform.UserId);
+
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        // Get user's first name from VerifyAccount
+                        var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
+                        // Get email settings from configuration
+                        var fromEmail = _configuration["EmailSettings:FromEmail"];
+                        var fromName = _configuration["EmailSettings:FromName"];
+                        var fromPassword = _configuration["EmailSettings:FromPassword"];
+
+                        if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
+                            throw new ArgumentException("Email settings are missing.");
+
+                        // Compose the email based on status
+                        var fromAddress = new MailAddress(fromEmail, fromName);
+                        var toAddress = new MailAddress(user.Email, firstName);
+
+                        string subject = "";
+                        string body = "";
+
+                        if (status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+                        {
+                            subject = "Congratulations! Your Medical Assistance Has Been Approved - LINGAP DVO";
+                            body = $@"
+                    Dear {firstName},
+
+                    We are pleased to inform you that your Medical Assistance application has been APPROVED.
+
+                    APPLICATION DETAILS:
+                    • Application Type: Medical Assistance
+                    • Application ID: {medicallabform.Id}
+                    • Status: Approved
+                    • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Processed By: {OtherAssistanceDto.Processby}
+
+                    REMARKS:
+                    {OtherAssistanceDto.Comments ?? "No additional remarks provided."}
+
+                    NEXT STEPS:
+                    Please visit our office to complete the necessary documentation and receive your assistance.
+
+                    Thank you for choosing LINGAP DVO. We are committed to supporting your healthcare needs.
+
+                    Sincerely,
+                    {fromName}
+                    LINGAP DVO Medical Assistance Program
+
+                    Note: This is an automated email. Please do not reply to this message.";
+                        }
+                        else if (status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase))
+                        {
+                            subject = "Update on Your Medical Assistance Application - LINGAP DVO";
+                            body = $@"
+                    Dear {firstName},
+
+                    After careful review, we regret to inform you that your Medical Assistance application has been DISAPPROVED.
+
+                    APPLICATION DETAILS:
+                    • Application Type: Medical Assistance
+                    • Application ID: {medicallabform.Id}
+                    • Status: Disapproved
+                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Processed By: {OtherAssistanceDto.Processby}
+
+                    REMARKS:
+                    {OtherAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
+
+                    If you have questions or would like to discuss this decision further, please visit our office during business hours.
+
+                    We appreciate your understanding.
+
+                    Sincerely,
+                    {fromName}
+                    LINGAP DVO Medical Assistance Program
+
+                    Note: This is an automated email. Please do not reply to this message.";
+                        }
+
+                        // Send the email safely
+                        using (var smtp = new SmtpClient("smtp.gmail.com", 587)
+                        {
+                            EnableSsl = true,
+                            DeliveryMethod = SmtpDeliveryMethod.Network,
+                            UseDefaultCredentials = false,
+                            Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                        })
+                        using (var message = new MailMessage(fromAddress, toAddress)
+                        {
+                            Subject = subject,
+                            Body = body,
+                            IsBodyHtml = false
+                        })
+                        {
+                            smtp.Send(message);
+                        }
+
+                        // Log email sent successfully
+                        Console.WriteLine($"Status update email sent to {user.Email} for application {medicallabform.Id} - Status: {status}");
+                    }
                 }
 
-                TempData["SuccessMessage"] = "Medical assistance status updated successfully.";
+                TempData["SuccessMessage"] = $"Medical assistance status updated to '{OtherAssistanceDto.Status2}' and notifications sent successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
             {
+                // Log the error
+                Console.WriteLine($"Error in OtherAssistanceUpdateprocessingstatus: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
                 ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
                 return View(OtherAssistanceDto);
             }
         }
 
-
         [HttpPost]
-        public IActionResult FuneralAssistanceUpdateprocessingstatus(int id, FuneralAssistanceDto FuneralAssistanceDto)
+        public IActionResult FuneralAssistanceProcessingStatus(int id, FuneralAssistanceDto FuneralAssistanceDto)
         {
             var FuneralAssistance = context.FuneralAssistance.Find(id);
 
@@ -3577,13 +3790,121 @@ namespace LingapDVO.Controllers
                         status,
                         FuneralAssistance.Id
                     );
+
+                    // ✅ ADDED EMAIL FEATURE
+                    // Get the user's info from RegisterAcc
+                    var user = context.RegisterAcc.FirstOrDefault(u => u.Id == FuneralAssistance.UserId);
+
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        // Get user's first name from VerifyAccount
+                        var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
+                        // Get email settings from configuration
+                        var fromEmail = _configuration["EmailSettings:FromEmail"];
+                        var fromName = _configuration["EmailSettings:FromName"];
+                        var fromPassword = _configuration["EmailSettings:FromPassword"];
+
+                        if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
+                            throw new ArgumentException("Email settings are missing.");
+
+                        // Compose the email based on status
+                        var fromAddress = new MailAddress(fromEmail, fromName);
+                        var toAddress = new MailAddress(user.Email, firstName);
+
+                        string subject = "";
+                        string body = "";
+
+                        if (status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+                        {
+                            subject = "Congratulations! Your Funeral Assistance Has Been Approved - LINGAP DVO";
+                            body = $@"
+                            Dear {firstName},
+
+                            We are pleased to inform you that your Funeral Assistance application has been APPROVED.
+
+                            APPLICATION DETAILS:
+                            • Application Type: Funeral Assistance
+                            • Application ID: {FuneralAssistance.Id}
+                            • Status: Approved
+                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Processed By: {FuneralAssistanceDto.Processby}
+
+                            REMARKS:
+                            {FuneralAssistanceDto.Comments ?? "No additional remarks provided."}
+
+                            NEXT STEPS:
+                            Please visit our office to complete the necessary documentation and receive your assistance.
+
+                            Thank you for choosing LINGAP DVO. We are committed to supporting your needs during this difficult time.
+
+                            Sincerely,
+                            {fromName}
+                            LINGAP DVO Funeral Assistance Program
+
+                            Note: This is an automated email. Please do not reply to this message.";
+                                        }
+                                        else if (status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            subject = "Update on Your Funeral Assistance Application - LINGAP DVO";
+                                            body = $@"
+                            Dear {firstName},
+
+                            After careful review, we regret to inform you that your Funeral Assistance application has been DISAPPROVED.
+
+                            APPLICATION DETAILS:
+                            • Application Type: Funeral Assistance
+                            • Application ID: {FuneralAssistance.Id}
+                            • Status: Disapproved
+                            • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Processed By: {FuneralAssistanceDto.Processby}
+
+                            REMARKS:
+                            {FuneralAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
+
+                            If you have questions or would like to discuss this decision further, please visit our office during business hours.
+
+                            We appreciate your understanding.
+
+                            Sincerely,
+                            {fromName}
+                            LINGAP DVO Funeral Assistance Program
+
+                            Note: This is an automated email. Please do not reply to this message.";
+                                        }
+
+                        // Send the email safely
+                        using (var smtp = new SmtpClient("smtp.gmail.com", 587)
+                        {
+                            EnableSsl = true,
+                            DeliveryMethod = SmtpDeliveryMethod.Network,
+                            UseDefaultCredentials = false,
+                            Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                        })
+                        using (var message = new MailMessage(fromAddress, toAddress)
+                        {
+                            Subject = subject,
+                            Body = body,
+                            IsBodyHtml = false
+                        })
+                        {
+                            smtp.Send(message);
+                        }
+
+                        // Log email sent successfully
+                        Console.WriteLine($"Status update email sent to {user.Email} for application {FuneralAssistance.Id} - Status: {status}");
+                    }
                 }
 
-                TempData["SuccessMessage"] = "Funeral assistance status updated successfully.";
+                TempData["SuccessMessage"] = $"Funeral assistance status updated to '{FuneralAssistanceDto.Status2}' and notifications sent successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
             {
+                // Log the error
+                Console.WriteLine($"Error in FuneralAssistanceUpdateprocessingstatus: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
                 ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
                 return View(FuneralAssistanceDto);
             }
@@ -3591,8 +3912,8 @@ namespace LingapDVO.Controllers
 
 
 
-        // ? For Approved Statuses to Claimed
-        [HttpPost]
+        // ? For Approved Statuses to Claimed 
+        [HttpPost] 
         public IActionResult HospitalAssistanceApproveStatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
         {
             var HospitalAssistance = context.HospitalAssistance.Find(id);
@@ -3690,9 +4011,9 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public IActionResult OtherAssistanceapprovedsstatus(int id, OtherAssistanceDto OtherAssistanceDto)
         {
-            var medicallabform = context.OtherAssistance.Find(id);
+            var otherAssistance = context.OtherAssistance.Find(id);
 
-            if (medicallabform == null)
+            if (otherAssistance == null)
             {
                 TempData["ErrorMessage"] = "Medical and laboratory record not found.";
                 return Redirect("/Admin");
@@ -3700,26 +4021,27 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // ? Update record
-                medicallabform.Status3 = OtherAssistanceDto.Status3;
-                medicallabform.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL;
-                medicallabform.Comments = OtherAssistanceDto.Comments;
-                medicallabform.Processby = OtherAssistanceDto.Processby;
-                medicallabform.ClaimedAt = DateTime.Now;
+                // ✅ Update record
+                otherAssistance.Status3 = OtherAssistanceDto.Status3;
+                otherAssistance.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL;
+                otherAssistance.Comments = OtherAssistanceDto.Comments;
+                otherAssistance.Processby = OtherAssistanceDto.Processby;
+                otherAssistance.ClaimedAt = DateTime.Now;
+
                 context.SaveChanges();
 
-                // ? Get user info
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == medicallabform.UserId);
+                // ✅ Get user info
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == otherAssistance.UserId);
 
-                // ? Only send email if status is "Claimed"
-                if (OtherAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true &&
-                    user != null && !string.IsNullOrEmpty(user.Email))
+                // ✅ Only send email if status is "Claimed"
+                if (OtherAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true
+                    && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // ? Get user's first name from VerifyAccount
+                    // ✅ Get first name from VerifyAccount
                     var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
-                    // ? Get email settings
+                    // ✅ Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
@@ -3727,34 +4049,35 @@ namespace LingapDVO.Controllers
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
                         throw new ArgumentException("Email settings are missing.");
 
-                    // ? Compose email
+                    // ✅ Compose email
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
                     string subject = "Medical and Laboratory Assistance Claimed - LINGAP DVO";
                     string body = $@"
-                            Dear {firstName},
+                Dear {firstName},
 
-                            We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
-                            APPLICATION DETAILS:
-                            � Application Type: Medical and Laboratory Assistance
-                            � Status: Claimed
-                            � Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
-                            � Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                APPLICATION DETAILS:
+                • Application Type: Medical and Laboratory Assistance
+                • Application ID: {otherAssistance.Id}
+                • Status: Claimed
+                • Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
+                • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                            REMARKS:
-                            {OtherAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
+                REMARKS:
+                {OtherAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                            Thank you for your patience and cooperation throughout the process.  
-                            Should you have any further questions, please contact our support team at [Support Email/Phone Number].
+                Thank you for your patience and cooperation throughout the process.  
+                Should you have any further questions, please contact our support team at [Support Email/Phone Number].
 
-                            Sincerely,  
-                            {fromName}  
-                            LINGAP DVO Medical Assistance Program
-";
+                Sincerely,  
+                {fromName}  
+                LINGAP DVO Medical Assistance Program
+                ";
 
-                    // ? Send email
+                    // ✅ Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -3770,6 +4093,9 @@ namespace LingapDVO.Controllers
                     {
                         smtp.Send(message);
                     }
+
+                    // ✅ Log success
+                    Console.WriteLine($"Claim notification email sent to {user.Email} for Medical and Laboratory Assistance ID {otherAssistance.Id}");
                 }
 
                 TempData["SuccessMessage"] = "Medical and laboratory claim processed successfully and email sent.";
@@ -3777,6 +4103,10 @@ namespace LingapDVO.Controllers
             }
             catch (Exception ex)
             {
+                // ✅ Log error
+                Console.WriteLine($"Error in OtherAssistanceapprovedsstatus: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
                 ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
                 return View(OtherAssistanceDto);
             }
