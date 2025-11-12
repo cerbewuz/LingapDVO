@@ -1,7 +1,10 @@
 ﻿@model HospitalAssistanceDto
 @{
-    Layout = "_AdminDisapprovedLayout";
-    ViewData["Title"] = "Hospital Assistance Disapproval View";
+    Layout = "_AdminProcessingLayout";
+    ViewData["Title"] = "Process Hospital Assistance";
+    var selectedSex = ViewData["Sex"]?.ToString();
+    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
 <style>
@@ -176,15 +179,10 @@
     .id-image-container {
         cursor: pointer;
         transition: transform 0.2s;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 10px;
-        background: white;
     }
 
         .id-image-container:hover {
             transform: scale(1.02);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
     .id-image {
@@ -192,6 +190,7 @@
         height: 200px;
         object-fit: contain;
         background-color: #f8f9fa;
+        border: 1px solid var(--border-color);
         border-radius: 5px;
     }
 
@@ -294,7 +293,7 @@
         overflow: auto;
     }
 
-    .pdf-canvas-container {
+    .pdf-container {
         display: flex;
         justify-content: center;
         padding: 20px;
@@ -304,8 +303,6 @@
     #pdfCanvas {
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         background-color: white;
-        max-width: 100%;
-        height: auto;
     }
 
     .pdf-controls {
@@ -360,12 +357,10 @@
     .btn-light {
         background-color: rgba(255, 255, 255, 0.9);
         border: none;
-        color: #333;
     }
 
         .btn-light:hover {
             background-color: white;
-            color: #333;
         }
 
         .btn-light:disabled {
@@ -434,240 +429,349 @@
             color: var(--primary-color);
         }
 
-    /* Document Type Badges */
-    .badge {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-        margin-left: 0.5rem;
-        vertical-align: middle;
-    }
-
-    /* File type indicators */
-    .pdf-container .pdf-preview {
-        cursor: pointer;
-    }
-
-        .pdf-container .pdf-preview:hover .pdf-icon {
-            color: #a00c28;
-        }
-
-    /* Image container hover effect */
-    .id-image-container {
-        position: relative;
-    }
-
-        .id-image-container::after {
-            content: '\F52A'; /* Bootstrap Icons zoom-in */
-            font-family: 'bootstrap-icons';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 3rem;
-            color: white;
-            background: rgba(0,0,0,0.5);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .id-image-container:hover::after {
-            opacity: 1;
-        }
-
-    /* Alert improvements */
-    .alert {
-        font-size: 0.9rem;
-        padding: 0.75rem;
-        margin-bottom: 0;
-    }
-
-        .alert i {
-            margin-right: 0.5rem;
-        }
-
-    /* Print Styles - Optimize for single page printing */
+    /* ============================================
+               PRINT STYLES - Fit entire form on one page
+               ============================================ */
     @@media print {
         /* Hide all buttons and interactive elements */
-        .btn-receipt,
-        .btn-approved,
-        .btn-disapproved,
-        .status-buttons,
-        .receipt-footer,
-        button {
+        .btn, button, .status-buttons, .receipt-footer,
+        .go-back-btn, .btn-approved, .btn-disapproved,
+        .btn-receipt, input[type="submit"], input[type="button"] {
             display: none !important;
         }
         /* Hide modals */
-        .zoom-modal,
-        .pdf-viewer-modal,
-        .comments-modal {
+        .zoom-modal, .pdf-viewer-modal, .comments-modal {
             display: none !important;
         }
-        /* Reset page margins and container styles for compact printing */
+        /* Reset page margins and padding */
+        @@page {
+            size: A4;
+            margin: 0.4cm;
+        }
+        /* Remove all spacing from body and wrapper elements */
         body {
-            margin: 0;
-            padding: 0;
-            background: white;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 8pt !important;
+            line-height: 1.1 !important;
+        }
+        /* Remove all spacing from layout wrapper elements */
+        .forms-layout-wrapper {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
         }
 
-        .receipt-container {
-            max-width: 100%;
-            margin: 0;
-            box-shadow: none;
-            border-radius: 0;
+        .form-container {
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+        /* Make header extremely compact */
+        .official-form-header {
+            margin: 0 !important;
+            padding: 0.3rem 0.5rem !important;
+            border-bottom: 1px solid #000 !important;
             page-break-after: avoid;
+        }
+
+        .header-content-flex {
+            gap: 0.3rem !important;
+            align-items: center !important;
+        }
+
+        .header-logo {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .lingap-logo {
+            width: 35px !important;
+            height: 35px !important;
+            max-width: 35px !important;
+        }
+
+        .header-text {
+            margin: 0 !important;
+            padding: 0 !important;
+            text-align: center !important;
+        }
+
+        .header-title {
+            font-size: 11pt !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.1 !important;
+            font-weight: bold !important;
+        }
+
+        .header-subtitle {
+            font-size: 9pt !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.1 !important;
+        }
+
+        .header-form-title {
+            font-size: 10pt !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.1 !important;
+            font-weight: bold !important;
+        }
+        /* Remove all spacing from form content wrapper */
+        .form-content-wrapper {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        /* Compact receipt container */
+        .receipt-container {
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            border: none !important;
+            page-break-inside: avoid;
         }
         /* Compact header */
         .receipt-header {
-            padding: 0.5rem;
-            margin: 0;
-            background: #DC143C !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            padding: 0.2rem 0.3rem !important;
+            margin: 0 !important;
+            page-break-after: avoid;
+            border: none !important;
         }
 
             .receipt-header h3 {
-                font-size: 1.1rem;
-                margin: 0;
+                font-size: 10pt !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-weight: bold !important;
             }
         /* Compact body */
         .receipt-body {
-            padding: 0.5rem;
+            padding: 0.3rem 0.5rem !important;
+            margin: 0 !important;
         }
-        /* Reduce section spacing */
+        /* Compact sections */
         .receipt-section {
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.3rem;
+            margin-bottom: 0.3rem !important;
+            padding-bottom: 0.2rem !important;
+            border-bottom: 0.5px solid #ccc !important;
             page-break-inside: avoid;
         }
 
         .section-title {
-            font-size: 0.9rem;
-            margin-bottom: 0.3rem;
-            padding-bottom: 0.2rem;
+            font-size: 9pt !important;
+            font-weight: bold !important;
+            margin-bottom: 0.2rem !important;
+            padding-bottom: 0.1rem !important;
+            color: #000 !important;
+            line-height: 1.1 !important;
         }
         /* Compact info rows */
         .info-row {
-            margin-bottom: 0.2rem;
-            font-size: 0.85rem;
+            margin-bottom: 0.1rem !important;
+            font-size: 7pt !important;
+            line-height: 1.1 !important;
         }
 
         .info-label {
-            font-size: 0.85rem;
+            flex: 0 0 25% !important;
+            font-size: 7pt !important;
+            color: #000 !important;
+            padding-right: 0.2rem !important;
         }
 
         .info-value {
-            font-size: 0.85rem;
-        }
-        /* Reduce image sizes for compact printing */
-        .id-image {
-            height: 120px;
-            page-break-inside: avoid;
-        }
-
-        .id-image-container {
-            page-break-inside: avoid;
-        }
-        /* Compact PDF preview */
-        .pdf-preview {
-            padding: 0.4rem;
-            font-size: 0.8rem;
-        }
-
-        .pdf-icon {
-            font-size: 1.5rem;
+            font-size: 7pt !important;
+            color: #000 !important;
         }
         /* Compact form controls */
-        .form-control,
-        .form-check,
-        .form-label,
-        textarea {
-            font-size: 0.8rem;
-            padding: 0.2rem 0.4rem;
-            margin-bottom: 0.2rem;
+        .form-control, .form-select, textarea {
+            font-size: 7pt !important;
+            padding: 0.15rem 0.2rem !important;
+            border: 0.5px solid #666 !important;
+            background: white !important;
+            margin-bottom: 0.1rem !important;
+            line-height: 1.1 !important;
         }
 
-        textarea {
-            min-height: 40px;
-        }
-        /* Compact CMO section */
-        .row.g-3 {
-            margin-top: 0.3rem !important;
+        .form-label {
+            font-size: 7pt !important;
+            margin-bottom: 0.05rem !important;
+            color: #000 !important;
+            line-height: 1.1 !important;
         }
 
-        .col-md-6 {
-            padding-left: 0.3rem;
-            padding-right: 0.3rem;
-        }
-        /* Reduce checkbox spacing */
         .form-check {
-            margin-top: 0.2rem !important;
+            margin-bottom: 0.1rem !important;
+            padding-left: 1rem !important;
         }
 
         .form-check-label {
-            font-size: 0.8rem;
-        }
-        /* Compact status badge */
-        .status-badge {
-            padding: 0.2rem 0.5rem;
-            font-size: 0.75rem;
-        }
-        /* Ensure colors print correctly */
-        .status-badge,
-        .receipt-header {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        /* Hide interactive hover states */
-        .id-image-container:hover,
-        .pdf-preview:hover {
-            transform: none;
-            border-color: var(--border-color);
-        }
-        /* Compact the "Processed by" section */
-        .form-floating {
-            height: auto !important;
-            min-height: 60px !important;
-        }
-
-            .form-floating .form-control {
-                height: auto !important;
-                padding: 0.3rem !important;
-                font-size: 0.85rem !important;
-            }
-        /* Remove unnecessary spacing */
-        br {
-            display: none;
-        }
-        /* Optimize Valid ID and Documents section */
-        .col-md-6.mb-3 {
-            margin-bottom: 0.3rem !important;
-        }
-
-        h6 {
-            font-size: 0.85rem;
-            margin-bottom: 0.2rem;
+            font-size: 6.5pt !important;
+            line-height: 1.1 !important;
         }
         /* Compact rows */
         .row {
-            margin-left: -0.3rem;
-            margin-right: -0.3rem;
+            margin-left: -0.15rem !important;
+            margin-right: -0.15rem !important;
+            margin-bottom: 0.1rem !important;
         }
-        /* Adjust Application ID */
-        .receipt-section .info-row:first-child {
-            font-weight: bold;
-            font-size: 0.9rem;
+
+            .row > * {
+                padding-left: 0.15rem !important;
+                padding-right: 0.15rem !important;
+            }
+
+        .g-3 {
+            gap: 0.2rem !important;
         }
-        /* Make sure page fits on one page */
-        @@page {
-            size: auto;
-            margin: 10mm 5mm;
+
+        .mt-2, .mt-3 {
+            margin-top: 0.2rem !important;
+        }
+
+        .mb-3, .mb-2 {
+            margin-bottom: 0.2rem !important;
+        }
+        /* Compact images */
+        .id-image {
+            max-height: 60px !important;
+            width: auto !important;
+        }
+
+        .id-image-container {
+            max-height: 60px !important;
+            margin-bottom: 0.2rem !important;
+        }
+
+        h6 {
+            font-size: 7pt !important;
+            margin: 0.1rem 0 !important;
+            font-weight: bold !important;
+        }
+        /* Compact PDF preview */
+        .pdf-preview {
+            padding: 0.2rem !important;
+            font-size: 6.5pt !important;
+            margin-bottom: 0.1rem !important;
+        }
+
+        .pdf-icon {
+            font-size: 1.2rem !important;
+        }
+
+        .pdf-filename, .pdf-label {
+            font-size: 6.5pt !important;
+            line-height: 1.1 !important;
+        }
+        /* Compact CMO section */
+        #billAmountInput, #cmoNotesInput, #cmoReflectionField {
+            height: auto !important;
+            min-height: 15px !important;
+            font-size: 7pt !important;
+            padding: 0.1rem !important;
+        }
+        /* Compact textarea */
+        textarea {
+            min-height: 25px !important;
+            height: 25px !important;
+            font-size: 7pt !important;
+            padding: 0.1rem !important;
+            line-height: 1.1 !important;
+        }
+        /* Status badge */
+        .status-badge {
+            padding: 0.1rem 0.3rem !important;
+            font-size: 6.5pt !important;
+        }
+        /* Hide unnecessary whitespace */
+        br {
+            display: none !important;
+        }
+        /* Ensure checkboxes are visible */
+        .form-check-input {
+            -webkit-appearance: checkbox !important;
+            -moz-appearance: checkbox !important;
+            appearance: checkbox !important;
+            width: 10px !important;
+            height: 10px !important;
+            margin-right: 0.2rem !important;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        /* Print colors exactly */
+        * {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        /* Compact form floating */
+        .form-floating {
+            height: auto !important;
+            margin-bottom: 0.1rem !important;
+        }
+
+            .form-floating input {
+                height: auto !important;
+                padding: 0.2rem !important;
+                font-size: 7pt !important;
+            }
+
+            .form-floating label {
+                font-size: 6.5pt !important;
+                padding: 0.15rem !important;
+            }
+        /* Prevent page breaks in critical sections */
+        .receipt-header,
+        .receipt-section,
+        .info-row,
+        .row {
+            page-break-inside: avoid;
+        }
+        /* Ensure first page contains all content */
+        .receipt-container {
+            height: auto !important;
+            max-height: none !important;
+        }
+        /* Compact col spacing */
+        .col-md-6, .col-md-4, .col-md-3 {
+            padding-top: 0.1rem !important;
+            padding-bottom: 0.1rem !important;
+        }
+
+        .col-md-6 {
+            flex: 0 0 48% !important;
+            max-width: 48% !important;
+        }
+        /* Remove box shadows and backgrounds for print */
+        .pdf-preview, .form-control, .id-image {
+            box-shadow: none !important;
+            background-color: white !important;
+        }
+        /* Application ID styling */
+        .info-row:first-child .info-label {
+            font-weight: bold !important;
+            font-size: 7pt !important;
+        }
+        /* Compact all container elements */
+        .container, .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        /* Even more compact spacing for specific elements */
+        p {
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.1 !important;
+        }
+        /* Reduce spacing between columns */
+        [class*="col-"] {
+            padding-left: 0.15rem !important;
+            padding-right: 0.15rem !important;
         }
     }
 </style>
@@ -712,19 +816,40 @@
                 <i class="bi bi-exclamation-triangle"></i>
                 <p>Error loading PDF. Please try again.</p>
             </div>
-            <div class="pdf-canvas-container">
+            <div class="pdf-container">
                 <canvas id="pdfCanvas"></canvas>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Comments Modal -->
+<div id="commentsModal" class="comments-modal">
+    <div class="comments-modal-content">
+        <div class="comments-modal-header">
+            <h5 class="comments-modal-title">Comments Required</h5>
+            <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
+        </div>
+        <div class="mb-3">
+            <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
+            <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
+            <div class="invalid-feedback">Comments are required when disapproving an application.</div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
+            <button type="button" class="btn btn-disapproved" onclick="submitDisapproved()">Submit Disapproval</button>
+        </div>
+    </div>
+</div>
+
 <div class="receipt-container">
-    <form asp-action="HospitalAssistanceDisapproveStatus" enctype="multipart/form-data" method="post">
+    <form asp-action="HospitalAssistanceApproveStatus" enctype="multipart/form-data" method="post" id="statusForm">
+        <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
+        <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
         <div class="receipt-body">
-            <!-- Patient Information -->
             <div class="receipt-section">
-                <h5 class="section-header">Patient Information</h5>
+                <br />
+                <h5 class="section-title">Patient Information</h5>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="info-row">
@@ -734,7 +859,6 @@
                                 @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
                             </div>
                         </div>
-
                         <div class="info-row">
                             <div class="info-label">Address:</div>
                             <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
@@ -767,7 +891,7 @@
 
             <!-- Requestor Details -->
             <div class="receipt-section">
-                <h5 class="section-header">Requestor's Details</h5>
+                <h5 class="section-title">Requestor's Details</h5>
                 <div class="info-row">
                     <div class="info-label">Full Name:</div>
                     <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
@@ -788,166 +912,130 @@
 
             <!-- Assistance Requested -->
             <div class="receipt-section">
-                <h5 class="section-header">Assistance Requested</h5>
+                <h5 class="section-title">Assistance Requested</h5>
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- CMO Section -->
-            <div class="receipt-section">
-                <h5 class="section-header">CMO Section</h5>
-                <div class="info-value">@ViewData["Typeassistance"]</div>
-            </div>
 
-            <!-- Comments Section -->
-            <div class="receipt-section">
-                <label for="idFrontDescription" class="form-label">Description / Comments</label>
-                <textarea class="form-control" id="idFrontDescription" rows="4" placeholder="Add any notes or comments about this application...">@ViewData["Comments"]</textarea>
-                <span asp-validation-for="Comments" class="text-danger"></span>
-            </div>
 
             <!-- Valid ID and Submitted Documents Section -->
             <div class="receipt-section">
-                <!-- Valid ID Section (Images) -->
+                <!-- Valid ID Section -->
                 <div class="receipt-section">
-                    <h5 class="section-header">Valid ID (Images)</h5>
+                    <h5 class="section-title">Valid ID</h5>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <h6>Front ID <span class="badge bg-secondary">Image</span></h6>
+                            <h6>Front ID</h6>
                             @if (ViewData["ValidfrontimageBase64"] != null)
                             {
-                                <div class="id-image-container" onclick="zoomImage(this.querySelector('img'))" title="Click to zoom">
-                                    <img src="data:image/png;base64,@ViewData["ValidfrontimageBase64"]"
-                                         alt="Front ID"
-                                         class="id-image"
-                                         onerror="this.src='data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]'" />
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
                                 </div>
-                                <small class="text-muted d-block mt-1"><i class="bi bi-zoom-in"></i> Click image to enlarge</small>
                             }
                             else
                             {
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle"></i> No front ID image available
-                                </div>
+                                <p class="text-muted">No front ID image available</p>
                             }
                         </div>
                         <div class="col-md-6 mb-3">
-                            <h6>Back ID <span class="badge bg-secondary">Image</span></h6>
+                            <h6>Back ID</h6>
                             @if (ViewData["ValidBackimageBase64"] != null)
                             {
-                                <div class="id-image-container" onclick="zoomImage(this.querySelector('img'))" title="Click to zoom">
-                                    <img src="data:image/png;base64,@ViewData["ValidBackimageBase64"]"
-                                         alt="Back ID"
-                                         class="id-image"
-                                         onerror="this.src='data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]'" />
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
                                 </div>
-                                <small class="text-muted d-block mt-1"><i class="bi bi-zoom-in"></i> Click image to enlarge</small>
                             }
                             else
                             {
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle"></i> No back ID image available
-                                </div>
+                                <p class="text-muted">No back ID image available</p>
                             }
                         </div>
                     </div>
                 </div>
 
-                <!-- Doctor Prescription (PDF) -->
+                <!-- Doctor Prescription -->
                 @if (ViewData["DoctorPrescriptionBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Doctor Prescription (PDF)</h5>
+                        <h5 class="section-title">Doctor Prescription</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
-                            <!-- PDF Document -->
                             <div class="pdf-container">
                                 <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
                                     <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
                                     <div class="pdf-info">
                                         <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                        <span class="pdf-label">Click to view PDF document</span>
+                                        <span class="pdf-label">Click to view PDF</span>
                                     </div>
                                 </div>
                             </div>
                         }
                         else
                         {
-                            <!-- Fallback: If detected as image instead of PDF -->
-                            <div class="alert alert-warning">
-                                <i class="bi bi-exclamation-triangle"></i>
-                                Doctor Prescription was expected to be a PDF but appears to be an image format.
-                            </div>
-                            <div class="id-image-container" onclick="zoomImage(this.querySelector('img'))">
-                                <img src="data:image/png;base64,@ViewData["DoctorPrescriptionBase64"]"
-                                     alt="Doctor Prescription"
-                                     class="id-image"
-                                     onerror="this.src='data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]'" />
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
                             </div>
                         }
-                    </div>
-                }
-                else
-                {
-                    <div class="receipt-section">
-                        <h5 class="section-header">Doctor Prescription (PDF)</h5>
-                        <p class="text-muted">No doctor prescription available</p>
                     </div>
                 }
 
-                <!-- Death Certificate (PDF or Image) -->
-                @if (ViewData["DeathCertificateBase64"] != null)
+                <!-- Medical Certificate -->
+                @if (ViewData["MedicalCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                        <h5 class="section-title">Medical Certificate</h5>
+                        @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                         {
-                            <h5 class="section-header">Death Certificate <span class="badge bg-danger">PDF</span></h5>
-                            <!-- PDF Document -->
                             <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')" title="Click to view PDF">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
                                     <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
                                     <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                        <span class="pdf-label">Click to view PDF document</span>
+                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
                                     </div>
                                 </div>
                             </div>
                         }
                         else
                         {
-                            <h5 class="section-header">Death Certificate <span class="badge bg-secondary">Image</span></h5>
-                            <!-- Image Document -->
-                            <div class="id-image-container" onclick="zoomImage(this.querySelector('img'))" title="Click to zoom">
-                                <img src="data:image/png;base64,@ViewData["DeathCertificateBase64"]"
-                                     alt="Death Certificate"
-                                     class="id-image"
-                                     onerror="this.src='data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]'" />
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
                             </div>
-                            <small class="text-muted d-block mt-1"><i class="bi bi-zoom-in"></i> Click image to enlarge</small>
+                        }
+                    </div>
+                }
+
+                <!-- Death Certificate -->
+                @if (ViewData["DeathCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-title">Death Certificate</h5>
+                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                            </div>
                         }
                     </div>
                 }
             </div>
 
-            <!-- Debug Information (Remove in production) -->
-            @if (ViewData["DebugMessages"] != null)
-            {
-                <div class="receipt-section" style="background-color: #f8f9fa; padding: 1rem; border-left: 4px solid #17a2b8;">
-                    <h5 class="section-header">🔍 Debug Information</h5>
-                    <div style="font-family: monospace; font-size: 0.85rem;">
-                        @foreach (var msg in (List<string>)ViewData["DebugMessages"])
-                        {
-                            <div>@msg</div>
-                        }
-                    </div>
-                    <small class="text-muted">This section helps verify file decryption is working correctly.</small>
-                </div>
-            }
 
             <!-- Status Section -->
             <div class="receipt-section">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="section-title mb-0">Request Status</h5>
-                </div>
+                <h5 class="section-title">Request Status</h5>
                 <div class="info-row">
                     <div class="info-label">Current Status:</div>
                     <div class="info-value">
@@ -968,6 +1056,7 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
+
         // Configure PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -977,52 +1066,26 @@
         let totalPages = 1;
         let currentScale = 1.2;
 
-        // Image Zoom Functionality - Enhanced to handle img elements or src strings
-        function zoomImage(imgElementOrSrc) {
+        // Image Zoom Functionality
+        function zoomImage(src) {
             const modal = document.getElementById("zoomModal");
             const modalImg = document.getElementById("zoomedImage");
-
-            // Handle both img elements and direct src strings
-            let imageSrc;
-            if (typeof imgElementOrSrc === 'string') {
-                imageSrc = imgElementOrSrc;
-            } else if (imgElementOrSrc && imgElementOrSrc.src) {
-                imageSrc = imgElementOrSrc.src;
-            } else {
-                console.error('Invalid image source provided to zoomImage');
-                return;
-            }
-
             modal.style.display = "block";
-            modalImg.src = imageSrc;
+            modalImg.src = src;
         }
 
-        // Close zoom modal - Enhanced with error handling
-        document.addEventListener('DOMContentLoaded', function() {
-            const closeZoomBtn = document.querySelector(".close-zoom");
-            if (closeZoomBtn) {
-                closeZoomBtn.onclick = function() {
-                    document.getElementById("zoomModal").style.display = "none";
-                };
-            }
-        });
+        // Close zoom modal
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
 
-        // PDF Viewer Function - Enhanced with better error handling
+        // PDF Viewer Function
         async function viewPDFInModal(fileName, fileType, displayName) {
-            console.log('📄 viewPDFInModal called:', { fileName, fileType, displayName });
-
             const modal = document.getElementById('pdfViewerModal');
             const title = document.getElementById('pdfViewerTitle');
             const loading = document.getElementById('pdfLoading');
             const errorDiv = document.getElementById('pdfError');
             const canvas = document.getElementById('pdfCanvas');
-
-            if (!modal || !title || !loading || !errorDiv || !canvas) {
-                console.error('❌ Required modal elements not found');
-                alert('PDF viewer components not found. Please refresh the page.');
-                return;
-            }
-
             const context = canvas.getContext('2d');
             const currentPageSpan = document.getElementById('currentPage');
             const totalPagesSpan = document.getElementById('totalPages');
@@ -1041,40 +1104,25 @@
             currentScale = 1.2;
 
             try {
-                console.log('🔄 Fetching PDF...');
                 const encodedFileName = encodeURIComponent(fileName);
                 const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
-                console.log('📡 URL:', url);
 
                 const response = await fetch(url);
-                console.log('📥 Response status:', response.status, response.statusText);
-
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ Server error:', errorText);
-                    throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const pdfData = await response.arrayBuffer();
-                console.log('✅ PDF data received:', pdfData.byteLength, 'bytes');
-
                 if (!pdfData || pdfData.byteLength === 0) {
                     throw new Error('PDF data is empty');
                 }
 
-                // Check if PDF.js is loaded
-                if (typeof pdfjsLib === 'undefined') {
-                    throw new Error('PDF.js library not loaded. Please refresh the page.');
-                }
-
-                console.log('📖 Loading PDF document...');
                 const loadingTask = pdfjsLib.getDocument({ data: pdfData });
                 currentPDF = await loadingTask.promise;
 
                 totalPages = currentPDF.numPages;
                 totalPagesSpan.textContent = totalPages;
                 currentPageSpan.textContent = currentPage;
-                console.log('✅ PDF loaded successfully. Total pages:', totalPages);
 
                 updateNavigationButtons();
                 await renderPage(currentPage);
@@ -1082,14 +1130,12 @@
                 loading.style.display = 'none';
                 canvas.style.display = 'block';
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-                console.log('✅ PDF viewer ready');
 
             } catch (error) {
-                console.error('❌ Error loading PDF:', error);
+                console.error('Error loading PDF:', error);
                 loading.style.display = 'none';
                 errorDiv.style.display = 'block';
-                const errorMsg = error.message || 'Unknown error occurred';
-                errorDiv.querySelector('p').textContent = `Error loading PDF: ${errorMsg}`;
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
             }
         }
 
@@ -1171,11 +1217,89 @@
             }
         }
 
+        // Status Submission Functions
+        function submitApproved() {
+            document.getElementById('statusInput').value = 'Approved';
+            document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
+            document.getElementById('statusForm').submit();
+        }
+
+        function showCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'block';
+            document.getElementById('commentsTextarea').focus();
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'none';
+            document.getElementById('commentsTextarea').value = '';
+            document.getElementById('commentsTextarea').classList.remove('is-invalid');
+        }
+
+        function submitDisapproved() {
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            const comments = commentsTextarea.value.trim();
+
+            if (comments === '') {
+                commentsTextarea.classList.add('is-invalid');
+                commentsTextarea.focus();
+                return;
+            }
+
+            document.getElementById('statusInput').value = 'Disapproved';
+            document.getElementById('commentsInput').value = comments;
+            document.getElementById('statusForm').submit();
+        }
+
+        // CMO Reflection Auto-generation
+        document.addEventListener('DOMContentLoaded', function() {
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+            cmoCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        cmoCheckboxes.forEach(cb => {
+                            if (cb !== this) cb.checked = false;
+                        });
+                    }
+                    updateReflection();
+                });
+            });
+
+            function updateReflection() {
+                const billInput = document.getElementById('billAmountInput');
+                const cmoNotes = document.getElementById('cmoNotesInput');
+                const reflectionField = document.getElementById('cmoReflectionField');
+                const docCheckboxes = document.querySelectorAll('.supporting-doc');
+
+                let parts = [];
+                if (billInput.value.trim()) {
+                    parts.push(`Bill: ${billInput.value.trim()}`);
+                }
+                const checkedDocs = [];
+                docCheckboxes.forEach(cb => {
+                    if (cb.checked) checkedDocs.push(cb.value);
+                });
+                if (checkedDocs.length) {
+                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                }
+                if (cmoNotes.value.trim()) {
+                    parts.push(`Others: ${cmoNotes.value.trim()}`);
+                }
+                reflectionField.value = parts.join(' , ');
+            }
+
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+            updateReflection();
+        });
+
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.getElementById("zoomModal").style.display = "none";
                 closePDFViewer();
+                closeCommentsModal();
             }
 
             const pdfModal = document.getElementById('pdfViewerModal');
@@ -1206,6 +1330,7 @@
         window.onclick = function(event) {
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
+            const commentsModal = document.getElementById("commentsModal");
 
             if (event.target == zoomModal) {
                 zoomModal.style.display = "none";
@@ -1213,48 +1338,9 @@
             if (event.target == pdfModal) {
                 closePDFViewer();
             }
+            if (event.target == commentsModal) {
+                closeCommentsModal();
+            }
         }
-
-        // Add image load event handlers for debugging
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎯 Page loaded - initializing image verification...');
-
-            // Check all images on the page
-            const images = document.querySelectorAll('.id-image');
-            console.log(`📸 Found ${images.length} images to verify`);
-
-            images.forEach((img, index) => {
-                img.addEventListener('load', function() {
-                    console.log(`✅ Image ${index + 1} loaded successfully:`, img.alt);
-                });
-
-                img.addEventListener('error', function() {
-                    console.error(`❌ Image ${index + 1} failed to load:`, img.alt);
-                    console.log('Attempting fallback format...');
-                });
-
-                // Log if image src exists
-                if (img.src) {
-                    const srcPreview = img.src.substring(0, 50) + '...';
-                    console.log(`📄 Image ${index + 1} (${img.alt}) src:`, srcPreview);
-                }
-            });
-
-            // Check ViewData availability
-            console.log('🔍 Checking decrypted data availability:');
-            const frontId = document.querySelector('img[alt="Front ID"]');
-            const backId = document.querySelector('img[alt="Back ID"]');
-            const doctorPrescImg = document.querySelector('img[alt="Doctor Prescription"]');
-            const deathCertImg = document.querySelector('img[alt="Death Certificate"]');
-
-            console.log('Front ID:', frontId ? '✅ Available' : '❌ Not found');
-            console.log('Back ID:', backId ? '✅ Available' : '❌ Not found');
-            console.log('Doctor Prescription (Image):', doctorPrescImg ? '✅ Available' : 'ℹ️ Not found (may be PDF)');
-            console.log('Death Certificate (Image):', deathCertImg ? '✅ Available' : 'ℹ️ Not found (may be PDF)');
-
-            // Check PDF containers
-            const pdfContainers = document.querySelectorAll('.pdf-container');
-            console.log(`📄 Found ${pdfContainers.length} PDF document(s)`);
-        });
     </script>
 }
