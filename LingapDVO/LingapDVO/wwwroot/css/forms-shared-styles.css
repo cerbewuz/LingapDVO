@@ -1,0 +1,205 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LINGAPDVO TRULY SHARED FORM STYLES
+   ═══════════════════════════════════════════════════════════════════════════════
+   These styles are TRULY uniform across ALL form pages:
+   - Input forms (user submission)
+   - View forms (display only)
+   - Edit forms (admin editing)
+   - Status pages (admin review/approval)
+
+   Only includes styles that apply to ALL form types universally.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CHECKBOX AND RADIO BUTTON STYLING - Used in all forms for display/selection
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.form-check-input {
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 1.5px solid #adb5bd;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-top: 0.15rem;
+    margin-right: 0.4rem;
+    flex-shrink: 0;
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+}
+
+.form-check-input:checked {
+    background-color: #dc143c;
+    border-color: #dc143c;
+}
+
+.form-check-input:focus {
+    border-color: #dc143c;
+    box-shadow: 0 0 0 0.2rem rgba(220, 20, 60, 0.15);
+    outline: none;
+}
+
+.form-check-input:hover {
+    border-color: #dc143c;
+}
+
+/* Compact label alignment */
+.form-check-label {
+    margin-left: 0;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Compact form-check container */
+.form-check {
+    display: flex;
+    align-items: center;
+    padding-left: 0;
+    margin-bottom: 0.5rem;
+    min-height: 1.4rem;
+}
+
+/* Inline checkboxes/radios with tighter spacing */
+.form-check-inline {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Reduce spacing for checkbox groups */
+.form-check.mt-2 {
+    margin-top: 0.5rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SECTION HEADER CONSISTENCY - Used in all forms
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.section-header,
+h5.section-header,
+h4.section-header {
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    color: var(--white, #ffffff);
+    background: var(--primary, #1a365d);
+    margin-top: 1rem;
+    margin-bottom: 0.625rem;
+    padding: 0.4rem 0.875rem;
+    border: none;
+    position: relative;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.section-header:first-child {
+    margin-top: 0;
+}
+
+.section-header i {
+    color: var(--white, #ffffff);
+    font-size: 1rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FORM LABEL CONSISTENCY - Used in all forms
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.form-label {
+    font-weight: 600;
+    color: var(--gray-900, #171717);
+    margin-bottom: 0.2rem;
+    font-size: 0.8125rem;
+    display: block;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    letter-spacing: 0.3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   IMAGE PREVIEW STYLING - Used in view/status pages for displaying images
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.img-preview {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 300px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    object-fit: contain;
+    display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ALERT STYLING - Used across all forms
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.alert-danger i {
+    margin-right: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE ADJUSTMENTS - Apply to all forms
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .section-header,
+    h5.section-header,
+    h4.section-header {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .form-label {
+        font-size: 0.8125rem;
+    }
+
+    .form-check-label {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-header,
+    h5.section-header,
+    h4.section-header {
+        font-size: 0.8125rem;
+        padding: 0.5rem;
+    }
+
+    .form-check-input {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PRINT STYLES - Apply to all forms
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media print {
+    .section-header {
+        background: white !important;
+        color: black !important;
+        border: 2px solid black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .form-check-input {
+        border: 2px solid black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .form-check-input:checked {
+        background: black !important;
+    }
+}

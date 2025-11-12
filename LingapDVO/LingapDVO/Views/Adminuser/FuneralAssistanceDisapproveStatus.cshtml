@@ -1,10 +1,10 @@
-@model FuneralAssistanceDto
+﻿@model FuneralAssistanceDto
 @{
     Layout = "_AdminDisapprovedLayout";
     ViewData["Title"] = "Application View";
 }
 
-    <div class="receipt-container">
+<div class="receipt-container">
         <form asp-action="FuneralAssistanceDisapproveStatus" enctype="multipart/form-data" method="post">
             <div class="receipt-header">
                 <h3>Hospital Bill Application Details</h3>
@@ -19,7 +19,7 @@
                         <div class="info-label">Application ID:@ViewData["Id"]</div>
                     </div>
                     <br />
-                    <h5 class="section-title">Patient Information</h5>
+                    <h5 class="section-header">Patient Information</h5>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="info-row">
@@ -62,7 +62,7 @@
 
                 <!-- Requestor Details -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Requestor's Details</h5>
+                    <h5 class="section-header">Requestor's Details</h5>
                     <div class="info-row">
                         <div class="info-label">Full Name:</div>
                         <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
@@ -83,14 +83,14 @@
 
                 <!-- Assistance Requested -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Assistance Requested</h5>
+                    <h5 class="section-header">Assistance Requested</h5>
                     <div class="info-value">@ViewData["Typeassistance"]</div>
                 </div>
 
                 <!-- CMO Section -->
 
                 <div class="receipt-section">
-                    <h5 class="section-title">CMO Section</h5>
+                    <h5 class="section-header">CMO Section</h5>
                     <div class="info-value">@ViewData["Typeassistance"]</div>
                 </div>
 
@@ -103,7 +103,7 @@
 
                 <!-- Valid ID and Submitted Documents Section -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Valid ID and Submitted Documents</h5>
+                    <h5 class="section-header">Valid ID and Submitted Documents</h5>
                     <div class="row">
                         <!-- Valid ID (Front and Back) -->
                         <div class="col-lg-6 mb-3">
