@@ -1,4 +1,4 @@
-@model HospitalAssistanceDto
+﻿@model HospitalAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
     ViewData["Title"] = "Hospital Assistance View";
@@ -6,6 +6,7 @@
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
+
 <style>
     /* Remove borders since layout already has them */
     .receipt-container {
@@ -284,7 +285,7 @@
         <div class="receipt-body">
             <!-- Patient Information -->
             <div class="receipt-section">
-                <h5 class="section-title">Patient Information</h5>
+                <h5 class="section-header">Patient Information</h5>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="info-row">
@@ -326,7 +327,7 @@
 
             <!-- Requestor Details -->
             <div class="receipt-section">
-                <h5 class="section-title">Requestor's Details</h5>
+                <h5 class="section-header">Requestor's Details</h5>
                 <div class="info-row">
                     <div class="info-label">Full Name:</div>
                     <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
@@ -347,7 +348,7 @@
 
             <!-- Assistance Requested -->
             <div class="receipt-section">
-                <h5 class="section-title">Assistance Requested</h5>
+                <h5 class="section-header">Assistance Requested</h5>
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
@@ -355,7 +356,7 @@
             <div class="receipt-section">
                 <!-- Valid ID Section -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Valid ID</h5>
+                    <h5 class="section-header">Valid ID</h5>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <h6>Front ID</h6>
@@ -390,7 +391,7 @@
                 @if (ViewData["DoctorPrescriptionBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-title">Doctor Prescription</h5>
+                        <h5 class="section-header">Doctor Prescription</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
                             <div class="pdf-container">
@@ -416,7 +417,7 @@
                 @if (ViewData["MedicalCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-title">Medical Certificate</h5>
+                        <h5 class="section-header">Medical Certificate</h5>
                         @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                         {
                             <div class="pdf-container">
@@ -442,7 +443,7 @@
                 @if (ViewData["DeathCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-title">Death Certificate</h5>
+                        <h5 class="section-header">Death Certificate</h5>
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
                             <div class="pdf-container">

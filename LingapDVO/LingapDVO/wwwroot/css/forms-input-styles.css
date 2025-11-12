@@ -1,0 +1,174 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LINGAPDVO INPUT/EDIT FORM SPECIFIC STYLES
+   ═══════════════════════════════════════════════════════════════════════════════
+   These styles are ONLY for forms that allow user input, editing, and submission:
+   - Input forms (user submission - FuneralAssistance, HospitalAssistance, OtherAssistance)
+   - Edit forms (admin editing - *Edit.cshtml files)
+
+   NOT for:
+   - View forms (display only)
+   - Status pages (admin review pages)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SUBMIT BUTTON STYLING - Only for forms with submission
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.btn-submit {
+    background-color: #28a745; /* Green */
+    color: white;
+    font-weight: 600;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-submit:hover {
+    background-color: #20c997; /* Green-blue hover */
+    transform: scale(1.05);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   REQUIRED FIELD INDICATOR - Only for input/edit forms
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+label.required::after {
+    content: " *";
+    color: var(--primary-color);
+    font-weight: bold;
+    transition: opacity 0.3s ease;
+}
+
+label.required.filled::after {
+    opacity: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   VALIDATION ERROR STYLES - Only for input/edit forms with validation
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.checkbox-group-error,
+.radio-group-error {
+    border: 2px solid #dc3545 !important;
+    border-radius: 8px;
+    padding: 1rem;
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.error-message.show {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   UPLOAD BOX STYLING - Only for input/edit forms with file uploads
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.upload-box {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    background-color: #fafafa;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.upload-box:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.upload-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FORM NOTES AND HELPER TEXT - For input/edit guidance
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.form-note {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FORM ACTIONS / BUTTON GROUP - For forms with action buttons
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.form-actions .btn {
+    min-width: 120px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE ADJUSTMENTS FOR INPUT FORMS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .btn-submit {
+        width: 100%;
+        padding: 0.75rem 1rem;
+    }
+
+    .form-actions {
+        justify-content: stretch;
+    }
+
+    .form-actions .btn {
+        flex: 1 1 100%;
+        min-width: 100%;
+    }
+
+    .upload-box {
+        padding: 1rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   PRINT STYLES FOR INPUT FORMS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media print {
+    .btn-submit,
+    .form-actions,
+    .upload-box {
+        display: none !important;
+    }
+
+    .error-message,
+    .text-danger,
+    .field-validation-error {
+        display: none !important;
+    }
+}

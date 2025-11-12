@@ -1,4 +1,4 @@
-@model HospitalAssistanceDto
+﻿@model HospitalAssistanceDto
 @{
     Layout = "_AdminDisapprovedLayout";
     ViewData["Title"] = "Hospital Assistance Disapproval View";
@@ -724,7 +724,7 @@
         <div class="receipt-body">
             <!-- Patient Information -->
             <div class="receipt-section">
-                <h5 class="section-title">Patient Information</h5>
+                <h5 class="section-header">Patient Information</h5>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="info-row">
@@ -767,7 +767,7 @@
 
             <!-- Requestor Details -->
             <div class="receipt-section">
-                <h5 class="section-title">Requestor's Details</h5>
+                <h5 class="section-header">Requestor's Details</h5>
                 <div class="info-row">
                     <div class="info-label">Full Name:</div>
                     <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
@@ -788,13 +788,13 @@
 
             <!-- Assistance Requested -->
             <div class="receipt-section">
-                <h5 class="section-title">Assistance Requested</h5>
+                <h5 class="section-header">Assistance Requested</h5>
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
             <!-- CMO Section -->
             <div class="receipt-section">
-                <h5 class="section-title">CMO Section</h5>
+                <h5 class="section-header">CMO Section</h5>
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
@@ -809,7 +809,7 @@
             <div class="receipt-section">
                 <!-- Valid ID Section (Images) -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Valid ID (Images)</h5>
+                    <h5 class="section-header">Valid ID (Images)</h5>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <h6>Front ID <span class="badge bg-secondary">Image</span></h6>
@@ -856,7 +856,7 @@
                 @if (ViewData["DoctorPrescriptionBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-title">Doctor Prescription (PDF)</h5>
+                        <h5 class="section-header">Doctor Prescription (PDF)</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
                             <!-- PDF Document -->
@@ -889,7 +889,7 @@
                 else
                 {
                     <div class="receipt-section">
-                        <h5 class="section-title">Doctor Prescription (PDF)</h5>
+                        <h5 class="section-header">Doctor Prescription (PDF)</h5>
                         <p class="text-muted">No doctor prescription available</p>
                     </div>
                 }
@@ -900,7 +900,7 @@
                     <div class="receipt-section">
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
-                            <h5 class="section-title">Death Certificate <span class="badge bg-danger">PDF</span></h5>
+                            <h5 class="section-header">Death Certificate <span class="badge bg-danger">PDF</span></h5>
                             <!-- PDF Document -->
                             <div class="pdf-container">
                                 <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')" title="Click to view PDF">
@@ -914,7 +914,7 @@
                         }
                         else
                         {
-                            <h5 class="section-title">Death Certificate <span class="badge bg-secondary">Image</span></h5>
+                            <h5 class="section-header">Death Certificate <span class="badge bg-secondary">Image</span></h5>
                             <!-- Image Document -->
                             <div class="id-image-container" onclick="zoomImage(this.querySelector('img'))" title="Click to zoom">
                                 <img src="data:image/png;base64,@ViewData["DeathCertificateBase64"]"
@@ -932,7 +932,7 @@
             @if (ViewData["DebugMessages"] != null)
             {
                 <div class="receipt-section" style="background-color: #f8f9fa; padding: 1rem; border-left: 4px solid #17a2b8;">
-                    <h5 class="section-title">🔍 Debug Information</h5>
+                    <h5 class="section-header">🔍 Debug Information</h5>
                     <div style="font-family: monospace; font-size: 0.85rem;">
                         @foreach (var msg in (List<string>)ViewData["DebugMessages"])
                         {
