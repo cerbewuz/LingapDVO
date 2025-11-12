@@ -1,4 +1,4 @@
-@model HospitalAssistanceDto
+@model FuneralAssistanceDto
 @{
     Layout = "_InputFormsLayout";
     ViewData["Title"] = "Funeral Assistance";
@@ -629,6 +629,56 @@
             </div>
             <!-- End Patient Details Section wrapper -->
             </div>
+
+                <!-- Type of Assistance Requested Section -->
+                <h5 class="section-header">Type of Assistance Requested</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <!-- Column 1 -->
+                        <div class="form-check mt-2">
+                            <input class="form-check-input assistance-type" type="checkbox"
+                                   id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
+                            <label class="form-check-label" for="hospitalAssistance">Funeral/ Burial Assistance</label>
+                        </div>
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input assistance-type" type="checkbox"
+                                   id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
+                            <label class="form-check-label" for="hospitalAssistance">Procedure</label>
+                            <input type="text" class="form-control mt-1 assistance-spec"
+                                   name="GovernmentDetails" placeholder="Specify" style="display: none;">
+                        </div>
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input assistance-type" type="checkbox"
+                                   id="governmentAssistance" name="TypeassistanceOptions" value="Government">
+                            <label class="form-check-label" for="governmentAssistance">Laboratory</label>
+                            <input type="text" class="form-control mt-1 assistance-spec"
+                                   name="GovernmentDetails" placeholder="Specify" style="display: none;">
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+                        <!-- Column 2 -->
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input assistance-type" type="checkbox"
+                                   id="procedure" name="TypeassistanceOptions" value="Procedure">
+                            <label class="form-check-label" for="procedure">Apparatus</label>
+                            <input type="text" class="form-control mt-1 assistance-spec"
+                                   name="ProcedureDetails" placeholder="Specify" style="display: none;">
+                        </div>
+
+                        <div class="form-check mt-2">
+                            <input class="form-check-input assistance-type" type="checkbox"
+                                   id="others" name="TypeassistanceOptions" value="Others">
+                            <label class="form-check-label" for="others">Others</label>
+                            <input type="text" class="form-control mt-1 assistance-spec"
+                                   name="OthersDetails" placeholder="Specify" style="display: none;">
+                        </div>
+                    </div>
+                </div>
             
 
             <div class="form-group mt-3" style="display: none">
@@ -649,9 +699,9 @@
                     <p>Click to upload document</p>
                     <p>Accepted formats: JPG, PNG, PDF (Max 10MB)</p> 
                 </div>
-                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none"
+                <input asp-for="DeathCertificateimage" type="file" id="receipt" class="d-none"
                        accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'receiptPreview')"> <!-- Removed .doc,.docx -->
-                <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
+                <span asp-validation-for="DeathCertificateimage" class="text-danger"></span>
 
                 <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
                 <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p> <!-- Updated text -->

@@ -1,4 +1,4 @@
-@model HospitalAssistanceDto
+@model OtherAssistanceDto
 @{
     Layout = "_InputFormsLayout";
     ViewData["Title"] = "Other Assistance";
@@ -187,7 +187,7 @@
     </style>
 }
 
-<form asp-action="HospitalAssistance" enctype="multipart/form-data" method="post">
+<form asp-action="OtherAssistance" enctype="multipart/form-data" method="post">
 
     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -716,9 +716,9 @@
             <p>Click to upload document</p>
             <p>Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
         </div>
-        <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none"
+        <input asp-for="MedCertificateimage" type="file" id="receipt" class="d-none"
                accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'receiptPreview')"> <!-- Removed .doc,.docx -->
-        <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
+        <span asp-validation-for="MedCertificateimage" class="text-danger"></span>
 
         <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
         <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p> <!-- Updated text -->
