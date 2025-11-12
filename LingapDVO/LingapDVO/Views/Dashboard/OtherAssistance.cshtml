@@ -592,14 +592,27 @@
                         // Remove required attribute and clear the field
                         philHealthInput.removeAttribute('required');
                         philHealthInput.value = '';
+                        philHealthInput.disabled = true; // Disable the input field
+                        philHealthInput.classList.remove('is-invalid'); // Remove validation error
                     } else if (this.value === 'With PhilHealth') {
                         // Add required attribute when "With PhilHealth" is selected
                         philHealthInput.setAttribute('required', 'required');
+                        philHealthInput.disabled = false; // Enable the input field
                     } else {
                         // Default: remove required for empty selection
                         philHealthInput.removeAttribute('required');
+                        philHealthInput.disabled = false;
                     }
                 });
+
+                // Initialize on page load
+                if (philHealthSelect.value === 'Without PhilHealth') {
+                    philHealthInput.removeAttribute('required');
+                    philHealthInput.disabled = true;
+                } else if (philHealthSelect.value === 'With PhilHealth') {
+                    philHealthInput.setAttribute('required', 'required');
+                    philHealthInput.disabled = false;
+                }
             </script>
 
             <div class="col-md-2 col-sm-6">
