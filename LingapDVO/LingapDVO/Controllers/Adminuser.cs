@@ -4009,7 +4009,7 @@ namespace LingapDVO.Controllers
         }
 
         [HttpPost]
-        public IActionResult OtherAssistanceapprovedsstatus(int id, OtherAssistanceDto OtherAssistanceDto)
+        public IActionResult OtherAssistanceApproveStatus(int id, OtherAssistanceDto OtherAssistanceDto)
         {
             var otherAssistance = context.OtherAssistance.Find(id);
 
@@ -4021,7 +4021,7 @@ namespace LingapDVO.Controllers
 
             try
             {
-                // ✅ Update record
+                // Update record
                 otherAssistance.Status3 = OtherAssistanceDto.Status3;
                 otherAssistance.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL;
                 otherAssistance.Comments = OtherAssistanceDto.Comments;
@@ -4030,18 +4030,18 @@ namespace LingapDVO.Controllers
 
                 context.SaveChanges();
 
-                // ✅ Get user info
+                // Get user info
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == otherAssistance.UserId);
 
-                // ✅ Only send email if status is "Claimed"
+                // Only send email if status is "Claimed"
                 if (OtherAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true
                     && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // ✅ Get first name from VerifyAccount
+                    // Get first name from VerifyAccount or fallback
                     var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
-                    // ✅ Get email settings
+                    // Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
@@ -4049,35 +4049,35 @@ namespace LingapDVO.Controllers
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
                         throw new ArgumentException("Email settings are missing.");
 
-                    // ✅ Compose email
+                    // Compose email
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
                     string subject = "Medical and Laboratory Assistance Claimed - LINGAP DVO";
                     string body = $@"
-                Dear {firstName},
+                    Dear {firstName},
 
-                We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                    We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
-                APPLICATION DETAILS:
-                • Application Type: Medical and Laboratory Assistance
-                • Application ID: {otherAssistance.Id}
-                • Status: Claimed
-                • Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
-                • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                    APPLICATION DETAILS:
+                    • Application Type: Medical and Laboratory Assistance
+                    • Application ID: {otherAssistance.Id}
+                    • Status: Claimed
+                    • Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
+                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                REMARKS:
-                {OtherAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
+                    REMARKS:
+                    {OtherAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                Thank you for your patience and cooperation throughout the process.  
-                Should you have any further questions, please contact our support team at [Support Email/Phone Number].
+                    Thank you for your patience and cooperation throughout the process.  
+                    Should you have any further questions, please contact our support team at [Support Email/Phone Number].
 
-                Sincerely,  
-                {fromName}  
-                LINGAP DVO Medical Assistance Program
-                ";
+                    Sincerely,  
+                    {fromName}  
+                    LINGAP DVO Medical Assistance Program
+                    ";
 
-                    // ✅ Send email
+                    // Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -4093,9 +4093,6 @@ namespace LingapDVO.Controllers
                     {
                         smtp.Send(message);
                     }
-
-                    // ✅ Log success
-                    Console.WriteLine($"Claim notification email sent to {user.Email} for Medical and Laboratory Assistance ID {otherAssistance.Id}");
                 }
 
                 TempData["SuccessMessage"] = "Medical and laboratory claim processed successfully and email sent.";
@@ -4103,22 +4100,17 @@ namespace LingapDVO.Controllers
             }
             catch (Exception ex)
             {
-                // ✅ Log error
-                Console.WriteLine($"Error in OtherAssistanceapprovedsstatus: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-
                 ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
                 return View(OtherAssistanceDto);
             }
         }
 
-
         [HttpPost]
-        public IActionResult Funeralburialapprovedstatus(int id, FuneralAssistanceDto FuneralAssistanceDto)
+        public IActionResult FuneralAssistanceApproveStatus(int id, FuneralAssistanceDto FuneralAssistanceDto)
         {
-            var FuneralAssistance = context.FuneralAssistance.Find(id);
+            var funeralAssistance = context.FuneralAssistance.Find(id);
 
-            if (FuneralAssistance == null)
+            if (funeralAssistance == null)
             {
                 TempData["ErrorMessage"] = "Funeral and burial record not found.";
                 return Redirect("/Admin");
@@ -4127,56 +4119,61 @@ namespace LingapDVO.Controllers
             try
             {
                 // Update record
-                FuneralAssistance.Status3 = FuneralAssistanceDto.Status3;
-                FuneralAssistance.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL;
-                FuneralAssistance.Comments = FuneralAssistanceDto.Comments;
-                FuneralAssistance.Processby = FuneralAssistanceDto.Processby;
-                FuneralAssistance.ClaimedAt = DateTime.Now;
+                funeralAssistance.Status3 = FuneralAssistanceDto.Status3;
+                funeralAssistance.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL;
+                funeralAssistance.Comments = FuneralAssistanceDto.Comments;
+                funeralAssistance.Processby = FuneralAssistanceDto.Processby;
+                funeralAssistance.ClaimedAt = DateTime.Now;
+
                 context.SaveChanges();
 
                 // Get user info
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == FuneralAssistance.UserId);
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == funeralAssistance.UserId);
 
-                // ? Send automatic email only if Claimed
-                if (FuneralAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
+                // Only send email if status is "Claimed"
+                if (FuneralAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true
+                    && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get email settings from configuration
+                    // Get first name from VerifyAccount or fallback to username
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
+
+                    // Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
 
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                    {
                         throw new ArgumentException("Email settings are missing.");
-                    }
 
-                    // Compose auto-generated email
+                    // Compose email
                     var fromAddress = new MailAddress(fromEmail, fromName);
-                    var toAddress = new MailAddress(user.Email, user.Username ?? "User");
+                    var toAddress = new MailAddress(user.Email, firstName);
 
                     string subject = "Your LINGAP Funeral Assistance Has Been Claimed";
                     string body = $@"
-                            Dear {user.Username ?? "Valued Applicant"},
+                    Dear {firstName},
 
-                            We are pleased to inform you that your LINGAP Funeral Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                    We are pleased to inform you that your LINGAP Funeral Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
-                            APPLICATION DETAILS:
-                            � Application Type: Funeral Assistance  
-                            � Status: Claimed  
-                            � Processed By: {FuneralAssistanceDto.Processby ?? "LINGAP Personnel"}
+                    APPLICATION DETAILS:
+                    • Application Type: Funeral Assistance
+                    • Status: Claimed
+                    • Processed By: {FuneralAssistanceDto.Processby ?? "LINGAP Personnel"}
+                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
-                            REMARKS:
-                            {FuneralAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
+                    REMARKS:
+                    {FuneralAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                            Thank you for your patience and cooperation throughout the process.  
-                            Should you have any further questions, feel free to contact our support team.
+                    Thank you for your patience and cooperation throughout the process.  
+                    Should you have any further questions, please contact our support team at [Support Email/Phone Number].
 
-                            Best regards,  
-                            {fromName}  
-                            LINGAP DVO Medical Assistance Program
-                            ";
+                    Sincerely,  
+                    {fromName}  
+                    LINGAP DVO Medical Assistance Program
+                    ";
 
-                    // ? Send email with proper using blocks
+                    // Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -4203,6 +4200,7 @@ namespace LingapDVO.Controllers
                 return View(FuneralAssistanceDto);
             }
         }
+
 
         // Priorities page with priority system
         public async Task<IActionResult> Priorities()
