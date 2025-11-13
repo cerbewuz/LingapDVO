@@ -202,13 +202,13 @@
                 color: '#3498db',
                 bg: '#e3f2fd'
             },
-            'approved': {
+            'approve': {
                 icon: '<i class="bi bi-check-circle-fill text-success"></i>',
                 title: 'Application Approved',
                 color: '#10b981',
                 bg: '#e8f5e9'
             },
-            'disapproved': {
+            'disapprove': {
                 icon: '<i class="bi bi-x-circle-fill text-danger"></i>',
                 title: 'Application Status Update',
                 color: '#ef4444',

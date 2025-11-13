@@ -263,7 +263,7 @@ namespace LingapDVO.Services
 
                 _logger.LogInformation($"Status update notification sent to User {userId}: {applicationType} - {status}");
 
-                // If status changed to Processing/Approved/Disapproved, update priority counts
+                // If status changed to Processing/Approve/Disapprove, update priority counts
                 if (status != "Pending")
                 {
                     await BroadcastPriorityCountsAsync();
