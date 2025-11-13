@@ -1,7 +1,223 @@
-﻿@model FuneralAssistanceDto
+@model FuneralAssistanceDto
 @{
     Layout = "_AdminPendingLayout";
     ViewData["Title"] = "Application View";
+}
+
+@section Styles {
+    <style>
+        .btn-submit {
+            background-color: #28a745; /* Green */
+            color: white;
+            font-weight: 600;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+            .btn-submit:hover {
+                background-color: #20c997; /* Green-blue hover */
+                transform: scale(1.05);
+            }
+
+        .form-label {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-value {
+            padding: 0.5rem 0.75rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+        }
+
+        .img-preview {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 300px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .img-preview:hover {
+                transform: scale(1.02);
+            }
+
+        .upload-box {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #fafafa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+            .upload-box:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+            }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-approve {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-disapprove {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-claimed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Zoom Modal Styles */
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .zoom-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .close-zoom {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            .close-zoom:hover,
+            .close-zoom:focus {
+                color: #bbb;
+            }
+
+        /* PDF Viewer Styles */
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .pdf-viewer-content {
+            background-color: #2c3e50;
+            margin: 2% auto;
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-viewer-header {
+            background-color: #34495e;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pdf-viewer-body {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2c3e50;
+        }
+
+        .pdf-container {
+            text-align: center;
+        }
+
+        .pdf-preview {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            .pdf-preview:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+            }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: #dc143c;
+            margin-bottom: 0.5rem;
+        }
+    </style>
 }
 
 <!-- Image Zoom Modal -->
@@ -51,170 +267,289 @@
     </div>
 </div>
 
-<div class="receipt-container">
-    <form asp-action="FuneralAssistancePendingStatus" method="post">
-        <div class="receipt-header">
-            <h3>Hospital Bill Application Details</h3>
+<form asp-action="FuneralAssistancePendingStatus" method="post">
+
+    <!-- Application ID -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <label class="form-label">Application ID</label>
+            <div class="form-value">@ViewData["Id"]</div>
+        </div>
+    </div>
+
+    <!-- Patient's Details -->
+    <h5 class="section-header">Patient's Details</h5>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label">Last Name</label>
+            <div class="form-value">@ViewData["Lastname"]</div>
         </div>
 
-        <div class="receipt-body">
-            <!-- Patient Information -->
-            <div class="receipt-section">
-                <div class="info-row">
-                    <div class="info-label">Application ID:</div>
-                    <div class="info-value">@ViewData["Id"]</div>
-                </div>
-
-                <h5 class="section-title">Patient Information</h5>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Name:</div>
-                            <div class="info-value">
-                                @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
-                                @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Address:</div>
-                            <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Sex:</div>
-                            <div class="info-value">@ViewData["Sex"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Date of Birth:</div>
-                            <div class="info-value">@ViewData["Dateofbirth"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Age:</div>
-                            <div class="info-value">@ViewData["Age"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">PhilHealth:</div>
-                            <div class="info-value">@ViewData["PhilHealth"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">PhilHealth No:</div>
-                            <div class="info-value">@ViewData["PhilHealthNo"]</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Requestor Details -->
-            <div class="receipt-section">
-                <h5 class="section-title">Requestor's Details</h5>
-                <div class="info-row">
-                    <div class="info-label">Full Name:</div>
-                    <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Address:</div>
-                    <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Relationship to Patient:</div>
-                    <div class="info-value">@ViewData["RelationshipPatient"]</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Contact No:</div>
-                    <div class="info-value">@ViewData["ContactNo"]</div>
-                </div>
-            </div>
-
-            <!-- Assistance Requested -->
-            <div class="receipt-section">
-                <h5 class="section-title">Assistance Requested</h5>
-                <div class="info-value">@ViewData["Typeassistance"]</div>
-            </div>
-
-            <!-- Valid ID and Submitted Documents Section -->
-            <div class="receipt-section">
-                <h5 class="section-title">Valid ID and Submitted Documents</h5>
-                <div class="row">
-                    <!-- Valid ID (Front and Back) -->
-                    <div class="col-lg-6 mb-3">
-                        <h6>Valid ID - Front</h6>
-                        @if (ViewData["ValidfrontimageBase64"] != null)
-                        {
-                            <div class="id-image-container mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
-                                <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
-                            </div>
-                        }
-                        else
-                        {
-                            <p class="text-muted">No front ID image available</p>
-                        }
-
-                        <h6>Valid ID - Back</h6>
-                        @if (ViewData["ValidBackimageBase64"] != null)
-                        {
-                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
-                                <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
-                            </div>
-                        }
-                        else
-                        {
-                            <p class="text-muted">No back ID image available</p>
-                        }
-                    </div>
-
-                    <!-- PDF Documents (Death Certificate) -->
-                    <div class="col-lg-6 mb-3">
-                        @if (ViewData["DeathCertificateBase64"] != null)
-                        {
-                            <h6>Death Certificate</h6>
-                            @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
-                            {
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
-                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
-                                    </div>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
-                                </div>
-                            }
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <!-- Status Section -->
-            <div class="receipt-section">
-                <h5 class="section-title">Request Status</h5>
-                <div class="info-row">
-                    <div class="info-label">Current Status:</div>
-                    <div class="info-value">
-                        <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
-                            @ViewData["Status"]
-                        </span>
-                    </div>
-                </div>
-                <input type="hidden" name="status2" value="Processing" />
-            </div>
+        <div class="col-md-3">
+            <label class="form-label">First Name</label>
+            <div class="form-value">@ViewData["Firstname"]</div>
         </div>
 
-        <div class="receipt-footer">
-            <button type="submit" class="btn btn-process">
-                <i class="bi bi-gear-fill"></i>Process Application
-            </button>
-            <button type="button" class="btn btn-receipt" onclick="window.print()">
-                <i class="bi bi-printer"></i> Print Receipt
-            </button>
-            <a href="javascript:history.back()" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Go Back
-            </a>
+        <div class="col-md-3">
+            <label class="form-label">Middle Name</label>
+            <div class="form-value">@ViewData["Middlename"]</div>
         </div>
-    </form>
-</div>
 
+        <div class="col-md-3">
+            <label class="form-label">Suffix</label>
+            <div class="form-value">@(ViewData["Suffix"]?.ToString() == "None" ? "" : ViewData["Suffix"])</div>
+        </div>
+    </div>
+
+    <!-- Address -->
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <label class="form-label">Blk / Lot / Street</label>
+            <div class="form-value">@ViewData["BlkLotStreet"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Sub / Vill.</label>
+            <div class="form-value">@ViewData["SubVill"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Brgy.</label>
+            <div class="form-value">@ViewData["Brgy"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">District</label>
+            <div class="form-value">@ViewData["District"]</div>
+        </div>
+    </div>
+
+    <!-- Gender, PhilHealth, DOB, Age -->
+    <div class="row g-3 mt-2">
+        <div class="col-md-2">
+            <label class="form-label">Sex</label>
+            <div class="form-value">@ViewData["Sex"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">PhilHealth</label>
+            <div class="form-value">@ViewData["PhilHealth"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">PhilHealth No.</label>
+            <div class="form-value">@ViewData["PhilHealthNo"]</div>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Date of Birth</label>
+            <div class="form-value">@ViewData["Dateofbirth"]</div>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Age</label>
+            <div class="form-value">@ViewData["Age"]</div>
+        </div>
+    </div>
+
+    <!-- Requestor's Details -->
+    <h5 class="section-header mt-4">Requestor's Details</h5>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label">Last Name</label>
+            <div class="form-value">@ViewData["RLastname"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">First Name</label>
+            <div class="form-value">@ViewData["RFirstname"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Middle Name</label>
+            <div class="form-value">@ViewData["RMiddlename"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Suffix</label>
+            <div class="form-value">@ViewData["RSuffix"]</div>
+        </div>
+    </div>
+
+    <!-- Requestor Address -->
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <label class="form-label">Blk / Lot / Street</label>
+            <div class="form-value">@ViewData["RBlkLotStreet"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Sub / Vill.</label>
+            <div class="form-value">@ViewData["RSubVill"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Brgy.</label>
+            <div class="form-value">@ViewData["RBrgy"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">District</label>
+            <div class="form-value">@ViewData["RDistrict"]</div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-md-6">
+            <label class="form-label">Relationship to Patient</label>
+            <div class="form-value">@ViewData["RelationshipPatient"]</div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Contact No.</label>
+            <div class="form-value">@ViewData["ContactNo"]</div>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <h5 class="section-header mt-4">Submitted Documents</h5>
+
+    <div class="row g-3">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Death Certificate</label>
+            @if (ViewData["DeathCertificateBase64"] != null)
+            {
+                @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                {
+                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                        <div class="pdf-info">
+                            <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                            <span class="pdf-label">Click to view PDF</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="img-preview" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                }
+            }
+            else
+            {
+                <p class="text-muted">No document available</p>
+            }
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Valid ID - Front</label>
+            @if (ViewData["ValidfrontimageBase64"] != null)
+            {
+                <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="img-preview mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+            }
+            else
+            {
+                <p class="text-muted">No front ID image available</p>
+            }
+
+            <label class="form-label mt-3">Valid ID - Back</label>
+            @if (ViewData["ValidBackimageBase64"] != null)
+            {
+                <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="img-preview" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+            }
+            else
+            {
+                <p class="text-muted">No back ID image available</p>
+            }
+        </div>
+    </div>
+
+    <!-- Status Section -->
+    <h5 class="section-header mt-4">Request Status</h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Current Status</label>
+            <div class="form-value">
+                <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
+                    @ViewData["Status"]
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" name="status2" value="Processing" />
+
+    <!-- Submit Button -->
+    <div class="text-center mt-4">
+        <button type="submit" class="btn-submit">
+            <i class="bi bi-gear-fill"></i> Process Application
+        </button>
+        <button type="button" class="btn btn-secondary ms-2" onclick="window.print()">
+            <i class="bi bi-printer"></i> Print
+        </button>
+        <a href="javascript:history.back()" class="btn btn-secondary ms-2">
+            <i class="bi bi-arrow-left"></i> Go Back
+        </a>
+    </div>
+    <br />
+    <br />
+</form>
+
+@section Scripts {
+    <script>
+        // Zoom Image Function
+        function zoomImage(imageSrc) {
+            const modal = document.getElementById('zoomModal');
+            const modalImg = document.getElementById('zoomedImage');
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+        }
+
+        // Close zoom modal
+        document.querySelector('.close-zoom')?.addEventListener('click', function() {
+            document.getElementById('zoomModal').style.display = 'none';
+        });
+
+        // Close modal when clicking outside the image
+        document.getElementById('zoomModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+
+        // PDF Viewer Functions
+        function viewPDFInModal(filename, folder, title) {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'block';
+            document.getElementById('pdfViewerTitle').textContent = title;
+
+            // Load PDF using PDF.js (requires PDF.js library)
+            const pdfPath = `/uploads/${folder}/${filename}`;
+            loadPDF(pdfPath);
+        }
+
+        function closePDFViewer() {
+            document.getElementById('pdfViewerModal').style.display = 'none';
+        }
+
+        function loadPDF(url) {
+            // PDF loading logic (requires PDF.js)
+            console.log('Loading PDF:', url);
+        }
+
+        function prevPage() {
+            // Navigate to previous page
+        }
+
+        function nextPage() {
+            // Navigate to next page
+        }
+
+        function zoomIn() {
+            // Zoom in functionality
+        }
+
+        function zoomOut() {
+            // Zoom out functionality
+        }
+    </script>
+}
