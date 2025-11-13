@@ -485,10 +485,10 @@
                 </text>
             }
 
-            // Calculate priority applications (ONLY for Pending applications)
+            // Calculate priority applications (ONLY for Pending AND Processing applications)
             const now = new Date();
             const priorityApplications = allApplications
-                .filter(app => app.status === 'pending') // Only count pending applications
+                .filter(app => app.status === 'pending' || app.status === 'processing') // Count both Pending and Processing applications
                 .map(app => {
                     const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
 
@@ -518,7 +518,7 @@
 
             console.log('[Priorities] Server counts - High:', serverHighCount, 'Medium:', serverMediumCount);
             console.log('[Priorities] Calculated counts - High:', highPriorityCount, 'Medium:', mediumPriorityCount);
-            console.log('[Priorities] Total pending applications:', allApplications.filter(app => app.status === 'pending').length);
+            console.log('[Priorities] Total pending/processing applications:', allApplications.filter(app => app.status === 'pending' || app.status === 'processing').length);
             console.log('[Priorities] Priority applications:', priorityApplications.length);
 
             // Always use server counts as they are the source of truth
