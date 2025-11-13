@@ -76,55 +76,6 @@
             gap: 1rem;
         }
 
-        /* Priority Notifications in Header */
-        .priority-notifications {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .priority-alert {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.75rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .priority-alert:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .priority-alert.high {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--danger);
-            border: 2px solid rgba(231, 76, 60, 0.3);
-        }
-
-        .priority-alert.medium {
-            background: rgba(243, 156, 18, 0.1);
-            color: var(--warning);
-            border: 2px solid rgba(243, 156, 18, 0.3);
-        }
-
-        .priority-count {
-            background: currentColor;
-            color: white;
-            border-radius: 50%;
-            min-width: 1.75rem;
-            height: 1.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-        }
 
         .page-title h1 {
             font-weight: 700;
@@ -554,9 +505,6 @@
             <div class="header">
                 <div class="page-title">
                     <h1>Application Dashboard</h1>
-                </div>
-                <div class="priority-notifications" id="headerPriorityAlerts">
-                    <!-- Priority alerts will be populated by JavaScript -->
                 </div>
             </div>
 
@@ -1247,11 +1195,6 @@
             updateSortIndicators();
             applyFilters();
 
-            // Update priority alerts in header
-            // Update priority alerts using the AdminSidebar module
-            if (window.AdminSidebar && window.AdminSidebar.updateHeaderPriorityAlerts) {
-                window.AdminSidebar.updateHeaderPriorityAlerts(allApplications);
-            }
         });
     </script>
 </body>
