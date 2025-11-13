@@ -531,6 +531,79 @@
         .chart-tooltip {
             font-size: 14px !important;
         }
+
+        /* Priority Stats */
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.high-priority {
+            border-left: 4px solid #e74c3c;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+        }
+
+        .stat-card.high-priority .stat-icon {
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+            animation: priorityPulse 2s ease-in-out infinite;
+        }
+
+        .stat-card.medium-priority {
+            border-left: 4px solid #f39c12;
+            background: linear-gradient(135deg, #fffbf5 0%, #ffffff 100%);
+        }
+
+        .stat-card.medium-priority .stat-icon {
+            background: rgba(243, 156, 18, 0.15);
+            color: #f39c12;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            flex-shrink: 0;
+        }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+
+        .stat-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        @@keyframes priorityPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -570,6 +643,33 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Priority Stats -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="stat-card high-priority">
+                        <div class="stat-icon">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</h3>
+                            <p>High Priority (2+ hrs)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card medium-priority">
+                        <div class="stat-icon">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</h3>
+                            <p>Medium Priority (1-2 hrs)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row g-3 mb-4" id="summaryCards">
             </div>
             <div class="row g-3">
@@ -663,6 +763,13 @@
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
+            // Update sidebar priority badge
+            const totalPriorityCount = @(ViewBag.TotalPriorityCount ?? 0);
+            if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
+                window.AdminSidebar.updatePriorityBadge(totalPriorityCount);
+                console.log('[Analytics] Sidebar badge updated:', totalPriorityCount);
+            }
+
             // Set default dates (last 3 months)
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth() - 3, 1);
@@ -944,7 +1051,7 @@
                             <i class="bi bi-check-circle"></i>
                         </div>
                         <div class="summary-number">${statusCounts.approved}</div>
-                        <div class="summary-label">Approved</div>
+                        <div class="summary-label">Approve</div>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -971,7 +1078,7 @@
                             <i class="bi bi-x-circle"></i>
                         </div>
                         <div class="summary-number">${statusCounts.disapproved}</div>
-                        <div class="summary-label">Disapproved</div>
+                        <div class="summary-label">Disapprove</div>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -989,7 +1096,7 @@
             window.chartData = {
                 statusData: [statusCounts.approved, statusCounts.pending, statusCounts.processing, statusCounts.disapproved, statusCounts.claimed],
                 typeData: countApplicationTypes(applications),
-                statusLabels: ['Approved', 'Pending', 'Processing', 'Disapproved', 'Claimed'],
+                statusLabels: ['Approve', 'Pending', 'Processing', 'Disapprove', 'Claimed'],
                 typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
                 // Barangay data will be processed separately
                 ...processBarangayData(applications)

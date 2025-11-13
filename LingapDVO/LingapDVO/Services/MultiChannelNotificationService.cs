@@ -136,8 +136,8 @@ namespace LingapDVO.Services
             {
                 "Pending" => "application_submitted",
                 "Processing" => "application_processing",
-                "Approved" => "application_approved",
-                "Disapproved" => "application_disapproved",
+                "Approve" => "application_approved",
+                "Disapprove" => "application_disapproved",
                 "Claimed" => "application_claimed",
                 _ => "status_change"
             };

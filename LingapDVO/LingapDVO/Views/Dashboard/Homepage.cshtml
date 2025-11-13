@@ -583,7 +583,7 @@
 
                     <div class="alert alert-info mt-3" role="alert">
                         <i class="fas fa-info-circle"></i>
-                        <small>You will receive notifications when your application status changes (Pending, Processing, Approved, Disapproved, Claimed)</small>
+                        <small>You will receive notifications when your application status changes (Pending, Processing, Approve, Disapprove, Claimed)</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1199,7 +1199,7 @@
                     }
 
                     // Check if application just got approved - FIXED LOGIC
-                    if (app.result && isValidDate(app.result) && app.status2 === 'Approved') {
+                    if (app.result && isValidDate(app.result) && app.status2 === 'Approve') {
                         const resultDate = new Date(app.result);
                         // Only notify if result is recent (last 10 minutes) AND we haven't notified before
                         if ((now - resultDate) < 10 * 60 * 1000) {
@@ -1207,7 +1207,7 @@
                             if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
-                                    title: `${app.type} Application Approved`,
+                                    title: `${app.type} Application Approve`,
                                     message: `Great news! Your ${app.type.toLowerCase()} application has been approved.`,
                                     isRead: false,
                                     createdAt: app.result,
@@ -1463,7 +1463,7 @@
                 // Check result status - FIXED LOGIC
                 if (application.result && isValidDate(application.result)) {
                     const status = application.status2 || 'Processed';
-                    const isApproved = status.toLowerCase() === 'approved';
+                    const isApprove = status.toLowerCase() === 'approved';
                     const notificationId = `result_${appId}`;
 
                     notifications.push({
@@ -1472,7 +1472,7 @@
                         message: `Your ${type.toLowerCase()} application has been ${status.toLowerCase()}.`,
                         isRead: readIds.includes(notificationId),
                         createdAt: application.result,
-                        type: isApproved ? "approved" : "unapproved",
+                        type: isApprove ? "approved" : "unapproved",
                         link: "/Uploads"
                     });
                 }

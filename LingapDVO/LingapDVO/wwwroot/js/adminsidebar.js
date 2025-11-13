@@ -18,7 +18,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
     let isMobile = false;
-    let sidebarOpen = false; // Sidebar hidden by default
+    let sidebarOpen = true; // Sidebar visible by default on desktop
 
     /**
      * Check if current viewport is mobile
@@ -209,14 +209,17 @@
         const wasMobile = isMobile;
         checkMobile();
 
-        // If switching from mobile to desktop
-        if (wasMobile && !isMobile) {
-            sidebarOpen = false;
-            updateSidebarState();
-        }
-        // If switching from desktop to mobile
-        else if (!wasMobile && isMobile) {
-            sidebarOpen = false;
+        // When switching between mobile and desktop, preserve sidebar state
+        // Don't automatically close the sidebar - let user control it
+        if (wasMobile !== isMobile) {
+            // If switching from mobile to desktop, open sidebar by default
+            if (wasMobile && !isMobile) {
+                sidebarOpen = true;
+            }
+            // If switching from desktop to mobile, close sidebar for better mobile UX
+            else if (!wasMobile && isMobile) {
+                sidebarOpen = false;
+            }
             updateSidebarState();
         }
     }

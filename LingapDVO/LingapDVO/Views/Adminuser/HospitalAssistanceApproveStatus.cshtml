@@ -837,7 +837,7 @@
         </div>
         <div class="d-flex justify-content-end gap-2">
             <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
-            <button type="button" class="btn btn-disapproved" onclick="submitDisapproved()">Submit Disapproval</button>
+            <button type="button" class="btn btn-disapproved" onclick="submitDisapprove()">Submit Disapproval</button>
         </div>
     </div>
 </div>
@@ -1225,8 +1225,8 @@
         }
 
         // Status Submission Functions
-        function submitApproved() {
-            document.getElementById('statusInput').value = 'Approved';
+        function submitApprove() {
+            document.getElementById('statusInput').value = 'Approve';
             document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
             document.getElementById('statusForm').submit();
         }
@@ -1242,7 +1242,7 @@
             document.getElementById('commentsTextarea').classList.remove('is-invalid');
         }
 
-        function submitDisapproved() {
+        function submitDisapprove() {
             const commentsTextarea = document.getElementById('commentsTextarea');
             const comments = commentsTextarea.value.trim();
 
@@ -1252,7 +1252,7 @@
                 return;
             }
 
-            document.getElementById('statusInput').value = 'Disapproved';
+            document.getElementById('statusInput').value = 'Disapprove';
             document.getElementById('commentsInput').value = comments;
             document.getElementById('statusForm').submit();
         }

@@ -1256,12 +1256,12 @@
                                     <!-- Step 1: Document Submitted -->
                                     <div class="timeline-item">
                                         <div class="timeline-marker submitted">
-                                            <i class="fas fa-file-alt"></i>
+                                            <i class="fas fa-paper-plane"></i>
                                         </div>
                                         <div class="timeline-content">
-                                            <h6>Form Sent</h6>
+                                            <h6>Application Submitted</h6>
                                             <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">Your Hospital Bill help request was sent successfully.</p>
+                                            <p class="timeline-description">Your Hospital Bill assistance application was successfully submitted.</p>
                                         </div>
                                     </div>
 
@@ -1270,12 +1270,12 @@
                                     {
                                         <div class="timeline-item">
                                             <div class="timeline-marker processing">
-                                                <i class="fas fa-cog"></i>
+                                                <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Being Reviewed</h6>
+                                                <h6>Under Review</h6>
                                                 <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Checked by <strong>@doc.Processby</strong></p>
+                                                <p class="timeline-description">Reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
                                     }
@@ -1283,11 +1283,11 @@
                                     {
                                         <div class="timeline-item">
                                             <div class="timeline-marker waiting">
-                                                <i class="fas fa-clock"></i>
+                                                <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Being Reviewed</h6>
-                                                <p class="waiting-text">Our staff is checking your request. Please wait...</p>
+                                                <h6>Pending Review</h6>
+                                                <p class="waiting-text">Your application is in queue for review. Please wait...</p>
                                             </div>
                                         </div>
                                     }
@@ -1296,14 +1296,14 @@
                                     @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1)
                                     {
                                         <div class="timeline-item">
-                                            <div class="timeline-marker @(doc.Status2 == "Approved" ? "approved" : "unapproved")">
-                                                <i class="fas fa-check-circle"></i>
+                                            <div class="timeline-marker @(doc.Status2 == "Approve" ? "approved" : "unapproved")">
+                                                <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Decision</h6>
+                                                <h6>Application @doc.Status2</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                             <p class="timeline-description text-gray-700 leading-relaxed">
-                                                Your request is <span class="status-badge status-@(doc.Status2.ToLower()) ml-1">@doc.Status2</span>
+                                                Your application has been <span class="status-badge status-@(doc.Status2.ToLower()) ml-1">@doc.Status2</span>
                                             </p>
 
 
@@ -1316,19 +1316,19 @@
                                         </div>
 
                                         <!-- Step 4: Claim Status (Only show if approved) -->
-                                        @if (doc.Status2 == "Approved")
+                                        @if (doc.Status2 == "Approve")
                                         {
                                             @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
                                             {
                                                 <div class="timeline-item">
                                                     <div class="timeline-marker claimed">
-                                                        <i class="fas fa-hand-holding-usd"></i>
+                                                        <i class="fas fa-hands-helping"></i>
                                                     </div>
                                                     <div class="timeline-content">
-                                                        <h6>Claimed</h6>
+                                                        <h6>Assistance Released</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            You received <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            Assistance successfully released: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1337,11 +1337,11 @@
                                             {
                                                 <div class="timeline-item">
                                                     <div class="timeline-marker waiting">
-                                                        <i class="fas fa-clock"></i>
+                                                        <i class="fas fa-gift"></i>
                                                     </div>
                                                     <div class="timeline-content">
-                                                        <h6>Ready to Claim</h6>
-                                                        <p class="waiting-text">You can now get your assistance. Please visit the office...</p>
+                                                        <h6>Ready for Release</h6>
+                                                        <p class="waiting-text">Your assistance is ready. Please visit the office to claim...</p>
                                                     </div>
                                                 </div>
                                             }
@@ -1411,12 +1411,12 @@
                                     <!-- Step 1: Document Submitted -->
                                     <div class="timeline-item">
                                         <div class="timeline-marker submitted">
-                                            <i class="fas fa-file-alt"></i>
+                                            <i class="fas fa-paper-plane"></i>
                                         </div>
                                         <div class="timeline-content">
-                                            <h6>Form Sent</h6>
+                                            <h6>Application Submitted</h6>
                                             <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">Your Medical help request was sent successfully.</p>
+                                            <p class="timeline-description">Your Medical assistance application was successfully submitted.</p>
                                         </div>
                                     </div>
 
@@ -1425,12 +1425,12 @@
                                     {
                                         <div class="timeline-item">
                                             <div class="timeline-marker processing">
-                                                <i class="fas fa-cog"></i>
+                                                <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Being Reviewed</h6>
+                                                <h6>Under Review</h6>
                                                 <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Checked by: <strong>@doc.Processby</strong></p>
+                                                <p class="timeline-description">Reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
                                     }
@@ -1438,11 +1438,11 @@
                                     {
                                         <div class="timeline-item">
                                             <div class="timeline-marker waiting">
-                                                <i class="fas fa-clock"></i>
+                                                <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Being Reviewed</h6>
-                                                <p class="waiting-text">Our staff is checking your request. Please wait...</p>
+                                                <h6>Pending Review</h6>
+                                                <p class="waiting-text">Your application is in queue for review. Please wait...</p>
                                             </div>
                                         </div>
                                     }
@@ -1451,36 +1451,36 @@
                                     @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1)
                                     {
                                         <div class="timeline-item">
-                                            <div class="timeline-marker @(doc.Status2 == "Approved" ? "approved" : "unapproved")">
-                                                <i class="fas fa-check-circle"></i>
+                                            <div class="timeline-marker @(doc.Status2 == "Approve" ? "approved" : "unapproved")">
+                                                <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Decision</h6>
+                                                <h6>Application @doc.Status2</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Your request is <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Your application has been <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
-                                                    <p class="timeline-description mt-2"><strong>Note</strong> @doc.Comments</p>
+                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
                                                 }
                                             </div>
                                         </div>
 
                                         <!-- Step 4: Claimed Status (Only show if approved) -->
-                                        @if (doc.Status2 == "Approved")
+                                        @if (doc.Status2 == "Approve")
                                         {
                                             @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
                                             {
                                                 <div class="timeline-item">
                                                     <div class="timeline-marker claimed">
-                                                        <i class="fas fa-hand-holding-usd"></i>
+                                                        <i class="fas fa-hands-helping"></i>
                                                     </div>
                                                     <div class="timeline-content">
-                                                        <h6>Claimed</h6>
+                                                        <h6>Assistance Released</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            You received<span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            Assistance successfully released: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1489,11 +1489,11 @@
                                             {
                                                 <div class="timeline-item">
                                                     <div class="timeline-marker waiting">
-                                                        <i class="fas fa-clock"></i>
+                                                        <i class="fas fa-gift"></i>
                                                     </div>
                                                     <div class="timeline-content">
-                                                        <h6>Ready to Claim</h6>
-                                                        <p class="waiting-text">You can now get your assistance. Please visit the office...</p>
+                                                        <h6>Ready for Release</h6>
+                                                        <p class="waiting-text">Your assistance is ready. Please visit the office to claim...</p>
                                                     </div>
                                                 </div>
                                             }
@@ -1563,12 +1563,12 @@
                                     <!-- Step 1: Document Submitted -->
                                     <div class="timeline-item">
                                         <div class="timeline-marker submitted">
-                                            <i class="fas fa-file-alt"></i>
+                                            <i class="fas fa-paper-plane"></i>
                                         </div>
                                         <div class="timeline-content">
-                                            <h6>Form Sent</h6>
+                                            <h6>Application Submitted</h6>
                                             <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">Your Funeral help request was sent successfully.</p>
+                                            <p class="timeline-description">Your Funeral assistance application was successfully submitted.</p>
                                         </div>
                                     </div>
 
@@ -1577,12 +1577,12 @@
                                     {
                                         <div class="timeline-item">
                                             <div class="timeline-marker processing">
-                                                <i class="fas fa-cog"></i>
+                                                <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Being Reviewed</h6>
+                                                <h6>Under Review</h6>
                                                 <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Checked by<strong>@doc.Processby</strong></p>
+                                                <p class="timeline-description">Reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
                                     }
@@ -1590,11 +1590,11 @@
                                     {
                                         <div class="timeline-item">
                                             <div class="timeline-marker waiting">
-                                                <i class="fas fa-clock"></i>
+                                                <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Being Reviewed</h6>
-                                                <p class="waiting-text">Our staff is checking your request. Please wait...</p>
+                                                <h6>Pending Review</h6>
+                                                <p class="waiting-text">Your application is in queue for review. Please wait...</p>
                                             </div>
                                         </div>
                                     }
@@ -1603,36 +1603,36 @@
                                     @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1)
                                     {
                                         <div class="timeline-item">
-                                            <div class="timeline-marker @(doc.Status2 == "Approved" ? "approved" : "unapproved")">
-                                                <i class="fas fa-check-circle"></i>
+                                            <div class="timeline-marker @(doc.Status2 == "Approve" ? "approved" : "unapproved")">
+                                                <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Decision</h6>
+                                                <h6>Application @doc.Status2</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description">
-                                                    Your request is<span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
+                                                    Your application has been <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
-                                                    <p class="timeline-description mt-2"><strong>Note:</strong> @doc.Comments</p>
+                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
                                                 }
                                             </div>
                                         </div>
 
                                         <!-- Step 4: Claimed Status (Only show if approved) -->
-                                        @if (doc.Status2 == "Approved")
+                                        @if (doc.Status2 == "Approve")
                                         {
                                             @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
                                             {
                                                 <div class="timeline-item">
                                                     <div class="timeline-marker claimed">
-                                                        <i class="fas fa-hand-holding-usd"></i>
+                                                        <i class="fas fa-hands-helping"></i>
                                                     </div>
                                                     <div class="timeline-content">
-                                                        <h6>Claimed</h6>
+                                                        <h6>Assistance Released</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            You received<span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            Assistance successfully released: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1641,11 +1641,11 @@
                                             {
                                                 <div class="timeline-item">
                                                     <div class="timeline-marker waiting">
-                                                        <i class="fas fa-clock"></i>
+                                                        <i class="fas fa-gift"></i>
                                                     </div>
                                                     <div class="timeline-content">
-                                                        <h6>Ready to Claim</h6>
-                                                        <p class="waiting-text">You can now get your assistance. Please visit the office...</p>
+                                                        <h6>Ready for Release</h6>
+                                                        <p class="waiting-text">Your assistance is ready. Please visit the office to claim...</p>
                                                     </div>
                                                 </div>
                                             }
@@ -1784,7 +1784,7 @@
                 // Check if there's a final result (approved/unapproved)
                 const resultMarker = card.querySelector('.timeline-item:nth-child(3) .timeline-marker.approved, .timeline-item:nth-child(3) .timeline-marker.unapproved');
                 if (resultMarker) {
-                    return resultMarker.classList.contains('approved') ? 'Approved' : 'Unapproved';
+                    return resultMarker.classList.contains('approved') ? 'Approve' : 'Unapproved';
                 }
 
                 // Check if processing has started (look for processing marker in step 2)
@@ -1928,7 +1928,7 @@
         // Update summary cards
         function updateSummary(applications) {
             const total = applications.length;
-            const approved = applications.filter(app => app.status === 'Approved').length;
+            const approved = applications.filter(app => app.status === 'Approve').length;
             const pending = applications.filter(app => app.status === 'Pending').length;
             const processing = applications.filter(app => app.status === 'Processing').length;
             const unapproved = applications.filter(app => app.status === 'Unapproved').length;
@@ -1940,7 +1940,7 @@
                     <div class="count">${total}</div>
                 </div>
                 <div class="summary-card">
-                    <h5>Approved</h5>
+                    <h5>Approve</h5>
                     <div class="count" style="color: var(--success-color);">${approved}</div>
                 </div>
                 <div class="summary-card">
@@ -1983,7 +1983,7 @@
 
                 // Determine status badge class
                 let statusClass = 'status-pending';
-                if (app.status === 'Approved') statusClass = 'status-approved';
+                if (app.status === 'Approve') statusClass = 'status-approved';
                 else if (app.status === 'Processing') statusClass = 'status-processing';
                 else if (app.status === 'Unapproved') statusClass = 'status-unapproved';
 
@@ -2039,10 +2039,10 @@
             }
 
             // Check if we should send approval notification
-            if (application.status === 'Approved' && application.resultDate) {
+            if (application.status === 'Approve' && application.resultDate) {
                 const notification = {
                     type: application.type,
-                    title: `${application.type} Application Approved`,
+                    title: `${application.type} Application Approve`,
                     message: `Great news! Your ${application.type.toLowerCase()} application has been approved.`,
                     timestamp: application.resultDate
                 };

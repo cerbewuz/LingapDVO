@@ -227,6 +227,45 @@
             color: var(--info);
         }
 
+        /* Priority Stats */
+        .priority-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card.high-priority {
+            border-left: 4px solid #e74c3c;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+        }
+
+        .stat-card.high-priority .stat-icon {
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+            animation: priorityPulse 2s ease-in-out infinite;
+        }
+
+        .stat-card.medium-priority {
+            border-left: 4px solid #f39c12;
+            background: linear-gradient(135deg, #fffbf5 0%, #ffffff 100%);
+        }
+
+        .stat-card.medium-priority .stat-icon {
+            background: rgba(243, 156, 18, 0.15);
+            color: #f39c12;
+        }
+
+        @@keyframes priorityPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+            }
+        }
+
         .stat-info h3 {
             font-size: clamp(1.3rem, 1.75rem, 2rem);
             font-weight: 700;
@@ -537,6 +576,28 @@
                 </div>
             </div>
 
+            <!-- Priority Stats -->
+            <div class="priority-stats mb-3">
+                <div class="stat-card high-priority">
+                    <div class="stat-icon">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</h3>
+                        <p>High Priority (2+ hrs)</p>
+                    </div>
+                </div>
+                <div class="stat-card medium-priority">
+                    <div class="stat-icon">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</h3>
+                        <p>Medium Priority (1-2 hrs)</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stats Cards -->
             <div class="stats-container">
                 <div class="stat-card approved active" data-status="approved">
@@ -545,7 +606,7 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="approved-count">0</h3>
-                        <p>Approved</p>
+                        <p>Approve</p>
                     </div>
                 </div>
                 <div class="stat-card disapproved" data-status="disapproved">
@@ -554,7 +615,7 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="disapproved-count">0</h3>
-                        <p>Disapproved</p>
+                        <p>Disapprove</p>
                     </div>
                 </div>
                 <div class="stat-card pending" data-status="pending">
@@ -665,6 +726,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Update sidebar priority badge
+            const totalPriorityCount = @(ViewBag.TotalPriorityCount ?? 0);
+            if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
+                window.AdminSidebar.updatePriorityBadge(totalPriorityCount);
+                console.log('[Admin] Sidebar badge updated:', totalPriorityCount);
+            }
+
             // Combine all applications from the model
             const allApplications = [];
 
@@ -980,8 +1048,8 @@
                 }
 
                 const statusMap = {
-                    'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approved' },
-                    'disapproved': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapproved' },
+                    'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approve' },
+                    'disapproved': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapprove' },
                     'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
                     'processing': { class: 'status-processing', icon: 'bi-gear', text: 'Processing' },
                     'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }

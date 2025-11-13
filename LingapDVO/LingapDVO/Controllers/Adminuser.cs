@@ -38,7 +38,7 @@ namespace LingapDVO.Controllers
         }
 
 
-        public IActionResult Admin()
+        public async Task<IActionResult> Admin()
         {
 
             // Prevent caching
@@ -66,6 +66,14 @@ namespace LingapDVO.Controllers
             var FuneralAssistance = context.FuneralAssistance
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
+
+            // Get priority counts
+            var (highPriority, mediumPriority, totalPriority) = await _priorityService.GetPriorityCountsAsync();
+
+            // Pass counts to view via ViewBag
+            ViewBag.HighPriorityCount = highPriority;
+            ViewBag.MediumPriorityCount = mediumPriority;
+            ViewBag.TotalPriorityCount = totalPriority;
 
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
@@ -642,7 +650,7 @@ namespace LingapDVO.Controllers
             }
         }
 
-        public IActionResult Analyticsdashboard()
+        public async Task<IActionResult> Analyticsdashboard()
         {
             // Get all data from the database without filtering by userId
             var hospitalBills = context.HospitalAssistance
@@ -656,6 +664,14 @@ namespace LingapDVO.Controllers
             var FuneralAssistance = context.FuneralAssistance
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
+
+            // Get priority counts
+            var (highPriority, mediumPriority, totalPriority) = await _priorityService.GetPriorityCountsAsync();
+
+            // Pass counts to view via ViewBag
+            ViewBag.HighPriorityCount = highPriority;
+            ViewBag.MediumPriorityCount = mediumPriority;
+            ViewBag.TotalPriorityCount = totalPriority;
 
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
@@ -3467,7 +3483,7 @@ namespace LingapDVO.Controllers
 
                 // Send multi-channel notification (In-App, SMS, Email based on preferences)
                 var status = HospitalAssistanceDto.Status2?.Trim();
-                if (!string.IsNullOrEmpty(status) && (status.Equals("Approved", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase)))
                 {
                     var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
@@ -3504,19 +3520,19 @@ namespace LingapDVO.Controllers
                         string subject = "";
                         string body = "";
 
-                        if (status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+                        if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approved - LINGAP DVO";
+                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approve - LINGAP DVO";
                             body = $@"
                             Dear {firstName},
 
-                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVED.
+                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVE.
 
                             APPLICATION DETAILS:
                             • Application Type: Hospital Bill Assistance
                             • Application ID: {HospitalAssistance.Id}
-                            • Status: Approved
-                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Status: Approve
+                            • Date Approve: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {HospitalAssistanceDto.Processby}
 
                             REMARKS:
@@ -3533,18 +3549,18 @@ namespace LingapDVO.Controllers
 
                             Note: This is an automated email. Please do not reply to this message.";
                                                     }
-                                                    else if (status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase))
+                                                    else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
                                                     {
                                                         subject = "Update on Your Hospital Bill Assistance Application - LINGAP DVO";
                                                         body = $@"
                             Dear {firstName},
 
-                            After careful review, we regret to inform you that your Hospital Bill Assistance application has been DISAPPROVED.
+                            After careful review, we regret to inform you that your Hospital Bill Assistance application has been DISAPPROVE.
 
                             APPLICATION DETAILS:
                             • Application Type: Hospital Bill Assistance
                             • Application ID: {HospitalAssistance.Id}
-                            • Status: Disapproved
+                            • Status: Disapprove
                             • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {HospitalAssistanceDto.Processby}
 
@@ -3623,7 +3639,7 @@ namespace LingapDVO.Controllers
 
                 // Send multi-channel notification (In-App, SMS, Email based on preferences)
                 var status = OtherAssistanceDto.Status2?.Trim();
-                if (!string.IsNullOrEmpty(status) && (status.Equals("Approved", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase)))
                 {
                     var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == medicallabform.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
@@ -3660,19 +3676,19 @@ namespace LingapDVO.Controllers
                         string subject = "";
                         string body = "";
 
-                        if (status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+                        if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Medical Assistance Has Been Approved - LINGAP DVO";
+                            subject = "Congratulations! Your Medical Assistance Has Been Approve - LINGAP DVO";
                             body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your Medical Assistance application has been APPROVED.
+                    We are pleased to inform you that your Medical Assistance application has been APPROVE.
 
                     APPLICATION DETAILS:
                     • Application Type: Medical Assistance
                     • Application ID: {medicallabform.Id}
-                    • Status: Approved
-                    • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Status: Approve
+                    • Date Approve: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
                     • Processed By: {OtherAssistanceDto.Processby}
 
                     REMARKS:
@@ -3689,18 +3705,18 @@ namespace LingapDVO.Controllers
 
                     Note: This is an automated email. Please do not reply to this message.";
                         }
-                        else if (status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase))
+                        else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
                         {
                             subject = "Update on Your Medical Assistance Application - LINGAP DVO";
                             body = $@"
                     Dear {firstName},
 
-                    After careful review, we regret to inform you that your Medical Assistance application has been DISAPPROVED.
+                    After careful review, we regret to inform you that your Medical Assistance application has been DISAPPROVE.
 
                     APPLICATION DETAILS:
                     • Application Type: Medical Assistance
                     • Application ID: {medicallabform.Id}
-                    • Status: Disapproved
+                    • Status: Disapprove
                     • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
                     • Processed By: {OtherAssistanceDto.Processby}
 
@@ -3778,7 +3794,7 @@ namespace LingapDVO.Controllers
 
                 // Send multi-channel notification (In-App, SMS, Email based on preferences)
                 var status = FuneralAssistanceDto.Status2?.Trim();
-                if (!string.IsNullOrEmpty(status) && (status.Equals("Approved", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase)))
                 {
                     var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == FuneralAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
@@ -3815,19 +3831,19 @@ namespace LingapDVO.Controllers
                         string subject = "";
                         string body = "";
 
-                        if (status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+                        if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Funeral Assistance Has Been Approved - LINGAP DVO";
+                            subject = "Congratulations! Your Funeral Assistance Has Been Approve - LINGAP DVO";
                             body = $@"
                             Dear {firstName},
 
-                            We are pleased to inform you that your Funeral Assistance application has been APPROVED.
+                            We are pleased to inform you that your Funeral Assistance application has been APPROVE.
 
                             APPLICATION DETAILS:
                             • Application Type: Funeral Assistance
                             • Application ID: {FuneralAssistance.Id}
-                            • Status: Approved
-                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Status: Approve
+                            • Date Approve: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {FuneralAssistanceDto.Processby}
 
                             REMARKS:
@@ -3844,18 +3860,18 @@ namespace LingapDVO.Controllers
 
                             Note: This is an automated email. Please do not reply to this message.";
                                         }
-                                        else if (status.Equals("Disapproved", StringComparison.OrdinalIgnoreCase))
+                                        else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
                                         {
                                             subject = "Update on Your Funeral Assistance Application - LINGAP DVO";
                                             body = $@"
                             Dear {firstName},
 
-                            After careful review, we regret to inform you that your Funeral Assistance application has been DISAPPROVED.
+                            After careful review, we regret to inform you that your Funeral Assistance application has been DISAPPROVE.
 
                             APPLICATION DETAILS:
                             • Application Type: Funeral Assistance
                             • Application ID: {FuneralAssistance.Id}
-                            • Status: Disapproved
+                            • Status: Disapprove
                             • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {FuneralAssistanceDto.Processby}
 

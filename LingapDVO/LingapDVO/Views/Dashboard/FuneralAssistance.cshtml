@@ -642,62 +642,6 @@
             <!-- End Patient Details Section wrapper -->
             </div>
 
-                <!-- Type of Assistance Requested Section -->
-                <h5 class="section-header">Type of Assistance Requested</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <!-- Column 1 -->
-                        <div class="form-check mt-2">
-                            <input class="form-check-input assistance-type" type="checkbox"
-                       id="Funeral/ Burial Assistance" name="TypeassistanceOptions" value="Funeral/ Burial Assistance">
-                <label class="form-check-label" for="Funeral/ Burial Assistance">Funeral/ Burial Assistance</label>
-                        </div>
-
-                        <div class="form-check mt-2">
-                            <input class="form-check-input assistance-type" type="checkbox"
-                                   id="hospitalAssistance" name="TypeassistanceOptions" value="Hospital Assistance">
-                            <label class="form-check-label" for="hospitalAssistance">Procedure</label>
-                            <input type="text" class="form-control mt-1 assistance-spec"
-                                   name="GovernmentDetails" placeholder="Specify" style="display: none;">
-                        </div>
-
-                        <div class="form-check mt-2">
-                            <input class="form-check-input assistance-type" type="checkbox"
-                                   id="governmentAssistance" name="TypeassistanceOptions" value="Government">
-                            <label class="form-check-label" for="governmentAssistance">Laboratory</label>
-                            <input type="text" class="form-control mt-1 assistance-spec"
-                                   name="GovernmentDetails" placeholder="Specify" style="display: none;">
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-6">
-                        <!-- Column 2 -->
-
-                        <div class="form-check mt-2">
-                            <input class="form-check-input assistance-type" type="checkbox"
-                                   id="procedure" name="TypeassistanceOptions" value="Procedure">
-                            <label class="form-check-label" for="procedure">Apparatus</label>
-                            <input type="text" class="form-control mt-1 assistance-spec"
-                                   name="ProcedureDetails" placeholder="Specify" style="display: none;">
-                        </div>
-
-                        <div class="form-check mt-2">
-                            <input class="form-check-input assistance-type" type="checkbox"
-                                   id="others" name="TypeassistanceOptions" value="Others">
-                            <label class="form-check-label" for="others">Others</label>
-                            <input type="text" class="form-control mt-1 assistance-spec"
-                                   name="OthersDetails" placeholder="Specify" style="display: none;">
-                        </div>
-                    </div>
-                </div>
-            
-
-            <div class="form-group mt-3" style="display: none">
-                <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
-                       name="Typeassistance" placeholder="Auto-generated info..." readonly>
-                <span asp-validation-for="Typeassistance" class="text-danger"></span>
-            </div>
 
             <!-- Upload Section -->
             <h5 class="section-header">Upload Required Documents</h5>

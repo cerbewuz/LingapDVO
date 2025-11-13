@@ -41,6 +41,8 @@ namespace LingapDVO.Services
 
         /// <summary>
         /// Get all priority applications counts
+        /// Tracks all incomplete applications (excludes Disapproved and Claimed statuses)
+        /// Priority is based on CreatedAt time (when user submitted the application)
         /// </summary>
         public async Task<(int high, int medium, int total)> GetPriorityCountsAsync()
         {
@@ -48,30 +50,35 @@ namespace LingapDVO.Services
             var twoHoursAgo = now.AddHours(-2);
             var oneHourAgo = now.AddHours(-1);
 
-            // Get pending medical/other assistance applications
+            // Get ALL incomplete medical/other assistance applications
+            // Exclude: Status2 = "Approve" OR Status2 = "Disapprove" (completed applications)
             var medicalApps = await _context.OtherAssistance
-                .Where(m => m.Status == "Pending")
+                .Where(m => m.Status2 != "Approve" && m.Status2 != "Disapprove")
                 .Select(m => m.CreatedAt)
                 .ToListAsync();
 
-            // Get pending funeral assistance applications
+            // Get ALL incomplete funeral assistance applications
+            // Exclude: Status2 = "Approve" OR Status2 = "Disapprove" (completed applications)
             var funeralApps = await _context.FuneralAssistance
-                .Where(f => f.Status == "Pending")
+                .Where(f => f.Status2 != "Approve" && f.Status2 != "Disapprove")
                 .Select(f => f.CreatedAt)
                 .ToListAsync();
 
-            // Get pending hospital assistance applications
+            // Get ALL incomplete hospital assistance applications
+            // Exclude: Status2 = "Approve" OR Status2 = "Disapprove" (completed applications)
             var hospitalApps = await _context.HospitalAssistance
-                .Where(h => h.Status == "Pending")
+                .Where(h => h.Status2 != "Approve" && h.Status2 != "Disapprove")
                 .Select(h => h.CreatedAt)
                 .ToListAsync();
 
-            // Combine all pending applications
-            var allPendingDates = medicalApps.Concat(funeralApps).Concat(hospitalApps).ToList();
+            // Combine all incomplete applications from all three application types
+            var allApplicationDates = medicalApps.Concat(funeralApps).Concat(hospitalApps).ToList();
 
-            // Calculate priority counts
-            int highPriority = allPendingDates.Count(d => d <= twoHoursAgo);
-            int mediumPriority = allPendingDates.Count(d => d > twoHoursAgo && d <= oneHourAgo);
+            // Calculate priority counts based on CreatedAt time
+            // High priority: forms created 2+ hours ago (CreatedAt <= twoHoursAgo)
+            int highPriority = allApplicationDates.Count(d => d <= twoHoursAgo);
+            // Medium priority: forms created 1-2 hours ago (CreatedAt > twoHoursAgo AND CreatedAt <= oneHourAgo)
+            int mediumPriority = allApplicationDates.Count(d => d > twoHoursAgo && d <= oneHourAgo);
             int totalPriority = highPriority + mediumPriority;
 
             return (highPriority, mediumPriority, totalPriority);
@@ -110,7 +117,9 @@ namespace LingapDVO.Services
         }
 
         /// <summary>
-        /// Check for delayed applications and send notifications
+        /// Check for delayed applications and send notifications to users
+        /// Only checks incomplete applications (excludes Disapproved and Claimed)
+        /// Sends notification for applications delayed 1+ hours
         /// </summary>
         public async Task CheckDelayedApplicationsAsync()
         {
@@ -120,9 +129,9 @@ namespace LingapDVO.Services
                 var twoHoursAgo = now.AddHours(-2);
                 var oneHourAgo = now.AddHours(-1);
 
-                // Check medical/other assistance applications
+                // Check medical/other assistance applications (exclude Approve and Disapprove)
                 var delayedMedical = await _context.OtherAssistance
-                    .Where(m => m.Status == "Pending" && m.CreatedAt <= oneHourAgo)
+                    .Where(m => m.Status2 != "Approve" && m.Status2 != "Disapprove" && m.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedMedical)
@@ -144,9 +153,9 @@ namespace LingapDVO.Services
                     _logger.LogInformation($"Delay notification sent to User {app.UserId} for Other Assistance Form {app.Id}");
                 }
 
-                // Check funeral assistance applications
+                // Check funeral assistance applications (exclude Approve and Disapprove)
                 var delayedFuneral = await _context.FuneralAssistance
-                    .Where(f => f.Status == "Pending" && f.CreatedAt <= oneHourAgo)
+                    .Where(f => f.Status2 != "Approve" && f.Status2 != "Disapprove" && f.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedFuneral)
@@ -168,9 +177,9 @@ namespace LingapDVO.Services
                     _logger.LogInformation($"Delay notification sent to User {app.UserId} for Funeral Assistance Form {app.Id}");
                 }
 
-                // Check hospital assistance applications
+                // Check hospital assistance applications (exclude Approve and Disapprove)
                 var delayedHospital = await _context.HospitalAssistance
-                    .Where(h => h.Status == "Pending" && h.CreatedAt <= oneHourAgo)
+                    .Where(h => h.Status2 != "Approve" && h.Status2 != "Disapprove" && h.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedHospital)

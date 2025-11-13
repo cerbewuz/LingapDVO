@@ -635,15 +635,15 @@ namespace LingapDVO.Controllers
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            // Check for forms with Status = "Approved" within the last month
+            // Check for forms with Status = "Approve" within the last month
             var hasRecentApproval = context.HospitalAssistance
-                .Any(f => f.UserId == userId && f.Status2 == "Approved" && f.CreatedAt >= oneMonthAgo);
+                .Any(f => f.UserId == userId && f.Status2 == "Approve" && f.CreatedAt >= oneMonthAgo);
 
             if (hasRecentApproval)
             {
                 // Get the most recent approved form to show the exact date
                 var recentApprovedForm = context.HospitalAssistance
-                    .Where(f => f.UserId == userId && f.Status2 == "Approved")
+                    .Where(f => f.UserId == userId && f.Status2 == "Approve")
                     .OrderByDescending(f => f.CreatedAt)
                     .FirstOrDefault();
 
@@ -1359,15 +1359,15 @@ namespace LingapDVO.Controllers
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            // Check for forms with Status = "Approved" within the last month
+            // Check for forms with Status = "Approve" within the last month
             var hasRecentApproval = context.OtherAssistance
-                .Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
+                .Any(f => f.UserId == userId && f.Status2 == "Approve" && f.CreatedAt >= oneMonthAgo);
 
             if (hasRecentApproval)
             {
                 // Get the most recent approved form to show the exact date
                 var recentApprovedForm = context.OtherAssistance
-                    .Where(f => f.UserId == userId && f.Status == "Approved")
+                    .Where(f => f.UserId == userId && f.Status2 == "Approve")
                     .OrderByDescending(f => f.CreatedAt)
                     .FirstOrDefault();
 
@@ -2139,15 +2139,15 @@ namespace LingapDVO.Controllers
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
             var oneMonthAgo = DateTime.Now.AddMonths(-1);
 
-            // Check for forms with Status = "Approved" within the last month
+            // Check for forms with Status = "Approve" within the last month
             var hasRecentApproval = context.FuneralAssistance
-                .Any(f => f.UserId == userId && f.Status == "Approved" && f.CreatedAt >= oneMonthAgo);
+                .Any(f => f.UserId == userId && f.Status2 == "Approve" && f.CreatedAt >= oneMonthAgo);
 
             if (hasRecentApproval)
             {
                 // Get the most recent approved form to show the exact date
                 var recentApprovedForm = context.FuneralAssistance
-                    .Where(f => f.UserId == userId && f.Status == "Approved")
+                    .Where(f => f.UserId == userId && f.Status2 == "Approve")
                     .OrderByDescending(f => f.CreatedAt)
                     .FirstOrDefault();
 
@@ -2174,6 +2174,9 @@ namespace LingapDVO.Controllers
             {
                 ModelState.Remove("PhilHealthNo");
             }
+
+            // Remove Typeassistance validation since FuneralAssistance doesn't have Type of Assistance checkboxes
+            ModelState.Remove("Typeassistance");
 
             // MODIFIED: Image validation - Remove ID image validation since we'll use existing ones from user account
             ModelState.Remove("IdFrontimage");
@@ -2274,8 +2277,8 @@ namespace LingapDVO.Controllers
                     RelationshipPatient = FuneralAssistanceDto.RelationshipPatient,
                     ContactNo = FuneralAssistanceDto.ContactNo,
 
-                    // Assistance Type
-                    Typeassistance = FuneralAssistanceDto.Typeassistance,
+                    // Assistance Type - Set to default "Funeral Assistance" since no checkboxes
+                    Typeassistance = "Funeral Assistance",
                     ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL,
 
                     // MODIFIED: Use existing ID images from user account instead of new uploads

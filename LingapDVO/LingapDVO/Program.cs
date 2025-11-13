@@ -276,6 +276,11 @@ app.MapControllerRoute(
     pattern: "FuneralAssistanceview/{id?}",
     defaults: new { controller = "Dashboard", action = "FuneralAssistanceview" });
 
+app.MapControllerRoute(
+    name: "feedback-form-view",
+    pattern: "Feedback",
+    defaults: new { controller = "Dashboard", action = "Feedback" });
+
 // Adminuser Controller Routes
 app.MapControllerRoute(
     name: "route-admin",
