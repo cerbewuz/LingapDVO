@@ -922,8 +922,8 @@
                     }
 
                     // For other statuses, EXCLUDE applications that have status3 = claimed
-                    // Then check status2 for approved/disapproved
-                    if (status === 'approved' || status === 'disapproved') {
+                    // Then check status2 for approve/disapprove
+                    if (status === 'approve' || status === 'disapprove') {
                         return app.status2 && app.status2.trim() !== '' &&
                                app.status2 === status &&
                                (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
@@ -933,7 +933,7 @@
                     return app.status === status &&
                            (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
                            (!app.status2 || app.status2.trim() === '' ||
-                            (app.status2 !== 'approved' && app.status2 !== 'disapproved'));
+                            (app.status2 !== 'approve' && app.status2 !== 'disapprove'));
                 });
             }
 
@@ -945,13 +945,17 @@
             const applications = data.allApplications || [];
 
             const statusCounts = {
-                approved: 0,
-                disapproved: 0,
+                approve: 0,
+                disapprove: 0,
                 pending: 0,
                 processing: 0,
                 claimed: 0,
                 total: 0
             };
+
+            let highPriority = 0;
+            let mediumPriority = 0;
+            const now = new Date();
 
             // Count applications by status following updated pattern
             applications.forEach(app => {
@@ -959,24 +963,41 @@
                 if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
                     statusCounts.claimed++;
                 }
-                // If NOT claimed, then check status2 for approved/disapproved
+                // If NOT claimed, then check status2 for approve/disapprove
                 else if (app.status2 && app.status2.trim() !== '') {
-                    if (app.status2 === 'approved') {
-                        statusCounts.approved++;
-                    } else if (app.status2 === 'disapproved') {
-                        statusCounts.disapproved++;
+                    if (app.status2 === 'approve') {
+                        statusCounts.approve++;
+                    } else if (app.status2 === 'disapprove') {
+                        statusCounts.disapprove++;
                     }
-                    // DO NOT count in processing/pending if Status2 is approved/disapproved
+                    // DO NOT count in processing/pending if Status2 is approve/disapprove
                 } else {
                     // No Status2 or Status2 is empty, and no claimed status3, use original status
                     if (statusCounts.hasOwnProperty(app.status)) {
                         statusCounts[app.status]++;
                     }
                 }
+
+                // Calculate priority counts (only for Pending and Processing)
+                const currentStatus = app.status2 || app.status;
+                if (currentStatus === 'pending' || currentStatus === 'processing') {
+                    const hoursSinceSubmission = (now - new Date(app.createdAt)) / (1000 * 60 * 60);
+                    if (hoursSinceSubmission >= 2) {
+                        highPriority++;
+                    } else if (hoursSinceSubmission >= 1) {
+                        mediumPriority++;
+                    }
+                }
             });
 
             // Calculate total
             statusCounts.total = applications.length;
+
+            // Update priority counts
+            const highPriorityCount = document.getElementById('high-priority-count');
+            const mediumPriorityCount = document.getElementById('medium-priority-count');
+            if (highPriorityCount) highPriorityCount.textContent = highPriority;
+            if (mediumPriorityCount) mediumPriorityCount.textContent = mediumPriority;
 
             const summaryCards = document.getElementById('summaryCards');
             summaryCards.innerHTML = `
@@ -990,11 +1011,11 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-approved" onclick="redirectToApplicationDashboard('approved')">
+                    <div class="card-analytics summary-card summary-approved" onclick="redirectToApplicationDashboard('approve')">
                         <div class="summary-icon">
                             <i class="bi bi-check-circle"></i>
                         </div>
-                        <div class="summary-number">${statusCounts.approved}</div>
+                        <div class="summary-number">${statusCounts.approve}</div>
                         <div class="summary-label">Approve</div>
                     </div>
                 </div>
@@ -1017,11 +1038,11 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-disapproved" onclick="redirectToApplicationDashboard('disapproved')">
+                    <div class="card-analytics summary-card summary-disapproved" onclick="redirectToApplicationDashboard('disapprove')">
                         <div class="summary-icon">
                             <i class="bi bi-x-circle"></i>
                         </div>
-                        <div class="summary-number">${statusCounts.disapproved}</div>
+                        <div class="summary-number">${statusCounts.disapprove}</div>
                         <div class="summary-label">Disapprove</div>
                     </div>
                 </div>
