@@ -770,28 +770,33 @@
 <!-- Success Modal -->
 <div class="modal fade" id="successModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-body text-center p-4">
-                <!-- Success Icon -->
-                <div class="mb-3">
-                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <!-- Success Icon with Animation -->
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
                 </div>
 
                 <!-- Success Message -->
-                <h5 class="modal-title text-success mb-2" id="successModalLabel">Application Submitted Successfully!</h5>
-                <p class="text-muted mb-3">Thank you for your submission. You will be redirected to the homepage shortly.</p>
+                <h5 class="modal-title" id="successModalLabel">Application Submitted Successfully!</h5>
+                <p class="modal-description">
+                    Your Other Assistance application has been received.
+                    <br>We'll review it and get back to you soon.
+                </p>
 
                 <!-- Countdown Timer -->
-                <div class="d-flex justify-content-center align-items-center mb-3">
-                    <div class="spinner-border spinner-border-sm text-success me-2" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                <div class="countdown-container">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-clock text-success"></i>
+                        <span class="text-muted">Redirecting in</span>
+                        <span class="countdown-number" id="countdown">3</span>
+                        <span class="text-muted">seconds</span>
                     </div>
-                    <small class="text-muted">Redirecting in <span id="countdown">2</span> seconds...</small>
                 </div>
 
                 <!-- Manual Redirect Button -->
-                <button type="button" class="btn btn-success btn-sm" onclick="redirectToHomepage()">
-                    Go Home Now
+                <button type="button" class="btn btn-success btn-go-home" onclick="redirectToHomepage()">
+                    <i class="fas fa-home me-2"></i>Go to Homepage Now
                 </button>
             </div>
         </div>
@@ -805,7 +810,7 @@
         const successModal = new bootstrap.Modal(document.getElementById('successModal'));
         successModal.show();
 
-        let countdown = 2;
+        let countdown = 3;
         const countdownElement = document.getElementById('countdown');
         const countdownInterval = setInterval(() => {
             countdown--;
@@ -1225,23 +1230,157 @@
 </script>
 
 <style>
-    /* Success Modal Styles */
+    /* Success Modal Styles - Enhanced Design with Proper Z-Index */
+    #successModal {
+        z-index: 10000 !important;
+    }
+
+    #successModal .modal-dialog {
+        z-index: 10001 !important;
+        position: relative;
+    }
+
+    /* Bootstrap modal backdrop - direct child of body */
+    .modal-backdrop {
+        z-index: 9999 !important;
+        backdrop-filter: blur(4px);
+        background-color: rgba(0, 0, 0, 0.6) !important;
+    }
+
     #successModal .modal-content {
-        border-radius: 12px;
+        border-radius: 20px;
         border: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     }
 
     #successModal .modal-body {
-        padding: 2rem;
+        padding: 3rem 2rem;
+        position: relative;
+    }
+
+    /* Success Icon Animation */
+    #successModal .success-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        animation: successPulse 2s ease-in-out infinite;
+        box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    #successModal .success-icon i {
+        font-size: 2.5rem;
+        color: white;
+        animation: checkmark 0.6s ease-in-out;
+    }
+
+    @@keyframes successPulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(40, 167, 69, 0.6);
+        }
+    }
+
+    @@keyframes checkmark {
+        0% {
+            transform: scale(0) rotate(-45deg);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.2) rotate(10deg);
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+        }
+    }
+
+    #successModal .modal-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #28a745;
+        margin-bottom: 0.75rem;
+    }
+
+    #successModal .modal-description {
+        color: #6c757d;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    #successModal .countdown-container {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border: 2px dashed #dee2e6;
+    }
+
+    #successModal .countdown-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #28a745;
+        font-family: 'Courier New', monospace;
+    }
+
+    #successModal .btn-go-home {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    #successModal .btn-go-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
     }
 
     .modal.fade .modal-dialog {
-        transform: scale(0.8);
-        transition: transform 0.3s ease-out;
+        transform: scale(0.7) translateY(-50px);
+        opacity: 0;
+        transition: all 0.3s ease-out;
     }
 
     .modal.show .modal-dialog {
-        transform: scale(1);
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+
+    /* Decorative elements */
+    #successModal .modal-body::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(40, 167, 69, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    #successModal .modal-body::after {
+        content: '';
+        position: absolute;
+        bottom: -50px;
+        left: -50px;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(32, 201, 151, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
     }
 </style>
 
