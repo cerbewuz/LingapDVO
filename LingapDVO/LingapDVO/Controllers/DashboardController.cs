@@ -3922,5 +3922,38 @@ namespace LingapDVO.Controllers
             }
         }
 
+        // ═══════════════════════════════════════════════════════════════
+        // FEEDBACK ACTIONS
+        // ═══════════════════════════════════════════════════════════════
+
+        [HttpGet]
+        public IActionResult Feedback(string assistanceType = null, int? assistanceId = null, int? userId = null)
+        {
+            ViewBag.AssistanceType = assistanceType;
+            ViewBag.AssistanceId = assistanceId;
+            ViewBag.UserId = userId;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitFeedback(Feedback feedback)
+        {
+            try
+            {
+                // Set IP address
+                feedback.IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                feedback.SubmittedAt = DateTime.UtcNow;
+
+                context.Feedbacks.Add(feedback);
+                await context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Thank you for your feedback!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while submitting your feedback. Please try again." });
+            }
+        }
+
     }
 }

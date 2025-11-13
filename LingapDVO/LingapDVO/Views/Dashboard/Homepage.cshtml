@@ -1207,7 +1207,7 @@
                             if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
-                                    title: `${app.type} Application Approve`,
+                                    title: `${app.type} Application Approved`,
                                     message: `Great news! Your ${app.type.toLowerCase()} application has been approved.`,
                                     isRead: false,
                                     createdAt: app.result,

@@ -39,5 +39,10 @@ namespace LingapDVO.Services
         // ═══════════════════════════════════════════════════════════════
         public DbSet<FormSubmissionToken> FormSubmissionTokens { get; set; }
         public DbSet<FormSubmissionAuditLog> FormSubmissionAuditLogs { get; set; }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 📝 CITIZEN FEEDBACK
+        // ═══════════════════════════════════════════════════════════════
+        public DbSet<Feedback> Feedbacks { get; set; }
     }
 }

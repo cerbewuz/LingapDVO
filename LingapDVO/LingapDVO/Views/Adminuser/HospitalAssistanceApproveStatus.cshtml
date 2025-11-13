@@ -43,7 +43,7 @@
         border-bottom: 1px solid var(--border-color);
     }
 
-    .section-title {
+    .section-header {
         color: var(--primary-color);
         font-weight: 600;
         margin-bottom: 1rem;
@@ -80,12 +80,12 @@
         color: #856404;
     }
 
-    .status-approved {
+    .status-approve {
         background-color: #d4edda;
         color: #155724;
     }
 
-    .status-disapproved {
+    .status-disapprove {
         background-color: #f8d7da;
         color: #721c24;
     }
@@ -563,7 +563,7 @@
             page-break-inside: avoid;
         }
 
-        .section-title {
+        .section-header {
             font-size: 9pt !important;
             font-weight: bold !important;
             margin-bottom: 0.2rem !important;
@@ -849,7 +849,7 @@
         <div class="receipt-body">
             <div class="receipt-section">
                 <br />
-                <h5 class="section-title">Patient Information</h5>
+                <h5 class="section-header">Patient Information</h5>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="info-row">
@@ -891,7 +891,7 @@
 
             <!-- Requestor Details -->
             <div class="receipt-section">
-                <h5 class="section-title">Requestor's Details</h5>
+                <h5 class="section-header">Requestor's Details</h5>
                 <div class="info-row">
                     <div class="info-label">Full Name:</div>
                     <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
@@ -912,7 +912,7 @@
 
             <!-- Assistance Requested -->
             <div class="receipt-section">
-                <h5 class="section-title">Assistance Requested</h5>
+                <h5 class="section-header">Assistance Requested</h5>
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
@@ -922,7 +922,7 @@
             <div class="receipt-section">
                 <!-- Valid ID Section -->
                 <div class="receipt-section">
-                    <h5 class="section-title">Valid ID</h5>
+                    <h5 class="section-header">Valid ID</h5>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <h6>Front ID</h6>
@@ -957,7 +957,7 @@
                 @if (ViewData["DoctorPrescriptionBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-title">Doctor Prescription</h5>
+                        <h5 class="section-header">Doctor Prescription</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
                             <div class="pdf-container">
@@ -983,7 +983,7 @@
                 @if (ViewData["MedicalCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-title">Medical Certificate</h5>
+                        <h5 class="section-header">Medical Certificate</h5>
                         @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                         {
                             <div class="pdf-container">
@@ -1009,7 +1009,7 @@
                 @if (ViewData["DeathCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-title">Death Certificate</h5>
+                        <h5 class="section-header">Death Certificate</h5>
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
                             <div class="pdf-container">
@@ -1035,7 +1035,7 @@
            
             <!-- Status Section -->
             <div class="receipt-section">
-                <h5 class="section-title">Request Status</h5>
+                <h5 class="section-header">Request Status</h5>
                 <div class="info-row">
                     <div class="info-label">Current Status:</div>
                     <div class="info-value">

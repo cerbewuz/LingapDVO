@@ -1211,13 +1211,19 @@
     <style>
     /* Success Modal Styles - Enhanced Design with Proper Z-Index */
     #successModal {
-        z-index: 9999 !important;
+        z-index: 10000 !important;
     }
 
-    #successModal .modal-backdrop {
-        z-index: 9998 !important;
+    #successModal .modal-dialog {
+        z-index: 10001 !important;
+        position: relative;
+    }
+
+    /* Bootstrap modal backdrop - direct child of body */
+    .modal-backdrop {
+        z-index: 9999 !important;
         backdrop-filter: blur(4px);
-        background-color: rgba(0, 0, 0, 0.6);
+        background-color: rgba(0, 0, 0, 0.6) !important;
     }
 
     #successModal .modal-content {

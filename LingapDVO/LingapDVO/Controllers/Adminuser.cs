@@ -3522,17 +3522,17 @@ namespace LingapDVO.Controllers
 
                         if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approve - LINGAP DVO";
+                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approved - LINGAP DVO";
                             body = $@"
                             Dear {firstName},
 
-                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVE.
+                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVED.
 
                             APPLICATION DETAILS:
                             • Application Type: Hospital Bill Assistance
                             • Application ID: {HospitalAssistance.Id}
                             • Status: Approve
-                            • Date Approve: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {HospitalAssistanceDto.Processby}
 
                             REMARKS:
@@ -3555,7 +3555,7 @@ namespace LingapDVO.Controllers
                                                         body = $@"
                             Dear {firstName},
 
-                            After careful review, we regret to inform you that your Hospital Bill Assistance application has been DISAPPROVE.
+                            After careful review, we regret to inform you that your Hospital Bill Assistance application has been DISAPPROVED.
 
                             APPLICATION DETAILS:
                             • Application Type: Hospital Bill Assistance
@@ -3682,7 +3682,7 @@ namespace LingapDVO.Controllers
                             body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your Medical Assistance application has been APPROVE.
+                    We are pleased to inform you that your Medical Assistance application has been APPROVED.
 
                     APPLICATION DETAILS:
                     • Application Type: Medical Assistance
@@ -4272,10 +4272,17 @@ namespace LingapDVO.Controllers
             {
                 var now = DateTime.Now;
 
-                // Get all applications
-                var hospitalBills = context.HospitalAssistance.ToList();
-                var medicalLabForms = context.OtherAssistance.ToList();
-                var FuneralAssistance = context.FuneralAssistance.ToList();
+                // Get ONLY Pending and Processing applications
+                // Completed statuses (Approve, Disapprove, Claimed) are excluded
+                var hospitalBills = context.HospitalAssistance
+                    .Where(h => h.Status2 == "Pending" || h.Status2 == "Processing")
+                    .ToList();
+                var medicalLabForms = context.OtherAssistance
+                    .Where(m => m.Status2 == "Pending" || m.Status2 == "Processing")
+                    .ToList();
+                var FuneralAssistance = context.FuneralAssistance
+                    .Where(f => f.Status2 == "Pending" || f.Status2 == "Processing")
+                    .ToList();
 
                 int priorityCount = 0;
 
@@ -4315,6 +4322,180 @@ namespace LingapDVO.Controllers
             {
                 return Json(new { count = 0, error = ex.Message });
             }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // FEEDBACK ANALYTICS
+        // ═══════════════════════════════════════════════════════════════
+
+        public IActionResult FeedbackAnalytics()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult GetFeedbackStatistics(DateTime? startDate, DateTime? endDate, string assistanceType = null)
+        {
+            try
+            {
+                var query = context.Feedbacks.AsQueryable();
+
+                // Apply date filter
+                if (startDate.HasValue)
+                {
+                    query = query.Where(f => f.SubmittedAt >= startDate.Value);
+                }
+                if (endDate.HasValue)
+                {
+                    query = query.Where(f => f.SubmittedAt <= endDate.Value.AddDays(1));
+                }
+
+                // Apply assistance type filter
+                if (!string.IsNullOrEmpty(assistanceType))
+                {
+                    query = query.Where(f => f.AssistanceType == assistanceType);
+                }
+
+                var feedbacks = query.ToList();
+                var totalFeedbacks = feedbacks.Count;
+
+                // Rating Statistics (1-8 questions, values 1-6)
+                var ratingStats = new
+                {
+                    r1_ServiceSatisfaction = CalculateRatingDistribution(feedbacks.Select(f => f.R1_ServiceSatisfaction)),
+                    r2_TimeSpent = CalculateRatingDistribution(feedbacks.Select(f => f.R2_TimeSpent)),
+                    r3_ProcessFollowed = CalculateRatingDistribution(feedbacks.Select(f => f.R3_ProcessFollowed)),
+                    r4_ProcessSimplicity = CalculateRatingDistribution(feedbacks.Select(f => f.R4_ProcessSimplicity)),
+                    r5_InformationAccess = CalculateRatingDistribution(feedbacks.Select(f => f.R5_InformationAccess)),
+                    r6_FairPayment = CalculateRatingDistribution(feedbacks.Select(f => f.R6_FairPayment)),
+                    r7_Fairness = CalculateRatingDistribution(feedbacks.Select(f => f.R7_Fairness)),
+                    r8_EmployeeCourtesy = CalculateRatingDistribution(feedbacks.Select(f => f.R8_EmployeeCourtesy))
+                };
+
+                // Demographics
+                var demographics = new
+                {
+                    sex = feedbacks.Where(f => !string.IsNullOrEmpty(f.Sex))
+                        .GroupBy(f => f.Sex)
+                        .Select(g => new { label = g.Key, count = g.Count() })
+                        .ToList(),
+                    typeOfClient = feedbacks.Where(f => !string.IsNullOrEmpty(f.TypeOfClient))
+                        .GroupBy(f => f.TypeOfClient)
+                        .Select(g => new { label = g.Key, count = g.Count() })
+                        .ToList()
+                };
+
+                // CC Knowledge
+                var ccKnowledge = new
+                {
+                    q1_Knowledge = feedbacks.Where(f => !string.IsNullOrEmpty(f.Q1_CCKnowledge))
+                        .GroupBy(f => f.Q1_CCKnowledge)
+                        .Select(g => new { label = g.Key, count = g.Count() })
+                        .ToList(),
+                    q2_Visibility = feedbacks.Where(f => !string.IsNullOrEmpty(f.Q2_CCVisibility))
+                        .GroupBy(f => f.Q2_CCVisibility)
+                        .Select(g => new { label = g.Key, count = g.Count() })
+                        .ToList(),
+                    q3_Helpfulness = feedbacks.Where(f => !string.IsNullOrEmpty(f.Q3_CCHelpfulness))
+                        .GroupBy(f => f.Q3_CCHelpfulness)
+                        .Select(g => new { label = g.Key, count = g.Count() })
+                        .ToList()
+                };
+
+                // Assistance Type Distribution
+                var assistanceTypeDistribution = feedbacks.Where(f => !string.IsNullOrEmpty(f.AssistanceType))
+                    .GroupBy(f => f.AssistanceType)
+                    .Select(g => new { label = g.Key, count = g.Count() })
+                    .ToList();
+
+                // Timeline (last 30 days)
+                var timeline = feedbacks.Where(f => f.SubmittedAt >= DateTime.UtcNow.AddDays(-30))
+                    .GroupBy(f => f.SubmittedAt.Date)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new { date = g.Key.ToString("yyyy-MM-dd"), count = g.Count() })
+                    .ToList();
+
+                // Recent Feedback with Remarks
+                var recentFeedback = feedbacks
+                    .OrderByDescending(f => f.SubmittedAt)
+                    .Take(10)
+                    .Select(f => new
+                    {
+                        id = f.Id,
+                        name = f.Name ?? "Anonymous",
+                        assistanceType = f.AssistanceType ?? "N/A",
+                        submittedAt = f.SubmittedAt.ToString("yyyy-MM-dd HH:mm"),
+                        commendation = f.Commendation,
+                        suggestion = f.Suggestion,
+                        request = f.Request,
+                        complaint = f.Complaint,
+                        averageRating = CalculateAverageRating(f)
+                    })
+                    .ToList();
+
+                return Json(new
+                {
+                    success = true,
+                    totalFeedbacks = totalFeedbacks,
+                    ratingStats = ratingStats,
+                    demographics = demographics,
+                    ccKnowledge = ccKnowledge,
+                    assistanceTypeDistribution = assistanceTypeDistribution,
+                    timeline = timeline,
+                    recentFeedback = recentFeedback
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+        }
+
+        private object CalculateRatingDistribution(IEnumerable<int?> ratings)
+        {
+            var validRatings = ratings.Where(r => r.HasValue).Select(r => r.Value).ToList();
+            var total = validRatings.Count;
+
+            if (total == 0)
+            {
+                return new
+                {
+                    average = 0,
+                    distribution = new int[] { 0, 0, 0, 0, 0, 0 },
+                    total = 0
+                };
+            }
+
+            var distribution = new int[6];
+            for (int i = 1; i <= 6; i++)
+            {
+                distribution[i - 1] = validRatings.Count(r => r == i);
+            }
+
+            var average = validRatings.Average();
+
+            return new
+            {
+                average = Math.Round(average, 2),
+                distribution = distribution,
+                total = total
+            };
+        }
+
+        private double CalculateAverageRating(Feedback f)
+        {
+            var ratings = new[] {
+                f.R1_ServiceSatisfaction,
+                f.R2_TimeSpent,
+                f.R3_ProcessFollowed,
+                f.R4_ProcessSimplicity,
+                f.R5_InformationAccess,
+                f.R6_FairPayment,
+                f.R7_Fairness,
+                f.R8_EmployeeCourtesy
+            }.Where(r => r.HasValue).Select(r => r.Value).ToList();
+
+            return ratings.Any() ? Math.Round(ratings.Average(), 2) : 0;
         }
 
 

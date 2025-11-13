@@ -41,7 +41,8 @@ namespace LingapDVO.Services
 
         /// <summary>
         /// Get all priority applications counts
-        /// Tracks all incomplete applications (excludes Disapproved and Claimed statuses)
+        /// Tracks ONLY Pending and Processing applications
+        /// Completed statuses (Approve, Disapprove, Claimed) are excluded
         /// Priority is based on CreatedAt time (when user submitted the application)
         /// </summary>
         public async Task<(int high, int medium, int total)> GetPriorityCountsAsync()
@@ -50,28 +51,31 @@ namespace LingapDVO.Services
             var twoHoursAgo = now.AddHours(-2);
             var oneHourAgo = now.AddHours(-1);
 
-            // Get ALL incomplete medical/other assistance applications
-            // Exclude: Status2 = "Approve" OR Status2 = "Disapprove" (completed applications)
+            // Get ONLY Pending and Processing medical/other assistance applications
+            // Include: Status2 = "Pending" OR Status2 = "Processing"
+            // Exclude: Status2 = "Approve", "Disapprove", "Claimed" (completed applications)
             var medicalApps = await _context.OtherAssistance
-                .Where(m => m.Status2 != "Approve" && m.Status2 != "Disapprove")
+                .Where(m => m.Status2 == "Pending" || m.Status2 == "Processing")
                 .Select(m => m.CreatedAt)
                 .ToListAsync();
 
-            // Get ALL incomplete funeral assistance applications
-            // Exclude: Status2 = "Approve" OR Status2 = "Disapprove" (completed applications)
+            // Get ONLY Pending and Processing funeral assistance applications
+            // Include: Status2 = "Pending" OR Status2 = "Processing"
+            // Exclude: Status2 = "Approve", "Disapprove", "Claimed" (completed applications)
             var funeralApps = await _context.FuneralAssistance
-                .Where(f => f.Status2 != "Approve" && f.Status2 != "Disapprove")
+                .Where(f => f.Status2 == "Pending" || f.Status2 == "Processing")
                 .Select(f => f.CreatedAt)
                 .ToListAsync();
 
-            // Get ALL incomplete hospital assistance applications
-            // Exclude: Status2 = "Approve" OR Status2 = "Disapprove" (completed applications)
+            // Get ONLY Pending and Processing hospital assistance applications
+            // Include: Status2 = "Pending" OR Status2 = "Processing"
+            // Exclude: Status2 = "Approve", "Disapprove", "Claimed" (completed applications)
             var hospitalApps = await _context.HospitalAssistance
-                .Where(h => h.Status2 != "Approve" && h.Status2 != "Disapprove")
+                .Where(h => h.Status2 == "Pending" || h.Status2 == "Processing")
                 .Select(h => h.CreatedAt)
                 .ToListAsync();
 
-            // Combine all incomplete applications from all three application types
+            // Combine all pending/processing applications from all three application types
             var allApplicationDates = medicalApps.Concat(funeralApps).Concat(hospitalApps).ToList();
 
             // Calculate priority counts based on CreatedAt time
@@ -118,7 +122,8 @@ namespace LingapDVO.Services
 
         /// <summary>
         /// Check for delayed applications and send notifications to users
-        /// Only checks incomplete applications (excludes Disapproved and Claimed)
+        /// Only checks Pending and Processing applications
+        /// Completed statuses (Approve, Disapprove, Claimed) are excluded
         /// Sends notification for applications delayed 1+ hours
         /// </summary>
         public async Task CheckDelayedApplicationsAsync()
@@ -129,9 +134,9 @@ namespace LingapDVO.Services
                 var twoHoursAgo = now.AddHours(-2);
                 var oneHourAgo = now.AddHours(-1);
 
-                // Check medical/other assistance applications (exclude Approve and Disapprove)
+                // Check medical/other assistance applications (ONLY Pending and Processing)
                 var delayedMedical = await _context.OtherAssistance
-                    .Where(m => m.Status2 != "Approve" && m.Status2 != "Disapprove" && m.CreatedAt <= oneHourAgo)
+                    .Where(m => (m.Status2 == "Pending" || m.Status2 == "Processing") && m.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedMedical)
@@ -153,9 +158,9 @@ namespace LingapDVO.Services
                     _logger.LogInformation($"Delay notification sent to User {app.UserId} for Other Assistance Form {app.Id}");
                 }
 
-                // Check funeral assistance applications (exclude Approve and Disapprove)
+                // Check funeral assistance applications (ONLY Pending and Processing)
                 var delayedFuneral = await _context.FuneralAssistance
-                    .Where(f => f.Status2 != "Approve" && f.Status2 != "Disapprove" && f.CreatedAt <= oneHourAgo)
+                    .Where(f => (f.Status2 == "Pending" || f.Status2 == "Processing") && f.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedFuneral)
@@ -177,9 +182,9 @@ namespace LingapDVO.Services
                     _logger.LogInformation($"Delay notification sent to User {app.UserId} for Funeral Assistance Form {app.Id}");
                 }
 
-                // Check hospital assistance applications (exclude Approve and Disapprove)
+                // Check hospital assistance applications (ONLY Pending and Processing)
                 var delayedHospital = await _context.HospitalAssistance
-                    .Where(h => h.Status2 != "Approve" && h.Status2 != "Disapprove" && h.CreatedAt <= oneHourAgo)
+                    .Where(h => (h.Status2 == "Pending" || h.Status2 == "Processing") && h.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedHospital)
@@ -258,7 +263,7 @@ namespace LingapDVO.Services
 
                 _logger.LogInformation($"Status update notification sent to User {userId}: {applicationType} - {status}");
 
-                // If status changed to Processing/Approved/Disapproved, update priority counts
+                // If status changed to Processing/Approve/Disapprove, update priority counts
                 if (status != "Pending")
                 {
                     await BroadcastPriorityCountsAsync();

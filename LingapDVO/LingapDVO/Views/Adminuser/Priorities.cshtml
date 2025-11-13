@@ -485,10 +485,10 @@
                 </text>
             }
 
-            // Calculate priority applications (ONLY for Pending applications)
+            // Calculate priority applications (ONLY for Pending AND Processing applications)
             const now = new Date();
             const priorityApplications = allApplications
-                .filter(app => app.status === 'pending') // Only count pending applications
+                .filter(app => app.status === 'pending' || app.status === 'processing') // Count both Pending and Processing applications
                 .map(app => {
                     const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
 
@@ -518,7 +518,7 @@
 
             console.log('[Priorities] Server counts - High:', serverHighCount, 'Medium:', serverMediumCount);
             console.log('[Priorities] Calculated counts - High:', highPriorityCount, 'Medium:', mediumPriorityCount);
-            console.log('[Priorities] Total pending applications:', allApplications.filter(app => app.status === 'pending').length);
+            console.log('[Priorities] Total pending/processing applications:', allApplications.filter(app => app.status === 'pending' || app.status === 'processing').length);
             console.log('[Priorities] Priority applications:', priorityApplications.length);
 
             // Always use server counts as they are the source of truth
@@ -619,7 +619,7 @@
                     return 'Claimed';
                 } else if (app.status2 && app.status2.trim() !== '') {
                     const status2 = app.status2.trim().toLowerCase();
-                    if (status2 === 'approved' || status2 === 'disapproved') {
+                    if (status2 === 'approve' || status2 === 'disapprove') {
                         return status2.charAt(0).toUpperCase() + status2.slice(1);
                     }
                 }
@@ -631,9 +631,9 @@
                 if (app.formType === "hospital") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         return `/HospitalAssistanceClaimStatus/${app.formId}`;
-                    } else if (app.status2 === "approved") {
+                    } else if (app.status2 === "approve") {
                         return `/HospitalAssistanceApproveStatus/${app.formId}`;
-                    } else if (app.status2 === "disapproved") {
+                    } else if (app.status2 === "disapprove") {
                         return `/HospitalAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
                         return `/HospitalAssistanceProcessingStatus/${app.formId}`;
@@ -643,9 +643,9 @@
                 } else if (app.formType === "medical") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         return `/OtherAssistanceClaimStatus/${app.formId}`;
-                    } else if (app.status2 === "approved") {
+                    } else if (app.status2 === "approve") {
                         return `/OtherAssistanceApproveStatus/${app.formId}`;
-                    } else if (app.status2 === "disapproved") {
+                    } else if (app.status2 === "disapprove") {
                         return `/OtherAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
                         return `/OtherAssistanceProcessingStatus/${app.formId}`;
@@ -655,9 +655,9 @@
                 } else if (app.formType === "funeral") {
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         return `/FuneralAssistanceClaimStatus/${app.formId}`;
-                    } else if (app.status2 === "approved") {
+                    } else if (app.status2 === "approve") {
                         return `/FuneralAssistanceApproveStatus/${app.formId}`;
-                    } else if (app.status2 === "disapproved") {
+                    } else if (app.status2 === "disapprove") {
                         return `/FuneralAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
                         return `/FuneralAssistanceProcessingStatus/${app.formId}`;

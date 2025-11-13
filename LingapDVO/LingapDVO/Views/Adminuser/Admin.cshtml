@@ -76,55 +76,6 @@
             gap: 1rem;
         }
 
-        /* Priority Notifications in Header */
-        .priority-notifications {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .priority-alert {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.75rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .priority-alert:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .priority-alert.high {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--danger);
-            border: 2px solid rgba(231, 76, 60, 0.3);
-        }
-
-        .priority-alert.medium {
-            background: rgba(243, 156, 18, 0.1);
-            color: var(--warning);
-            border: 2px solid rgba(243, 156, 18, 0.3);
-        }
-
-        .priority-count {
-            background: currentColor;
-            color: white;
-            border-radius: 50%;
-            min-width: 1.75rem;
-            height: 1.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-        }
 
         .page-title h1 {
             font-weight: 700;
@@ -170,11 +121,11 @@
                 border-left: 4px solid;
             }
 
-            .stat-card.approved.active {
+            .stat-card.approve.active {
                 border-left-color: var(--success);
             }
 
-            .stat-card.disapproved.active {
+            .stat-card.disapprove.active {
                 border-left-color: var(--danger);
             }
 
@@ -202,12 +153,12 @@
             flex-shrink: 0;
         }
 
-        .stat-card.approved .stat-icon {
+        .stat-card.approve .stat-icon {
             background: rgba(46, 204, 113, 0.15);
             color: var(--success);
         }
 
-        .stat-card.disapproved .stat-icon {
+        .stat-card.disapprove .stat-icon {
             background: rgba(231, 76, 60, 0.15);
             color: var(--danger);
         }
@@ -555,9 +506,6 @@
                 <div class="page-title">
                     <h1>Application Dashboard</h1>
                 </div>
-                <div class="priority-notifications" id="headerPriorityAlerts">
-                    <!-- Priority alerts will be populated by JavaScript -->
-                </div>
             </div>
 
             <!-- Time Filter Section -->
@@ -600,7 +548,7 @@
 
             <!-- Stats Cards -->
             <div class="stats-container">
-                <div class="stat-card approved active" data-status="approved">
+                <div class="stat-card approve active" data-status="approve">
                     <div class="stat-icon">
                         <i class="bi bi-check-circle"></i>
                     </div>
@@ -609,7 +557,7 @@
                         <p>Approve</p>
                     </div>
                 </div>
-                <div class="stat-card disapproved" data-status="disapproved">
+                <div class="stat-card disapprove" data-status="disapprove">
                     <div class="stat-icon">
                         <i class="bi bi-x-circle"></i>
                     </div>
@@ -802,9 +750,11 @@
             const pendingCount = document.getElementById('pending-count');
             const processingCount = document.getElementById('processing-count');
             const claimedCount = document.getElementById('claimed-count');
+            const highPriorityCount = document.getElementById('high-priority-count');
+            const mediumPriorityCount = document.getElementById('medium-priority-count');
 
             // Current filter state
-            let currentStatusFilter = 'approved';
+            let currentStatusFilter = 'approve';
             let currentTimeFilter = 'currentMonth';
             let currentTypeFilter = 'all';
             let currentSearchTerm = '';
@@ -853,7 +803,7 @@
                 // Priority 2: Check status2 for approved/disapproved
                 else if (app.status2 && app.status2.trim() !== '') {
                     const status2 = app.status2.trim().toLowerCase();
-                    if (status2 === 'approved' || status2 === 'disapproved') {
+                    if (status2 === 'approve' || status2 === 'disapprove') {
                         return status2;
                     }
                 }
@@ -917,7 +867,7 @@
 
                     // For other statuses, EXCLUDE applications that have status3 = claimed
                     // Then check status2 for approved/disapproved
-                    if (status === 'approved' || status === 'disapproved') {
+                    if (status === 'approve' || status === 'disapprove') {
                         return app.status2 && app.status2.trim() !== '' &&
                                app.status2 === status &&
                                (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
@@ -927,7 +877,7 @@
                     return app.status === status &&
                            (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
                            (!app.status2 || app.status2.trim() === '' ||
-                            (app.status2 !== 'approved' && app.status2 !== 'disapproved'));
+                            (app.status2 !== 'approve' && app.status2 !== 'disapprove'));
                 });
             }
 
@@ -954,40 +904,57 @@
                 const timeFilteredApplications = filterByTimePeriod(allApplications, timePeriod);
 
                 const statusCounts = {
-                    approved: 0,
-                    disapproved: 0,
+                    approve: 0,
+                    disapprove: 0,
                     pending: 0,
                     processing: 0,
                     claimed: 0
                 };
+
+                let highPriority = 0;
+                let mediumPriority = 0;
+                const now = new Date();
 
                 timeFilteredApplications.forEach(app => {
                     // Check status3 FIRST for "claimed" status - if claimed, count ONLY in claimed
                     if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
                         statusCounts.claimed++;
                     }
-                    // If NOT claimed, then check status2 for approved/disapproved
+                    // If NOT claimed, then check status2 for approve/disapprove
                     else if (app.status2 && app.status2.trim() !== '') {
-                        if (app.status2 === 'approved') {
-                            statusCounts.approved++;
-                        } else if (app.status2 === 'disapproved') {
-                            statusCounts.disapproved++;
+                        if (app.status2 === 'approve') {
+                            statusCounts.approve++;
+                        } else if (app.status2 === 'disapprove') {
+                            statusCounts.disapprove++;
                         }
-                        // DO NOT count in processing/pending if Status2 is approved/disapproved
+                        // DO NOT count in processing/pending if Status2 is approve/disapprove
                     } else {
                         // No Status2 or Status2 is empty, and no claimed status3, use original status
                         if (statusCounts.hasOwnProperty(app.status)) {
                             statusCounts[app.status]++;
                         }
                     }
+
+                    // Calculate priority counts (only for Pending and Processing)
+                    const currentStatus = app.status2 || app.status;
+                    if (currentStatus === 'pending' || currentStatus === 'processing') {
+                        const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
+                        if (hoursSinceSubmission >= 2) {
+                            highPriority++;
+                        } else if (hoursSinceSubmission >= 1) {
+                            mediumPriority++;
+                        }
+                    }
                 });
 
                 // Update the count displays
-                approvedCount.textContent = statusCounts.approved;
-                disapprovedCount.textContent = statusCounts.disapproved;
+                approvedCount.textContent = statusCounts.approve;
+                disapprovedCount.textContent = statusCounts.disapprove;
                 pendingCount.textContent = statusCounts.pending;
                 processingCount.textContent = statusCounts.processing;
                 claimedCount.textContent = statusCounts.claimed;
+                highPriorityCount.textContent = highPriority;
+                mediumPriorityCount.textContent = mediumPriority;
             }
 
             // Function to render applications table
@@ -1040,7 +1007,7 @@
                 // Priority 2: Check status2 for approved/disapproved (only if NOT claimed)
                 else if (app.status2 && app.status2.trim() !== '') {
                     const status2 = app.status2.trim().toLowerCase();
-                    if (status2 === 'approved' || status2 === 'disapproved') {
+                    if (status2 === 'approve' || status2 === 'disapprove') {
                         displayStatus = status2;
                         displayText = status2.charAt(0).toUpperCase() + status2.slice(1);
                     }
@@ -1048,8 +1015,8 @@
                 }
 
                 const statusMap = {
-                    'approved': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approve' },
-                    'disapproved': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapprove' },
+                    'approve': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approve' },
+                    'disapprove': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapprove' },
                     'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
                     'processing': { class: 'status-processing', icon: 'bi-gear', text: 'Processing' },
                     'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
@@ -1072,7 +1039,7 @@
 
                 // Check if status3 is claimed AND status2 is disapproved
                 if (app.status3 && app.status3.toLowerCase() === 'claimed' &&
-                    app.status2 && app.status2.toLowerCase() === 'disapproved') {
+                    app.status2 && app.status2.toLowerCase() === 'disapprove') {
                     iconClass = 'bi-eye';
                     title = 'View Details';
                 }
@@ -1083,9 +1050,9 @@
                         editUrl = `/HospitalAssistanceClaimStatus/${app.formId}`;
                     }
                     // Then check status2 for approved/disapproved
-                    else if (app.status2 === "approved") {
+                    else if (app.status2 === "approve") {
                         editUrl = `/HospitalAssistanceApproveStatus/${app.formId}`;
-                    } else if (app.status2 === "disapproved") {
+                    } else if (app.status2 === "disapprove") {
                         editUrl = `/HospitalAssistanceDisapproveStatus/${app.formId}`;
                     }
                     // Then check original status
@@ -1100,9 +1067,9 @@
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/OtherAssistanceClaimStatus/${app.formId}`;
                     }
-                    else if (app.status2 === "approved") {
+                    else if (app.status2 === "approve") {
                         editUrl = `/OtherAssistanceApproveStatus/${app.formId}`;
-                    } else if (app.status2 === "disapproved") {
+                    } else if (app.status2 === "disapprove") {
                         editUrl = `/OtherAssistanceDisapproveStatus/${app.formId}`;
 
                     } else if (app.status === "processing") {
@@ -1116,9 +1083,9 @@
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/FuneralAssistanceClaimStatus/${app.formId}`;
                     }
-                    else if (app.status2 === "approved") {
+                    else if (app.status2 === "approve") {
                         editUrl = `/FuneralAssistanceApproveStatus/${app.formId}`;
-                    } else if (app.status2 === "disapproved") {
+                    } else if (app.status2 === "disapprove") {
                         editUrl = `/FuneralAssistanceDisapproveStatus/${app.formId}`;
                     } else if (app.status === "processing") {
                         editUrl = `/FuneralAssistanceProcessingStatus/${app.formId}`;
@@ -1247,11 +1214,6 @@
             updateSortIndicators();
             applyFilters();
 
-            // Update priority alerts in header
-            // Update priority alerts using the AdminSidebar module
-            if (window.AdminSidebar && window.AdminSidebar.updateHeaderPriorityAlerts) {
-                window.AdminSidebar.updateHeaderPriorityAlerts(allApplications);
-            }
         });
     </script>
 </body>
