@@ -323,13 +323,13 @@ public class NotificationsController : Controller
                 "application_processing"
             ),
             "Approve" => (
-                "Application Approve",
-                $"Good news! Your {formType} application has been approve. Please visit the office for claiming.",
+                "Application Approved",
+                $"Good news! Your {formType} application has been approved. Please visit the office for claiming.",
                 "application_approved"
             ),
             "Disapprove" => (
-                "Application Disapprove",
-                $"We regret to inform you that your {formType} application has been disapprove. Please contact us for more details.",
+                "Application Disapproved",
+                $"We regret to inform you that your {formType} application has been disapproved. Please contact us for more details.",
                 "application_disapproved"
             ),
             "Claimed" => (
