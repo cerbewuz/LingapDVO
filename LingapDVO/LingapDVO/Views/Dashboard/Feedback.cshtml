@@ -1,147 +1,126 @@
-﻿@{
-    Layout = "_Layout";
-    ViewData["Title"] = "Feedback Form";
+@{
+    Layout = "_InputFormsLayout";
+    ViewData["Title"] = "Citizen Feedback Form";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citizen Feedback Form - City Government of Davao</title>
+@section Styles {
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            background-color: #fdfdfd;
-            color: #000;
-        }
-
-        h2, h3 {
-            text-align: center;
-            margin: 0;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-            .header img {
-                width: 80px;
-                height: auto;
-                margin-bottom: 5px;
-            }
-
-        form {
-            border: 1px solid #aaa;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: #fff;
-            max-width: 900px;
-            margin: auto;
-        }
-
-        .form-section {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: inline-block;
-            margin: 5px 0;
-        }
-
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 6px;
-            border: 1px solid #aaa;
-            border-radius: 4px;
-            font-size: 14px;
-            margin-top: 2px;
-        }
-
-        textarea {
-            resize: vertical;
-            height: 80px;
-        }
-
-        .radio-group label {
-            margin-right: 20px;
-        }
-
+        /* Question section styling */
         .question-section {
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #fafafa;
+            margin-bottom: 1.5rem;
+            border: 1px solid #dee2e6;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            background-color: #f8f9fa;
         }
 
-            .question-section p {
-                margin: 5px 0;
-                font-weight: bold;
-            }
+        .question-section p {
+            margin: 0 0 0.75rem 0;
+            font-weight: 600;
+            color: #495057;
+        }
 
         .question-option {
-            margin-left: 20px;
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
         }
 
-        table {
+        .question-option input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+
+        /* Rating table styling */
+        .rating-table {
             width: 100%;
+            margin-top: 1rem;
             border-collapse: collapse;
-            margin-top: 10px;
         }
 
-        th, td {
-            border: 1px solid #ccc;
+        .rating-table th,
+        .rating-table td {
+            border: 1px solid #dee2e6;
+            padding: 0.75rem;
             text-align: center;
-            padding: 6px;
-            font-size: 13px;
+            font-size: 0.9rem;
         }
 
-        th {
-            background-color: #f3f3f3;
+        .rating-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
         }
 
-        td:first-child {
+        .rating-table td:first-child {
             text-align: left;
+            font-weight: 500;
         }
 
-        .remarks input[type="text"] {
-            width: 70%;
-            margin-bottom: 8px;
+        .rating-table input[type="radio"] {
+            cursor: pointer;
         }
 
-        .signature {
-            margin-top: 25px;
+        /* Remarks section */
+        .remarks-section {
+            margin-top: 1.5rem;
+        }
+
+        .remarks-section label {
+            display: block;
+            margin-top: 0.75rem;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .remarks-section input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Signature section */
+        .signature-section {
+            margin-top: 1.5rem;
             text-align: center;
         }
 
-            .signature input {
-                border: none;
-                border-bottom: 1px solid #000;
-                width: 60%;
-                text-align: center;
-            }
-
-        .submit-btn {
-            margin-top: 20px;
-            display: block;
-            width: 100%;
-            background-color: #0066cc;
-            color: #fff;
+        .signature-section input {
+            width: 60%;
             border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
+            border-bottom: 2px solid #000;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 1rem;
         }
 
-            .submit-btn:hover {
-                background-color: #004999;
-            }
+        .signature-section input:focus {
+            outline: none;
+            border-bottom-color: #dc143c;
+        }
 
-        /* Popup */
+        /* Submit button */
+        .btn-submit {
+            background-color: #28a745;
+            color: white;
+            font-weight: 600;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            width: 100%;
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #20c997;
+            transform: scale(1.02);
+        }
+
+        /* Popup styling */
         .popup {
             display: none;
             position: fixed;
@@ -149,7 +128,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.6);
+            background-color: rgba(0, 0, 0, 0.6);
             justify-content: center;
             align-items: center;
             z-index: 9999;
@@ -157,132 +136,234 @@
 
         .popup-content {
             background-color: #fff;
-            padding: 30px 40px;
+            padding: 40px 50px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             animation: fadeIn 0.3s ease;
         }
 
-            .popup-content h2 {
-                margin-bottom: 10px;
-                color: #0066cc;
-            }
-
-            .popup-content p {
-                font-size: 15px;
-            }
-
-        .close-btn {
-            background-color: #0066cc;
-            color: #fff;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 5px;
-            margin-top: 15px;
-            cursor: pointer;
+        .popup-content h2 {
+            margin-bottom: 15px;
+            color: #28a745;
+            font-size: 1.8rem;
         }
 
-            .close-btn:hover {
-                background-color: #004999;
-            }
+        .popup-content p {
+            font-size: 1rem;
+            color: #495057;
+        }
+
+        .close-btn {
+            background-color: #dc143c;
+            color: #fff;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .close-btn:hover {
+            background-color: #a00f2e;
+        }
 
         @@keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: scale(0.9);
             }
-
             to {
                 opacity: 1;
                 transform: scale(1);
             }
         }
 
-        @@media print {
-            .submit-btn, .popup {
-                display: none !important;
-            }
+        .section-header {
+            background-color: #dc143c;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .instructions {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.375rem;
+        }
+
+        .instructions h4 {
+            margin: 0 0 0.5rem 0;
+            color: #856404;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .instructions p {
+            margin: 0;
+            color: #856404;
+            font-size: 0.9rem;
         }
     </style>
-</head>
-<body>
+}
 
-    <div class="header">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Seal_of_Davao_City.png" alt="Davao Logo">
-        <h2>CITY GOVERNMENT OF DAVAO</h2>
-        <p>
-            City Hall, City Hall Drive, Davao City<br>
-            www.davaocity.gov.ph | (082) 241-1000
-        </p>
-        <h3>CITIZEN FEEDBACK FORM (Cebuano)</h3>
+<!-- Form Content -->
+<form id="feedbackForm" class="needs-validation" novalidate>
+    <!-- Hidden Fields for Tracking -->
+    <input type="hidden" name="UserId" value="@ViewBag.UserId">
+    <input type="hidden" name="AssistanceType" value="@ViewBag.AssistanceType">
+    <input type="hidden" name="AssistanceId" value="@ViewBag.AssistanceId">
+
+    <!-- Basic Information Section -->
+    <div class="section-header">
+        <i class="fas fa-user-circle"></i> Basic Information
     </div>
 
-    <form id="feedbackForm">
-        <!-- Hidden Fields for Tracking -->
-        <input type="hidden" name="UserId" value="@ViewBag.UserId">
-        <input type="hidden" name="AssistanceType" value="@ViewBag.AssistanceType">
-        <input type="hidden" name="AssistanceId" value="@ViewBag.AssistanceId">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Name (Optional)</label>
+            <input type="text" name="Name" class="form-control" placeholder="Enter your full name">
+        </div>
 
-        <!-- Basic Info -->
-        <div class="form-section">
-            <label><strong>Name (Optional):</strong></label>
-            <input type="text" name="Name">
-            <label><strong>Office/Department:</strong></label>
-            <input type="text" name="Office">
-            <label><strong>Service Availed:</strong></label>
-            <input type="text" name="ServiceAvailed">
-            <label><strong>Tel. No/Email (Optional):</strong></label>
-            <input type="text" name="Contact">
+        <div class="col-md-6">
+            <label class="form-label">Office/Department</label>
+            <input type="text" name="Office" class="form-control" placeholder="e.g., Lingap Para sa Mahirap">
+        </div>
+    </div>
 
-            <label><strong>Sex:</strong></label>
-            <div class="radio-group">
-                <label><input type="radio" name="Sex" value="Male"> Male</label>
-                <label><input type="radio" name="Sex" value="Female"> Female</label>
-                <label><input type="radio" name="Sex" value="Rather not say"> Rather not say</label>
+    <div class="row g-3 mt-2">
+        <div class="col-md-6">
+            <label class="form-label">Service Availed</label>
+            <input type="text" name="ServiceAvailed" class="form-control" placeholder="e.g., Hospital Assistance">
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Tel. No/Email (Optional)</label>
+            <input type="text" name="Contact" class="form-control" placeholder="Contact information">
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-md-6">
+            <label class="form-label">Sex</label>
+            <div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="Sex" id="sexMale" value="Male">
+                    <label class="form-check-label" for="sexMale">Male</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="Sex" id="sexFemale" value="Female">
+                    <label class="form-check-label" for="sexFemale">Female</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="Sex" id="sexPreferNot" value="Rather not say">
+                    <label class="form-check-label" for="sexPreferNot">Rather not say</label>
+                </div>
             </div>
+        </div>
 
-            <label><strong>Type of Client:</strong></label>
-            <div class="radio-group">
-                <label><input type="radio" name="TypeOfClient" value="Citizen"> Citizen</label>
-                <label><input type="radio" name="TypeOfClient" value="Business"> Business</label>
-                <label><input type="radio" name="TypeOfClient" value="Government"> Government (Employee or other agency)</label>
+        <div class="col-md-6">
+            <label class="form-label">Type of Client</label>
+            <div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="TypeOfClient" id="typeCitizen" value="Citizen">
+                    <label class="form-check-label" for="typeCitizen">Citizen</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="TypeOfClient" id="typeBusiness" value="Business">
+                    <label class="form-check-label" for="typeBusiness">Business</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="TypeOfClient" id="typeGov" value="Government">
+                    <label class="form-check-label" for="typeGov">Government</label>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Question Section 1 -->
-        <div class="question-section">
-            <p>1. Anaa ka bay kasayuran sa CC?</p>
-            <div class="question-option"><input type="radio" name="Q1_CCKnowledge" value="Yes - Nakakita sa CC"> Nasyado ako kung unsa ang CC ug nakakita kog sama niini dinhing opisina.</div>
-            <div class="question-option"><input type="radio" name="Q1_CCKnowledge" value="Yes - Nakakita sa ubang opisina"> Nasyado ako kung unsa ang CC apan wala ko nakakita niini dinhing opisina.</div>
-            <div class="question-option"><input type="radio" name="Q1_CCKnowledge" value="Nakabalo lang"> Nakabalo lamang ako kung unsa ang CC pagkahibalo gikan niini.</div>
-            <div class="question-option"><input type="radio" name="Q1_CCKnowledge" value="Wala"> Wala akong alam sa CC ug wala koy nakita niini dinhi nga opisina.</div>
+    <!-- Citizen's Charter (CC) Questions Section -->
+    <div class="section-header mt-4">
+        <i class="fas fa-question-circle"></i> Citizen's Charter (CC) Knowledge
+    </div>
+
+    <!-- Question 1 -->
+    <div class="question-section">
+        <p>1. Anaa ka bay kasayuran sa CC? (Do you have knowledge about the Citizen's Charter?)</p>
+        <div class="question-option">
+            <input type="radio" name="Q1_CCKnowledge" id="q1a" value="Yes - Nakakita sa CC">
+            <label for="q1a">Nasyado ako kung unsa ang CC ug nakakita kog sama niini dinhing opisina.</label>
         </div>
-
-        <!-- Question Section 2 -->
-        <div class="question-section">
-            <p>2. Kung aduna kay kasayuran sa CC, maka ingon ka ba nga ang CC niini nga opisina kay…?</p>
-            <div class="question-option"><input type="radio" name="Q2_CCVisibility" value="Nakita"> Nagdisplayed gikan sa CC.</div>
-            <div class="question-option"><input type="radio" name="Q2_CCVisibility" value="Wala makita"> Dili gyud dali makita ang CC.</div>
-            <div class="question-option"><input type="radio" name="Q2_CCVisibility" value="N/A"> N/A</div>
+        <div class="question-option">
+            <input type="radio" name="Q1_CCKnowledge" id="q1b" value="Yes - Nakakita sa ubang opisina">
+            <label for="q1b">Nasyado ako kung unsa ang CC apan wala ko nakakita niini dinhing opisina.</label>
         </div>
-
-        <!-- Question Section 3 -->
-        <div class="question-section">
-            <p>3. Kung aduna kay kasayuran sa CC, nakatabang ba kini sa imong transaksyon niini nga opisina?</p>
-            <div class="question-option"><input type="radio" name="Q3_CCHelpfulness" value="Dako natabang"> Nakatabang jud gyud dako sa akong transaksyon.</div>
-            <div class="question-option"><input type="radio" name="Q3_CCHelpfulness" value="Gamay natabang"> Nakatabang ra gamay sa akong transaksyon.</div>
-            <div class="question-option"><input type="radio" name="Q3_CCHelpfulness" value="Wala natabang"> Wala makatabang sa akong transaksyon.</div>
+        <div class="question-option">
+            <input type="radio" name="Q1_CCKnowledge" id="q1c" value="Nakabalo lang">
+            <label for="q1c">Nakabalo lamang ako kung unsa ang CC pagkahibalo gikan niini.</label>
         </div>
+        <div class="question-option">
+            <input type="radio" name="Q1_CCKnowledge" id="q1d" value="Wala">
+            <label for="q1d">Wala akong alam sa CC ug wala koy nakita niini dinhi nga opisina.</label>
+        </div>
+    </div>
 
+    <!-- Question 2 -->
+    <div class="question-section">
+        <p>2. Kung aduna kay kasayuran sa CC, maka ingon ka ba nga ang CC niini nga opisina kay…?</p>
+        <div class="question-option">
+            <input type="radio" name="Q2_CCVisibility" id="q2a" value="Nakita">
+            <label for="q2a">Nagdisplayed gikan sa CC.</label>
+        </div>
+        <div class="question-option">
+            <input type="radio" name="Q2_CCVisibility" id="q2b" value="Wala makita">
+            <label for="q2b">Dili gyud dali makita ang CC.</label>
+        </div>
+        <div class="question-option">
+            <input type="radio" name="Q2_CCVisibility" id="q2c" value="N/A">
+            <label for="q2c">N/A</label>
+        </div>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="question-section">
+        <p>3. Kung aduna kay kasayuran sa CC, nakatabang ba kini sa imong transaksyon niini nga opisina?</p>
+        <div class="question-option">
+            <input type="radio" name="Q3_CCHelpfulness" id="q3a" value="Dako natabang">
+            <label for="q3a">Nakatabang jud gyud dako sa akong transaksyon.</label>
+        </div>
+        <div class="question-option">
+            <input type="radio" name="Q3_CCHelpfulness" id="q3b" value="Gamay natabang">
+            <label for="q3b">Nakatabang ra gamay sa akong transaksyon.</label>
+        </div>
+        <div class="question-option">
+            <input type="radio" name="Q3_CCHelpfulness" id="q3c" value="Wala natabang">
+            <label for="q3c">Wala makatabang sa akong transaksyon.</label>
+        </div>
+    </div>
+
+    <!-- Service Rating Section -->
+    <div class="section-header mt-4">
+        <i class="fas fa-star"></i> Service Rating
+    </div>
+
+    <div class="instructions">
         <h4>INSTRUCTIONS:</h4>
         <p>Palihug markahi og (✔) ang imong tubag nga mosanong sa imong kasinatian niini nga opinyanha.</p>
+        <p>Please mark (✔) your answer that corresponds to your experience with this service.</p>
+    </div>
 
-        <!-- Rating Table -->
-        <table>
+    <div class="table-responsive">
+        <table class="rating-table">
             <thead>
                 <tr>
-                    <th>Statement</th>
+                    <th style="width: 40%;">Statement / Pahayag</th>
                     <th>Strongly Disagree</th>
                     <th>Disagree</th>
                     <th>Neither</th>
@@ -292,44 +373,126 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td>1. Ganahan kaayo ko sa serbisyo nga akong nasinati-an.</td><td><input type="radio" name="R1_ServiceSatisfaction" value="1"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="2"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="3"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="4"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="5"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="6"></td></tr>
-                <tr><td>2. Sakto lang ang oras nga akong nagahin para sa akong transaksyon.</td><td><input type="radio" name="R2_TimeSpent" value="1"></td><td><input type="radio" name="R2_TimeSpent" value="2"></td><td><input type="radio" name="R2_TimeSpent" value="3"></td><td><input type="radio" name="R2_TimeSpent" value="4"></td><td><input type="radio" name="R2_TimeSpent" value="5"></td><td><input type="radio" name="R2_TimeSpent" value="6"></td></tr>
-                <tr><td>3. Gisubay gayud sa opisina ang proseso sa akong transaksyon base sa ilang gihatag nga impormasyon.</td><td><input type="radio" name="R3_ProcessFollowed" value="1"></td><td><input type="radio" name="R3_ProcessFollowed" value="2"></td><td><input type="radio" name="R3_ProcessFollowed" value="3"></td><td><input type="radio" name="R3_ProcessFollowed" value="4"></td><td><input type="radio" name="R3_ProcessFollowed" value="5"></td><td><input type="radio" name="R3_ProcessFollowed" value="6"></td></tr>
-                <tr><td>4. Ang mga naglihok nga proseso (apil ang pagbayad) kay sayon ug simple.</td><td><input type="radio" name="R4_ProcessSimplicity" value="1"></td><td><input type="radio" name="R4_ProcessSimplicity" value="2"></td><td><input type="radio" name="R4_ProcessSimplicity" value="3"></td><td><input type="radio" name="R4_ProcessSimplicity" value="4"></td><td><input type="radio" name="R4_ProcessSimplicity" value="5"></td><td><input type="radio" name="R4_ProcessSimplicity" value="6"></td></tr>
-                <tr><td>5. Dali ra ko nakakita sa mga impormasyon mahitungod sa akong transaksyon (sa opisina o website).</td><td><input type="radio" name="R5_InformationAccess" value="1"></td><td><input type="radio" name="R5_InformationAccess" value="2"></td><td><input type="radio" name="R5_InformationAccess" value="3"></td><td><input type="radio" name="R5_InformationAccess" value="4"></td><td><input type="radio" name="R5_InformationAccess" value="5"></td><td><input type="radio" name="R5_InformationAccess" value="6"></td></tr>
-                <tr><td>6. Sakto ra akong nabayran sa akong transaksyon. (kung ang serbisyo libre, markahi ang 'N/A')</td><td><input type="radio" name="R6_FairPayment" value="1"></td><td><input type="radio" name="R6_FairPayment" value="2"></td><td><input type="radio" name="R6_FairPayment" value="3"></td><td><input type="radio" name="R6_FairPayment" value="4"></td><td><input type="radio" name="R6_FairPayment" value="5"></td><td><input type="radio" name="R6_FairPayment" value="6"></td></tr>
-                <tr><td>7. Nabatid ko nga patas ang opinyon sa tanan o 'walay palakasan' sa kinitab-uan nakong transaksyon.</td><td><input type="radio" name="R7_Fairness" value="1"></td><td><input type="radio" name="R7_Fairness" value="2"></td><td><input type="radio" name="R7_Fairness" value="3"></td><td><input type="radio" name="R7_Fairness" value="4"></td><td><input type="radio" name="R7_Fairness" value="5"></td><td><input type="radio" name="R7_Fairness" value="6"></td></tr>
-                <tr><td>8. Mabatid nako nga ang tatar sa mga empleyado ug matinaabangon sila kon aduna koy pangutana.</td><td><input type="radio" name="R8_EmployeeCourtesy" value="1"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="2"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="3"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="4"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="5"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="6"></td></tr>
+                <tr>
+                    <td>1. Ganahan kaayo ko sa serbisyo nga akong nasinati-an.</td>
+                    <td><input type="radio" name="R1_ServiceSatisfaction" value="1"></td>
+                    <td><input type="radio" name="R1_ServiceSatisfaction" value="2"></td>
+                    <td><input type="radio" name="R1_ServiceSatisfaction" value="3"></td>
+                    <td><input type="radio" name="R1_ServiceSatisfaction" value="4"></td>
+                    <td><input type="radio" name="R1_ServiceSatisfaction" value="5"></td>
+                    <td><input type="radio" name="R1_ServiceSatisfaction" value="6"></td>
+                </tr>
+                <tr>
+                    <td>2. Sakto lang ang oras nga akong nagahin para sa akong transaksyon.</td>
+                    <td><input type="radio" name="R2_TimeSpent" value="1"></td>
+                    <td><input type="radio" name="R2_TimeSpent" value="2"></td>
+                    <td><input type="radio" name="R2_TimeSpent" value="3"></td>
+                    <td><input type="radio" name="R2_TimeSpent" value="4"></td>
+                    <td><input type="radio" name="R2_TimeSpent" value="5"></td>
+                    <td><input type="radio" name="R2_TimeSpent" value="6"></td>
+                </tr>
+                <tr>
+                    <td>3. Gisubay gayud sa opisina ang proseso sa akong transaksyon base sa ilang gihatag nga impormasyon.</td>
+                    <td><input type="radio" name="R3_ProcessFollowed" value="1"></td>
+                    <td><input type="radio" name="R3_ProcessFollowed" value="2"></td>
+                    <td><input type="radio" name="R3_ProcessFollowed" value="3"></td>
+                    <td><input type="radio" name="R3_ProcessFollowed" value="4"></td>
+                    <td><input type="radio" name="R3_ProcessFollowed" value="5"></td>
+                    <td><input type="radio" name="R3_ProcessFollowed" value="6"></td>
+                </tr>
+                <tr>
+                    <td>4. Ang mga naglihok nga proseso (apil ang pagbayad) kay sayon ug simple.</td>
+                    <td><input type="radio" name="R4_ProcessSimplicity" value="1"></td>
+                    <td><input type="radio" name="R4_ProcessSimplicity" value="2"></td>
+                    <td><input type="radio" name="R4_ProcessSimplicity" value="3"></td>
+                    <td><input type="radio" name="R4_ProcessSimplicity" value="4"></td>
+                    <td><input type="radio" name="R4_ProcessSimplicity" value="5"></td>
+                    <td><input type="radio" name="R4_ProcessSimplicity" value="6"></td>
+                </tr>
+                <tr>
+                    <td>5. Dali ra ko nakakita sa mga impormasyon mahitungod sa akong transaksyon (sa opisina o website).</td>
+                    <td><input type="radio" name="R5_InformationAccess" value="1"></td>
+                    <td><input type="radio" name="R5_InformationAccess" value="2"></td>
+                    <td><input type="radio" name="R5_InformationAccess" value="3"></td>
+                    <td><input type="radio" name="R5_InformationAccess" value="4"></td>
+                    <td><input type="radio" name="R5_InformationAccess" value="5"></td>
+                    <td><input type="radio" name="R5_InformationAccess" value="6"></td>
+                </tr>
+                <tr>
+                    <td>6. Sakto ra akong nabayran sa akong transaksyon. (kung ang serbisyo libre, markahi ang 'N/A')</td>
+                    <td><input type="radio" name="R6_FairPayment" value="1"></td>
+                    <td><input type="radio" name="R6_FairPayment" value="2"></td>
+                    <td><input type="radio" name="R6_FairPayment" value="3"></td>
+                    <td><input type="radio" name="R6_FairPayment" value="4"></td>
+                    <td><input type="radio" name="R6_FairPayment" value="5"></td>
+                    <td><input type="radio" name="R6_FairPayment" value="6"></td>
+                </tr>
+                <tr>
+                    <td>7. Nabatid ko nga patas ang opinyon sa tanan o 'walay palakasan' sa kinitab-uan nakong transaksyon.</td>
+                    <td><input type="radio" name="R7_Fairness" value="1"></td>
+                    <td><input type="radio" name="R7_Fairness" value="2"></td>
+                    <td><input type="radio" name="R7_Fairness" value="3"></td>
+                    <td><input type="radio" name="R7_Fairness" value="4"></td>
+                    <td><input type="radio" name="R7_Fairness" value="5"></td>
+                    <td><input type="radio" name="R7_Fairness" value="6"></td>
+                </tr>
+                <tr>
+                    <td>8. Mabatid nako nga ang tatar sa mga empleyado ug matinaabangon sila kon aduna koy pangutana.</td>
+                    <td><input type="radio" name="R8_EmployeeCourtesy" value="1"></td>
+                    <td><input type="radio" name="R8_EmployeeCourtesy" value="2"></td>
+                    <td><input type="radio" name="R8_EmployeeCourtesy" value="3"></td>
+                    <td><input type="radio" name="R8_EmployeeCourtesy" value="4"></td>
+                    <td><input type="radio" name="R8_EmployeeCourtesy" value="5"></td>
+                    <td><input type="radio" name="R8_EmployeeCourtesy" value="6"></td>
+                </tr>
             </tbody>
         </table>
-
-        <!-- Remarks -->
-        <div class="remarks">
-            <p><strong>Remarks (Please provide details):</strong></p>
-            <label>Commendation (Pagdayeg):</label><input type="text" name="Commendation"><br>
-            <label>Suggestion (Suhestyon):</label><input type="text" name="Suggestion"><br>
-            <label>Request (Hangyo):</label><input type="text" name="Request"><br>
-            <label>Complaint (Mulo):</label><input type="text" name="Complaint">
-        </div>
-
-        <!-- Signature -->
-        <div class="signature">
-            <p>Signature over printed name:</p>
-            <input type="text" name="Signature">
-        </div>
-
-        <button type="submit" class="submit-btn">Submit Feedback</button>
-    </form>
-
-    <!-- Popup -->
-    <div class="popup" id="thankYouPopup">
-        <div class="popup-content">
-            <h2>Salamat sa imong feedback!</h2>
-            <p>Ang imong opinyon makatabang aron mapalambo pa ang serbisyo sa City Government of Davao.</p>
-            <button class="close-btn" onclick="closePopup()">Close</button>
-        </div>
     </div>
 
+    <!-- Remarks Section -->
+    <div class="section-header mt-4">
+        <i class="fas fa-comments"></i> Remarks / Additional Feedback
+    </div>
+
+    <div class="remarks-section">
+        <label>Commendation (Pagdayeg):</label>
+        <input type="text" name="Commendation" class="form-control" placeholder="What did you appreciate about our service?">
+
+        <label>Suggestion (Suhestyon):</label>
+        <input type="text" name="Suggestion" class="form-control" placeholder="What can we improve?">
+
+        <label>Request (Hangyo):</label>
+        <input type="text" name="Request" class="form-control" placeholder="Any special requests?">
+
+        <label>Complaint (Mulo):</label>
+        <input type="text" name="Complaint" class="form-control" placeholder="Any concerns or complaints?">
+    </div>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <p style="margin-bottom: 0.5rem; font-weight: 600;">Signature over printed name:</p>
+        <input type="text" name="Signature" placeholder="Type your full name">
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-submit">
+        <i class="fas fa-paper-plane"></i> Submit Feedback
+    </button>
+</form>
+
+<!-- Success Popup -->
+<div class="popup" id="thankYouPopup">
+    <div class="popup-content">
+        <h2><i class="fas fa-check-circle"></i> Salamat sa imong feedback!</h2>
+        <p>Ang imong opinyon makatabang aron mapalambo pa ang serbisyo sa City Government of Davao.</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">Your feedback helps us improve our services to better serve you.</p>
+        <button class="close-btn" onclick="closePopup()">
+            <i class="fas fa-times"></i> Close
+        </button>
+    </div>
+</div>
+
+@section Scripts {
     <script>
         const form = document.getElementById("feedbackForm");
         const popup = document.getElementById("thankYouPopup");
@@ -363,9 +526,7 @@
         function closePopup() {
             popup.style.display = "none";
             // Optionally redirect to homepage or dashboard
-            // window.location.href = '/Dashboard/Homepage';
+            window.location.href = '/Dashboard/Homepage';
         }
     </script>
-
-</body>
-</html>
+}
