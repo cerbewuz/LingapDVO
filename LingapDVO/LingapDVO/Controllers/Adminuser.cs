@@ -3522,17 +3522,17 @@ namespace LingapDVO.Controllers
 
                         if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approve - LINGAP DVO";
+                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approved - LINGAP DVO";
                             body = $@"
                             Dear {firstName},
 
-                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVE.
+                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVED.
 
                             APPLICATION DETAILS:
                             • Application Type: Hospital Bill Assistance
                             • Application ID: {HospitalAssistance.Id}
                             • Status: Approve
-                            • Date Approve: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {HospitalAssistanceDto.Processby}
 
                             REMARKS:
@@ -3555,7 +3555,7 @@ namespace LingapDVO.Controllers
                                                         body = $@"
                             Dear {firstName},
 
-                            After careful review, we regret to inform you that your Hospital Bill Assistance application has been DISAPPROVE.
+                            After careful review, we regret to inform you that your Hospital Bill Assistance application has been DISAPPROVED.
 
                             APPLICATION DETAILS:
                             • Application Type: Hospital Bill Assistance
@@ -3682,7 +3682,7 @@ namespace LingapDVO.Controllers
                             body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your Medical Assistance application has been APPROVE.
+                    We are pleased to inform you that your Medical Assistance application has been APPROVED.
 
                     APPLICATION DETAILS:
                     • Application Type: Medical Assistance
