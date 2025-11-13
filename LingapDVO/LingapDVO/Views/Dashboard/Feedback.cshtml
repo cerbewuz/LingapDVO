@@ -219,56 +219,60 @@
     </div>
 
     <form id="feedbackForm">
+        <!-- Hidden Fields for Tracking -->
+        <input type="hidden" name="UserId" value="@ViewBag.UserId">
+        <input type="hidden" name="AssistanceType" value="@ViewBag.AssistanceType">
+        <input type="hidden" name="AssistanceId" value="@ViewBag.AssistanceId">
 
         <!-- Basic Info -->
         <div class="form-section">
             <label><strong>Name (Optional):</strong></label>
-            <input type="text" name="name">
+            <input type="text" name="Name">
             <label><strong>Office/Department:</strong></label>
-            <input type="text" name="office">
+            <input type="text" name="Office">
             <label><strong>Service Availed:</strong></label>
-            <input type="text" name="service">
+            <input type="text" name="ServiceAvailed">
             <label><strong>Tel. No/Email (Optional):</strong></label>
-            <input type="text" name="contact">
+            <input type="text" name="Contact">
 
             <label><strong>Sex:</strong></label>
             <div class="radio-group">
-                <label><input type="radio" name="sex" value="Male"> Male</label>
-                <label><input type="radio" name="sex" value="Female"> Female</label>
-                <label><input type="radio" name="sex" value="Rather not say"> Rather not say</label>
+                <label><input type="radio" name="Sex" value="Male"> Male</label>
+                <label><input type="radio" name="Sex" value="Female"> Female</label>
+                <label><input type="radio" name="Sex" value="Rather not say"> Rather not say</label>
             </div>
 
             <label><strong>Type of Client:</strong></label>
             <div class="radio-group">
-                <label><input type="radio" name="type" value="Citizen"> Citizen</label>
-                <label><input type="radio" name="type" value="Business"> Business</label>
-                <label><input type="radio" name="type" value="Government"> Government (Employee or other agency)</label>
+                <label><input type="radio" name="TypeOfClient" value="Citizen"> Citizen</label>
+                <label><input type="radio" name="TypeOfClient" value="Business"> Business</label>
+                <label><input type="radio" name="TypeOfClient" value="Government"> Government (Employee or other agency)</label>
             </div>
         </div>
 
         <!-- Question Section 1 -->
         <div class="question-section">
             <p>1. Anaa ka bay kasayuran sa CC?</p>
-            <div class="question-option"><input type="radio" name="q1a" value="Yes - Nakakita sa CC"> Nasyado ako kung unsa ang CC ug nakakita kog sama niini dinhing opisina.</div>
-            <div class="question-option"><input type="radio" name="q1a" value="Yes - Nakakita sa ubang opisina"> Nasyado ako kung unsa ang CC apan wala ko nakakita niini dinhing opisina.</div>
-            <div class="question-option"><input type="radio" name="q1a" value="Nakabalo lang"> Nakabalo lamang ako kung unsa ang CC pagkahibalo gikan niini.</div>
-            <div class="question-option"><input type="radio" name="q1a" value="Wala"> Wala akong alam sa CC ug wala koy nakita niini dinhi nga opisina.</div>
+            <div class="question-option"><input type="radio" name="Q1_CCKnowledge" value="Yes - Nakakita sa CC"> Nasyado ako kung unsa ang CC ug nakakita kog sama niini dinhing opisina.</div>
+            <div class="question-option"><input type="radio" name="Q1_CCKnowledge" value="Yes - Nakakita sa ubang opisina"> Nasyado ako kung unsa ang CC apan wala ko nakakita niini dinhing opisina.</div>
+            <div class="question-option"><input type="radio" name="Q1_CCKnowledge" value="Nakabalo lang"> Nakabalo lamang ako kung unsa ang CC pagkahibalo gikan niini.</div>
+            <div class="question-option"><input type="radio" name="Q1_CCKnowledge" value="Wala"> Wala akong alam sa CC ug wala koy nakita niini dinhi nga opisina.</div>
         </div>
 
         <!-- Question Section 2 -->
         <div class="question-section">
             <p>2. Kung aduna kay kasayuran sa CC, maka ingon ka ba nga ang CC niini nga opisina kay…?</p>
-            <div class="question-option"><input type="radio" name="q2" value="Nakita"> Nagdisplayed gikan sa CC.</div>
-            <div class="question-option"><input type="radio" name="q2" value="Wala makita"> Dili gyud dali makita ang CC.</div>
-            <div class="question-option"><input type="radio" name="q2" value="N/A"> N/A</div>
+            <div class="question-option"><input type="radio" name="Q2_CCVisibility" value="Nakita"> Nagdisplayed gikan sa CC.</div>
+            <div class="question-option"><input type="radio" name="Q2_CCVisibility" value="Wala makita"> Dili gyud dali makita ang CC.</div>
+            <div class="question-option"><input type="radio" name="Q2_CCVisibility" value="N/A"> N/A</div>
         </div>
 
         <!-- Question Section 3 -->
         <div class="question-section">
             <p>3. Kung aduna kay kasayuran sa CC, nakatabang ba kini sa imong transaksyon niini nga opisina?</p>
-            <div class="question-option"><input type="radio" name="q3" value="Dako natabang"> Nakatabang jud gyud dako sa akong transaksyon.</div>
-            <div class="question-option"><input type="radio" name="q3" value="Gamay natabang"> Nakatabang ra gamay sa akong transaksyon.</div>
-            <div class="question-option"><input type="radio" name="q3" value="Wala natabang"> Wala makatabang sa akong transaksyon.</div>
+            <div class="question-option"><input type="radio" name="Q3_CCHelpfulness" value="Dako natabang"> Nakatabang jud gyud dako sa akong transaksyon.</div>
+            <div class="question-option"><input type="radio" name="Q3_CCHelpfulness" value="Gamay natabang"> Nakatabang ra gamay sa akong transaksyon.</div>
+            <div class="question-option"><input type="radio" name="Q3_CCHelpfulness" value="Wala natabang"> Wala makatabang sa akong transaksyon.</div>
         </div>
 
         <h4>INSTRUCTIONS:</h4>
@@ -288,30 +292,30 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td>1. Ganahan kaayo ko sa serbisyo nga akong nasinati-an.</td><td><input type="radio" name="r1"></td><td><input type="radio" name="r1"></td><td><input type="radio" name="r1"></td><td><input type="radio" name="r1"></td><td><input type="radio" name="r1"></td><td><input type="radio" name="r1"></td></tr>
-                <tr><td>2. Sakto lang ang oras nga akong nagahin para sa akong transaksyon.</td><td><input type="radio" name="r2"></td><td><input type="radio" name="r2"></td><td><input type="radio" name="r2"></td><td><input type="radio" name="r2"></td><td><input type="radio" name="r2"></td><td><input type="radio" name="r2"></td></tr>
-                <tr><td>3. Gisubay gayud sa opisina ang proseso sa akong transaksyon base sa ilang gihatag nga impormasyon.</td><td><input type="radio" name="r3"></td><td><input type="radio" name="r3"></td><td><input type="radio" name="r3"></td><td><input type="radio" name="r3"></td><td><input type="radio" name="r3"></td><td><input type="radio" name="r3"></td></tr>
-                <tr><td>4. Ang mga naglihok nga proseso (apil ang pagbayad) kay sayon ug simple.</td><td><input type="radio" name="r4"></td><td><input type="radio" name="r4"></td><td><input type="radio" name="r4"></td><td><input type="radio" name="r4"></td><td><input type="radio" name="r4"></td><td><input type="radio" name="r4"></td></tr>
-                <tr><td>5. Dali ra ko nakakita sa mga impormasyon mahitungod sa akong transaksyon (sa opisina o website).</td><td><input type="radio" name="r5"></td><td><input type="radio" name="r5"></td><td><input type="radio" name="r5"></td><td><input type="radio" name="r5"></td><td><input type="radio" name="r5"></td><td><input type="radio" name="r5"></td></tr>
-                <tr><td>6. Sakto ra akong nabayran sa akong transaksyon. (kung ang serbisyo libre, markahi ang 'N/A')</td><td><input type="radio" name="r6"></td><td><input type="radio" name="r6"></td><td><input type="radio" name="r6"></td><td><input type="radio" name="r6"></td><td><input type="radio" name="r6"></td><td><input type="radio" name="r6"></td></tr>
-                <tr><td>7. Nabatid ko nga patas ang opinyon sa tanan o 'walay palakasan' sa kinitab-uan nakong transaksyon.</td><td><input type="radio" name="r7"></td><td><input type="radio" name="r7"></td><td><input type="radio" name="r7"></td><td><input type="radio" name="r7"></td><td><input type="radio" name="r7"></td><td><input type="radio" name="r7"></td></tr>
-                <tr><td>8. Mabatid nako nga ang tatar sa mga empleyado ug matinaabangon sila kon aduna koy pangutana.</td><td><input type="radio" name="r8"></td><td><input type="radio" name="r8"></td><td><input type="radio" name="r8"></td><td><input type="radio" name="r8"></td><td><input type="radio" name="r8"></td><td><input type="radio" name="r8"></td></tr>
+                <tr><td>1. Ganahan kaayo ko sa serbisyo nga akong nasinati-an.</td><td><input type="radio" name="R1_ServiceSatisfaction" value="1"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="2"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="3"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="4"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="5"></td><td><input type="radio" name="R1_ServiceSatisfaction" value="6"></td></tr>
+                <tr><td>2. Sakto lang ang oras nga akong nagahin para sa akong transaksyon.</td><td><input type="radio" name="R2_TimeSpent" value="1"></td><td><input type="radio" name="R2_TimeSpent" value="2"></td><td><input type="radio" name="R2_TimeSpent" value="3"></td><td><input type="radio" name="R2_TimeSpent" value="4"></td><td><input type="radio" name="R2_TimeSpent" value="5"></td><td><input type="radio" name="R2_TimeSpent" value="6"></td></tr>
+                <tr><td>3. Gisubay gayud sa opisina ang proseso sa akong transaksyon base sa ilang gihatag nga impormasyon.</td><td><input type="radio" name="R3_ProcessFollowed" value="1"></td><td><input type="radio" name="R3_ProcessFollowed" value="2"></td><td><input type="radio" name="R3_ProcessFollowed" value="3"></td><td><input type="radio" name="R3_ProcessFollowed" value="4"></td><td><input type="radio" name="R3_ProcessFollowed" value="5"></td><td><input type="radio" name="R3_ProcessFollowed" value="6"></td></tr>
+                <tr><td>4. Ang mga naglihok nga proseso (apil ang pagbayad) kay sayon ug simple.</td><td><input type="radio" name="R4_ProcessSimplicity" value="1"></td><td><input type="radio" name="R4_ProcessSimplicity" value="2"></td><td><input type="radio" name="R4_ProcessSimplicity" value="3"></td><td><input type="radio" name="R4_ProcessSimplicity" value="4"></td><td><input type="radio" name="R4_ProcessSimplicity" value="5"></td><td><input type="radio" name="R4_ProcessSimplicity" value="6"></td></tr>
+                <tr><td>5. Dali ra ko nakakita sa mga impormasyon mahitungod sa akong transaksyon (sa opisina o website).</td><td><input type="radio" name="R5_InformationAccess" value="1"></td><td><input type="radio" name="R5_InformationAccess" value="2"></td><td><input type="radio" name="R5_InformationAccess" value="3"></td><td><input type="radio" name="R5_InformationAccess" value="4"></td><td><input type="radio" name="R5_InformationAccess" value="5"></td><td><input type="radio" name="R5_InformationAccess" value="6"></td></tr>
+                <tr><td>6. Sakto ra akong nabayran sa akong transaksyon. (kung ang serbisyo libre, markahi ang 'N/A')</td><td><input type="radio" name="R6_FairPayment" value="1"></td><td><input type="radio" name="R6_FairPayment" value="2"></td><td><input type="radio" name="R6_FairPayment" value="3"></td><td><input type="radio" name="R6_FairPayment" value="4"></td><td><input type="radio" name="R6_FairPayment" value="5"></td><td><input type="radio" name="R6_FairPayment" value="6"></td></tr>
+                <tr><td>7. Nabatid ko nga patas ang opinyon sa tanan o 'walay palakasan' sa kinitab-uan nakong transaksyon.</td><td><input type="radio" name="R7_Fairness" value="1"></td><td><input type="radio" name="R7_Fairness" value="2"></td><td><input type="radio" name="R7_Fairness" value="3"></td><td><input type="radio" name="R7_Fairness" value="4"></td><td><input type="radio" name="R7_Fairness" value="5"></td><td><input type="radio" name="R7_Fairness" value="6"></td></tr>
+                <tr><td>8. Mabatid nako nga ang tatar sa mga empleyado ug matinaabangon sila kon aduna koy pangutana.</td><td><input type="radio" name="R8_EmployeeCourtesy" value="1"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="2"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="3"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="4"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="5"></td><td><input type="radio" name="R8_EmployeeCourtesy" value="6"></td></tr>
             </tbody>
         </table>
 
         <!-- Remarks -->
         <div class="remarks">
             <p><strong>Remarks (Please provide details):</strong></p>
-            <label>Commendation (Pagdayeg):</label><input type="text" name="commendation"><br>
-            <label>Suggestion (Suhestyon):</label><input type="text" name="suggestion"><br>
-            <label>Request (Hangyo):</label><input type="text" name="request"><br>
-            <label>Complaint (Mulo):</label><input type="text" name="complaint">
+            <label>Commendation (Pagdayeg):</label><input type="text" name="Commendation"><br>
+            <label>Suggestion (Suhestyon):</label><input type="text" name="Suggestion"><br>
+            <label>Request (Hangyo):</label><input type="text" name="Request"><br>
+            <label>Complaint (Mulo):</label><input type="text" name="Complaint">
         </div>
 
         <!-- Signature -->
         <div class="signature">
             <p>Signature over printed name:</p>
-            <input type="text" name="signature">
+            <input type="text" name="Signature">
         </div>
 
         <button type="submit" class="submit-btn">Submit Feedback</button>
@@ -332,12 +336,34 @@
 
         form.addEventListener("submit", function (e) {
             e.preventDefault();
-            popup.style.display = "flex";
-            form.reset();
+
+            // Collect form data
+            const formData = new FormData(form);
+
+            // Send AJAX request
+            fetch('/Dashboard/SubmitFeedback', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    popup.style.display = "flex";
+                    form.reset();
+                } else {
+                    alert(data.message || 'An error occurred. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting your feedback. Please try again.');
+            });
         });
 
         function closePopup() {
             popup.style.display = "none";
+            // Optionally redirect to homepage or dashboard
+            // window.location.href = '/Dashboard/Homepage';
         }
     </script>
 
