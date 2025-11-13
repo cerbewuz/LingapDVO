@@ -1210,7 +1210,7 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // ? 11. Set success flag and RAF number for modal - Convert int to string for varchar field
-                TempData["ShowSuccessModal"] = "true";
+                ViewBag.Success = true;
                 TempData["SuccessRAF"] = id.ToString(); // This converts int to string
 
                 // ? 12. Repopulate view data for success display
@@ -2043,7 +2043,7 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // ? 12. Set success flag and RAF number for modal
-                TempData["ShowSuccessModal"] = "true";
+                ViewBag.Success = true;
                 TempData["SuccessRAF"] = id.ToString();
 
                 // ? 13. Repopulate view data for success display
@@ -2737,7 +2737,7 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // ? 11. Set success flag and RAF number for modal
-                TempData["ShowSuccessModal"] = "true";
+                ViewBag.Success = true;
                 TempData["SuccessRAF"] = id.ToString();
 
                 // ? 12. Repopulate view data for success display
