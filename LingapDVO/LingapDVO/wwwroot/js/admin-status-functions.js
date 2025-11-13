@@ -22,7 +22,7 @@
             const statusForm = document.getElementById('statusForm');
 
             if (statusInput && statusForm) {
-                statusInput.value = 'Approved';
+                statusInput.value = 'Approve';
                 statusForm.submit();
             } else {
                 console.error('Status form elements not found');
@@ -48,7 +48,7 @@
             const statusForm = document.getElementById('statusForm');
 
             if (statusInput && commentsInput && statusForm) {
-                statusInput.value = 'Disapproved';
+                statusInput.value = 'Disapprove';
                 commentsInput.value = comments;
                 statusForm.submit();
             } else {
@@ -156,7 +156,7 @@
         const statusForm = document.getElementById('statusForm');
 
         if (statusInput && commentsInput && statusForm) {
-            statusInput.value = 'Disapproved';
+            statusInput.value = 'Disapprove';
             commentsInput.value = comments;
             statusForm.submit();
         } else {
@@ -182,10 +182,10 @@
 
         // Define valid status transitions
         const validTransitions = {
-            'Pending': ['Processing', 'Approved', 'Disapproved'],
-            'Processing': ['Approved', 'Disapproved'],
-            'Approved': ['Claimed'],
-            'Disapproved': [], // Cannot change from disapproved
+            'Pending': ['Processing', 'Approve', 'Disapprove'],
+            'Processing': ['Approve', 'Disapprove'],
+            'Approve': ['Claimed'],
+            'Disapprove': [], // Cannot change from disapprove
             'Claimed': [] // Final state
         };
 

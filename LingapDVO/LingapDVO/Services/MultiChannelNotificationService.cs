@@ -164,8 +164,8 @@ namespace LingapDVO.Services
             {
                 "Pending" => "Application Submitted",
                 "Processing" => "Application Being Processed",
-                "Approved" => "Application Approved",
-                "Disapproved" => "Application Disapproved",
+                "Approve" => "Application Approved",
+                "Disapprove" => "Application Disapproved",
                 "Claimed" => "Assistance Claimed",
                 _ => "Application Status Update"
             };
@@ -185,8 +185,8 @@ namespace LingapDVO.Services
             {
                 "Pending" => $"Your {formTypeDisplay} application has been submitted and is pending review.",
                 "Processing" => $"Your {formTypeDisplay} application is now being processed by our team.",
-                "Approved" => $"Good news! Your {formTypeDisplay} application has been approved. Please visit the office for claiming.",
-                "Disapproved" => $"We regret to inform you that your {formTypeDisplay} application has been disapproved. Please contact us for more details.",
+                "Approve" => $"Good news! Your {formTypeDisplay} application has been approved. Please visit the office for claiming.",
+                "Disapprove" => $"We regret to inform you that your {formTypeDisplay} application has been disapproved. Please contact us for more details.",
                 "Claimed" => $"Your {formTypeDisplay} has been successfully claimed. Thank you for using our service.",
                 _ => $"Your {formTypeDisplay} application status has been updated to {status}."
             };
