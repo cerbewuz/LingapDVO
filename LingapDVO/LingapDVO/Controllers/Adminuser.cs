@@ -4272,10 +4272,17 @@ namespace LingapDVO.Controllers
             {
                 var now = DateTime.Now;
 
-                // Get all applications
-                var hospitalBills = context.HospitalAssistance.ToList();
-                var medicalLabForms = context.OtherAssistance.ToList();
-                var FuneralAssistance = context.FuneralAssistance.ToList();
+                // Get ONLY Pending and Processing applications
+                // Completed statuses (Approve, Disapprove, Claimed) are excluded
+                var hospitalBills = context.HospitalAssistance
+                    .Where(h => h.Status2 == "Pending" || h.Status2 == "Processing")
+                    .ToList();
+                var medicalLabForms = context.OtherAssistance
+                    .Where(m => m.Status2 == "Pending" || m.Status2 == "Processing")
+                    .ToList();
+                var FuneralAssistance = context.FuneralAssistance
+                    .Where(f => f.Status2 == "Pending" || f.Status2 == "Processing")
+                    .ToList();
 
                 int priorityCount = 0;
 
