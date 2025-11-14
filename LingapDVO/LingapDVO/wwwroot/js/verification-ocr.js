@@ -7163,7 +7163,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (davaoResultMessage) {
                     const locationText = detectedCity !== "Not detected"
                         ? `Detected location: ${detectedCity}`
-                        : 'City could not be detected on the ID';
+                        : 'Location not detected';
                     davaoResultMessage.textContent = `This service is only for Davao City residents. ${locationText}.`;
                 }
                 if (davaoStatusBadge) {
@@ -7188,66 +7188,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const modal = document.getElementById('davaoVerificationModal');
         if (!modal) {
             console.error('Davao verification modal not found');
-            alert(`VERIFICATION BLOCKED\n\nThis service is only available for Davao City residents.\n\nDetected location: ${detectedCity}\n\nYou cannot proceed with account verification.`);
+            alert(`VERIFICATION BLOCKED\n\nThis service is only available for Davao City residents.\n\nDetected location: ${detectedCity}`);
             return;
         }
 
-        // Update modal content
-        const titleElement = modal.querySelector('.modal-title');
-        const bodyElement = modal.querySelector('.modal-body');
-
-        if (titleElement) {
-            titleElement.innerHTML = '<i class="fas fa-map-marker-alt mr-2"></i>Verification Blocked - Non-Davao City Resident';
+        // Update detected location text
+        const detectedLocationElement = document.getElementById('detected-location');
+        if (detectedLocationElement) {
+            detectedLocationElement.textContent = detectedCity !== "Not detected"
+                ? detectedCity
+                : 'Location not detected';
         }
 
-        if (bodyElement) {
-            const locationInfo = detectedCity !== "Not detected"
-                ? `<div class="alert alert-danger mb-3">
-                     <i class="fas fa-exclamation-triangle mr-2"></i>
-                     <strong>Detected Location:</strong> ${detectedCity}
-                   </div>`
-                : `<div class="alert alert-warning mb-3">
-                     <i class="fas fa-question-circle mr-2"></i>
-                     City could not be detected on the ID
-                   </div>`;
-
-            bodyElement.innerHTML = `
-                <div class="text-center mb-4">
-                    <i class="fas fa-ban text-red-500" style="font-size: 4rem;"></i>
-                </div>
-
-                ${locationInfo}
-
-                <h5 class="font-bold mb-3">Account Verification Blocked</h5>
-
-                <p class="mb-3">
-                    This account verification service is <strong>exclusively for Davao City residents</strong>.
-                    Your ${idTypeName} indicates you are not a resident of Davao City.
-                </p>
-
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">
-                    <p class="text-sm font-semibold text-blue-900 mb-2">
-                        <i class="fas fa-info-circle mr-1"></i> If you ARE a Davao City resident:
-                    </p>
-                    <ul class="text-sm text-blue-800 list-disc list-inside space-y-1">
-                        <li>Ensure your ID image is clear and well-lit</li>
-                        <li>Make sure the address section is fully visible</li>
-                        <li>Upload a higher quality image</li>
-                        <li>Use an ID that shows your current Davao City address</li>
-                    </ul>
-                </div>
-
-                <div class="bg-gray-50 p-3 rounded">
-                    <p class="text-sm text-gray-700 mb-1">
-                        <strong>Accepted locations:</strong> Davao City only
-                    </p>
-                    <p class="text-sm text-gray-600">
-                        <strong>Not accepted:</strong> Cebu City, Manila, Quezon City, or any other location outside Davao City
-                    </p>
-                </div>
-            `;
-        }
-
+        // Show modal
         try {
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();

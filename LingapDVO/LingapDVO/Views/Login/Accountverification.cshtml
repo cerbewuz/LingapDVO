@@ -711,49 +711,38 @@
     <!-- Davao Verification Failed Modal -->
     <div class="modal fade" id="davaoVerificationModal" tabindex="-1" aria-labelledby="davaoVerificationModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-red-50 via-white to-rose-50">
-                <div class="modal-header bg-gradient-to-r from-red-600 via-red-500 to-rose-600 text-white py-4 px-6 border-b-0 shadow-lg">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                <div class="modal-header bg-gradient-to-r from-red-600 to-rose-600 text-white py-4 px-6 border-b-0">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                             <i class="fas fa-exclamation-triangle text-white text-lg"></i>
                         </div>
-                        <div>
-                            <h5 class="modal-title font-bold text-lg text-white" id="davaoVerificationModalLabel">Location Restriction Warning</h5>
-                        </div>
+                        <h5 class="modal-title font-bold text-lg" id="davaoVerificationModalLabel">Verification Blocked</h5>
                     </div>
                 </div>
                 <div class="modal-body p-6 text-center">
-                    <div class="w-16 h-16 bg-gradient-to-br from-red-100 to-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
-                        <i class="fas fa-map-marker-alt text-red-600 text-2xl"></i>
+                    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-map-marker-alt text-red-600 text-3xl"></i>
                     </div>
-                    <h4 class="font-bold text-gray-800 text-lg mb-2">Service Not Available in Your Area</h4>
-                    <p id="davao-error-message" class="text-gray-600 mb-4">
-                        This service is currently only available for Davao City residents.
-                    </p>
-                    <div class="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl p-4 text-left shadow-sm">
-                        <div class="flex items-start gap-3">
-                            <i class="fas fa-info-circle text-red-600 mt-0.5"></i>
+                    <h4 class="font-bold text-gray-800 text-xl mb-3">Not a Davao City Resident</h4>
+                    <p class="text-gray-600 mb-4 text-sm">This service is exclusively for Davao City residents.</p>
+
+                    <div class="bg-red-50 border-l-4 border-red-600 rounded-lg p-4 text-left mb-4">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-map-marked-alt text-red-600 text-xl"></i>
                             <div class="flex-1">
-                                <p class="text-sm text-red-700 font-semibold mb-1">Detected Location:</p>
-                                <p id="detected-location" class="text-sm text-red-600 font-medium"></p>
+                                <div class="text-xs font-semibold text-red-700 mb-1">Detected Location</div>
+                                <div id="detected-location" class="text-sm font-bold text-red-800"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-500 rounded-xl p-4 text-left mt-4 shadow-sm">
-                        <div class="flex items-start gap-2">
-                            <i class="fas fa-exclamation-circle text-yellow-600 mt-1"></i>
-                            <div class="text-sm text-yellow-800">
-                                <strong>Important:</strong> You must be a Davao City resident to use this service. Please ensure your ID shows a Davao City address.
-                            </div>
-                        </div>
-                    </div>
+
+                    <p class="text-xs text-gray-500">Please ensure your ID shows a valid Davao City address.</p>
                 </div>
-                <div class="modal-footer bg-gradient-to-r from-red-50 to-rose-50 py-4 px-6 border-t-0">
-                    <div class="w-full flex flex-col sm:flex-row gap-3">
-                        <button type="button" class="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200" onclick="window.location.href='/Homepage'">
-                            <i class="fas fa-home mr-2"></i>Back to Home
-                        </button>
-                    </div>
+                <div class="modal-footer bg-gray-50 py-3 px-6 border-t-0">
+                    <button type="button" class="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white py-3 rounded-xl font-semibold transition-all duration-200" onclick="window.location.href='/Homepage'">
+                        <i class="fas fa-home mr-2"></i>Back to Home
+                    </button>
                 </div>
             </div>
         </div>
@@ -762,56 +751,45 @@
     <!-- Name Mismatch Modal -->
     <div class="modal fade" id="nameMismatchModal" tabindex="-1" aria-labelledby="nameMismatchModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-red-50 via-white to-rose-50">
-                <div class="modal-header bg-gradient-to-r from-red-600 via-red-500 to-rose-600 text-white py-4 px-6 border-b-0 shadow-lg">
+            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
+                <div class="modal-header bg-gradient-to-r from-red-600 to-rose-600 text-white py-4 px-6 border-b-0">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                             <i class="fas fa-exclamation-triangle text-white text-lg"></i>
                         </div>
-                        <div>
-                            <h5 class="modal-title font-bold text-lg text-white" id="nameMismatchModalLabel">Name Mismatch Warning</h5>
-                        </div>
+                        <h5 class="modal-title font-bold text-lg" id="nameMismatchModalLabel">Verification Blocked</h5>
                     </div>
                 </div>
                 <div class="modal-body p-6 text-center">
-                    <div class="w-16 h-16 bg-gradient-to-br from-red-100 to-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
-                        <i class="fas fa-user-times text-red-600 text-2xl"></i>
+                    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-times text-red-600 text-3xl"></i>
                     </div>
-                    <h4 class="font-bold text-gray-800 text-lg mb-2">Identity Verification Failed</h4>
-                    <p class="text-gray-600 mb-4">
-                        The name on your ID does not match the registered account name.
-                    </p>
-                    <div class="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl p-4 text-left mb-4 shadow-sm">
-                        <div class="flex items-start gap-3 mb-3">
-                            <i class="fas fa-user-check text-red-600 mt-0.5"></i>
-                            <div class="flex-1">
-                                <div class="text-sm font-semibold text-red-700 mb-1">Registered Name:</div>
+                    <h4 class="font-bold text-gray-800 text-xl mb-3">Name Does Not Match</h4>
+                    <p class="text-gray-600 mb-4 text-sm">The name on your ID does not match your registered account name.</p>
+
+                    <div class="bg-red-50 border-l-4 border-red-600 rounded-lg p-4 mb-4">
+                        <div class="flex items-start gap-3 mb-3 pb-3 border-b border-red-200">
+                            <i class="fas fa-user-check text-red-600 text-lg mt-0.5"></i>
+                            <div class="flex-1 text-left">
+                                <div class="text-xs font-semibold text-red-700 mb-1">Registered Name</div>
                                 <div id="name-mismatch-registered" class="text-sm font-bold text-gray-900"></div>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
-                            <i class="fas fa-id-card text-red-600 mt-0.5"></i>
-                            <div class="flex-1">
-                                <div class="text-sm font-semibold text-red-700 mb-1">Name on ID:</div>
-                                <div id="name-mismatch-extracted" class="text-sm font-bold text-red-700"></div>
+                            <i class="fas fa-id-card text-red-600 text-lg mt-0.5"></i>
+                            <div class="flex-1 text-left">
+                                <div class="text-xs font-semibold text-red-700 mb-1">Name on ID</div>
+                                <div id="name-mismatch-extracted" class="text-sm font-bold text-red-800"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-500 rounded-xl p-4 text-left shadow-sm">
-                        <div class="flex items-start gap-2">
-                            <i class="fas fa-exclamation-circle text-yellow-600 mt-1"></i>
-                            <div class="text-sm text-yellow-800">
-                                <strong>Important:</strong> You must use your own valid ID that matches your registered account name. Using someone else's ID is not allowed.
-                            </div>
-                        </div>
-                    </div>
+
+                    <p class="text-xs text-gray-500">You must use your own valid ID that matches your registered name.</p>
                 </div>
-                <div class="modal-footer bg-gradient-to-r from-red-50 to-rose-50 py-4 px-6 border-t-0">
-                    <div class="w-full flex flex-col sm:flex-row gap-3">
-                        <button type="button" class="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200" onclick="window.location.href='/Homepage'">
-                            <i class="fas fa-home mr-2"></i>Back to Home
-                        </button>
-                    </div>
+                <div class="modal-footer bg-gray-50 py-3 px-6 border-t-0">
+                    <button type="button" class="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white py-3 rounded-xl font-semibold transition-all duration-200" onclick="window.location.href='/Homepage'">
+                        <i class="fas fa-home mr-2"></i>Back to Home
+                    </button>
                 </div>
             </div>
         </div>
