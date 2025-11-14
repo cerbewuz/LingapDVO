@@ -688,10 +688,10 @@ namespace LingapDVO.Controllers
         // COMPLETE HOSPITAL BILL CONTROLLER - WITH EMBEDDED AES ENCRYPTION HELPER
         // ====================================
 
-        // +---------------------------------------------------------------------------+
-        // �                    AES-256 ENCRYPTION HELPER CLASS                        �
-        // �         Secure AES-256 Implementation using Configuration                 �
-        // +---------------------------------------------------------------------------+
+        //---------------------------------------------------------------------------//
+        //                     AES-256 ENCRYPTION HELPER CLASS                       //
+        //          Secure AES-256 Implementation using Configuration                //
+        //---------------------------------------------------------------------------//
         private class AesEncryptionHelper
         {
             private readonly byte[] _aesKey;
