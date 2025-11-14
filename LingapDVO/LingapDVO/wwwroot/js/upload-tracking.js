@@ -164,17 +164,95 @@
         playNotificationSound(data.priority);
     }
 
-    // Show local delay notification
+    // Show local delay notification - NOW INTEGRATED INTO TIMELINE
     function showDelayNotificationLocal(app, priority, hoursElapsed) {
         const message = priority === 'high'
-            ? `Your ${app.type} application has been pending for ${Math.floor(hoursElapsed)} hours. We apologize for the delay. Our team is working on it with high priority and will process it ASAP.`
-            : `Your ${app.type} application has been pending for over an hour. Don't worry! It's in our queue and will be reviewed shortly.`;
+            ? `Your application has been pending for ${Math.floor(hoursElapsed)} hours. We apologize for the delay. Our team is working on it with high priority and will process it ASAP.`
+            : `Your application has been pending for over an hour. Don't worry! It's in our queue and will be reviewed shortly.`;
 
-        showDelayNotification({
-            priority: priority,
-            hoursElapsed: hoursElapsed,
-            applicationType: app.type,
-            message: message
+        // Add delay timeline item to the tracking card
+        addDelayTimelineItem(app, priority, hoursElapsed, message);
+    }
+
+    // Add delay notification as timeline item in tracking card
+    function addDelayTimelineItem(app, priority, hoursElapsed, message) {
+        // Find all tracking cards and locate the one matching this application
+        const trackingCards = document.querySelectorAll('.tracking-card');
+
+        trackingCards.forEach(card => {
+            // Check if this card matches the application by checking the form ID in action buttons
+            const viewButton = card.querySelector('.btn-view');
+            if (!viewButton) return;
+
+            const href = viewButton.getAttribute('href');
+            if (!href || !href.includes('/' + app.formId)) return;
+
+            // Check if delay notification already exists for this card
+            const existingDelay = card.querySelector('.timeline-item[data-delay-notification="true"]');
+            if (existingDelay) return; // Already shown
+
+            // Find the timeline container
+            const timeline = card.querySelector('.timeline');
+            if (!timeline) return;
+
+            // Find the "Pending Review" timeline item (should be the 2nd item)
+            const pendingItem = timeline.querySelector('.timeline-item:nth-child(2)');
+            if (!pendingItem) return;
+
+            // Create delay notification timeline item
+            const delayItem = document.createElement('div');
+            delayItem.className = 'timeline-item';
+            delayItem.setAttribute('data-delay-notification', 'true');
+
+            const priorityColor = priority === 'high' ? 'var(--danger-color)' : 'var(--warning-color)';
+            const priorityBg = priority === 'high' ? '#fee2e2' : '#fef3c7';
+            const priorityIcon = priority === 'high' ? 'fa-exclamation-triangle' : 'fa-clock';
+            const priorityLabel = priority === 'high' ? 'High Priority Delay' : 'Processing Delay Notice';
+
+            delayItem.innerHTML = `
+                <div class="timeline-marker" style="background: ${priorityColor};">
+                    <i class="fas ${priorityIcon}"></i>
+                </div>
+                <div class="timeline-content" style="background: ${priorityBg}; border-left: 3px solid ${priorityColor};">
+                    <h6 style="color: ${priorityColor};">
+                        <i class="fas fa-bell me-1"></i>${priorityLabel}
+                    </h6>
+                    <span class="timeline-date">${new Date().toLocaleString('en-US', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    })}</span>
+                    <p class="timeline-description" style="color: #4b5563; margin-top: 0.5rem;">
+                        ${message}
+                    </p>
+                    <div class="timeline-description mt-2" style="font-size: 0.75rem; background: white; padding: 0.5rem; border-radius: 4px;">
+                        <i class="fas fa-info-circle" style="color: ${priorityColor};"></i>
+                        <strong>Time Elapsed:</strong> ${Math.floor(hoursElapsed)} hour(s) ${Math.floor((hoursElapsed % 1) * 60)} minute(s)
+                    </div>
+                </div>
+            `;
+
+            // Insert after the pending item (makes it the 3rd item)
+            if (pendingItem.nextSibling) {
+                timeline.insertBefore(delayItem, pendingItem.nextSibling);
+            } else {
+                timeline.appendChild(delayItem);
+            }
+
+            // Add subtle animation
+            delayItem.style.opacity = '0';
+            delayItem.style.transform = 'translateX(-10px)';
+            setTimeout(() => {
+                delayItem.style.transition = 'all 0.4s ease-out';
+                delayItem.style.opacity = '1';
+                delayItem.style.transform = 'translateX(0)';
+            }, 50);
+
+            // Play notification sound
+            playNotificationSound(priority);
         });
     }
 
