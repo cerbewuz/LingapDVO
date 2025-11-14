@@ -1,11 +1,94 @@
 ﻿@model HospitalAssistanceDto
 @{
     Layout = "_EditFormsLayout";
-    ViewData["Title"] = "Edit Hospital Assistance";
+    ViewData["Title"] = "Edit Other Assistance";
+    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
+    var selectedSex = ViewData["Sex"]?.ToString();
 }
 
-<form asp-action="HospitalAssistanceEdit" enctype="multipart/form-data" method="post">
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-body text-center p-4">
+                <!-- Success Icon -->
+                <div class="mb-3">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                </div>
+
+                <!-- Success Message -->
+                <h5 class="modal-title text-success mb-2" id="successModalLabel">Changes Saved Successfully!</h5>
+                <p class="text-muted mb-3">Your updates have been saved. You will be redirected shortly.</p>
+
+                <!-- Countdown Timer -->
+                <div class="d-flex justify-content-center align-items-center mb-3">
+                    <div class="spinner-border spinner-border-sm text-success me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <small class="text-muted">Redirecting in <span id="countdown">2</span> seconds...</small>
+                </div>
+
+                <!-- Manual Redirect Button -->
+                <button type="button" class="btn btn-success btn-sm" onclick="redirectToList()">
+                    Go Back Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Zoom Modal -->
+<div id="zoomModal" class="zoom-modal">
+    <span class="close-zoom">&times;</span>
+    <img class="zoom-modal-content" id="zoomedImage">
+</div>
+
+<!-- PDF Viewer Modal -->
+<div id="pdfViewerModal" class="pdf-viewer-modal">
+    <div class="pdf-viewer-content">
+        <div class="pdf-viewer-header">
+            <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+            <div class="pdf-controls">
+                <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                    <i class="fas fa-search-minus"></i>
+                </button>
+                <span class="zoom-level" id="zoomLevel">100%</span>
+                <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                    <i class="fas fa-search-plus"></i>
+                </button>
+            </div>
+            <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+        </div>
+        <div class="pdf-viewer-body">
+            <div id="pdfLoading" class="pdf-loading">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading PDF document...</p>
+            </div>
+            <div id="pdfError" class="pdf-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error loading PDF. Please try again.</p>
+            </div>
+            <div class="pdf-container">
+                <canvas id="pdfCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="HospitalAssistanceEdit" enctype="multipart/form-data" method="post" id="editForm">
     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <!-- Hidden field to track successful submission -->
+    <input type="hidden" id="formSubmitted" name="FormSubmitted" value="false">
 
     <!-- Patient Information -->
     <div class="form-section">
@@ -13,32 +96,33 @@
         <div class="row g-3">
             <div class="col-md-3">
                 <label class="form-label">Last Name</label>
-                <input asp-for="Lastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
+                <input value="@ViewData["Lastname"]" asp-for="Lastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
                 <span asp-validation-for="Lastname" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">First Name</label>
-                <input asp-for="Firstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
+                <input value="@ViewData["Firstname"]" asp-for="Firstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
                 <span asp-validation-for="Firstname" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Middle Name</label>
-                <input asp-for="Middlename" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                <input value="@ViewData["Middlename"]" asp-for="Middlename" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                 <span asp-validation-for="Middlename" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Suffix</label>
                 <select class="form-select" asp-for="Suffix">
-                    <option value="None">None</option>
-                    <option value="Jr.">Jr.</option>
-                    <option value="Sr.">Sr.</option>
-                    <option value="II">II</option>
-                    <option value="III">III</option>
-                    <option value="IV">IV</option>
-                    <option value="V">V</option>
+                    <option value="">-- Select Suffix --</option>
+                    <option value="None" selected="@(ViewData["Suffix"]?.ToString() == "None")">None</option>
+                    <option value="Jr." selected="@(ViewData["Suffix"]?.ToString() == "Jr.")">Jr.</option>
+                    <option value="Sr." selected="@(ViewData["Suffix"]?.ToString() == "Sr.")">Sr.</option>
+                    <option value="II" selected="@(ViewData["Suffix"]?.ToString() == "II")">II</option>
+                    <option value="III" selected="@(ViewData["Suffix"]?.ToString() == "III")">III</option>
+                    <option value="IV" selected="@(ViewData["Suffix"]?.ToString() == "IV")">IV</option>
+                    <option value="V" selected="@(ViewData["Suffix"]?.ToString() == "V")">V</option>
                 </select>
                 <span asp-validation-for="Suffix" class="text-danger"></span>
             </div>
@@ -47,58 +131,58 @@
         <div class="row g-3 mt-2">
             <div class="col-md-3">
                 <label class="form-label">Blk / Lot / Street</label>
-                <input asp-for="BlkLotStreet" type="text" class="form-control" required>
+                <input value="@ViewData["BlkLotStreet"]" asp-for="BlkLotStreet" type="text" class="form-control" required>
                 <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Sub / Vill.</label>
-                <input asp-for="SubVill" type="text" class="form-control">
+                <input value="@ViewData["SubVill"]" asp-for="SubVill" type="text" class="form-control">
                 <span asp-validation-for="SubVill" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Barangay</label>
-                <input asp-for="Brgy" type="text" class="form-control" required>
+                <input value="@ViewData["Brgy"]" asp-for="Brgy" type="text" class="form-control" required>
                 <span asp-validation-for="Brgy" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">District</label>
-                <input asp-for="District" type="text" class="form-control" required>
-                <span asp-validation-for="District" class="text-danger"></span>
+                <input value="@ViewData["District"]" asp-for="District" type="text" class="form-control" required>
+                <span asp-validation-for="District"></span>
             </div>
         </div>
 
         <div class="row g-3 mt-2">
             <div class="col-md-3">
                 <label class="form-label">Date of Birth</label>
-                <input asp-for="Dateofbirth" type="date" class="form-control" required>
+                <input value="@ViewData["Dateofbirth"]" asp-for="Dateofbirth" type="date" class="form-control" required>
                 <span asp-validation-for="Dateofbirth" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Age</label>
-                <input asp-for="Age" type="number" class="form-control" required>
+                <input value="@ViewData["Age"]" asp-for="Age" type="number" class="form-control">
                 <span asp-validation-for="Age" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
-                <label class="form-label">Sex</label>
+                <label class="form-label required-field">Sex</label>
                 <select asp-for="Sex" class="form-select" required>
                     <option value="">Select Sex</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
+                    <option value="Male" selected="@(ViewData["Sex"]?.ToString() == "Male")">Male</option>
+                    <option value="Female" selected="@(ViewData["Sex"]?.ToString() == "Female")">Female</option>
                 </select>
                 <span asp-validation-for="Sex" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">PhilHealth</label>
-                <select asp-for="PhilHealth" class="form-select" required>
-                    <option value="">Select</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
+                <select class="form-select" asp-for="PhilHealth" id="philHealthSelect">
+                    <option value="">Select option</option>
+                    <option value="Without PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "Without PhilHealth")">Without PhilHealth</option>
+                    <option value="With PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "With PhilHealth")">With PhilHealth</option>
                 </select>
                 <span asp-validation-for="PhilHealth" class="text-danger"></span>
             </div>
@@ -107,10 +191,31 @@
         <div class="row g-3 mt-2">
             <div class="col-md-6">
                 <label class="form-label">PhilHealth Number (if applicable)</label>
-                <input asp-for="PhilHealthNo" type="text" class="form-control">
+                <input asp-for="PhilHealthNo" type="text" class="form-control" id="philHealthNo">
                 <span asp-validation-for="PhilHealthNo" class="text-danger"></span>
             </div>
         </div>
+
+        <script>
+            const select = document.getElementById("philHealthSelect");
+            const phNo = document.getElementById("philHealthNo");
+
+            function togglePhilHealthNo() {
+                if (select.value === "Without PhilHealth") {
+                    phNo.value = "";
+                    phNo.disabled = true;
+                } else {
+                    phNo.disabled = false;
+                }
+            }
+
+            // Execute on page load (for edit forms)
+            togglePhilHealthNo();
+
+            // Execute on change
+            select.addEventListener("change", togglePhilHealthNo);
+        </script>
+
     </div>
 
     <!-- Requestor Information -->
@@ -119,32 +224,33 @@
         <div class="row g-3">
             <div class="col-md-3">
                 <label class="form-label">Last Name</label>
-                <input asp-for="RLastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
-                <span asp-validation-for="RLastname" class="text-danger"></span>
+                <input value="@ViewData["RLastname"]" asp-for="RLastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                <span asp-validation-for="RLastname"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">First Name</label>
-                <input asp-for="RFirstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
-                <span asp-validation-for="RFirstname" class="text-danger"></span>
+                <input value="@ViewData["RFirstname"]" asp-for="RFirstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                <span asp-validation-for="RFirstname"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Middle Name</label>
-                <input asp-for="RMiddlename" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                <input value="@ViewData["RMiddlename"]" asp-for="RMiddlename" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                 <span asp-validation-for="RMiddlename"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Suffix</label>
                 <select class="form-select" asp-for="RSuffix">
-                    <option value="None">None</option>
-                    <option value="Jr.">Jr.</option>
-                    <option value="Sr.">Sr.</option>
-                    <option value="II">II</option>
-                    <option value="III">III</option>
-                    <option value="IV">IV</option>
-                    <option value="V">V</option>
+                    <option value="">-- Select Suffix --</option>
+                    <option value="None" selected="@(ViewData["RSuffix"]?.ToString() == "None")">None</option>
+                    <option value="Jr." selected="@(ViewData["RSuffix"]?.ToString() == "Jr.")">Jr.</option>
+                    <option value="Sr." selected="@(ViewData["RSuffix"]?.ToString() == "Sr.")">Sr.</option>
+                    <option value="II" selected="@(ViewData["RSuffix"]?.ToString() == "II")">II</option>
+                    <option value="III" selected="@(ViewData["RSuffix"]?.ToString() == "III")">III</option>
+                    <option value="IV" selected="@(ViewData["RSuffix"]?.ToString() == "IV")">IV</option>
+                    <option value="V" selected="@(ViewData["RSuffix"]?.ToString() == "V")">V</option>
                 </select>
                 <span asp-validation-for="RSuffix"></span>
             </div>
@@ -153,121 +259,833 @@
         <div class="row g-3 mt-2">
             <div class="col-md-3">
                 <label class="form-label">Blk / Lot / Street</label>
-                <input asp-for="RBlkLotStreet" type="text" class="form-control">
-                <span asp-validation-for="RBlkLotStreet" class="text-danger"></span>
+                <input value="@ViewData["RBlkLotStreet"]" asp-for="RBlkLotStreet" type="text" class="form-control">
+                <span asp-validation-for="RBlkLotStreet"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Sub / Vill.</label>
-                <input asp-for="RSubVill" type="text" class="form-control">
-                <span asp-validation-for="RSubVill" class="text-danger"></span>
+                <input value="@ViewData["RSubVill"]" asp-for="RSubVill" type="text" class="form-control">
+                <span asp-validation-for="RSubVill"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Barangay</label>
-                <input asp-for="RBrgy" type="text" class="form-control">
-                <span asp-validation-for="RBrgy" class="text-danger"></span>
+                <input value="@ViewData["RBrgy"]" asp-for="RBrgy" type="text" class="form-control">
+                <span asp-validation-for="RBrgy"></span>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">District</label>
-                <input asp-for="RDistrict" type="text" class="form-control">
-                <span asp-validation-for="RDistrict" class="text-danger"></span>
+                <input value="@ViewData["RDistrict"]" asp-for="RDistrict" type="text" class="form-control">
+                <span asp-validation-for="RDistrict"></span>
             </div>
         </div>
 
         <div class="row g-3 mt-2">
             <div class="col-md-6">
                 <label class="form-label">Relationship to Patient</label>
-                <input asp-for="RelationshipPatient" type="text" class="form-control">
-                <span asp-validation-for="RelationshipPatient" class="text-danger"></span>
+                <input value="@ViewData["RelationshipPatient"]" asp-for="RelationshipPatient" type="text" class="form-control">
+                <span asp-validation-for="RelationshipPatient"></span>
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">Contact No.</label>
-                <input asp-for="ContactNo" type="text" class="form-control">
+                <label>Contact No.</label>
+                <input value="@ViewData["ContactNo"]" asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
+                       placeholder="0912-345-6789 or 02-123-4567"
+                       onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                 <span asp-validation-for="ContactNo"></span>
+                <small class="text-muted">Format: 0912-345-6789 (mobile) or 02-123-4567 (landline)</small>
             </div>
         </div>
     </div>
 
-    <!-- Assistance Type -->
-    <div class="form-section">
-        <h5 class="section-header">Type of Assistance</h5>
-        <div class="row g-3">
-            <div class="col-md-12">
-                <label class="form-label">Assistance Type</label>
-                <input asp-for="Typeassistance" type="text" class="form-control">
-                <span asp-validation-for="Typeassistance" class="text-danger"></span>
+    <!-- Type of Assistance Requested Section -->
+    <div class="card mt-4" style="width: 1200px;">
+        <div class="card-header">Type of Assistance Requested</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <!-- Column 1 -->
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="governmentAssistance" name="TypeassistanceOptions" value="Government"
+                               @(checkedAssistance.ContainsKey("Government") ? "checked" : "")>
+                        <label class="form-check-label" for="governmentAssistance">Government</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="GovernmentDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Government") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Government") ? checkedAssistance["Government"] : "")">
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="privateAssistance" name="TypeassistanceOptions" value="Private"
+                               @(checkedAssistance.ContainsKey("Private") ? "checked" : "")>
+                        <label class="form-check-label" for="privateAssistance">Private</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="PrivateDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Private") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Private") ? checkedAssistance["Private"] : "")">
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input assistance-type" type="checkbox"
+                               id="caseAssistance" name="TypeassistanceOptions" value="Case"
+                               @(checkedAssistance.ContainsKey("Case") ? "checked" : "")>
+                        <label class="form-check-label" for="caseAssistance">Case</label>
+                        <input type="text" class="form-control mt-1 assistance-spec"
+                               name="CaseDetails" placeholder="Specify"
+                               style="@(checkedAssistance.ContainsKey("Case") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Case") ? checkedAssistance["Case"] : "")">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <!-- Column 2 (empty but keeping structure) -->
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="assistanceReflection" class="form-label">Reflection info:</label>
+                <input type="text" class="form-control" id="assistanceReflection"
+                       name="Typeassistance"
+                       value="@(Model?.Typeassistance ?? "")"
+                       placeholder="Auto-generated info..." readonly>
+                <span asp-validation-for="Typeassistance"></span>
             </div>
         </div>
     </div>
+    <!-- Upload Section -->
+    <div class="card mt-4">
+        <div class="card-header">Upload Required Documents</div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label>Doctor's Prescription/Receipt</label>
 
-    <!-- Document Uploads -->
-    <div class="form-section">
-        <h5 class="section-header">Required Documents</h5>
-
-        <div class="row g-3 mb-3">
-            <div class="col-md-6">
-                <label class="form-label">Valid ID (Front)</label>
-                <input type="file" asp-for="IdFrontimage" class="form-control" accept="image/*,.pdf">
-                @if (Model?.IdFrontimage != null)
+                <!-- Current Document Display -->
+                @if (ViewData["DoctorPrescription"] != null)
                 {
                     <div class="current-file">
-                        <i class="bi bi-file-check"></i> Current file uploaded
-                        <small class="text-muted d-block">Upload a new file to replace</small>
+                        <strong>Current Document:</strong> @ViewData["DoctorPrescription"]
+                        @if (ViewData["DoctorPrescriptionBase64"] != null)
+                        {
+                            <div class="mt-2">
+                                @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                                {
+                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                        <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
+                                        <div class="pdf-info">
+                                            <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                            <span class="pdf-label">Click to view PDF</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="document-preview-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                        <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="document-preview" />
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
                 }
-            </div>
 
-            <div class="col-md-6">
-                <label class="form-label">Valid ID (Back)</label>
-                <input type="file" asp-for="IdBackimage" class="form-control" accept="image/*,.pdf">
-                @if (Model?.IdBackimage != null)
-                {
-                    <div class="current-file">
-                        <i class="bi bi-file-check"></i> Current file uploaded
-                        <small class="text-muted d-block">Upload a new file to replace</small>
+                <div class="upload-box" onclick="document.getElementById('medicalCertificate').click()">
+                    <div class="upload-icon">
+                        <i class="fas fa-file-medical"></i>
                     </div>
-                }
-            </div>
-        </div>
+                    <p id="uploadTextMedical">Click to upload new document</p>
+                    <p id="fileNameMedical" class="text-success fw-bold mt-2"></p>
+                    <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
+                </div>
 
-        <div class="row g-3 mb-3">
-            <div class="col-md-6">
-                <label class="form-label">Doctor Prescription (Optional)</label>
-                <input type="file" asp-for="DoctorPrescriptionimage" class="form-control" accept="image/*,.pdf">
-                @if (Model?.DoctorPrescriptionimage != null)
-                {
-                    <div class="current-file">
-                        <i class="bi bi-file-check"></i> Current file uploaded
-                        <small class="text-muted d-block">Upload a new file to replace</small>
-                    </div>
-                }
-            </div>
+                <input asp-for="DoctorPrescriptionimage"
+                       type="file"
+                       id="medicalCertificate"
+                       class="d-none"
+                       accept=".png,.jpg,.jpeg,.pdf"
+                       onchange="handleFileSelect(this)">
+                <span asp-validation-for="DoctorPrescriptionimage"></span>
 
-            <div class="col-md-6">
-                <label class="form-label">Death Certificate (if applicable)</label>
-                <input type="file" asp-for="DeathCertificateimage" class="form-control" accept="image/*,.pdf">
-                @if (Model?.DeathCertificateimage != null)
-                {
-                    <div class="current-file">
-                        <i class="bi bi-file-check"></i> Current file uploaded
-                        <small class="text-muted d-block">Upload a new file to replace</small>
-                    </div>
-                }
+                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
+                <div id="fileStatus" class="file-status"></div>
+                <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
             </div>
         </div>
     </div>
 
     <!-- Submit Button -->
     <div class="text-center mt-4 mb-4">
-        <button type="submit" class="btn btn-submit">
+        <button type="submit" class="btn btn-submit" id="submitButton">
             <i class="bi bi-save"></i> Save Changes
         </button>
     </div>
 </form>
 
+@section Styles {
+    <style>
+        /* Success Modal Styles */
+        #successModal .modal-content {
+            border-radius: 12px;
+            border: none;
+        }
+
+        #successModal .modal-body {
+            padding: 2rem;
+        }
+
+        .modal.fade .modal-dialog {
+            transform: scale(0.8);
+            transition: transform 0.3s ease-out;
+        }
+
+        .modal.show .modal-dialog {
+            transform: scale(1);
+        }
+
+        .form-check {
+            margin-left: 20px;
+        }
+
+        .card-body .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .col-md-6 {
+            padding-left: 30px;
+        }
+
+        .form-check {
+            margin-bottom: 10px;
+        }
+
+        /* PDF Viewer Modal Styles */
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+        }
+
+        .pdf-viewer-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-viewer-header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pdf-viewer-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .pdf-viewer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            line-height: 1;
+        }
+
+            .pdf-viewer-close:hover {
+                color: #dc143c;
+            }
+
+        .pdf-viewer-body {
+            flex: 1;
+            background-color: #525659;
+            position: relative;
+            overflow: auto;
+        }
+
+        .pdf-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        #pdfCanvas {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            background-color: white;
+        }
+
+        .pdf-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .page-info {
+            color: white;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        .zoom-level {
+            color: white;
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pdf-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pdf-error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            display: none;
+        }
+
+            .pdf-error i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+        .btn-light {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+        }
+
+            .btn-light:hover {
+                background-color: white;
+            }
+
+            .btn-light:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+        /* Image Zoom Modal */
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .zoom-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .close-zoom {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Document Preview Styles */
+        .document-preview-container {
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+            .document-preview-container:hover {
+                transform: scale(1.02);
+            }
+
+        .document-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .pdf-preview {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+            .pdf-preview:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+                transform: translateY(-2px);
+            }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: #dc143c;
+            margin-right: 1rem;
+        }
+
+        .pdf-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-filename {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .pdf-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .file-status {
+            margin-top: 5px;
+            font-size: 0.85rem;
+        }
+
+        .file-success {
+            color: var(--success-color);
+        }
+
+        .file-error {
+            color: #dc3545;
+        }
+
+        .current-file {
+            background-color: var(--primary-light);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .img-preview {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 300px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            object-fit: contain;
+            display: none;
+        }
+    </style>
+}
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Success Modal Functions
+        function showSuccessModal() {
+            console.log('Showing success modal');
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+
+            let countdown = 2;
+            const countdownElement = document.getElementById('countdown');
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    redirectToList();
+                }
+            }, 1000);
+        }
+
+        function redirectToList() {
+            console.log('Redirecting to list');
+            window.location.href = '/Homepage';
+        }
+
+        // Check for successful form submission on page load
+        function checkFormSubmission() {
+            console.log('Checking form submission status');
+
+            // Method 1: Check URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+
+            // Method 2: Check ViewData from server
+            const serverSuccess = @Json.Serialize(ViewBag.Success ?? false);
+
+            // Method 3: Check TempData (common in ASP.NET)
+            const tempDataSuccess = @Json.Serialize(TempData["Success"] ?? false);
+
+            console.log('URL success param:', success);
+            console.log('ViewBag.Success:', serverSuccess);
+            console.log('TempData Success:', tempDataSuccess);
+
+            if (success === 'true' || serverSuccess === true || tempDataSuccess === true) {
+                console.log('Success detected, showing modal');
+                setTimeout(() => {
+                    showSuccessModal();
+                }, 500);
+            } else {
+                console.log('No success detected');
+            }
+        }
+
+        // Enhanced form submission handler
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing form handlers');
+
+            const form = document.getElementById('editForm');
+            const submitButton = document.getElementById('submitButton');
+            const formSubmittedField = document.getElementById('formSubmitted');
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('Form submitted');
+                    // Set the hidden field to indicate form was submitted
+                    if (formSubmittedField) {
+                        formSubmittedField.value = 'true';
+                    }
+
+                    // Optional: Add loading state to button
+                    if (submitButton) {
+                        submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+                        submitButton.disabled = true;
+                    }
+
+                    // Form will continue with normal submission
+                    // The success modal will be shown on the next page load if successful
+                });
+            }
+
+            // Check for success on page load
+            checkFormSubmission();
+
+            // Also check if we're coming back from a post with validation errors
+            const hasValidationErrors = document.querySelector('.alert-danger, .field-validation-error');
+            if (hasValidationErrors) {
+                console.log('Validation errors detected, not showing success modal');
+                // Re-enable submit button if it was disabled
+                if (submitButton) {
+                    submitButton.innerHTML = '<i class="bi bi-save"></i> Save Changes';
+                    submitButton.disabled = false;
+                }
+            }
+        });
+
+        // PDF Viewer Variables and Functions
+        let currentPDF = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScale = 1.2;
+
+        function ensurePDFJSLoaded() {
+            return new Promise((resolve, reject) => {
+                if (typeof pdfjsLib !== 'undefined') {
+                    resolve();
+                } else {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                }
+            });
+        }
+
+        function zoomImage(src) {
+            const modal = document.getElementById("zoomModal");
+            const modalImg = document.getElementById("zoomedImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
+
+        async function viewPDFInModal(fileName, fileType, displayName) {
+            try {
+                await ensurePDFJSLoaded();
+
+                const modal = document.getElementById('pdfViewerModal');
+                const title = document.getElementById('pdfViewerTitle');
+                const loading = document.getElementById('pdfLoading');
+                const errorDiv = document.getElementById('pdfError');
+                const canvas = document.getElementById('pdfCanvas');
+                const context = canvas.getContext('2d');
+                const currentPageSpan = document.getElementById('currentPage');
+                const totalPagesSpan = document.getElementById('totalPages');
+                const zoomLevelSpan = document.getElementById('zoomLevel');
+
+                title.textContent = displayName || 'PDF Document';
+                modal.style.display = 'block';
+                loading.style.display = 'flex';
+                errorDiv.style.display = 'none';
+                canvas.style.display = 'none';
+
+                currentPDF = null;
+                currentPage = 1;
+                currentScale = 1.2;
+
+                const encodedFileName = encodeURIComponent(fileName);
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const pdfData = await response.arrayBuffer();
+
+                if (!pdfData || pdfData.byteLength === 0) {
+                    throw new Error('PDF data is empty');
+                }
+
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                totalPagesSpan.textContent = totalPages;
+                currentPageSpan.textContent = currentPage;
+
+                updateNavigationButtons();
+
+                await renderPage(currentPage);
+
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                const loading = document.getElementById('pdfLoading');
+                const errorDiv = document.getElementById('pdfError');
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+            }
+        }
+
+        async function renderPage(pageNum) {
+            if (!currentPDF) return;
+
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+
+            try {
+                const page = await currentPDF.getPage(pageNum);
+                const viewport = page.getViewport({ scale: currentScale });
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                currentPageSpan.textContent = pageNum;
+
+            } catch (error) {
+                console.error('Error rendering page:', error);
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function zoomIn() {
+            currentScale += 0.2;
+            renderPage(currentPage);
+            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.2;
+                renderPage(currentPage);
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        function closePDFViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'none';
+
+            if (currentPDF) {
+                currentPDF.destroy();
+                currentPDF = null;
+            }
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            const fileNameDisplay = document.getElementById('fileNameMedical');
+            const uploadText = document.getElementById('uploadTextMedical');
+            const fileStatus = document.getElementById('fileStatus');
+            const preview = document.getElementById('receiptPreview');
+            const uploadBox = input.previousElementSibling;
+
+            if (file) {
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const maxSize = 10 * 1024 * 1024;
+
+                if (!validTypes.includes(file.type)) {
+                    fileStatus.innerHTML = '<span class="file-error">Invalid file type. Please upload JPG, PNG, or PDF files only.</span>';
+                    input.value = '';
+                    return;
+                }
+
+                if (file.size > maxSize) {
+                    fileStatus.innerHTML = '<span class="file-error">File size too large. Maximum size is 10MB.</span>';
+                    input.value = '';
+                    return;
+                }
+
+                fileNameDisplay.textContent = file.name;
+                fileStatus.innerHTML = '<span class="file-success">File selected: ' + file.name + '</span>';
+
+                if (uploadText) {
+                    uploadText.textContent = 'Click to change document';
+                }
+
+                if (uploadBox) {
+                    uploadBox.style.borderColor = "var(--success-color)";
+                    uploadBox.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
+                }
+
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.style.display = "none";
+                }
+            } else {
+                preview.style.display = "none";
+                fileNameDisplay.textContent = '';
+                fileStatus.innerHTML = '';
+                if (uploadText) {
+                    uploadText.textContent = 'Click to upload new document';
+                }
+                if (uploadBox) {
+                    uploadBox.style.borderColor = "#ddd";
+                    uploadBox.style.backgroundColor = "#fafafa";
+                }
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById("zoomModal").style.display = "none";
+                closePDFViewer();
+            }
+
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+
+            if (event.target == zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal) {
+                closePDFViewer();
+            }
+        }
+    </script>
 }

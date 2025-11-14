@@ -1023,7 +1023,7 @@ namespace LingapDVO.Controllers
         }
 
         [HttpPost]
-        public IActionResult HospitalAssistanceedit(int id, HospitalAssistanceDto dto)
+        public IActionResult HospitalAssistanceEdit(int id, HospitalAssistanceDto dto)
         {
             // ? 1. Check user session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -2533,7 +2533,7 @@ namespace LingapDVO.Controllers
         }
 
         [HttpPost]
-        public IActionResult FuneralAssistanceedit(int id, FuneralAssistanceDto FuneralAssistanceDto)
+        public IActionResult FuneralAssistanceEdit(int id, FuneralAssistanceDto FuneralAssistanceDto)
         {
             // ? 1. Check user session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
