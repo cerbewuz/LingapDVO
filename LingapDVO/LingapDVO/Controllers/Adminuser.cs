@@ -3680,58 +3680,58 @@ namespace LingapDVO.Controllers
                         {
                             subject = "Congratulations! Your Medical Assistance Has Been Approve - LINGAP DVO";
                             body = $@"
-                    Dear {firstName},
+                            Dear {firstName},
 
-                    We are pleased to inform you that your Medical Assistance application has been APPROVED.
+                            We are pleased to inform you that your Medical Assistance application has been APPROVED.
 
-                    APPLICATION DETAILS:
-                    • Application Type: Medical Assistance
-                    • Application ID: {medicallabform.Id}
-                    • Status: Approve
-                    • Date Approve: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
-                    • Processed By: {OtherAssistanceDto.Processby}
+                            APPLICATION DETAILS:
+                            • Application Type: Medical Assistance
+                            • Application ID: {medicallabform.Id}
+                            • Status: Approve
+                            • Date Approve: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Processed By: {OtherAssistanceDto.Processby}
 
-                    REMARKS:
-                    {OtherAssistanceDto.Comments ?? "No additional remarks provided."}
+                            REMARKS:
+                            {OtherAssistanceDto.Comments ?? "No additional remarks provided."}
 
-                    NEXT STEPS:
-                    Please visit our office to complete the necessary documentation and receive your assistance.
+                            NEXT STEPS:
+                            Please visit our office to complete the necessary documentation and receive your assistance.
 
-                    Thank you for choosing LINGAP DVO. We are committed to supporting your healthcare needs.
+                            Thank you for choosing LINGAP DVO. We are committed to supporting your healthcare needs.
 
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Medical Assistance Program
+                            Sincerely,
+                            {fromName}
+                            LINGAP DVO Medical Assistance Program
 
-                    Note: This is an automated email. Please do not reply to this message.";
-                        }
-                        else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
-                        {
-                            subject = "Update on Your Medical Assistance Application - LINGAP DVO";
-                            body = $@"
-                    Dear {firstName},
+                            Note: This is an automated email. Please do not reply to this message.";
+                                }
+                                else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    subject = "Update on Your Medical Assistance Application - LINGAP DVO";
+                                    body = $@"
+                            Dear {firstName},
 
-                    After careful review, we regret to inform you that your Medical Assistance application has been DISAPPROVE.
+                            After careful review, we regret to inform you that your Medical Assistance application has been DISAPPROVE.
 
-                    APPLICATION DETAILS:
-                    • Application Type: Medical Assistance
-                    • Application ID: {medicallabform.Id}
-                    • Status: Disapprove
-                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
-                    • Processed By: {OtherAssistanceDto.Processby}
+                            APPLICATION DETAILS:
+                            • Application Type: Medical Assistance
+                            • Application ID: {medicallabform.Id}
+                            • Status: Disapprove
+                            • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Processed By: {OtherAssistanceDto.Processby}
 
-                    REMARKS:
-                    {OtherAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
+                            REMARKS:
+                            {OtherAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
 
-                    If you have questions or would like to discuss this decision further, please visit our office during business hours.
+                            If you have questions or would like to discuss this decision further, please visit our office during business hours.
 
-                    We appreciate your understanding.
+                            We appreciate your understanding.
 
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Medical Assistance Program
+                            Sincerely,
+                            {fromName}
+                            LINGAP DVO Medical Assistance Program
 
-                    Note: This is an automated email. Please do not reply to this message.";
+                            Note: This is an automated email. Please do not reply to this message.";
                         }
 
                         // Send the email safely
