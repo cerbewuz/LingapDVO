@@ -39,14 +39,30 @@
 
         .site-navbar {
             background: transparent;
-            height: clamp(70px, 12vw, 100px);
-            padding-top: clamp(10px, 2vw, 14px);
-            padding-bottom: clamp(14px, 3vw, 20px);
+            height: auto;
+            padding: 1rem 0;
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
             transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @media (max-width: 1199px) {
+            .site-navbar {
+                padding: 0.75rem 0;
+            }
+
+            .site-navbar .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .site-navbar {
+                padding: 0.5rem 0;
+            }
         }
 
         /* When on LIGHT background sections - Use DARK navbar for visibility */
@@ -146,9 +162,21 @@
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
+        .site-navbar h1 {
+            font-size: clamp(1.25rem, 5vw, 2rem);
+            margin: 0;
+            line-height: 1.2;
+        }
+
         .site-navbar.on-light-bg .navbar-brand,
         .site-navbar.on-dark-bg .navbar-brand {
-            transform: scale(clamp(0.85, 1.5vw, 0.95));
+            transform: scale(1);
+        }
+
+        @media (max-width: 767px) {
+            .site-navbar h1 {
+                font-size: 1.5rem;
+            }
         }
 
         /* Mobile Menu Toggle Icon */
@@ -175,33 +203,80 @@
 
         /* Mobile Menu Adaptive Colors */
         .site-mobile-menu {
-            background-color: rgba(0, 0, 0, 0.95);
+            background-color: rgba(0, 0, 0, 0.98);
             backdrop-filter: blur(20px);
             color: white;
             position: fixed;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             top: 0;
             left: 0;
             z-index: 2000;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            overflow-y: auto;
+        }
+
+        .site-mobile-menu.active {
+            transform: translateX(0);
+        }
+
+        .site-mobile-menu-header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .site-mobile-menu-close {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .site-mobile-menu-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .site-mobile-menu-close .icon-close2 {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .site-mobile-menu-body {
+            padding: 2rem 1.5rem;
+        }
+
+        .site-mobile-menu .site-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .site-mobile-menu .site-menu > li {
+            margin-bottom: 0.5rem;
         }
 
         .site-mobile-menu a,
         .site-mobile-menu .nav-btn {
             color: white;
             font-weight: 700;
-            font-size: clamp(16px, 3.5vw, 18px);
+            font-size: clamp(1rem, 3.5vw, 1.125rem);
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            padding: clamp(12px, 2.5vw, 14px) clamp(20px, 4vw, 24px);
-            border-radius: clamp(4px, 1vw, 6px);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
             display: block;
+            text-align: left;
+            width: 100%;
+            border: 1px solid transparent;
         }
 
         .site-mobile-menu a:hover,
         .site-mobile-menu .nav-btn:hover {
             color: #DC143C;
             background: rgba(255, 255, 255, 0.1);
-            transform: translateX(clamp(3px, 1vw, 5px));
+            transform: translateX(0.5rem);
+            border-color: rgba(220, 20, 60, 0.3);
+            text-decoration: none;
         }
 
         
@@ -281,10 +356,48 @@
                 box-shadow: 0 12px 35px rgba(220, 20, 60, 0.6), 0 0 0 10px rgba(220, 20, 60, 0);
             }
 
-        
+
         .application-btn {
-            font-size: clamp(1.1rem, 2.5vw, 1.25rem);
-            padding: clamp(14px, 3vw, 16px) clamp(28px, 4vw, 32px);
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            padding: clamp(12px, 3vw, 16px) clamp(24px, 4vw, 32px);
+        }
+
+        @media (max-width: 767px) {
+            .application-btn {
+                font-size: 1rem;
+                padding: 12px 24px;
+            }
+
+            .application-btn i {
+                font-size: 1.25rem;
+                margin-right: 8px;
+            }
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 991px) {
+            .site-blocks-cover .text-center {
+                padding: 0 1rem;
+            }
+
+            .desc {
+                font-size: 1rem;
+                line-height: 1.6;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .site-blocks-cover h1 {
+                font-size: 1.75rem !important;
+            }
+
+            .desc {
+                font-size: 0.9rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem !important;
+            }
         }
     </style>
 </head>
@@ -307,23 +420,7 @@
                     <span class="icon-close2 js-menu-toggle"></span>
                 </div>
             </div>
-            <div class="site-mobile-menu-body">
-                <!-- Mobile menu content -->
-                <ul class="site-menu main-menu">
-                    <li>
-                        <button type="button" class="nav-btn" onclick="location.href='#home-section'">Home</button>
-                    </li>
-                    <li>
-                        <button type="button" class="nav-btn" onclick="location.href='#about-section'">About Us</button>
-                    </li>
-                    <li>
-                        <button type="button" class="nav-btn" onclick="location.href='#contact-section'">Contact</button>
-                    </li>
-                    <li>
-                        <button type="button" class="nav-btn" onclick="location.href='/Login'">Login</button>
-                    </li>
-                </ul>
-            </div>
+            <div class="site-mobile-menu-body"></div>
         </div>
 
 
@@ -378,7 +475,7 @@
                             <div class="slide">
                                 <h1 class="text-uppercase" data-aos="fade-up">Lingap Para sa Mahirap</h1>
                                 <p class="mb-5 desc" data-aos="fade-up" data-aos-delay="100">
-                                    ?"Nagbibigay ng pag-asa at tulong sa bawat Dabawenyong nangangailangan—accessible, may malasakit,
+                                    ?"Nagbibigay ng pag-asa at tulong sa bawat Dabawenyong nangangailanganï¿½accessible, may malasakit,
                                     at nakatuon sa iyong kapakanan. Danasin ang tunay na serbisyo publiko sa Lingap para sa Mahirap!"
                                 </p>
                                
@@ -391,7 +488,7 @@
                             <div class="slide">
                                 <h1 class="text-uppercase" data-aos="fade-up">Libreng Serbisyo at Tulong Pinansyal</h1>
                                 <p class="mb-5 desc" data-aos="fade-up" data-aos-delay="100">
-                                    "Lingap para sa Mahirap—serbisyong tapat at abot-kamay para sa bawat Dabawenyo.
+                                    "Lingap para sa Mahirapï¿½serbisyong tapat at abot-kamay para sa bawat Dabawenyo.
                                     Mula sa medikal na tulong hanggang sa pangangailangang pinansyal, nandito kami upang suportahan ka.
                                     Walang maiiwan sa tunay na malasakit!"
                                 </p>
@@ -454,7 +551,7 @@
 
                         <p style="text-align: justify;">
                             Ang Lingap Program ay nagbibigay ng libreng tulong pinansyal para sa ating mga kapus-palad na kaigsuonang Dabawenyo. Layunin
-                            nitong suportahan ang mga nangangailangan sa oras ng kagipitan—maging ito man ay para sa pang-araw-araw na gastusin,
+                            nitong suportahan ang mga nangangailangan sa oras ng kagipitanï¿½maging ito man ay para sa pang-araw-araw na gastusin,
                             pangangailangang medikal, o iba pang mahahalagang pangangailangan. Sa pamamagitan ng programang ito,
                             sinisigurado ng pamahalaan na walang Dabawenyong maiiwan, at bawat isa ay may makakapitang
                             tulong sa panahon ng pangangailangan.
@@ -475,7 +572,7 @@
                         <h3 class="card-title">Libreng Serbisyong Medikal at Pinansyal</h3>
                         <p style="text-align: justify;">
                             ??Kami sa Lingap para sa Mahirap ay handang tumulong sa inyong mga pangangailangang medikal at
-                            pinansyal—mula sa hospital bills, laboratory fees, dialysis treatments, hanggang sa funeral
+                            pinansyalï¿½mula sa hospital bills, laboratory fees, dialysis treatments, hanggang sa funeral
                             expenses. Ang inyong kaginhawaan at seguridad ay aming misyon.
                         </p>
                     </div>
@@ -517,7 +614,7 @@
 
                         <div class="mb-4">
                             <ul class="list-unstyled ul-check success">
-                                <li>Ang bawat Dabawenyo ay prayoridad—handog namin ang libreng serbisyong may malasakit at tunay na pagtulong.</li>
+                                <li>Ang bawat Dabawenyo ay prayoridadï¿½handog namin ang libreng serbisyong may malasakit at tunay na pagtulong.</li>
                                 <li>Nandito ang Lingap upang tiyakin na walang Dabawenyong maiiwan sa oras ng pangangailangan.</li>
                                 <li>Ang aming misyon ay magbigay ng agarang suporta at kalinga para sa mas maayos at maginhawang buhay ng bawat Dabawenyo.</li>
                             </ul>
@@ -565,7 +662,7 @@
                             <div>
                                 <h2 class="section-title mb-3">01. Online na Aplikasyon</h2>
                                 <p>
-                                    "Mas pinadali at pinalapit na ang libreng online application para sa bawat Dabawenyo—apply kahit saan,
+                                    "Mas pinadali at pinalapit na ang libreng online application para sa bawat Dabawenyoï¿½apply kahit saan,
                                     kahit kailan, nang mabilis at walang abala!"
                                 </p>
 
@@ -583,7 +680,7 @@
                             <div>
                                 <h2 class="section-title mb-3">03. Serbisyong Direktang Hatid sa Inyo</h2>
                                 <p>
-                                    "Libreng serbisyong direkta sa inyo—mabilis, ligtas, at walang bayad na proseso para sa kaginhawaan ng
+                                    "Libreng serbisyong direkta sa inyoï¿½mabilis, ligtas, at walang bayad na proseso para sa kaginhawaan ng
                                     bawat Dabawenyo!"
                                 </p>
 
@@ -1034,13 +1131,43 @@
             });
 
             // Mobile menu toggle functionality
-            const mobileMenuToggle = document.querySelector('.js-menu-toggle');
+            const mobileMenuToggles = document.querySelectorAll('.js-menu-toggle');
             const mobileMenu = document.querySelector('.site-mobile-menu');
+            const body = document.body;
 
-            if (mobileMenuToggle && mobileMenu) {
-                mobileMenuToggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    mobileMenu.classList.toggle('active');
+            if (mobileMenuToggles.length > 0 && mobileMenu) {
+                mobileMenuToggles.forEach(toggle => {
+                    toggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const isActive = mobileMenu.classList.contains('active');
+
+                        if (isActive) {
+                            // Close menu
+                            mobileMenu.classList.remove('active');
+                            body.style.overflow = '';
+                        } else {
+                            // Open menu
+                            mobileMenu.classList.add('active');
+                            body.style.overflow = 'hidden';
+                        }
+                    });
+                });
+
+                // Close mobile menu when clicking on a nav link
+                const mobileNavLinks = mobileMenu.querySelectorAll('a, .nav-btn');
+                mobileNavLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenu.classList.remove('active');
+                        body.style.overflow = '';
+                    });
+                });
+
+                // Close mobile menu on window resize if screen becomes large
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth >= 1200 && mobileMenu.classList.contains('active')) {
+                        mobileMenu.classList.remove('active');
+                        body.style.overflow = '';
+                    }
                 });
             }
 
