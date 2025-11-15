@@ -411,57 +411,6 @@
         </div>
     </div>
 
-    <!-- Upload Section -->
-    <h5 class="section-header mt-4">Submitted Documents</h5>
-
-    <div class="row g-3">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Death Certificate</label>
-            @if (ViewData["DeathCertificateBase64"] != null)
-            {
-                @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
-                {
-                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
-                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                        <div class="pdf-info">
-                            <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                            <span class="pdf-label">Click to view PDF</span>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="img-preview" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
-                }
-            }
-            else
-            {
-                <p class="text-muted">No document available</p>
-            }
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Valid ID - Front</label>
-            @if (ViewData["ValidfrontimageBase64"] != null)
-            {
-                <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="img-preview mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
-            }
-            else
-            {
-                <p class="text-muted">No front ID image available</p>
-            }
-
-            <label class="form-label mt-3">Valid ID - Back</label>
-            @if (ViewData["ValidBackimageBase64"] != null)
-            {
-                <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="img-preview" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
-            }
-            else
-            {
-                <p class="text-muted">No back ID image available</p>
-            }
-        </div>
-    </div>
 
     <!-- Status Section -->
     <h5 class="section-header mt-4">Request Status</h5>

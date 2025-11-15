@@ -1,151 +1,27 @@
 @model FuneralAssistanceDto
 @{
-    Layout = "_AdminProcessingLayout";
-    ViewData["Title"] = "Process Hospital Assistance";
+    Layout = "_ViewFormsLayout";
+    ViewData["Title"] = "Hospital Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
-    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
 <style>
-    :root {
-        --primary-color: #DC143C;
-        --primary-light: #FFE6EA;
-        --primary-dark: #B01030;
-        --secondary-color: #2c3e50;
-        --light-gray: #f8f9fa;
-        --border-color: #dee2e6;
-    }
-
+    /* Remove borders since layout already has them */
     .receipt-container {
-        max-width: 800px;
-        margin: 2rem auto;
-        background: white;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        overflow: hidden;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
     }
 
     .receipt-header {
-        background: var(--primary-color);
-        color: white;
-        padding: 1.5rem;
-        text-align: center;
+        border: none !important;
     }
 
     .receipt-body {
-        padding: 2rem;
+        padding: 1rem !important;
     }
-
-    .receipt-section {
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .section-header {
-        color: var(--primary-color);
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--primary-light);
-    }
-
-    .info-row {
-        display: flex;
-        margin-bottom: 0.5rem;
-    }
-
-    .info-label {
-        flex: 0 0 30%;
-        font-weight: 500;
-        color: var(--secondary-color);
-    }
-
-    .info-value {
-        flex: 1;
-        color: #555;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 0.35rem 0.75rem;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-
-    .status-pending {
-        background-color: #fff3cd;
-        color: #856404;
-    }
-
-    .status-approve {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .status-disapprove {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-
-    .status-processing {
-        background-color: #cce5ff;
-        color: #004085;
-    }
-
-    .status-claimed {
-        background-color: #d1ecf1;
-        color: #0c5460;
-    }
-
-    .btn-receipt {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-        color: white;
-        padding: 0.5rem 1.5rem;
-        font-weight: 500;
-        border-radius: 5px;
-    }
-
-        .btn-receipt:hover {
-            background-color: var(--primary-dark);
-            border-color: var(--primary-dark);
-            color: white;
-        }
-
-    .btn-approved {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-    }
-
-        .btn-approved:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            color: white;
-        }
-
-    .btn-disapproved {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-    }
-
-        .btn-disapproved:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
-        }
 
     .zoom-modal {
         display: none;
@@ -354,25 +230,7 @@
             margin-bottom: 1rem;
         }
 
-    .btn-light {
-        background-color: rgba(255, 255, 255, 0.9);
-        border: none;
-    }
-
-        .btn-light:hover {
-            background-color: white;
-        }
-
-        .btn-light:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-    .comments-required {
-        border: 2px solid #dc3545 !important;
-        background-color: #fff5f5;
-    }
-
+    /* Status Buttons Styling */
     .status-buttons {
         display: flex;
         justify-content: center;
@@ -381,6 +239,65 @@
         flex-wrap: wrap;
     }
 
+    .btn-approved {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-approved:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .btn-disapproved {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-disapproved:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Claimed Button Styling - Same design as approve/disapprove */
+    .btn-claimed {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-claimed:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Comments Modal Styling */
     .comments-modal {
         display: none;
         position: fixed;
@@ -429,350 +346,125 @@
             color: var(--primary-color);
         }
 
-    /* ============================================
-               PRINT STYLES - Fit entire form on one page
-               ============================================ */
-    @@media print {
-        /* Hide all buttons and interactive elements */
-        .btn, button, .status-buttons, .receipt-footer,
-        .go-back-btn, .btn-approved, .btn-disapproved,
-        .btn-receipt, input[type="submit"], input[type="button"] {
-            display: none !important;
-        }
-        /* Hide modals */
-        .zoom-modal, .pdf-viewer-modal, .comments-modal {
-            display: none !important;
-        }
-        /* Reset page margins and padding */
-        @@page {
-            size: A4;
-            margin: 0.4cm;
-        }
-        /* Remove all spacing from body and wrapper elements */
-        body {
-            margin: 0 !important;
-            padding: 0 !important;
-            font-size: 8pt !important;
-            line-height: 1.1 !important;
-        }
-        /* Remove all spacing from layout wrapper elements */
-        .forms-layout-wrapper {
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
+    .comments-required {
+        border: 2px solid #dc3545 !important;
+        background-color: #fff5f5;
+    }
+
+    /* Form Validation */
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+        .is-invalid ~ .invalid-feedback {
+            display: block;
         }
 
-        .form-container {
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            border: none !important;
-        }
-        /* Make header extremely compact */
-        .official-form-header {
-            margin: 0 !important;
-            padding: 0.3rem 0.5rem !important;
-            border-bottom: 1px solid #000 !important;
-            page-break-after: avoid;
-        }
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
 
-        .header-content-flex {
-            gap: 0.3rem !important;
-            align-items: center !important;
-        }
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
 
-        .header-logo {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+    .status-approve {
+        background-color: #d4edda;
+        color: #155724;
+    }
 
-        .lingap-logo {
-            width: 35px !important;
-            height: 35px !important;
-            max-width: 35px !important;
-        }
+    .status-disapprove {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
 
-        .header-text {
-            margin: 0 !important;
-            padding: 0 !important;
-            text-align: center !important;
-        }
+    .status-processing {
+        background-color: #cce5ff;
+        color: #004085;
+    }
 
-        .header-title {
-            font-size: 11pt !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            line-height: 1.1 !important;
-            font-weight: bold !important;
-        }
+    .status-claimed {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
 
-        .header-subtitle {
-            font-size: 9pt !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            line-height: 1.1 !important;
-        }
+    /* Receipt Sections */
+    .receipt-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
 
-        .header-form-title {
-            font-size: 10pt !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            line-height: 1.1 !important;
-            font-weight: bold !important;
-        }
-        /* Remove all spacing from form content wrapper */
-        .form-content-wrapper {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        /* Compact receipt container */
-        .receipt-container {
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            border: none !important;
-            page-break-inside: avoid;
-        }
-        /* Compact header */
-        .receipt-header {
-            padding: 0.2rem 0.3rem !important;
-            margin: 0 !important;
-            page-break-after: avoid;
-            border: none !important;
-        }
+    .section-header {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
+    }
 
-            .receipt-header h3 {
-                font-size: 10pt !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                font-weight: bold !important;
-            }
-        /* Compact body */
-        .receipt-body {
-            padding: 0.3rem 0.5rem !important;
-            margin: 0 !important;
-        }
-        /* Compact sections */
-        .receipt-section {
-            margin-bottom: 0.3rem !important;
-            padding-bottom: 0.2rem !important;
-            border-bottom: 0.5px solid #ccc !important;
-            page-break-inside: avoid;
-        }
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
 
-        .section-header {
-            font-size: 9pt !important;
-            font-weight: bold !important;
-            margin-bottom: 0.2rem !important;
-            padding-bottom: 0.1rem !important;
-            color: #000 !important;
-            line-height: 1.1 !important;
-        }
-        /* Compact info rows */
-        .info-row {
-            margin-bottom: 0.1rem !important;
-            font-size: 7pt !important;
-            line-height: 1.1 !important;
-        }
+    .info-label {
+        flex: 0 0 30%;
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
 
-        .info-label {
-            flex: 0 0 25% !important;
-            font-size: 7pt !important;
-            color: #000 !important;
-            padding-right: 0.2rem !important;
-        }
+    .info-value {
+        flex: 1;
+        color: #555;
+    }
 
-        .info-value {
-            font-size: 7pt !important;
-            color: #000 !important;
-        }
-        /* Compact form controls */
-        .form-control, .form-select, textarea {
-            font-size: 7pt !important;
-            padding: 0.15rem 0.2rem !important;
-            border: 0.5px solid #666 !important;
-            background: white !important;
-            margin-bottom: 0.1rem !important;
-            line-height: 1.1 !important;
-        }
+    /* Success Modal */
+    .success-modal {
+        display: none;
+        position: fixed;
+        z-index: 4000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
 
-        .form-label {
-            font-size: 7pt !important;
-            margin-bottom: 0.05rem !important;
-            color: #000 !important;
-            line-height: 1.1 !important;
-        }
+    .success-modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
 
-        .form-check {
-            margin-bottom: 0.1rem !important;
-            padding-left: 1rem !important;
-        }
-
-        .form-check-label {
-            font-size: 6.5pt !important;
-            line-height: 1.1 !important;
-        }
-        /* Compact rows */
-        .row {
-            margin-left: -0.15rem !important;
-            margin-right: -0.15rem !important;
-            margin-bottom: 0.1rem !important;
-        }
-
-            .row > * {
-                padding-left: 0.15rem !important;
-                padding-right: 0.15rem !important;
-            }
-
-        .g-3 {
-            gap: 0.2rem !important;
-        }
-
-        .mt-2, .mt-3 {
-            margin-top: 0.2rem !important;
-        }
-
-        .mb-3, .mb-2 {
-            margin-bottom: 0.2rem !important;
-        }
-        /* Compact images */
-        .id-image {
-            max-height: 60px !important;
-            width: auto !important;
-        }
-
-        .id-image-container {
-            max-height: 60px !important;
-            margin-bottom: 0.2rem !important;
-        }
-
-        h6 {
-            font-size: 7pt !important;
-            margin: 0.1rem 0 !important;
-            font-weight: bold !important;
-        }
-        /* Compact PDF preview */
-        .pdf-preview {
-            padding: 0.2rem !important;
-            font-size: 6.5pt !important;
-            margin-bottom: 0.1rem !important;
-        }
-
-        .pdf-icon {
-            font-size: 1.2rem !important;
-        }
-
-        .pdf-filename, .pdf-label {
-            font-size: 6.5pt !important;
-            line-height: 1.1 !important;
-        }
-        /* Compact CMO section */
-        #billAmountInput, #cmoNotesInput, #cmoReflectionField {
-            height: auto !important;
-            min-height: 15px !important;
-            font-size: 7pt !important;
-            padding: 0.1rem !important;
-        }
-        /* Compact textarea */
-        textarea {
-            min-height: 25px !important;
-            height: 25px !important;
-            font-size: 7pt !important;
-            padding: 0.1rem !important;
-            line-height: 1.1 !important;
-        }
-        /* Status badge */
-        .status-badge {
-            padding: 0.1rem 0.3rem !important;
-            font-size: 6.5pt !important;
-        }
-        /* Hide unnecessary whitespace */
-        br {
-            display: none !important;
-        }
-        /* Ensure checkboxes are visible */
-        .form-check-input {
-            -webkit-appearance: checkbox !important;
-            -moz-appearance: checkbox !important;
-            appearance: checkbox !important;
-            width: 10px !important;
-            height: 10px !important;
-            margin-right: 0.2rem !important;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-        }
-        /* Print colors exactly */
-        * {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-        }
-        /* Compact form floating */
-        .form-floating {
-            height: auto !important;
-            margin-bottom: 0.1rem !important;
-        }
-
-            .form-floating input {
-                height: auto !important;
-                padding: 0.2rem !important;
-                font-size: 7pt !important;
-            }
-
-            .form-floating label {
-                font-size: 6.5pt !important;
-                padding: 0.15rem !important;
-            }
-        /* Prevent page breaks in critical sections */
-        .receipt-header,
-        .receipt-section,
-        .info-row,
-        .row {
-            page-break-inside: avoid;
-        }
-        /* Ensure first page contains all content */
-        .receipt-container {
-            height: auto !important;
-            max-height: none !important;
-        }
-        /* Compact col spacing */
-        .col-md-6, .col-md-4, .col-md-3 {
-            padding-top: 0.1rem !important;
-            padding-bottom: 0.1rem !important;
-        }
-
-        .col-md-6 {
-            flex: 0 0 48% !important;
-            max-width: 48% !important;
-        }
-        /* Remove box shadows and backgrounds for print */
-        .pdf-preview, .form-control, .id-image {
-            box-shadow: none !important;
-            background-color: white !important;
-        }
-        /* Application ID styling */
-        .info-row:first-child .info-label {
-            font-weight: bold !important;
-            font-size: 7pt !important;
-        }
-        /* Compact all container elements */
-        .container, .container-fluid {
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        /* Even more compact spacing for specific elements */
-        p {
-            margin: 0 !important;
-            padding: 0 !important;
-            line-height: 1.1 !important;
-        }
-        /* Reduce spacing between columns */
-        [class*="col-"] {
-            padding-left: 0.15rem !important;
-            padding-right: 0.15rem !important;
-        }
+    .success-icon {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
     }
 </style>
 
@@ -842,13 +534,37 @@
     </div>
 </div>
 
+<!-- Success Modal -->
+<div id="successModal" class="success-modal">
+    <div class="success-modal-content">
+        <div class="success-icon">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <h4>Status Updated Successfully!</h4>
+        <p>Application marked as <strong>Claimed</strong></p>
+        <p>Redirecting to Admin page...</p>
+        <div class="mt-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="receipt-container">
-    <form asp-action="FuneralAssistanceApproveStatus" enctype="multipart/form-data" method="post" id="statusForm">
+    <form asp-action="FuneralAssistanceApproveStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
+        @Html.AntiForgeryToken()
+
+        <!-- Hidden fields for form submission -->
+        <input type="hidden" name="id" value="@ViewData["Id"]" />
         <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
-        <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
+        <input type="hidden" id="commentsInput" name="Comments" value="" />
+        <input type="hidden" id="forCMOPersonnelInput" name="ForCMOPERSONNEL" value="@ViewData["ForCMOPERSONNEL"]" />
+        <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
+
         <div class="receipt-body">
+            <!-- Patient Information -->
             <div class="receipt-section">
-                <br />
                 <h5 class="section-header">Patient Information</h5>
                 <div class="row">
                     <div class="col-md-6">
@@ -916,7 +632,69 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-
+            <!-- CMO Section -->
+            <div class="receipt-section">
+                <h5 class="section-header">CMO Details</h5>
+                <div class="mt-3">
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Bill Amount:</label>
+                            <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label">Supporting Documents Attached:</label>
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
+                                    <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input supporting-doc" type="checkbox" id="hospitalBill" name="SupportingDocs" value="Hospital Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
+                                    <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input supporting-doc" type="checkbox" id="medicalCertificate" name="SupportingDocs" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
+                                    <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input supporting-doc" type="checkbox" id="funeralBill" name="SupportingDocs" value="Funeral Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "")>
+                                    <label class="form-check-label" for="funeralBill">Funeral Bill</label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input supporting-doc" type="checkbox" id="deathCertificate" name="SupportingDocs" value="Death Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "")>
+                                    <label class="form-check-label" for="deathCertificate">Death Certificate</label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
+                                    <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Others:</label>
+                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating position-relative" style="height: 100px;">
+                                <input type="text" class="form-control border rounded p-3 h-100 d-flex align-items-center justify-content-center text-center" id="processedBy" value="@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")" readonly style="font-size: 1.2rem;">
+                                <label class="form-label text-center w-100 position-absolute bottom-0 start-0">Processed by:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CMO Reflection info:</label>
+                        <input type="text" class="form-control" id="cmoReflectionField" name="ForCMOPERSONNEL" placeholder="Auto-generated info..." value="@ViewData["ForCMOPERSONNEL"]">
+                    </div>
+                </div>
+            </div>
 
             <!-- Valid ID and Submitted Documents Section -->
             <div class="receipt-section">
@@ -1032,7 +810,6 @@
                 }
             </div>
 
-
             <!-- Status Section -->
             <div class="receipt-section">
                 <h5 class="section-header">Request Status</h5>
@@ -1045,17 +822,13 @@
                     </div>
                 </div>
 
-                <!-- Mark as Claimed Button -->
-                <div class="mt-3">
-                    <button type="button" class="btn btn-mark-claimed" onclick="markAsClaimed()">
-                        <i class="bi bi-check-circle me-2"></i>Mark as Claim
+                <!-- Action Buttons -->
+                <div class="status-buttons">
+                    <button type="button" class="btn btn-claimed" onclick="markAsClaimed()">
+                        <i class="bi bi-check-circle"></i> Mark as Claimed
                     </button>
                 </div>
             </div>
-        </div>
-
-        <div class="receipt-footer">
-            <button type="button" class="btn btn-receipt" onclick="window.print()">Print Receipt</button>
         </div>
     </form>
 </div>
@@ -1063,7 +836,6 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-
         // Configure PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -1226,9 +998,26 @@
 
         // Status Submission Functions
         function submitApprove() {
+            console.log('Submitting approve...');
+
+            // Set the status and comments
             document.getElementById('statusInput').value = 'Approve';
-            document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
-            document.getElementById('statusForm').submit();
+            document.getElementById('commentsInput').value = ''; // Empty comments for approval
+            document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
+            document.getElementById('processByInput').value = document.getElementById('processedBy').value;
+
+            // Show loading modal
+            showSuccessModal();
+
+            // Submit the form
+            setTimeout(() => {
+                console.log('Final form submission - Approve');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
+                console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+
+                document.getElementById('statusForm').submit();
+            }, 500);
         }
 
         function showCommentsModal() {
@@ -1252,9 +1041,52 @@
                 return;
             }
 
+            console.log('Submitting disapprove...');
+
             document.getElementById('statusInput').value = 'Disapprove';
             document.getElementById('commentsInput').value = comments;
-            document.getElementById('statusForm').submit();
+            document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
+            document.getElementById('processByInput').value = document.getElementById('processedBy').value;
+
+            // Show loading modal
+            showSuccessModal();
+
+            // Submit the form
+            setTimeout(() => {
+                console.log('Final form submission - Disapprove');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
+
+                document.getElementById('statusForm').submit();
+            }, 500);
+        }
+
+        // Mark as Claimed Function
+        function markAsClaimed() {
+            console.log('Marking as claimed...');
+
+            // Set the status to "Claimed"
+            document.getElementById('statusInput').value = 'Claimed';
+            document.getElementById('commentsInput').value = 'Application marked as claimed by user';
+            document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
+            document.getElementById('processByInput').value = document.getElementById('processedBy').value;
+
+            // Show success modal
+            showSuccessModal();
+
+            // Submit the form after a short delay to show the modal
+            setTimeout(() => {
+                console.log('Final form submission - Claimed');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
+                console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+
+                document.getElementById('statusForm').submit();
+            }, 2000); // Show modal for 2 seconds before redirecting
+        }
+
+        function showSuccessModal() {
+            document.getElementById('successModal').style.display = 'block';
         }
 
         // CMO Reflection Auto-generation
@@ -1292,13 +1124,30 @@
                     parts.push(`Others: ${cmoNotes.value.trim()}`);
                 }
                 reflectionField.value = parts.join(' , ');
+
+                // Update the hidden field as well
+                document.getElementById('forCMOPersonnelInput').value = reflectionField.value;
             }
 
             const billInput = document.getElementById('billAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
             if (billInput) billInput.addEventListener('input', updateReflection);
             if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+
+            // Initialize reflection field
             updateReflection();
+        });
+
+        // Enhanced form submission debugging
+        document.getElementById('statusForm').addEventListener('submit', function(e) {
+            console.log('=== FORM SUBMISSION DEBUG INFO ===');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+            console.log('Status:', document.getElementById('statusInput').value);
+            console.log('Comments:', document.getElementById('commentsInput').value);
+            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+            console.log('Processed By:', document.getElementById('processByInput').value);
+            console.log('==============================');
         });
 
         // Keyboard shortcuts and navigation
@@ -1338,6 +1187,7 @@
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
             const commentsModal = document.getElementById("commentsModal");
+            const successModal = document.getElementById("successModal");
 
             if (event.target == zoomModal) {
                 zoomModal.style.display = "none";
@@ -1347,6 +1197,9 @@
             }
             if (event.target == commentsModal) {
                 closeCommentsModal();
+            }
+            if (event.target == successModal) {
+                successModal.style.display = "none";
             }
         }
     </script>

@@ -122,39 +122,7 @@
     </div>
     <h5 class="section-header mt-4">Assistance Requested</h5>
     <div class="row g-3"><div class="col-md-12"><div class="form-value">@ViewData["Typeassistance"]</div></div></div>
-    <h5 class="section-header mt-4">Submitted Documents</h5>
-    <div class="row g-3">
-        <div class="col-md-6 mb-3">
-            @if (ViewData["DoctorPrescriptionBase64"] != null) {
-                <label class="form-label">Doctor Prescription</label>
-                @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"]) {
-                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
-                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                        <div class="pdf-info"><span class="pdf-filename">@ViewData["DoctorPrescription"]</span><span class="pdf-label">Click to view PDF</span></div>
-                    </div>
-                } else {
-                    <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="img-preview mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
-                }
-            }
-            @if (ViewData["MedicalCertificateBase64"] != null) {
-                <label class="form-label mt-3">Medical Certificate</label>
-                @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"]) {
-                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
-                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                        <div class="pdf-info"><span class="pdf-filename">@ViewData["MedicalCertificate"]</span><span class="pdf-label">Click to view PDF</span></div>
-                    </div>
-                } else {
-                    <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="img-preview" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
-                }
-            }
-        </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Valid ID - Front</label>
-            @if (ViewData["ValidfrontimageBase64"] != null) { <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="img-preview mb-3" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')"> } else { <p class="text-muted">No front ID image available</p> }
-            <label class="form-label mt-3">Valid ID - Back</label>
-            @if (ViewData["ValidBackimageBase64"] != null) { <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="img-preview" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')"> } else { <p class="text-muted">No back ID image available</p> }
-        </div>
-    </div>
+   
     <h5 class="section-header mt-4">Request Status</h5>
     <div class="row g-3">
         <div class="col-md-6"><label class="form-label">Current Status</label><div class="form-value"><span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">@ViewData["Status"]</span></div></div>
