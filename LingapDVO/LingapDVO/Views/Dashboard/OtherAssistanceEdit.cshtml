@@ -176,7 +176,7 @@
 
             <div class="col-md-3">
                 <label class="form-label">PhilHealth</label>
-                <select class="form-select" asp-for="PhilHealth">
+                <select class="form-select" asp-for="PhilHealth" id="philHealthSelect">
                     <option value="">Select option</option>
                     <option value="Without PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "Without PhilHealth")">Without PhilHealth</option>
                     <option value="With PhilHealth" selected="@(ViewData["PhilHealth"]?.ToString() == "With PhilHealth")">With PhilHealth</option>
@@ -188,10 +188,31 @@
         <div class="row g-3 mt-2">
             <div class="col-md-6">
                 <label class="form-label">PhilHealth Number (if applicable)</label>
-                <input asp-for="PhilHealthNo" type="text" class="form-control">
+                <input asp-for="PhilHealthNo" type="text" class="form-control" id="philHealthNo">
                 <span asp-validation-for="PhilHealthNo" class="text-danger"></span>
             </div>
         </div>
+
+        <script>
+            const select = document.getElementById("philHealthSelect");
+            const phNo = document.getElementById("philHealthNo");
+
+            function togglePhilHealthNo() {
+                if (select.value === "Without PhilHealth") {
+                    phNo.value = "";
+                    phNo.disabled = true;
+                } else {
+                    phNo.disabled = false;
+                }
+            }
+
+            // Execute on page load (for edit forms)
+            togglePhilHealthNo();
+
+            // Execute on change
+            select.addEventListener("change", togglePhilHealthNo);
+        </script>
+
     </div>
 
     <!-- Requestor Information -->
@@ -284,37 +305,44 @@
                 <div class="col-md-6">
                     <div class="form-check">
                         <input class="form-check-input assistance-type" type="checkbox"
-                               id="medicineAssistance" name="TypeassistanceOptions" value="Medicine Assistance" checked>
+                               id="medicineAssistance" name="TypeassistanceOptions" value="Medicine Assistance"
+                               @(checkedAssistance.ContainsKey("Medicine Assistance") ? "checked" : "")>
                         <label class="form-check-label" for="medicineAssistance">Medicine Assistance</label>
                     </div>
 
                     <div class="form-check">
                         <input class="form-check-input assistance-type" type="checkbox"
-                               id="laboratory" name="TypeassistanceOptions" value="Laboratory">
+                               id="laboratory" name="TypeassistanceOptions" value="Laboratory"
+                               @(checkedAssistance.ContainsKey("Laboratory") ? "checked" : "")>
                         <label class="form-check-label" for="laboratory">Laboratory</label>
                         <input type="text" class="form-control mt-1 assistance-spec"
                                name="LaboratoryDetails" placeholder="Specify"
-                               style="display: none;">
+                               style="@(checkedAssistance.ContainsKey("Laboratory") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Laboratory") ? checkedAssistance["Laboratory"] : "")">
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="form-check">
                         <input class="form-check-input assistance-type" type="checkbox"
-                               id="apparatus" name="TypeassistanceOptions" value="Apparatus">
+                               id="apparatus" name="TypeassistanceOptions" value="Apparatus"
+                               @(checkedAssistance.ContainsKey("Apparatus") ? "checked" : "")>
                         <label class="form-check-label" for="apparatus">Apparatus</label>
                         <input type="text" class="form-control mt-1 assistance-spec"
                                name="ApparatusDetails" placeholder="Specify"
-                               style="display: none;">
+                               style="@(checkedAssistance.ContainsKey("Apparatus") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Apparatus") ? checkedAssistance["Apparatus"] : "")">
                     </div>
 
                     <div class="form-check">
                         <input class="form-check-input assistance-type" type="checkbox"
-                               id="others" name="TypeassistanceOptions" value="Others">
+                               id="others" name="TypeassistanceOptions" value="Others"
+                               @(checkedAssistance.ContainsKey("Others") ? "checked" : "")>
                         <label class="form-check-label" for="others">Others</label>
                         <input type="text" class="form-control mt-1 assistance-spec"
                                name="OthersDetails" placeholder="Specify"
-                               style="display: none;">
+                               style="@(checkedAssistance.ContainsKey("Others") ? "" : "display: none;")"
+                               value="@(checkedAssistance.ContainsKey("Others") ? checkedAssistance["Others"] : "")">
                     </div>
                 </div>
             </div>
@@ -322,7 +350,10 @@
             <div class="form-group mt-4">
                 <label for="assistanceReflection" class="form-label">Reflection info:</label>
                 <input type="text" class="form-control" id="assistanceReflection"
-                       name="Typeassistance" value="Medicine Assistance" readonly>
+                       name="Typeassistance"
+                       value="@(Model?.Typeassistance ?? "")"
+                       placeholder="Auto-generated info..." readonly>
+                <span asp-validation-for="Typeassistance"></span>
             </div>
         </div>
     </div>
