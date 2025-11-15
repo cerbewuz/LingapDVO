@@ -224,14 +224,14 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Hospital Bill Assistance Update - LINGAP DVO";
+                    string subject = "Hospital Assistance Update - LINGAP DVO";
                     string body = $@"
                 Dear {firstName},
 
-                Your Hospital Bill Assistance application is now being processed.
+                Your Hospital Assistance application is now being processed.
 
                 APPLICATION DETAILS:
-                � Application Type: Hospital Bill Assistance
+                � Application Type: Hospital Assistance
                 � Status: Processing
                 � Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
@@ -242,7 +242,7 @@ namespace LingapDVO.Controllers
 
                 Sincerely,
                 {fromName}
-                LINGAP DVO Medical Assistance Program";
+                LINGAP DVO Other Assistance Program";
 
                     // Send the email safely
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -414,14 +414,14 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Medical and Laboratory Assistance Update - LINGAP DVO";
+                    string subject = "Other Assistance Update - LINGAP DVO";
                     string body = $@"
             Dear {firstName},
 
-            Your Medical and Laboratory Assistance application is now being processed.
+            Your Other Assistance application is now being processed.
 
             APPLICATION DETAILS:
-            • Application Type: Medical and Laboratory Assistance
+            • Application Type: Other Assistance
             • Status: Processing
             • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
@@ -432,7 +432,7 @@ namespace LingapDVO.Controllers
 
             Sincerely,
             {fromName}
-            LINGAP DVO Medical Assistance Program";
+            LINGAP DVO Other Assistance Program";
 
                     // Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -602,14 +602,14 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Funeral and Burial Assistance Update - LINGAP DVO";
+                    string subject = "Funeral Assistance Update - LINGAP DVO";
                     string body = $@"
             Dear {firstName},
 
-            Your Funeral and Burial Assistance application is now being processed.
+            Your Funeral Assistance application is now being processed.
 
             APPLICATION DETAILS:
-            • Application Type: Funeral and Burial Assistance
+            • Application Type: Funeral Assistance
             • Status: Processing
             • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
 
@@ -620,7 +620,7 @@ namespace LingapDVO.Controllers
 
             Sincerely,
             {fromName}
-            LINGAP DVO Funeral and Burial Assistance Program";
+            LINGAP DVO Funeral Assistance Program";
 
                     // ? Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -3522,14 +3522,14 @@ namespace LingapDVO.Controllers
 
                         if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approved - LINGAP DVO";
+                            subject = "Congratulations! Your Hospital Assistance Has Been Approved - LINGAP DVO";
                             body = $@"
                             Dear {firstName},
 
-                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVED.
+                            We are pleased to inform you that your Hospital Assistance application has been APPROVED.
 
                             APPLICATION DETAILS:
-                            • Application Type: Hospital Bill Assistance
+                            • Application Type: Hospital Assistance
                             • Application ID: {HospitalAssistance.Id}
                             • Status: Approve
                             • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
@@ -3545,20 +3545,20 @@ namespace LingapDVO.Controllers
 
                             Sincerely,
                             {fromName}
-                            LINGAP DVO Medical Assistance Program
+                            LINGAP DVO Other Assistance Program
 
                             Note: This is an automated email. Please do not reply to this message.";
                                                     }
                                                     else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
                                                     {
-                                                        subject = "Update on Your Hospital Bill Assistance Application - LINGAP DVO";
+                                                        subject = "Update on Your Hospital Assistance Application - LINGAP DVO";
                                                         body = $@"
                             Dear {firstName},
 
-                            After careful review, we regret to inform you that your Hospital Bill Assistance application has been DISAPPROVED.
+                            After careful review, we regret to inform you that your Hospital Assistance application has been DISAPPROVED.
 
                             APPLICATION DETAILS:
-                            • Application Type: Hospital Bill Assistance
+                            • Application Type: Hospital Assistance
                             • Application ID: {HospitalAssistance.Id}
                             • Status: Disapprove
                             • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
@@ -3573,7 +3573,7 @@ namespace LingapDVO.Controllers
 
                             Sincerely,
                             {fromName}
-                            LINGAP DVO Medical Assistance Program
+                            LINGAP DVO Other Assistance Program
 
                             Note: This is an automated email. Please do not reply to this message.";
                         }
@@ -3678,14 +3678,14 @@ namespace LingapDVO.Controllers
 
                         if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Medical Assistance Has Been Approve - LINGAP DVO";
+                            subject = "Congratulations! Your Other Assistance Has Been Approve - LINGAP DVO";
                             body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your Medical Assistance application has been APPROVED.
+                    We are pleased to inform you that your Other Assistance application has been APPROVED.
 
                     APPLICATION DETAILS:
-                    • Application Type: Medical Assistance
+                    • Application Type: Other Assistance
                     • Application ID: {medicallabform.Id}
                     • Status: Approve
                     • Date Approve: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
@@ -3701,20 +3701,20 @@ namespace LingapDVO.Controllers
 
                     Sincerely,
                     {fromName}
-                    LINGAP DVO Medical Assistance Program
+                    LINGAP DVO Other Assistance Program
 
                     Note: This is an automated email. Please do not reply to this message.";
                         }
                         else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Update on Your Medical Assistance Application - LINGAP DVO";
+                            subject = "Update on Your Other Assistance Application - LINGAP DVO";
                             body = $@"
                     Dear {firstName},
 
-                    After careful review, we regret to inform you that your Medical Assistance application has been DISAPPROVE.
+                    After careful review, we regret to inform you that your Other Assistance application has been DISAPPROVE.
 
                     APPLICATION DETAILS:
-                    • Application Type: Medical Assistance
+                    • Application Type: Other Assistance
                     • Application ID: {medicallabform.Id}
                     • Status: Disapprove
                     • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
@@ -3729,7 +3729,7 @@ namespace LingapDVO.Controllers
 
                     Sincerely,
                     {fromName}
-                    LINGAP DVO Medical Assistance Program
+                    LINGAP DVO Other Assistance Program
 
                     Note: This is an automated email. Please do not reply to this message.";
                         }
@@ -3973,14 +3973,14 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Hospital Bill Assistance Claimed - LINGAP DVO";
+                    string subject = "Hospital Assistance Claimed - LINGAP DVO";
                     string body = $@"
                         Dear {firstName},
 
-                        We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                        We are pleased to inform you that your Hospital Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
                         APPLICATION DETAILS:
-                        � Application Type: Hospital Bill Assistance
+                        � Application Type: Hospital Assistance
                         � Status: Claimed
                         � Processed By: {HospitalAssistanceDto.Processby ?? "LINGAP Personnel"}
                         � Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
@@ -3993,7 +3993,7 @@ namespace LingapDVO.Controllers
 
                         Sincerely,  
                         {fromName}  
-                        LINGAP DVO Medical Assistance Program
+                        LINGAP DVO Other Assistance Program
                         ";
 
                     // ? Send email
@@ -4069,14 +4069,14 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Medical and Laboratory Assistance Claimed - LINGAP DVO";
+                    string subject = "Other Assistance Claimed - LINGAP DVO";
                     string body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                    We are pleased to inform you that your Other Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
                     APPLICATION DETAILS:
-                    • Application Type: Medical and Laboratory Assistance
+                    • Application Type: Other Assistance
                     • Application ID: {otherAssistance.Id}
                     • Status: Claimed
                     • Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
@@ -4090,7 +4090,7 @@ namespace LingapDVO.Controllers
 
                     Sincerely,  
                     {fromName}  
-                    LINGAP DVO Medical Assistance Program
+                    LINGAP DVO Other Assistance Program
                     ";
 
                     // Send email
@@ -4186,7 +4186,7 @@ namespace LingapDVO.Controllers
 
                     Sincerely,  
                     {fromName}  
-                    LINGAP DVO Medical Assistance Program
+                    LINGAP DVO Other Assistance Program
                     ";
 
                     // Send email

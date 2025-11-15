@@ -423,6 +423,16 @@
 
         const config = statusConfig[status] || statusConfig['disconnected'];
         indicator.innerHTML = `<small class="${config.class}">${config.icon} ${config.text}</small>`;
+
+        // Show the indicator for non-connected states
+        if (status !== 'connected') {
+            indicator.style.display = 'block';
+        } else {
+            // Hide the indicator after 3 seconds when successfully connected
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 3000);
+        }
     }
 
     // Play notification sound

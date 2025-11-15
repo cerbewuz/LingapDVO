@@ -151,7 +151,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-accountverification",
-    pattern: "Accountverification",
+    pattern: "Verifyaccount",
     defaults: new { controller = "Login", action = "Accountverification" });
 
 app.MapControllerRoute(
@@ -187,7 +187,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-homepage",
-    pattern: "Homepage",
+    pattern: "Home",
     defaults: new { controller = "Dashboard", action = "Homepage" });
 
 app.MapControllerRoute(
@@ -196,14 +196,14 @@ app.MapControllerRoute(
     defaults: new { controller = "Dashboard", action = "Userprofile" });
 
 app.MapControllerRoute(
-    name: "route-uploads",
-    pattern: "Uploads",
-    defaults: new { controller = "Dashboard", action = "Uploads" });
+    name: "route-applicationtracking",
+    pattern: "Applicationtracking",
+    defaults: new { controller = "Dashboard", action = "Applicationtracking" });
 
 app.MapControllerRoute(
-    name: "route-maps",
-    pattern: "Maps",
-    defaults: new { controller = "Dashboard", action = "Maps" });
+    name: "route-nearby-offices",
+    pattern: "Nearbyoffices",
+    defaults: new { controller = "Dashboard", action = "Nearbyoffices" });
 
 app.MapControllerRoute(
     name: "route-listofpartners",
@@ -293,11 +293,16 @@ app.MapControllerRoute(
     defaults: new { controller = "Adminuser", action = "Analyticsdashboard" });
 
 app.MapControllerRoute(
+    name: "route-feedbackdashboard",
+    pattern: "Feedbacksreport",
+    defaults: new { controller = "Adminuser", action = "Feedbackanalytics" });
+
+app.MapControllerRoute(
     name: "route-priorities",
     pattern: "Priorities",
     defaults: new { controller = "Adminuser", action = "Priorities" });
 
-// Admin Hospital Bill Status Routes
+// Admin Hospital Status Routes
 app.MapControllerRoute(
     name: "route-admin-hospitalbill-pending",
     pattern: "HospitalAssistancePendingStatus/{id?}",

@@ -85,24 +85,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #4361ee;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
-            --processing: #9b59b6;
-            --lingap-red: #dc143c;
-            --dark: #1e1e2c;
-            --light: #f8f9fa;
-            --gray-200: #e9ecef;
-            --gray-500: #adb5bd;
-            --gray-600: #6c757d;
-            --gray-800: #343a40;
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --primary-light: #42a5f5;
+            --success: #43a047;
+            --danger: #e53935;
+            --warning: #fb8c00;
+            --info: #00acc1;
+            --processing: #7e57c2;
+            --dark: #1a237e;
+            --light: #f5f7fa;
+            --gray-200: #eceff1;
+            --gray-500: #90a4ae;
+            --gray-600: #607d8b;
+            --gray-800: #37474f;
+            --accent-blue: #4fc3f7;
+            --soft-blue: #e3f2fd;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: #f5f7fb;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: #ffffff;
             color: var(--gray-800);
             margin: 0;
             padding: 0;
@@ -121,7 +124,7 @@
         .main-content-with-sidebar {
             flex: 1;
             padding: clamp(0.75rem, 1.5rem, 2rem);
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: transparent;
             min-height: 100vh;
             margin-left: clamp(0px, calc((100vw - 768px) * 999), 260px);
             padding-top: clamp(4rem, calc((100vw - 768px) * 999), 0.75rem);
@@ -139,7 +142,8 @@
             background: white;
             border-radius: clamp(0.75rem, 1rem, 1.25rem);
             padding: clamp(1rem, 1.5rem, 2rem);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
             margin-bottom: clamp(1rem, 1.5rem, 2rem);
             display: flex;
             justify-content: space-between;
@@ -180,15 +184,16 @@
         .card-analytics {
             background: white;
             border-radius: clamp(0.75rem, 1rem, 1.25rem);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
             margin-bottom: clamp(1rem, 1.5rem, 2rem);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
             .card-analytics:hover {
                 transform: translateY(-5px);
-                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+                border-color: var(--primary-light);
             }
 
         .card-header-custom {
@@ -501,24 +506,26 @@
         }
 
         .stat-card.high-priority {
-            border-left: 4px solid #e74c3c;
-            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+            border-left: 5px solid var(--danger);
+            background: white;
+            box-shadow: 0 2px 8px rgba(229, 57, 53, 0.15);
         }
 
         .stat-card.high-priority .stat-icon {
-            background: rgba(231, 76, 60, 0.15);
-            color: #e74c3c;
+            background: rgba(229, 57, 53, 0.1);
+            color: var(--danger);
             animation: priorityPulse 2s ease-in-out infinite;
         }
 
         .stat-card.medium-priority {
-            border-left: 4px solid #f39c12;
-            background: linear-gradient(135deg, #fffbf5 0%, #ffffff 100%);
+            border-left: 5px solid var(--warning);
+            background: white;
+            box-shadow: 0 2px 8px rgba(251, 140, 0, 0.15);
         }
 
         .stat-card.medium-priority .stat-icon {
-            background: rgba(243, 156, 18, 0.15);
-            color: #f39c12;
+            background: rgba(251, 140, 0, 0.1);
+            color: var(--warning);
         }
 
         .stat-icon {
@@ -696,17 +703,17 @@
         let filteredData = null;
         let currentStatusFilter = 'all';
 
-        // Colors for different assistance types and statuses
+        // Colors for different assistance types and statuses - Modern Blue Palette
         const colors = {
-            primary: '#4361ee',
-            success: '#2ecc71',
-            danger: '#e74c3c',
-            warning: '#f39c12',
-            info: '#3498db',
-            processing: '#9b59b6',
-            hospital: '#4361ee',
-            medical: '#9b59b6',
-            funeral: '#e74c3c'
+            primary: '#1e88e5',
+            success: '#43a047',
+            danger: '#e53935',
+            warning: '#fb8c00',
+            info: '#00acc1',
+            processing: '#7e57c2',
+            hospital: '#1e88e5',
+            medical: '#7e57c2',
+            funeral: '#e53935'
         };
 
         // Initialize dashboard
@@ -1717,13 +1724,14 @@
         // Helper functions
         function generateAssistanceTypeColors(count) {
             const colorPalette = [
-                '#4361ee', '#3a0ca3', '#4cc9f0', '#f72585', '#7209b7',
-                '#3f37c9', '#560bad', '#b5179e', '#4895ef', '#480ca8',
-                '#f15bb5', '#00bbf9', '#00f5d4', '#00bbf9', '#fee440',
-                '#f96167', '#f9c74f', '#90be6d', '#43aa8b', '#577590',
-                '#4d908e', '#277da1', '#577590', '#43aa8b', '#90be6d',
-                '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
-                '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
+                '#1e88e5', '#1565c0', '#42a5f5', '#64b5f6', '#90caf9',
+                '#00acc1', '#0097a7', '#26c6da', '#4dd0e1', '#80deea',
+                '#7e57c2', '#673ab7', '#9575cd', '#b39ddb', '#d1c4e9',
+                '#43a047', '#388e3c', '#66bb6a', '#81c784', '#a5d6a7',
+                '#fb8c00', '#f57c00', '#ffa726', '#ffb74d', '#ffcc80',
+                '#e53935', '#d32f2f', '#ef5350', '#e57373', '#ef9a9a',
+                '#00897b', '#00796b', '#26a69a', '#4db6ac', '#80cbc4',
+                '#039be5', '#0288d1', '#29b6f6', '#4fc3f7', '#81d4fa'
             ];
 
             const generatedColors = [];

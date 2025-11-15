@@ -59,7 +59,7 @@ public class NotificationsController : Controller
                 var notificationId = $"hospital_{bill.Id}_{bill.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
 
-                var (title, message, type) = GetStatusNotificationDetails("Hospital Bill Assistance", bill.Status, bill.CreatedAt);
+                var (title, message, type) = GetStatusNotificationDetails("Hospital Assistance", bill.Status, bill.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -69,7 +69,7 @@ public class NotificationsController : Controller
                     isRead = isRead,
                     createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
-                    link = "/Uploads",
+                    link = "/Applicationtracking",
                     status = bill.Status
                 });
             }
@@ -80,7 +80,7 @@ public class NotificationsController : Controller
                 var notificationId = $"medical_{medical.Id}_{medical.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
 
-                var (title, message, type) = GetStatusNotificationDetails("Medical and Lab Assistance", medical.Status, medical.CreatedAt);
+                var (title, message, type) = GetStatusNotificationDetails("Other Assistance", medical.Status, medical.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -90,7 +90,7 @@ public class NotificationsController : Controller
                     isRead = isRead,
                     createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
-                    link = "/Uploads",
+                    link = "/Applicationtracking",
                     status = medical.Status
                 });
             }
@@ -101,7 +101,7 @@ public class NotificationsController : Controller
                 var notificationId = $"funeral_{funeral.Id}_{funeral.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
 
-                var (title, message, type) = GetStatusNotificationDetails("Funeral and Burial Assistance", funeral.Status, funeral.CreatedAt);
+                var (title, message, type) = GetStatusNotificationDetails("Funeral Assistance", funeral.Status, funeral.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -111,7 +111,7 @@ public class NotificationsController : Controller
                     isRead = isRead,
                     createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
-                    link = "/Uploads",
+                    link = "/Applicationtracking",
                     status = funeral.Status
                 });
             }

@@ -1399,7 +1399,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
 
     // Allowed ID types - STRICT VALIDATION
-    const ALLOWED_ID_TYPES = ['phil-id', 'driver-license', 'umid', 'sss-id'];
+    const ALLOWED_ID_TYPES = ['phil-id', 'driver-license', 'umid'];
 
     // ID type display element
     const idTypeDisplay = document.getElementById('id-type-display');
@@ -1518,7 +1518,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedValue = this.value;
 
         // Enable OCR for all supported ID types OR when empty (for auto-detection)
-        if (!selectedValue || selectedValue === 'phil-id' || selectedValue === 'driver-license' || selectedValue === 'umid' || selectedValue === 'sss-id') {
+        if (!selectedValue || selectedValue === 'phil-id' || selectedValue === 'driver-license' || selectedValue === 'umid') {
             ocrEnabled = true;
             if (uploadFront) uploadFront.classList.remove('disabled');
             if (uploadBack) uploadBack.classList.remove('disabled');
@@ -2206,11 +2206,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log('✗ STEP 1 FAILED: Individual components do not match');
 
-        // STEP 2: Full Name Comparison (Driver's License & SSS ID Priority)
-        const usesFullNameComparison = idType === 'driver-license' || idType === 'sss-id';
+        // STEP 2: Full Name Comparison (Driver's License Priority)
+        const usesFullNameComparison = idType === 'driver-license';
 
         if (usesFullNameComparison) {
-            console.log('\n[STEP 2] Full name comparison (Driver\'s License / SSS ID)...');
+            console.log('\n[STEP 2] Full name comparison (Driver\'s License)...');
 
             // Concatenate full names (accept different formats)
             // Format 1: "First Middle Last Suffix"
@@ -2576,188 +2576,184 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('checkboxtemplate', '0');
         formData.append('apikey', apiKey);
 
-        fetch(apiUrl, {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(result => {
-                clearInterval(progressInterval);
-                if (progress) progress.style.width = '100%';
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData
+            });
 
-                // Set status to complete
-                if (status) {
-                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600"></i>OCR processing complete';
-                }
+            const result = await response.json();
+            clearInterval(progressInterval);
+            if (progress) progress.style.width = '100%';
 
-                if (result.OCRExitCode !== 1 || !result.ParsedResults || result.ParsedResults.length === 0) {
-                    throw new Error(result.ErrorMessage || 'OCR processing failed');
-                }
+            // Set status to complete
+            if (status) {
+                status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600"></i>OCR processing complete';
+            }
 
-                const text = result.ParsedResults[0].ParsedText;
+            if (result.OCRExitCode !== 1 || !result.ParsedResults || result.ParsedResults.length === 0) {
+                throw new Error(result.ErrorMessage || 'OCR processing failed');
+            }
 
-                // Clean OCR text to remove noise
-                const cleanedText = cleanOCRText(text);
-                lastOCRText = cleanedText;
+            const text = result.ParsedResults[0].ParsedText;
 
-                // Log all extracted OCR text to console for debugging
-                console.log('========================================');
-                console.log('===  OCR EXTRACTION COMPLETE  ===');
-                console.log('========================================');
-                console.log('Raw OCR Text:');
-                console.log(text);
-                console.log('----------------------------------------');
-                console.log('Cleaned OCR Text:');
-                console.log(cleanedText);
-                console.log('========================================');
+            // Clean OCR text to remove noise
+            const cleanedText = cleanOCRText(text);
+            lastOCRText = cleanedText;
 
-                // === STEP 1: ID TYPE DETECTION ===
-                console.log('\n=== STEP 1: ID TYPE DETECTION ===');
-                const detectedIdType = detectIdType(cleanedText);
-                const selectedIdType = documentType.value;
+            // Log all extracted OCR text to console for debugging
+            console.log('========================================');
+            console.log('===  OCR EXTRACTION COMPLETE  ===');
+            console.log('========================================');
+            console.log('Raw OCR Text:');
+            console.log(text);
+            console.log('----------------------------------------');
+            console.log('Cleaned OCR Text:');
+            console.log(cleanedText);
+            console.log('========================================');
 
-                // Log detected ID type to console for debugging
-                console.log('ID Detection Result:', {
-                    detected: detectedIdType ? getIdTypeName(detectedIdType) : 'None',
-                    selected: selectedIdType ? getIdTypeName(selectedIdType) : 'None'
-                });
-                debugLog('ID-DETECTION', { detected: detectedIdType, selected: selectedIdType });
+            // === STEP 1: ID TYPE DETECTION ===
+            console.log('\n=== STEP 1: ID TYPE DETECTION ===');
+            const detectedIdType = detectIdType(cleanedText);
+            const selectedIdType = documentType.value;
 
-                // VALIDATION: Check if detected ID type is in allowed list
-                if (detectedIdType && !ALLOWED_ID_TYPES.includes(detectedIdType)) {
-                    console.error('✗ STEP 1 FAILED: Detected ID type not in allowed list:', detectedIdType);
-                    showInvalidIdTypeModal(getIdTypeName(detectedIdType));
-                    return;
-                }
+            // Log detected ID type to console for debugging
+            console.log('ID Detection Result:', {
+                detected: detectedIdType ? getIdTypeName(detectedIdType) : 'None',
+                selected: selectedIdType ? getIdTypeName(selectedIdType) : 'None'
+            });
+            debugLog('ID-DETECTION', { detected: detectedIdType, selected: selectedIdType });
 
-                // If no ID type selected yet, auto-select
-                if (!selectedIdType && detectedIdType) {
-                    documentType.value = detectedIdType;
-                    const detectionConfidence = 90;
-                    updateIDTypeDisplay(detectedIdType, detectionConfidence);
-                    status.innerHTML = `<i class="fas fa-check-circle mr-2"></i>Auto-detected: ${getIdTypeName(detectedIdType)}`;
-                }
+            // VALIDATION: Check if detected ID type is in allowed list
+            if (detectedIdType && !ALLOWED_ID_TYPES.includes(detectedIdType)) {
+                console.error('✗ STEP 1 FAILED: Detected ID type not in allowed list:', detectedIdType);
+                showInvalidIdTypeModal(getIdTypeName(detectedIdType));
+                return;
+            }
 
-                // Use detected type if selection is empty (auto-detection mode)
-                const idTypeToProcess = selectedIdType || detectedIdType;
+            // ALWAYS auto-set ID type when detected (override any previous selection)
+            if (detectedIdType) {
+                documentType.value = detectedIdType;
+                const detectionConfidence = 90;
+                updateIDTypeDisplay(detectedIdType, detectionConfidence);
+                status.innerHTML = `<i class="fas fa-check-circle mr-2"></i>Auto-detected: ${getIdTypeName(detectedIdType)}`;
+                console.log(`✓ ID Type auto-set to: ${getIdTypeName(detectedIdType)}`);
+            }
 
-                // Final check: If still no valid ID type, show error with detailed guidance
-                if (!idTypeToProcess || !ALLOWED_ID_TYPES.includes(idTypeToProcess)) {
-                    console.error('✗ STEP 1 FAILED: Unable to detect valid ID type');
-                    console.error('OCR Text Preview:', cleanedText.substring(0, 500));
+            // Use detected type (auto-detection mode)
+            const idTypeToProcess = detectedIdType || selectedIdType;
 
-                    let errorMessage = 'Unable to detect ID type from the uploaded image.\n\n';
-                    errorMessage += 'Please ensure:\n';
-                    errorMessage += '1. The image is clear and well-lit\n';
-                    errorMessage += '2. All text on the ID is readable\n';
-                    errorMessage += '3. The entire ID is visible in the image\n';
-                    errorMessage += '4. You are using one of these ACCEPTED IDs ONLY:\n';
-                    errorMessage += '   • Philippine National ID (PhilSys)\n';
-                    errorMessage += '   • Driver\'s License (LTO)\n';
-                    errorMessage += '   • UMID (Unified Multi-Purpose ID)\n';
-                    errorMessage += '   • SSS ID (Social Security System)\n\n';
-                    errorMessage += '   ❌ NOT ACCEPTED: PhilHealth, Senior Citizen, PWD, Postal ID, etc.\n\n';
-                    errorMessage += 'Tips:\n';
-                    errorMessage += '• Make sure the ID text is not blurry\n';
-                    errorMessage += '• Avoid shadows and glare\n';
-                    errorMessage += '• Try taking a new photo with better lighting';
+            // Final check: If still no valid ID type, show error with detailed guidance
+            if (!idTypeToProcess || !ALLOWED_ID_TYPES.includes(idTypeToProcess)) {
+                console.error('✗ STEP 1 FAILED: Unable to detect valid ID type');
+                console.error('OCR Text Preview:', cleanedText.substring(0, 500));
 
-                    showOCRErrorModal(errorMessage);
-                    return;
-                }
-
-                console.log('✓ STEP 1 PASSED: ID Type =', getIdTypeName(idTypeToProcess));
-                console.log('===================================\n');
-
-                // === STEP 1.5: VALIDATE ID SIDE (FRONT vs BACK) ===
-                console.log('\n=== STEP 1.5: ID SIDE VALIDATION ===');
-                const detectedSide = detectIDSide(cleanedText, idTypeToProcess);
-                console.log('Upload Area:', isBack ? 'BACK' : 'FRONT');
-                console.log('Detected Side:', detectedSide);
-
-                // Validate that the correct side is uploaded in the correct upload area
-                if (detectedSide !== 'unknown') {
-                    if (!isBack && detectedSide === 'back') {
-                        // User uploaded back ID in front ID upload area
-                        console.error('✗ STEP 1.5 FAILED: Back ID uploaded in Front ID area');
-                        showIDSideMismatchModal('front', 'back', idTypeToProcess);
-                        clearUploadArea(isBack);
-                        return;
-                    } else if (isBack && detectedSide === 'front') {
-                        // User uploaded front ID in back ID upload area
-                        console.error('✗ STEP 1.5 FAILED: Front ID uploaded in Back ID area');
-                        showIDSideMismatchModal('back', 'front', idTypeToProcess);
-                        clearUploadArea(isBack);
-                        return;
-                    }
-                }
-
-                console.log('✓ STEP 1.5 PASSED: ID Side is correct');
-                console.log('===================================\n');
-
-                // === STEP 2 & 3: Parse ID, Validate Name, Extract Data ===
-                if (idTypeToProcess === "driver-license") {
-                    if (!isBack) {
-                        parseDriverLicenseFront(cleanedText);
-                    }
-                } else if (idTypeToProcess === "phil-id") {
-                    if (isBack) {
-                        parsePhilSysBack(cleanedText);
-                    } else {
-                        parsePhilSysFront(cleanedText);
-                    }
-                } else if (idTypeToProcess === "umid") {
-                    if (!isBack) {
-                        parseUMIDFront(cleanedText);
-                    } else {
-                        parseUMIDBack(cleanedText);
-                    }
-                } else if (idTypeToProcess === "sss-id") {
-                    if (!isBack) {
-                        parseSSSFront(cleanedText);
-                    }
-                } else {
-                    console.error('✗ VALIDATION FAILED: Unknown ID type');
-                    showOCRErrorModal('Unable to detect ID type. Please ensure the image is clear and contains a valid Philippine ID.');
-                }
-
-            })
-            .catch(err => {
-                clearInterval(progressInterval);
-                progressBar.classList.add('hidden');
-
-                let errorMessage = 'Unable to process the ID image. ';
-
-                if (err.message.includes('network') || err.message.includes('fetch')) {
-                    errorMessage = 'Network error. Please check your internet connection and try again.';
-                    status.innerHTML = '<i class="fas fa-wifi mr-2"></i>Network error';
-                } else if (err.message.includes('rate') || err.message.includes('limit')) {
-                    errorMessage = 'API rate limit reached. Please wait a moment and try again.';
-                    status.innerHTML = '<i class="fas fa-stopwatch mr-2"></i>Rate limit reached';
-                } else if (err.message.includes('size') || err.message.includes('large')) {
-                    errorMessage = 'Image file is too large. Please use a smaller image (max 1MB).';
-                    status.innerHTML = '<i class="fas fa-file-image mr-2"></i>File too large';
-                } else if (err.message.includes('format')) {
-                    errorMessage = 'Invalid image format. Please use JPEG or PNG.';
-                    status.innerHTML = '<i class="fas fa-image mr-2"></i>Invalid format';
-                } else {
-                    status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Recognition failed';
-                    errorMessage = 'Unable to process the ID image. Please ensure:\n\n' +
-                        '1. Image is clear and well-lit\n' +
-                        '2. All text on the ID is readable\n' +
-                        '3. ID is fully visible in the frame\n' +
-                        '4. Image is not blurry or distorted\n\n' +
-                        'Error details: ' + err.message;
-                }
+                let errorMessage = 'Unable to detect ID type from the uploaded image.\n\n';
+                errorMessage += 'Please ensure:\n';
+                errorMessage += '1. The image is clear and well-lit\n';
+                errorMessage += '2. All text on the ID is readable\n';
+                errorMessage += '3. The entire ID is visible in the image\n';
+                errorMessage += '4. You are using one of these ACCEPTED IDs ONLY:\n';
+                errorMessage += '   • Philippine National ID (PhilSys)\n';
+                errorMessage += '   • Driver\'s License (LTO)\n';
+                errorMessage += '   • UMID (Unified Multi-Purpose ID)\n';
+                errorMessage += '   ❌ NOT ACCEPTED: PhilHealth, Senior Citizen, PWD, Postal ID, etc.\n\n';
+                errorMessage += 'Tips:\n';
+                errorMessage += '• Make sure the ID text is not blurry\n';
+                errorMessage += '• Avoid shadows and glare\n';
+                errorMessage += '• Try taking a new photo with better lighting';
 
                 showOCRErrorModal(errorMessage);
+                return;
+            }
 
-                debugLog('OCR-API-ERROR', {
-                    message: err.message,
-                    stack: err.stack,
-                    timestamp: new Date().toISOString()
-                });
+            console.log('✓ STEP 1 PASSED: ID Type =', getIdTypeName(idTypeToProcess));
+            console.log('===================================\n');
+
+            // === STEP 1.5: VALIDATE ID SIDE (FRONT vs BACK) ===
+            console.log('\n=== STEP 1.5: ID SIDE VALIDATION ===');
+            const detectedSide = detectIDSide(cleanedText, idTypeToProcess);
+            console.log('Upload Area:', isBack ? 'BACK' : 'FRONT');
+            console.log('Detected Side:', detectedSide);
+
+            // Validate that the correct side is uploaded in the correct upload area
+            if (detectedSide !== 'unknown') {
+                if (!isBack && detectedSide === 'back') {
+                    // User uploaded back ID in front ID upload area
+                    console.error('✗ STEP 1.5 FAILED: Back ID uploaded in Front ID area');
+                    showIDSideMismatchModal('front', 'back', idTypeToProcess);
+                    clearUploadArea(isBack);
+                    return;
+                } else if (isBack && detectedSide === 'front') {
+                    // User uploaded front ID in back ID upload area
+                    console.error('✗ STEP 1.5 FAILED: Front ID uploaded in Back ID area');
+                    showIDSideMismatchModal('back', 'front', idTypeToProcess);
+                    clearUploadArea(isBack);
+                    return;
+                }
+            }
+
+            console.log('✓ STEP 1.5 PASSED: ID Side is correct');
+            console.log('===================================\n');
+
+            // === STEP 2 & 3: Parse ID, Validate Name, Extract Data ===
+            if (idTypeToProcess === "driver-license") {
+                if (!isBack) {
+                    parseDriverLicenseFront(cleanedText);
+                }
+            } else if (idTypeToProcess === "phil-id") {
+                if (isBack) {
+                    parsePhilSysBack(cleanedText);
+                } else {
+                    parsePhilSysFront(cleanedText);
+                }
+            } else if (idTypeToProcess === "umid") {
+                if (!isBack) {
+                    parseUMIDFront(cleanedText);
+                } else {
+                    parseUMIDBack(cleanedText);
+                }
+            } else {
+                console.error('✗ VALIDATION FAILED: Unknown ID type');
+                showOCRErrorModal('Unable to detect ID type. Please ensure the image is clear and contains a valid Philippine ID.');
+            }
+
+        } catch (err) {
+            clearInterval(progressInterval);
+            progressBar.classList.add('hidden');
+
+            let errorMessage = 'Unable to process the ID image. ';
+
+            if (err.message.includes('network') || err.message.includes('fetch')) {
+                errorMessage = 'Network error. Please check your internet connection and try again.';
+                status.innerHTML = '<i class="fas fa-wifi mr-2"></i>Network error';
+            } else if (err.message.includes('rate') || err.message.includes('limit')) {
+                errorMessage = 'API rate limit reached. Please wait a moment and try again.';
+                status.innerHTML = '<i class="fas fa-stopwatch mr-2"></i>Rate limit reached';
+            } else if (err.message.includes('size') || err.message.includes('large')) {
+                errorMessage = 'Image file is too large. Please use a smaller image (max 1MB).';
+                status.innerHTML = '<i class="fas fa-file-image mr-2"></i>File too large';
+            } else if (err.message.includes('format')) {
+                errorMessage = 'Invalid image format. Please use JPEG or PNG.';
+                status.innerHTML = '<i class="fas fa-image mr-2"></i>Invalid format';
+            } else {
+                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Recognition failed';
+                errorMessage = 'Unable to process the ID image. Please ensure:\n\n' +
+                    '1. Image is clear and well-lit\n' +
+                    '2. All text on the ID is readable\n' +
+                    '3. ID is fully visible in the frame\n' +
+                    '4. Image is not blurry or distorted\n\n' +
+                    'Error details: ' + err.message;
+            }
+
+            showOCRErrorModal(errorMessage);
+
+            debugLog('OCR-API-ERROR', {
+                message: err.message,
+                stack: err.stack,
+                timestamp: new Date().toISOString()
             });
+        }
     }
 
     // Get friendly ID type name
@@ -2765,8 +2761,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const idTypeNames = {
             'driver-license': 'Driver\'s License',
             'phil-id': 'National ID',
-            'umid': 'UMID',
-            'sss-id': 'Social Security System'
+            'umid': 'UMID'
         };
         return idTypeNames[idType] || idType;
     }
@@ -2950,48 +2945,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 break;
 
-            case 'sss-id':
-                // SSS ID Front Indicators
-                const sssFrontIndicators = {
-                    'SSS NUMBER': 10,
-                    'SSS NO': 10,
-                    'SS NO': 9,
-                    'MEMBER': 7,
-                    'SOCIAL SECURITY': 9,
-                    'GIVEN NAME': 7,
-                    'SURNAME': 7,
-                    'DATE OF BIRTH': 8
-                };
-
-                // SSS ID Back Indicators
-                const sssBackIndicators = {
-                    'BENEFITS': 9,
-                    'CONTRIBUTION': 9,
-                    'EMPLOYER': 8,
-                    'SIGNATURE': 8,
-                    'CONTACT': 7
-                };
-
-                // Score front indicators
-                for (const [keyword, weight] of Object.entries(sssFrontIndicators)) {
-                    if (upperText.includes(keyword)) {
-                        frontScore += weight;
-                        detectedIndicators.front.push(keyword);
-                        console.log(`✓ Front indicator found: "${keyword}" (+${weight})`);
-                    }
-                }
-
-                // Score back indicators
-                for (const [keyword, weight] of Object.entries(sssBackIndicators)) {
-                    if (upperText.includes(keyword)) {
-                        backScore += weight;
-                        detectedIndicators.back.push(keyword);
-                        console.log(`✓ Back indicator found: "${keyword}" (+${weight})`);
-                    }
-                }
-
-                break;
-
             default:
                 console.log('❌ Unknown ID type for side detection');
                 return 'unknown';
@@ -3130,6 +3083,20 @@ document.addEventListener('DOMContentLoaded', function () {
         // Only National ID/PhilSys, Driver's License, and UMID are accepted
         // All other IDs must be explicitly rejected with clear error messages
 
+        // SSS ID detection - NOT ACCEPTED
+        if (upperText.includes('SOCIAL SECURITY SYSTEM') ||
+            upperText.includes('SSS MEMBER') ||
+            upperText.includes('SSS ID') ||
+            upperText.includes('S.S.S') ||
+            upperText.includes('SISTEMA NG SEGURIDAD SOSYAL') ||
+            upperText.includes('SEGURIDAD SOSYAL') ||
+            (upperText.includes('SSS') && !upperText.includes('GSIS') && !upperText.includes('UMID') &&
+                (upperText.includes('NUMBER') || upperText.includes('CARD') || upperText.includes('MEMBER') || upperText.includes('NUMERO')))) {
+            console.error('✗ REJECTED: SSS ID is not accepted');
+            showRejectedIdModal('SSS (Social Security System) ID');
+            return 'REJECTED';
+        }
+
         // PhilHealth ID detection
         if (upperText.includes('PHILHEALTH') ||
             upperText.includes('PHILIPPINE HEALTH') ||
@@ -3205,19 +3172,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // === METHOD 1: STRONG KEYWORD DETECTION (High confidence) ===
-        // SSS ID detection - ACCEPTED (English + Filipino variations)
-        if (upperText.includes('SOCIAL SECURITY SYSTEM') ||
-            upperText.includes('SSS MEMBER') ||
-            upperText.includes('SSS ID') ||
-            upperText.includes('S.S.S') ||
-            upperText.includes('SISTEMA NG SEGURIDAD SOSYAL') || // Filipino
-            upperText.includes('SEGURIDAD SOSYAL') || // Filipino
-            (upperText.includes('SSS') && !upperText.includes('GSIS') && !upperText.includes('UMID') &&
-                (upperText.includes('NUMBER') || upperText.includes('CARD') || upperText.includes('MEMBER') || upperText.includes('NUMERO')))) {
-            console.log('✓ SSS ID detected (Social Security System)');
-            return 'sss-id';
-        }
-
         // National ID / PhilSys - ACCEPTED (English + Filipino variations)
         if (upperText.includes('PHILSYS') ||
             upperText.includes('PHILIPPINE IDENTIFICATION SYSTEM') ||
@@ -3336,8 +3290,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'UMID CARD': 5,
             'UNIFIED MULTI': 5,
             // Medium weight (3 points)
-            'GSIS': 3,
-            'SSS': 1 // Low because SSS appears on both SSS ID and UMID
+            'GSIS': 3
         };
 
         let driverLicenseScore = 0;
@@ -6575,545 +6528,54 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // Parse SSS ID Front - COMPLETE NAME EXTRACTION
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // SSS ID EXTRACTION - SIMPLIFIED
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // IMPORTANT DATA TO EXTRACT:
-    // 1. Full name (Format: FIRSTNAME MIDDLENAME LASTNAME SUFFIX)
-    // 2. ID type name: "Social Security System"
-    // 3. SSS Number (Format: 00-0000000-0)
-    //
-    // SSS ID Characteristics:
-    // - NO explicit labels for name components
-    // - Full name appears on one line
-    // - Simple structure, no complex fields
-    // ═══════════════════════════════════════════════════════════════════════════════
-    function parseSSSFront(text) {
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-
-        console.log('\n╔═══════════════════════════════════════════════════════╗');
-        console.log('║           SSS ID EXTRACTION (SIMPLIFIED)             ║');
-        console.log('╚═══════════════════════════════════════════════════════╝');
-        console.log('Data to extract:');
-        console.log('  1. Full Name (First Middle Last Suffix)');
-        console.log('  2. ID Type: "Social Security System"');
-        console.log('  3. SSS Number');
-        console.log('');
-        console.log('Total Lines:', lines.length);
-        console.log('All Lines:');
-        lines.forEach((line, index) => {
-            console.log(`  ${index + 1}: "${line}"`);
-        });
-        console.log('═══════════════════════════════════════════════════════\n');
-
-        let extractedData = {
-            idNumber: "",
-            idType: "Social Security System", // Fixed ID type name
-            lastName: "",
-            firstName: "",
-            middleName: "",
-            suffix: "",
-            confidence: {}
-        };
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // STEP 1: Extract SSS Number (REQUIRED)
-        // ═══════════════════════════════════════════════════════════════════════
-        console.log('[STEP 1] EXTRACTING SSS NUMBER');
-        console.log('Format: 00-0000000-0 (2 digits, 7 digits, 1 digit)');
-
-        for (const line of lines) {
-            // Pattern 1: 00-0000000-0 (with dashes)
-            const sssPattern = /\b\d{2}-\d{7}-\d{1}\b/;
-            let match = line.match(sssPattern);
-
-            if (match) {
-                extractedData.idNumber = match[0];
-                console.log(`✓ SSS Number found: "${extractedData.idNumber}"`);
-                extractedData.confidence.idNumber = 95;
-                break;
-            }
-
-            // Pattern 2: 0000000000 (10 consecutive digits)
-            const sssPattern2 = /\b\d{10}\b/;
-            match = line.match(sssPattern2);
-
-            if (match) {
-                // Format it: 00-0000000-0
-                const num = match[0];
-                extractedData.idNumber = `${num.substring(0, 2)}-${num.substring(2, 9)}-${num.substring(9)}`;
-                console.log(`✓ SSS Number found and formatted: "${extractedData.idNumber}"`);
-                extractedData.confidence.idNumber = 90;
-                break;
-            }
-        }
-
-        if (extractedData.idNumber) {
-            console.log(`✓ SSS Number: "${extractedData.idNumber}"`);
-        } else {
-            console.log('✗ SSS Number not found');
-        }
-        console.log('');
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // STEP 2: Extract Full Name (REQUIRED)
-        // ═══════════════════════════════════════════════════════════════════════
-        console.log('[STEP 2] EXTRACTING FULL NAME');
-        console.log('Format: FIRSTNAME MIDDLENAME LASTNAME SUFFIX');
-        console.log('Strategy: Find complete name line, parse structure\n');
-
-        const nameResult = extractSSSFullName(lines);
-        if (nameResult) {
-            extractedData.firstName = nameResult.firstName;
-            extractedData.middleName = nameResult.middleName;
-            extractedData.lastName = nameResult.lastName;
-            extractedData.suffix = nameResult.suffix;
-
-            console.log('✓ NAME EXTRACTION COMPLETE:');
-            console.log(`  First Name : "${extractedData.firstName}"`);
-            console.log(`  Middle Name: "${extractedData.middleName}"`);
-            console.log(`  Last Name  : "${extractedData.lastName}"`);
-            console.log(`  Suffix     : "${extractedData.suffix}"`);
-
-            extractedData.confidence.firstName = 85;
-            extractedData.confidence.lastName = 85;
-            if (extractedData.middleName) extractedData.confidence.middleName = 80;
-        } else {
-            console.log('✗ Name extraction failed');
-        }
-        console.log('');
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // STEP 3: ID Type Confirmation
-        // ═══════════════════════════════════════════════════════════════════════
-        console.log('[STEP 3] ID TYPE CONFIRMATION');
-        console.log(`✓ ID Type: "${extractedData.idType}"`);
-        console.log('');
-
-        // Calculate overall confidence
-        const confidenceValues = Object.values(extractedData.confidence).filter(v => v > 0);
-        const overallConfidence = confidenceValues.length > 0
-            ? Math.round(confidenceValues.reduce((a, b) => a + b, 0) / confidenceValues.length)
-            : 70; // Default confidence for SSS
-
-        // Log extracted data summary
-        console.log('═══════════════════════════════════════════════════════');
-        console.log('       SSS ID EXTRACTION SUMMARY');
-        console.log('═══════════════════════════════════════════════════════');
-        console.log(`ID Type      : ${extractedData.idType}`);
-        console.log(`SSS Number   : ${extractedData.idNumber || 'Not found'}`);
-        console.log(`Full Name    : ${extractedData.firstName} ${extractedData.middleName} ${extractedData.lastName} ${extractedData.suffix}`.trim());
-        console.log(`Confidence   : ${overallConfidence}%`);
-        console.log('═══════════════════════════════════════════════════════\n');
-
-        // Validate extracted names
-        const dataValidation = validateExtractedNames(extractedData);
-        if (!dataValidation.valid) {
-            console.error('✗ EXTRACTION FAILED: Invalid name data');
-            console.error('Issues:', dataValidation.issues);
-
-            if (resultBox) {
-                resultBox.classList.remove('hidden');
-                resultBox.className = "p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700";
-                resultBox.innerHTML = `
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    <strong>Extraction Error:</strong> Cannot read SSS ID data properly.
-                    <br><small>Issues detected:</small>
-                    <ul class="mt-2 ml-4 list-disc">
-                        ${dataValidation.issues.map(issue => `<li>${issue}</li>`).join('')}
-                    </ul>
-                    <small class="block mt-2">Please ensure the SSS ID image is clear and well-lit.</small>
-                `;
-            }
-            return;
-        }
-
-        // Name matching validation
-        console.log('=== SSS ID NAME MATCHING VALIDATION ===');
-        const nameValidation = validateNameMatch(
-            extractedData.firstName,
-            extractedData.middleName,
-            extractedData.lastName,
-            extractedData.suffix,
-            'sss-id' // Enable two-step validation with full name fallback
-        );
-
-        if (!nameValidation.matches) {
-            console.error('✗ NAME MISMATCH:', nameValidation.reason);
-            showNameMismatchModal(
-                nameValidation.details ? nameValidation.details.extractedName : `${extractedData.lastName}, ${extractedData.firstName} ${extractedData.middleName} ${extractedData.suffix}`.trim(),
-                nameValidation.details ? nameValidation.details.registeredName : `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName} ${registeredSuffix || ''}`.trim(),
-                nameValidation.details || {}
-            );
-            return;
-        }
-
-        console.log('✓ NAME MATCH VALIDATED');
-
-        // Populate form fields
-        updateFormFieldsAdvanced(
-            extractedData.idNumber,
-            extractedData.firstName,
-            extractedData.middleName,
-            extractedData.lastName,
-            "",  // birthdate (not on SSS front)
-            "",  // sex (not on SSS front)
-            "",  // civil status (not on SSS front)
-            extractedData.suffix,
-            "",  // address (not on SSS front)
-            text,
-            'sss-id',
-            overallConfidence
-        );
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // Extract full name from SSS ID - SIMPLIFIED
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // IMPORTANT: Full name is located BELOW "Social Security System" text
-    // Format: FIRSTNAME MIDDLENAME LASTNAME SUFFIX (no labels, all on one line)
-    // ═══════════════════════════════════════════════════════════════════════════════
-    function extractSSSFullName(lines) {
-        console.log('=== SSS Full Name Extraction ===');
-        console.log('Strategy: Find name BELOW "Social Security System" label\n');
-
-        // STEP 1: Find "Social Security System" label first
-        let sssLabelLineIndex = -1;
-        for (let i = 0; i < lines.length; i++) {
-            const upperLine = lines[i].toUpperCase();
-            if (upperLine.includes('SOCIAL SECURITY') || upperLine.includes('SSS')) {
-                sssLabelLineIndex = i;
-                console.log(`  ✓ Found SSS label at Line ${i + 1}: "${lines[i]}"`);
-                break;
-            }
-        }
-
-        // STEP 2: Extract name from lines BELOW the SSS label
-        const startIndex = sssLabelLineIndex >= 0 ? sssLabelLineIndex + 1 : 0;
-        console.log(`  → Searching for name starting from Line ${startIndex + 1}\n`);
-
-        for (let i = startIndex; i < lines.length; i++) {
-            const line = lines[i].trim();
-            const upperLine = line.toUpperCase();
-
-            // Skip label lines
-            if (isExtractedTextALabel(line)) {
-                console.log(`  Line ${i + 1}: "${line}" → LABEL, skipping`);
-                continue;
-            }
-
-            // Skip lines with SSS number
-            if (/\d{2}-\d{7}-\d{1}/.test(line) || /\d{10}/.test(line)) {
-                console.log(`  Line ${i + 1}: "${line}" → SSS number, skipping`);
-                continue;
-            }
-
-            // Must have at least 2 words
-            const words = line.split(/\s+/).filter(w => w.length > 1);
-            if (words.length < 2) {
-                console.log(`  Line ${i + 1}: "${line}" → Too short, skipping`);
-                continue;
-            }
-
-            // Must contain name-like characters
-            if (!/[A-Z]{2,}/.test(upperLine)) {
-                console.log(`  Line ${i + 1}: "${line}" → No valid name characters, skipping`);
-                continue;
-            }
-
-            // This looks like the name line
-            console.log(`  ✓ Name found at Line ${i + 1}: "${line}"`);
-
-            // Parse: FIRSTNAME MIDDLENAME LASTNAME SUFFIX
-            const parsed = parseSSSNameStructure(words);
-
-            if (parsed && parsed.lastName) {
-                console.log(`    First: "${parsed.firstName}", Middle: "${parsed.middleName}", Last: "${parsed.lastName}", Suffix: "${parsed.suffix}"`);
-                return parsed;
-            }
-        }
-
-        console.log('✗ No valid name line found');
-        return null;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // Parse SSS Name Structure
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // SSS ID NAME FORMAT: "First name, Middle name, Last name, Suffix"
-    //
-    // IMPORTANT CHARACTERISTICS:
-    // - NO explicit labels/indicators for name components
-    // - All components appear on ONE LINE (space-separated)
-    // - Located BELOW "Social Security System" label
-    //
-    // Format examples:
-    // • "JUAN MIGUEL SANTOS" → First: JUAN, Middle: MIGUEL, Last: SANTOS
-    // • "JUAN MIGUEL DELA CRUZ JR" → First: JUAN, Middle: MIGUEL, Last: DELA CRUZ, Suffix: JR
-    // • "MARIA CLARA JOSE SANTOS" → First: MARIA CLARA (compound), Middle: JOSE, Last: SANTOS
-    //
-    // Components to extract:
-    // 1. First name (may be compound like "MARIA CLARA")
-    // 2. Middle name (single word or initial)
-    // 3. Last name (may be compound like "DELA CRUZ", "SAN JOSE")
-    // 4. Suffix (OPTIONAL - JR, SR, II, III, IV, V - no value if not present)
-    // ═══════════════════════════════════════════════════════════════════════════════
-    function parseSSSNameStructure(words) {
-        if (!words || words.length < 2) {
-            console.log('✗ Insufficient words for SSS name parsing (need at least 2)');
-            return null;
-        }
-
-        console.log('\n═══════════════════════════════════════════════════════');
-        console.log('       PARSING SSS NAME STRUCTURE');
-        console.log('═══════════════════════════════════════════════════════');
-        console.log('Input words:', words);
-        console.log('Total words:', words.length);
-        console.log('Format: FIRSTNAME MIDDLENAME LASTNAME SUFFIX');
-        console.log('');
-
-        let firstName = "", middleName = "", lastName = "", suffix = "";
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // STEP 1: Check for suffix at the end (OPTIONAL)
-        // ═══════════════════════════════════════════════════════════════════════
-        console.log('[STEP 1] Checking for suffix...');
-        const lastWord = words[words.length - 1].toUpperCase().replace(/\./g, '');
-        const suffixPattern = /^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i;
-
-        let workingWords = [...words];
-        if (suffixPattern.test(lastWord)) {
-            suffix = lastWord;
-            // Normalize suffix
-            if (suffix === 'JUNIOR') suffix = 'JR';
-            if (suffix === 'SENIOR') suffix = 'SR';
-            workingWords = words.slice(0, -1);
-            console.log(`✓ Suffix detected: "${suffix}"`);
-            console.log(`  Remaining words after removing suffix: ${workingWords.length}`);
-        } else {
-            console.log(`  No suffix detected (last word: "${lastWord}")`);
-        }
-        console.log('');
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // STEP 2: Parse name components (FIRSTNAME MIDDLENAME LASTNAME)
-        // ═══════════════════════════════════════════════════════════════════════
-        console.log('[STEP 2] Parsing name components...');
-        console.log(`Words to parse: ${workingWords.length} → ${workingWords.join(' ')}`);
-        console.log('');
-
-        if (workingWords.length === 3) {
-            // ═══════════════════════════════════════════════════════════════════
-            // CASE 1: Exactly 3 words → FIRSTNAME MIDDLENAME LASTNAME
-            // ═══════════════════════════════════════════════════════════════════
-            // Example: "JUAN MIGUEL SANTOS"
-            // → First: JUAN, Middle: MIGUEL, Last: SANTOS
-            firstName = workingWords[0];
-            middleName = workingWords[1];
-            lastName = workingWords[2];
-            console.log('→ CASE 1: Standard 3-word format');
-            console.log(`  First Name  : "${firstName}"`);
-            console.log(`  Middle Name : "${middleName}"`);
-            console.log(`  Last Name   : "${lastName}"`);
-        } else if (workingWords.length === 4) {
-            // ═══════════════════════════════════════════════════════════════════
-            // CASE 2: 4 words → Could be compound first OR compound last
-            // ═══════════════════════════════════════════════════════════════════
-            // Priority 1: Check for compound LAST name (more common in Philippines)
-            // Priority 2: Assume compound FIRST name if no compound last detected
-
-            const last2Words = workingWords.slice(-2);
-            if (isCompoundName(last2Words)) {
-                // Compound last name: FIRSTNAME MIDDLENAME DELA CRUZ
-                // Example: "JUAN MIGUEL DELA CRUZ"
-                // → First: JUAN, Middle: MIGUEL, Last: DELA CRUZ
-                firstName = workingWords[0];
-                middleName = workingWords[1];
-                lastName = last2Words.join(' ');
-                console.log('→ CASE 2A: Compound last name (2 words)');
-                console.log(`  First Name  : "${firstName}"`);
-                console.log(`  Middle Name : "${middleName}"`);
-                console.log(`  Last Name   : "${lastName}" (compound)`);
-            } else {
-                // Compound first name: MARIA CLARA MIDDLENAME LASTNAME
-                // Example: "MARIA CLARA JOSE SANTOS"
-                // → First: MARIA CLARA, Middle: JOSE, Last: SANTOS
-                firstName = workingWords.slice(0, 2).join(' ');
-                middleName = workingWords[2];
-                lastName = workingWords[3];
-                console.log('→ CASE 2B: Compound first name (2 words)');
-                console.log(`  First Name  : "${firstName}" (compound)`);
-                console.log(`  Middle Name : "${middleName}"`);
-                console.log(`  Last Name   : "${lastName}"`);
-            }
-        } else if (workingWords.length >= 5) {
-            // ═══════════════════════════════════════════════════════════════════
-            // CASE 3: 5+ words → Complex cases with compound names
-            // ═══════════════════════════════════════════════════════════════════
-            // Could be:
-            // - Compound first + compound last
-            // - Compound first + simple last
-            // - Simple first + compound last
-
-            const last2Words = workingWords.slice(-2);
-            const last3Words = workingWords.slice(-3);
-
-            if (isCompoundName(last3Words)) {
-                // 3-word compound last name (e.g., "FERNANDEZ DE LEON")
-                lastName = last3Words.join(' ');
-                const remaining = workingWords.slice(0, -3);
-                if (remaining.length >= 2) {
-                    middleName = remaining[remaining.length - 1];
-                    firstName = remaining.slice(0, -1).join(' ');
-                } else {
-                    firstName = remaining.join(' ');
-                    middleName = "";
-                }
-                console.log('→ CASE 3A: 3-word compound last name');
-                console.log(`  First Name  : "${firstName}"`);
-                console.log(`  Middle Name : "${middleName}"`);
-                console.log(`  Last Name   : "${lastName}" (3-word compound)`);
-            } else if (isCompoundName(last2Words)) {
-                // 2-word compound last name (e.g., "DELA CRUZ")
-                lastName = last2Words.join(' ');
-                const remaining = workingWords.slice(0, -2);
-                if (remaining.length >= 2) {
-                    middleName = remaining[remaining.length - 1];
-                    firstName = remaining.slice(0, -1).join(' ');
-                } else {
-                    firstName = remaining.join(' ');
-                    middleName = "";
-                }
-                console.log('→ CASE 3B: 2-word compound last name');
-                console.log(`  First Name  : "${firstName}" ${remaining.length > 2 ? '(compound)' : ''}`);
-                console.log(`  Middle Name : "${middleName}"`);
-                console.log(`  Last Name   : "${lastName}" (2-word compound)`);
-            } else {
-                // No compound last name - assume simple last name
-                // Middle name is second-to-last, first name is everything before
-                lastName = workingWords[workingWords.length - 1];
-                const remaining = workingWords.slice(0, -1);
-                if (remaining.length >= 2) {
-                    middleName = remaining[remaining.length - 1];
-                    firstName = remaining.slice(0, -1).join(' ');
-                } else {
-                    firstName = remaining.join(' ');
-                    middleName = "";
-                }
-                console.log('→ CASE 3C: Standard parsing (no compound last)');
-                console.log(`  First Name  : "${firstName}" (compound)`);
-                console.log(`  Middle Name : "${middleName}"`);
-                console.log(`  Last Name   : "${lastName}"`);
-            }
-        } else if (workingWords.length === 2) {
-            // ═══════════════════════════════════════════════════════════════════
-            // CASE 4: Only 2 words → FIRSTNAME LASTNAME (NO middle name)
-            // ═══════════════════════════════════════════════════════════════════
-            firstName = workingWords[0];
-            lastName = workingWords[1];
-            middleName = "";
-            console.log('→ CASE 4: Only 2 words (NO middle name)');
-            console.log(`  First Name  : "${firstName}"`);
-            console.log(`  Middle Name : (none)`);
-            console.log(`  Last Name   : "${lastName}"`);
-        } else {
-            console.log('✗ Insufficient words for name parsing (need at least 2)');
-            return null;
-        }
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // STEP 3: Clean and validate extracted names
-        // ═══════════════════════════════════════════════════════════════════════
-        console.log('');
-        console.log('[STEP 3] Cleaning extracted names...');
-        firstName = cleanName(firstName);
-        middleName = cleanName(middleName);
-        lastName = cleanName(lastName);
-
-        console.log('');
-        console.log('═══════════════════════════════════════════════════════');
-        console.log('       SSS NAME PARSING COMPLETE');
-        console.log('═══════════════════════════════════════════════════════');
-        console.log(`✓ First Name  : "${firstName}"`);
-        console.log(`✓ Middle Name : "${middleName}"`);
-        console.log(`✓ Last Name   : "${lastName}"`);
-        console.log(`✓ Suffix      : "${suffix}"`);
-        console.log('═══════════════════════════════════════════════════════');
-
-        return { firstName, middleName, lastName, suffix };
-    }
-
     // Check if city is Davao City
-    // ACCEPTS: "Davao", "Davao City", "City of Davao" (any case), and province names in uppercase
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ACCEPTS: "Davao", "Davao City", "City of Davao" (any case)
     // REJECTS: Other cities/municipalities from Davao provinces (Digos, Tagum, Panabo, Mati, etc.)
     function checkIfDavaoCity(city) {
-        if (!city || city === "Not detected") {
-            console.log('❌ checkIfDavaoCity: No city provided or not detected');
-            return false;
-        }
+        if (!city) return false;
 
-        const normalizedCity = city.toUpperCase().trim();
-        console.log(`🔍 checkIfDavaoCity: Checking "${normalizedCity}"`);
+        const upperCity = city.toUpperCase().trim();
 
-        // STEP 1: Check for OTHER CITIES/MUNICIPALITIES from Davao provinces (REJECT these)
-        // These are NOT Davao City, they're separate cities in the provinces
-        const rejectionCities = [
-            // Davao del Sur cities/municipalities
-            'DIGOS', 'DIGOS CITY', 'BANSALAN', 'HAGONOY', 'KIBLAWAN', 'MAGSAYSAY',
-            'MALALAG', 'MATANAO', 'PADADA', 'SANTA CRUZ', 'SULOP',
+        console.log('🔍 Checking if city is Davao City...');
+        console.log(`   Input: "${city}"`);
+        console.log(`   Normalized: "${upperCity}"`);
 
-            // Davao del Norte cities/municipalities
-            'TAGUM', 'TAGUM CITY', 'PANABO', 'PANABO CITY', 'SAMAL', 'ISLAND GARDEN CITY OF SAMAL',
-            'ASUNCION', 'BRAULIO', 'CARMEN', 'KAPALONG', 'NEW CORELLA', 'SAN ISIDRO',
-            'SANTO TOMAS', 'TALAINGOD',
-
-            // Davao Oriental cities/municipalities
-            'MATI', 'MATI CITY', 'BAGANGA', 'BANAYBANAY', 'BOSTON', 'CARAGA', 'CATEEL',
-            'GOVERNOR GENEROSO', 'LUPON', 'MANAY', 'TARRAGONA',
-
-            // Davao Occidental cities/municipalities
-            'MALITA', 'DON MARCELINO', 'JOSE ABAD SANTOS', 'SANTA MARIA', 'SARANGANI'
-        ];
-
-        for (const rejectionCity of rejectionCities) {
-            if (normalizedCity.includes(rejectionCity)) {
-                console.log(`❌ REJECTED: This is "${rejectionCity}", not Davao City`);
-                console.log(`   "${rejectionCity}" is a separate city/municipality in a Davao province`);
-                console.log(`   Only residents of Davao City proper are accepted`);
-                return false;
-            }
-        }
-
-        // STEP 2: Check for ACCEPTED Davao City patterns
-        // Includes: Davao, Davao City, City of Davao (any case), and province names in uppercase
-        const acceptedPatterns = [
+        // Accept variations of "Davao City"
+        const davaoCityVariations = [
+            'DAVAO',
             'DAVAO CITY',
             'CITY OF DAVAO',
-            'DVO CITY',
-            'DAVAO',  // Accept "Davao" as it refers to Davao City
-            // Also accept province names in uppercase (they may contain Davao City addresses)
-            'DAVAO DEL SUR',
-            'DAVAO DEL NORTE',
-            'DAVAO ORIENTAL',
-            'DAVAO OCCIDENTAL',
-            'DAVAO DE ORO'
+            'DAVAO CITY, PHILIPPINES',
+            'DAVAO CITY PHILIPPINES'
         ];
 
-        for (const pattern of acceptedPatterns) {
-            if (normalizedCity.includes(pattern)) {
-                console.log(`✅ ACCEPTED: City matches "${pattern}"`);
-                console.log(`   This is Davao City - verification can proceed`);
-                console.log(`   (Province names in uppercase are accepted)`);
+        // Check if it matches any Davao City variation
+        for (const variation of davaoCityVariations) {
+            if (upperCity === variation || upperCity.includes(variation)) {
+                console.log(`   ✓ Match found: "${variation}"`);
+                console.log('   ✓ Result: IS DAVAO CITY');
                 return true;
             }
         }
 
-        // If we reach here, city doesn't match any accepted pattern
-        console.log(`❌ REJECTED: Does not match Davao City patterns`);
-        console.log(`   Detected: "${normalizedCity}"`);
-        console.log(`   Accepted: "Davao", "Davao City", "City of Davao", "DAVAO DEL SUR", etc.`);
+        // Reject other Davao province cities/municipalities
+        const otherDavaoCities = [
+            'DIGOS', 'TAGUM', 'PANABO', 'MATI', 'SAMAL',
+            'ISLAND GARDEN CITY OF SAMAL', 'IGACOS',
+            'SAN PEDRO', 'SANTA CRUZ', 'MALITA', 'BANSALAN'
+        ];
 
+        for (const otherCity of otherDavaoCities) {
+            if (upperCity.includes(otherCity)) {
+                console.log(`   ✗ Rejected: Found "${otherCity}" (not Davao City)`);
+                console.log('   ✗ Result: NOT DAVAO CITY');
+                return false;
+            }
+        }
+
+        console.log('   ✗ No match found');
+        console.log('   ✗ Result: NOT DAVAO CITY');
         return false;
     }
 
@@ -7125,7 +6587,6 @@ document.addEventListener('DOMContentLoaded', function () {
             'driver-license': 'Driver\'s License',
             'national-id': 'National ID',
             'phil-id': 'National ID',
-            'sss-id': 'SSS ID',
             'umid': 'UMID'
         };
 
@@ -8295,7 +7756,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <li><strong>Philippine National ID (PhilSys)</strong></li>
                                 <li><strong>Driver's License (LTO)</strong></li>
                                 <li><strong>UMID (Unified Multi-Purpose ID)</strong></li>
-                                <li><strong>SSS ID (Social Security System)</strong></li>
                             </ul>
                         </div>
 

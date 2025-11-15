@@ -2167,9 +2167,9 @@ namespace LingapDVO.Controllers
                             string successSmsMessage = $"Congratulations {verifyaccount.Firstname}!\n\n" +
                                                        $"Your LingapDvo Online account has been successfully verified!\n\n" +
                                                        $"You can now:\n" +
-                                                       $"1.) Apply for Hospital Bill Assistance\n" +
-                                                       $"2.) Apply for Funeral/Burial Assistance\n" +
-                                                       $"3.) Apply for Other Accepted Assistance\n\n" +
+                                                       $"1.) Apply for Hospital Assistance\n" +
+                                                       $"2.) Apply for Funeral Assistance\n" +
+                                                       $"3.) Apply for Other Assistance\n\n" +
                                                        $"Login now to get started!\n\n" +
                                                        $"LingapDvo Automated SMS Message";
 

@@ -90,21 +90,26 @@ namespace LingapDVO.Services
         {
             var title = GetStatusTitle(status);
             var message = GetStatusMessage(applicantName, formType, status);
-            var link = "/Uploads"; // Link to user's uploads page
+            var link = "/Applicationtracking"; // Link to user's uploads page
             var type = GetNotificationType(status);
 
-            // For email notifications, we need special handling for "Claimed" status to include feedback link
-            if (status == "Claimed")
+            // Special handling for "Approved" status to include nearby offices link
+            if (status == "Approve")
             {
-                await SendClaimedNotificationAsync(userId, title, message, type, link, formType, formId);
+                await SendApprovedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId);
+            }
+            // Special handling for "Claimed" status to include feedback link
+            else if (status == "Claimed")
+            {
+                await SendClaimedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId);
             }
             else
             {
-                await SendNotificationAsync(userId, title, message, type, link);
+                await SendStatusNotificationAsync(userId, applicantName, title, message, type, link, formType);
             }
         }
 
-        private async Task SendClaimedNotificationAsync(int userId, string title, string message, string type, string link, string formType, int formId)
+        private async Task SendStatusNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType)
         {
             try
             {
@@ -115,6 +120,144 @@ namespace LingapDVO.Services
                     _logger.LogWarning($"User with ID {userId} not found");
                     return;
                 }
+
+                // Get assistance type display
+                var formTypeDisplay = formType switch
+                {
+                    "HospitalBill" => "Hospital Assistance",
+                    "Medical" => "Other Assistance",
+                    "Funeral" => "Funeral Assistance",
+                    _ => "Financial Assistance"
+                };
+
+                // Send in-app notification via SignalR if preferred
+                if (user.PreferInAppNotification)
+                {
+                    await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
+                    {
+                        title = title,
+                        message = message,
+                        type = type,
+                        link = link,
+                        createdAt = DateTime.UtcNow
+                    });
+                }
+
+                // Send email notification if preferred
+                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
+                {
+                    var emailBody = GenerateEmailBody(title, message, link);
+                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
+                }
+
+                // Send SMS notification if preferred (with personalized greeting and assistance type)
+                if (user.PreferSmsNotification)
+                {
+                    var verifyAccount = await _context.Verifyaccount
+                        .FirstOrDefaultAsync(v => v.UserId == userId);
+
+                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
+                    {
+                        var smsMessage = $"Hi {applicantName}! {message}";
+                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
+                    }
+                }
+
+                _logger.LogInformation($"Multi-channel status notification sent successfully to user {userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending multi-channel status notification to user {userId}");
+            }
+        }
+
+        private async Task SendApprovedNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId)
+        {
+            try
+            {
+                // Get user preferences
+                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User with ID {userId} not found");
+                    return;
+                }
+
+                // Get assistance type display
+                var formTypeDisplay = formType switch
+                {
+                    "HospitalBill" => "Hospital Assistance",
+                    "Medical" => "Other Assistance",
+                    "Funeral" => "Funeral Assistance",
+                    _ => "Financial Assistance"
+                };
+
+                var nearbyOfficesUrl = "https://lingap.online/Nearbyoffices";
+
+                // Send in-app notification via SignalR if preferred
+                if (user.PreferInAppNotification)
+                {
+                    await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
+                    {
+                        title = title,
+                        message = message,
+                        type = type,
+                        link = link,
+                        createdAt = DateTime.UtcNow
+                    });
+                }
+
+                // Send email notification with nearby offices link if preferred
+                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
+                {
+                    var emailBody = GenerateApprovedEmailBody(title, message, link, nearbyOfficesUrl);
+                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
+                }
+
+                // Send SMS notification with nearby offices link if preferred
+                if (user.PreferSmsNotification)
+                {
+                    var verifyAccount = await _context.Verifyaccount
+                        .FirstOrDefaultAsync(v => v.UserId == userId);
+
+                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
+                    {
+                        var smsMessage = $"Hi {applicantName}! Good news! Your {formTypeDisplay} application has been approved. " +
+                                       $"Please visit our office for claiming. Find nearby offices here: {nearbyOfficesUrl}";
+                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
+                    }
+                }
+
+                _logger.LogInformation($"Multi-channel approved notification sent successfully to user {userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending multi-channel approved notification to user {userId}");
+            }
+        }
+
+        private async Task SendClaimedNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId)
+        {
+            try
+            {
+                // Get user preferences
+                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User with ID {userId} not found");
+                    return;
+                }
+
+                // Get assistance type display
+                var formTypeDisplay = formType switch
+                {
+                    "HospitalBill" => "Hospital Assistance",
+                    "Medical" => "Other Assistance",
+                    "Funeral" => "Funeral Assistance",
+                    _ => "Financial Assistance"
+                };
+
+                var feedbackUrl = "https://lingap.online/Feedback";
 
                 // Send in-app notification via SignalR if preferred
                 if (user.PreferInAppNotification)
@@ -132,20 +275,20 @@ namespace LingapDVO.Services
                 // Send email notification with feedback link if preferred
                 if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
                 {
-                    var emailBody = GenerateClaimedEmailBody(title, message, link, userId, formType, formId);
+                    var emailBody = GenerateClaimedEmailBody(title, message, link, feedbackUrl);
                     await _emailService.SendEmailAsync(user.Email, title, emailBody);
                 }
 
-                // Send SMS notification if preferred
+                // Send SMS notification with feedback link if preferred
                 if (user.PreferSmsNotification)
                 {
-                    // Get phone number from Verifyaccount table
                     var verifyAccount = await _context.Verifyaccount
                         .FirstOrDefaultAsync(v => v.UserId == userId);
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
-                        var smsMessage = $"{title}: {message}";
+                        var smsMessage = $"Hi {applicantName}! Your {formTypeDisplay} has been successfully claimed. " +
+                                       $"Thank you for using our service! We'd love to hear your feedback: {feedbackUrl}";
                         await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
@@ -175,9 +318,9 @@ namespace LingapDVO.Services
         {
             var formTypeDisplay = formType switch
             {
-                "HospitalBill" => "Hospital Bill Assistance",
-                "Medical" => "Medical and Lab Assistance",
-                "Funeral" => "Funeral and Burial Assistance",
+                "HospitalBill" => "Hospital Assistance",
+                "Medical" => "Other Assistance",
+                "Funeral" => "Funeral Assistance",
                 _ => "Financial Assistance"
             };
 
@@ -237,10 +380,48 @@ namespace LingapDVO.Services
 </html>";
         }
 
-        private string GenerateClaimedEmailBody(string title, string message, string link, int userId, string formType, int formId)
+        private string GenerateApprovedEmailBody(string title, string message, string link, string nearbyOfficesUrl)
         {
-            var feedbackUrl = $"https://yourdomain.com/Dashboard/Feedback?userId={userId}&assistanceType={formType}&assistanceId={formId}";
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #dc143c; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .button {{ display: inline-block; padding: 10px 20px; background-color: #dc143c; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; margin-right: 10px; }}
+        .office-button {{ display: inline-block; padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; }}
+        .office-section {{ margin-top: 20px; padding: 15px; background-color: #e8f8e8; border-left: 4px solid #28a745; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2>{title}</h2>
+        </div>
+        <div class='content'>
+            <p>{message}</p>
+            {(string.IsNullOrEmpty(link) ? "" : $"<a href='{link}' class='button'>View Details</a>")}
 
+            <div class='office-section'>
+                <h3>Next Steps</h3>
+                <p>Please visit our office to claim your approved assistance. Find the nearest office location:</p>
+                <a href='{nearbyOfficesUrl}' class='office-button'>Find Nearby Offices</a>
+            </div>
+        </div>
+        <div class='footer'>
+            <p>This is an automated message from LingapDVO. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+
+        private string GenerateClaimedEmailBody(string title, string message, string link, string feedbackUrl)
+        {
             return $@"
 <!DOCTYPE html>
 <html>

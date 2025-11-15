@@ -8,8 +8,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feedback Analytics - LingapDVO Admin</title>
+    <link rel="icon" type="image/x-icon" href="~/Icon/lingaplogo.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/admin-sidebar.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --primary-light: #42a5f5;
+            --success: #43a047;
+            --danger: #e53935;
+            --warning: #fb8c00;
+            --info: #00acc1;
+            --dark: #1a237e;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -17,36 +33,57 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            padding: 20px;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content-with-sidebar {
+            flex: 1;
+            padding: clamp(0.75rem, 1.5rem, 2rem);
+            margin-left: clamp(0px, calc((100vw - 768px) * 999), 260px);
+            padding-top: clamp(4rem, calc((100vw - 768px) * 999), 0.75rem);
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content-with-sidebar.sidebar-hidden {
+            margin-left: 0;
         }
 
         .header {
-            background: linear-gradient(135deg, #dc143c 0%, #a00f2e 100%);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 10px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 25px 35px;
+            border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
+            font-size: clamp(1.5rem, 2rem, 2.5rem);
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 700;
         }
 
         .header p {
-            opacity: 0.9;
-            font-size: 14px;
+            color: #607d8b;
+            font-size: clamp(0.875rem, 1rem, 1.125rem);
         }
 
         .filters {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            padding: 25px;
+            border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .filter-group {
@@ -77,18 +114,22 @@
         }
 
         .filter-item button {
-            padding: 8px 20px;
-            background-color: #dc143c;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
             margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3);
         }
 
         .filter-item button:hover {
-            background-color: #a00f2e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 136, 229, 0.4);
         }
 
         .stats-overview {
@@ -100,10 +141,17 @@
 
         .stat-card {
             background: white;
+            border: 1px solid #e0e0e0;
             padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid #dc143c;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
 
         .stat-card h3 {
@@ -113,9 +161,12 @@
         }
 
         .stat-card .value {
-            font-size: 36px;
-            font-weight: bold;
-            color: #333;
+            font-size: clamp(2rem, 2.5rem, 3rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .charts-grid {
@@ -127,17 +178,25 @@
 
         .chart-container {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e0e0;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
 
         .chart-container h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #333;
-            border-bottom: 2px solid #dc143c;
-            padding-bottom: 10px;
+            font-size: clamp(1rem, 1.125rem, 1.25rem);
+            margin-bottom: 20px;
+            color: var(--dark);
+            font-weight: 700;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 12px;
         }
 
         .chart-wrapper {
@@ -158,21 +217,35 @@
 
         .rating-card {
             background: white;
+            border: 1px solid #e0e0e0;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .rating-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-light);
         }
 
         .rating-card h3 {
             font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
+            color: #607d8b;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .rating-card .average {
-            font-size: 32px;
-            font-weight: bold;
-            color: #dc143c;
+            font-size: clamp(1.75rem, 2rem, 2.25rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 10px;
         }
 
@@ -183,18 +256,20 @@
 
         .feedback-table {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e0e0;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             overflow-x: auto;
         }
 
         .feedback-table h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #333;
-            border-bottom: 2px solid #dc143c;
-            padding-bottom: 10px;
+            font-size: clamp(1rem, 1.125rem, 1.25rem);
+            margin-bottom: 20px;
+            color: var(--dark);
+            font-weight: 700;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 12px;
         }
 
         table {
@@ -258,11 +333,16 @@
     </style>
 </head>
 <body>
+    <div class="dashboard-container">
+        <!-- Include Shared Admin Sidebar -->
+        @await Html.PartialAsync("_AdminSidebar")
 
-    <div class="header">
-        <h1>Citizen Feedback Analytics</h1>
-        <p>Comprehensive analysis of citizen satisfaction and service feedback</p>
-    </div>
+        <!-- Main Content -->
+        <div class="main-content-with-sidebar" id="mainContent">
+            <div class="header">
+                <h1>Citizen Feedback Analytics</h1>
+                <p>Comprehensive analysis of citizen satisfaction and service feedback</p>
+            </div>
 
     <div class="filters">
         <div class="filter-group">
@@ -488,7 +568,7 @@
                         labels: data.demographics.sex.map(d => d.label),
                         datasets: [{
                             data: data.demographics.sex.map(d => d.count),
-                            backgroundColor: ['#dc143c', '#4CAF50', '#FFC107']
+                            backgroundColor: ['#1e88e5', '#43a047', '#fb8c00']
                         }]
                     },
                     options: {
@@ -535,7 +615,7 @@
                         datasets: [{
                             label: 'Count',
                             data: data.assistanceTypeDistribution.map(d => d.count),
-                            backgroundColor: '#dc143c'
+                            backgroundColor: '#1e88e5'
                         }]
                     },
                     options: {
@@ -593,8 +673,8 @@
                         datasets: [{
                             label: 'Feedback Submissions',
                             data: data.timeline.map(d => d.count),
-                            borderColor: '#dc143c',
-                            backgroundColor: 'rgba(220, 20, 60, 0.1)',
+                            borderColor: '#1e88e5',
+                            backgroundColor: 'rgba(30, 136, 229, 0.1)',
                             tension: 0.4,
                             fill: true
                         }]
@@ -680,6 +760,13 @@
             return 'hospital';
         }
     </script>
+
+        </div>
+    </div>
+
+    <!-- Load admin sidebar utilities and session timeout scripts -->
+    <script src="~/js/adminsidebar.js"></script>
+    @await Html.PartialAsync("_SessionTimeout")
 
 </body>
 </html>

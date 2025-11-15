@@ -606,7 +606,7 @@
                         </div>
                         <select class="filter-select" id="typeFilter">
                             <option value="all">All Types</option>
-                            <option value="Hospital Bill Assistance">Hospital Bill Assistance</option>
+                            <option value="Hospital Assistance">Hospital Assistance</option>
                             <option value="Medical and laboratory Procedure">Medical & Laboratory</option>
                             <option value="Funeral and burial assistance">Funeral & Burial</option>
                         </select>
@@ -684,12 +684,12 @@
             // Combine all applications from the model
             const allApplications = [];
 
-            // Add Hospital Bills
+            // Add Hospitals
             @foreach (var f in Model.HospitalAssistance)
             {
                     <text>
                     allApplications.push({
-                        type: "Hospital Bill Assistance",
+                        type: "Hospital Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -1044,7 +1044,7 @@
                     title = 'View Details';
                 }
 
-                if (app.type === "Hospital Bill Assistance") {
+                if (app.type === "Hospital Assistance") {
                     // Check status3 FIRST for claimed (highest priority)
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/HospitalAssistanceClaimStatus/${app.formId}`;

@@ -119,11 +119,11 @@ namespace LingapDVO.Controllers
             var allDocs = new List<dynamic>();
 
             if (hospitalBills.Any())
-                allDocs.Add(new { Type = "Hospital Bill", Data = hospitalBills.First() });
+                allDocs.Add(new { Type = "Hospital", Data = hospitalBills.First() });
             if (medicalLabForms.Any())
-                allDocs.Add(new { Type = "Medical/Lab Form", Data = medicalLabForms.First() });
+                allDocs.Add(new { Type = "Other", Data = medicalLabForms.First() });
             if (FuneralAssistance.Any())
-                allDocs.Add(new { Type = "Funeral/Burial Form", Data = FuneralAssistance.First() });
+                allDocs.Add(new { Type = "Funeral", Data = FuneralAssistance.First() });
 
             var latestDoc = allDocs
                 .OrderByDescending(d => d.Data.CreatedAt)
@@ -2783,7 +2783,7 @@ namespace LingapDVO.Controllers
 
 
 
-        public IActionResult Uploads()
+        public IActionResult Applicationtracking()
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
             {
@@ -2928,7 +2928,7 @@ namespace LingapDVO.Controllers
             }
         }
 
-        public IActionResult Maps()
+        public IActionResult Nearbyoffices()
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
             {

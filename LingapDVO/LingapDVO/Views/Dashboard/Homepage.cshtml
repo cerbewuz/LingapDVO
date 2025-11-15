@@ -648,7 +648,7 @@
                                 }
                                 else
                                 {
-                                    <a href="/Accountverification" class="btn btn-link text-warning">
+                                    <a href="/Verifyaccount" class="btn btn-link text-warning">
                                         <i class="fas fa-exclamation-triangle" title="Complete Verification"></i>
                                     </a>
                                 }
@@ -697,10 +697,10 @@
                                     <i class="fas fa-info-circle text-warning me-3" style="font-size: 1.5rem;"></i>
                                     <div>
                                         <strong class="d-block">Account Verification Required</strong>
-                                        <small class="text-muted">Complete verification to access Hospital Bill, Medical Procedures, and Funeral Assistance services.</small>
+                                        <small class="text-muted">Complete verification to access Hospital, Other, and Funeral Assistance services.</small>
                                     </div>
                                 </div>
-                                <a href="/Accountverification" class="btn btn-sm btn-warning">
+                                <a href="/Verifyaccount" class="btn btn-sm btn-warning">
                                     <i class="fas fa-user-check me-1"></i>Verify Now
                                 </a>
                             </div>
@@ -793,7 +793,7 @@
                             <div class="col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
-                                    <a href="/Uploads" class="text-decoration-none">
+                                    <a href="/Applicationtracking" class="text-decoration-none">
                                         <div class="service-card">
                                             <div class="service-icon">
                                                 <i class="fas fa-history"></i>
@@ -817,13 +817,13 @@
 
                             <!-- Service 5 - Locate Facilities -->
                             <div class="col-md-6 col-lg-4">
-                                <a href="/Maps" class="text-decoration-none">
+                                <a href="/Nearbyoffices" class="text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
                                             <i class="fas fa-map-marker-alt"></i>
                                         </div>
                                         <h5 class="service-title">Branches Nearby</h5>
-                                        <p class="service-description">Find satellite near you</p>
+                                        <p class="service-description">Find nearby offices near you</p>
                                     </div>
                                 </a>
                             </div>
@@ -1170,7 +1170,7 @@
 
                 // Check all applications for status changes
                 const allApplications = [
-                    ...(applications.hospitalBills || []).map(app => ({ ...app, type: 'Hospital Bill' })),
+                    ...(applications.hospitalBills || []).map(app => ({ ...app, type: 'Hospital' })),
                     ...(applications.medicalForms || []).map(app => ({ ...app, type: 'Medical Procedure' })),
                     ...(applications.funeralForms || []).map(app => ({ ...app, type: 'Funeral Assistance' }))
                 ];
@@ -1192,7 +1192,7 @@
                                     isRead: false,
                                     createdAt: app.processAt,
                                     type: "processing",
-                                    link: "/Uploads"
+                                    link: "/Applicationtracking"
                                 });
                             }
                         }
@@ -1212,7 +1212,7 @@
                                     isRead: false,
                                     createdAt: app.result,
                                     type: "approved",
-                                    link: "/Uploads"
+                                    link: "/Applicationtracking"
                                 });
                             }
                         }
@@ -1232,7 +1232,7 @@
                                     isRead: false,
                                     createdAt: app.result,
                                     type: "unapproved",
-                                    link: "/Uploads"
+                                    link: "/Applicationtracking"
                                 });
                             }
                         }
@@ -1253,7 +1253,7 @@
                                     isRead: false,
                                     createdAt: app.claimedAt,
                                     type: "claimed",
-                                    link: "/Uploads"
+                                    link: "/Applicationtracking"
                                 });
                             }
                         }
@@ -1277,7 +1277,7 @@
                                     isRead: false,
                                     createdAt: new Date(submittedDate.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
                                     type: "delayed",
-                                    link: "/Uploads"
+                                    link: "/Applicationtracking"
                                 });
                             }
                         }
@@ -1321,7 +1321,7 @@
                         isRead: false,
                         createdAt: new Date().toISOString(),
                         type: "submitted",
-                        link: "/Uploads"
+                        link: "/Applicationtracking"
                     }]);
                 }
             }
@@ -1393,10 +1393,10 @@
                     return notifications;
                 }
 
-                // Check Hospital Bills
+                // Check Hospitals
                 if (applications.hospitalBills && applications.hospitalBills.length > 0) {
                     applications.hospitalBills.forEach(app => {
-                        notifications.push(...getApplicationStatusNotifications(app, 'Hospital Bill'));
+                        notifications.push(...getApplicationStatusNotifications(app, 'Hospital'));
                     });
                 }
 
@@ -1442,7 +1442,7 @@
                         isRead: readIds.includes(notificationId), // Check if already read
                         createdAt: application.createdAt,
                         type: "submitted",
-                        link: "/Uploads"
+                        link: "/Applicationtracking"
                     });
                 }
 
@@ -1456,7 +1456,7 @@
                         isRead: readIds.includes(notificationId),
                         createdAt: application.processAt,
                         type: "processing",
-                        link: "/Uploads"
+                        link: "/Applicationtracking"
                     });
                 }
 
@@ -1473,7 +1473,7 @@
                         isRead: readIds.includes(notificationId),
                         createdAt: application.result,
                         type: isApprove ? "approved" : "unapproved",
-                        link: "/Uploads"
+                        link: "/Applicationtracking"
                     });
                 }
 
@@ -1488,7 +1488,7 @@
                         isRead: readIds.includes(notificationId),
                         createdAt: application.claimedAt,
                         type: "claimed",
-                        link: "/Uploads"
+                        link: "/Applicationtracking"
                     });
                 }
 
@@ -1669,7 +1669,7 @@
                             <div class="space-y-2">
                                 <div class="flex items-start gap-2">
                                     <i class="fas fa-hospital text-green-600 text-xs mt-1"></i>
-                                    <span class="text-xs text-gray-700">Hospital Bill Assistance</span>
+                                    <span class="text-xs text-gray-700">Hospital Assistance</span>
                                 </div>
                                 <div class="flex items-start gap-2">
                                     <i class="fas fa-pills text-green-600 text-xs mt-1"></i>
@@ -1689,7 +1689,7 @@
                                 How to Apply
                             </h6>
                             <ol class="text-xs text-gray-700 space-y-1 ml-4 list-decimal">
-                                <li>Click on "Uploads" in the menu</li>
+                                <li>Click on "Application Tracking" in the menu</li>
                                 <li>Choose your needed assistance type</li>
                                 <li>Fill out the form completely</li>
                                 <li>Upload required documents</li>

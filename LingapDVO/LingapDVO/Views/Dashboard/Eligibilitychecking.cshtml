@@ -311,7 +311,7 @@
             <ul class="nav nav-tabs" id="assistanceTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="hospital-tab" data-bs-toggle="tab" data-bs-target="#hospital" type="button" role="tab" aria-controls="hospital" aria-selected="true">
-                        <i class="fas fa-hospital me-2"></i>Hospital Bills
+                        <i class="fas fa-hospital me-2"></i>Hospitals
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -328,10 +328,10 @@
         </div>
 
         <div class="tab-content" id="assistanceTabsContent">
-            <!-- Hospital Bills Section -->
+            <!-- Hospitals Section -->
             <div class="tab-pane fade show active" id="hospital" role="tabpanel" aria-labelledby="hospital-tab">
                 <div class="card-container">
-                    <h3 class="section-title">Hospital Bill Assistance (Private Hospital)</h3>
+                    <h3 class="section-title">Hospital Assistance (Private Hospital)</h3>
 
                     @{
                         var approvedHospitalBills = Model.HospitalAssistance.Where(f => f.Status?.ToLower() == "approved").ToList();
@@ -381,7 +381,7 @@
                 </div>
             </div>
 
-            <!-- Medical and Lab Forms Section -->
+            <!-- Other Forms Section -->
             <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-tab">
                 <div class="card-container">
                     <h3 class="section-title">Medical and laboratory Procedure(Private Hospital)</h3>
