@@ -4571,25 +4571,117 @@ namespace LingapDVO.Controllers
                 var relationships = new[] { "Parent", "Spouse", "Child", "Sibling", "Relative", "Guardian", "Friend" };
                 var processors = new[] { "Admin Santos", "Admin Garcia", "Admin Cruz", "Admin Reyes", "Admin Flores" };
 
+                // IP addresses and user agents for realistic data
+                var ipAddresses = new[] { "192.168.1.100", "10.0.0.50", "172.16.0.10", "192.168.0.25", "10.1.1.75" };
+                var userAgents = new[] {
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+                };
+
+                // STEP 1: Create unique user accounts (RegisterAcc)
+                var createdUsers = new List<RegisterAcc>();
+                var userCount = 50; // Create 50 unique users
+
+                for (int i = 0; i < userCount; i++)
+                {
+                    var regDate = now.AddDays(-random.Next(185, 365)); // Registered 6-12 months ago
+                    var firstName = firstNames[random.Next(firstNames.Length)];
+                    var middleName = middleNames[random.Next(middleNames.Length)];
+                    var lastName = lastNames[random.Next(lastNames.Length)];
+                    var username = $"{firstName.ToLower()}.{lastName.ToLower()}{i}";
+                    var email = $"{firstName.ToLower()}.{lastName.ToLower()}{i}@gmail.com";
+
+                    var user = new RegisterAcc
+                    {
+                        FirstName = firstName,
+                        MiddleName = middleName,
+                        LastName = lastName,
+                        Suffix = random.Next(10) > 8 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
+                        Email = email,
+                        Password = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+                        Username = username,
+                        Status = "active",
+                        Profilepicture = "default-avatar.png",
+                        PreferEmailNotification = true,
+                        PreferSmsNotification = random.Next(2) == 0,
+                        PreferInAppNotification = true
+                    };
+
+                    context.RegisterAcc.Add(user);
+                    createdUsers.Add(user);
+                }
+
+                // Save users to get their IDs
+                await context.SaveChangesAsync();
+
+                // STEP 2: Create RegistrationTokens and RegistrationAuditLogs for each user
+                foreach (var user in createdUsers)
+                {
+                    var regDate = now.AddDays(-random.Next(185, 365));
+                    var tokenCreatedAt = regDate.AddSeconds(-random.Next(10, 60));
+                    var token = $"REG-TOKEN-{Guid.NewGuid():N}";
+                    var ip = ipAddresses[random.Next(ipAddresses.Length)];
+                    var userAgent = userAgents[random.Next(userAgents.Length)];
+
+                    // Create RegistrationToken
+                    var regToken = new RegistrationToken
+                    {
+                        Token = token,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        CreatedAt = tokenCreatedAt,
+                        ExpiresAt = tokenCreatedAt.AddMinutes(30),
+                        IsUsed = true,
+                        UsedAt = regDate,
+                        UsedByEmail = user.Email,
+                        IsRevoked = false
+                    };
+                    context.Add(regToken);
+
+                    // Create RegistrationAuditLog
+                    var auditLog = new RegistrationAuditLog
+                    {
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        Email = user.Email,
+                        Username = user.Username,
+                        FullName = $"{user.LastName} {user.FirstName} {user.MiddleName}",
+                        Action = "SUCCESS",
+                        Source = "WEB_FORM",
+                        Reason = "User registered successfully",
+                        RegistrationToken = token,
+                        HasValidToken = true,
+                        SuspiciousActivity = false,
+                        AttemptedAt = regDate,
+                        RegisteredUserId = user.Id
+                    };
+                    context.Add(auditLog);
+                }
+
+                await context.SaveChangesAsync();
+
                 var generatedRecords = 0;
-                var userId = 1; // Default user ID for dummy data
 
                 // Distribute 200 records: 80 Hospital, 70 Medical/Lab, 50 Funeral
                 var hospitalCount = 80;
                 var medicalCount = 70;
                 var funeralCount = 50;
 
-                // Generate Hospital Assistance records
+                // STEP 3: Generate Hospital Assistance records with random user assignment
                 for (int i = 0; i < hospitalCount; i++)
                 {
                     var createdDate = now.AddDays(-random.Next(1, 180)); // Within last 6 months
                     var status = DetermineStatus(random);
                     var age = random.Next(18, 80);
                     var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
 
                     var record = new HospitalAssistance
                     {
-                        UserId = userId,
+                        UserId = assignedUser.Id,
                         Lastname = lastNames[random.Next(lastNames.Length)],
                         Firstname = firstNames[random.Next(firstNames.Length)],
                         Middlename = middleNames[random.Next(middleNames.Length)],
@@ -4645,10 +4737,11 @@ namespace LingapDVO.Controllers
                     var status = DetermineStatus(random);
                     var age = random.Next(18, 80);
                     var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
 
                     var record = new OtherAssistance
                     {
-                        UserId = userId,
+                        UserId = assignedUser.Id,
                         Lastname = lastNames[random.Next(lastNames.Length)],
                         Firstname = firstNames[random.Next(firstNames.Length)],
                         Middlename = middleNames[random.Next(middleNames.Length)],
@@ -4705,10 +4798,11 @@ namespace LingapDVO.Controllers
                     var status = DetermineStatus(random);
                     var age = random.Next(18, 80);
                     var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
 
                     var record = new FuneralAssistance
                     {
-                        UserId = userId,
+                        UserId = assignedUser.Id,
                         Lastname = lastNames[random.Next(lastNames.Length)],
                         Firstname = firstNames[random.Next(firstNames.Length)],
                         Middlename = middleNames[random.Next(middleNames.Length)],
@@ -4760,16 +4854,7 @@ namespace LingapDVO.Controllers
                 // Save all applications first to get their IDs
                 await context.SaveChangesAsync();
 
-                // Now generate FormSubmissionTokens and FormSubmissionAuditLogs for each application
-                var ipAddresses = new[] { "192.168.1.100", "10.0.0.50", "172.16.0.10", "192.168.0.25", "10.1.1.75" };
-                var userAgents = new[] {
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
-                };
-
+                // STEP 4: Generate FormSubmissionTokens and FormSubmissionAuditLogs for each application
                 // Generate tokens and audit logs for Hospital Assistance
                 foreach (var app in context.HospitalAssistance.Where(h => h.CreatedAt >= now.AddDays(-180)))
                 {
@@ -4917,18 +5002,178 @@ namespace LingapDVO.Controllers
                 // Save tokens and audit logs
                 await context.SaveChangesAsync();
 
-                var totalTokens = context.ChangeTracker.Entries<FormSubmissionToken>().Count();
-                var totalAuditLogs = context.ChangeTracker.Entries<FormSubmissionAuditLog>().Count();
+                // STEP 5: Generate Feedbacks for claimed applications (about 30% of claimed applications)
+                var serviceTypes = new[] { "Hospital Bill Assistance", "Other Assistance", "Funeral Assistance" };
+                var offices = new[] { "City Health Office", "Social Welfare Office", "CDVO", "Mayor's Office" };
+                var clientTypes = new[] { "Citizen", "Business", "Government Employee", "Senior Citizen", "PWD" };
+                var ccResponses = new[] { "Yes", "No", "Not Sure", "Somewhat" };
+
+                var feedbackCount = 0;
+
+                // Generate feedbacks for claimed Hospital Assistance
+                var claimedHospital = context.HospitalAssistance
+                    .Where(h => h.Status3 == "claimed" && h.CreatedAt >= now.AddDays(-180))
+                    .ToList();
+
+                foreach (var app in claimedHospital)
+                {
+                    if (random.Next(100) < 30) // 30% chance of feedback
+                    {
+                        var user = createdUsers.FirstOrDefault(u => u.Id == app.UserId);
+                        if (user != null)
+                        {
+                            var feedback = new Feedback
+                            {
+                                UserId = user.Id,
+                                Name = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                                Office = offices[random.Next(offices.Length)],
+                                ServiceAvailed = "Hospital Bill Assistance",
+                                Contact = app.ContactNo,
+                                Sex = app.Sex,
+                                TypeOfClient = clientTypes[random.Next(clientTypes.Length)],
+                                AssistanceType = "HospitalBill",
+                                AssistanceId = app.Id,
+                                Q1_CCKnowledge = ccResponses[random.Next(ccResponses.Length)],
+                                Q2_CCVisibility = ccResponses[random.Next(ccResponses.Length)],
+                                Q3_CCHelpfulness = ccResponses[random.Next(ccResponses.Length)],
+                                R1_ServiceSatisfaction = random.Next(4, 9), // Rating 4-8
+                                R2_TimeSpent = random.Next(4, 9),
+                                R3_ProcessFollowed = random.Next(4, 9),
+                                R4_ProcessSimplicity = random.Next(4, 9),
+                                R5_InformationAccess = random.Next(4, 9),
+                                R6_FairPayment = random.Next(4, 9),
+                                R7_Fairness = random.Next(4, 9),
+                                R8_EmployeeCourtesy = random.Next(4, 9),
+                                Commendation = random.Next(2) == 0 ? "The staff were very helpful and courteous." : null,
+                                Suggestion = random.Next(2) == 0 ? "Please add more seating in the waiting area." : null,
+                                Request = null,
+                                Complaint = random.Next(10) == 0 ? "The waiting time was a bit long." : null,
+                                Signature = $"{user.FirstName}_{user.LastName}",
+                                SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)), // Feedback within 7 days of claiming
+                                IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
+                            };
+                            context.Add(feedback);
+                            feedbackCount++;
+                        }
+                    }
+                }
+
+                // Generate feedbacks for claimed Medical/Lab Assistance
+                var claimedMedical = context.OtherAssistance
+                    .Where(o => o.Status3 == "claimed" && o.CreatedAt >= now.AddDays(-180))
+                    .ToList();
+
+                foreach (var app in claimedMedical)
+                {
+                    if (random.Next(100) < 30) // 30% chance of feedback
+                    {
+                        var user = createdUsers.FirstOrDefault(u => u.Id == app.UserId);
+                        if (user != null)
+                        {
+                            var feedback = new Feedback
+                            {
+                                UserId = user.Id,
+                                Name = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                                Office = offices[random.Next(offices.Length)],
+                                ServiceAvailed = app.Typeassistance,
+                                Contact = app.ContactNo,
+                                Sex = app.Sex,
+                                TypeOfClient = clientTypes[random.Next(clientTypes.Length)],
+                                AssistanceType = "Medical",
+                                AssistanceId = app.Id,
+                                Q1_CCKnowledge = ccResponses[random.Next(ccResponses.Length)],
+                                Q2_CCVisibility = ccResponses[random.Next(ccResponses.Length)],
+                                Q3_CCHelpfulness = ccResponses[random.Next(ccResponses.Length)],
+                                R1_ServiceSatisfaction = random.Next(4, 9),
+                                R2_TimeSpent = random.Next(4, 9),
+                                R3_ProcessFollowed = random.Next(4, 9),
+                                R4_ProcessSimplicity = random.Next(4, 9),
+                                R5_InformationAccess = random.Next(4, 9),
+                                R6_FairPayment = random.Next(4, 9),
+                                R7_Fairness = random.Next(4, 9),
+                                R8_EmployeeCourtesy = random.Next(4, 9),
+                                Commendation = random.Next(2) == 0 ? "Excellent service, thank you!" : null,
+                                Suggestion = random.Next(2) == 0 ? "Online tracking of application status would be helpful." : null,
+                                Request = null,
+                                Complaint = random.Next(10) == 0 ? "Process could be streamlined." : null,
+                                Signature = $"{user.FirstName}_{user.LastName}",
+                                SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)),
+                                IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
+                            };
+                            context.Add(feedback);
+                            feedbackCount++;
+                        }
+                    }
+                }
+
+                // Generate feedbacks for claimed Funeral Assistance
+                var claimedFuneral = context.FuneralAssistance
+                    .Where(f => f.Status3 == "claimed" && f.CreatedAt >= now.AddDays(-180))
+                    .ToList();
+
+                foreach (var app in claimedFuneral)
+                {
+                    if (random.Next(100) < 30) // 30% chance of feedback
+                    {
+                        var user = createdUsers.FirstOrDefault(u => u.Id == app.UserId);
+                        if (user != null)
+                        {
+                            var feedback = new Feedback
+                            {
+                                UserId = user.Id,
+                                Name = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                                Office = offices[random.Next(offices.Length)],
+                                ServiceAvailed = "Funeral and Burial Assistance",
+                                Contact = app.ContactNo,
+                                Sex = app.Sex,
+                                TypeOfClient = clientTypes[random.Next(clientTypes.Length)],
+                                AssistanceType = "Funeral",
+                                AssistanceId = app.Id,
+                                Q1_CCKnowledge = ccResponses[random.Next(ccResponses.Length)],
+                                Q2_CCVisibility = ccResponses[random.Next(ccResponses.Length)],
+                                Q3_CCHelpfulness = ccResponses[random.Next(ccResponses.Length)],
+                                R1_ServiceSatisfaction = random.Next(4, 9),
+                                R2_TimeSpent = random.Next(4, 9),
+                                R3_ProcessFollowed = random.Next(4, 9),
+                                R4_ProcessSimplicity = random.Next(4, 9),
+                                R5_InformationAccess = random.Next(4, 9),
+                                R6_FairPayment = random.Next(4, 9),
+                                R7_Fairness = random.Next(4, 9),
+                                R8_EmployeeCourtesy = random.Next(4, 9),
+                                Commendation = random.Next(2) == 0 ? "Very helpful during difficult time. Thank you." : null,
+                                Suggestion = random.Next(2) == 0 ? "More information about requirements would help." : null,
+                                Request = null,
+                                Complaint = random.Next(10) == 0 ? "Needed faster processing for emergency cases." : null,
+                                Signature = $"{user.FirstName}_{user.LastName}",
+                                SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)),
+                                IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
+                            };
+                            context.Add(feedback);
+                            feedbackCount++;
+                        }
+                    }
+                }
+
+                await context.SaveChangesAsync();
+
+                var totalTokens = totalTokens = 200; // Total form submission tokens
+                var totalAuditLogs = 200; // Total form submission audit logs
+                var totalRegTokens = userCount; // Total registration tokens
+                var totalRegAuditLogs = userCount; // Total registration audit logs
 
                 return Ok(new {
                     success = true,
-                    message = $"Successfully generated {generatedRecords} dummy records with tokens and audit logs!",
+                    message = $"Successfully generated complete dummy data with users, applications, tokens, audit logs, and feedbacks!",
                     details = new {
+                        users = userCount,
+                        registrationTokens = totalRegTokens,
+                        registrationAuditLogs = totalRegAuditLogs,
                         hospital = hospitalCount,
                         medical = medicalCount,
                         funeral = funeralCount,
-                        tokens = totalTokens / 3, // Divided by 3 because each type adds entries
-                        auditLogs = totalAuditLogs / 3
+                        formSubmissionTokens = totalTokens,
+                        formSubmissionAuditLogs = totalAuditLogs,
+                        feedbacks = feedbackCount
                     }
                 });
             }
