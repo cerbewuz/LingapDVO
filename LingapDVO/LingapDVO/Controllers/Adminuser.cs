@@ -5184,23 +5184,25 @@ namespace LingapDVO.Controllers
         }
 
         // Helper method to determine realistic status progression
-        // Updated to align with new priority tracking system (excludes claimed from priorities)
+        // Updated to follow realistic application lifecycle through the system
+        // Most applications should complete successfully (claimed)
         private (string Status, string Status2, string Status3, string Comments) DetermineStatus(Random random)
         {
             var roll = random.Next(100);
 
-            // 10% pending (new applications) - NOT in priorities
-            if (roll < 10)
+            // 12% Pending (new applications just submitted) - NOT in priorities
+            if (roll < 12)
             {
                 return ("pending", "", "", "");
             }
-            // 5% processing (being reviewed) - NOT in priorities
-            else if (roll < 15)
+            // 10% Processing (being reviewed by admin) - NOT in priorities
+            else if (roll < 22)
             {
                 return ("processing", "", "", "Under review by admin");
             }
-            // 50% approved not claimed - IN PRIORITY POOL
-            else if (roll < 65)
+            // 25% Approved but not claimed - IN PRIORITY POOL
+            // These are waiting for the user to claim their assistance
+            else if (roll < 47)
             {
                 var comments = new[] {
                     "Application approved. Documents verified.",
@@ -5211,8 +5213,9 @@ namespace LingapDVO.Controllers
                 };
                 return ("processing", "approve", "", comments[random.Next(comments.Length)]);
             }
-            // 10% claimed (approved and claimed) - NOT in priorities (completed)
-            else if (roll < 75)
+            // 48% Claimed (successfully completed the entire process) - NOT in priorities
+            // This represents the majority of applications that complete successfully
+            else if (roll < 95)
             {
                 var comments = new[] {
                     "Application approved. Documents verified. Assistance claimed.",
@@ -5223,7 +5226,8 @@ namespace LingapDVO.Controllers
                 };
                 return ("processing", "approve", "claimed", comments[random.Next(comments.Length)]);
             }
-            // 25% disapproved - IN PRIORITY POOL
+            // 5% Disapproved (less than 8% as required) - IN PRIORITY POOL
+            // Small percentage of applications that don't meet requirements
             else
             {
                 var comments = new[] {
@@ -5231,7 +5235,9 @@ namespace LingapDVO.Controllers
                     "Application does not meet eligibility criteria.",
                     "Documents need verification. Please resubmit.",
                     "Duplicate application found.",
-                    "Applicant does not qualify for this type of assistance."
+                    "Applicant does not qualify for this type of assistance.",
+                    "Required supporting documents not provided.",
+                    "Application information inconsistent with requirements."
                 };
                 return ("processing", "disapprove", "", comments[random.Next(comments.Length)]);
             }
@@ -5239,22 +5245,25 @@ namespace LingapDVO.Controllers
 
         // Helper method to generate realistic processing times
         // Returns processing time in minutes
-        // Updated to create more priority applications for demonstration
+        // Balanced distribution for realistic priority tracking
         private int GenerateProcessingTime(Random random)
         {
             var roll = random.Next(100);
 
-            // 60% processed in less than 1 hour (10-55 minutes) - No priority
-            if (roll < 60)
+            // 65% processed in less than 1 hour (10-55 minutes) - No priority
+            // Most applications are processed quickly
+            if (roll < 65)
             {
                 return random.Next(10, 56);
             }
             // 20% processed in 1-2 hours (60-119 minutes) - Medium priority
-            else if (roll < 80)
+            // Some applications need more review time
+            else if (roll < 85)
             {
                 return random.Next(60, 120);
             }
-            // 20% processed in 2-4 hours (120-240 minutes) - High priority
+            // 15% processed in 2-4 hours (120-240 minutes) - High priority
+            // Few applications require extended processing
             else
             {
                 return random.Next(120, 241);
