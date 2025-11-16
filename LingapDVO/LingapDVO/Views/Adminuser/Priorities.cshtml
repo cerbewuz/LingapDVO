@@ -352,7 +352,7 @@
             <div class="header">
                 <div class="page-title">
                     <h1><i class="bi bi-bell"></i> Priority Applications</h1>
-                    <p>Approved/Disapproved applications with slow processing times (excludes claimed)</p>
+                    <p>Applications requiring immediate attention</p>
                 </div>
             </div>
 
@@ -364,7 +364,7 @@
                     </div>
                     <div class="priority-info">
                         <h3 id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</h3>
-                        <p>High Priority (2+ hrs to process)</p>
+                        <p>High Priority (2+ hours)</p>
                     </div>
                 </div>
                 <div class="priority-card medium">
@@ -373,7 +373,7 @@
                     </div>
                     <div class="priority-info">
                         <h3 id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</h3>
-                        <p>Medium Priority (1-2 hrs to process)</p>
+                        <p>Medium Priority (1-2 hours)</p>
                     </div>
                 </div>
             </div>
@@ -442,7 +442,6 @@
                     type: "Hospital Bill Assistance",
                     name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                     createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                    resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
                     status: "@f.Status?.ToLower()",
                     status2: "@f.Status2?.ToLower()",
                     status3: "@f.Status3?.ToLower()",
@@ -457,10 +456,9 @@
             {
                 <text>
                 allApplications.push({
-                    type: "Other Assistance",
+                    type: "Medical and Laboratory Procedure",
                     name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                     createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                    resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
                     status: "@f.Status?.ToLower()",
                     status2: "@f.Status2?.ToLower()",
                     status3: "@f.Status3?.ToLower()",
@@ -475,10 +473,9 @@
             {
                 <text>
                 allApplications.push({
-                    type: "Funeral Assistance",
+                    type: "Funeral and Burial Assistance",
                     name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                     createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                    resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
                     status: "@f.Status?.ToLower()",
                     status2: "@f.Status2?.ToLower()",
                     status3: "@f.Status3?.ToLower()",
@@ -488,32 +485,28 @@
                 </text>
             }
 
-            // Calculate priority applications (ONLY for Approved and Disapproved applications that are NOT claimed)
-            // Priority is based on processing time (from submission to completion)
-            // Excludes applications with status3 = 'claimed'
+            // Calculate priority applications (ONLY for Pending AND Processing applications)
             const now = new Date();
             const priorityApplications = allApplications
-                .filter(app => (app.status2 === 'approve' || app.status2 === 'disapprove')
-                    && app.resultDate !== null
-                    && app.status3 !== 'claimed') // Exclude claimed applications
+                .filter(app => app.status === 'pending' || app.status === 'processing') // Count both Pending and Processing applications
                 .map(app => {
-                    const processingHours = (app.resultDate - app.createdAt) / (1000 * 60 * 60);
+                    const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
 
                     let priority = null;
-                    if (processingHours >= 2) {
+                    if (hoursSinceSubmission >= 2) {
                         priority = 'high';
-                    } else if (processingHours >= 1) {
+                    } else if (hoursSinceSubmission >= 1) {
                         priority = 'medium';
                     }
 
                     return {
                         ...app,
-                        processingHours,
+                        hoursSinceSubmission,
                         priority
                     };
                 })
                 .filter(app => app.priority !== null)
-                .sort((a, b) => b.processingHours - a.processingHours);
+                .sort((a, b) => b.hoursSinceSubmission - a.hoursSinceSubmission);
 
             // Count priority levels
             const highPriorityCount = priorityApplications.filter(app => app.priority === 'high').length;
@@ -525,8 +518,8 @@
 
             console.log('[Priorities] Server counts - High:', serverHighCount, 'Medium:', serverMediumCount);
             console.log('[Priorities] Calculated counts - High:', highPriorityCount, 'Medium:', mediumPriorityCount);
-            console.log('[Priorities] Total completed (not claimed) applications:', allApplications.filter(app => (app.status2 === 'approve' || app.status2 === 'disapprove') && app.status3 !== 'claimed').length);
-            console.log('[Priorities] Priority applications (processing time 1+ hours, not claimed):', priorityApplications.length);
+            console.log('[Priorities] Total pending/processing applications:', allApplications.filter(app => app.status === 'pending' || app.status === 'processing').length);
+            console.log('[Priorities] Priority applications:', priorityApplications.length);
 
             // Always use server counts as they are the source of truth
             const finalHighCount = serverHighCount;
@@ -583,8 +576,8 @@
                 }
 
                 prioritiesList.innerHTML = filteredApps.map(app => {
-                    const hours = Math.floor(app.processingHours);
-                    const minutes = Math.floor((app.processingHours - hours) * 60);
+                    const hours = Math.floor(app.hoursSinceSubmission);
+                    const minutes = Math.floor((app.hoursSinceSubmission - hours) * 60);
                     const timeString = `${hours}h ${minutes}m`;
                     const priorityLabel = app.priority === 'high' ? 'High Priority' : 'Medium Priority';
                     const url = getApplicationUrl(app);
@@ -607,12 +600,8 @@
                                     <span>Submitted: ${formatDate(app.createdAt)}</span>
                                 </div>
                                 <div class="priority-detail">
-                                    <i class="bi bi-check-circle"></i>
-                                    <span>Completed: ${formatDate(app.resultDate)}</span>
-                                </div>
-                                <div class="priority-detail">
                                     <i class="bi bi-hourglass-split"></i>
-                                    <span class="time-elapsed ${app.priority}">Processing time: ${timeString}</span>
+                                    <span class="time-elapsed ${app.priority}">${timeString} elapsed</span>
                                 </div>
                                 <div class="priority-detail">
                                     <i class="bi bi-tag"></i>
