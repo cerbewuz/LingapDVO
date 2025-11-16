@@ -216,12 +216,14 @@ namespace LingapDVO.Services
 
         /// <summary>
         /// Notify admins of new priority application
+        /// Note: For pending applications, uses current time to calculate wait time
         /// </summary>
         public async Task NotifyNewPriorityApplicationAsync(string applicationType, string applicantName, int formId, DateTime applicationDate)
         {
             try
             {
-                var priority = CalculatePriority(applicationDate);
+                // For pending applications, calculate wait time using current time
+                var priority = CalculatePriority(applicationDate, DateTime.Now);
 
                 // Only notify if medium or high priority
                 if (priority == "medium" || priority == "high")

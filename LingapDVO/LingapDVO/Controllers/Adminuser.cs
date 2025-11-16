@@ -5156,7 +5156,7 @@ namespace LingapDVO.Controllers
 
                 await context.SaveChangesAsync();
 
-                var totalTokens = totalTokens = 200; // Total form submission tokens
+                var totalTokens = 200; // Total form submission tokens
                 var totalAuditLogs = 200; // Total form submission audit logs
                 var totalRegTokens = userCount; // Total registration tokens
                 var totalRegAuditLogs = userCount; // Total registration audit logs
