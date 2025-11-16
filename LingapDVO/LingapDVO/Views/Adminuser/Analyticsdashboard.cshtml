@@ -932,7 +932,7 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Medical and Laboratory Procedure",
+                        type: "Other Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -951,14 +951,14 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Funeral and Burial Assistance",
+                        type: "Funeral Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
                         status3: "@f.Status3?.ToLower()",
                         brgy: "@f.Brgy",
-                        typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
+                        typeassistance: "Funeral Assistance", // Default for funeral forms
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -1203,7 +1203,7 @@
 
             // Update global chart data
             window.chartData = {
-                statusData: [statusCounts.approved, statusCounts.pending, statusCounts.processing, statusCounts.disapproved, statusCounts.claimed],
+                statusData: [statusCounts.approve, statusCounts.pending, statusCounts.processing, statusCounts.disapprove, statusCounts.claimed],
                 typeData: countApplicationTypes(applications),
                 statusLabels: ['Approve', 'Pending', 'Processing', 'Disapprove', 'Claimed'],
                 typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
@@ -1222,8 +1222,8 @@
 
             applications.forEach(app => {
                 if (app.type === "Hospital Bill Assistance") counts.hospital++;
-                else if (app.type === "Medical and Laboratory Procedure") counts.medical++;
-                else if (app.type === "Funeral and Burial Assistance") counts.funeral++;
+                else if (app.type === "Other Assistance") counts.medical++;
+                else if (app.type === "Funeral Assistance") counts.funeral++;
             });
 
             return [counts.hospital, counts.medical, counts.funeral];
@@ -2002,9 +2002,7 @@
                         },
                         x: {
                             ticks: {
-                                font: { size: 12 },
-                                maxRotation: 45,
-                                minRotation: 45
+                                font: { size: 12 }
                             }
                         }
                     }
@@ -2012,57 +2010,87 @@
             });
         }
 
+        // Process trends data
         function processTrendsData(applications, timeframe) {
-            const data = { labels: [], hospital: [], medical: [], funeral: [] };
-            const counts = {};
+            const now = new Date();
+            const dataMap = {
+                hospital: {},
+                medical: {},
+                funeral: {}
+            };
+            const labels = [];
 
+            // Generate labels based on timeframe
+            if (timeframe === 'daily') {
+                for (let i = 29; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - i);
+                    const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    labels.push(label);
+                    const key = date.toISOString().split('T')[0];
+                    dataMap.hospital[key] = 0;
+                    dataMap.medical[key] = 0;
+                    dataMap.funeral[key] = 0;
+                }
+            } else if (timeframe === 'weekly') {
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - (i * 7));
+                    const weekStart = new Date(date);
+                    weekStart.setDate(date.getDate() - date.getDay());
+                    const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    labels.push(`Week of ${label}`);
+                    const key = `week-${i}`;
+                    dataMap.hospital[key] = 0;
+                    dataMap.medical[key] = 0;
+                    dataMap.funeral[key] = 0;
+                }
+            } else { // monthly
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setMonth(date.getMonth() - i);
+                    const label = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+                    labels.push(label);
+                    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    dataMap.hospital[key] = 0;
+                    dataMap.medical[key] = 0;
+                    dataMap.funeral[key] = 0;
+                }
+            }
+
+            // Count applications
             applications.forEach(app => {
                 if (!app.createdAt) return;
-
                 const date = new Date(app.createdAt);
                 let key;
 
                 if (timeframe === 'daily') {
                     key = date.toISOString().split('T')[0];
                 } else if (timeframe === 'weekly') {
-                    const weekStart = new Date(date);
-                    weekStart.setDate(date.getDate() - date.getDay());
-                    key = weekStart.toISOString().split('T')[0];
-                } else {
+                    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+                    const weekIndex = Math.floor(diffDays / 7);
+                    if (weekIndex <= 11) key = `week-${weekIndex}`;
+                } else { // monthly
                     key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 }
 
-                if (!counts[key]) {
-                    counts[key] = { hospital: 0, medical: 0, funeral: 0 };
+                if (key) {
+                    if (app.type === 'Hospital Bill Assistance' && dataMap.hospital[key] !== undefined) {
+                        dataMap.hospital[key]++;
+                    } else if (app.type === 'Other Assistance' && dataMap.medical[key] !== undefined) {
+                        dataMap.medical[key]++;
+                    } else if (app.type === 'Funeral Assistance' && dataMap.funeral[key] !== undefined) {
+                        dataMap.funeral[key]++;
+                    }
                 }
-
-                if (app.type === "Hospital Bill Assistance") counts[key].hospital++;
-                else if (app.type === "Medical and Laboratory Procedure") counts[key].medical++;
-                else if (app.type === "Funeral and Burial Assistance") counts[key].funeral++;
             });
 
-            const sortedKeys = Object.keys(counts).sort();
-            const limit = timeframe === 'daily' ? 30 : 12;
-            const recentKeys = sortedKeys.slice(-limit);
-
-            recentKeys.forEach(key => {
-                let label;
-                if (timeframe === 'daily') {
-                    label = new Date(key).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                } else if (timeframe === 'weekly') {
-                    const weekStart = new Date(key);
-                    label = `Week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-                } else {
-                    label = new Date(key + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-                }
-
-                data.labels.push(label);
-                data.hospital.push(counts[key].hospital);
-                data.medical.push(counts[key].medical);
-                data.funeral.push(counts[key].funeral);
-            });
-
-            return data;
+            return {
+                labels,
+                hospital: Object.values(dataMap.hospital),
+                medical: Object.values(dataMap.medical),
+                funeral: Object.values(dataMap.funeral)
+            };
         }
 
         // Approval Rate by Assistance Type
@@ -2082,21 +2110,18 @@
                     datasets: [
                         {
                             label: 'Approved',
-                            data: approvalData.approvalRates,
-                            backgroundColor: colors.success,
-                            borderRadius: 8
+                            data: approvalData.approved,
+                            backgroundColor: colors.success + 'cc'
                         },
                         {
                             label: 'Disapproved',
-                            data: approvalData.disapprovalRates,
-                            backgroundColor: colors.danger,
-                            borderRadius: 8
+                            data: approvalData.disapproved,
+                            backgroundColor: colors.danger + 'cc'
                         },
                         {
                             label: 'Pending/Processing',
-                            data: approvalData.pendingRates,
-                            backgroundColor: colors.warning,
-                            borderRadius: 8
+                            data: approvalData.pending,
+                            backgroundColor: colors.warning + 'cc'
                         }
                     ]
                 },
@@ -2110,93 +2135,79 @@
                         },
                         title: {
                             display: true,
-                            text: 'Approval Rates by Assistance Type (%)',
+                            text: 'Approval Rate by Type',
                             font: { size: 18, weight: 'bold' }
                         },
                         tooltip: {
-                            titleFont: { size: 14 },
-                            bodyFont: { size: 14 },
                             callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.raw || 0;
-                                    const index = context.dataIndex;
-                                    const count = context.datasetIndex === 0 ? approvalData.approved[index] :
-                                                  context.datasetIndex === 1 ? approvalData.disapproved[index] :
-                                                  approvalData.pending[index];
-                                    return `${label}: ${value.toFixed(1)}% (${count} apps)`;
+                                afterLabel: function(context) {
+                                    const total = approvalData.totals[context.dataIndex];
+                                    const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                                    return `${percentage}% of total`;
                                 }
                             }
                         }
                     },
                     scales: {
+                        x: {
+                            stacked: true,
+                            ticks: { font: { size: 12 } }
+                        },
                         y: {
+                            stacked: true,
                             beginAtZero: true,
-                            max: 100,
                             ticks: {
-                                callback: function(value) { return value + '%'; },
+                                precision: 0,
                                 font: { size: 12 }
                             },
                             title: {
                                 display: true,
-                                text: 'Percentage',
+                                text: 'Number of Applications',
                                 font: { size: 14, weight: 'bold' }
                             }
-                        },
-                        x: {
-                            ticks: { font: { size: 13 } }
                         }
                     }
                 }
             });
         }
 
+        // Calculate approval rates
         function calculateApprovalRates(applications) {
-            const stats = {
+            const types = {
                 hospital: { approved: 0, disapproved: 0, pending: 0, total: 0 },
                 medical: { approved: 0, disapproved: 0, pending: 0, total: 0 },
                 funeral: { approved: 0, disapproved: 0, pending: 0, total: 0 }
             };
 
             applications.forEach(app => {
-                let category;
-                if (app.type === "Hospital Bill Assistance") category = 'hospital';
-                else if (app.type === "Medical and Laboratory Procedure") category = 'medical';
-                else if (app.type === "Funeral and Burial Assistance") category = 'funeral';
+                let typeKey;
+                if (app.type === 'Hospital Bill Assistance') typeKey = 'hospital';
+                else if (app.type === 'Other Assistance') typeKey = 'medical';
+                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
                 else return;
 
-                stats[category].total++;
+                types[typeKey].total++;
 
+                // Check status3 first for claimed (don't count)
                 if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                    stats[category].approved++;
-                } else if (app.status2 === 'approve') {
-                    stats[category].approved++;
+                    return; // Skip claimed applications
+                }
+
+                // Check status2 for approve/disapprove
+                if (app.status2 === 'approve') {
+                    types[typeKey].approved++;
                 } else if (app.status2 === 'disapprove') {
-                    stats[category].disapproved++;
+                    types[typeKey].disapproved++;
                 } else {
-                    stats[category].pending++;
+                    types[typeKey].pending++;
                 }
             });
 
             return {
-                approvalRates: [
-                    stats.hospital.total > 0 ? (stats.hospital.approved / stats.hospital.total) * 100 : 0,
-                    stats.medical.total > 0 ? (stats.medical.approved / stats.medical.total) * 100 : 0,
-                    stats.funeral.total > 0 ? (stats.funeral.approved / stats.funeral.total) * 100 : 0
-                ],
-                disapprovalRates: [
-                    stats.hospital.total > 0 ? (stats.hospital.disapproved / stats.hospital.total) * 100 : 0,
-                    stats.medical.total > 0 ? (stats.medical.disapproved / stats.medical.total) * 100 : 0,
-                    stats.funeral.total > 0 ? (stats.funeral.disapproved / stats.funeral.total) * 100 : 0
-                ],
-                pendingRates: [
-                    stats.hospital.total > 0 ? (stats.hospital.pending / stats.hospital.total) * 100 : 0,
-                    stats.medical.total > 0 ? (stats.medical.pending / stats.medical.total) * 100 : 0,
-                    stats.funeral.total > 0 ? (stats.funeral.pending / stats.funeral.total) * 100 : 0
-                ],
-                approved: [stats.hospital.approved, stats.medical.approved, stats.funeral.approved],
-                disapproved: [stats.hospital.disapproved, stats.medical.disapproved, stats.funeral.disapproved],
-                pending: [stats.hospital.pending, stats.medical.pending, stats.funeral.pending]
+                approved: [types.hospital.approved, types.medical.approved, types.funeral.approved],
+                disapproved: [types.hospital.disapproved, types.medical.disapproved, types.funeral.disapproved],
+                pending: [types.hospital.pending, types.medical.pending, types.funeral.pending],
+                totals: [types.hospital.total, types.medical.total, types.funeral.total]
             };
         }
 
@@ -2213,12 +2224,11 @@
             processingTimeChart = new Chart(context, {
                 type: 'bar',
                 data: {
-                    labels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial', 'Overall Average'],
+                    labels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
                     datasets: [{
-                        label: 'Average Processing Time (hours)',
-                        data: processingData.averageTimes,
-                        backgroundColor: [colors.hospital, colors.medical, colors.funeral, colors.info],
-                        borderRadius: 8
+                        label: 'Average Days',
+                        data: processingData.averageDays,
+                        backgroundColor: [colors.hospital + 'cc', colors.medical + 'cc', colors.funeral + 'cc']
                     }]
                 },
                 options: {
@@ -2230,24 +2240,13 @@
                         },
                         title: {
                             display: true,
-                            text: 'Average Time from Submission to Approval',
+                            text: 'Average Processing Time (Days)',
                             font: { size: 18, weight: 'bold' }
                         },
                         tooltip: {
-                            titleFont: { size: 14 },
-                            bodyFont: { size: 14 },
                             callbacks: {
                                 label: function(context) {
-                                    const hours = context.raw || 0;
-                                    const days = Math.floor(hours / 24);
-                                    const remainingHours = Math.floor(hours % 24);
-                                    const count = processingData.counts[context.dataIndex];
-
-                                    let timeStr = '';
-                                    if (days > 0) timeStr += `${days}d `;
-                                    timeStr += `${remainingHours}h`;
-
-                                    return `${timeStr} (${count} processed apps)`;
+                                    return `${context.raw.toFixed(1)} days average`;
                                 }
                             }
                         }
@@ -2255,66 +2254,50 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    const days = Math.floor(value / 24);
-                                    const hours = Math.floor(value % 24);
-                                    return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
-                                },
-                                font: { size: 12 }
-                            },
+                            ticks: { font: { size: 12 } },
                             title: {
                                 display: true,
-                                text: 'Hours',
+                                text: 'Days',
                                 font: { size: 14, weight: 'bold' }
                             }
                         },
                         x: {
-                            ticks: { font: { size: 13 } }
+                            ticks: { font: { size: 12 } }
                         }
                     }
                 }
             });
         }
 
+        // Calculate processing times
         function calculateProcessingTimes(applications) {
-            const stats = {
+            const types = {
                 hospital: { total: 0, count: 0 },
                 medical: { total: 0, count: 0 },
                 funeral: { total: 0, count: 0 }
             };
 
-            applications.forEach(app => {
-                // Only calculate for approved/disapproved applications
-                if (!app.status2 || (app.status2 !== 'approve' && app.status2 !== 'disapprove')) return;
-                if (!app.createdAt) return;
+            const now = new Date();
 
-                let category;
-                if (app.type === "Hospital Bill Assistance") category = 'hospital';
-                else if (app.type === "Medical and Laboratory Procedure") category = 'medical';
-                else if (app.type === "Funeral and Burial Assistance") category = 'funeral';
+            applications.forEach(app => {
+                let typeKey;
+                if (app.type === 'Hospital Bill Assistance') typeKey = 'hospital';
+                else if (app.type === 'Other Assistance') typeKey = 'medical';
+                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
                 else return;
 
-                // Calculate time in hours from submission to approval
-                const submitted = new Date(app.createdAt);
-                const now = new Date();
-                const hours = (now - submitted) / (1000 * 60 * 60);
-
-                stats[category].total += hours;
-                stats[category].count++;
+                // Calculate days since submission
+                const daysSinceSubmission = (now - new Date(app.createdAt)) / (1000 * 60 * 60 * 24);
+                types[typeKey].total += daysSinceSubmission;
+                types[typeKey].count++;
             });
 
-            const avgHospital = stats.hospital.count > 0 ? stats.hospital.total / stats.hospital.count : 0;
-            const avgMedical = stats.medical.count > 0 ? stats.medical.total / stats.medical.count : 0;
-            const avgFuneral = stats.funeral.count > 0 ? stats.funeral.total / stats.funeral.count : 0;
-            const overallAvg = (stats.hospital.count + stats.medical.count + stats.funeral.count) > 0 ?
-                (stats.hospital.total + stats.medical.total + stats.funeral.total) /
-                (stats.hospital.count + stats.medical.count + stats.funeral.count) : 0;
-
             return {
-                averageTimes: [avgHospital, avgMedical, avgFuneral, overallAvg],
-                counts: [stats.hospital.count, stats.medical.count, stats.funeral.count,
-                        stats.hospital.count + stats.medical.count + stats.funeral.count]
+                averageDays: [
+                    types.hospital.count > 0 ? types.hospital.total / types.hospital.count : 0,
+                    types.medical.count > 0 ? types.medical.total / types.medical.count : 0,
+                    types.funeral.count > 0 ? types.funeral.total / types.funeral.count : 0
+                ]
             };
         }
 
@@ -2336,33 +2319,28 @@
                     datasets: [
                         {
                             label: 'Approved',
-                            data: isPercentage ? statusData.approvedPct : statusData.approved,
-                            backgroundColor: colors.success,
-                            borderRadius: 6
+                            data: statusData.approved,
+                            backgroundColor: colors.success + 'cc'
                         },
                         {
                             label: 'Pending',
-                            data: isPercentage ? statusData.pendingPct : statusData.pending,
-                            backgroundColor: colors.warning,
-                            borderRadius: 6
+                            data: statusData.pending,
+                            backgroundColor: colors.warning + 'cc'
                         },
                         {
                             label: 'Processing',
-                            data: isPercentage ? statusData.processingPct : statusData.processing,
-                            backgroundColor: colors.processing,
-                            borderRadius: 6
+                            data: statusData.processing,
+                            backgroundColor: colors.processing + 'cc'
                         },
                         {
                             label: 'Disapproved',
-                            data: isPercentage ? statusData.disapprovedPct : statusData.disapproved,
-                            backgroundColor: colors.danger,
-                            borderRadius: 6
+                            data: statusData.disapproved,
+                            backgroundColor: colors.danger + 'cc'
                         },
                         {
                             label: 'Claimed',
-                            data: isPercentage ? statusData.claimedPct : statusData.claimed,
-                            backgroundColor: colors.info,
-                            borderRadius: 6
+                            data: statusData.claimed,
+                            backgroundColor: colors.info + 'cc'
                         }
                     ]
                 },
@@ -2376,26 +2354,15 @@
                         },
                         title: {
                             display: true,
-                            text: isPercentage ? 'Status Distribution by Type (%)' : 'Status Distribution by Type (Count)',
+                            text: 'Status Distribution by Assistance Type',
                             font: { size: 18, weight: 'bold' }
                         },
                         tooltip: {
-                            titleFont: { size: 14 },
-                            bodyFont: { size: 14 },
                             callbacks: {
                                 label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.raw || 0;
-                                    const index = context.dataIndex;
-                                    const actualCount = context.datasetIndex === 0 ? statusData.approved[index] :
-                                                       context.datasetIndex === 1 ? statusData.pending[index] :
-                                                       context.datasetIndex === 2 ? statusData.processing[index] :
-                                                       context.datasetIndex === 3 ? statusData.disapproved[index] :
-                                                       statusData.claimed[index];
-
-                                    return isPercentage ?
-                                        `${label}: ${value.toFixed(1)}% (${actualCount} apps)` :
-                                        `${label}: ${value} apps`;
+                                    const total = statusData.totals[context.dataIndex];
+                                    const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                                    return `${context.dataset.label}: ${context.raw} (${percentage}%)`;
                                 }
                             }
                         }
@@ -2403,17 +2370,18 @@
                     scales: {
                         x: {
                             stacked: chartType !== 'groupedBar',
-                            ticks: { font: { size: 13 } }
+                            ticks: { font: { size: 12 } }
                         },
                         y: {
                             stacked: chartType !== 'groupedBar',
                             beginAtZero: true,
                             max: isPercentage ? 100 : undefined,
                             ticks: {
+                                precision: 0,
+                                font: { size: 12 },
                                 callback: function(value) {
                                     return isPercentage ? value + '%' : value;
-                                },
-                                font: { size: 12 }
+                                }
                             },
                             title: {
                                 display: true,
@@ -2426,174 +2394,138 @@
             });
         }
 
+        // Calculate status by type
         function calculateStatusByType(applications) {
-            const stats = {
-                hospital: { approved: 0, pending: 0, processing: 0, disapproved: 0, claimed: 0, total: 0 },
-                medical: { approved: 0, pending: 0, processing: 0, disapproved: 0, claimed: 0, total: 0 },
-                funeral: { approved: 0, pending: 0, processing: 0, disapproved: 0, claimed: 0, total: 0 }
+            const types = {
+                hospital: { approved: 0, disapproved: 0, pending: 0, processing: 0, claimed: 0, total: 0 },
+                medical: { approved: 0, disapproved: 0, pending: 0, processing: 0, claimed: 0, total: 0 },
+                funeral: { approved: 0, disapproved: 0, pending: 0, processing: 0, claimed: 0, total: 0 }
             };
 
             applications.forEach(app => {
-                let category;
-                if (app.type === "Hospital Bill Assistance") category = 'hospital';
-                else if (app.type === "Medical and Laboratory Procedure") category = 'medical';
-                else if (app.type === "Funeral and Burial Assistance") category = 'funeral';
+                let typeKey;
+                if (app.type === 'Hospital Bill Assistance') typeKey = 'hospital';
+                else if (app.type === 'Other Assistance') typeKey = 'medical';
+                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
                 else return;
 
-                stats[category].total++;
+                types[typeKey].total++;
 
+                // Check status3 first for claimed
                 if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                    stats[category].claimed++;
-                } else if (app.status2 === 'approve') {
-                    stats[category].approved++;
+                    types[typeKey].claimed++;
+                    return;
+                }
+
+                // Check status2 for approve/disapprove
+                if (app.status2 === 'approve') {
+                    types[typeKey].approved++;
                 } else if (app.status2 === 'disapprove') {
-                    stats[category].disapproved++;
-                } else if (app.status === 'processing') {
-                    stats[category].processing++;
+                    types[typeKey].disapproved++;
                 } else if (app.status === 'pending') {
-                    stats[category].pending++;
+                    types[typeKey].pending++;
+                } else if (app.status === 'processing') {
+                    types[typeKey].processing++;
                 }
             });
 
             return {
-                approved: [stats.hospital.approved, stats.medical.approved, stats.funeral.approved],
-                pending: [stats.hospital.pending, stats.medical.pending, stats.funeral.pending],
-                processing: [stats.hospital.processing, stats.medical.processing, stats.funeral.processing],
-                disapproved: [stats.hospital.disapproved, stats.medical.disapproved, stats.funeral.disapproved],
-                claimed: [stats.hospital.claimed, stats.medical.claimed, stats.funeral.claimed],
-                approvedPct: [
-                    stats.hospital.total > 0 ? (stats.hospital.approved / stats.hospital.total) * 100 : 0,
-                    stats.medical.total > 0 ? (stats.medical.approved / stats.medical.total) * 100 : 0,
-                    stats.funeral.total > 0 ? (stats.funeral.approved / stats.funeral.total) * 100 : 0
-                ],
-                pendingPct: [
-                    stats.hospital.total > 0 ? (stats.hospital.pending / stats.hospital.total) * 100 : 0,
-                    stats.medical.total > 0 ? (stats.medical.pending / stats.medical.total) * 100 : 0,
-                    stats.funeral.total > 0 ? (stats.funeral.pending / stats.funeral.total) * 100 : 0
-                ],
-                processingPct: [
-                    stats.hospital.total > 0 ? (stats.hospital.processing / stats.hospital.total) * 100 : 0,
-                    stats.medical.total > 0 ? (stats.medical.processing / stats.medical.total) * 100 : 0,
-                    stats.funeral.total > 0 ? (stats.funeral.processing / stats.funeral.total) * 100 : 0
-                ],
-                disapprovedPct: [
-                    stats.hospital.total > 0 ? (stats.hospital.disapproved / stats.hospital.total) * 100 : 0,
-                    stats.medical.total > 0 ? (stats.medical.disapproved / stats.medical.total) * 100 : 0,
-                    stats.funeral.total > 0 ? (stats.funeral.disapproved / stats.funeral.total) * 100 : 0
-                ],
-                claimedPct: [
-                    stats.hospital.total > 0 ? (stats.hospital.claimed / stats.hospital.total) * 100 : 0,
-                    stats.medical.total > 0 ? (stats.medical.claimed / stats.medical.total) * 100 : 0,
-                    stats.funeral.total > 0 ? (stats.funeral.claimed / stats.funeral.total) * 100 : 0
-                ]
+                approved: [types.hospital.approved, types.medical.approved, types.funeral.approved],
+                pending: [types.hospital.pending, types.medical.pending, types.funeral.pending],
+                processing: [types.hospital.processing, types.medical.processing, types.funeral.processing],
+                disapproved: [types.hospital.disapproved, types.medical.disapproved, types.funeral.disapproved],
+                claimed: [types.hospital.claimed, types.medical.claimed, types.funeral.claimed],
+                totals: [types.hospital.total, types.medical.total, types.funeral.total]
             };
         }
 
         // Claim Rate Metrics
         function updateClaimRateMetrics() {
-            const container = document.getElementById('claimRateMetrics');
-            if (!container || !filteredData) return;
+            if (!filteredData) return;
 
-            const claimStats = calculateClaimStats(filteredData.allApplications);
+            const claimData = calculateClaimRates(filteredData.allApplications);
+            const container = document.getElementById('claimRateMetrics');
 
             container.innerHTML = `
                 <div class="col-md-3">
                     <div class="claim-metric-card">
                         <div class="claim-metric-label">Overall Claim Rate</div>
-                        <div class="claim-metric-value" style="color: ${colors.info};">
-                            ${claimStats.overallRate.toFixed(1)}%
-                        </div>
+                        <div class="claim-metric-value" style="color: ${colors.info};">${claimData.overall.rate}%</div>
                         <div class="claim-progress-bar">
-                            <div class="claim-progress-fill" style="width: ${claimStats.overallRate}%;"></div>
+                            <div class="claim-progress-fill" style="width: ${claimData.overall.rate}%;"></div>
                         </div>
-                        <div class="metric-subtext">${claimStats.totalClaimed} of ${claimStats.totalApproved} approved</div>
+                        <div class="metric-subtext">${claimData.overall.claimed} of ${claimData.overall.approved} approved</div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="claim-metric-card">
                         <div class="claim-metric-label">Hospital Bill Claims</div>
-                        <div class="claim-metric-value" style="color: ${colors.hospital};">
-                            ${claimStats.hospitalRate.toFixed(1)}%
-                        </div>
+                        <div class="claim-metric-value" style="color: ${colors.hospital};">${claimData.hospital.rate}%</div>
                         <div class="claim-progress-bar">
-                            <div class="claim-progress-fill" style="width: ${claimStats.hospitalRate}%; background: linear-gradient(90deg, ${colors.hospital}, ${colors.hospital}90);"></div>
+                            <div class="claim-progress-fill" style="width: ${claimData.hospital.rate}%; background: ${colors.hospital};"></div>
                         </div>
-                        <div class="metric-subtext">${claimStats.hospitalClaimed} of ${claimStats.hospitalApproved} claimed</div>
+                        <div class="metric-subtext">${claimData.hospital.claimed} of ${claimData.hospital.approved}</div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="claim-metric-card">
                         <div class="claim-metric-label">Medical/Lab Claims</div>
-                        <div class="claim-metric-value" style="color: ${colors.medical};">
-                            ${claimStats.medicalRate.toFixed(1)}%
-                        </div>
+                        <div class="claim-metric-value" style="color: ${colors.medical};">${claimData.medical.rate}%</div>
                         <div class="claim-progress-bar">
-                            <div class="claim-progress-fill" style="width: ${claimStats.medicalRate}%; background: linear-gradient(90deg, ${colors.medical}, ${colors.medical}90);"></div>
+                            <div class="claim-progress-fill" style="width: ${claimData.medical.rate}%; background: ${colors.medical};"></div>
                         </div>
-                        <div class="metric-subtext">${claimStats.medicalClaimed} of ${claimStats.medicalApproved} claimed</div>
+                        <div class="metric-subtext">${claimData.medical.claimed} of ${claimData.medical.approved}</div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="claim-metric-card">
                         <div class="claim-metric-label">Funeral/Burial Claims</div>
-                        <div class="claim-metric-value" style="color: ${colors.funeral};">
-                            ${claimStats.funeralRate.toFixed(1)}%
-                        </div>
+                        <div class="claim-metric-value" style="color: ${colors.funeral};">${claimData.funeral.rate}%</div>
                         <div class="claim-progress-bar">
-                            <div class="claim-progress-fill" style="width: ${claimStats.funeralRate}%; background: linear-gradient(90deg, ${colors.funeral}, ${colors.funeral}90);"></div>
+                            <div class="claim-progress-fill" style="width: ${claimData.funeral.rate}%; background: ${colors.funeral};"></div>
                         </div>
-                        <div class="metric-subtext">${claimStats.funeralClaimed} of ${claimStats.funeralApproved} claimed</div>
+                        <div class="metric-subtext">${claimData.funeral.claimed} of ${claimData.funeral.approved}</div>
                     </div>
                 </div>
             `;
         }
 
-        function calculateClaimStats(applications) {
-            const stats = {
-                hospital: { approved: 0, claimed: 0 },
-                medical: { approved: 0, claimed: 0 },
-                funeral: { approved: 0, claimed: 0 },
-                overall: { approved: 0, claimed: 0 }
+        // Calculate claim rates
+        function calculateClaimRates(applications) {
+            const data = {
+                overall: { approved: 0, claimed: 0, rate: 0 },
+                hospital: { approved: 0, claimed: 0, rate: 0 },
+                medical: { approved: 0, claimed: 0, rate: 0 },
+                funeral: { approved: 0, claimed: 0, rate: 0 }
             };
 
             applications.forEach(app => {
-                // Count approved applications (status2 = approve)
-                const isApproved = app.status2 === 'approve';
-                const isClaimed = app.status3 && app.status3.toLowerCase() === 'claimed';
-
-                if (!isApproved && !isClaimed) return;
-
-                let category;
-                if (app.type === "Hospital Bill Assistance") category = 'hospital';
-                else if (app.type === "Medical and Laboratory Procedure") category = 'medical';
-                else if (app.type === "Funeral and Burial Assistance") category = 'funeral';
+                let typeKey;
+                if (app.type === 'Hospital Bill Assistance') typeKey = 'hospital';
+                else if (app.type === 'Other Assistance') typeKey = 'medical';
+                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
                 else return;
 
-                if (isApproved || isClaimed) {
-                    stats[category].approved++;
-                    stats.overall.approved++;
-                }
+                // Count approved applications
+                if (app.status2 === 'approve') {
+                    data[typeKey].approved++;
+                    data.overall.approved++;
 
-                if (isClaimed) {
-                    stats[category].claimed++;
-                    stats.overall.claimed++;
+                    // Count claimed among approved
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                        data[typeKey].claimed++;
+                        data.overall.claimed++;
+                    }
                 }
             });
 
-            return {
-                overallRate: stats.overall.approved > 0 ? (stats.overall.claimed / stats.overall.approved) * 100 : 0,
-                hospitalRate: stats.hospital.approved > 0 ? (stats.hospital.claimed / stats.hospital.approved) * 100 : 0,
-                medicalRate: stats.medical.approved > 0 ? (stats.medical.claimed / stats.medical.approved) * 100 : 0,
-                funeralRate: stats.funeral.approved > 0 ? (stats.funeral.claimed / stats.funeral.approved) * 100 : 0,
-                totalApproved: stats.overall.approved,
-                totalClaimed: stats.overall.claimed,
-                hospitalApproved: stats.hospital.approved,
-                hospitalClaimed: stats.hospital.claimed,
-                medicalApproved: stats.medical.approved,
-                medicalClaimed: stats.medical.claimed,
-                funeralApproved: stats.funeral.approved,
-                funeralClaimed: stats.funeral.claimed
-            };
+            // Calculate rates
+            data.overall.rate = data.overall.approved > 0 ? Math.round((data.overall.claimed / data.overall.approved) * 100) : 0;
+            data.hospital.rate = data.hospital.approved > 0 ? Math.round((data.hospital.claimed / data.hospital.approved) * 100) : 0;
+            data.medical.rate = data.medical.approved > 0 ? Math.round((data.medical.claimed / data.medical.approved) * 100) : 0;
+            data.funeral.rate = data.funeral.approved > 0 ? Math.round((data.funeral.claimed / data.funeral.approved) * 100) : 0;
+
+            return data;
         }
     </script>
 </body>

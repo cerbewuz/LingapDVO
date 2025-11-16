@@ -607,8 +607,8 @@
                         <select class="filter-select" id="typeFilter">
                             <option value="all">All Types</option>
                             <option value="Hospital Assistance">Hospital Assistance</option>
-                            <option value="Medical and laboratory Procedure">Medical & Laboratory</option>
-                            <option value="Funeral and burial assistance">Funeral & Burial</option>
+                            <option value="Other Assistance">Other Assistance</option>
+                            <option value="Funeral Assistance">Funeral Assistance</option>
                         </select>
                         <select class="sort-select" id="sortSelect">
                             <option value="date-desc">Newest First</option>
@@ -706,7 +706,7 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Medical and Laboratory Procedure",
+                        type: "Other Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -723,7 +723,7 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Funeral and Burial Assistance",
+                        type: "Funeral Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -1062,7 +1062,7 @@
                         editUrl = `/HospitalAssistancePendingStatus/${app.formId}`;
                     }
 
-                } else if (app.type === "Medical and Laboratory Procedure") {
+                } else if (app.type === "Other Assistance") {
                     // Apply the same logic for Medical forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/OtherAssistanceClaimStatus/${app.formId}`;
@@ -1078,7 +1078,7 @@
                         editUrl = `/OtherAssistancePendingStatus/${app.formId}`;
                     }
 
-                } else if (app.type === "Funeral and Burial Assistance") {
+                } else if (app.type === "Funeral Assistance") {
                     // Apply the same logic for Funeral forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/FuneralAssistanceClaimStatus/${app.formId}`;
