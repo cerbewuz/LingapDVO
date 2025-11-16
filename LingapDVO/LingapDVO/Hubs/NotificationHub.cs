@@ -152,18 +152,19 @@ namespace LingapDVO.Hubs
 
         /// <summary>
         /// Get delay message based on priority level
+        /// Expected processing time: 1-2 hours from submission to decision
         /// </summary>
         private string GetDelayMessage(string priority, double hoursElapsed)
         {
             if (priority == "high")
             {
                 return $"Your application has been pending for {Math.Floor(hoursElapsed)} hours. " +
-                       "We apologize for the delay. Our team is working on it with high priority and will process it as soon as possible.";
+                       "We apologize for the delay (expected processing time: 1-2 hours). Our team is working on it with high priority and will process it as soon as possible.";
             }
             else if (priority == "medium")
             {
                 return $"Your application has been pending for over an hour. " +
-                       "Don't worry! It's in our queue and will be reviewed shortly.";
+                       "Expected processing time is 1-2 hours. Don't worry! It's in our queue and will be reviewed shortly.";
             }
             return "";
         }

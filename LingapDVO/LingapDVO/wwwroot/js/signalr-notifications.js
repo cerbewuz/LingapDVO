@@ -4,7 +4,6 @@
 
     // Check if SignalR is available
     if (typeof signalR === 'undefined') {
-        console.error('SignalR library not loaded. Please include SignalR client library.');
         return;
     }
 
@@ -17,7 +16,6 @@
 
     // Handle incoming notifications
     connection.on("ReceiveNotification", function (notification) {
-        console.log('Received notification:', notification);
 
         // Show toast/alert notification
         showNotificationToast(notification);
@@ -32,17 +30,14 @@
 
     // Connection lifecycle events
     connection.onreconnecting((error) => {
-        console.warn('SignalR reconnecting:', error);
         showConnectionStatus('Reconnecting to notification service...');
     });
 
     connection.onreconnected((connectionId) => {
-        console.log('SignalR reconnected:', connectionId);
         showConnectionStatus('Connected to notification service', 'success');
     });
 
     connection.onclose((error) => {
-        console.error('SignalR connection closed:', error);
         showConnectionStatus('Disconnected from notification service', 'error');
     });
 
@@ -50,10 +45,8 @@
     function startConnection() {
         connection.start()
             .then(function () {
-                console.log('SignalR connected successfully');
             })
             .catch(function (error) {
-                console.error('SignalR connection error:', error);
                 // Retry connection after 5 seconds
                 setTimeout(startConnection, 5000);
             });
@@ -142,13 +135,11 @@
                 }
             })
             .catch(error => {
-                console.error('Error updating notification badge:', error);
             });
     }
 
     // Show connection status message
     function showConnectionStatus(message, type = 'info') {
-        console.log(`[${type.toUpperCase()}] ${message}`);
         // You can enhance this to show a visual indicator if needed
     }
 
@@ -156,7 +147,7 @@
     function playNotificationSound() {
         // Uncomment to enable sound
         // const audio = new Audio('/sounds/notification.mp3');
-        // audio.play().catch(err => console.log('Could not play notification sound:', err));
+        // audio.play().catch(err =>
     }
 
     // Initialize when DOM is ready
@@ -175,7 +166,6 @@
 
         connection.invoke("SendNotificationToUser", userId, title, message, type, link)
             .catch(function (error) {
-                console.error('Error sending notification:', error);
             });
     });
 

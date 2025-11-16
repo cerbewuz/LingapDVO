@@ -1411,7 +1411,7 @@
                                         <div class="timeline-content">
                                             <h6>Application Submitted</h6>
                                             <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">Your Hospital assistance application was successfully submitted.</p>
+                                            <p class="timeline-description">We have received your application for Hospital assistance.</p>
                                         </div>
                                     </div>
 
@@ -1423,9 +1423,9 @@
                                                 <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Under Review</h6>
+                                                <h6>Being Reviewed</h6>
                                                 <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Reviewed by <strong>@doc.Processby</strong></p>
+                                                <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
                                     }
@@ -1436,8 +1436,8 @@
                                                 <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Pending Review</h6>
-                                                <p class="waiting-text">Your application is in queue for review. Please wait...</p>
+                                                <h6>Waiting for Review</h6>
+                                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
                                             </div>
                                         </div>
                                     }
@@ -1450,10 +1450,17 @@
                                                 <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application @(doc.Status2 == "Approve" ? "Approved" : doc.Status2)</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                             <p class="timeline-description text-gray-700 leading-relaxed">
-                                                Your application has been <span class="status-badge status-@(doc.Status2.ToLower()) ml-1">@doc.Status2</span>
+                                                @if (doc.Status2 == "Approve")
+                                                {
+                                                    <text>Your application has been approved. You can now claim your assistance.</text>
+                                                }
+                                                else
+                                                {
+                                                    <text>Your application was not approved at this time.</text>
+                                                }
                                             </p>
 
 
@@ -1478,7 +1485,7 @@
                                                         <h6>Assistance Released</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            Assistance successfully released: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            Your assistance has been released and completed.
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1491,7 +1498,7 @@
                                                     </div>
                                                     <div class="timeline-content">
                                                         <h6>Ready for Release</h6>
-                                                        <p class="waiting-text">Your assistance is ready. Please visit the office to claim...</p>
+                                                        <p class="waiting-text">Your assistance is ready. Please visit our office to collect it.</p>
                                                     </div>
                                                 </div>
                                             }
@@ -1504,8 +1511,8 @@
                                                 <i class="fas fa-clock"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Decision</h6>
-                                                <p class="waiting-text">We are checking your request. Please wait...</p>
+                                                <h6>Decision Pending</h6>
+                                                <p class="waiting-text">We are reviewing your application and will make a decision within 1-2 hours.</p>
                                             </div>
                                         </div>
                                     }
@@ -1566,7 +1573,7 @@
                                         <div class="timeline-content">
                                             <h6>Application Submitted</h6>
                                             <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">Your Medical assistance application was successfully submitted.</p>
+                                            <p class="timeline-description">We have received your application for Medical assistance.</p>
                                         </div>
                                     </div>
 
@@ -1578,9 +1585,9 @@
                                                 <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Under Review</h6>
+                                                <h6>Being Reviewed</h6>
                                                 <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Reviewed by <strong>@doc.Processby</strong></p>
+                                                <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
                                     }
@@ -1591,8 +1598,8 @@
                                                 <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Pending Review</h6>
-                                                <p class="waiting-text">Your application is in queue for review. Please wait...</p>
+                                                <h6>Waiting for Review</h6>
+                                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
                                             </div>
                                         </div>
                                     }
@@ -1605,11 +1612,21 @@
                                                 <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application @(doc.Status2 == "Approve" ? "Approved" : doc.Status2)</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">
-                                                    Your application has been <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
-                                                </p>
+                                            <p class="timeline-description text-gray-700 leading-relaxed">
+                                                @if (doc.Status2 == "Approve")
+                                                {
+                                                    <text>Your application has been approved. You can now claim your assistance.</text>
+                                                }
+                                                else
+                                                {
+                                                    <text>Your application was not approved at this time.</text>
+                                                }
+                                            </p>
+
+
+
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
                                                     <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
@@ -1630,7 +1647,7 @@
                                                         <h6>Assistance Released</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            Assistance successfully released: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            Your assistance has been released and completed.
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1643,7 +1660,7 @@
                                                     </div>
                                                     <div class="timeline-content">
                                                         <h6>Ready for Release</h6>
-                                                        <p class="waiting-text">Your assistance is ready. Please visit the office to claim...</p>
+                                                        <p class="waiting-text">Your assistance is ready. Please visit our office to collect it.</p>
                                                     </div>
                                                 </div>
                                             }
@@ -1656,8 +1673,8 @@
                                                 <i class="fas fa-clock"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Decision</h6>
-                                                <p class="waiting-text">We are checking your request. Please wait...</p>
+                                                <h6>Decision Pending</h6>
+                                                <p class="waiting-text">We are reviewing your application and will make a decision within 1-2 hours.</p>
                                             </div>
                                         </div>
                                     }
@@ -1718,7 +1735,7 @@
                                         <div class="timeline-content">
                                             <h6>Application Submitted</h6>
                                             <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">Your Funeral assistance application was successfully submitted.</p>
+                                            <p class="timeline-description">We have received your application for Funeral assistance.</p>
                                         </div>
                                     </div>
 
@@ -1730,9 +1747,9 @@
                                                 <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Under Review</h6>
+                                                <h6>Being Reviewed</h6>
                                                 <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Reviewed by <strong>@doc.Processby</strong></p>
+                                                <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
                                     }
@@ -1743,8 +1760,8 @@
                                                 <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Pending Review</h6>
-                                                <p class="waiting-text">Your application is in queue for review. Please wait...</p>
+                                                <h6>Waiting for Review</h6>
+                                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
                                             </div>
                                         </div>
                                     }
@@ -1757,11 +1774,21 @@
                                                 <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application @(doc.Status2 == "Approve" ? "Approved" : doc.Status2)</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">
-                                                    Your application has been <span class="status-badge status-@(doc.Status2.ToLower())">@doc.Status2</span>
-                                                </p>
+                                            <p class="timeline-description text-gray-700 leading-relaxed">
+                                                @if (doc.Status2 == "Approve")
+                                                {
+                                                    <text>Your application has been approved. You can now claim your assistance.</text>
+                                                }
+                                                else
+                                                {
+                                                    <text>Your application was not approved at this time.</text>
+                                                }
+                                            </p>
+
+
+
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
                                                     <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
@@ -1782,7 +1809,7 @@
                                                         <h6>Assistance Released</h6>
                                                         <span class="timeline-date">@doc.ClaimedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                         <p class="timeline-description">
-                                                            Assistance successfully released: <span class="status-badge status-@(doc.Status3.ToLower())">@doc.Status3</span>
+                                                            Your assistance has been released and completed.
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1795,7 +1822,7 @@
                                                     </div>
                                                     <div class="timeline-content">
                                                         <h6>Ready for Release</h6>
-                                                        <p class="waiting-text">Your assistance is ready. Please visit the office to claim...</p>
+                                                        <p class="waiting-text">Your assistance is ready. Please visit our office to collect it.</p>
                                                     </div>
                                                 </div>
                                             }
@@ -1808,8 +1835,8 @@
                                                 <i class="fas fa-clock"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Decision</h6>
-                                                <p class="waiting-text">We are checking your request. Please wait...</p>
+                                                <h6>Decision Pending</h6>
+                                                <p class="waiting-text">We are reviewing your application and will make a decision within 1-2 hours.</p>
                                             </div>
                                         </div>
                                     }

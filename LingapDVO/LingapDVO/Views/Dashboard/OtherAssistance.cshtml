@@ -22,6 +22,19 @@
                 transform: scale(1.05);
             }
 
+        /* Readonly field styling - indicates pre-populated non-editable fields */
+        .readonly-field,
+        .readonly-field:focus {
+            background-color: #e9ecef !important;
+            cursor: not-allowed !important;
+            border-color: #ced4da !important;
+            color: #495057 !important;
+        }
+
+        .readonly-field::placeholder {
+            color: #6c757d !important;
+        }
+
         /* Compact checkbox and radio button styling */
         .form-check-input {
             width: 1.1rem;
@@ -193,124 +206,260 @@
 
     <!-- Requestor Details -->
     <h5 class="section-header">Requestor's Details</h5>
+    @{
+        var isLastnameReadonly = ViewBag.Lastname != null && !string.IsNullOrEmpty(ViewBag.Lastname.ToString());
+        var isFirstnameReadonly = ViewBag.Firstname != null && !string.IsNullOrEmpty(ViewBag.Firstname.ToString());
+        var isMiddlenameReadonly = ViewBag.Middlename != null && !string.IsNullOrEmpty(ViewBag.Middlename.ToString());
+        var isSuffixReadonly = ViewBag.Suffix != null && !string.IsNullOrEmpty(ViewBag.Suffix.ToString());
+        var isBlkLotStreetReadonly = ViewBag.BlkLotStreet != null && !string.IsNullOrEmpty(ViewBag.BlkLotStreet.ToString());
+        var isSubVillReadonly = ViewBag.SubVill != null && !string.IsNullOrEmpty(ViewBag.SubVill.ToString());
+        var isBarangayReadonly = ViewBag.Barangay != null && !string.IsNullOrEmpty(ViewBag.Barangay.ToString());
+        var isDistrictReadonly = ViewBag.District != null && !string.IsNullOrEmpty(ViewBag.District.ToString());
+        var isPhonenumberReadonly = ViewBag.Phonenumber != null && !string.IsNullOrEmpty(ViewBag.Phonenumber.ToString());
+    }
     <div class="row g-3">
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">Last Name</label>
-            <input asp-for="RLastname" type="text" value="@ViewBag.Lastname" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+            @if (isLastnameReadonly)
+            {
+                <input asp-for="RLastname" type="text" value="@ViewBag.Lastname"
+                       oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                       class="form-control readonly-field" readonly>
+            }
+            else
+            {
+                <input asp-for="RLastname" type="text" value="@ViewBag.Lastname"
+                       oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                       class="form-control">
+            }
             <span asp-validation-for="RLastname" class="text-danger"></span>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">First Name</label>
-            <input asp-for="RFirstname" type="text" value="@ViewBag.Firstname" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+            @if (isFirstnameReadonly)
+            {
+                <input asp-for="RFirstname" type="text" value="@ViewBag.Firstname"
+                       oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                       class="form-control readonly-field" readonly>
+            }
+            else
+            {
+                <input asp-for="RFirstname" type="text" value="@ViewBag.Firstname"
+                       oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                       class="form-control">
+            }
             <span asp-validation-for="RFirstname" class="text-danger"></span>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">Middle Name</label>
-            <input asp-for="RMiddlename" type="text" value="@ViewBag.Middlename" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" class="form-control">
+            @if (isMiddlenameReadonly)
+            {
+                <input asp-for="RMiddlename" type="text" value="@ViewBag.Middlename"
+                       oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                       class="form-control readonly-field" readonly>
+            }
+            else
+            {
+                <input asp-for="RMiddlename" type="text" value="@ViewBag.Middlename"
+                       oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                       class="form-control">
+            }
             <span asp-validation-for="RMiddlename"></span>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">Suffix</label>
-            <select class="form-select" asp-for="RSuffix">
-                <option value="None" selected="@(ViewBag.Suffix == "None")">None</option>
-                <option value="Jr." selected="@(ViewBag.Suffix == "Jr.")">Jr.</option>
-                <option value="Sr." selected="@(ViewBag.Suffix == "Sr.")">Sr.</option>
-                <option value="II" selected="@(ViewBag.Suffix == "II")">II</option>
-                <option value="III" selected="@(ViewBag.Suffix == "III")">III</option>
-                <option value="IV" selected="@(ViewBag.Suffix == "IV")">IV</option>
-                <option value="V" selected="@(ViewBag.Suffix == "V")">V</option>
-            </select>
+            @if (isSuffixReadonly)
+            {
+                <select class="form-select readonly-field" asp-for="RSuffix" disabled>
+                    <option value="None">None</option>
+                    <option value="Jr.">Jr.</option>
+                    <option value="Sr.">Sr.</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                </select>
+                <input type="hidden" asp-for="RSuffix" value="@ViewBag.Suffix" />
+            }
+            else
+            {
+                <select class="form-select" asp-for="RSuffix">
+                    <option value="None">None</option>
+                    <option value="Jr.">Jr.</option>
+                    <option value="Sr.">Sr.</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                </select>
+            }
             <span asp-validation-for="RSuffix"></span>
         </div>
     </div>
 
     <!-- Requestor Address -->
     <div class="row g-3 mt-2">
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">Blk / Lot / Street</label>
-            <input asp-for="RBlkLotStreet" type="text" value="@ViewBag.BlkLotStreet" class="form-control">
+            @if (isBlkLotStreetReadonly)
+            {
+                <input asp-for="RBlkLotStreet" type="text" value="@ViewBag.BlkLotStreet"
+                       class="form-control readonly-field" readonly>
+            }
+            else
+            {
+                <input asp-for="RBlkLotStreet" type="text" value="@ViewBag.BlkLotStreet"
+                       class="form-control">
+            }
             <span asp-validation-for="RBlkLotStreet" class="text-danger"></span>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">Sub / Vill.</label>
-            <input asp-for="RSubVill" type="text" value="@ViewBag.SubVill" class="form-control">
+            @if (isSubVillReadonly)
+            {
+                <input asp-for="RSubVill" type="text" value="@ViewBag.SubVill"
+                       class="form-control readonly-field" readonly>
+            }
+            else
+            {
+                <input asp-for="RSubVill" type="text" value="@ViewBag.SubVill"
+                       class="form-control">
+            }
             <span asp-validation-for="RSubVill" class="text-danger"></span>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">Brgy.</label>
-            <input asp-for="RBrgy" type="text" value="@ViewBag.Barangay" class="form-control">
+            @if (isBarangayReadonly)
+            {
+                <input asp-for="RBrgy" type="text" value="@ViewBag.Barangay"
+                       class="form-control readonly-field" readonly>
+            }
+            else
+            {
+                <input asp-for="RBrgy" type="text" value="@ViewBag.Barangay"
+                       class="form-control">
+            }
             <span asp-validation-for="RBrgy" class="text-danger"></span>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">District</label>
-            <input asp-for="RDistrict" type="text" value="@ViewBag.District" class="form-control">
+            @if (isDistrictReadonly)
+            {
+                <input asp-for="RDistrict" type="text" value="@ViewBag.District"
+                       class="form-control readonly-field" readonly>
+            }
+            else
+            {
+                <input asp-for="RDistrict" type="text" value="@ViewBag.District"
+                       class="form-control">
+            }
             <span asp-validation-for="RDistrict" class="text-danger"></span>
         </div>
     </div>
 
     <div class="row g-3 mt-2">
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-12">
             <label class="form-label">Relationship to Patient</label>
             <input asp-for="RelationshipPatient" type="text" class="form-control">
             <span asp-validation-for="RelationshipPatient" class="text-danger"></span>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-12">
             <label class="form-label">Contact No.</label>
-            <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
-                   value="@ViewBag.Phonenumber"
-                   placeholder="0912-345-6789 or 02-123-4567"
-                   onkeypress="return event.charCode >= 48 && event.charCode <= 57"> <!-- Blocks letters -->
+            @if (isPhonenumberReadonly)
+            {
+                <input asp-for="ContactNo" type="text" class="form-control readonly-field" id="contactNoInput"
+                       value="@ViewBag.Phonenumber"
+                       placeholder="+639XXXXXXXXX or 09XXXXXXXXX" readonly>
+            }
+            else
+            {
+                <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
+                       value="@ViewBag.Phonenumber"
+                       placeholder="+639XXXXXXXXX or 09XXXXXXXXX">
+            }
             <span asp-validation-for="ContactNo"></span>
-            <small class="text-muted">Format: 0912-345-6789 (mobile) or 02-123-4567 (landline)</small>
+            <small class="text-muted">Format: +639XXXXXXXXX or 09XXXXXXXXX</small>
         </div>
 
         <script>
             const contactNoInput = document.getElementById('contactNoInput');
 
             contactNoInput.addEventListener('input', function(e) {
-                // Remove all non-digit characters (extra safety)
-                let value = this.value.replace(/\D/g, '');
+                let value = this.value;
 
-                // Mobile number (09XXXXXXXXX)
-                if (value.startsWith('09') && value.length <= 11) {
-                    if (value.length > 4) {
-                        value = value.substring(0, 4) + '-' + value.substring(4);
-                    }
-                    if (value.length > 8) {
-                        value = value.substring(0, 8) + '-' + value.substring(8);
+                // Handle +639 format (international)
+                if (value.startsWith('+639') || value.startsWith('+63')) {
+                    // Keep the + and digits only
+                    value = value.replace(/[^\+\d]/g, '');
+                    // Limit to +639XXXXXXXXX (13 chars total)
+                    if (value.length > 13) {
+                        value = value.substring(0, 13);
                     }
                 }
-                // Landline (02XXXXXXXX or area code)
-                else if ((value.startsWith('02') || /^[1-9]\d{1}$/.test(value.substring(0,2)))) {
-                    if (value.length > 2) {
-                        value = value.substring(0, 2) + '-' + value.substring(2);
-                    }
-                    if (value.length > 6) {
-                        value = value.substring(0, 6) + '-' + value.substring(6);
+                // Handle 639 format (without +)
+                else if (value.startsWith('639') || value.startsWith('63')) {
+                    // Keep digits only
+                    value = value.replace(/\D/g, '');
+                    // Limit to 639XXXXXXXXX (12 chars total)
+                    if (value.length > 12) {
+                        value = value.substring(0, 12);
                     }
                 }
-
-                // Limit length (11 digits for mobile, 10 for landline)
-                const maxLength = value.startsWith('09') ? 13 : 11; // Includes hyphens
-                if (value.length > maxLength) {
-                    value = value.substring(0, maxLength);
+                // Handle 09 format (local)
+                else if (value.startsWith('09') || value.startsWith('0')) {
+                    // Keep digits only
+                    value = value.replace(/\D/g, '');
+                    // Limit to 09XXXXXXXXX (11 chars total)
+                    if (value.length > 11) {
+                        value = value.substring(0, 11);
+                    }
+                }
+                // Handle 9 format (just the number part)
+                else if (/^9/.test(value)) {
+                    // Keep digits only
+                    value = value.replace(/\D/g, '');
+                    // Limit to 9XXXXXXXXX (10 chars total)
+                    if (value.length > 10) {
+                        value = value.substring(0, 10);
+                    }
+                }
+                else {
+                    // Default: remove non-digit and non-plus characters
+                    value = value.replace(/[^\+\d]/g, '');
                 }
 
                 this.value = value;
             });
 
-            // Strict validation on blur (optional)
+            // Validation on blur
             contactNoInput.addEventListener('blur', function() {
-                const regex = /^(09\d{2}-\d{3}-\d{4}|0[2-9]\d-\d{3}-\d{4})$/;
-                if (this.value && !regex.test(this.value)) {
-                    alert("Please enter a valid Philippine number (e.g., 0912-345-6789 or 02-123-4567)");
+                const value = this.value.trim();
+                if (!value) return; // Skip validation if empty
+
+                // Accept formats: +639XXXXXXXXX (13), 639XXXXXXXXX (12), 09XXXXXXXXX (11), 9XXXXXXXXX (10)
+                const validFormats = [
+                    /^\+639\d{9}$/,    // +639XXXXXXXXX
+                    /^639\d{9}$/,      // 639XXXXXXXXX
+                    /^09\d{9}$/,       // 09XXXXXXXXX
+                    /^9\d{9}$/         // 9XXXXXXXXX
+                ];
+
+                const isValid = validFormats.some(regex => regex.test(value));
+
+                if (!isValid) {
+                    alert("Please enter a valid Philippine mobile number:\n" +
+                          "Accepted formats:\n" +
+                          "• +639XXXXXXXXX\n" +
+                          "• 639XXXXXXXXX\n" +
+                          "• 09XXXXXXXXX\n" +
+                          "• 9XXXXXXXXX");
                     this.focus();
                 }
             });
@@ -781,7 +930,7 @@
                 <h5 class="modal-title" id="successModalLabel">Application Submitted Successfully!</h5>
                 <p class="modal-description">
                     Your Other Assistance application has been received.
-                    <br>We'll review it and get back to you soon.
+                    <br>We'll review it within 1-2 hours and get back to you with a decision.
                 </p>
 
                 <!-- Countdown Timer -->
@@ -1232,27 +1381,42 @@
 <style>
     /* Success Modal Styles - Enhanced Design with Proper Z-Index */
     #successModal {
-        z-index: 10000 !important;
+        z-index: 99999 !important;
+        isolation: isolate;
+    }
+
+    #successModal.show {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 
     #successModal .modal-dialog {
-        z-index: 10001 !important;
+        z-index: 100000 !important;
         position: relative;
+        margin: 0 auto;
     }
 
     /* Bootstrap modal backdrop - direct child of body */
     .modal-backdrop {
-        z-index: 9999 !important;
-        backdrop-filter: blur(4px);
-        background-color: rgba(0, 0, 0, 0.6) !important;
+        z-index: 99998 !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+
+    .modal-backdrop.show {
+        opacity: 1 !important;
     }
 
     #successModal .modal-content {
         border-radius: 20px;
         border: none;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         overflow: hidden;
         background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        position: relative;
+        z-index: 100001;
     }
 
     #successModal .modal-body {
@@ -2002,14 +2166,6 @@
                                     this.value = value;
                                 });
 
-                                // Strict validation on blur (optional)
-                                contactNoInput.addEventListener('blur', function() {
-                                    const regex = /^(09\d{2}-\d{3}-\d{4}|0[2-9]\d-\d{3}-\d{4})$/;
-                                    if (this.value && !regex.test(this.value)) {
-                                        alert("Please enter a valid Philippine number (e.g., 0912-345-6789 or 02-123-4567)");
-                                        this.focus();
-                                    }
-                                });
 
         // Function to show success modal and redirect
                 function showSuccessModal() {

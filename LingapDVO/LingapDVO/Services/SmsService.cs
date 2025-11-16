@@ -43,15 +43,28 @@ namespace LingapDVO.Services
                     return false;
                 }
 
-                // Normalize phone number - iProg accepts: 639XXXXXXXXX or 09XXXXXXXXX
+                // Normalize phone number - iProg accepts: 639XXXXXXXXX format
+                // Input formats accepted: +639XXXXXXXXX, 639XXXXXXXXX, 09XXXXXXXXX
                 string normalizedPhone = phoneNumber;
-                if (phoneNumber.StartsWith("0"))
+
+                // Remove + prefix if present
+                if (normalizedPhone.StartsWith("+"))
                 {
-                    normalizedPhone = "63" + phoneNumber.Substring(1);
+                    normalizedPhone = normalizedPhone.Substring(1);
                 }
-                else if (!phoneNumber.StartsWith("63"))
+
+                // Remove spaces, dashes, and parentheses
+                normalizedPhone = normalizedPhone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+
+                // Convert 09XXXXXXXXX to 639XXXXXXXXX
+                if (normalizedPhone.StartsWith("0"))
                 {
-                    normalizedPhone = "63" + phoneNumber;
+                    normalizedPhone = "63" + normalizedPhone.Substring(1);
+                }
+                // If doesn't start with 63, add it
+                else if (!normalizedPhone.StartsWith("63"))
+                {
+                    normalizedPhone = "63" + normalizedPhone;
                 }
 
                 _logger.LogInformation($"   Normalized phone: {normalizedPhone}");
