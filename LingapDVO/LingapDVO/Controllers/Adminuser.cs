@@ -4537,6 +4537,297 @@ namespace LingapDVO.Controllers
             return ratings.Any() ? Math.Round(ratings.Average(), 2) : 0;
         }
 
+        // TEMPORARY: Action to generate 200 realistic dummy data records
+        // This will be removed after data is generated
+        public async Task<IActionResult> GenerateDummyData()
+        {
+            if (HttpContext.Session.GetString("IsAdmin") != "true")
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            try
+            {
+                // First, clear existing test data if needed (be careful with this in production!)
+                // Uncomment below to clear existing data:
+                // context.HospitalAssistance.RemoveRange(context.HospitalAssistance);
+                // context.OtherAssistance.RemoveRange(context.OtherAssistance);
+                // context.FuneralAssistance.RemoveRange(context.FuneralAssistance);
+                // await context.SaveChangesAsync();
+
+                var random = new Random(42); // Fixed seed for reproducibility
+                var now = DateTime.Now;
+
+                // Arrays of realistic Filipino data
+                var firstNames = new[] { "Juan", "Maria", "Jose", "Ana", "Pedro", "Rosa", "Miguel", "Elena", "Roberto", "Carmen", "Luis", "Sofia", "Carlos", "Isabella", "Diego", "Gabriela", "Fernando", "Valentina", "Antonio", "Camila", "Manuel", "Victoria", "Rafael", "Lucia", "Andres", "Mariana", "Jorge", "Paula", "Ricardo", "Diana", "Francisco", "Catalina", "Alejandro", "Daniela", "Martin", "Adriana", "Javier", "Natalia", "Raul", "Angela" };
+                var lastNames = new[] { "Santos", "Reyes", "Cruz", "Bautista", "Garcia", "Gonzales", "Flores", "Mendoza", "Torres", "Lopez", "Ramos", "Rivera", "Gomez", "Hernandez", "Perez", "Martinez", "Rodriguez", "Fernandez", "Morales", "Castillo", "Aquino", "Villarosa", "Dela Cruz", "Villanueva", "Santiago", "Medina", "Roxas", "Ocampo", "Aguilar", "Soriano", "Navarro", "Pascual", "Lim", "Tan", "Ong", "Chua", "Wong", "Lee", "Chan", "Go" };
+                var middleNames = new[] { "Santos", "Cruz", "Reyes", "Garcia", "Bautista", "Flores", "Lopez", "Ramos", "Perez", "Gonzales", "Mendoza", "Torres", "Rivera", "Martinez", "Gomez", "Rodriguez", "Fernandez", "Morales", "Castillo", "Aquino" };
+                var barangays = new[] { "Agdao", "Bankerohan", "Buhangin", "Bunawan", "Calinan", "Daliao", "Davao City Proper", "Lanang", "Ma-a", "Matina", "Mintal", "Panacan", "Sasa", "Talomo", "Tibungco", "Toril", "Tugbok", "Ula", "Bago Oshiro", "Bago Gallera", "Catalunan Grande", "Catalunan Pequeño", "Dumoy", "Indangan", "Leon Garcia", "Marilog", "Paquibato", "Shrine Hills", "Tacunan", "Waan", "Wilfredo Aquino" };
+                var streets = new[] { "Roxas Avenue", "J.P. Laurel Avenue", "C.M. Recto Street", "Bonifacio Street", "Rizal Street", "Quirino Avenue", "Osmeña Boulevard", "Mabini Street", "Aguinaldo Street", "Luna Street", "Del Pilar Street", "Quezon Boulevard", "Magallanes Street", "Lapu-Lapu Street", "San Pedro Street" };
+                var assistanceTypes = new[] { "Hospital Bill Assistance", "Medicines", "Laboratory", "Medical and Surgical Procedures" };
+                var funeralTypes = new[] { "Funeral and Burial Assistance" };
+                var sexes = new[] { "Male", "Female" };
+                var philHealthStatuses = new[] { "Yes", "No" };
+                var relationships = new[] { "Parent", "Spouse", "Child", "Sibling", "Relative", "Guardian", "Friend" };
+                var processors = new[] { "Admin Santos", "Admin Garcia", "Admin Cruz", "Admin Reyes", "Admin Flores" };
+
+                var generatedRecords = 0;
+                var userId = 1; // Default user ID for dummy data
+
+                // Distribute 200 records: 80 Hospital, 70 Medical/Lab, 50 Funeral
+                var hospitalCount = 80;
+                var medicalCount = 70;
+                var funeralCount = 50;
+
+                // Generate Hospital Assistance records
+                for (int i = 0; i < hospitalCount; i++)
+                {
+                    var createdDate = now.AddDays(-random.Next(1, 180)); // Within last 6 months
+                    var status = DetermineStatus(random);
+                    var age = random.Next(18, 80);
+                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+
+                    var record = new HospitalAssistance
+                    {
+                        UserId = userId,
+                        Lastname = lastNames[random.Next(lastNames.Length)],
+                        Firstname = firstNames[random.Next(firstNames.Length)],
+                        Middlename = middleNames[random.Next(middleNames.Length)],
+                        Suffix = random.Next(10) > 7 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
+                        BlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        SubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        Brgy = barangays[random.Next(barangays.Length)],
+                        District = $"District {random.Next(1, 4)}",
+                        Sex = sexes[random.Next(sexes.Length)],
+                        PhilHealth = philHealthStatuses[random.Next(philHealthStatuses.Length)],
+                        PhilHealthNo = random.Next(2) == 0 ? $"12-{random.Next(100000000, 999999999)}-{random.Next(0, 10)}" : "",
+                        Dateofbirth = dateOfBirth,
+                        Age = age.ToString(),
+
+                        // Requestor details
+                        RLastname = lastNames[random.Next(lastNames.Length)],
+                        RFirstname = firstNames[random.Next(firstNames.Length)],
+                        RMiddlename = middleNames[random.Next(middleNames.Length)],
+                        RSuffix = "",
+                        RBlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        RSubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        RBrgy = barangays[random.Next(barangays.Length)],
+                        RDistrict = $"District {random.Next(1, 4)}",
+                        RelationshipPatient = relationships[random.Next(relationships.Length)],
+                        ContactNo = $"09{random.Next(100000000, 999999999)}",
+
+                        Typeassistance = "Hospital Bill Assistance",
+                        ForCMOPERSONNEL = "",
+                        Validfrontimage = "dummy_id_front.jpg",
+                        ValidBackimage = "dummy_id_back.jpg",
+                        DoctorPrescription = "dummy_prescription.jpg",
+                        DeathCertificate = "",
+
+                        CreatedAt = createdDate,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddHours(random.Next(2, 48)) : DateTime.MinValue,
+                        Status = status.Status,
+                        Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
+                        Comments = status.Comments,
+                        Result = status.Status2 != "" ? createdDate.AddHours(random.Next(48, 120)) : DateTime.MinValue,
+                        Status2 = status.Status2,
+                        ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
+                        Status3 = status.Status3
+                    };
+
+                    context.HospitalAssistance.Add(record);
+                    generatedRecords++;
+                }
+
+                // Generate Medical/Laboratory Assistance records
+                for (int i = 0; i < medicalCount; i++)
+                {
+                    var createdDate = now.AddDays(-random.Next(1, 180));
+                    var status = DetermineStatus(random);
+                    var age = random.Next(18, 80);
+                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+
+                    var record = new OtherAssistance
+                    {
+                        UserId = userId,
+                        Lastname = lastNames[random.Next(lastNames.Length)],
+                        Firstname = firstNames[random.Next(firstNames.Length)],
+                        Middlename = middleNames[random.Next(middleNames.Length)],
+                        Suffix = random.Next(10) > 7 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
+                        BlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        SubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        Brgy = barangays[random.Next(barangays.Length)],
+                        District = $"District {random.Next(1, 4)}",
+                        Sex = sexes[random.Next(sexes.Length)],
+                        PhilHealth = philHealthStatuses[random.Next(philHealthStatuses.Length)],
+                        PhilHealthNo = random.Next(2) == 0 ? $"12-{random.Next(100000000, 999999999)}-{random.Next(0, 10)}" : "",
+                        Dateofbirth = dateOfBirth,
+                        Age = age.ToString(),
+
+                        // Requestor details
+                        RLastname = lastNames[random.Next(lastNames.Length)],
+                        RFirstname = firstNames[random.Next(firstNames.Length)],
+                        RMiddlename = middleNames[random.Next(middleNames.Length)],
+                        RSuffix = "",
+                        RBlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        RSubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        RBrgy = barangays[random.Next(barangays.Length)],
+                        RDistrict = $"District {random.Next(1, 4)}",
+                        RelationshipPatient = relationships[random.Next(relationships.Length)],
+                        ContactNo = $"09{random.Next(100000000, 999999999)}",
+
+                        Typeassistance = assistanceTypes[random.Next(1, assistanceTypes.Length)], // Skip first one (Hospital Bill)
+                        ForCMOPERSONNEL = "",
+                        Validfrontimage = "dummy_id_front.jpg",
+                        ValidBackimage = "dummy_id_back.jpg",
+                        DoctorPrescription = "dummy_prescription.jpg",
+                        DeathCertificate = "",
+                        MedCertificate = "dummy_med_cert.jpg",
+
+                        CreatedAt = createdDate,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddHours(random.Next(2, 48)) : DateTime.MinValue,
+                        Status = status.Status,
+                        Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
+                        Comments = status.Comments,
+                        Result = status.Status2 != "" ? createdDate.AddHours(random.Next(48, 120)) : DateTime.MinValue,
+                        Status2 = status.Status2,
+                        ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
+                        Status3 = status.Status3
+                    };
+
+                    context.OtherAssistance.Add(record);
+                    generatedRecords++;
+                }
+
+                // Generate Funeral Assistance records
+                for (int i = 0; i < funeralCount; i++)
+                {
+                    var createdDate = now.AddDays(-random.Next(1, 180));
+                    var status = DetermineStatus(random);
+                    var age = random.Next(18, 80);
+                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+
+                    var record = new FuneralAssistance
+                    {
+                        UserId = userId,
+                        Lastname = lastNames[random.Next(lastNames.Length)],
+                        Firstname = firstNames[random.Next(firstNames.Length)],
+                        Middlename = middleNames[random.Next(middleNames.Length)],
+                        Suffix = random.Next(10) > 7 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
+                        BlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        SubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        Brgy = barangays[random.Next(barangays.Length)],
+                        District = $"District {random.Next(1, 4)}",
+                        Sex = sexes[random.Next(sexes.Length)],
+                        PhilHealth = philHealthStatuses[random.Next(philHealthStatuses.Length)],
+                        PhilHealthNo = random.Next(2) == 0 ? $"12-{random.Next(100000000, 999999999)}-{random.Next(0, 10)}" : "",
+                        Dateofbirth = dateOfBirth,
+                        Age = age.ToString(),
+
+                        // Requestor details
+                        RLastname = lastNames[random.Next(lastNames.Length)],
+                        RFirstname = firstNames[random.Next(firstNames.Length)],
+                        RMiddlename = middleNames[random.Next(middleNames.Length)],
+                        RSuffix = "",
+                        RBlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        RSubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        RBrgy = barangays[random.Next(barangays.Length)],
+                        RDistrict = $"District {random.Next(1, 4)}",
+                        RelationshipPatient = relationships[random.Next(relationships.Length)],
+                        ContactNo = $"09{random.Next(100000000, 999999999)}",
+
+                        Typeassistance = "Funeral and Burial Assistance",
+                        ForCMOPERSONNEL = "",
+                        Validfrontimage = "dummy_id_front.jpg",
+                        ValidBackimage = "dummy_id_back.jpg",
+                        DoctorPrescription = "",
+                        DeathCertificate = "dummy_death_cert.jpg",
+
+                        CreatedAt = createdDate,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddHours(random.Next(2, 48)) : DateTime.MinValue,
+                        Status = status.Status,
+                        Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
+                        Comments = status.Comments,
+                        Result = status.Status2 != "" ? createdDate.AddHours(random.Next(48, 120)) : DateTime.MinValue,
+                        Status2 = status.Status2,
+                        ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
+                        Status3 = status.Status3
+                    };
+
+                    context.FuneralAssistance.Add(record);
+                    generatedRecords++;
+                }
+
+                await context.SaveChangesAsync();
+
+                return Ok(new {
+                    success = true,
+                    message = $"Successfully generated {generatedRecords} dummy records!",
+                    details = new {
+                        hospital = hospitalCount,
+                        medical = medicalCount,
+                        funeral = funeralCount
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Error generating dummy data: {ex.Message}" });
+            }
+        }
+
+        // Helper method to determine realistic status progression
+        private (string Status, string Status2, string Status3, string Comments) DetermineStatus(Random random)
+        {
+            var roll = random.Next(100);
+
+            // 15% pending (new applications)
+            if (roll < 15)
+            {
+                return ("pending", "", "", "");
+            }
+            // 15% processing (being reviewed)
+            else if (roll < 30)
+            {
+                return ("processing", "", "", "Under review by admin");
+            }
+            // 40% approved (processed and approved)
+            else if (roll < 70)
+            {
+                var comments = new[] {
+                    "Application approved. Documents verified.",
+                    "Assistance granted. All requirements met.",
+                    "Approved for processing. Complete documentation provided.",
+                    "Application successful. Ready for assistance.",
+                    "Verified and approved. Proceed to claiming."
+                };
+                return ("processing", "approve", "", comments[random.Next(comments.Length)]);
+            }
+            // 20% claimed (approved and claimed)
+            else if (roll < 90)
+            {
+                var comments = new[] {
+                    "Application approved. Documents verified. Assistance claimed.",
+                    "Assistance granted and successfully claimed.",
+                    "Approved and claimed. Process completed.",
+                    "Application successful. Assistance provided.",
+                    "Verified, approved, and claimed successfully."
+                };
+                return ("processing", "approve", "claimed", comments[random.Next(comments.Length)]);
+            }
+            // 10% disapproved (rejected)
+            else
+            {
+                var comments = new[] {
+                    "Incomplete documentation. Please provide missing requirements.",
+                    "Application does not meet eligibility criteria.",
+                    "Documents need verification. Please resubmit.",
+                    "Duplicate application found.",
+                    "Applicant does not qualify for this type of assistance."
+                };
+                return ("processing", "disapprove", "", comments[random.Next(comments.Length)]);
+            }
+        }
+
 
     }
 
