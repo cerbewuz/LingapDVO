@@ -5184,22 +5184,23 @@ namespace LingapDVO.Controllers
         }
 
         // Helper method to determine realistic status progression
+        // Updated to align with new priority tracking system (excludes claimed from priorities)
         private (string Status, string Status2, string Status3, string Comments) DetermineStatus(Random random)
         {
             var roll = random.Next(100);
 
-            // 15% pending (new applications)
-            if (roll < 15)
+            // 10% pending (new applications) - NOT in priorities
+            if (roll < 10)
             {
                 return ("pending", "", "", "");
             }
-            // 15% processing (being reviewed)
-            else if (roll < 30)
+            // 5% processing (being reviewed) - NOT in priorities
+            else if (roll < 15)
             {
                 return ("processing", "", "", "Under review by admin");
             }
-            // 40% approved (processed and approved)
-            else if (roll < 70)
+            // 50% approved not claimed - IN PRIORITY POOL
+            else if (roll < 65)
             {
                 var comments = new[] {
                     "Application approved. Documents verified.",
@@ -5210,8 +5211,8 @@ namespace LingapDVO.Controllers
                 };
                 return ("processing", "approve", "", comments[random.Next(comments.Length)]);
             }
-            // 20% claimed (approved and claimed)
-            else if (roll < 90)
+            // 10% claimed (approved and claimed) - NOT in priorities (completed)
+            else if (roll < 75)
             {
                 var comments = new[] {
                     "Application approved. Documents verified. Assistance claimed.",
@@ -5222,7 +5223,7 @@ namespace LingapDVO.Controllers
                 };
                 return ("processing", "approve", "claimed", comments[random.Next(comments.Length)]);
             }
-            // 10% disapproved (rejected)
+            // 25% disapproved - IN PRIORITY POOL
             else
             {
                 var comments = new[] {
@@ -5238,21 +5239,22 @@ namespace LingapDVO.Controllers
 
         // Helper method to generate realistic processing times
         // Returns processing time in minutes
+        // Updated to create more priority applications for demonstration
         private int GenerateProcessingTime(Random random)
         {
             var roll = random.Next(100);
 
-            // 70% processed in less than 1 hour (10-55 minutes) - No priority
-            if (roll < 70)
+            // 60% processed in less than 1 hour (10-55 minutes) - No priority
+            if (roll < 60)
             {
                 return random.Next(10, 56);
             }
-            // 15% processed in 1-2 hours (60-119 minutes) - Medium priority
-            else if (roll < 85)
+            // 20% processed in 1-2 hours (60-119 minutes) - Medium priority
+            else if (roll < 80)
             {
                 return random.Next(60, 120);
             }
-            // 15% processed in 2-4 hours (120-240 minutes) - High priority
+            // 20% processed in 2-4 hours (120-240 minutes) - High priority
             else
             {
                 return random.Next(120, 241);
