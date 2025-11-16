@@ -434,12 +434,12 @@
             // Combine all applications from the model
             const allApplications = [];
 
-            // Add Hospital Bills
+            // Add Hospital Assistance
             @foreach (var f in Model.HospitalAssistance)
             {
                 <text>
                 allApplications.push({
-                    type: "Hospital Bill Assistance",
+                    type: "Hospital Assistance",
                     name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                     createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                     status: "@f.Status?.ToLower()",
@@ -451,7 +451,7 @@
                 </text>
             }
 
-            // Add Medical Lab Forms
+            // Add Other Assistance
             @foreach (var f in Model.OtherAssistance)
             {
                 <text>

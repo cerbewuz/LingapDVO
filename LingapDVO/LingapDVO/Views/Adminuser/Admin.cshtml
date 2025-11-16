@@ -529,7 +529,7 @@
 
             <!-- Priority Stats -->
             <div class="priority-stats mb-3">
-                <div class="stat-card high-priority">
+                <div class="stat-card high-priority" data-priority="high">
                     <div class="stat-icon">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                     </div>
@@ -538,7 +538,7 @@
                         <p>High Priority (2+ hrs)</p>
                     </div>
                 </div>
-                <div class="stat-card medium-priority">
+                <div class="stat-card medium-priority" data-priority="medium">
                     <div class="stat-icon">
                         <i class="bi bi-exclamation-circle-fill"></i>
                     </div>
@@ -593,6 +593,7 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="claims-count">0</h3>
+                        <h3 id="claimed-count">0</h3>
                         <p>Claims</p>
                     </div>
                 </div>
@@ -695,6 +696,7 @@
                         type: "Hospital Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
                         status3: "@f.Status3?.ToLower()",
@@ -704,7 +706,7 @@
                     </text>
             }
 
-            // Add Medical Lab Forms
+            // Add Other Assistance
             @foreach (var f in Model.OtherAssistance)
             {
                     <text>
@@ -712,6 +714,7 @@
                         type: "Other Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
                         status3: "@f.Status3?.ToLower()",
@@ -729,6 +732,7 @@
                         type: "Funeral Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
                         status3: "@f.Status3?.ToLower()",
@@ -745,6 +749,7 @@
             const sortSelect = document.getElementById('sortSelect');
             const timeFilterButtons = document.querySelectorAll('.time-filter-btn');
             const statCards = document.querySelectorAll('.stat-card');
+            const priorityCards = document.querySelectorAll('[data-priority]');
             const sortableHeaders = document.querySelectorAll('th.sortable');
 
             // Status count elements
@@ -762,6 +767,7 @@
             let currentTypeFilter = 'all';
             let currentSearchTerm = '';
             let currentSort = 'date-desc';
+            let currentPriorityFilter = null; // null, 'high', or 'medium'
 
             // Function to sort applications
             function sortApplications(applications, sortOption) {
@@ -909,6 +915,30 @@
                     app.name.toLowerCase().includes(term) ||
                     app.type.toLowerCase().includes(term)
                 );
+            }
+
+            // Function to filter by priority (processing time)
+            function filterByPriority(applications, priorityLevel) {
+                if (!priorityLevel) return applications;
+
+                return applications.filter(app => {
+                    // Only show approved/disapproved that are NOT claimed and have a result date
+                    if (!((app.status2 === 'approve' || app.status2 === 'disapprove')
+                        && app.resultDate !== null
+                        && (app.status3 === null || app.status3 !== 'claimed'))) {
+                        return false;
+                    }
+
+                    // Calculate processing time
+                    const processingHours = (app.resultDate - app.createdAt) / (1000 * 60 * 60);
+
+                    if (priorityLevel === 'high') {
+                        return processingHours >= 2;
+                    } else if (priorityLevel === 'medium') {
+                        return processingHours >= 1 && processingHours < 2;
+                    }
+                    return false;
+                });
             }
 
             // Function to update status counts based on time filter - UPDATED VERSION
@@ -1144,8 +1174,13 @@
                 // Apply time filter
                 filteredApplications = filterByTimePeriod(filteredApplications, currentTimeFilter);
 
-                // Apply status filter
-                filteredApplications = filterByStatus(filteredApplications, currentStatusFilter);
+                // Apply priority filter (takes precedence over status filter if active)
+                if (currentPriorityFilter) {
+                    filteredApplications = filterByPriority(filteredApplications, currentPriorityFilter);
+                } else {
+                    // Apply status filter only if priority filter is not active
+                    filteredApplications = filterByStatus(filteredApplications, currentStatusFilter);
+                }
 
                 // Apply type filter
                 filteredApplications = filterByType(filteredApplications, currentTypeFilter);
@@ -1163,6 +1198,8 @@
             // Event listeners for status cards
             statCards.forEach(card => {
                 card.addEventListener('click', function() {
+                    // Clear priority filter when status card is clicked
+                    currentPriorityFilter = null;
                     currentStatusFilter = this.dataset.status;
 
                     // Update active card
@@ -1184,6 +1221,29 @@
 
                     // Update status counts based on the selected time period
                     updateStatusCounts(currentTimeFilter);
+
+                    // Apply all filters to the table
+                    applyFilters();
+                });
+            });
+
+            // Event listeners for priority cards
+            priorityCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const priority = this.dataset.priority;
+
+                    // Toggle priority filter - if same card clicked again, clear filter
+                    if (currentPriorityFilter === priority) {
+                        currentPriorityFilter = null;
+                        // Remove active state from priority cards
+                        priorityCards.forEach(c => c.classList.remove('active'));
+                    } else {
+                        currentPriorityFilter = priority;
+                        // Update active card state
+                        statCards.forEach(c => c.classList.remove('active'));
+                        priorityCards.forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+                    }
 
                     // Apply all filters to the table
                     applyFilters();

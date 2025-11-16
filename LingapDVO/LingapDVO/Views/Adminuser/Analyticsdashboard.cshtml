@@ -5,7 +5,7 @@
     // Prepare detailed data for Barangay with Specific Assistance Types
     var barangayDetailedData = new Dictionary<string, Dictionary<string, int>>();
 
-    // Process Hospital Bills - they have TypeAssistance field
+    // Process Hospital Assistance - they have TypeAssistance field
     foreach (var bill in Model.HospitalAssistance)
     {
         if (!string.IsNullOrEmpty(bill.Brgy) && !string.IsNullOrEmpty(bill.Typeassistance))
@@ -19,7 +19,7 @@
         }
     }
 
-    // Process Medical Lab Forms - they have TypeAssistance field
+    // Process Other Assistance - they have TypeAssistance field
     foreach (var form in Model.OtherAssistance)
     {
         if (!string.IsNullOrEmpty(form.Brgy) && !string.IsNullOrEmpty(form.Typeassistance))
@@ -33,7 +33,7 @@
         }
     }
 
-    // Process Funeral Forms - they are all "Funeral and Burial Assistance"
+    // Process Funeral Forms - they are all "Funeral Assistance"
     foreach (var form in Model.FuneralAssistance)
     {
         if (!string.IsNullOrEmpty(form.Brgy))
@@ -41,8 +41,8 @@
             if (!barangayDetailedData.ContainsKey(form.Brgy))
                 barangayDetailedData[form.Brgy] = new Dictionary<string, int>();
 
-            barangayDetailedData[form.Brgy]["Funeral and Burial Assistance"] =
-                barangayDetailedData[form.Brgy].GetValueOrDefault("Funeral and Burial Assistance", 0) + 1;
+            barangayDetailedData[form.Brgy]["Funeral Assistance"] =
+                barangayDetailedData[form.Brgy].GetValueOrDefault("Funeral Assistance", 0) + 1;
         }
     }
 
@@ -908,12 +908,12 @@
             // Create combined applications array following Admin.cshtml pattern
             const allApplications = [];
 
-            // Add Hospital Bills following Admin.cshtml pattern
+            // Add Hospital Assistance following Admin.cshtml pattern
             @foreach (var f in Model.HospitalAssistance)
             {
                     <text>
                     allApplications.push({
-                        type: "Hospital Bill Assistance",
+                        type: "Hospital Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -927,7 +927,7 @@
                     </text>
             }
 
-            // Add Medical Lab Forms following Admin.cshtml pattern
+            // Add Other Assistance following Admin.cshtml pattern
             @foreach (var f in Model.OtherAssistance)
             {
                     <text>
@@ -1205,7 +1205,7 @@
                             <i class="bi bi-box-seam"></i>
                         </div>
                         <div class="summary-number">${statusCounts.claimed}</div>
-                        <div class="summary-label">Claimed</div>
+                        <div class="summary-label">Claims</div>
                     </div>
                 </div>
             `;
@@ -1215,7 +1215,7 @@
                 statusData: [statusCounts.approve, statusCounts.pending, statusCounts.processing, statusCounts.disapprove, statusCounts.claimed],
                 typeData: countApplicationTypes(applications),
                 statusLabels: ['Approve', 'Pending', 'Processing', 'Disapprove', 'Claimed'],
-                typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                typeLabels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
                 // Barangay data will be processed separately
                 ...processBarangayData(applications)
             };
@@ -1230,7 +1230,7 @@
             };
 
             applications.forEach(app => {
-                if (app.type === "Hospital Bill Assistance") counts.hospital++;
+                if (app.type === "Hospital Assistance") counts.hospital++;
                 else if (app.type === "Other Assistance") counts.medical++;
                 else if (app.type === "Funeral Assistance") counts.funeral++;
             });
