@@ -4624,11 +4624,11 @@ namespace LingapDVO.Controllers
                         DeathCertificate = "",
 
                         CreatedAt = createdDate,
-                        ProcessAt = status.Status != "pending" ? createdDate.AddHours(random.Next(2, 48)) : DateTime.MinValue,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddMinutes(random.Next(5, 30)) : DateTime.MinValue,
                         Status = status.Status,
                         Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
                         Comments = status.Comments,
-                        Result = status.Status2 != "" ? createdDate.AddHours(random.Next(48, 120)) : DateTime.MinValue,
+                        Result = status.Status2 != "" ? createdDate.AddMinutes(GenerateProcessingTime(random)) : DateTime.MinValue,
                         Status2 = status.Status2,
                         ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
                         Status3 = status.Status3
@@ -4684,11 +4684,11 @@ namespace LingapDVO.Controllers
                         MedCertificate = "dummy_med_cert.jpg",
 
                         CreatedAt = createdDate,
-                        ProcessAt = status.Status != "pending" ? createdDate.AddHours(random.Next(2, 48)) : DateTime.MinValue,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddMinutes(random.Next(5, 30)) : DateTime.MinValue,
                         Status = status.Status,
                         Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
                         Comments = status.Comments,
-                        Result = status.Status2 != "" ? createdDate.AddHours(random.Next(48, 120)) : DateTime.MinValue,
+                        Result = status.Status2 != "" ? createdDate.AddMinutes(GenerateProcessingTime(random)) : DateTime.MinValue,
                         Status2 = status.Status2,
                         ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
                         Status3 = status.Status3
@@ -4743,11 +4743,11 @@ namespace LingapDVO.Controllers
                         DeathCertificate = "dummy_death_cert.jpg",
 
                         CreatedAt = createdDate,
-                        ProcessAt = status.Status != "pending" ? createdDate.AddHours(random.Next(2, 48)) : DateTime.MinValue,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddMinutes(random.Next(5, 30)) : DateTime.MinValue,
                         Status = status.Status,
                         Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
                         Comments = status.Comments,
-                        Result = status.Status2 != "" ? createdDate.AddHours(random.Next(48, 120)) : DateTime.MinValue,
+                        Result = status.Status2 != "" ? createdDate.AddMinutes(GenerateProcessingTime(random)) : DateTime.MinValue,
                         Status2 = status.Status2,
                         ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
                         Status3 = status.Status3
@@ -4825,6 +4825,29 @@ namespace LingapDVO.Controllers
                     "Applicant does not qualify for this type of assistance."
                 };
                 return ("processing", "disapprove", "", comments[random.Next(comments.Length)]);
+            }
+        }
+
+        // Helper method to generate realistic processing times
+        // Returns processing time in minutes
+        private int GenerateProcessingTime(Random random)
+        {
+            var roll = random.Next(100);
+
+            // 70% processed in less than 1 hour (10-55 minutes) - No priority
+            if (roll < 70)
+            {
+                return random.Next(10, 56);
+            }
+            // 15% processed in 1-2 hours (60-119 minutes) - Medium priority
+            else if (roll < 85)
+            {
+                return random.Next(60, 120);
+            }
+            // 15% processed in 2-4 hours (120-240 minutes) - High priority
+            else
+            {
+                return random.Next(120, 241);
             }
         }
 
