@@ -41,50 +41,56 @@ namespace LingapDVO.Services
 
         /// <summary>
         /// Get all priority applications counts
-        /// Tracks ONLY Completed applications (Approve or Disapprove) that are NOT yet claimed
-        /// Priority is based on processing time (CreatedAt to Result date)
+        /// Tracks ONLY Pending or Processing applications that have NOT been approved/disapproved/claimed
+        /// Priority is based on waiting time (time since CreatedAt to now)
+        /// Excludes applications with Status2 = "approve" or "disapprove"
         /// Excludes applications with Status3 = "claimed"
+        /// High Priority: 2+ hours waiting | Medium Priority: 1-2 hours waiting
         /// </summary>
         public async Task<(int high, int medium, int total)> GetPriorityCountsAsync()
         {
-            // Get ONLY Approved or Disapproved medical/other assistance applications that are NOT claimed
-            // These are completed applications with a Result date but haven't been claimed yet
+            // Get ONLY Pending or Processing medical/other assistance applications
+            // EXCLUDE applications that have been approved/disapproved or claimed
             var medicalApps = await _context.OtherAssistance
-                .Where(m => (m.Status2 == "approve" || m.Status2 == "disapprove")
-                    && m.Result != DateTime.MinValue
-                    && (m.Status3 == null || m.Status3 != "claimed"))
-                .Select(m => new { m.CreatedAt, m.Result })
+                .Where(m => (m.Status == "pending" || m.Status == "processing")
+                    && (m.Status2 == null || m.Status2 == "" || (m.Status2.ToLower() != "approve" && m.Status2.ToLower() != "disapprove"))
+                    && (m.Status3 == null || m.Status3 == "" || m.Status3.ToLower() != "claimed"))
+                .Select(m => new { m.CreatedAt })
                 .ToListAsync();
 
-            // Get ONLY Approved or Disapproved funeral assistance applications that are NOT claimed
+            // Get ONLY Pending or Processing funeral assistance applications
+            // EXCLUDE applications that have been approved/disapproved or claimed
             var funeralApps = await _context.FuneralAssistance
-                .Where(f => (f.Status2 == "approve" || f.Status2 == "disapprove")
-                    && f.Result != DateTime.MinValue
-                    && (f.Status3 == null || f.Status3 != "claimed"))
-                .Select(f => new { f.CreatedAt, f.Result })
+                .Where(f => (f.Status == "pending" || f.Status == "processing")
+                    && (f.Status2 == null || f.Status2 == "" || (f.Status2.ToLower() != "approve" && f.Status2.ToLower() != "disapprove"))
+                    && (f.Status3 == null || f.Status3 == "" || f.Status3.ToLower() != "claimed"))
+                .Select(f => new { f.CreatedAt })
                 .ToListAsync();
 
-            // Get ONLY Approved or Disapproved hospital assistance applications that are NOT claimed
+            // Get ONLY Pending or Processing hospital assistance applications
+            // EXCLUDE applications that have been approved/disapproved or claimed
             var hospitalApps = await _context.HospitalAssistance
-                .Where(h => (h.Status2 == "approve" || h.Status2 == "disapprove")
-                    && h.Result != DateTime.MinValue
-                    && (h.Status3 == null || h.Status3 != "claimed"))
-                .Select(h => new { h.CreatedAt, h.Result })
+                .Where(h => (h.Status == "pending" || h.Status == "processing")
+                    && (h.Status2 == null || h.Status2 == "" || (h.Status2.ToLower() != "approve" && h.Status2.ToLower() != "disapprove"))
+                    && (h.Status3 == null || h.Status3 == "" || h.Status3.ToLower() != "claimed"))
+                .Select(h => new { h.CreatedAt })
                 .ToListAsync();
 
-            // Combine all completed applications from all three application types
+            // Combine all pending/processing applications from all three application types
             var allApplications = medicalApps.Concat(funeralApps).Concat(hospitalApps).ToList();
 
-            // Calculate processing time for each application
-            var processingTimes = allApplications
-                .Select(app => (app.Result - app.CreatedAt).TotalHours)
+            var now = DateTime.Now;
+
+            // Calculate time waiting for each application (hours since submission)
+            var waitingTimes = allApplications
+                .Select(app => (now - app.CreatedAt).TotalHours)
                 .ToList();
 
-            // Calculate priority counts based on processing time
-            // High priority: applications that took 2+ hours to process
-            int highPriority = processingTimes.Count(hours => hours >= 2);
-            // Medium priority: applications that took 1-2 hours to process
-            int mediumPriority = processingTimes.Count(hours => hours >= 1 && hours < 2);
+            // Calculate priority counts based on waiting time
+            // High priority: applications waiting 2+ hours
+            int highPriority = waitingTimes.Count(hours => hours >= 2);
+            // Medium priority: applications waiting 1-2 hours
+            int mediumPriority = waitingTimes.Count(hours => hours >= 1 && hours < 2);
             int totalPriority = highPriority + mediumPriority;
 
             return (highPriority, mediumPriority, totalPriority);

@@ -1122,9 +1122,18 @@
                     }
                 }
 
-                // Calculate priority counts (only for Pending and Processing)
-                const currentStatus = app.status2 || app.status;
-                if (currentStatus === 'pending' || currentStatus === 'processing') {
+                // Calculate priority counts (ONLY for Pending and Processing that are NOT approved/disapproved/claimed)
+                // Exclude if status3 is claimed
+                if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                    return; // Skip claimed applications
+                }
+                // Exclude if status2 is approve or disapprove
+                if (app.status2 && app.status2.trim() !== '' &&
+                    (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) {
+                    return; // Skip approved/disapproved applications
+                }
+                // Only count if original status is pending or processing
+                if (app.status === 'pending' || app.status === 'processing') {
                     const hoursSinceSubmission = (now - new Date(app.createdAt)) / (1000 * 60 * 60);
                     if (hoursSinceSubmission >= 2) {
                         highPriority++;

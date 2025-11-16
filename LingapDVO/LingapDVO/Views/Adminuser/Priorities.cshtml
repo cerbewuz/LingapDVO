@@ -485,10 +485,25 @@
                 </text>
             }
 
-            // Calculate priority applications (ONLY for Pending AND Processing applications)
+            // Calculate priority applications (ONLY for Pending AND Processing applications that are NOT approved/disapproved/claimed)
             const now = new Date();
             const priorityApplications = allApplications
-                .filter(app => app.status === 'pending' || app.status === 'processing') // Count both Pending and Processing applications
+                .filter(app => {
+                    // Must be in pending or processing status
+                    if (app.status !== 'pending' && app.status !== 'processing') {
+                        return false;
+                    }
+                    // Exclude if status3 is claimed
+                    if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                        return false;
+                    }
+                    // Exclude if status2 is approve or disapprove
+                    if (app.status2 && app.status2.trim() !== '' &&
+                        (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) {
+                        return false;
+                    }
+                    return true;
+                })
                 .map(app => {
                     const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
 
@@ -518,8 +533,17 @@
 
             console.log('[Priorities] Server counts - High:', serverHighCount, 'Medium:', serverMediumCount);
             console.log('[Priorities] Calculated counts - High:', highPriorityCount, 'Medium:', mediumPriorityCount);
-            console.log('[Priorities] Total pending/processing applications:', allApplications.filter(app => app.status === 'pending' || app.status === 'processing').length);
-            console.log('[Priorities] Priority applications:', priorityApplications.length);
+
+            // Count pending/processing applications EXCLUDING approved/disapproved/claimed
+            const eligibleApplications = allApplications.filter(app => {
+                if (app.status !== 'pending' && app.status !== 'processing') return false;
+                if (app.status3 && app.status3.toLowerCase() === 'claimed') return false;
+                if (app.status2 && (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) return false;
+                return true;
+            });
+
+            console.log('[Priorities] Total pending/processing (EXCLUDING approved/disapproved/claimed):', eligibleApplications.length);
+            console.log('[Priorities] Priority applications (1+ hours waiting):', priorityApplications.length);
 
             // Always use server counts as they are the source of truth
             const finalHighCount = serverHighCount;
