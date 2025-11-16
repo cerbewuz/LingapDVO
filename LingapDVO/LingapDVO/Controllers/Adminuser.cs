@@ -4757,15 +4757,178 @@ namespace LingapDVO.Controllers
                     generatedRecords++;
                 }
 
+                // Save all applications first to get their IDs
                 await context.SaveChangesAsync();
+
+                // Now generate FormSubmissionTokens and FormSubmissionAuditLogs for each application
+                var ipAddresses = new[] { "192.168.1.100", "10.0.0.50", "172.16.0.10", "192.168.0.25", "10.1.1.75" };
+                var userAgents = new[] {
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+                };
+
+                // Generate tokens and audit logs for Hospital Assistance
+                foreach (var app in context.HospitalAssistance.Where(h => h.CreatedAt >= now.AddDays(-180)))
+                {
+                    var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60)); // Token created before submission
+                    var token = $"TOKEN-HOSP-{Guid.NewGuid():N}";
+                    var ip = ipAddresses[random.Next(ipAddresses.Length)];
+                    var userAgent = userAgents[random.Next(userAgents.Length)];
+
+                    // Create FormSubmissionToken
+                    var submissionToken = new FormSubmissionToken
+                    {
+                        Token = token,
+                        FormType = "HospitalBill",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        CreatedAt = tokenCreatedAt,
+                        ExpiresAt = tokenCreatedAt.AddMinutes(30),
+                        IsUsed = true,
+                        UsedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsRevoked = false
+                    };
+                    context.Add(submissionToken);
+
+                    // Create FormSubmissionAuditLog
+                    var auditLog = new FormSubmissionAuditLog
+                    {
+                        FormType = "HospitalBill",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        PatientName = $"{app.Lastname} {app.Firstname} {app.Middlename}",
+                        RequestorName = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                        Action = "SUCCESS",
+                        Source = "WEB_FORM",
+                        Reason = "Form submitted successfully",
+                        SubmissionToken = token,
+                        HasValidToken = true,
+                        SuspiciousActivity = false,
+                        FormDataHash = $"SHA256-{Guid.NewGuid():N}",
+                        AttemptedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsDuplicate = false
+                    };
+                    context.Add(auditLog);
+                }
+
+                // Generate tokens and audit logs for Medical/Laboratory Assistance
+                foreach (var app in context.OtherAssistance.Where(o => o.CreatedAt >= now.AddDays(-180)))
+                {
+                    var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60));
+                    var token = $"TOKEN-MED-{Guid.NewGuid():N}";
+                    var ip = ipAddresses[random.Next(ipAddresses.Length)];
+                    var userAgent = userAgents[random.Next(userAgents.Length)];
+
+                    // Create FormSubmissionToken
+                    var submissionToken = new FormSubmissionToken
+                    {
+                        Token = token,
+                        FormType = "MedicalLab",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        CreatedAt = tokenCreatedAt,
+                        ExpiresAt = tokenCreatedAt.AddMinutes(30),
+                        IsUsed = true,
+                        UsedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsRevoked = false
+                    };
+                    context.Add(submissionToken);
+
+                    // Create FormSubmissionAuditLog
+                    var auditLog = new FormSubmissionAuditLog
+                    {
+                        FormType = "MedicalLab",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        PatientName = $"{app.Lastname} {app.Firstname} {app.Middlename}",
+                        RequestorName = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                        Action = "SUCCESS",
+                        Source = "WEB_FORM",
+                        Reason = "Form submitted successfully",
+                        SubmissionToken = token,
+                        HasValidToken = true,
+                        SuspiciousActivity = false,
+                        FormDataHash = $"SHA256-{Guid.NewGuid():N}",
+                        AttemptedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsDuplicate = false
+                    };
+                    context.Add(auditLog);
+                }
+
+                // Generate tokens and audit logs for Funeral Assistance
+                foreach (var app in context.FuneralAssistance.Where(f => f.CreatedAt >= now.AddDays(-180)))
+                {
+                    var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60));
+                    var token = $"TOKEN-FUN-{Guid.NewGuid():N}";
+                    var ip = ipAddresses[random.Next(ipAddresses.Length)];
+                    var userAgent = userAgents[random.Next(userAgents.Length)];
+
+                    // Create FormSubmissionToken
+                    var submissionToken = new FormSubmissionToken
+                    {
+                        Token = token,
+                        FormType = "Funeral",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        CreatedAt = tokenCreatedAt,
+                        ExpiresAt = tokenCreatedAt.AddMinutes(30),
+                        IsUsed = true,
+                        UsedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsRevoked = false
+                    };
+                    context.Add(submissionToken);
+
+                    // Create FormSubmissionAuditLog
+                    var auditLog = new FormSubmissionAuditLog
+                    {
+                        FormType = "Funeral",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        PatientName = $"{app.Lastname} {app.Firstname} {app.Middlename}",
+                        RequestorName = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                        Action = "SUCCESS",
+                        Source = "WEB_FORM",
+                        Reason = "Form submitted successfully",
+                        SubmissionToken = token,
+                        HasValidToken = true,
+                        SuspiciousActivity = false,
+                        FormDataHash = $"SHA256-{Guid.NewGuid():N}",
+                        AttemptedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsDuplicate = false
+                    };
+                    context.Add(auditLog);
+                }
+
+                // Save tokens and audit logs
+                await context.SaveChangesAsync();
+
+                var totalTokens = context.ChangeTracker.Entries<FormSubmissionToken>().Count();
+                var totalAuditLogs = context.ChangeTracker.Entries<FormSubmissionAuditLog>().Count();
 
                 return Ok(new {
                     success = true,
-                    message = $"Successfully generated {generatedRecords} dummy records!",
+                    message = $"Successfully generated {generatedRecords} dummy records with tokens and audit logs!",
                     details = new {
                         hospital = hospitalCount,
                         medical = medicalCount,
-                        funeral = funeralCount
+                        funeral = funeralCount,
+                        tokens = totalTokens / 3, // Divided by 3 because each type adds entries
+                        auditLogs = totalAuditLogs / 3
                     }
                 });
             }
