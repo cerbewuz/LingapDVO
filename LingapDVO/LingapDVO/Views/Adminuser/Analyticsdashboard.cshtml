@@ -801,7 +801,7 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Medical and Laboratory Procedure",
+                        type: "Other Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
@@ -820,14 +820,14 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Funeral and Burial Assistance",
+                        type: "Funeral Assistance",
                         name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
                         status3: "@f.Status3?.ToLower()",
                         brgy: "@f.Brgy",
-                        typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
+                        typeassistance: "Funeral Assistance", // Default for funeral forms
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -1066,7 +1066,7 @@
 
             // Update global chart data
             window.chartData = {
-                statusData: [statusCounts.approved, statusCounts.pending, statusCounts.processing, statusCounts.disapproved, statusCounts.claimed],
+                statusData: [statusCounts.approve, statusCounts.pending, statusCounts.processing, statusCounts.disapprove, statusCounts.claimed],
                 typeData: countApplicationTypes(applications),
                 statusLabels: ['Approve', 'Pending', 'Processing', 'Disapprove', 'Claimed'],
                 typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
@@ -1085,8 +1085,8 @@
 
             applications.forEach(app => {
                 if (app.type === "Hospital Bill Assistance") counts.hospital++;
-                else if (app.type === "Medical and Laboratory Procedure") counts.medical++;
-                else if (app.type === "Funeral and Burial Assistance") counts.funeral++;
+                else if (app.type === "Other Assistance") counts.medical++;
+                else if (app.type === "Funeral Assistance") counts.funeral++;
             });
 
             return [counts.hospital, counts.medical, counts.funeral];
