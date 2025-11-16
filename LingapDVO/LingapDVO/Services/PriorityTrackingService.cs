@@ -41,27 +41,34 @@ namespace LingapDVO.Services
 
         /// <summary>
         /// Get all priority applications counts
-        /// Tracks ONLY Completed applications (Approve or Disapprove)
+        /// Tracks ONLY Completed applications (Approve or Disapprove) that are NOT yet claimed
         /// Priority is based on processing time (CreatedAt to Result date)
+        /// Excludes applications with Status3 = "claimed"
         /// </summary>
         public async Task<(int high, int medium, int total)> GetPriorityCountsAsync()
         {
-            // Get ONLY Approved or Disapproved medical/other assistance applications
-            // These are completed applications with a Result date
+            // Get ONLY Approved or Disapproved medical/other assistance applications that are NOT claimed
+            // These are completed applications with a Result date but haven't been claimed yet
             var medicalApps = await _context.OtherAssistance
-                .Where(m => (m.Status2 == "approve" || m.Status2 == "disapprove") && m.Result != DateTime.MinValue)
+                .Where(m => (m.Status2 == "approve" || m.Status2 == "disapprove")
+                    && m.Result != DateTime.MinValue
+                    && (m.Status3 == null || m.Status3 != "claimed"))
                 .Select(m => new { m.CreatedAt, m.Result })
                 .ToListAsync();
 
-            // Get ONLY Approved or Disapproved funeral assistance applications
+            // Get ONLY Approved or Disapproved funeral assistance applications that are NOT claimed
             var funeralApps = await _context.FuneralAssistance
-                .Where(f => (f.Status2 == "approve" || f.Status2 == "disapprove") && f.Result != DateTime.MinValue)
+                .Where(f => (f.Status2 == "approve" || f.Status2 == "disapprove")
+                    && f.Result != DateTime.MinValue
+                    && (f.Status3 == null || f.Status3 != "claimed"))
                 .Select(f => new { f.CreatedAt, f.Result })
                 .ToListAsync();
 
-            // Get ONLY Approved or Disapproved hospital assistance applications
+            // Get ONLY Approved or Disapproved hospital assistance applications that are NOT claimed
             var hospitalApps = await _context.HospitalAssistance
-                .Where(h => (h.Status2 == "approve" || h.Status2 == "disapprove") && h.Result != DateTime.MinValue)
+                .Where(h => (h.Status2 == "approve" || h.Status2 == "disapprove")
+                    && h.Result != DateTime.MinValue
+                    && (h.Status3 == null || h.Status3 != "claimed"))
                 .Select(h => new { h.CreatedAt, h.Result })
                 .ToListAsync();
 

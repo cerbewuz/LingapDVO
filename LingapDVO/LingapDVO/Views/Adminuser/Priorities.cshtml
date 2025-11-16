@@ -352,7 +352,7 @@
             <div class="header">
                 <div class="page-title">
                     <h1><i class="bi bi-bell"></i> Priority Applications</h1>
-                    <p>Completed applications with slow processing times</p>
+                    <p>Approved/Disapproved applications with slow processing times (excludes claimed)</p>
                 </div>
             </div>
 
@@ -488,11 +488,14 @@
                 </text>
             }
 
-            // Calculate priority applications (ONLY for Approved and Disapproved applications)
+            // Calculate priority applications (ONLY for Approved and Disapproved applications that are NOT claimed)
             // Priority is based on processing time (from submission to completion)
+            // Excludes applications with status3 = 'claimed'
             const now = new Date();
             const priorityApplications = allApplications
-                .filter(app => (app.status2 === 'approve' || app.status2 === 'disapprove') && app.resultDate !== null) // Only completed applications
+                .filter(app => (app.status2 === 'approve' || app.status2 === 'disapprove')
+                    && app.resultDate !== null
+                    && app.status3 !== 'claimed') // Exclude claimed applications
                 .map(app => {
                     const processingHours = (app.resultDate - app.createdAt) / (1000 * 60 * 60);
 
@@ -522,8 +525,8 @@
 
             console.log('[Priorities] Server counts - High:', serverHighCount, 'Medium:', serverMediumCount);
             console.log('[Priorities] Calculated counts - High:', highPriorityCount, 'Medium:', mediumPriorityCount);
-            console.log('[Priorities] Total completed applications:', allApplications.filter(app => app.status2 === 'approve' || app.status2 === 'disapprove').length);
-            console.log('[Priorities] Priority applications (processing time 1+ hours):', priorityApplications.length);
+            console.log('[Priorities] Total completed (not claimed) applications:', allApplications.filter(app => (app.status2 === 'approve' || app.status2 === 'disapprove') && app.status3 !== 'claimed').length);
+            console.log('[Priorities] Priority applications (processing time 1+ hours, not claimed):', priorityApplications.length);
 
             // Always use server counts as they are the source of truth
             const finalHighCount = serverHighCount;
