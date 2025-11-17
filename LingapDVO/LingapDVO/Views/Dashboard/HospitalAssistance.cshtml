@@ -255,31 +255,10 @@
 
             <div class="col-lg-3 col-md-6 col-sm-12">
                 <label class="form-label">Suffix</label>
-                @if (isSuffixReadonly)
-                {
-                    <select class="form-select readonly-field" asp-for="RSuffix" disabled>
-                        <option value="None">None</option>
-                        <option value="Jr.">Jr.</option>
-                        <option value="Sr.">Sr.</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                    </select>
-                    <input type="hidden" asp-for="RSuffix" value="@ViewBag.Suffix" />
-                }
-                else
-                {
-                    <select class="form-select" asp-for="RSuffix">
-                        <option value="None">None</option>
-                        <option value="Jr.">Jr.</option>
-                        <option value="Sr.">Sr.</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                    </select>
-                }
+                <input type="text" asp-for="RSuffix" readonly
+                       class="form-control readonly-field"
+                       value="@(string.IsNullOrWhiteSpace(ViewBag.Suffix) || ViewBag.Suffix == "None" ? " " : ViewBag.Suffix)"
+                       placeholder=" ">
                 <span asp-validation-for="RSuffix"></span>
             </div>
         </div>
@@ -724,15 +703,21 @@
                             philHealthInput.removeAttribute('required');
                             philHealthInput.value = '';
                             philHealthInput.disabled = true; // Disable the input field
+                            philHealthInput.readOnly = true; // Make it readonly
+                            philHealthInput.classList.add('readonly-field'); // Add readonly styling
                             philHealthInput.classList.remove('is-invalid'); // Remove validation error
                         } else if (this.value === 'With PhilHealth') {
                             // Add required attribute when "With PhilHealth" is selected
                             philHealthInput.setAttribute('required', 'required');
                             philHealthInput.disabled = false; // Enable the input field
+                            philHealthInput.readOnly = false; // Make it editable
+                            philHealthInput.classList.remove('readonly-field'); // Remove readonly styling
                         } else {
                             // Default: remove required for empty selection
                             philHealthInput.removeAttribute('required');
                             philHealthInput.disabled = false;
+                            philHealthInput.readOnly = false;
+                            philHealthInput.classList.remove('readonly-field');
                         }
                     });
 
@@ -740,9 +725,13 @@
                     if (philHealthSelect.value === 'Without PhilHealth') {
                         philHealthInput.removeAttribute('required');
                         philHealthInput.disabled = true;
+                        philHealthInput.readOnly = true;
+                        philHealthInput.classList.add('readonly-field');
                     } else if (philHealthSelect.value === 'With PhilHealth') {
                         philHealthInput.setAttribute('required', 'required');
                         philHealthInput.disabled = false;
+                        philHealthInput.readOnly = false;
+                        philHealthInput.classList.remove('readonly-field');
                     }
                 </script>
 
@@ -1167,7 +1156,10 @@
                 if (requestorLastname && requestorLastname.value) patientLastname.value = requestorLastname.value;
                 if (requestorFirstname && requestorFirstname.value) patientFirstname.value = requestorFirstname.value;
                 if (requestorMiddlename && requestorMiddlename.value) patientMiddlename.value = requestorMiddlename.value;
-                if (requestorSuffix && requestorSuffix.value) patientSuffix.value = requestorSuffix.value;
+                // Handle suffix - if empty or just whitespace, set to "None"
+                if (requestorSuffix) {
+                    patientSuffix.value = (requestorSuffix.value && requestorSuffix.value.trim()) ? requestorSuffix.value : "None";
+                }
                 if (requestorBlkLotStreet && requestorBlkLotStreet.value) patientBlkLotStreet.value = requestorBlkLotStreet.value;
                 if (requestorSubVill && requestorSubVill.value) patientSubVill.value = requestorSubVill.value;
                 if (requestorBrgy && requestorBrgy.value) patientBrgy.value = requestorBrgy.value;
@@ -1379,13 +1371,13 @@
     /* Bootstrap modal backdrop - direct child of body */
     .modal-backdrop {
         z-index: 99998 !important;
-        backdrop-filter: blur(8px) !important;
-        -webkit-backdrop-filter: blur(8px) !important;
-        background-color: rgba(0, 0, 0, 0.7) !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
     }
 
     .modal-backdrop.show {
         opacity: 1 !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
     }
 
     #successModal .modal-content {
@@ -1393,9 +1385,13 @@
         border: none;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         overflow: hidden;
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        background: #ffffff;
         position: relative;
         z-index: 100001;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: transform;
+        isolation: isolate;
     }
 
     #successModal .modal-body {

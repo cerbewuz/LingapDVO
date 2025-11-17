@@ -84,63 +84,44 @@
             font-size: clamp(0.9rem, 1rem, 1.1rem);
         }
 
-        /* Priority Stats Cards */
-        .priority-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-            gap: clamp(1rem, 1.5rem, 2rem);
-            margin-bottom: clamp(1.5rem, 2rem, 2.5rem);
+        /* Priority Alert Boxes - Non-clickable */
+        .priority-alerts {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
         }
 
-        .priority-card {
-            background: white;
-            border-radius: clamp(0.75rem, 1rem, 1.25rem);
-            padding: clamp(1.25rem, 1.5rem, 2rem);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        .priority-alert-box {
             display: flex;
             align-items: center;
-            gap: clamp(0.75rem, 1rem, 1.5rem);
-            border-left: 4px solid;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
         }
 
-        .priority-card.high {
-            border-left-color: var(--danger);
+        .priority-alert-box.high {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
         }
 
-        .priority-card.medium {
-            border-left-color: var(--warning);
+        .priority-alert-box.medium {
+            background: rgba(243, 156, 18, 0.1);
+            color: #f39c12;
+            border: 1px solid rgba(243, 156, 18, 0.3);
         }
 
-        .priority-icon {
-            width: clamp(50px, 60px, 70px);
-            height: clamp(50px, 60px, 70px);
-            border-radius: clamp(10px, 12px, 14px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: clamp(1.5rem, 1.75rem, 2rem);
-            flex-shrink: 0;
+        .priority-alert-box i {
+            font-size: 1rem;
         }
 
-        .priority-card.high .priority-icon {
-            background: rgba(231, 76, 60, 0.15);
-            color: var(--danger);
-        }
-
-        .priority-card.medium .priority-icon {
-            background: rgba(243, 156, 18, 0.15);
-            color: var(--warning);
-        }
-
-        .priority-info h3 {
-            font-size: clamp(1.5rem, 1.75rem, 2rem);
+        .priority-alert-box .count {
             font-weight: 700;
-            margin-bottom: 0.25rem;
-            transition: all 0.3s ease;
-        }
-
-        .priority-info h3.pulse {
-            animation: pulse 0.5s ease-in-out;
+            font-size: 1rem;
         }
 
         @@keyframes pulse {
@@ -148,15 +129,16 @@
                 transform: scale(1);
             }
             50% {
-                transform: scale(1.15);
+                transform: scale(1.05);
             }
         }
 
-        .priority-info p {
-            color: var(--gray-600);
-            margin-bottom: 0;
-            font-weight: 500;
-            font-size: clamp(0.9rem, 1rem, 1.1rem);
+        .priority-alert-box.high i {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .count.pulse {
+            animation: pulse 0.5s ease-in-out;
         }
 
         /* Main Card */
@@ -354,26 +336,16 @@
                     <h1><i class="bi bi-bell"></i> Priority Applications</h1>
                     <p>Applications requiring immediate attention</p>
                 </div>
-            </div>
-
-            <!-- Priority Stats -->
-            <div class="priority-stats">
-                <div class="priority-card high">
-                    <div class="priority-icon">
+                <div class="priority-alerts">
+                    <div class="priority-alert-box high">
                         <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span class="count" id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</span>
+                        <span>High Priority</span>
                     </div>
-                    <div class="priority-info">
-                        <h3 id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</h3>
-                        <p>High Priority (2+ hours)</p>
-                    </div>
-                </div>
-                <div class="priority-card medium">
-                    <div class="priority-icon">
+                    <div class="priority-alert-box medium">
                         <i class="bi bi-exclamation-circle-fill"></i>
-                    </div>
-                    <div class="priority-info">
-                        <h3 id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</h3>
-                        <p>Medium Priority (1-2 hours)</p>
+                        <span class="count" id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</span>
+                        <span>Medium Priority</span>
                     </div>
                 </div>
             </div>
@@ -431,6 +403,31 @@
             const urlParams = new URLSearchParams(window.location.search);
             const initialFilter = urlParams.get('filter') || 'all';
 
+            // Helper function to format names with proper case
+            function formatName(lastname, firstname, middlename, suffix) {
+                // Helper to capitalize first letter of each word
+                const toProperCase = (str) => {
+                    if (!str) return '';
+                    return str.split(' ').map(word =>
+                        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                    ).join(' ');
+                };
+
+                // Format: "Lastname, Firstname Middlename"
+                let formattedName = `${toProperCase(lastname)}, ${toProperCase(firstname)}`;
+
+                if (middlename && middlename.trim() !== '') {
+                    formattedName += ` ${toProperCase(middlename)}`;
+                }
+
+                // Only add suffix if it exists and is not "None"
+                if (suffix && suffix.trim() !== '' && suffix.toLowerCase() !== 'none') {
+                    formattedName += ` ${toProperCase(suffix)}`;
+                }
+
+                return formattedName;
+            }
+
             // Combine all applications from the model
             const allApplications = [];
 
@@ -440,7 +437,7 @@
                 <text>
                 allApplications.push({
                     type: "Hospital Assistance",
-                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                    name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
                     createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                     status: "@f.Status?.ToLower()",
                     status2: "@f.Status2?.ToLower()",
@@ -456,8 +453,8 @@
             {
                 <text>
                 allApplications.push({
-                    type: "Medical and Laboratory Procedure",
-                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                    type: "Other Assistance",
+                    name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
                     createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                     status: "@f.Status?.ToLower()",
                     status2: "@f.Status2?.ToLower()",
@@ -473,8 +470,8 @@
             {
                 <text>
                 allApplications.push({
-                    type: "Funeral and Burial Assistance",
-                    name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                    type: "Funeral Assistance",
+                    name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
                     createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                     status: "@f.Status?.ToLower()",
                     status2: "@f.Status2?.ToLower()",
@@ -485,7 +482,7 @@
                 </text>
             }
 
-            // Calculate priority applications (ONLY for Pending AND Processing applications that are NOT approved/disapproved/claimed)
+            // Calculate priority applications (ONLY for Pending AND Processing applications that are NOT approved/disapproved/claims)
             const now = new Date();
             const priorityApplications = allApplications
                 .filter(app => {
@@ -493,8 +490,8 @@
                     if (app.status !== 'pending' && app.status !== 'processing') {
                         return false;
                     }
-                    // Exclude if status3 is claimed
-                    if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                    // Exclude if status3 is claims
+                    if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
                         return false;
                     }
                     // Exclude if status2 is approve or disapprove
@@ -534,15 +531,15 @@
             console.log('[Priorities] Server counts - High:', serverHighCount, 'Medium:', serverMediumCount);
             console.log('[Priorities] Calculated counts - High:', highPriorityCount, 'Medium:', mediumPriorityCount);
 
-            // Count pending/processing applications EXCLUDING approved/disapproved/claimed
+            // Count pending/processing applications EXCLUDING approved/disapproved/claims
             const eligibleApplications = allApplications.filter(app => {
                 if (app.status !== 'pending' && app.status !== 'processing') return false;
-                if (app.status3 && app.status3.toLowerCase() === 'claimed') return false;
+                if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) return false;
                 if (app.status2 && (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) return false;
                 return true;
             });
 
-            console.log('[Priorities] Total pending/processing (EXCLUDING approved/disapproved/claimed):', eligibleApplications.length);
+            console.log('[Priorities] Total pending/processing (EXCLUDING approved/disapproved/claims):', eligibleApplications.length);
             console.log('[Priorities] Priority applications (1+ hours waiting):', priorityApplications.length);
 
             // Always use server counts as they are the source of truth
@@ -639,8 +636,8 @@
 
             // Get display status
             function getDisplayStatus(app) {
-                if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
-                    return 'Claimed';
+                if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    return 'Claims';
                 } else if (app.status2 && app.status2.trim() !== '') {
                     const status2 = app.status2.trim().toLowerCase();
                     if (status2 === 'approve' || status2 === 'disapprove') {
@@ -653,7 +650,7 @@
             // Get application URL
             function getApplicationUrl(app) {
                 if (app.formType === "hospital") {
-                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                    if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
                         return `/HospitalAssistanceClaimStatus/${app.formId}`;
                     } else if (app.status2 === "approve") {
                         return `/HospitalAssistanceApproveStatus/${app.formId}`;
@@ -665,7 +662,7 @@
                         return `/HospitalAssistancePendingStatus/${app.formId}`;
                     }
                 } else if (app.formType === "medical") {
-                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                    if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
                         return `/OtherAssistanceClaimStatus/${app.formId}`;
                     } else if (app.status2 === "approve") {
                         return `/OtherAssistanceApproveStatus/${app.formId}`;
@@ -677,7 +674,7 @@
                         return `/OtherAssistancePendingStatus/${app.formId}`;
                     }
                 } else if (app.formType === "funeral") {
-                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
+                    if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
                         return `/FuneralAssistanceClaimStatus/${app.formId}`;
                     } else if (app.status2 === "approve") {
                         return `/FuneralAssistanceApproveStatus/${app.formId}`;

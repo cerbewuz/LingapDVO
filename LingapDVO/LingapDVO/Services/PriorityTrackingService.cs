@@ -41,38 +41,38 @@ namespace LingapDVO.Services
 
         /// <summary>
         /// Get all priority applications counts
-        /// Tracks ONLY Pending or Processing applications that have NOT been approved/disapproved/claimed
+        /// Tracks ONLY Pending or Processing applications that have NOT been approved/disapproved/claims
         /// Priority is based on waiting time (time since CreatedAt to now)
         /// Excludes applications with Status2 = "approve" or "disapprove"
-        /// Excludes applications with Status3 = "claimed"
+        /// Excludes applications with Status3 = "claims" or "claimed"
         /// High Priority: 2+ hours waiting | Medium Priority: 1-2 hours waiting
         /// </summary>
         public async Task<(int high, int medium, int total)> GetPriorityCountsAsync()
         {
             // Get ONLY Pending or Processing medical/other assistance applications
-            // EXCLUDE applications that have been approved/disapproved or claimed
+            // EXCLUDE applications that have been approved/disapproved or claims
             var medicalApps = await _context.OtherAssistance
                 .Where(m => (m.Status == "pending" || m.Status == "processing")
                     && (m.Status2 == null || m.Status2 == "" || (m.Status2.ToLower() != "approve" && m.Status2.ToLower() != "disapprove"))
-                    && (m.Status3 == null || m.Status3 == "" || m.Status3.ToLower() != "claimed"))
+                    && (m.Status3 == null || m.Status3 == "" || (m.Status3.ToLower() != "claims" && m.Status3.ToLower() != "claimed")))
                 .Select(m => new { m.CreatedAt })
                 .ToListAsync();
 
             // Get ONLY Pending or Processing funeral assistance applications
-            // EXCLUDE applications that have been approved/disapproved or claimed
+            // EXCLUDE applications that have been approved/disapproved or claims
             var funeralApps = await _context.FuneralAssistance
                 .Where(f => (f.Status == "pending" || f.Status == "processing")
                     && (f.Status2 == null || f.Status2 == "" || (f.Status2.ToLower() != "approve" && f.Status2.ToLower() != "disapprove"))
-                    && (f.Status3 == null || f.Status3 == "" || f.Status3.ToLower() != "claimed"))
+                    && (f.Status3 == null || f.Status3 == "" || (f.Status3.ToLower() != "claims" && f.Status3.ToLower() != "claimed")))
                 .Select(f => new { f.CreatedAt })
                 .ToListAsync();
 
             // Get ONLY Pending or Processing hospital assistance applications
-            // EXCLUDE applications that have been approved/disapproved or claimed
+            // EXCLUDE applications that have been approved/disapproved or claims
             var hospitalApps = await _context.HospitalAssistance
                 .Where(h => (h.Status == "pending" || h.Status == "processing")
                     && (h.Status2 == null || h.Status2 == "" || (h.Status2.ToLower() != "approve" && h.Status2.ToLower() != "disapprove"))
-                    && (h.Status3 == null || h.Status3 == "" || h.Status3.ToLower() != "claimed"))
+                    && (h.Status3 == null || h.Status3 == "" || (h.Status3.ToLower() != "claims" && h.Status3.ToLower() != "claimed")))
                 .Select(h => new { h.CreatedAt })
                 .ToListAsync();
 
@@ -131,7 +131,7 @@ namespace LingapDVO.Services
         /// <summary>
         /// Check for delayed applications and send notifications to users
         /// Only checks Pending and Processing applications
-        /// Completed statuses (Approve, Disapprove, Claimed) are excluded
+        /// Completed statuses (Approve, Disapprove, Claims) are excluded
         /// Sends notification for applications delayed 1+ hours
         /// </summary>
         public async Task CheckDelayedApplicationsAsync()
