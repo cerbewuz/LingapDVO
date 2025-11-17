@@ -606,6 +606,97 @@
             color: var(--gray-500);
             margin-top: 0.5rem;
         }
+
+        /* Mobile Responsive Enhancements */
+        @@media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .date-filter {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .date-input {
+                width: 100%;
+            }
+
+            .priority-alerts {
+                flex-direction: column;
+                width: 100%;
+                align-items: stretch;
+            }
+
+            .priority-alert-box {
+                justify-content: center;
+            }
+
+            .chart-controls {
+                justify-content: center;
+            }
+
+            .chart-select,
+            .btn-custom {
+                flex: 1;
+            }
+
+            .barangay-list {
+                max-height: 200px;
+            }
+
+            .chart-container {
+                height: 300px;
+                padding: 1rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .header-title h1 {
+                font-size: 1.3rem;
+            }
+
+            .date-filter {
+                gap: 0.5rem;
+            }
+
+            .chart-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .chart-select,
+            .btn-custom {
+                width: 100%;
+            }
+
+            .summary-card {
+                padding: 1rem;
+            }
+
+            .claim-metric-card {
+                padding: 1rem;
+            }
+
+            .claim-metric-value {
+                font-size: 2rem;
+            }
+
+            .chart-container {
+                height: 250px;
+                padding: 0.75rem;
+            }
+
+            .barangay-item {
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>

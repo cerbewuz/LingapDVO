@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingapDVO Admin</title>
+    <title>Admin Applications View</title>
     <link rel="icon" type="image/x-icon" href="~/Icon/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -60,10 +60,10 @@
             transition: margin-left 0.3s ease, width 0.3s ease;
         }
 
-        /* When sidebar is hidden, expand content to full width */
-        .main-content-with-sidebar.sidebar-hidden {
-            margin-left: 0;
-        }
+            /* When sidebar is hidden, expand content to full width */
+            .main-content-with-sidebar.sidebar-hidden {
+                margin-left: 0;
+            }
 
         .header {
             display: flex;
@@ -521,6 +521,80 @@
                 opacity: 1;
                 color: var(--primary);
             }
+
+        /* Responsive Styles */
+        @@media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .priority-alerts {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .priority-alert-box {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+            }
+
+            .card-tools {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .search-box input,
+            .filter-select,
+            .sort-select {
+                width: 100%;
+            }
+
+            .time-filter {
+                width: 100%;
+            }
+
+            .time-filter-btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .priority-alerts {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .priority-alert-box {
+                width: 100%;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .time-filter {
+                flex-direction: column;
+            }
+
+            .time-filter-btn {
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -536,12 +610,12 @@
                     <h1>Application Dashboard</h1>
                 </div>
                 <div class="priority-alerts">
-                    <a href="/Priorities?filter=high" class="priority-alert-box high">
+                    <a href="/Adminuser/Priorities?filter=high" class="priority-alert-box high">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         <span class="count" id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</span>
                         <span>High Priority</span>
                     </a>
-                    <a href="/Priorities?filter=medium" class="priority-alert-box medium">
+                    <a href="/Adminuser/Priorities?filter=medium" class="priority-alert-box medium">
                         <i class="bi bi-exclamation-circle-fill"></i>
                         <span class="count" id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</span>
                         <span>Medium Priority</span>
@@ -612,7 +686,6 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="claims-count">0</h3>
-                        <h3 id="claimed-count">0</h3>
                         <p>Claims</p>
                     </div>
                 </div>
@@ -704,86 +777,58 @@
                 console.log('[Admin] Sidebar badge updated:', totalPriorityCount);
             }
 
-            // Helper function to format names with proper case
-            function formatName(lastname, firstname, middlename, suffix) {
-                // Helper to capitalize first letter of each word
-                const toProperCase = (str) => {
-                    if (!str) return '';
-                    return str.split(' ').map(word =>
-                        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                    ).join(' ');
-                };
-
-                // Format: "Lastname, Firstname Middlename"
-                let formattedName = `${toProperCase(lastname)}, ${toProperCase(firstname)}`;
-
-                if (middlename && middlename.trim() !== '') {
-                    formattedName += ` ${toProperCase(middlename)}`;
-                }
-
-                // Only add suffix if it exists and is not "None"
-                if (suffix && suffix.trim() !== '' && suffix.toLowerCase() !== 'none') {
-                    formattedName += ` ${toProperCase(suffix)}`;
-                }
-
-                return formattedName;
-            }
-
             // Combine all applications from the model
             const allApplications = [];
 
             // Add Hospitals
             @foreach (var f in Model.HospitalAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Hospital Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Hospital Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
-            // Add Other Assistance
+            // Add Medical Lab Forms
             @foreach (var f in Model.OtherAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Other Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Other Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // Add Funeral Forms
             @foreach (var f in Model.FuneralAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Funeral Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        resultDate: @(f.Result != DateTime.MinValue ? $"new Date(\"{f.Result.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Funeral Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // DOM elements
@@ -793,7 +838,6 @@
             const sortSelect = document.getElementById('sortSelect');
             const timeFilterButtons = document.querySelectorAll('.time-filter-btn');
             const statCards = document.querySelectorAll('.stat-card');
-            const priorityCards = document.querySelectorAll('[data-priority]');
             const sortableHeaders = document.querySelectorAll('th.sortable');
 
             // Status count elements
@@ -809,10 +853,8 @@
             let currentStatusFilter = 'approve';
             let currentTimeFilter = 'today';
             let currentTypeFilter = 'all';
-            let currentPriorityFilter = 'none';
             let currentSearchTerm = '';
             let currentSort = 'date-desc';
-            let currentPriorityFilter = null; // null, 'high', or 'medium'
 
             // Function to sort applications
             function sortApplications(applications, sortOption) {
@@ -962,30 +1004,6 @@
                 );
             }
 
-            // Function to filter by priority (processing time)
-            function filterByPriority(applications, priorityLevel) {
-                if (!priorityLevel) return applications;
-
-                return applications.filter(app => {
-                    // Only show approved/disapproved that are NOT claimed and have a result date
-                    if (!((app.status2 === 'approve' || app.status2 === 'disapprove')
-                        && app.resultDate !== null
-                        && (app.status3 === null || app.status3 !== 'claimed'))) {
-                        return false;
-                    }
-
-                    // Calculate processing time
-                    const processingHours = (app.resultDate - app.createdAt) / (1000 * 60 * 60);
-
-                    if (priorityLevel === 'high') {
-                        return processingHours >= 2;
-                    } else if (priorityLevel === 'medium') {
-                        return processingHours >= 1 && processingHours < 2;
-                    }
-                    return false;
-                });
-            }
-
             // Function to update status counts based on time filter - UPDATED VERSION
             function updateStatusCounts(timePeriod) {
                 // Filter applications by time period first
@@ -1096,10 +1114,10 @@
                 let displayStatus = app.status;
                 let displayText = app.status.charAt(0).toUpperCase() + app.status.slice(1);
 
-                // Priority 1: Check status3 for "claims" status (highest priority)
-                if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
-                    displayStatus = 'claims';
-                    displayText = 'Claims';
+                // Priority 1: Check status3 for "claimed" status (highest priority)
+                if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
+                    displayStatus = 'claimed';
+                    displayText = 'Claimed';
                 }
                 // Priority 2: Check status2 for approved/disapproved (only if NOT claimed)
                 else if (app.status2 && app.status2.trim() !== '') {
@@ -1116,7 +1134,7 @@
                     'disapprove': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapprove' },
                     'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
                     'processing': { class: 'status-processing', icon: 'bi-gear', text: 'Processing' },
-                    'claims': { class: 'status-claims', icon: 'bi-cloud-check', text: 'Claims' }
+                    'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
                 };
 
                 const statusInfo = statusMap[displayStatus] || { class: '', icon: 'bi-question-circle', text: displayText };
@@ -1134,16 +1152,16 @@
                 let iconClass = 'bi-pencil';
                 let title = 'Update Status';
 
-                // Check if status3 is claims AND status2 is disapproved
-                if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed') &&
+                // Check if status3 is claimed AND status2 is disapproved
+                if (app.status3 && app.status3.toLowerCase() === 'claimed' &&
                     app.status2 && app.status2.toLowerCase() === 'disapprove') {
                     iconClass = 'bi-eye';
                     title = 'View Details';
                 }
 
                 if (app.type === "Hospital Assistance") {
-                    // Check status3 FIRST for claims (highest priority)
-                    if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    // Check status3 FIRST for claimed (highest priority)
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/HospitalAssistanceClaimStatus/${app.formId}`;
                     }
                     // Then check status2 for approved/disapproved
@@ -1161,7 +1179,7 @@
 
                 } else if (app.type === "Other Assistance") {
                     // Apply the same logic for Medical forms
-                    if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/OtherAssistanceClaimStatus/${app.formId}`;
                     }
                     else if (app.status2 === "approve") {
@@ -1177,7 +1195,7 @@
 
                 } else if (app.type === "Funeral Assistance") {
                     // Apply the same logic for Funeral forms
-                    if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/FuneralAssistanceClaimStatus/${app.formId}`;
                     }
                     else if (app.status2 === "approve") {
@@ -1219,13 +1237,8 @@
                 // Apply time filter
                 filteredApplications = filterByTimePeriod(filteredApplications, currentTimeFilter);
 
-                // Apply priority filter (takes precedence over status filter if active)
-                if (currentPriorityFilter) {
-                    filteredApplications = filterByPriority(filteredApplications, currentPriorityFilter);
-                } else {
-                    // Apply status filter only if priority filter is not active
-                    filteredApplications = filterByStatus(filteredApplications, currentStatusFilter);
-                }
+                // Apply status filter
+                filteredApplications = filterByStatus(filteredApplications, currentStatusFilter);
 
                 // Apply type filter
                 filteredApplications = filterByType(filteredApplications, currentTypeFilter);
@@ -1243,12 +1256,7 @@
             // Event listeners for status cards
             statCards.forEach(card => {
                 card.addEventListener('click', function() {
-                    // Clear priority filter when status card is clicked
-                    currentPriorityFilter = null;
                     currentStatusFilter = this.dataset.status;
-
-                    // Clear priority filter when status card is clicked
-                    currentPriorityFilter = 'none';
 
                     // Update active card
                     statCards.forEach(c => c.classList.remove('active'));
@@ -1269,29 +1277,6 @@
 
                     // Update status counts based on the selected time period
                     updateStatusCounts(currentTimeFilter);
-
-                    // Apply all filters to the table
-                    applyFilters();
-                });
-            });
-
-            // Event listeners for priority cards
-            priorityCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    const priority = this.dataset.priority;
-
-                    // Toggle priority filter - if same card clicked again, clear filter
-                    if (currentPriorityFilter === priority) {
-                        currentPriorityFilter = null;
-                        // Remove active state from priority cards
-                        priorityCards.forEach(c => c.classList.remove('active'));
-                    } else {
-                        currentPriorityFilter = priority;
-                        // Update active card state
-                        statCards.forEach(c => c.classList.remove('active'));
-                        priorityCards.forEach(c => c.classList.remove('active'));
-                        this.classList.add('active');
-                    }
 
                     // Apply all filters to the table
                     applyFilters();

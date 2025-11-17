@@ -45,7 +45,7 @@
 <body>
     <div class="forms-layout-wrapper">
         <!-- Go Back Button -->
-        <a href="/Admin" class="go-back-btn">
+        <a href="#" class="go-back-btn" onclick="if (document.referrer && document.referrer !== '') { history.back(); } else { window.location.href = '/Adminuser/Admin'; } return false;">
             <i class="fas fa-arrow-left"></i>
             <span>Back</span>
         </a>
