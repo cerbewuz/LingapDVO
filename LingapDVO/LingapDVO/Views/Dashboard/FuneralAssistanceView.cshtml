@@ -1,7 +1,7 @@
-﻿@model HospitalAssistanceDto
+﻿@model FuneralAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Application View";
+    ViewData["Title"] = "Hospital Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
@@ -20,7 +20,7 @@
     }
 
     .receipt-body {
-        padding: 1.5rem 0 !important;
+        padding: 1rem !important;
     }
 
     .zoom-modal {
@@ -230,156 +230,130 @@
             margin-bottom: 1rem;
         }
 </style>
-
 <!-- Image Zoom Modal -->
-    <div id="zoomModal" class="zoom-modal">
-        <span class="close-zoom">&times;</span>
-        <img class="zoom-modal-content" id="zoomedImage">
-    </div>
+<div id="zoomModal" class="zoom-modal">
+    <span class="close-zoom">&times;</span>
+    <img class="zoom-modal-content" id="zoomedImage">
+</div>
 
-    <!-- PDF Viewer Modal -->
-    <div id="pdfViewerModal" class="pdf-viewer-modal">
-        <div class="pdf-viewer-content">
-            <div class="pdf-viewer-header">
-                <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
-                <div class="pdf-controls">
-                    <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
-                        <i class="bi bi-chevron-left"></i> Previous
-                    </button>
-                    <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
-                    <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
-                        Next <i class="bi bi-chevron-right"></i>
-                    </button>
-                    <button class="btn btn-sm btn-light" onclick="zoomOut()">
-                        <i class="bi bi-zoom-out"></i>
-                    </button>
-                    <span class="zoom-level" id="zoomLevel">100%</span>
-                    <button class="btn btn-sm btn-light" onclick="zoomIn()">
-                        <i class="bi bi-zoom-in"></i>
-                    </button>
-                </div>
-                <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+<!-- PDF Viewer Modal -->
+<div id="pdfViewerModal" class="pdf-viewer-modal">
+    <div class="pdf-viewer-content">
+        <div class="pdf-viewer-header">
+            <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+            <div class="pdf-controls">
+                <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+                <span class="zoom-level" id="zoomLevel">100%</span>
+                <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
             </div>
-            <div class="pdf-viewer-body">
-                <div id="pdfLoading" class="pdf-loading">
-                    <div class="spinner-border text-light" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p>Loading PDF document...</p>
+            <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+        </div>
+        <div class="pdf-viewer-body">
+            <div id="pdfLoading" class="pdf-loading">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-                <div id="pdfError" class="pdf-error">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <p>Error loading PDF. Please try again.</p>
-                </div>
-                <div class="pdf-container">
-                    <canvas id="pdfCanvas"></canvas>
-                </div>
+                <p>Loading PDF document...</p>
+            </div>
+            <div id="pdfError" class="pdf-error">
+                <i class="bi bi-exclamation-triangle"></i>
+                <p>Error loading PDF. Please try again.</p>
+            </div>
+            <div class="pdf-container">
+                <canvas id="pdfCanvas"></canvas>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Comments Modal -->
-    <div id="commentsModal" class="comments-modal">
-        <div class="comments-modal-content">
-            <div class="comments-modal-header">
-                <h5 class="comments-modal-title">Comments Required</h5>
-                <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
-            </div>
-            <div class="mb-3">
-                <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
-                <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
-                <div class="invalid-feedback">Comments are required when disapproving an application.</div>
-            </div>
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
-                <button type="button" class="btn btn-disapproved" onclick="submitDisapprove()">Submit Disapprove</button>
-            </div>
-        </div>
-    </div>
+<div class="receipt-container">
+    <form asp-action="HospitalAssistanceView" enctype="multipart/form-data" method="post" id="statusForm">
+        <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
+        <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
 
-    <div class="receipt-container">
-        <form asp-action="FuneralAssistanceView" enctype="multipart/form-data" method="post" id="statusForm">
-            <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
-            <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
-
-            <div class="receipt-header">
-                <h3>Funeral Assistance Application Details</h3>
-            </div>
-
-            <div class="receipt-body">
-                <!-- Patient Information -->
-                <div class="receipt-section">
-                    <div class="info-row">
-                        <div class="info-label">Application ID: @ViewData["Id"]</div>
-                    </div>
-                    <br />
-                    <h5 class="section-header">Patient Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="info-row">
-                                <div class="info-label">Name:</div>
-                                <div class="info-value">
-                                    @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
-                                    @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Address:</div>
-                                <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Sex:</div>
-                                <div class="info-value">@ViewData["Sex"]</div>
+        <div class="receipt-body">
+            <!-- Patient Information -->
+            <div class="receipt-section">
+                <h5 class="section-header">Patient Information</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Name:</div>
+                            <div class="info-value">
+                                @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
+                                @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="info-row">
-                                <div class="info-label">Date of Birth:</div>
-                                <div class="info-value">@ViewData["Dateofbirth"]</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Age:</div>
-                                <div class="info-value">@ViewData["Age"]</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">PhilHealth:</div>
-                                <div class="info-value">@ViewData["PhilHealth"]</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">PhilHealth No:</div>
-                                <div class="info-value">@ViewData["PhilHealthNo"]</div>
-                            </div>
+                        <div class="info-row">
+                            <div class="info-label">Address:</div>
+                            <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Sex:</div>
+                            <div class="info-value">@ViewData["Sex"]</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Date of Birth:</div>
+                            <div class="info-value">@ViewData["Dateofbirth"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Age:</div>
+                            <div class="info-value">@ViewData["Age"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">PhilHealth:</div>
+                            <div class="info-value">@ViewData["PhilHealth"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">PhilHealth No:</div>
+                            <div class="info-value">@ViewData["PhilHealthNo"]</div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Requestor Details -->
-                <div class="receipt-section">
-                    <h5 class="section-header">Requestor's Details</h5>
-                    <div class="info-row">
-                        <div class="info-label">Full Name:</div>
-                        <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Address:</div>
-                        <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Relationship to Patient:</div>
-                        <div class="info-value">@ViewData["RelationshipPatient"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Contact No:</div>
-                        <div class="info-value">@ViewData["ContactNo"]</div>
-                    </div>
+            <!-- Requestor Details -->
+            <div class="receipt-section">
+                <h5 class="section-header">Requestor's Details</h5>
+                <div class="info-row">
+                    <div class="info-label">Full Name:</div>
+                    <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
                 </div>
-
-                <!-- Assistance Requested -->
-                <div class="receipt-section">
-                    <h5 class="section-header">Assistance Requested</h5>
-                    <div class="info-value">@ViewData["Typeassistance"]</div>
+                <div class="info-row">
+                    <div class="info-label">Address:</div>
+                    <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
                 </div>
+                <div class="info-row">
+                    <div class="info-label">Relationship to Patient:</div>
+                    <div class="info-value">@ViewData["RelationshipPatient"]</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Contact No:</div>
+                    <div class="info-value">@ViewData["ContactNo"]</div>
+                </div>
+            </div>
 
+            <!-- Assistance Requested -->
+            <div class="receipt-section">
+                <h5 class="section-header">Assistance Requested</h5>
+                <div class="info-value">@ViewData["Typeassistance"]</div>
+            </div>
+
+            <!-- Valid ID and Submitted Documents Section -->
+            <div class="receipt-section">
                 <!-- Valid ID Section -->
                 <div class="receipt-section">
                     <h5 class="section-header">Valid ID</h5>
@@ -490,12 +464,12 @@
                         }
                     </div>
                 }
-
             </div>
 
-        </form>
-    </div>
+        </div>
 
+    </form>
+</div>
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>

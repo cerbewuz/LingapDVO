@@ -7,7 +7,7 @@
 @section Styles {
     <style>
         .btn-submit {
-            background-color: #28a745;
+            background-color: #28a745; /* Green */
             color: white;
             font-weight: 600;
             padding: 10px 25px;
@@ -16,15 +16,18 @@
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
-        .btn-submit:hover {
-            background-color: #20c997;
-            transform: scale(1.05);
-        }
+
+            .btn-submit:hover {
+                background-color: #20c997; /* Green-blue hover */
+                transform: scale(1.05);
+            }
+
         .form-label {
             font-weight: 500;
             color: #2c3e50;
             margin-bottom: 0.25rem;
         }
+
         .form-value {
             padding: 0.5rem 0.75rem;
             background-color: #f8f9fa;
@@ -34,6 +37,7 @@
             display: flex;
             align-items: center;
         }
+
         .img-preview {
             width: 100%;
             max-width: 100%;
@@ -46,9 +50,38 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .img-preview:hover {
-            transform: scale(1.02);
+
+            .img-preview:hover {
+                transform: scale(1.02);
+            }
+
+        .upload-box {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #fafafa;
+            transition: all 0.3s;
+            cursor: pointer;
         }
+
+            .upload-box:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+            }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
         .status-badge {
             display: inline-block;
             padding: 0.35rem 0.75rem;
@@ -56,91 +89,510 @@
             font-weight: 600;
             font-size: 0.85rem;
         }
-        .status-pending { background-color: #fff3cd; color: #856404; }
-        .status-processing { background-color: #cce5ff; color: #004085; }
-        .status-approve { background-color: #d4edda; color: #155724; }
-        .status-disapprove { background-color: #f8d7da; color: #721c24; }
-        .status-claimed { background-color: #d1ecf1; color: #0c5460; }
-        .zoom-modal { display: none; position: fixed; z-index: 9999; padding-top: 50px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.9); }
-        .zoom-modal-content { margin: auto; display: block; max-width: 90%; max-height: 90%; }
-        .close-zoom { position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; }
-        .close-zoom:hover, .close-zoom:focus { color: #bbb; }
-        .pdf-preview { border: 2px dashed #ddd; border-radius: 8px; padding: 1.5rem; text-align: center; background-color: #fafafa; cursor: pointer; transition: all 0.3s; }
-        .pdf-preview:hover { border-color: var(--primary-color); background-color: var(--primary-light); }
-        .pdf-icon { font-size: 3rem; color: #dc143c; margin-bottom: 0.5rem; }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-approve {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-disapprove {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-claimed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Zoom Modal Styles */
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .zoom-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .close-zoom {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            .close-zoom:hover,
+            .close-zoom:focus {
+                color: #bbb;
+            }
+
+        /* PDF Viewer Styles */
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .pdf-viewer-content {
+            background-color: #2c3e50;
+            margin: 2% auto;
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pdf-viewer-header {
+            background-color: #34495e;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pdf-viewer-body {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2c3e50;
+        }
+
+        .pdf-container {
+            text-align: center;
+        }
+
+        .pdf-preview {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            .pdf-preview:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+            }
+
+        .pdf-icon {
+            font-size: 3rem;
+            color: #dc143c;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Success Modal */
+        .success-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .success-modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
     </style>
 }
 
+<!-- Image Zoom Modal -->
 <div id="zoomModal" class="zoom-modal">
     <span class="close-zoom">&times;</span>
     <img class="zoom-modal-content" id="zoomedImage">
 </div>
 
-<form asp-action="OtherAssistancePendingStatus" method="post">
+<!-- PDF Viewer Modal -->
+<div id="pdfViewerModal" class="pdf-viewer-modal">
+    <div class="pdf-viewer-content">
+        <div class="pdf-viewer-header">
+            <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+            <div class="pdf-controls">
+                <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+                <span class="zoom-level" id="zoomLevel">100%</span>
+                <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
+            </div>
+            <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+        </div>
+        <div class="pdf-viewer-body">
+            <div id="pdfLoading" class="pdf-loading">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading PDF document...</p>
+            </div>
+            <div id="pdfError" class="pdf-error">
+                <i class="bi bi-exclamation-triangle"></i>
+                <p>Error loading PDF. Please try again.</p>
+            </div>
+            <div class="pdf-container">
+                <canvas id="pdfCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="success-modal">
+    <div class="success-modal-content">
+        <div class="success-icon">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <h4>Application Processed Successfully!</h4>
+        <p>Status updated to Processing. Redirecting to Admin page...</p>
+        <div class="mt-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="OtherAssistancePendingStatus" method="post" id="statusForm">
+    @Html.AntiForgeryToken()
+
+    <!-- Hidden field for application ID -->
+    <input type="hidden" name="id" value="@ViewData["Id"]" />
+
+    <!-- Application ID -->
     <div class="row g-3 mb-3">
         <div class="col-md-12">
             <label class="form-label">Application ID</label>
             <div class="form-value">@ViewData["Id"]</div>
         </div>
     </div>
+
+    <!-- Patient's Details -->
     <h5 class="section-header">Patient's Details</h5>
     <div class="row g-3">
-        <div class="col-md-3"><label class="form-label">Last Name</label><div class="form-value">@ViewData["Lastname"]</div></div>
-        <div class="col-md-3"><label class="form-label">First Name</label><div class="form-value">@ViewData["Firstname"]</div></div>
-        <div class="col-md-3"><label class="form-label">Middle Name</label><div class="form-value">@ViewData["Middlename"]</div></div>
-        <div class="col-md-3"><label class="form-label">Suffix</label><div class="form-value">@(ViewData["Suffix"]?.ToString() == "None" ? "" : ViewData["Suffix"])</div></div>
+        <div class="col-md-3">
+            <label class="form-label">Last Name</label>
+            <div class="form-value">@ViewData["Lastname"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">First Name</label>
+            <div class="form-value">@ViewData["Firstname"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Middle Name</label>
+            <div class="form-value">@ViewData["Middlename"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Suffix</label>
+            <div class="form-value">@(ViewData["Suffix"]?.ToString() == "None" ? "" : ViewData["Suffix"])</div>
+        </div>
     </div>
+
+    <!-- Address -->
     <div class="row g-3 mt-2">
-        <div class="col-md-3"><label class="form-label">Blk / Lot / Street</label><div class="form-value">@ViewData["BlkLotStreet"]</div></div>
-        <div class="col-md-3"><label class="form-label">Sub / Vill.</label><div class="form-value">@ViewData["SubVill"]</div></div>
-        <div class="col-md-3"><label class="form-label">Brgy.</label><div class="form-value">@ViewData["Brgy"]</div></div>
-        <div class="col-md-3"><label class="form-label">District</label><div class="form-value">@ViewData["District"]</div></div>
+        <div class="col-md-3">
+            <label class="form-label">Blk / Lot / Street</label>
+            <div class="form-value">@ViewData["BlkLotStreet"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Sub / Vill.</label>
+            <div class="form-value">@ViewData["SubVill"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Brgy.</label>
+            <div class="form-value">@ViewData["Brgy"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">District</label>
+            <div class="form-value">@ViewData["District"]</div>
+        </div>
     </div>
+
+    <!-- Gender, PhilHealth, DOB, Age -->
     <div class="row g-3 mt-2">
-        <div class="col-md-2"><label class="form-label">Sex</label><div class="form-value">@ViewData["Sex"]</div></div>
-        <div class="col-md-3"><label class="form-label">PhilHealth</label><div class="form-value">@ViewData["PhilHealth"]</div></div>
-        <div class="col-md-3"><label class="form-label">PhilHealth No.</label><div class="form-value">@ViewData["PhilHealthNo"]</div></div>
-        <div class="col-md-2"><label class="form-label">Date of Birth</label><div class="form-value">@ViewData["Dateofbirth"]</div></div>
-        <div class="col-md-2"><label class="form-label">Age</label><div class="form-value">@ViewData["Age"]</div></div>
+        <div class="col-md-2">
+            <label class="form-label">Sex</label>
+            <div class="form-value">@ViewData["Sex"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">PhilHealth</label>
+            <div class="form-value">@ViewData["PhilHealth"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">PhilHealth No.</label>
+            <div class="form-value">@ViewData["PhilHealthNo"]</div>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Date of Birth</label>
+            <div class="form-value">@ViewData["Dateofbirth"]</div>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Age</label>
+            <div class="form-value">@ViewData["Age"]</div>
+        </div>
     </div>
+
+    <!-- Requestor's Details -->
     <h5 class="section-header mt-4">Requestor's Details</h5>
     <div class="row g-3">
-        <div class="col-md-3"><label class="form-label">Last Name</label><div class="form-value">@ViewData["RLastname"]</div></div>
-        <div class="col-md-3"><label class="form-label">First Name</label><div class="form-value">@ViewData["RFirstname"]</div></div>
-        <div class="col-md-3"><label class="form-label">Middle Name</label><div class="form-value">@ViewData["RMiddlename"]</div></div>
-        <div class="col-md-3"><label class="form-label">Suffix</label><div class="form-value">@ViewData["RSuffix"]</div></div>
+        <div class="col-md-3">
+            <label class="form-label">Last Name</label>
+            <div class="form-value">@ViewData["RLastname"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">First Name</label>
+            <div class="form-value">@ViewData["RFirstname"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Middle Name</label>
+            <div class="form-value">@ViewData["RMiddlename"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Suffix</label>
+            <div class="form-value">@ViewData["RSuffix"]</div>
+        </div>
     </div>
+
+    <!-- Requestor Address -->
     <div class="row g-3 mt-2">
-        <div class="col-md-3"><label class="form-label">Blk / Lot / Street</label><div class="form-value">@ViewData["RBlkLotStreet"]</div></div>
-        <div class="col-md-3"><label class="form-label">Sub / Vill.</label><div class="form-value">@ViewData["RSubVill"]</div></div>
-        <div class="col-md-3"><label class="form-label">Brgy.</label><div class="form-value">@ViewData["RBrgy"]</div></div>
-        <div class="col-md-3"><label class="form-label">District</label><div class="form-value">@ViewData["RDistrict"]</div></div>
+        <div class="col-md-3">
+            <label class="form-label">Blk / Lot / Street</label>
+            <div class="form-value">@ViewData["RBlkLotStreet"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Sub / Vill.</label>
+            <div class="form-value">@ViewData["RSubVill"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Brgy.</label>
+            <div class="form-value">@ViewData["RBrgy"]</div>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">District</label>
+            <div class="form-value">@ViewData["RDistrict"]</div>
+        </div>
     </div>
+
     <div class="row g-3 mt-2">
-        <div class="col-md-6"><label class="form-label">Relationship to Patient</label><div class="form-value">@ViewData["RelationshipPatient"]</div></div>
-        <div class="col-md-6"><label class="form-label">Contact No.</label><div class="form-value">@ViewData["ContactNo"]</div></div>
+        <div class="col-md-6">
+            <label class="form-label">Relationship to Patient</label>
+            <div class="form-value">@ViewData["RelationshipPatient"]</div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Contact No.</label>
+            <div class="form-value">@ViewData["ContactNo"]</div>
+        </div>
     </div>
+
+    <!-- Assistance Requested -->
     <h5 class="section-header mt-4">Assistance Requested</h5>
-    <div class="row g-3"><div class="col-md-12"><div class="form-value">@ViewData["Typeassistance"]</div></div></div>
-   
+    <div class="row g-3">
+        <div class="col-md-12">
+            <div class="form-value">@ViewData["Typeassistance"]</div>
+        </div>
+    </div>
+
+    <!-- Status Section -->
     <h5 class="section-header mt-4">Request Status</h5>
     <div class="row g-3">
-        <div class="col-md-6"><label class="form-label">Current Status</label><div class="form-value"><span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">@ViewData["Status"]</span></div></div>
+        <div class="col-md-6">
+            <label class="form-label">Current Status</label>
+            <div class="form-value">
+                <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
+                    @ViewData["Status"]
+                </span>
+            </div>
+        </div>
     </div>
+
     <input type="hidden" name="status2" value="Processing" />
+
+    <!-- Submit Button -->
     <div class="text-center mt-4">
-        <button type="submit" class="btn-submit"><i class="bi bi-gear-fill"></i> Process Application</button>
-        <button type="button" class="btn btn-secondary ms-2" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
-        <a href="javascript:history.back()" class="btn btn-secondary ms-2"><i class="bi bi-arrow-left"></i> Go Back</a>
+        <button type="submit" class="btn-submit" onclick="processApplication(event)">
+            <i class="bi bi-gear-fill"></i> Process Application
+        </button>
+        <button type="button" class="btn btn-secondary ms-2" onclick="window.print()">
+            <i class="bi bi-printer"></i> Print
+        </button>
+        <a href="javascript:history.back()" class="btn btn-secondary ms-2">
+            <i class="bi bi-arrow-left"></i> Go Back
+        </a>
     </div>
-    <br /><br />
+    <br />
+    <br />
 </form>
 
 @section Scripts {
     <script>
-        function zoomImage(imageSrc) { const modal = document.getElementById('zoomModal'); const modalImg = document.getElementById('zoomedImage'); modal.style.display = 'block'; modalImg.src = imageSrc; }
-        document.querySelector('.close-zoom')?.addEventListener('click', function() { document.getElementById('zoomModal').style.display = 'none'; });
-        document.getElementById('zoomModal')?.addEventListener('click', function(e) { if (e.target === this) { this.style.display = 'none'; } });
-        function viewPDFInModal(filename, folder, title) { console.log('Loading PDF:', `/uploads/${folder}/${filename}`); }
+        // Process Application with Success Modal
+        function processApplication(event) {
+            event.preventDefault();
+
+            console.log('Processing application...');
+
+            // Show success modal
+            showSuccessModal();
+
+            // Submit the form after a short delay
+            setTimeout(() => {
+                console.log('Submitting form...');
+                document.getElementById('statusForm').submit();
+            }, 1500);
+        }
+
+        function showSuccessModal() {
+            document.getElementById('successModal').style.display = 'block';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const successModal = document.getElementById("successModal");
+            if (event.target == successModal) {
+                successModal.style.display = "none";
+            }
+        }
+
+        // Enhanced form submission debugging
+        document.getElementById('statusForm').addEventListener('submit', function(e) {
+            console.log('=== FORM SUBMISSION DEBUG INFO ===');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+            console.log('Status:', document.querySelector('input[name="status2"]').value);
+            console.log('Application ID:', document.querySelector('input[name="id"]').value);
+            console.log('==============================');
+        });
+
+        // Zoom Image Function
+        function zoomImage(imageSrc) {
+            const modal = document.getElementById('zoomModal');
+            const modalImg = document.getElementById('zoomedImage');
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+        }
+
+        // Close zoom modal
+        document.querySelector('.close-zoom')?.addEventListener('click', function() {
+            document.getElementById('zoomModal').style.display = 'none';
+        });
+
+        // Close modal when clicking outside the image
+        document.getElementById('zoomModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+
+        // PDF Viewer Functions
+        function viewPDFInModal(filename, folder, title) {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'block';
+            document.getElementById('pdfViewerTitle').textContent = title;
+
+            // Load PDF using PDF.js (requires PDF.js library)
+            const pdfPath = `/uploads/${folder}/${filename}`;
+            loadPDF(pdfPath);
+        }
+
+        function closePDFViewer() {
+            document.getElementById('pdfViewerModal').style.display = 'none';
+        }
+
+        function loadPDF(url) {
+            // PDF loading logic (requires PDF.js)
+            console.log('Loading PDF:', url);
+        }
+
+        function prevPage() {
+            // Navigate to previous page
+        }
+
+        function nextPage() {
+            // Navigate to next page
+        }
+
+        function zoomIn() {
+            // Zoom in functionality
+        }
+
+        function zoomOut() {
+            // Zoom out functionality
+        }
     </script>
 }

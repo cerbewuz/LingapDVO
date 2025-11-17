@@ -172,18 +172,18 @@ namespace LingapDVO.Controllers
 
         //renvic edit sa grammar
         [HttpPost]
-        public IActionResult HospitalAssistancePendingStatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
+        public async Task<IActionResult> HospitalAssistancePendingStatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
         {
-            var HospitalAssistance = context.HospitalAssistance.Find(id);
-
-            if (HospitalAssistance == null)
-            {
-                TempData["ErrorMessage"] = "Hospital bill record not found.";
-                return Redirect("/Admin");
-            }
-
             try
             {
+                var HospitalAssistance = context.HospitalAssistance.Find(id);
+
+                if (HospitalAssistance == null)
+                {
+                    TempData["ErrorMessage"] = "Hospital bill record not found.";
+                    return Redirect("/Admin");
+                }
+
                 // Automatically set status to "Processing"
                 HospitalAssistance.Status = "Processing";
                 HospitalAssistance.ForCMOPERSONNEL = HospitalAssistanceDto.ForCMOPERSONNEL;
@@ -196,6 +196,7 @@ namespace LingapDVO.Controllers
                 // Send multi-channel notification (In-App, SMS, Email based on preferences)
                 var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
+
                 _ = _notificationService.SendStatusChangeNotificationAsync(
                     HospitalAssistance.UserId,
                     applicantName,
@@ -231,9 +232,9 @@ namespace LingapDVO.Controllers
                     Your Hospital Bill Assistance application is now being processed.
 
                     APPLICATION DETAILS:
-                    � Application Type: Hospital Bill Assistance
-                    � Status: Processing
-                    � Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                    • Application Type: Hospital Bill Assistance
+                    • Status: Processing
+                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {HospitalAssistanceDto.Comments ?? "N/A"}
@@ -242,36 +243,43 @@ namespace LingapDVO.Controllers
 
                     Sincerely,
                     {fromName}
-                    LINGAP DVO Medical Assistance Program";
+                    LINGAP DVO Medical Assistance Program
 
-                        // Send the email safely
-                        using (var smtp = new SmtpClient("smtp.gmail.com", 587)
-                        {
-                            EnableSsl = true,
-                            DeliveryMethod = SmtpDeliveryMethod.Network,
-                            UseDefaultCredentials = false,
-                            Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                        })
-                        using (var message = new MailMessage(fromAddress, toAddress)
-                        {
-                            Subject = subject,
-                            Body = body
-                        })
-                        {
-                            smtp.Send(message);
-                        }
+                    Note: This is an automated email. Please do not reply to this message.";
+
+                    // Send the email safely using async
+                    using (var smtp = new SmtpClient("smtp.gmail.com", 587)
+                    {
+                        EnableSsl = true,
+                        DeliveryMethod = SmtpDeliveryMethod.Network,
+                        UseDefaultCredentials = false,
+                        Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                    })
+                    using (var message = new MailMessage(fromAddress, toAddress)
+                    {
+                        Subject = subject,
+                        Body = body,
+                        IsBodyHtml = false
+                    })
+                    {
+                        await smtp.SendMailAsync(message);
                     }
 
-                TempData["SuccessMessage"] = "Hospital bill status set to 'Processing' and email sent successfully.";
+                    Console.WriteLine($"Processing status email sent to {user.Email} for application {HospitalAssistance.Id}");
+                }
+
+                TempData["SuccessMessage"] = "Hospital bill status set to 'Processing' and notifications sent successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
-                return View(HospitalAssistanceDto);
+                Console.WriteLine($"Error in HospitalAssistancePendingStatus: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                TempData["ErrorMessage"] = "An error occurred while updating status: " + ex.Message;
+                return Redirect("/Admin");
             }
         }
-
 
 
         public IActionResult OtherAssistancePendingStatus(int id)
@@ -358,23 +366,23 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public IActionResult OtherAssistancePendingStatus(int id, OtherAssistanceDto OtherAssistanceDto) // ← Change method name
+        public async Task<IActionResult> OtherAssistancePendingStatus(int id, OtherAssistanceDto OtherAssistanceDto)
         {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
-            {
-                return RedirectToAction("Landingpage", "Dashboard");
-            }
-
-            var OtherAssistance = context.OtherAssistance.Find(id);
-
-            if (OtherAssistance == null)
-            {
-                TempData["ErrorMessage"] = "Medical and laboratory record not found.";
-                return Redirect("/Admin");
-            }
-
             try
             {
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+                {
+                    return RedirectToAction("Landingpage", "Dashboard");
+                }
+
+                var OtherAssistance = context.OtherAssistance.Find(id);
+
+                if (OtherAssistance == null)
+                {
+                    TempData["ErrorMessage"] = "Medical and laboratory record not found.";
+                    return Redirect("/Admin");
+                }
+
                 // Automatically set status to "Processing"
                 OtherAssistance.Status = "Processing";
                 OtherAssistance.Comments = OtherAssistanceDto.Comments;
@@ -386,6 +394,7 @@ namespace LingapDVO.Controllers
                 // Send multi-channel notification
                 var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == OtherAssistance.UserId);
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
+
                 _ = _notificationService.SendStatusChangeNotificationAsync(
                     OtherAssistance.UserId,
                     applicantName,
@@ -416,25 +425,27 @@ namespace LingapDVO.Controllers
 
                     string subject = "Medical and Laboratory Assistance Update - LINGAP DVO";
                     string body = $@"
-            Dear {firstName},
+                    Dear {firstName},
 
-            Your Medical and Laboratory Assistance application is now being processed.
+                    Your Medical and Laboratory Assistance application is now being processed.
 
-            APPLICATION DETAILS:
-            • Application Type: Medical and Laboratory Assistance
-            • Status: Processing
-            • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                    APPLICATION DETAILS:
+                    • Application Type: Medical and Laboratory Assistance
+                    • Status: Processing
+                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
-            REMARKS:
-            {OtherAssistanceDto.Comments ?? "N/A"}
+                    REMARKS:
+                    {OtherAssistanceDto.Comments ?? "N/A"}
 
-            Thank you for your patience. We will notify you once your application status has been updated.
+                    Thank you for your patience. We will notify you once your application status has been updated.
 
-            Sincerely,
-            {fromName}
-            LINGAP DVO Medical Assistance Program";
+                    Sincerely,
+                    {fromName}
+                    LINGAP DVO Medical Assistance Program
 
-                    // Send email
+                    Note: This is an automated email. Please do not reply to this message.";
+
+                    // Send email using async
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -445,23 +456,28 @@ namespace LingapDVO.Controllers
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
-                        Body = body
+                        Body = body,
+                        IsBodyHtml = false
                     })
                     {
-                        smtp.Send(message);
+                        await smtp.SendMailAsync(message);
                     }
+
+                    Console.WriteLine($"Processing status email sent to {user.Email} for Medical and Laboratory application {OtherAssistance.Id}");
                 }
 
-                TempData["SuccessMessage"] = "Medical and laboratory status set to 'Processing' and email sent successfully.";
+                TempData["SuccessMessage"] = "Medical and laboratory status set to 'Processing' and notifications sent successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
-                return View(OtherAssistanceDto);
+                Console.WriteLine($"Error in OtherAssistancePendingStatus: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                TempData["ErrorMessage"] = "An error occurred while updating status: " + ex.Message;
+                return Redirect("/Admin");
             }
         }
-
 
 
         public IActionResult FuneralAssistancePendingStatus(int id)
@@ -546,24 +562,24 @@ namespace LingapDVO.Controllers
 
         // Renvic edit sa grammar
         [HttpPost]
-        public IActionResult FuneralAssistancePendingStatus(int id, FuneralAssistanceDto FuneralAssistanceDto) // ← Change method name
+        public async Task<IActionResult> FuneralAssistancePendingStatus(int id, FuneralAssistanceDto FuneralAssistanceDto)
         {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
-            {
-                return RedirectToAction("Landingpage", "Dashboard");
-            }
-
-            var FuneralAssistance = context.FuneralAssistance.Find(id);
-
-            if (FuneralAssistance == null)
-            {
-                TempData["ErrorMessage"] = "Funeral and burial record not found.";
-                return Redirect("/Admin");
-            }
-
             try
             {
-                // ? Automatically set status to "Processing"
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+                {
+                    return RedirectToAction("Landingpage", "Dashboard");
+                }
+
+                var FuneralAssistance = context.FuneralAssistance.Find(id);
+
+                if (FuneralAssistance == null)
+                {
+                    TempData["ErrorMessage"] = "Funeral and burial record not found.";
+                    return Redirect("/Admin");
+                }
+
+                // Automatically set status to "Processing"
                 FuneralAssistance.Status = "Processing";
                 FuneralAssistance.Comments = FuneralAssistanceDto.Comments;
                 FuneralAssistance.Processby = FuneralAssistanceDto.Processby;
@@ -574,6 +590,7 @@ namespace LingapDVO.Controllers
                 // Send multi-channel notification
                 var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == FuneralAssistance.UserId);
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
+
                 _ = _notificationService.SendStatusChangeNotificationAsync(
                     FuneralAssistance.UserId,
                     applicantName,
@@ -582,15 +599,15 @@ namespace LingapDVO.Controllers
                     FuneralAssistance.Id
                 );
 
-                // ? Get user info
+                // Get user info
                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == FuneralAssistance.UserId);
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // ? Get user's first name from VerifyAccount table (reuse existing verifyAccount variable)
+                    // Get user's first name from VerifyAccount table
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
-                    // ? Get email settings
+                    // Get email settings
                     var fromEmail = _configuration["EmailSettings:FromEmail"];
                     var fromName = _configuration["EmailSettings:FromName"];
                     var fromPassword = _configuration["EmailSettings:FromPassword"];
@@ -598,7 +615,7 @@ namespace LingapDVO.Controllers
                     if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
                         throw new ArgumentException("Email settings are missing.");
 
-                    // ? Prepare email content
+                    // Prepare email content
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
@@ -611,7 +628,7 @@ namespace LingapDVO.Controllers
                     APPLICATION DETAILS:
                     • Application Type: Funeral and Burial Assistance
                     • Status: Processing
-                    • Date Updated: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {FuneralAssistanceDto.Comments ?? "N/A"}
@@ -620,9 +637,11 @@ namespace LingapDVO.Controllers
 
                     Sincerely,
                     {fromName}
-                    LINGAP DVO Funeral and Burial Assistance Program";
+                    LINGAP DVO Funeral and Burial Assistance Program
 
-                    // ? Send email
+                    Note: This is an automated email. Please do not reply to this message.";
+
+                    // Send email using async
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
                     {
                         EnableSsl = true,
@@ -633,20 +652,26 @@ namespace LingapDVO.Controllers
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
-                        Body = body
+                        Body = body,
+                        IsBodyHtml = false
                     })
                     {
-                        smtp.Send(message);
+                        await smtp.SendMailAsync(message);
                     }
+
+                    Console.WriteLine($"Processing status email sent to {user.Email} for Funeral and Burial application {FuneralAssistance.Id}");
                 }
 
-                TempData["SuccessMessage"] = "Funeral and burial status set to 'Processing' and email sent successfully.";
+                TempData["SuccessMessage"] = "Funeral and burial status set to 'Processing' and notifications sent successfully.";
                 return Redirect("/Admin");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while updating status: " + ex.Message);
-                return View(FuneralAssistanceDto);
+                Console.WriteLine($"Error in FuneralAssistancePendingStatus: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                TempData["ErrorMessage"] = "An error occurred while updating status: " + ex.Message;
+                return Redirect("/Admin");
             }
         }
 
