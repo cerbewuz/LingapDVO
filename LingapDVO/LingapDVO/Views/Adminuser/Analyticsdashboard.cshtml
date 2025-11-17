@@ -5,7 +5,7 @@
     // Prepare detailed data for Barangay with Specific Assistance Types
     var barangayDetailedData = new Dictionary<string, Dictionary<string, int>>();
 
-    // Process Hospital Bills - they have TypeAssistance field
+    // Process Hospital Assistance - they have TypeAssistance field
     foreach (var bill in Model.HospitalAssistance)
     {
         if (!string.IsNullOrEmpty(bill.Brgy) && !string.IsNullOrEmpty(bill.Typeassistance))
@@ -19,7 +19,7 @@
         }
     }
 
-    // Process Medical Lab Forms - they have TypeAssistance field
+    // Process Other Assistance - they have TypeAssistance field
     foreach (var form in Model.OtherAssistance)
     {
         if (!string.IsNullOrEmpty(form.Brgy) && !string.IsNullOrEmpty(form.Typeassistance))
@@ -33,7 +33,7 @@
         }
     }
 
-    // Process Funeral Forms - they are all "Funeral and Burial Assistance"
+    // Process Funeral Forms - they are all "Funeral Assistance"
     foreach (var form in Model.FuneralAssistance)
     {
         if (!string.IsNullOrEmpty(form.Brgy))
@@ -41,8 +41,8 @@
             if (!barangayDetailedData.ContainsKey(form.Brgy))
                 barangayDetailedData[form.Brgy] = new Dictionary<string, int>();
 
-            barangayDetailedData[form.Brgy]["Funeral and Burial Assistance"] =
-                barangayDetailedData[form.Brgy].GetValueOrDefault("Funeral and Burial Assistance", 0) + 1;
+            barangayDetailedData[form.Brgy]["Funeral Assistance"] =
+                barangayDetailedData[form.Brgy].GetValueOrDefault("Funeral Assistance", 0) + 1;
         }
     }
 
@@ -266,7 +266,7 @@
             color: var(--danger);
         }
 
-        .summary-claimed .summary-icon {
+        .summary-claims .summary-icon {
             background: rgba(52, 152, 219, 0.15);
             color: var(--info);
         }
@@ -488,78 +488,213 @@
             font-size: 14px !important;
         }
 
-        /* Priority Stats */
-        .stat-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        /* Priority Alert Boxes */
+        .priority-alerts {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .priority-alert-box {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            white-space: nowrap;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        .priority-alert-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
-        .stat-card.high-priority {
-            border-left: 5px solid var(--danger);
-            background: white;
-            box-shadow: 0 2px 8px rgba(229, 57, 53, 0.15);
+        .priority-alert-box.high {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
         }
 
-        .stat-card.high-priority .stat-icon {
-            background: rgba(229, 57, 53, 0.1);
-            color: var(--danger);
-            animation: priorityPulse 2s ease-in-out infinite;
+        .priority-alert-box.high:hover {
+            background: rgba(231, 76, 60, 0.15);
         }
 
-        .stat-card.medium-priority {
-            border-left: 5px solid var(--warning);
-            background: white;
-            box-shadow: 0 2px 8px rgba(251, 140, 0, 0.15);
+        .priority-alert-box.medium {
+            background: rgba(243, 156, 18, 0.1);
+            color: #f39c12;
+            border: 1px solid rgba(243, 156, 18, 0.3);
         }
 
-        .stat-card.medium-priority .stat-icon {
-            background: rgba(251, 140, 0, 0.1);
-            color: var(--warning);
+        .priority-alert-box.medium:hover {
+            background: rgba(243, 156, 18, 0.15);
         }
 
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.75rem;
-            flex-shrink: 0;
+        .priority-alert-box i {
+            font-size: 1rem;
         }
 
-        .stat-info h3 {
-            font-size: 2rem;
+        .priority-alert-box .count {
             font-weight: 700;
-            margin-bottom: 0.25rem;
-            color: #333;
-        }
-
-        .stat-info p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: #666;
+            font-size: 1rem;
         }
 
         @@keyframes priorityPulse {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
             }
             50% {
                 transform: scale(1.05);
-                box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+            }
+        }
+
+        .priority-alert-box.high i {
+            animation: priorityPulse 2s ease-in-out infinite;
+        }
+
+        /* Claim Rate Metrics Styles */
+        .claim-metric-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .claim-metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .claim-metric-label {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+
+        .claim-metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .claim-progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .claim-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 6px;
+            transition: width 1s ease;
+        }
+
+        .metric-subtext {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-top: 0.5rem;
+        }
+
+        /* Mobile Responsive Enhancements */
+        @@media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .date-filter {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .date-input {
+                width: 100%;
+            }
+
+            .priority-alerts {
+                flex-direction: column;
+                width: 100%;
+                align-items: stretch;
+            }
+
+            .priority-alert-box {
+                justify-content: center;
+            }
+
+            .chart-controls {
+                justify-content: center;
+            }
+
+            .chart-select,
+            .btn-custom {
+                flex: 1;
+            }
+
+            .barangay-list {
+                max-height: 200px;
+            }
+
+            .chart-container {
+                height: 300px;
+                padding: 1rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .header-title h1 {
+                font-size: 1.3rem;
+            }
+
+            .date-filter {
+                gap: 0.5rem;
+            }
+
+            .chart-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .chart-select,
+            .btn-custom {
+                width: 100%;
+            }
+
+            .summary-card {
+                padding: 1rem;
+            }
+
+            .claim-metric-card {
+                padding: 1rem;
+            }
+
+            .claim-metric-value {
+                font-size: 2rem;
+            }
+
+            .chart-container {
+                height: 250px;
+                padding: 0.75rem;
+            }
+
+            .barangay-item {
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -589,38 +724,24 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                    <div class="priority-alerts">
+                        <a href="/Priorities?filter=high" class="priority-alert-box high">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span class="count" id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</span>
+                            <span>High Priority</span>
+                        </a>
+                        <a href="/Priorities?filter=medium" class="priority-alert-box medium">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <span class="count" id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</span>
+                            <span>Medium Priority</span>
+                        </a>
+                    </div>
                     <div class="date-filter">
                         <input type="date" id="startDate" class="date-input">
                         <span class="text-muted">to</span>
                         <input type="date" id="endDate" class="date-input">
                         <button class="btn-custom btn-primary-custom" onclick="applyDateFilter()">Apply</button>
                         <button class="btn-custom btn-outline-custom" onclick="resetDateFilter()">Reset</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Priority Stats -->
-            <div class="row g-3 mb-3">
-                <div class="col-md-6">
-                    <div class="stat-card high-priority">
-                        <div class="stat-icon">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</h3>
-                            <p>High Priority (2+ hrs)</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="stat-card medium-priority">
-                        <div class="stat-icon">
-                            <i class="bi bi-exclamation-circle-fill"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</h3>
-                            <p>Medium Priority (1-2 hrs)</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -686,6 +807,86 @@
                             <canvas id="barangayChart"></canvas>
                         </div>
                         <div id="barangayListContainer" class="barangay-list" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Application Trends Over Time -->
+            <div class="row g-3 mt-3">
+                <div class="col-12">
+                    <div class="card-analytics">
+                        <div class="card-header-custom d-flex justify-content-between align-items-center">
+                            <h5 class="card-title-custom">Application Trends Over Time</h5>
+                            <select class="chart-select" id="trendsTimeframe" onchange="updateTrendsChart()">
+                                <option value="daily">Last 30 Days</option>
+                                <option value="weekly">Last 12 Weeks</option>
+                                <option value="monthly" selected>Last 12 Months</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Approval Rates and Processing Time Analysis -->
+            <div class="row g-3 mt-3">
+                <!-- Approval Rate by Assistance Type -->
+                <div class="col-md-6">
+                    <div class="card-analytics">
+                        <div class="card-header-custom">
+                            <h5 class="card-title-custom">Approval Rate by Assistance Type</h5>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="approvalRateChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <!-- Processing Time Analysis -->
+                <div class="col-md-6">
+                    <div class="card-analytics">
+                        <div class="card-header-custom">
+                            <h5 class="card-title-custom">Average Processing Time</h5>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="processingTimeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Status Distribution by Assistance Type -->
+            <div class="row g-3 mt-3">
+                <div class="col-12">
+                    <div class="card-analytics">
+                        <div class="card-header-custom d-flex justify-content-between align-items-center">
+                            <h5 class="card-title-custom">Status Distribution by Assistance Type</h5>
+                            <select class="chart-select" onchange="updateStatusByTypeChart(this.value)">
+                                <option value="stackedBar">Stacked Bar</option>
+                                <option value="groupedBar">Grouped Bar</option>
+                                <option value="percentage">100% Stacked</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="statusByTypeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Claim Rate Metrics -->
+            <div class="row g-3 mt-3 mb-4">
+                <div class="col-12">
+                    <div class="card-analytics">
+                        <div class="card-header-custom">
+                            <h5 class="card-title-custom">Claim Rate Analysis</h5>
+                        </div>
+                        <div class="card-body" style="padding: 2rem;">
+                            <div class="row g-4" id="claimRateMetrics">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -772,18 +973,43 @@
             window.location.href = '/Admin';
         }
 
+        // Helper function to format names with proper case
+        function formatName(lastname, firstname, middlename, suffix) {
+            // Helper to capitalize first letter of each word
+            const toProperCase = (str) => {
+                if (!str) return '';
+                return str.split(' ').map(word =>
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                ).join(' ');
+            };
+
+            // Format: "Lastname, Firstname Middlename"
+            let formattedName = `${toProperCase(lastname)}, ${toProperCase(firstname)}`;
+
+            if (middlename && middlename.trim() !== '') {
+                formattedName += ` ${toProperCase(middlename)}`;
+            }
+
+            // Only add suffix if it exists and is not "None"
+            if (suffix && suffix.trim() !== '' && suffix.toLowerCase() !== 'none') {
+                formattedName += ` ${toProperCase(suffix)}`;
+            }
+
+            return formattedName;
+        }
+
         // Initialize dashboard with data - FOLLOWING ADMIN.CSHTML PATTERN
         function initializeDashboard() {
             // Create combined applications array following Admin.cshtml pattern
             const allApplications = [];
 
-            // Add Hospital Bills following Admin.cshtml pattern
+            // Add Hospital Assistance following Admin.cshtml pattern
             @foreach (var f in Model.HospitalAssistance)
             {
                     <text>
                     allApplications.push({
-                        type: "Hospital Bill Assistance",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        type: "Hospital Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
@@ -796,13 +1022,13 @@
                     </text>
             }
 
-            // Add Medical Lab Forms following Admin.cshtml pattern
+            // Add Other Assistance following Admin.cshtml pattern
             @foreach (var f in Model.OtherAssistance)
             {
                     <text>
                     allApplications.push({
-                        type: "Medical and Laboratory Procedure",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        type: "Other Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
@@ -820,14 +1046,14 @@
             {
                     <text>
                     allApplications.push({
-                        type: "Funeral and Burial Assistance",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                        type: "Funeral Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
                         status: "@f.Status?.ToLower()",
                         status2: "@f.Status2?.ToLower()",
                         status3: "@f.Status3?.ToLower()",
                         brgy: "@f.Brgy",
-                        typeassistance: "Funeral and Burial Assistance", // Default for funeral forms
+                        typeassistance: "Funeral Assistance", // Default for funeral forms
                         formId: @f.Id,
                         controller: "Dashboard"
                     });
@@ -870,6 +1096,12 @@
                 updateStatusChart('doughnut');
                 updateBarangayChart();
 
+                // Update new charts
+                updateTrendsChart();
+                updateApprovalRateChart();
+                updateProcessingTimeChart();
+                updateStatusByTypeChart('stackedBar');
+                updateClaimRateMetrics();
 
                 showLoading(false);
             }, 500);
@@ -923,22 +1155,22 @@
             // Filter applications by status following updated pattern
             if (data.allApplications) {
                 filtered.allApplications = data.allApplications.filter(app => {
-                    // For claimed status, check ONLY status3 field
-                    if (status === 'claimed') {
-                        return app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed';
+                    // For claims status, check ONLY status3 field
+                    if (status === 'claims') {
+                        return app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed');
                     }
 
-                    // For other statuses, EXCLUDE applications that have status3 = claimed
+                    // For other statuses, EXCLUDE applications that have status3 = claims
                     // Then check status2 for approve/disapprove
                     if (status === 'approve' || status === 'disapprove') {
                         return app.status2 && app.status2.trim() !== '' &&
                                app.status2 === status &&
-                               (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
+                               (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed'));
                     }
 
-                    // For pending/processing, use original status but exclude claimed status3
+                    // For pending/processing, use original status but exclude claims status3
                     return app.status === status &&
-                           (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
+                           (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed')) &&
                            (!app.status2 || app.status2.trim() === '' ||
                             (app.status2 !== 'approve' && app.status2 !== 'disapprove'));
                 });
@@ -956,7 +1188,7 @@
                 disapprove: 0,
                 pending: 0,
                 processing: 0,
-                claimed: 0,
+                claims: 0,
                 total: 0
             };
 
@@ -966,11 +1198,11 @@
 
             // Count applications by status following updated pattern
             applications.forEach(app => {
-                // Check status3 FIRST for "claimed" status - if claimed, count ONLY in claimed
-                if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
-                    statusCounts.claimed++;
+                // Check status3 FIRST for "claims" status - if claims, count ONLY in claims
+                if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    statusCounts.claims++;
                 }
-                // If NOT claimed, then check status2 for approve/disapprove
+                // If NOT claims, then check status2 for approve/disapprove
                 else if (app.status2 && app.status2.trim() !== '') {
                     if (app.status2 === 'approve') {
                         statusCounts.approve++;
@@ -979,15 +1211,24 @@
                     }
                     // DO NOT count in processing/pending if Status2 is approve/disapprove
                 } else {
-                    // No Status2 or Status2 is empty, and no claimed status3, use original status
+                    // No Status2 or Status2 is empty, and no claims status3, use original status
                     if (statusCounts.hasOwnProperty(app.status)) {
                         statusCounts[app.status]++;
                     }
                 }
 
-                // Calculate priority counts (only for Pending and Processing)
-                const currentStatus = app.status2 || app.status;
-                if (currentStatus === 'pending' || currentStatus === 'processing') {
+                // Calculate priority counts (ONLY for Pending and Processing that are NOT approved/disapproved/claims)
+                // Exclude if status3 is claims
+                if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    return; // Skip claims applications
+                }
+                // Exclude if status2 is approve or disapprove
+                if (app.status2 && app.status2.trim() !== '' &&
+                    (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) {
+                    return; // Skip approved/disapproved applications
+                }
+                // Only count if original status is pending or processing
+                if (app.status === 'pending' || app.status === 'processing') {
                     const hoursSinceSubmission = (now - new Date(app.createdAt)) / (1000 * 60 * 60);
                     if (hoursSinceSubmission >= 2) {
                         highPriority++;
@@ -1054,22 +1295,22 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="card-analytics summary-card summary-claimed" onclick="redirectToApplicationDashboard('claimed')">
+                    <div class="card-analytics summary-card summary-claims" onclick="redirectToApplicationDashboard('claims')">
                         <div class="summary-icon">
                             <i class="bi bi-box-seam"></i>
                         </div>
-                        <div class="summary-number">${statusCounts.claimed}</div>
-                        <div class="summary-label">Claimed</div>
+                        <div class="summary-number">${statusCounts.claims}</div>
+                        <div class="summary-label">Claims</div>
                     </div>
                 </div>
             `;
 
             // Update global chart data
             window.chartData = {
-                statusData: [statusCounts.approved, statusCounts.pending, statusCounts.processing, statusCounts.disapproved, statusCounts.claimed],
+                statusData: [statusCounts.approve, statusCounts.pending, statusCounts.processing, statusCounts.disapprove, statusCounts.claims],
                 typeData: countApplicationTypes(applications),
                 statusLabels: ['Approve', 'Pending', 'Processing', 'Disapprove', 'Claimed'],
-                typeLabels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                typeLabels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
                 // Barangay data will be processed separately
                 ...processBarangayData(applications)
             };
@@ -1084,9 +1325,9 @@
             };
 
             applications.forEach(app => {
-                if (app.type === "Hospital Bill Assistance") counts.hospital++;
-                else if (app.type === "Medical and Laboratory Procedure") counts.medical++;
-                else if (app.type === "Funeral and Burial Assistance") counts.funeral++;
+                if (app.type === "Hospital Assistance") counts.hospital++;
+                else if (app.type === "Other Assistance") counts.medical++;
+                else if (app.type === "Funeral Assistance") counts.funeral++;
             });
 
             return [counts.hospital, counts.medical, counts.funeral];
@@ -1770,6 +2011,625 @@
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
             processDataAndUpdateCharts();
+        }
+
+        // ==========================================
+        // NEW VISUALIZATION FUNCTIONS
+        // ==========================================
+
+        // Global chart variables for new visualizations
+        let trendsChart, approvalRateChart, processingTimeChart, statusByTypeChart;
+
+        // Application Trends Over Time
+        function updateTrendsChart() {
+            const ctx = document.getElementById('trendsChart');
+            if (!ctx || !filteredData) return;
+
+            const context = ctx.getContext('2d');
+            if (trendsChart) trendsChart.destroy();
+
+            const timeframe = document.getElementById('trendsTimeframe').value;
+            const trendsData = processTrendsData(filteredData.allApplications, timeframe);
+
+            trendsChart = new Chart(context, {
+                type: 'line',
+                data: {
+                    labels: trendsData.labels,
+                    datasets: [
+                        {
+                            label: 'Hospital Bill Assistance',
+                            data: trendsData.hospital,
+                            borderColor: colors.hospital,
+                            backgroundColor: colors.hospital + '20',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Medical and Laboratory',
+                            data: trendsData.medical,
+                            borderColor: colors.medical,
+                            backgroundColor: colors.medical + '20',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Funeral and Burial',
+                            data: trendsData.funeral,
+                            borderColor: colors.funeral,
+                            backgroundColor: colors.funeral + '20',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { size: 14 },
+                                usePointStyle: true
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: `Application Submission Trends (${timeframe === 'daily' ? 'Daily' : timeframe === 'weekly' ? 'Weekly' : 'Monthly'})`,
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 14 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: { size: 12 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Applications',
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Process trends data
+        function processTrendsData(applications, timeframe) {
+            const now = new Date();
+            const dataMap = {
+                hospital: {},
+                medical: {},
+                funeral: {}
+            };
+            const labels = [];
+
+            // Generate labels based on timeframe
+            if (timeframe === 'daily') {
+                for (let i = 29; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - i);
+                    const label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    labels.push(label);
+                    const key = date.toISOString().split('T')[0];
+                    dataMap.hospital[key] = 0;
+                    dataMap.medical[key] = 0;
+                    dataMap.funeral[key] = 0;
+                }
+            } else if (timeframe === 'weekly') {
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - (i * 7));
+                    const weekStart = new Date(date);
+                    weekStart.setDate(date.getDate() - date.getDay());
+                    const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    labels.push(`Week of ${label}`);
+                    const key = `week-${i}`;
+                    dataMap.hospital[key] = 0;
+                    dataMap.medical[key] = 0;
+                    dataMap.funeral[key] = 0;
+                }
+            } else { // monthly
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setMonth(date.getMonth() - i);
+                    const label = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+                    labels.push(label);
+                    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    dataMap.hospital[key] = 0;
+                    dataMap.medical[key] = 0;
+                    dataMap.funeral[key] = 0;
+                }
+            }
+
+            // Count applications
+            applications.forEach(app => {
+                if (!app.createdAt) return;
+                const date = new Date(app.createdAt);
+                let key;
+
+                if (timeframe === 'daily') {
+                    key = date.toISOString().split('T')[0];
+                } else if (timeframe === 'weekly') {
+                    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+                    const weekIndex = Math.floor(diffDays / 7);
+                    if (weekIndex <= 11) key = `week-${weekIndex}`;
+                } else { // monthly
+                    key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                }
+
+                if (key) {
+                    if (app.type === 'Hospital Assistance' && dataMap.hospital[key] !== undefined) {
+                        dataMap.hospital[key]++;
+                    } else if (app.type === 'Other Assistance' && dataMap.medical[key] !== undefined) {
+                        dataMap.medical[key]++;
+                    } else if (app.type === 'Funeral Assistance' && dataMap.funeral[key] !== undefined) {
+                        dataMap.funeral[key]++;
+                    }
+                }
+            });
+
+            return {
+                labels,
+                hospital: Object.values(dataMap.hospital),
+                medical: Object.values(dataMap.medical),
+                funeral: Object.values(dataMap.funeral)
+            };
+        }
+
+        // Approval Rate by Assistance Type
+        function updateApprovalRateChart() {
+            const ctx = document.getElementById('approvalRateChart');
+            if (!ctx || !filteredData) return;
+
+            const context = ctx.getContext('2d');
+            if (approvalRateChart) approvalRateChart.destroy();
+
+            const approvalData = calculateApprovalRates(filteredData.allApplications);
+
+            approvalRateChart = new Chart(context, {
+                type: 'bar',
+                data: {
+                    labels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                    datasets: [
+                        {
+                            label: 'Approved',
+                            data: approvalData.approved,
+                            backgroundColor: colors.success + 'cc'
+                        },
+                        {
+                            label: 'Disapproved',
+                            data: approvalData.disapproved,
+                            backgroundColor: colors.danger + 'cc'
+                        },
+                        {
+                            label: 'Pending/Processing',
+                            data: approvalData.pending,
+                            backgroundColor: colors.warning + 'cc'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { size: 14 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Approval Rate by Type',
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    const total = approvalData.totals[context.dataIndex];
+                                    const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                                    return `${percentage}% of total`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: { font: { size: 12 } }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: { size: 12 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Applications',
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Calculate approval rates
+        function calculateApprovalRates(applications) {
+            const types = {
+                hospital: { approved: 0, disapproved: 0, pending: 0, total: 0 },
+                medical: { approved: 0, disapproved: 0, pending: 0, total: 0 },
+                funeral: { approved: 0, disapproved: 0, pending: 0, total: 0 }
+            };
+
+            applications.forEach(app => {
+                let typeKey;
+                if (app.type === 'Hospital Assistance') typeKey = 'hospital';
+                else if (app.type === 'Other Assistance') typeKey = 'medical';
+                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
+                else return;
+
+                types[typeKey].total++;
+
+                // Check status3 first for claims (don't count)
+                if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    return; // Skip claims applications
+                }
+
+                // Check status2 for approve/disapprove
+                if (app.status2 === 'approve') {
+                    types[typeKey].approved++;
+                } else if (app.status2 === 'disapprove') {
+                    types[typeKey].disapproved++;
+                } else {
+                    types[typeKey].pending++;
+                }
+            });
+
+            return {
+                approved: [types.hospital.approved, types.medical.approved, types.funeral.approved],
+                disapproved: [types.hospital.disapproved, types.medical.disapproved, types.funeral.disapproved],
+                pending: [types.hospital.pending, types.medical.pending, types.funeral.pending],
+                totals: [types.hospital.total, types.medical.total, types.funeral.total]
+            };
+        }
+
+        // Processing Time Analysis
+        function updateProcessingTimeChart() {
+            const ctx = document.getElementById('processingTimeChart');
+            if (!ctx || !filteredData) return;
+
+            const context = ctx.getContext('2d');
+            if (processingTimeChart) processingTimeChart.destroy();
+
+            const processingData = calculateProcessingTimes(filteredData.allApplications);
+
+            processingTimeChart = new Chart(context, {
+                type: 'bar',
+                data: {
+                    labels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                    datasets: [{
+                        label: 'Average Days',
+                        data: processingData.averageDays,
+                        backgroundColor: [colors.hospital + 'cc', colors.medical + 'cc', colors.funeral + 'cc']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Average Processing Time (Days)',
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.raw.toFixed(1)} days average`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { font: { size: 12 } },
+                            title: {
+                                display: true,
+                                text: 'Days',
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        },
+                        x: {
+                            ticks: { font: { size: 12 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Calculate processing times
+        function calculateProcessingTimes(applications) {
+            const types = {
+                hospital: { total: 0, count: 0 },
+                medical: { total: 0, count: 0 },
+                funeral: { total: 0, count: 0 }
+            };
+
+            const now = new Date();
+
+            applications.forEach(app => {
+                let typeKey;
+                if (app.type === 'Hospital Assistance') typeKey = 'hospital';
+                else if (app.type === 'Other Assistance') typeKey = 'medical';
+                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
+                else return;
+
+                // Calculate days since submission
+                const daysSinceSubmission = (now - new Date(app.createdAt)) / (1000 * 60 * 60 * 24);
+                types[typeKey].total += daysSinceSubmission;
+                types[typeKey].count++;
+            });
+
+            return {
+                averageDays: [
+                    types.hospital.count > 0 ? types.hospital.total / types.hospital.count : 0,
+                    types.medical.count > 0 ? types.medical.total / types.medical.count : 0,
+                    types.funeral.count > 0 ? types.funeral.total / types.funeral.count : 0
+                ]
+            };
+        }
+
+        // Status Distribution by Assistance Type
+        function updateStatusByTypeChart(chartType) {
+            const ctx = document.getElementById('statusByTypeChart');
+            if (!ctx || !filteredData) return;
+
+            const context = ctx.getContext('2d');
+            if (statusByTypeChart) statusByTypeChart.destroy();
+
+            const statusData = calculateStatusByType(filteredData.allApplications);
+            const isPercentage = chartType === 'percentage';
+
+            statusByTypeChart = new Chart(context, {
+                type: 'bar',
+                data: {
+                    labels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                    datasets: [
+                        {
+                            label: 'Approved',
+                            data: statusData.approved,
+                            backgroundColor: colors.success + 'cc'
+                        },
+                        {
+                            label: 'Pending',
+                            data: statusData.pending,
+                            backgroundColor: colors.warning + 'cc'
+                        },
+                        {
+                            label: 'Processing',
+                            data: statusData.processing,
+                            backgroundColor: colors.processing + 'cc'
+                        },
+                        {
+                            label: 'Disapproved',
+                            data: statusData.disapproved,
+                            backgroundColor: colors.danger + 'cc'
+                        },
+                        {
+                            label: 'Claims',
+                            data: statusData.claims,
+                            backgroundColor: colors.info + 'cc'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { size: 14 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Status Distribution by Assistance Type',
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = statusData.totals[context.dataIndex];
+                                    const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                                    return `${context.dataset.label}: ${context.raw} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: chartType !== 'groupedBar',
+                            ticks: { font: { size: 12 } }
+                        },
+                        y: {
+                            stacked: chartType !== 'groupedBar',
+                            beginAtZero: true,
+                            max: isPercentage ? 100 : undefined,
+                            ticks: {
+                                precision: 0,
+                                font: { size: 12 },
+                                callback: function(value) {
+                                    return isPercentage ? value + '%' : value;
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: isPercentage ? 'Percentage' : 'Number of Applications',
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Calculate status by type
+        function calculateStatusByType(applications) {
+            const types = {
+                hospital: { approved: 0, disapproved: 0, pending: 0, processing: 0, claims: 0, total: 0 },
+                medical: { approved: 0, disapproved: 0, pending: 0, processing: 0, claims: 0, total: 0 },
+                funeral: { approved: 0, disapproved: 0, pending: 0, processing: 0, claims: 0, total: 0 }
+            };
+
+            applications.forEach(app => {
+                let typeKey;
+                if (app.type === 'Hospital Assistance') typeKey = 'hospital';
+                else if (app.type === 'Other Assistance') typeKey = 'medical';
+                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
+                else return;
+
+                types[typeKey].total++;
+
+                // Check status3 first for claims
+                if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    types[typeKey].claims++;
+                    return;
+                }
+
+                // Check status2 for approve/disapprove
+                if (app.status2 === 'approve') {
+                    types[typeKey].approved++;
+                } else if (app.status2 === 'disapprove') {
+                    types[typeKey].disapproved++;
+                } else if (app.status === 'pending') {
+                    types[typeKey].pending++;
+                } else if (app.status === 'processing') {
+                    types[typeKey].processing++;
+                }
+            });
+
+            return {
+                approved: [types.hospital.approved, types.medical.approved, types.funeral.approved],
+                pending: [types.hospital.pending, types.medical.pending, types.funeral.pending],
+                processing: [types.hospital.processing, types.medical.processing, types.funeral.processing],
+                disapproved: [types.hospital.disapproved, types.medical.disapproved, types.funeral.disapproved],
+                claims: [types.hospital.claims, types.medical.claims, types.funeral.claims],
+                totals: [types.hospital.total, types.medical.total, types.funeral.total]
+            };
+        }
+
+        // Claim Rate Metrics
+        function updateClaimRateMetrics() {
+            if (!filteredData) return;
+
+            const claimData = calculateClaimRates(filteredData.allApplications);
+            const container = document.getElementById('claimRateMetrics');
+
+            container.innerHTML = `
+                <div class="col-md-3">
+                    <div class="claim-metric-card">
+                        <div class="claim-metric-label">Overall Claim Rate</div>
+                        <div class="claim-metric-value" style="color: ${colors.info};">${claimData.overall.rate}%</div>
+                        <div class="claim-progress-bar">
+                            <div class="claim-progress-fill" style="width: ${claimData.overall.rate}%;"></div>
+                        </div>
+                        <div class="metric-subtext">${claimData.overall.claims} of ${claimData.overall.approved} approved</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="claim-metric-card">
+                        <div class="claim-metric-label">Hospital Bill Claims</div>
+                        <div class="claim-metric-value" style="color: ${colors.hospital};">${claimData.hospital.rate}%</div>
+                        <div class="claim-progress-bar">
+                            <div class="claim-progress-fill" style="width: ${claimData.hospital.rate}%; background: ${colors.hospital};"></div>
+                        </div>
+                        <div class="metric-subtext">${claimData.hospital.claims} of ${claimData.hospital.approved}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="claim-metric-card">
+                        <div class="claim-metric-label">Medical/Lab Claims</div>
+                        <div class="claim-metric-value" style="color: ${colors.medical};">${claimData.medical.rate}%</div>
+                        <div class="claim-progress-bar">
+                            <div class="claim-progress-fill" style="width: ${claimData.medical.rate}%; background: ${colors.medical};"></div>
+                        </div>
+                        <div class="metric-subtext">${claimData.medical.claims} of ${claimData.medical.approved}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="claim-metric-card">
+                        <div class="claim-metric-label">Funeral/Burial Claims</div>
+                        <div class="claim-metric-value" style="color: ${colors.funeral};">${claimData.funeral.rate}%</div>
+                        <div class="claim-progress-bar">
+                            <div class="claim-progress-fill" style="width: ${claimData.funeral.rate}%; background: ${colors.funeral};"></div>
+                        </div>
+                        <div class="metric-subtext">${claimData.funeral.claims} of ${claimData.funeral.approved}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Calculate claim rates
+        function calculateClaimRates(applications) {
+            const data = {
+                overall: { approved: 0, claims: 0, rate: 0 },
+                hospital: { approved: 0, claims: 0, rate: 0 },
+                medical: { approved: 0, claims: 0, rate: 0 },
+                funeral: { approved: 0, claims: 0, rate: 0 }
+            };
+
+            applications.forEach(app => {
+                let typeKey;
+                if (app.type === 'Hospital Assistance') typeKey = 'hospital';
+                else if (app.type === 'Other Assistance') typeKey = 'medical';
+                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
+                else return;
+
+                // Count approved applications
+                if (app.status2 === 'approve') {
+                    data[typeKey].approved++;
+                    data.overall.approved++;
+
+                    // Count claims among approved
+                    if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                        data[typeKey].claims++;
+                        data.overall.claims++;
+                    }
+                }
+            });
+
+            // Calculate rates
+            data.overall.rate = data.overall.approved > 0 ? Math.round((data.overall.claims / data.overall.approved) * 100) : 0;
+            data.hospital.rate = data.hospital.approved > 0 ? Math.round((data.hospital.claims / data.hospital.approved) * 100) : 0;
+            data.medical.rate = data.medical.approved > 0 ? Math.round((data.medical.claims / data.medical.approved) * 100) : 0;
+            data.funeral.rate = data.funeral.approved > 0 ? Math.round((data.funeral.claims / data.funeral.approved) * 100) : 0;
+
+            return data;
         }
     </script>
 </body>

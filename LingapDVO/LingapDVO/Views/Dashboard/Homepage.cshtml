@@ -252,6 +252,11 @@
             color: white;
         }
 
+        .notification-type-waiting {
+            background: var(--secondary-color);
+            color: white;
+        }
+
         /* Mark all as read animation */
         #markAllRead {
             transition: all 0.3s ease;
@@ -1162,13 +1167,14 @@
                 }
             }
 
-            // Detect status changes and generate notifications
+            // Detect REAL-TIME status changes (like push notifications on other websites)
+            // Only notify about NEW transitions, not continuously show all states
             function detectStatusChanges(applications) {
                 const newNotifications = [];
                 const now = new Date();
                 const readIds = getStoredReadNotifications();
 
-                // Check all applications for status changes
+                // Check all applications for RECENT status changes (last 10 minutes)
                 const allApplications = [
                     ...(applications.hospitalBills || []).map(app => ({ ...app, type: 'Hospital' })),
                     ...(applications.medicalForms || []).map(app => ({ ...app, type: 'Medical Procedure' })),
@@ -1178,17 +1184,20 @@
                 allApplications.forEach(app => {
                     const appId = app.id || app.Id;
 
-                    // Check if application just started processing - FIXED LOGIC
-                    if (app.processAt && isValidDate(app.processAt)) {
+                    // Only notify if there's a RECENT change (within last 10 minutes)
+                    // This mimics real-time push notifications like Amazon order updates
+
+                    // Check if application JUST started being reviewed (NEW status transition)
+                    if (app.processAt && isValidDate(app.processAt) &&
+                        app.processby && app.processby.trim() !== '') {
                         const processingDate = new Date(app.processAt);
-                        // Only notify if processed recently (last 10 minutes) AND we haven't notified before
                         if ((now - processingDate) < 10 * 60 * 1000) {
-                            const notificationId = `processing_${appId}`;
+                            const notificationId = `change_processing_${appId}`;
                             if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
-                                    title: `${app.type} Application in Progress`,
-                                    message: `Your ${app.type.toLowerCase()} application is now being processed by our staff.`,
+                                    title: `${app.type} Application Update`,
+                                    message: `Your application is now being reviewed by ${app.processby}.`,
                                     isRead: false,
                                     createdAt: app.processAt,
                                     type: "processing",
@@ -1198,17 +1207,16 @@
                         }
                     }
 
-                    // Check if application just got approved - FIXED LOGIC
+                    // Check if application JUST got approved (NEW status transition)
                     if (app.result && isValidDate(app.result) && app.status2 === 'Approve') {
                         const resultDate = new Date(app.result);
-                        // Only notify if result is recent (last 10 minutes) AND we haven't notified before
                         if ((now - resultDate) < 10 * 60 * 1000) {
-                            const notificationId = `approved_${appId}`;
+                            const notificationId = `change_approved_${appId}`;
                             if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
-                                    title: `${app.type} Application Approved`,
-                                    message: `Great news! Your ${app.type.toLowerCase()} application has been approved.`,
+                                    title: `${app.type} Application Approved!`,
+                                    message: `Good news! Your application has been approved. Visit our office to claim.`,
                                     isRead: false,
                                     createdAt: app.result,
                                     type: "approved",
@@ -1218,17 +1226,16 @@
                         }
                     }
 
-                    // Check if application just got unapproved - FIXED LOGIC
+                    // Check if application JUST got disapproved (NEW status transition)
                     if (app.result && isValidDate(app.result) && app.status2 === 'Unapproved') {
                         const resultDate = new Date(app.result);
-                        // Only notify if result is recent (last 10 minutes) AND we haven't notified before
                         if ((now - resultDate) < 10 * 60 * 1000) {
-                            const notificationId = `unapproved_${appId}`;
+                            const notificationId = `change_unapproved_${appId}`;
                             if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
                                     title: `${app.type} Application Update`,
-                                    message: `Your ${app.type.toLowerCase()} application status has been updated.`,
+                                    message: `Your application was not approved. Check details in Application History.`,
                                     isRead: false,
                                     createdAt: app.result,
                                     type: "unapproved",
@@ -1238,45 +1245,21 @@
                         }
                     }
 
-                    // Check if benefits were just claimed - FIXED LOGIC
-                    if (app.claimedAt && isValidDate(app.claimedAt)) {
+                    // Check if assistance JUST got claimed (NEW status transition)
+                    if (app.status2 === 'Approve' &&
+                        app.claimedAt && isValidDate(app.claimedAt) &&
+                        app.status3 && app.status3.trim() !== '') {
                         const claimedDate = new Date(app.claimedAt);
-                        // Only notify if claimed recently (last 10 minutes) AND we haven't notified before
                         if ((now - claimedDate) < 10 * 60 * 1000) {
-                            const claimStatus = app.status3 || 'Claimed';
-                            const notificationId = `claimed_${appId}`;
+                            const notificationId = `change_claimed_${appId}`;
                             if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
-                                    title: `Benefits ${claimStatus}`,
-                                    message: `Your ${app.type.toLowerCase()} benefits have been ${claimStatus.toLowerCase()}.`,
+                                    title: `${app.type} Assistance Completed`,
+                                    message: `Your assistance has been released. Thank you for using LingapDVO.`,
                                     isRead: false,
                                     createdAt: app.claimedAt,
                                     type: "claimed",
-                                    link: "/Applicationtracking"
-                                });
-                            }
-                        }
-                    }
-
-                    // Check for delayed applications (not processed for more than 2 days) - FIXED LOGIC
-                    if (app.createdAt && isValidDate(app.createdAt)) {
-                        const submittedDate = new Date(app.createdAt);
-                        const daysSinceSubmission = Math.floor((now - submittedDate) / (1000 * 60 * 60 * 24));
-
-                        // Check if application is not processed yet
-                        const isNotProcessed = !app.processAt || !isValidDate(app.processAt);
-
-                        if (daysSinceSubmission >= 2 && isNotProcessed) {
-                            const delayedId = `delayed_${appId}`;
-                            if (!currentNotifications.some(n => n.id === delayedId) && !readIds.includes(delayedId)) {
-                                newNotifications.push({
-                                    id: delayedId,
-                                    title: `${app.type} Application Waiting`,
-                                    message: `Your ${app.type.toLowerCase()} application has been waiting for review for ${daysSinceSubmission} days. It will be processed soon.`,
-                                    isRead: false,
-                                    createdAt: new Date(submittedDate.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-                                    type: "delayed",
                                     link: "/Applicationtracking"
                                 });
                             }
@@ -1426,68 +1409,143 @@
             }
 
             // Get notifications for a single application based on ACTUAL status
+            // REALISTIC PATTERN: Shows only the LATEST/CURRENT status (like real websites)
+            // Not all historical steps - just the current state that matters to the user
             function getApplicationStatusNotifications(application, type) {
                 const notifications = [];
                 const now = new Date();
                 const appId = application.id || application.Id;
                 const readIds = getStoredReadNotifications();
 
-                // Check submission status
-                if (application.createdAt && isValidDate(application.createdAt)) {
-                    const notificationId = `submitted_${appId}`;
-                    notifications.push({
-                        id: notificationId,
-                        title: `${type} Application Submitted`,
-                        message: `Your ${type.toLowerCase()} application has been submitted successfully.`,
-                        isRead: readIds.includes(notificationId), // Check if already read
-                        createdAt: application.createdAt,
-                        type: "submitted",
-                        link: "/Applicationtracking"
+                // Helper function to get the most recent valid date
+                function getMostRecentValidDate(...dates) {
+                    const validDates = dates
+                        .filter(date => date && isValidDate(date))
+                        .map(date => new Date(date))
+                        .sort((a, b) => b - a); // Sort descending (most recent first)
+                    return validDates.length > 0 ? validDates[0].toISOString() : new Date().toISOString();
+                }
+
+                // Helper function to calculate hours elapsed
+                function getHoursElapsed(dateString) {
+                    if (!dateString || !isValidDate(dateString)) return 0;
+                    const date = new Date(dateString);
+                    const diffTime = now - date;
+                    return Math.floor(diffTime / (1000 * 60 * 60));
+                }
+
+                // Helper function to format date for display
+                function formatDateForDisplay(dateString) {
+                    if (!dateString || !isValidDate(dateString)) return '';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
                     });
                 }
 
-                // Check processing status - FIXED LOGIC
-                if (application.processAt && isValidDate(application.processAt)) {
-                    const notificationId = `processing_${appId}`;
-                    notifications.push({
-                        id: notificationId,
-                        title: `${type} Application in Progress`,
-                        message: `Your ${type.toLowerCase()} application is now being processed by our staff.`,
-                        isRead: readIds.includes(notificationId),
-                        createdAt: application.processAt,
-                        type: "processing",
-                        link: "/Applicationtracking"
-                    });
+                // Helper function to format time ago
+                function getTimeAgo(dateString) {
+                    if (!dateString || !isValidDate(dateString)) return '';
+                    const hours = getHoursElapsed(dateString);
+                    if (hours < 1) return 'just now';
+                    if (hours === 1) return '1 hour ago';
+                    if (hours < 24) return `${hours} hours ago`;
+                    const days = Math.floor(hours / 24);
+                    if (days === 1) return 'yesterday';
+                    if (days < 7) return `${days} days ago`;
+                    return formatDateForDisplay(dateString);
                 }
 
-                // Check result status - FIXED LOGIC
-                if (application.result && isValidDate(application.result)) {
-                    const status = application.status2 || 'Processed';
-                    const isApprove = status.toLowerCase() === 'approved';
-                    const notificationId = `result_${appId}`;
+                // REALISTIC NOTIFICATION PATTERN: Show only ONE notification per application
+                // Display the CURRENT/LATEST status, like real websites (Amazon, Facebook, etc.)
+                // Priority order: Claimed > Approved/Disapproved > Processing > Pending
 
-                    notifications.push({
-                        id: notificationId,
-                        title: `${type} Application ${status}`,
-                        message: `Your ${type.toLowerCase()} application has been ${status.toLowerCase()}.`,
-                        isRead: readIds.includes(notificationId),
-                        createdAt: application.result,
-                        type: isApprove ? "approved" : "unapproved",
-                        link: "/Applicationtracking"
-                    });
+                let notificationId, title, message, notificationType, createdDate;
+
+                // Priority 1: Check if assistance has been claimed (FINAL STATE)
+                if (application.status2 === 'Approve' &&
+                    application.claimedAt && isValidDate(application.claimedAt) &&
+                    application.status3 && application.status3.trim() !== '') {
+
+                    notificationId = `status_${appId}`;
+                    title = `${type} Assistance Completed`;
+                    message = `Your ${type} assistance has been released. Thank you for using LingapDVO.`;
+                    notificationType = "claimed";
+                    createdDate = application.claimedAt;
+                }
+                // Priority 2: Check if approved and waiting to be claimed
+                else if (application.status2 === 'Approve') {
+                    const hoursApproved = getHoursElapsed(application.result);
+                    const daysSinceApproval = Math.floor(hoursApproved / 24);
+
+                    notificationId = `status_${appId}`;
+                    title = `${type} Assistance Approved`;
+
+                    if (daysSinceApproval >= 7) {
+                        message = `Your assistance is ready to claim (approved ${daysSinceApproval} days ago). Please visit our office soon.`;
+                        notificationType = "delayed";
+                    } else {
+                        message = `Your application has been approved. Visit our office to claim your assistance.`;
+                        notificationType = "approved";
+                    }
+                    createdDate = application.result;
+                }
+                // Priority 3: Check if disapproved
+                else if (application.result && isValidDate(application.result) && application.status2 === 'Unapproved') {
+                    notificationId = `status_${appId}`;
+                    title = `${type} Application Not Approved`;
+                    message = `Your application was not approved. Check Application History for details.`;
+                    notificationType = "unapproved";
+                    createdDate = application.result;
+                }
+                // Priority 4: Check if under review
+                else if (application.processAt && isValidDate(application.processAt) &&
+                         application.processby && application.processby.trim() !== '') {
+
+                    const hoursInReview = getHoursElapsed(application.processAt);
+
+                    notificationId = `status_${appId}`;
+
+                    if (hoursInReview >= 2) {
+                        title = `${type} Application - Review Delayed`;
+                        message = `Your application has been under review for ${hoursInReview} hours. We're working on it.`;
+                        notificationType = "delayed";
+                    } else {
+                        title = `${type} Application Under Review`;
+                        message = `${application.processby} is reviewing your application. Decision expected within 1-2 hours.`;
+                        notificationType = "processing";
+                    }
+                    createdDate = application.processAt;
+                }
+                // Priority 5: Pending review (initial state)
+                else if (application.createdAt && isValidDate(application.createdAt)) {
+                    const hoursWaiting = getHoursElapsed(application.createdAt);
+
+                    notificationId = `status_${appId}`;
+
+                    if (hoursWaiting >= 2) {
+                        title = `${type} Application - Pending`;
+                        message = `Your application has been waiting ${hoursWaiting} hours for review. We'll assign a reviewer soon.`;
+                        notificationType = "delayed";
+                    } else {
+                        title = `${type} Application Submitted`;
+                        message = `Your application is in queue. Expected review time: 1-2 hours.`;
+                        notificationType = "submitted";
+                    }
+                    createdDate = application.createdAt;
                 }
 
-                // Check claim status - FIXED LOGIC
-                if (application.claimedAt && isValidDate(application.claimedAt)) {
-                    const claimStatus = application.status3 || 'Processed';
-                    const notificationId = `claimed_${appId}`;
+                // Create the single notification for this application's current status
+                if (notificationId) {
                     notifications.push({
                         id: notificationId,
-                        title: `Benefits ${claimStatus}`,
-                        message: `Your ${type.toLowerCase()} benefits have been ${claimStatus.toLowerCase()}.`,
+                        title: title,
+                        message: message,
                         isRead: readIds.includes(notificationId),
-                        createdAt: application.claimedAt,
-                        type: "claimed",
+                        createdAt: createdDate,
+                        type: notificationType,
                         link: "/Applicationtracking"
                     });
                 }
@@ -1594,7 +1652,8 @@
                     approved: { class: 'notification-type-approved', icon: 'fas fa-check-circle' },
                     unapproved: { class: 'notification-type-unapproved', icon: 'fas fa-times-circle' },
                     claimed: { class: 'notification-type-claimed', icon: 'fas fa-hand-holding-usd' },
-                    delayed: { class: 'notification-type-delayed', icon: 'fas fa-clock' }
+                    delayed: { class: 'notification-type-delayed', icon: 'fas fa-clock' },
+                    waiting: { class: 'notification-type-waiting', icon: 'fas fa-hourglass-half' }
                 };
                 return types[type] || { class: 'notification-type-submitted', icon: 'fas fa-bell' };
             }
@@ -1616,14 +1675,55 @@
             }
 
             function formatTime(dateString) {
+                // Validate date before processing
+                if (!dateString || !isValidDate(dateString)) {
+                    return 'Recently';
+                }
+
                 const date = new Date(dateString);
                 const now = new Date();
+
+                // Check if date is in the future
+                if (date > now) {
+                    return 'Just now';
+                }
+
+                // Check if date is unreasonably old (more than 2 years)
+                const twoYearsAgo = new Date();
+                twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+                if (date < twoYearsAgo) {
+                    // Return formatted date instead of huge day count
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                }
+
                 const diffInMinutes = Math.floor((now - date) / (1000 * 60));
 
+                // Less than 1 minute
                 if (diffInMinutes < 1) return 'Just now';
+
+                // Less than 1 hour
                 if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+                // Less than 24 hours
                 if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
-                return `${Math.floor(diffInMinutes / 1440)}d ago`;
+
+                // Less than 30 days
+                const days = Math.floor(diffInMinutes / 1440);
+                if (days < 30) return `${days}d ago`;
+
+                // Less than 365 days (show months)
+                if (days < 365) {
+                    const months = Math.floor(days / 30);
+                    return `${months} month${months > 1 ? 's' : ''} ago`;
+                }
+
+                // More than 365 days (show years)
+                const years = Math.floor(days / 365);
+                return `${years} year${years > 1 ? 's' : ''} ago`;
             }
 
             function escapeHtml(unsafe) {

@@ -36,7 +36,6 @@
 
     async function loadServerConfiguration() {
         try {
-            console.log('🔧 Loading session timeout configuration from server...');
             const response = await fetch('/Login/GetSessionConfig', {
                 method: 'GET',
                 headers: {
@@ -60,16 +59,9 @@
 
             CONFIG_LOADED = true;
 
-            console.log('✅ Session timeout configuration loaded from server:');
-            console.log(`   📋 Warning modal: ${WARNING_TIME_MINUTES} minutes`);
-            console.log(`   🚪 Force logout: ${FORCE_LOGOUT_MINUTES} minutes`);
-            console.log(`   ⏱️ Countdown: ${COUNTDOWN_DURATION_SECONDS} seconds`);
-            console.log(`   💓 Keep-alive: ${KEEP_ALIVE_INTERVAL_MINUTES} minutes`);
 
             return true;
         } catch (error) {
-            console.error('❌ Failed to load session configuration from server:', error);
-            console.warn('⚠️ Using default configuration values');
             CONFIG_LOADED = true; // Mark as loaded to continue with defaults
             return false;
         }
@@ -78,7 +70,6 @@
     // ====== CORE FUNCTIONS ======
 
     function logoutUser(showToast = false) {
-        console.warn('Session timeout reached. Logging out user...');
 
         // Store flag to show toast on login page
         if (showToast) {
@@ -91,7 +82,6 @@
     function showWarningModal() {
         if (modalShown) return;
 
-        console.warn('⚠️ Showing session timeout warning modal');
         modalShown = true;
         modal.style.display = 'flex';
         startCountdown();
@@ -104,7 +94,6 @@
     }
 
     function hideWarningModal() {
-        console.log('✅ Hiding session timeout warning modal');
         modalShown = false;
         modal.style.display = 'none';
         stopCountdown();
@@ -150,7 +139,6 @@
 
         // Set new warning timer
         warningTimer = setTimeout(() => {
-            console.warn(`⏰ User inactive for ${WARNING_TIME_MINUTES} minutes — showing warning modal`);
             showWarningModal();
         }, WARNING_TIME_MINUTES * 60 * 1000);
 
@@ -159,10 +147,8 @@
             isKeepAliveRequest = true;
             originalFetch(KEEP_ALIVE_URL, { method: 'GET' })
                 .then(() => {
-                    console.log('✅ Keep-alive request sent successfully');
                 })
                 .catch((err) => {
-                    console.error('❌ Keep-alive request failed:', err);
                 })
                 .finally(() => {
                     isKeepAliveRequest = false;
@@ -171,13 +157,11 @@
     }
 
     function continueSession() {
-        console.log('✅ User chose to continue session');
         hideWarningModal();
         resetInactivityTimer();
     }
 
     function logoutNow() {
-        console.log('🚪 User chose to logout immediately');
         hideWarningModal();
         logoutUser(false);
     }
@@ -189,10 +173,8 @@
                 isKeepAliveRequest = true;
                 originalFetch(KEEP_ALIVE_URL, { method: 'GET' })
                     .then(() => {
-                        console.log('✅ Periodic keep-alive sent');
                     })
                     .catch((err) => {
-                        console.error('❌ Periodic keep-alive failed:', err);
                     })
                     .finally(() => {
                         isKeepAliveRequest = false;
@@ -237,14 +219,12 @@
 
             // Normal requests reset inactivity timer
             if (!modalShown && CONFIG_LOADED) {
-                console.log('🌐 Activity: API request →', url);
                 resetInactivityTimer();
             }
 
             // Proceed with original fetch
             return originalFetch.apply(this, arguments);
         } catch (err) {
-            console.error('Fetch interception error:', err);
             throw err;
         }
     };
@@ -252,17 +232,13 @@
     // ====== INITIALIZATION ======
 
     async function initialize() {
-        console.log('🕒 Session timeout manager initializing...');
 
         // Load configuration from server first
         const configLoaded = await loadServerConfiguration();
 
         if (!configLoaded) {
-            console.warn('⚠️ Using fallback configuration');
         }
 
-        console.log(`⏰ Warning modal will show after ${WARNING_TIME_MINUTES} minutes of inactivity`);
-        console.log(`🚪 Force logout will occur after ${FORCE_LOGOUT_MINUTES} minutes of inactivity`);
 
         resetInactivityTimer();
         startKeepAlive();

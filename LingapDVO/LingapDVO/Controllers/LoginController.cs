@@ -1787,10 +1787,10 @@ namespace LingapDVO.Controllers
                 var aesHelper = new AesEncryptionHelper(_configuration);
                 string encryptedPassword = aesHelper.Encrypt(registerAccDto.Password);
 
-                // Normalize suffix before saving: treat "None" as null
+                // Normalize suffix before saving: treat "None" as empty string
                 string? suffixToSave = string.IsNullOrWhiteSpace(registerAccDto.Suffix) ||
                                        registerAccDto.Suffix.Equals("None", StringComparison.OrdinalIgnoreCase)
-                                       ? null
+                                       ? ""
                                        : registerAccDto.Suffix.Trim();
 
                 var registercacc = new RegisterAcc

@@ -736,6 +736,10 @@ namespace LingapDVO.Controllers
                     }
                 }
 
+                // Normalize suffix values - convert "None" to empty string
+                if (HospitalAssistanceDto.Suffix == "None") HospitalAssistanceDto.Suffix = "";
+                if (HospitalAssistanceDto.RSuffix == "None") HospitalAssistanceDto.RSuffix = "";
+
                 // Map data to entity
                 HospitalAssistance HospitalAssistance = new HospitalAssistance()
                 {
@@ -1480,6 +1484,10 @@ namespace LingapDVO.Controllers
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
+
+                // Normalize suffix values - convert "None" to empty string
+                if (OtherAssistanceDto.Suffix == "None") OtherAssistanceDto.Suffix = "";
+                if (OtherAssistanceDto.RSuffix == "None") OtherAssistanceDto.RSuffix = "";
 
                 // Map data to entity
                 OtherAssistance OtherAssistance = new OtherAssistance()
@@ -2245,6 +2253,10 @@ namespace LingapDVO.Controllers
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
+
+                // Normalize suffix values - convert "None" to empty string
+                if (FuneralAssistanceDto.Suffix == "None") FuneralAssistanceDto.Suffix = "";
+                if (FuneralAssistanceDto.RSuffix == "None") FuneralAssistanceDto.RSuffix = "";
 
                 // Map data to entity
                 FuneralAssistance FuneralAssistance = new FuneralAssistance()

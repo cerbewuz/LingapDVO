@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingapDVO Admin</title>
+    <title>Admin Applications View</title>
     <link rel="icon" type="image/x-icon" href="~/Icon/lingaplogo.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -60,10 +60,10 @@
             transition: margin-left 0.3s ease, width 0.3s ease;
         }
 
-        /* When sidebar is hidden, expand content to full width */
-        .main-content-with-sidebar.sidebar-hidden {
-            margin-left: 0;
-        }
+            /* When sidebar is hidden, expand content to full width */
+            .main-content-with-sidebar.sidebar-hidden {
+                margin-left: 0;
+            }
 
         .header {
             display: flex;
@@ -137,7 +137,7 @@
                 border-left-color: var(--processing);
             }
 
-            .stat-card.claimed.active {
+            .stat-card.claims.active {
                 border-left-color: var(--info);
             }
 
@@ -173,48 +173,77 @@
             color: var(--processing);
         }
 
-        .stat-card.claimed .stat-icon {
+        .stat-card.claims .stat-icon {
             background: rgba(52, 152, 219, 0.15);
             color: var(--info);
         }
 
-        /* Priority Stats */
-        .priority-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+        /* Priority Alert Boxes */
+        .priority-alerts {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
         }
 
-        .stat-card.high-priority {
-            border-left: 4px solid #e74c3c;
-            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+        .priority-alert-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            white-space: nowrap;
         }
 
-        .stat-card.high-priority .stat-icon {
-            background: rgba(231, 76, 60, 0.15);
+        .priority-alert-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .priority-alert-box.high {
+            background: rgba(231, 76, 60, 0.1);
             color: #e74c3c;
-            animation: priorityPulse 2s ease-in-out infinite;
+            border: 1px solid rgba(231, 76, 60, 0.3);
         }
 
-        .stat-card.medium-priority {
-            border-left: 4px solid #f39c12;
-            background: linear-gradient(135deg, #fffbf5 0%, #ffffff 100%);
+        .priority-alert-box.high:hover {
+            background: rgba(231, 76, 60, 0.15);
         }
 
-        .stat-card.medium-priority .stat-icon {
-            background: rgba(243, 156, 18, 0.15);
+        .priority-alert-box.medium {
+            background: rgba(243, 156, 18, 0.1);
             color: #f39c12;
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+
+        .priority-alert-box.medium:hover {
+            background: rgba(243, 156, 18, 0.15);
+        }
+
+        .priority-alert-box i {
+            font-size: 1rem;
+        }
+
+        .priority-alert-box .count {
+            font-weight: 700;
+            font-size: 1rem;
         }
 
         @@keyframes priorityPulse {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
             }
             50% {
                 transform: scale(1.05);
-                box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
             }
+        }
+
+        .priority-alert-box.high i {
+            animation: priorityPulse 2s ease-in-out infinite;
         }
 
         .stat-info h3 {
@@ -418,7 +447,7 @@
             color: var(--danger);
         }
 
-        .status-claimed {
+        .status-claims {
             background: rgba(52, 152, 219, 0.15);
             color: var(--info);
         }
@@ -492,6 +521,80 @@
                 opacity: 1;
                 color: var(--primary);
             }
+
+        /* Responsive Styles */
+        @@media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .priority-alerts {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .priority-alert-box {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+            }
+
+            .card-tools {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .search-box input,
+            .filter-select,
+            .sort-select {
+                width: 100%;
+            }
+
+            .time-filter {
+                width: 100%;
+            }
+
+            .time-filter-btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .priority-alerts {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .priority-alert-box {
+                width: 100%;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .time-filter {
+                flex-direction: column;
+            }
+
+            .time-filter-btn {
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -506,6 +609,18 @@
                 <div class="page-title">
                     <h1>Application Dashboard</h1>
                 </div>
+                <div class="priority-alerts">
+                    <a href="/Adminuser/Priorities?filter=high" class="priority-alert-box high">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span class="count" id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</span>
+                        <span>High Priority</span>
+                    </a>
+                    <a href="/Adminuser/Priorities?filter=medium" class="priority-alert-box medium">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <span class="count" id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</span>
+                        <span>Medium Priority</span>
+                    </a>
+                </div>
             </div>
 
             <!-- Time Filter Section -->
@@ -516,32 +631,13 @@
                         <div class="time-filter">
                             <span class="time-filter-label">Show:</span>
                             <button class="time-filter-btn" data-period="1year">Last Year</button>
-                            <button class="time-filter-btn" data-period="1week">Last Week</button>
-                            <button class="time-filter-btn active" data-period="currentMonth">Current Month</button>
+                            <button class="time-filter-btn" data-period="6months">Last 6 Months</button>
+                            <button class="time-filter-btn" data-period="3months">Last 3 Months</button>
+                            <button class="time-filter-btn" data-period="currentMonth">Current Month</button>
+                            <button class="time-filter-btn" data-period="1week">This Week</button>
+                            <button class="time-filter-btn active" data-period="today">Today</button>
                             <button class="time-filter-btn" data-period="all">All</button>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Priority Stats -->
-            <div class="priority-stats mb-3">
-                <div class="stat-card high-priority">
-                    <div class="stat-icon">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</h3>
-                        <p>High Priority (2+ hrs)</p>
-                    </div>
-                </div>
-                <div class="stat-card medium-priority">
-                    <div class="stat-icon">
-                        <i class="bi bi-exclamation-circle-fill"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3 id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</h3>
-                        <p>Medium Priority (1-2 hrs)</p>
                     </div>
                 </div>
             </div>
@@ -584,13 +680,13 @@
                         <p>Processing</p>
                     </div>
                 </div>
-                <div class="stat-card claimed" data-status="claimed">
+                <div class="stat-card claims" data-status="claims">
                     <div class="stat-icon">
                         <i class="bi bi-cloud-check"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="claimed-count">0</h3>
-                        <p>Claimed</p>
+                        <h3 id="claims-count">0</h3>
+                        <p>Claims</p>
                     </div>
                 </div>
             </div>
@@ -607,8 +703,8 @@
                         <select class="filter-select" id="typeFilter">
                             <option value="all">All Types</option>
                             <option value="Hospital Assistance">Hospital Assistance</option>
-                            <option value="Medical and laboratory Procedure">Medical & Laboratory</option>
-                            <option value="Funeral and burial assistance">Funeral & Burial</option>
+                            <option value="Other Assistance">Other Assistance</option>
+                            <option value="Funeral Assistance">Funeral Assistance</option>
                         </select>
                         <select class="sort-select" id="sortSelect">
                             <option value="date-desc">Newest First</option>
@@ -687,52 +783,52 @@
             // Add Hospitals
             @foreach (var f in Model.HospitalAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Hospital Assistance",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Hospital Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // Add Medical Lab Forms
             @foreach (var f in Model.OtherAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Medical and Laboratory Procedure",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Other Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // Add Funeral Forms
             @foreach (var f in Model.FuneralAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Funeral and Burial Assistance",
-                        name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Funeral Assistance",
+                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // DOM elements
@@ -749,13 +845,13 @@
             const disapprovedCount = document.getElementById('disapproved-count');
             const pendingCount = document.getElementById('pending-count');
             const processingCount = document.getElementById('processing-count');
-            const claimedCount = document.getElementById('claimed-count');
+            const claimsCount = document.getElementById('claims-count');
             const highPriorityCount = document.getElementById('high-priority-count');
             const mediumPriorityCount = document.getElementById('medium-priority-count');
 
             // Current filter state
             let currentStatusFilter = 'approve';
-            let currentTimeFilter = 'currentMonth';
+            let currentTimeFilter = 'today';
             let currentTypeFilter = 'all';
             let currentSearchTerm = '';
             let currentSort = 'date-desc';
@@ -837,22 +933,32 @@
 
                 const now = new Date();
                 let startDate;
+                let endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
                 switch (period) {
                     case '1year':
                         startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
                         break;
-                    case '1week':
-                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                    case '6months':
+                        startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                        break;
+                    case '3months':
+                        startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
                         break;
                     case 'currentMonth':
                         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        break;
+                    case '1week':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                        break;
+                    case 'today':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
                         break;
                     default:
                         return applications;
                 }
 
-                return applications.filter(app => app.createdAt >= startDate);
+                return applications.filter(app => app.createdAt >= startDate && app.createdAt <= endDate);
             }
 
             // Function to filter applications by status - UPDATED VERSION
@@ -860,22 +966,22 @@
                 if (status === 'all') return applications;
 
                 return applications.filter(app => {
-                    // For claimed status, check ONLY status3 field
-                    if (status === 'claimed') {
-                        return app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed';
+                    // For claims status, check ONLY status3 field
+                    if (status === 'claims') {
+                        return app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed');
                     }
 
-                    // For other statuses, EXCLUDE applications that have status3 = claimed
+                    // For other statuses, EXCLUDE applications that have status3 = claims
                     // Then check status2 for approved/disapproved
                     if (status === 'approve' || status === 'disapprove') {
                         return app.status2 && app.status2.trim() !== '' &&
                                app.status2 === status &&
-                               (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed');
+                               (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed'));
                     }
 
-                    // For pending/processing, use original status but exclude claimed status3
+                    // For pending/processing, use original status but exclude claims status3
                     return app.status === status &&
-                           (!app.status3 || app.status3.trim() === '' || app.status3.toLowerCase() !== 'claimed') &&
+                           (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed')) &&
                            (!app.status2 || app.status2.trim() === '' ||
                             (app.status2 !== 'approve' && app.status2 !== 'disapprove'));
                 });
@@ -908,7 +1014,7 @@
                     disapprove: 0,
                     pending: 0,
                     processing: 0,
-                    claimed: 0
+                    claims: 0
                 };
 
                 let highPriority = 0;
@@ -916,9 +1022,9 @@
                 const now = new Date();
 
                 timeFilteredApplications.forEach(app => {
-                    // Check status3 FIRST for "claimed" status - if claimed, count ONLY in claimed
-                    if (app.status3 && app.status3.trim() !== '' && app.status3.toLowerCase() === 'claimed') {
-                        statusCounts.claimed++;
+                    // Check status3 FIRST for "claims" status - if claims, count ONLY in claims
+                    if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                        statusCounts.claims++;
                     }
                     // If NOT claimed, then check status2 for approve/disapprove
                     else if (app.status2 && app.status2.trim() !== '') {
@@ -935,9 +1041,18 @@
                         }
                     }
 
-                    // Calculate priority counts (only for Pending and Processing)
-                    const currentStatus = app.status2 || app.status;
-                    if (currentStatus === 'pending' || currentStatus === 'processing') {
+                    // Calculate priority counts (ONLY for Pending and Processing that are NOT approved/disapproved/claims)
+                    // Exclude if status3 is claims
+                    if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                        return; // Skip claims applications
+                    }
+                    // Exclude if status2 is approve or disapprove
+                    if (app.status2 && app.status2.trim() !== '' &&
+                        (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) {
+                        return; // Skip approved/disapproved applications
+                    }
+                    // Only count if original status is pending or processing
+                    if (app.status === 'pending' || app.status === 'processing') {
                         const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
                         if (hoursSinceSubmission >= 2) {
                             highPriority++;
@@ -952,7 +1067,7 @@
                 disapprovedCount.textContent = statusCounts.disapprove;
                 pendingCount.textContent = statusCounts.pending;
                 processingCount.textContent = statusCounts.processing;
-                claimedCount.textContent = statusCounts.claimed;
+                claimsCount.textContent = statusCounts.claims;
                 highPriorityCount.textContent = highPriority;
                 mediumPriorityCount.textContent = mediumPriority;
             }
@@ -1062,7 +1177,7 @@
                         editUrl = `/HospitalAssistancePendingStatus/${app.formId}`;
                     }
 
-                } else if (app.type === "Medical and Laboratory Procedure") {
+                } else if (app.type === "Other Assistance") {
                     // Apply the same logic for Medical forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/OtherAssistanceClaimStatus/${app.formId}`;
@@ -1078,7 +1193,7 @@
                         editUrl = `/OtherAssistancePendingStatus/${app.formId}`;
                     }
 
-                } else if (app.type === "Funeral and Burial Assistance") {
+                } else if (app.type === "Funeral Assistance") {
                     // Apply the same logic for Funeral forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/FuneralAssistanceClaimStatus/${app.formId}`;

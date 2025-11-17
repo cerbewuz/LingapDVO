@@ -4562,6 +4562,739 @@ namespace LingapDVO.Controllers
             return ratings.Any() ? Math.Round(ratings.Average(), 2) : 0;
         }
 
+        // TEMPORARY: Action to generate 200 realistic dummy data records
+        // This will be removed after data is generated
+        public async Task<IActionResult> GenerateDummyData()
+        {
+            if (HttpContext.Session.GetString("IsAdmin") != "true")
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            try
+            {
+                // First, clear existing test data if needed (be careful with this in production!)
+                // Uncomment below to clear existing data:
+                // context.HospitalAssistance.RemoveRange(context.HospitalAssistance);
+                // context.OtherAssistance.RemoveRange(context.OtherAssistance);
+                // context.FuneralAssistance.RemoveRange(context.FuneralAssistance);
+                // await context.SaveChangesAsync();
+
+                var random = new Random(42); // Fixed seed for reproducibility
+                var now = DateTime.Now;
+
+                // Arrays of realistic Filipino data
+                var firstNames = new[] { "Juan", "Maria", "Jose", "Ana", "Pedro", "Rosa", "Miguel", "Elena", "Roberto", "Carmen", "Luis", "Sofia", "Carlos", "Isabella", "Diego", "Gabriela", "Fernando", "Valentina", "Antonio", "Camila", "Manuel", "Victoria", "Rafael", "Lucia", "Andres", "Mariana", "Jorge", "Paula", "Ricardo", "Diana", "Francisco", "Catalina", "Alejandro", "Daniela", "Martin", "Adriana", "Javier", "Natalia", "Raul", "Angela" };
+                var lastNames = new[] { "Santos", "Reyes", "Cruz", "Bautista", "Garcia", "Gonzales", "Flores", "Mendoza", "Torres", "Lopez", "Ramos", "Rivera", "Gomez", "Hernandez", "Perez", "Martinez", "Rodriguez", "Fernandez", "Morales", "Castillo", "Aquino", "Villarosa", "Dela Cruz", "Villanueva", "Santiago", "Medina", "Roxas", "Ocampo", "Aguilar", "Soriano", "Navarro", "Pascual", "Lim", "Tan", "Ong", "Chua", "Wong", "Lee", "Chan", "Go" };
+                var middleNames = new[] { "Santos", "Cruz", "Reyes", "Garcia", "Bautista", "Flores", "Lopez", "Ramos", "Perez", "Gonzales", "Mendoza", "Torres", "Rivera", "Martinez", "Gomez", "Rodriguez", "Fernandez", "Morales", "Castillo", "Aquino" };
+                var barangays = new[] { "Agdao", "Bankerohan", "Buhangin", "Bunawan", "Calinan", "Daliao", "Davao City Proper", "Lanang", "Ma-a", "Matina", "Mintal", "Panacan", "Sasa", "Talomo", "Tibungco", "Toril", "Tugbok", "Ula", "Bago Oshiro", "Bago Gallera", "Catalunan Grande", "Catalunan Pequeño", "Dumoy", "Indangan", "Leon Garcia", "Marilog", "Paquibato", "Shrine Hills", "Tacunan", "Waan", "Wilfredo Aquino" };
+                var streets = new[] { "Roxas Avenue", "J.P. Laurel Avenue", "C.M. Recto Street", "Bonifacio Street", "Rizal Street", "Quirino Avenue", "Osmeña Boulevard", "Mabini Street", "Aguinaldo Street", "Luna Street", "Del Pilar Street", "Quezon Boulevard", "Magallanes Street", "Lapu-Lapu Street", "San Pedro Street" };
+                var assistanceTypes = new[] { "Hospital Bill Assistance", "Medicines", "Laboratory", "Medical and Surgical Procedures" };
+                var funeralTypes = new[] { "Funeral and Burial Assistance" };
+                var sexes = new[] { "Male", "Female" };
+                var philHealthStatuses = new[] { "Yes", "No" };
+                var relationships = new[] { "Parent", "Spouse", "Child", "Sibling", "Relative", "Guardian", "Friend" };
+                var processors = new[] { "Admin Santos", "Admin Garcia", "Admin Cruz", "Admin Reyes", "Admin Flores" };
+
+                // IP addresses and user agents for realistic data
+                var ipAddresses = new[] { "192.168.1.100", "10.0.0.50", "172.16.0.10", "192.168.0.25", "10.1.1.75" };
+                var userAgents = new[] {
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+                };
+
+                // STEP 1: Create unique user accounts (RegisterAcc)
+                var createdUsers = new List<RegisterAcc>();
+                var userCount = 50; // Create 50 unique users
+
+                for (int i = 0; i < userCount; i++)
+                {
+                    var regDate = now.AddDays(-random.Next(185, 365)); // Registered 6-12 months ago
+                    var firstName = firstNames[random.Next(firstNames.Length)];
+                    var middleName = middleNames[random.Next(middleNames.Length)];
+                    var lastName = lastNames[random.Next(lastNames.Length)];
+                    var username = $"{firstName.ToLower()}.{lastName.ToLower()}{i}";
+                    var email = $"{firstName.ToLower()}.{lastName.ToLower()}{i}@gmail.com";
+
+                    var user = new RegisterAcc
+                    {
+                        FirstName = firstName,
+                        MiddleName = middleName,
+                        LastName = lastName,
+                        Suffix = random.Next(10) > 8 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
+                        Email = email,
+                        Password = BCrypt.Net.BCrypt.HashPassword("Password123!"),
+                        Username = username,
+                        Status = "active",
+                        Profilepicture = "default-avatar.png",
+                        PreferEmailNotification = true,
+                        PreferSmsNotification = random.Next(2) == 0,
+                        PreferInAppNotification = true
+                    };
+
+                    context.RegisterAcc.Add(user);
+                    createdUsers.Add(user);
+                }
+
+                // Save users to get their IDs
+                await context.SaveChangesAsync();
+
+                // STEP 2: Create RegistrationTokens and RegistrationAuditLogs for each user
+                foreach (var user in createdUsers)
+                {
+                    var regDate = now.AddDays(-random.Next(185, 365));
+                    var tokenCreatedAt = regDate.AddSeconds(-random.Next(10, 60));
+                    var token = $"REG-TOKEN-{Guid.NewGuid():N}";
+                    var ip = ipAddresses[random.Next(ipAddresses.Length)];
+                    var userAgent = userAgents[random.Next(userAgents.Length)];
+
+                    // Create RegistrationToken
+                    var regToken = new RegistrationToken
+                    {
+                        Token = token,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        CreatedAt = tokenCreatedAt,
+                        ExpiresAt = tokenCreatedAt.AddMinutes(30),
+                        IsUsed = true,
+                        UsedAt = regDate,
+                        UsedByEmail = user.Email,
+                        IsRevoked = false
+                    };
+                    context.Add(regToken);
+
+                    // Create RegistrationAuditLog
+                    var auditLog = new RegistrationAuditLog
+                    {
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        Email = user.Email,
+                        Username = user.Username,
+                        FullName = $"{user.LastName} {user.FirstName} {user.MiddleName}",
+                        Action = "SUCCESS",
+                        Source = "WEB_FORM",
+                        Reason = "User registered successfully",
+                        RegistrationToken = token,
+                        HasValidToken = true,
+                        SuspiciousActivity = false,
+                        AttemptedAt = regDate,
+                        RegisteredUserId = user.Id
+                    };
+                    context.Add(auditLog);
+                }
+
+                await context.SaveChangesAsync();
+
+                var generatedRecords = 0;
+
+                // Distribute 200 records: 80 Hospital, 70 Medical/Lab, 50 Funeral
+                var hospitalCount = 80;
+                var medicalCount = 70;
+                var funeralCount = 50;
+
+                // STEP 3: Generate Hospital Assistance records with random user assignment
+                for (int i = 0; i < hospitalCount; i++)
+                {
+                    var createdDate = now.AddDays(-random.Next(1, 180)); // Within last 6 months
+                    var status = DetermineStatus(random);
+                    var age = random.Next(18, 80);
+                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
+
+                    var record = new HospitalAssistance
+                    {
+                        UserId = assignedUser.Id,
+                        Lastname = lastNames[random.Next(lastNames.Length)],
+                        Firstname = firstNames[random.Next(firstNames.Length)],
+                        Middlename = middleNames[random.Next(middleNames.Length)],
+                        Suffix = random.Next(10) > 7 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
+                        BlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        SubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        Brgy = barangays[random.Next(barangays.Length)],
+                        District = $"District {random.Next(1, 4)}",
+                        Sex = sexes[random.Next(sexes.Length)],
+                        PhilHealth = philHealthStatuses[random.Next(philHealthStatuses.Length)],
+                        PhilHealthNo = random.Next(2) == 0 ? $"12-{random.Next(100000000, 999999999)}-{random.Next(0, 10)}" : "",
+                        Dateofbirth = dateOfBirth,
+                        Age = age.ToString(),
+
+                        // Requestor details
+                        RLastname = lastNames[random.Next(lastNames.Length)],
+                        RFirstname = firstNames[random.Next(firstNames.Length)],
+                        RMiddlename = middleNames[random.Next(middleNames.Length)],
+                        RSuffix = "",
+                        RBlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        RSubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        RBrgy = barangays[random.Next(barangays.Length)],
+                        RDistrict = $"District {random.Next(1, 4)}",
+                        RelationshipPatient = relationships[random.Next(relationships.Length)],
+                        ContactNo = $"09{random.Next(100000000, 999999999)}",
+
+                        Typeassistance = "Hospital Bill Assistance",
+                        ForCMOPERSONNEL = "",
+                        Validfrontimage = "dummy_id_front.jpg",
+                        ValidBackimage = "dummy_id_back.jpg",
+                        DoctorPrescription = "dummy_prescription.jpg",
+                        DeathCertificate = "",
+
+                        CreatedAt = createdDate,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddMinutes(random.Next(5, 30)) : DateTime.MinValue,
+                        Status = status.Status,
+                        Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
+                        Comments = status.Comments,
+                        Result = status.Status2 != "" ? createdDate.AddMinutes(GenerateProcessingTime(random)) : DateTime.MinValue,
+                        Status2 = status.Status2,
+                        ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
+                        Status3 = status.Status3
+                    };
+
+                    context.HospitalAssistance.Add(record);
+                    generatedRecords++;
+                }
+
+                // Generate Medical/Laboratory Assistance records
+                for (int i = 0; i < medicalCount; i++)
+                {
+                    var createdDate = now.AddDays(-random.Next(1, 180));
+                    var status = DetermineStatus(random);
+                    var age = random.Next(18, 80);
+                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
+
+                    var record = new OtherAssistance
+                    {
+                        UserId = assignedUser.Id,
+                        Lastname = lastNames[random.Next(lastNames.Length)],
+                        Firstname = firstNames[random.Next(firstNames.Length)],
+                        Middlename = middleNames[random.Next(middleNames.Length)],
+                        Suffix = random.Next(10) > 7 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
+                        BlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        SubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        Brgy = barangays[random.Next(barangays.Length)],
+                        District = $"District {random.Next(1, 4)}",
+                        Sex = sexes[random.Next(sexes.Length)],
+                        PhilHealth = philHealthStatuses[random.Next(philHealthStatuses.Length)],
+                        PhilHealthNo = random.Next(2) == 0 ? $"12-{random.Next(100000000, 999999999)}-{random.Next(0, 10)}" : "",
+                        Dateofbirth = dateOfBirth,
+                        Age = age.ToString(),
+
+                        // Requestor details
+                        RLastname = lastNames[random.Next(lastNames.Length)],
+                        RFirstname = firstNames[random.Next(firstNames.Length)],
+                        RMiddlename = middleNames[random.Next(middleNames.Length)],
+                        RSuffix = "",
+                        RBlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        RSubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        RBrgy = barangays[random.Next(barangays.Length)],
+                        RDistrict = $"District {random.Next(1, 4)}",
+                        RelationshipPatient = relationships[random.Next(relationships.Length)],
+                        ContactNo = $"09{random.Next(100000000, 999999999)}",
+
+                        Typeassistance = assistanceTypes[random.Next(1, assistanceTypes.Length)], // Skip first one (Hospital Bill)
+                        ForCMOPERSONNEL = "",
+                        Validfrontimage = "dummy_id_front.jpg",
+                        ValidBackimage = "dummy_id_back.jpg",
+                        DoctorPrescription = "dummy_prescription.jpg",
+                        DeathCertificate = "",
+                        MedCertificate = "dummy_med_cert.jpg",
+
+                        CreatedAt = createdDate,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddMinutes(random.Next(5, 30)) : DateTime.MinValue,
+                        Status = status.Status,
+                        Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
+                        Comments = status.Comments,
+                        Result = status.Status2 != "" ? createdDate.AddMinutes(GenerateProcessingTime(random)) : DateTime.MinValue,
+                        Status2 = status.Status2,
+                        ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
+                        Status3 = status.Status3
+                    };
+
+                    context.OtherAssistance.Add(record);
+                    generatedRecords++;
+                }
+
+                // Generate Funeral Assistance records
+                for (int i = 0; i < funeralCount; i++)
+                {
+                    var createdDate = now.AddDays(-random.Next(1, 180));
+                    var status = DetermineStatus(random);
+                    var age = random.Next(18, 80);
+                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
+
+                    var record = new FuneralAssistance
+                    {
+                        UserId = assignedUser.Id,
+                        Lastname = lastNames[random.Next(lastNames.Length)],
+                        Firstname = firstNames[random.Next(firstNames.Length)],
+                        Middlename = middleNames[random.Next(middleNames.Length)],
+                        Suffix = random.Next(10) > 7 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
+                        BlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        SubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        Brgy = barangays[random.Next(barangays.Length)],
+                        District = $"District {random.Next(1, 4)}",
+                        Sex = sexes[random.Next(sexes.Length)],
+                        PhilHealth = philHealthStatuses[random.Next(philHealthStatuses.Length)],
+                        PhilHealthNo = random.Next(2) == 0 ? $"12-{random.Next(100000000, 999999999)}-{random.Next(0, 10)}" : "",
+                        Dateofbirth = dateOfBirth,
+                        Age = age.ToString(),
+
+                        // Requestor details
+                        RLastname = lastNames[random.Next(lastNames.Length)],
+                        RFirstname = firstNames[random.Next(firstNames.Length)],
+                        RMiddlename = middleNames[random.Next(middleNames.Length)],
+                        RSuffix = "",
+                        RBlkLotStreet = $"{random.Next(1, 500)} {streets[random.Next(streets.Length)]}",
+                        RSubVill = random.Next(10) > 5 ? $"Phase {random.Next(1, 5)}" : "",
+                        RBrgy = barangays[random.Next(barangays.Length)],
+                        RDistrict = $"District {random.Next(1, 4)}",
+                        RelationshipPatient = relationships[random.Next(relationships.Length)],
+                        ContactNo = $"09{random.Next(100000000, 999999999)}",
+
+                        Typeassistance = "Funeral and Burial Assistance",
+                        ForCMOPERSONNEL = "",
+                        Validfrontimage = "dummy_id_front.jpg",
+                        ValidBackimage = "dummy_id_back.jpg",
+                        DoctorPrescription = "",
+                        DeathCertificate = "dummy_death_cert.jpg",
+
+                        CreatedAt = createdDate,
+                        ProcessAt = status.Status != "pending" ? createdDate.AddMinutes(random.Next(5, 30)) : DateTime.MinValue,
+                        Status = status.Status,
+                        Processby = status.Status != "pending" ? processors[random.Next(processors.Length)] : "",
+                        Comments = status.Comments,
+                        Result = status.Status2 != "" ? createdDate.AddMinutes(GenerateProcessingTime(random)) : DateTime.MinValue,
+                        Status2 = status.Status2,
+                        ClaimedAt = status.Status3 == "claimed" ? createdDate.AddDays(random.Next(7, 30)) : DateTime.MinValue,
+                        Status3 = status.Status3
+                    };
+
+                    context.FuneralAssistance.Add(record);
+                    generatedRecords++;
+                }
+
+                // Save all applications first to get their IDs
+                await context.SaveChangesAsync();
+
+                // STEP 4: Generate FormSubmissionTokens and FormSubmissionAuditLogs for each application
+                // Generate tokens and audit logs for Hospital Assistance
+                foreach (var app in context.HospitalAssistance.Where(h => h.CreatedAt >= now.AddDays(-180)))
+                {
+                    var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60)); // Token created before submission
+                    var token = $"TOKEN-HOSP-{Guid.NewGuid():N}";
+                    var ip = ipAddresses[random.Next(ipAddresses.Length)];
+                    var userAgent = userAgents[random.Next(userAgents.Length)];
+
+                    // Create FormSubmissionToken
+                    var submissionToken = new FormSubmissionToken
+                    {
+                        Token = token,
+                        FormType = "HospitalBill",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        CreatedAt = tokenCreatedAt,
+                        ExpiresAt = tokenCreatedAt.AddMinutes(30),
+                        IsUsed = true,
+                        UsedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsRevoked = false
+                    };
+                    context.Add(submissionToken);
+
+                    // Create FormSubmissionAuditLog
+                    var auditLog = new FormSubmissionAuditLog
+                    {
+                        FormType = "HospitalBill",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        PatientName = $"{app.Lastname} {app.Firstname} {app.Middlename}",
+                        RequestorName = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                        Action = "SUCCESS",
+                        Source = "WEB_FORM",
+                        Reason = "Form submitted successfully",
+                        SubmissionToken = token,
+                        HasValidToken = true,
+                        SuspiciousActivity = false,
+                        FormDataHash = $"SHA256-{Guid.NewGuid():N}",
+                        AttemptedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsDuplicate = false
+                    };
+                    context.Add(auditLog);
+                }
+
+                // Generate tokens and audit logs for Medical/Laboratory Assistance
+                foreach (var app in context.OtherAssistance.Where(o => o.CreatedAt >= now.AddDays(-180)))
+                {
+                    var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60));
+                    var token = $"TOKEN-MED-{Guid.NewGuid():N}";
+                    var ip = ipAddresses[random.Next(ipAddresses.Length)];
+                    var userAgent = userAgents[random.Next(userAgents.Length)];
+
+                    // Create FormSubmissionToken
+                    var submissionToken = new FormSubmissionToken
+                    {
+                        Token = token,
+                        FormType = "MedicalLab",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        CreatedAt = tokenCreatedAt,
+                        ExpiresAt = tokenCreatedAt.AddMinutes(30),
+                        IsUsed = true,
+                        UsedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsRevoked = false
+                    };
+                    context.Add(submissionToken);
+
+                    // Create FormSubmissionAuditLog
+                    var auditLog = new FormSubmissionAuditLog
+                    {
+                        FormType = "MedicalLab",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        PatientName = $"{app.Lastname} {app.Firstname} {app.Middlename}",
+                        RequestorName = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                        Action = "SUCCESS",
+                        Source = "WEB_FORM",
+                        Reason = "Form submitted successfully",
+                        SubmissionToken = token,
+                        HasValidToken = true,
+                        SuspiciousActivity = false,
+                        FormDataHash = $"SHA256-{Guid.NewGuid():N}",
+                        AttemptedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsDuplicate = false
+                    };
+                    context.Add(auditLog);
+                }
+
+                // Generate tokens and audit logs for Funeral Assistance
+                foreach (var app in context.FuneralAssistance.Where(f => f.CreatedAt >= now.AddDays(-180)))
+                {
+                    var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60));
+                    var token = $"TOKEN-FUN-{Guid.NewGuid():N}";
+                    var ip = ipAddresses[random.Next(ipAddresses.Length)];
+                    var userAgent = userAgents[random.Next(userAgents.Length)];
+
+                    // Create FormSubmissionToken
+                    var submissionToken = new FormSubmissionToken
+                    {
+                        Token = token,
+                        FormType = "Funeral",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        CreatedAt = tokenCreatedAt,
+                        ExpiresAt = tokenCreatedAt.AddMinutes(30),
+                        IsUsed = true,
+                        UsedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsRevoked = false
+                    };
+                    context.Add(submissionToken);
+
+                    // Create FormSubmissionAuditLog
+                    var auditLog = new FormSubmissionAuditLog
+                    {
+                        FormType = "Funeral",
+                        UserId = app.UserId,
+                        IpAddress = ip,
+                        UserAgent = userAgent,
+                        PatientName = $"{app.Lastname} {app.Firstname} {app.Middlename}",
+                        RequestorName = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                        Action = "SUCCESS",
+                        Source = "WEB_FORM",
+                        Reason = "Form submitted successfully",
+                        SubmissionToken = token,
+                        HasValidToken = true,
+                        SuspiciousActivity = false,
+                        FormDataHash = $"SHA256-{Guid.NewGuid():N}",
+                        AttemptedAt = app.CreatedAt,
+                        SubmittedFormId = app.Id,
+                        IsDuplicate = false
+                    };
+                    context.Add(auditLog);
+                }
+
+                // Save tokens and audit logs
+                await context.SaveChangesAsync();
+
+                // STEP 5: Generate Feedbacks for claimed applications (about 30% of claimed applications)
+                var serviceTypes = new[] { "Hospital Bill Assistance", "Other Assistance", "Funeral Assistance" };
+                var offices = new[] { "City Health Office", "Social Welfare Office", "CDVO", "Mayor's Office" };
+                var clientTypes = new[] { "Citizen", "Business", "Government Employee", "Senior Citizen", "PWD" };
+                var ccResponses = new[] { "Yes", "No", "Not Sure", "Somewhat" };
+
+                var feedbackCount = 0;
+
+                // Generate feedbacks for claimed Hospital Assistance
+                var claimedHospital = context.HospitalAssistance
+                    .Where(h => h.Status3 == "claimed" && h.CreatedAt >= now.AddDays(-180))
+                    .ToList();
+
+                foreach (var app in claimedHospital)
+                {
+                    if (random.Next(100) < 30) // 30% chance of feedback
+                    {
+                        var user = createdUsers.FirstOrDefault(u => u.Id == app.UserId);
+                        if (user != null)
+                        {
+                            var feedback = new Feedback
+                            {
+                                UserId = user.Id,
+                                Name = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                                Office = offices[random.Next(offices.Length)],
+                                ServiceAvailed = "Hospital Bill Assistance",
+                                Contact = app.ContactNo,
+                                Sex = app.Sex,
+                                TypeOfClient = clientTypes[random.Next(clientTypes.Length)],
+                                AssistanceType = "HospitalBill",
+                                AssistanceId = app.Id,
+                                Q1_CCKnowledge = ccResponses[random.Next(ccResponses.Length)],
+                                Q2_CCVisibility = ccResponses[random.Next(ccResponses.Length)],
+                                Q3_CCHelpfulness = ccResponses[random.Next(ccResponses.Length)],
+                                R1_ServiceSatisfaction = random.Next(4, 9), // Rating 4-8
+                                R2_TimeSpent = random.Next(4, 9),
+                                R3_ProcessFollowed = random.Next(4, 9),
+                                R4_ProcessSimplicity = random.Next(4, 9),
+                                R5_InformationAccess = random.Next(4, 9),
+                                R6_FairPayment = random.Next(4, 9),
+                                R7_Fairness = random.Next(4, 9),
+                                R8_EmployeeCourtesy = random.Next(4, 9),
+                                Commendation = random.Next(2) == 0 ? "The staff were very helpful and courteous." : null,
+                                Suggestion = random.Next(2) == 0 ? "Please add more seating in the waiting area." : null,
+                                Request = null,
+                                Complaint = random.Next(10) == 0 ? "The waiting time was a bit long." : null,
+                                Signature = $"{user.FirstName}_{user.LastName}",
+                                SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)), // Feedback within 7 days of claiming
+                                IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
+                            };
+                            context.Add(feedback);
+                            feedbackCount++;
+                        }
+                    }
+                }
+
+                // Generate feedbacks for claimed Medical/Lab Assistance
+                var claimedMedical = context.OtherAssistance
+                    .Where(o => o.Status3 == "claimed" && o.CreatedAt >= now.AddDays(-180))
+                    .ToList();
+
+                foreach (var app in claimedMedical)
+                {
+                    if (random.Next(100) < 30) // 30% chance of feedback
+                    {
+                        var user = createdUsers.FirstOrDefault(u => u.Id == app.UserId);
+                        if (user != null)
+                        {
+                            var feedback = new Feedback
+                            {
+                                UserId = user.Id,
+                                Name = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                                Office = offices[random.Next(offices.Length)],
+                                ServiceAvailed = app.Typeassistance,
+                                Contact = app.ContactNo,
+                                Sex = app.Sex,
+                                TypeOfClient = clientTypes[random.Next(clientTypes.Length)],
+                                AssistanceType = "Medical",
+                                AssistanceId = app.Id,
+                                Q1_CCKnowledge = ccResponses[random.Next(ccResponses.Length)],
+                                Q2_CCVisibility = ccResponses[random.Next(ccResponses.Length)],
+                                Q3_CCHelpfulness = ccResponses[random.Next(ccResponses.Length)],
+                                R1_ServiceSatisfaction = random.Next(4, 9),
+                                R2_TimeSpent = random.Next(4, 9),
+                                R3_ProcessFollowed = random.Next(4, 9),
+                                R4_ProcessSimplicity = random.Next(4, 9),
+                                R5_InformationAccess = random.Next(4, 9),
+                                R6_FairPayment = random.Next(4, 9),
+                                R7_Fairness = random.Next(4, 9),
+                                R8_EmployeeCourtesy = random.Next(4, 9),
+                                Commendation = random.Next(2) == 0 ? "Excellent service, thank you!" : null,
+                                Suggestion = random.Next(2) == 0 ? "Online tracking of application status would be helpful." : null,
+                                Request = null,
+                                Complaint = random.Next(10) == 0 ? "Process could be streamlined." : null,
+                                Signature = $"{user.FirstName}_{user.LastName}",
+                                SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)),
+                                IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
+                            };
+                            context.Add(feedback);
+                            feedbackCount++;
+                        }
+                    }
+                }
+
+                // Generate feedbacks for claimed Funeral Assistance
+                var claimedFuneral = context.FuneralAssistance
+                    .Where(f => f.Status3 == "claimed" && f.CreatedAt >= now.AddDays(-180))
+                    .ToList();
+
+                foreach (var app in claimedFuneral)
+                {
+                    if (random.Next(100) < 30) // 30% chance of feedback
+                    {
+                        var user = createdUsers.FirstOrDefault(u => u.Id == app.UserId);
+                        if (user != null)
+                        {
+                            var feedback = new Feedback
+                            {
+                                UserId = user.Id,
+                                Name = $"{app.RLastname} {app.RFirstname} {app.RMiddlename}",
+                                Office = offices[random.Next(offices.Length)],
+                                ServiceAvailed = "Funeral and Burial Assistance",
+                                Contact = app.ContactNo,
+                                Sex = app.Sex,
+                                TypeOfClient = clientTypes[random.Next(clientTypes.Length)],
+                                AssistanceType = "Funeral",
+                                AssistanceId = app.Id,
+                                Q1_CCKnowledge = ccResponses[random.Next(ccResponses.Length)],
+                                Q2_CCVisibility = ccResponses[random.Next(ccResponses.Length)],
+                                Q3_CCHelpfulness = ccResponses[random.Next(ccResponses.Length)],
+                                R1_ServiceSatisfaction = random.Next(4, 9),
+                                R2_TimeSpent = random.Next(4, 9),
+                                R3_ProcessFollowed = random.Next(4, 9),
+                                R4_ProcessSimplicity = random.Next(4, 9),
+                                R5_InformationAccess = random.Next(4, 9),
+                                R6_FairPayment = random.Next(4, 9),
+                                R7_Fairness = random.Next(4, 9),
+                                R8_EmployeeCourtesy = random.Next(4, 9),
+                                Commendation = random.Next(2) == 0 ? "Very helpful during difficult time. Thank you." : null,
+                                Suggestion = random.Next(2) == 0 ? "More information about requirements would help." : null,
+                                Request = null,
+                                Complaint = random.Next(10) == 0 ? "Needed faster processing for emergency cases." : null,
+                                Signature = $"{user.FirstName}_{user.LastName}",
+                                SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)),
+                                IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
+                            };
+                            context.Add(feedback);
+                            feedbackCount++;
+                        }
+                    }
+                }
+
+                await context.SaveChangesAsync();
+
+                var totalTokens = 200; // Total form submission tokens
+                var totalAuditLogs = 200; // Total form submission audit logs
+                var totalRegTokens = userCount; // Total registration tokens
+                var totalRegAuditLogs = userCount; // Total registration audit logs
+
+                return Ok(new {
+                    success = true,
+                    message = $"Successfully generated complete dummy data with users, applications, tokens, audit logs, and feedbacks!",
+                    details = new {
+                        users = userCount,
+                        registrationTokens = totalRegTokens,
+                        registrationAuditLogs = totalRegAuditLogs,
+                        hospital = hospitalCount,
+                        medical = medicalCount,
+                        funeral = funeralCount,
+                        formSubmissionTokens = totalTokens,
+                        formSubmissionAuditLogs = totalAuditLogs,
+                        feedbacks = feedbackCount
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Error generating dummy data: {ex.Message}" });
+            }
+        }
+
+        // Helper method to determine realistic status progression
+        // Updated to follow realistic application lifecycle through the system
+        // Most applications should complete successfully (claimed)
+        private (string Status, string Status2, string Status3, string Comments) DetermineStatus(Random random)
+        {
+            var roll = random.Next(100);
+
+            // 12% Pending (new applications just submitted) - NOT in priorities
+            if (roll < 12)
+            {
+                return ("pending", "", "", "");
+            }
+            // 10% Processing (being reviewed by admin) - NOT in priorities
+            else if (roll < 22)
+            {
+                return ("processing", "", "", "Under review by admin");
+            }
+            // 25% Approved but not claimed - IN PRIORITY POOL
+            // These are waiting for the user to claim their assistance
+            else if (roll < 47)
+            {
+                var comments = new[] {
+                    "Application approved. Documents verified.",
+                    "Assistance granted. All requirements met.",
+                    "Approved for processing. Complete documentation provided.",
+                    "Application successful. Ready for assistance.",
+                    "Verified and approved. Proceed to claiming."
+                };
+                return ("processing", "approve", "", comments[random.Next(comments.Length)]);
+            }
+            // 48% Claimed (successfully completed the entire process) - NOT in priorities
+            // This represents the majority of applications that complete successfully
+            else if (roll < 95)
+            {
+                var comments = new[] {
+                    "Application approved. Documents verified. Assistance claimed.",
+                    "Assistance granted and successfully claimed.",
+                    "Approved and claimed. Process completed.",
+                    "Application successful. Assistance provided.",
+                    "Verified, approved, and claimed successfully."
+                };
+                return ("processing", "approve", "claimed", comments[random.Next(comments.Length)]);
+            }
+            // 5% Disapproved (less than 8% as required) - IN PRIORITY POOL
+            // Small percentage of applications that don't meet requirements
+            else
+            {
+                var comments = new[] {
+                    "Incomplete documentation. Please provide missing requirements.",
+                    "Application does not meet eligibility criteria.",
+                    "Documents need verification. Please resubmit.",
+                    "Duplicate application found.",
+                    "Applicant does not qualify for this type of assistance.",
+                    "Required supporting documents not provided.",
+                    "Application information inconsistent with requirements."
+                };
+                return ("processing", "disapprove", "", comments[random.Next(comments.Length)]);
+            }
+        }
+
+        // Helper method to generate realistic processing times
+        // Returns processing time in minutes
+        // Balanced distribution for realistic priority tracking
+        private int GenerateProcessingTime(Random random)
+        {
+            var roll = random.Next(100);
+
+            // 65% processed in less than 1 hour (10-55 minutes) - No priority
+            // Most applications are processed quickly
+            if (roll < 65)
+            {
+                return random.Next(10, 56);
+            }
+            // 20% processed in 1-2 hours (60-119 minutes) - Medium priority
+            // Some applications need more review time
+            else if (roll < 85)
+            {
+                return random.Next(60, 120);
+            }
+            // 15% processed in 2-4 hours (120-240 minutes) - High priority
+            // Few applications require extended processing
+            else
+            {
+                return random.Next(120, 241);
+            }
+        }
+
 
     }
 

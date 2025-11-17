@@ -1,7 +1,7 @@
 ﻿@model FuneralAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Hospital Assistance View";
+    ViewData["Title"] = "Funeral Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
