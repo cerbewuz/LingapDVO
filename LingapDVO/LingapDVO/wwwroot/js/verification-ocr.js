@@ -3518,9 +3518,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Extract Multi-Line Address (1-3 Lines Support)
+    // Extract Multi-Line Address (1-4 Lines Support)
     // ═══════════════════════════════════════════════════════════════════════════
-    // Philippine National IDs have address spanning 1-3 lines after ADDRESS label
+    // Philippine National IDs and UMID have address spanning 1-4 lines after ADDRESS label
     // This function extracts and concatenates ALL address lines for Davao City detection
     //
     // SUPPORTED FORMATS:
@@ -3539,6 +3539,13 @@ document.addEventListener('DOMContentLoaded', function () {
     //            MATINA APLAYA BARANGAY
     //            DAVAO CITY DAVAO DEL SUR
     //   Result: "BLK 10 LOT 5 PUROK 3 MATINA APLAYA BARANGAY DAVAO CITY DAVAO DEL SUR"
+    //
+    // 4-LINE ADDRESS (UMID Support):
+    //   ADDRESS: BLK 5 LOT 3
+    //            PUROK 2
+    //            BARANGAY MATINA
+    //            DAVAO CITY DAVAO DEL SUR
+    //   Result: "BLK 5 LOT 3 PUROK 2 BARANGAY MATINA DAVAO CITY DAVAO DEL SUR"
     //
     // ═══════════════════════════════════════════════════════════════════════════
     function extractMultiLineAddress(lines) {
@@ -3559,13 +3566,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (upperLine.includes(label)) {
                     console.log(`📍 Found ADDRESS label at line ${i + 1}: "${line}"`);
 
-                    // Collect the next 1-3 lines as potential address lines
-                    // NATIONAL ID: Address can span:
+                    // Collect the next 1-4 lines as potential address lines
+                    // NATIONAL ID / UMID: Address can span:
                     //   1 line: "DAVAO CITY"
                     //   2 lines: "Street/Barangay" + "City/Province"
                     //   3 lines: "Street" + "Barangay" + "City/Province"
+                    //   4 lines: "House/Block/Lot" + "Street" + "Barangay" + "City/Province"
                     const addressLines = [];
-                    const maxAddressLines = 3; // Support up to 3 address lines
+                    const maxAddressLines = 4; // Support up to 4 address lines for UMID
 
                     console.log(`🔍 Checking up to ${maxAddressLines} lines after ADDRESS label...`);
 
@@ -3688,7 +3696,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
 
                     // ═══════════════════════════════════════════════════════════════
-                    // CONCATENATE ADDRESS LINES (Supports 1-3 lines)
+                    // CONCATENATE ADDRESS LINES (Supports 1-4 lines)
                     // ═══════════════════════════════════════════════════════════════
                     // Join all address lines with space to create complete address
                     // This ensures "CITY OF" + "DAVAO" becomes "CITY OF DAVAO"
@@ -3699,10 +3707,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     //            = "MANDUG, CITY OF DAVAO, DAVAO DEL SUR"
                     //   3 lines: "BLK 10" + "MATINA APLAYA" + "DAVAO CITY"
                     //            = "BLK 10 MATINA APLAYA DAVAO CITY"
+                    //   4 lines: "BLK 5 LOT 3" + "PUROK 2" + "BARANGAY MATINA" + "DAVAO CITY"
+                    //            = "BLK 5 LOT 3 PUROK 2 BARANGAY MATINA DAVAO CITY"
                     // ═══════════════════════════════════════════════════════════════
                     if (addressLines.length > 0) {
                         // Log each extracted line
-                        console.log(`📍 Extracting ${addressLines.length}-line National ID address (supports 1-3 lines):`);
+                        console.log(`📍 Extracting ${addressLines.length}-line address (supports 1-4 lines):`);
                         addressLines.forEach((line, idx) => {
                             console.log(`   Address Line ${idx + 1}/${addressLines.length}: "${line}"`);
                         });
@@ -3731,13 +3741,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // ═══════════════════════════════════════════════════════════════════════════════
     // DAVAO CITY VALIDATION - Detects all variants in concatenated multi-line addresses
     // ═══════════════════════════════════════════════════════════════════════════════
-    // This function validates Davao City from CONCATENATED ADDRESS (1-3 lines combined)
-    // Works with addresses extracted from National ID where address may span multiple lines
+    // This function validates Davao City from CONCATENATED ADDRESS (1-4 lines combined)
+    // Works with addresses extracted from National ID and UMID where address may span multiple lines
     //
     // INPUT EXAMPLES (After Concatenation):
     //   1 line:  "DAVAO CITY"
     //   2 lines: "BLK.5 LOT 25 DAGOHOY ST., DDF VILL., MANDUG, CITY OF DAVAO, DAVAO DEL SUR"
     //   3 lines: "BLK 10 LOT 5 PUROK 3 MATINA APLAYA BARANGAY DAVAO CITY DAVAO DEL SUR"
+    //   4 lines: "BLK 5 LOT 3 PUROK 2 BARANGAY MATINA DAVAO CITY DAVAO DEL SUR"
     //
     // DETECTION: Checks for Davao City variants anywhere in the concatenated address
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -5499,6 +5510,8 @@ document.addEventListener('DOMContentLoaded', function () {
             sex: "",
             civilStatus: "",
             city: "",
+            address: "",
+            barangay: "",
             confidence: {}
         };
 
@@ -5547,7 +5560,79 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`⚠️ UMID Gender: Not found`);
         }
 
-        // Extract city
+        // Extract address - MULTI-LINE SUPPORT (1-4 lines concatenated for UMID)
+        extractedData.address = extractMultiLineAddress(lines);
+        if (extractedData.address) {
+            console.log(`📍 UMID Address Extracted: "${extractedData.address}"`);
+        } else {
+            console.log(`⚠️ UMID Address: Not found`);
+        }
+
+        // Extract barangay (PRIORITY for address components)
+        // UMID typically doesn't have "BARANGAY" label, so search through address text
+        let detectedBarangay = null;
+
+        // PRIORITY 1: Extract from position before "Davao City" (MOST RELIABLE for UMID)
+        if (extractedData.address) {
+            detectedBarangay = extractBarangayFromAddressPosition(extractedData.address);
+
+            if (detectedBarangay) {
+                console.log(`🏘️ UMID Barangay Extracted (Position-based): "${detectedBarangay}"`);
+            } else {
+                console.log(`⚠️ UMID Barangay (Position-based): Not found`);
+            }
+        }
+
+        // PRIORITY 2: Full text search in extracted address (fallback)
+        if (!detectedBarangay && extractedData.address) {
+            detectedBarangay = extractBarangayFromAddress(extractedData.address);
+
+            if (detectedBarangay) {
+                console.log(`🏘️ UMID Barangay Extracted (Text search): "${detectedBarangay}"`);
+            } else {
+                console.log(`⚠️ UMID Barangay (Text search): Not found`);
+            }
+        }
+
+        // PRIORITY 3: Try label-based extraction (rare but possible)
+        if (!detectedBarangay) {
+            const barangayResult = extractFieldValue(lines, 'barangay');
+            if (barangayResult && barangayResult.value) {
+                detectedBarangay = barangayResult.value.trim();
+                console.log(`🏘️ UMID Barangay Extracted (Label-based): "${detectedBarangay}"`);
+            } else {
+                console.log(`⚠️ UMID Barangay (Label-based): Not found`);
+            }
+        }
+
+        // PRIORITY 4: Search through ALL OCR text as last resort
+        if (!detectedBarangay) {
+            const fullText = text || lines.join(' ');
+
+            // Try positional extraction on full text first
+            detectedBarangay = extractBarangayFromAddressPosition(fullText);
+
+            // If still not found, try full text search
+            if (!detectedBarangay) {
+                detectedBarangay = extractBarangayFromAddress(fullText);
+            }
+
+            if (detectedBarangay) {
+                console.log(`🏘️ UMID Barangay Extracted (Full text search): "${detectedBarangay}"`);
+            } else {
+                console.log(`⚠️ UMID Barangay (Full text search): Not found`);
+            }
+        }
+
+        // Store the detected barangay
+        if (detectedBarangay) {
+            extractedData.barangay = detectedBarangay;
+            console.log(`✅ UMID Barangay FINAL: "${extractedData.barangay}"`);
+        } else {
+            console.log(`❌ UMID Barangay NOT DETECTED`);
+        }
+
+        // Extract city (legacy - address is now preferred for Davao verification)
         extractedData.city = extractUMIDCity(lines);
 
         // Store extracted data for debugging
@@ -5638,13 +5723,17 @@ document.addEventListener('DOMContentLoaded', function () {
             extractedData.sex,
             extractedData.civilStatus,
             extractedData.suffix,
-            "",
+            extractedData.barangay,
             text,
             'umid',
             overallConfidence
         );
 
-        // Check if it's Davao City using CONCATENATED ADDRESS (supports multi-line)
+        // Check if it's Davao City using CONCATENATED ADDRESS (supports 1-4 line addresses)
+        // The system intelligently:
+        // 1. Concatenates 1-4 lines of address from UMID
+        // 2. Searches for barangay in the complete address text
+        // 3. Detects all Davao City variants (DAVAO CITY, CITY OF DAVAO, DVO CITY, etc.)
         const isDavaoCityResult = isDavaoCity(extractedData.address);
         showDavaoVerificationResult(isDavaoCityResult, extractedData.address, 'umid');
     }
