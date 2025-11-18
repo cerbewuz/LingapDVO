@@ -3518,6 +3518,99 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // Extract Address From Lines (Pattern-Based - No Label Required)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // For UMID cards that don't have an ADDRESS label, this scans ALL OCR lines
+    // and finds address patterns based on keywords and concatenates them
+    // ═══════════════════════════════════════════════════════════════════════════
+    function extractAddressFromLines(lines) {
+        console.log(`🔍 Pattern-based address extraction: Scanning ${lines.length} lines...`);
+
+        // Address keywords that indicate a line is part of an address
+        const addressKeywords = [
+            'BARANGAY', 'BRGY', 'BARRIO',
+            'DAVAO', 'CITY',
+            'STREET', 'ST', 'AVENUE', 'AVE', 'ROAD', 'RD', 'BOULEVARD', 'BLVD',
+            'BLOCK', 'BLK', 'LOT',
+            'PUROK', 'SITIO', 'ZONE', 'DISTRICT',
+            'SUBDIVISION', 'SUBD', 'VILLAGE', 'VILL',
+            'DEL SUR', 'DEL NORTE', 'ORIENTAL', 'OCCIDENTAL',
+            'PROVINCE', 'MUNICIPALITY'
+        ];
+
+        const addressLines = [];
+        let consecutiveNonAddressLines = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line || line.length === 0) continue;
+
+            const upperLine = line.toUpperCase();
+
+            // Skip if line is clearly a label (contains only label text)
+            const isLabel = /^(ADDRESS|TIRAHAN|NAME|PANGALAN|BIRTHDATE|KAPANGANAKAN|SEX|KASARIAN|GENDER)[\s:]*$/i.test(line);
+            if (isLabel) {
+                console.log(`   Line ${i + 1}: SKIPPED (label) - "${line}"`);
+                continue;
+            }
+
+            // Skip if line looks like a person name (and doesn't have address keywords)
+            const hasAddressKeyword = addressKeywords.some(kw => upperLine.includes(kw));
+            const looksLikeName = /^[A-Z\s\-',]+$/.test(line) &&
+                                  line.split(/\s+/).length <= 4 &&
+                                  line.length < 50 &&
+                                  !hasAddressKeyword;
+
+            if (looksLikeName) {
+                console.log(`   Line ${i + 1}: SKIPPED (looks like name) - "${line}"`);
+                consecutiveNonAddressLines++;
+                if (consecutiveNonAddressLines >= 2 && addressLines.length > 0) {
+                    // If we found some address lines and then hit 2+ non-address lines, stop
+                    console.log(`   Stopping: Found ${consecutiveNonAddressLines} consecutive non-address lines`);
+                    break;
+                }
+                continue;
+            }
+
+            // Check if this line contains address keywords
+            if (hasAddressKeyword) {
+                console.log(`   Line ${i + 1}: ✅ ADDRESS LINE - "${line}"`);
+                addressLines.push(line);
+                consecutiveNonAddressLines = 0;
+            } else if (addressLines.length > 0 && consecutiveNonAddressLines < 1) {
+                // If we've already found address lines, include nearby lines (might be continuation)
+                // But only if they have some address-like characteristics
+                const hasNumbers = /\d/.test(line);
+                const hasComma = line.includes(',');
+                if (hasNumbers || hasComma || line.length > 10) {
+                    console.log(`   Line ${i + 1}: ✅ ADDRESS LINE (continuation) - "${line}"`);
+                    addressLines.push(line);
+                    consecutiveNonAddressLines = 0;
+                } else {
+                    consecutiveNonAddressLines++;
+                }
+            } else {
+                consecutiveNonAddressLines++;
+            }
+
+            // Stop after collecting up to 4 address lines
+            if (addressLines.length >= 4) {
+                console.log(`   Stopping: Collected 4 address lines`);
+                break;
+            }
+        }
+
+        if (addressLines.length > 0) {
+            const concatenated = addressLines.join(' ').replace(/\s+/g, ' ').trim();
+            console.log(`✅ Pattern-based extraction found ${addressLines.length} line(s): "${concatenated}"`);
+            return concatenated;
+        }
+
+        console.log(`❌ Pattern-based extraction: No address lines found`);
+        return "";
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // Extract Multi-Line Address (SAME-LINE + 1-4 Lines Support)
     // ═══════════════════════════════════════════════════════════════════════════
     // Philippine National IDs and UMID have address in various formats:
@@ -5594,7 +5687,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Extract address - MULTI-LINE SUPPORT (1-4 lines concatenated for UMID)
+        // ROBUST APPROACH: Try labeled extraction first, then pattern-based if needed
         extractedData.address = extractMultiLineAddress(lines);
+
+        // If labeled extraction failed, do smart pattern-based scan of ALL lines
+        if (!extractedData.address || extractedData.address.trim().length === 0) {
+            console.log(`⚠️ No labeled ADDRESS found, scanning all lines for address patterns...`);
+            extractedData.address = extractAddressFromLines(lines);
+        }
+
         if (extractedData.address) {
             console.log(`📍 UMID Address Extracted: "${extractedData.address}"`);
         } else {
