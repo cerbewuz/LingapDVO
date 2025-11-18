@@ -338,16 +338,23 @@
                 {
                     <input asp-for="ContactNo" type="text" class="form-control readonly-field" id="contactNoInput"
                            value="@ViewBag.Phonenumber"
-                           placeholder="+639XXXXXXXXX or 09XXXXXXXXX" readonly>
+                           placeholder="09123456789"
+                           pattern="[0-9]{11}"
+                           maxlength="11"
+                           inputmode="numeric"
+                           readonly>
                 }
                 else
                 {
                     <input asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
                            value="@ViewBag.Phonenumber"
-                           placeholder="+639XXXXXXXXX or 09XXXXXXXXX">
+                           placeholder="09123456789"
+                           pattern="[0-9]{11}"
+                           maxlength="11"
+                           inputmode="numeric">
                 }
                 <span asp-validation-for="ContactNo"></span>
-                <small class="text-muted">Format: +639XXXXXXXXX or 09XXXXXXXXX</small>
+                <small class="text-muted">Format: 09123456789 (11 digits)</small>
             </div>
 
             <script>
@@ -356,45 +363,12 @@
                 contactNoInput.addEventListener('input', function(e) {
                     let value = this.value;
 
-                    // Handle +639 format (international)
-                    if (value.startsWith('+639') || value.startsWith('+63')) {
-                        // Keep the + and digits only
-                        value = value.replace(/[^\+\d]/g, '');
-                        // Limit to +639XXXXXXXXX (13 chars total)
-                        if (value.length > 13) {
-                            value = value.substring(0, 13);
-                        }
-                    }
-                    // Handle 639 format (without +)
-                    else if (value.startsWith('639') || value.startsWith('63')) {
-                        // Keep digits only
-                        value = value.replace(/\D/g, '');
-                        // Limit to 639XXXXXXXXX (12 chars total)
-                        if (value.length > 12) {
-                            value = value.substring(0, 12);
-                        }
-                    }
-                    // Handle 09 format (local)
-                    else if (value.startsWith('09') || value.startsWith('0')) {
-                        // Keep digits only
-                        value = value.replace(/\D/g, '');
-                        // Limit to 09XXXXXXXXX (11 chars total)
-                        if (value.length > 11) {
-                            value = value.substring(0, 11);
-                        }
-                    }
-                    // Handle 9 format (just the number part)
-                    else if (/^9/.test(value)) {
-                        // Keep digits only
-                        value = value.replace(/\D/g, '');
-                        // Limit to 9XXXXXXXXX (10 chars total)
-                        if (value.length > 10) {
-                            value = value.substring(0, 10);
-                        }
-                    }
-                    else {
-                        // Default: remove non-digit and non-plus characters
-                        value = value.replace(/[^\+\d]/g, '');
+                    // Only accept numeric digits
+                    value = value.replace(/\D/g, '');
+
+                    // Limit to 11 digits (09XXXXXXXXX format)
+                    if (value.length > 11) {
+                        value = value.substring(0, 11);
                     }
 
                     this.value = value;
@@ -405,23 +379,11 @@
                     const value = this.value.trim();
                     if (!value) return; // Skip validation if empty
 
-                    // Accept formats: +639XXXXXXXXX (13), 639XXXXXXXXX (12), 09XXXXXXXXX (11), 9XXXXXXXXX (10)
-                    const validFormats = [
-                        /^\+639\d{9}$/,    // +639XXXXXXXXX
-                        /^639\d{9}$/,      // 639XXXXXXXXX
-                        /^09\d{9}$/,       // 09XXXXXXXXX
-                        /^9\d{9}$/         // 9XXXXXXXXX
-                    ];
+                    // Only accept 09XXXXXXXXX format (11 digits)
+                    const validFormat = /^09\d{9}$/;
 
-                    const isValid = validFormats.some(regex => regex.test(value));
-
-                    if (!isValid) {
-                        alert("Please enter a valid Philippine mobile number:\n" +
-                              "Accepted formats:\n" +
-                              "• +639XXXXXXXXX\n" +
-                              "• 639XXXXXXXXX\n" +
-                              "• 09XXXXXXXXX\n" +
-                              "• 9XXXXXXXXX");
+                    if (!validFormat.test(value)) {
+                        alert("Please enter a valid Philippine mobile number in format: 09123456789 (11 digits)");
                         this.focus();
                     }
                 });
@@ -815,6 +777,21 @@
         <br />
 </form>
 
+<!-- Compact Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body text-center p-4">
+                <div class="success-checkmark mb-3">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">Success!</h5>
+                <p class="text-muted mb-0 small">Your application has been submitted successfully.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- For zooming photo -->
 <!-- Add this modal HTML at the end of your form container but before the closing </div> -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
@@ -845,88 +822,22 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div class="modal fade" id="successModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <!-- Success Icon with Animation -->
-                    <div class="success-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-
-                    <!-- Success Message -->
-                    <h5 class="modal-title" id="successModalLabel">Application Submitted Successfully!</h5>
-                    <p class="modal-description">
-                        Your Funeral and Burial Assistance application has been received.
-                        <br>We'll review it within 1-2 hours and get back to you with a decision.
-                    </p>
-
-                    <!-- Countdown Timer -->
-                    <div class="countdown-container">
-                        <div class="d-flex align-items-center justify-content-center gap-2">
-                            <i class="fas fa-clock text-success"></i>
-                            <span class="text-muted">Redirecting in</span>
-                            <span class="countdown-number" id="countdown">3</span>
-                            <span class="text-muted">seconds</span>
-                        </div>
-                    </div>
-
-                    <!-- Manual Redirect Button -->
-                    <button type="button" class="btn btn-success btn-go-home" onclick="redirectToHomepage()">
-                        <i class="fas fa-home me-2"></i>Go to Homepage Now
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- JS Scripts -->
     <script>
-        // Function to show success modal and redirect
-        function showSuccessModal() {
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            successModal.show();
-
-            let countdown = 3;
-            const countdownElement = document.getElementById('countdown');
-            const countdownInterval = setInterval(() => {
-                countdown--;
-                countdownElement.textContent = countdown;
-
-                if (countdown <= 0) {
-                    clearInterval(countdownInterval);
-                    redirectToHomepage();
-                }
-            }, 1000);
-        }
-
-        // Function to redirect to homepage
-        function redirectToHomepage() {
-            window.location.href = '/Home';
-        }
-
-        // Function to check if form was submitted successfully and show modal
+        // Function to check if form was submitted successfully and show compact modal
         function checkFormSubmission() {
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const success = urlParams.get('success');
-
             @if (ViewBag.Success != null && ViewBag.Success == true)
             {
-                    <text>
-                    setTimeout(() => {
-                        showSuccessModal();
-                    }, 500); // Small delay to ensure page is fully loaded
-                    </text>
-            }
+                <text>
+                // Show compact success modal
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
 
-            // Alternative: Check for hidden field in form (if form posts to same page)
-            const formSubmitted = document.querySelector('input[name="FormSubmitted"]');
-            if (formSubmitted && formSubmitted.value === 'true') {
+                // Auto-redirect after 2 seconds
                 setTimeout(() => {
-                    showSuccessModal();
-                }, 500);
+                    window.location.href = '/Home';
+                }, 2000);
+                </text>
             }
         }
 
@@ -1310,178 +1221,45 @@
         });
     </script>
 
+    <!-- Compact Success Modal Styles -->
     <style>
-    /* Success Modal Styles - Enhanced Design with Proper Z-Index */
-    #successModal {
-        z-index: 99999 !important;
-        isolation: isolate;
-    }
-
-    #successModal.show {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-    }
-
-    #successModal .modal-dialog {
-        z-index: 100000 !important;
-        position: relative;
-        margin: 0 auto;
-    }
-
-    /* Bootstrap modal backdrop - direct child of body */
-    .modal-backdrop {
-        z-index: 99998 !important;
-        background-color: rgba(0, 0, 0, 0.5) !important;
-    }
-
-    .modal-backdrop.show {
-        opacity: 1 !important;
-        backdrop-filter: blur(4px) !important;
-        -webkit-backdrop-filter: blur(4px) !important;
-    }
-
-    #successModal .modal-content {
-        border-radius: 20px;
-        border: none;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        overflow: hidden;
-        background: #ffffff;
-        position: relative;
-        z-index: 100001;
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        will-change: transform;
-        isolation: isolate;
-    }
-
-    #successModal .modal-body {
-        padding: 3rem 2rem;
-        position: relative;
-    }
-
-    /* Success Icon Animation */
-    #successModal .success-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        animation: successPulse 2s ease-in-out infinite;
-        box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
-    }
-
-    #successModal .success-icon i {
-        font-size: 2.5rem;
-        color: white;
-        animation: checkmark 0.6s ease-in-out;
-    }
-
-    @@keyframes successPulse {
-        0%, 100% {
-            transform: scale(1);
-            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+        #successModal .modal-content {
+            border-radius: 16px;
+            overflow: hidden;
         }
-        50% {
-            transform: scale(1.05);
-            box-shadow: 0 8px 30px rgba(40, 167, 69, 0.6);
+
+        #successModal .success-checkmark i {
+            animation: checkmarkPop 0.5s ease-out;
         }
-    }
 
-    @@keyframes checkmark {
-        0% {
-            transform: scale(0) rotate(-45deg);
-            opacity: 0;
+        @@keyframes checkmarkPop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
-        50% {
-            transform: scale(1.2) rotate(10deg);
+
+        #successModal .modal-dialog {
+            animation: slideDown 0.3s ease-out;
         }
-        100% {
-            transform: scale(1) rotate(0deg);
-            opacity: 1;
+
+        @@keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
-    }
-
-    #successModal .modal-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #28a745;
-        margin-bottom: 0.75rem;
-    }
-
-    #successModal .modal-description {
-        color: #6c757d;
-        font-size: 1rem;
-        line-height: 1.6;
-    }
-
-    #successModal .countdown-container {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 1rem;
-        margin: 1.5rem 0;
-        border: 2px dashed #dee2e6;
-    }
-
-    #successModal .countdown-number {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #28a745;
-        font-family: 'Courier New', monospace;
-    }
-
-    #successModal .btn-go-home {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        border: none;
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-    }
-
-    #successModal .btn-go-home:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-    }
-
-    .modal.fade .modal-dialog {
-        transform: scale(0.7) translateY(-50px);
-        opacity: 0;
-        transition: all 0.3s ease-out;
-    }
-
-    .modal.show .modal-dialog {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
-
-    /* Decorative elements */
-    #successModal .modal-body::before {
-        content: '';
-        position: absolute;
-        top: -50px;
-        right: -50px;
-        width: 150px;
-        height: 150px;
-        background: radial-gradient(circle, rgba(40, 167, 69, 0.1) 0%, transparent 70%);
-        border-radius: 50%;
-    }
-
-    #successModal .modal-body::after {
-        content: '';
-        position: absolute;
-        bottom: -50px;
-        left: -50px;
-        width: 150px;
-        height: 150px;
-        background: radial-gradient(circle, rgba(32, 201, 151, 0.1) 0%, transparent 70%);
-        border-radius: 50%;
-    }
     </style>
 
     <style>
@@ -1922,57 +1700,7 @@ const contactNoInput = document.getElementById('contactNoInput');
                         });
 
 
-// Function to show success modal and redirect
-        function showSuccessModal() {
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            successModal.show();
-
-            let countdown = 2;
-            const countdownElement = document.getElementById('countdown');
-            const countdownInterval = setInterval(() => {
-                countdown--;
-                countdownElement.textContent = countdown;
-
-                if (countdown <= 0) {
-                    clearInterval(countdownInterval);
-                    redirectToHomepage();
-                }
-            }, 1000);
-        }
-
-        // Function to redirect to homepage
-        function redirectToHomepage() {
-            window.location.href = '/Home';
-        }
-
-        // Function to check if form was submitted successfully and show modal
-        function checkFormSubmission() {
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const success = urlParams.get('success');
-
-            @if (ViewBag.Success != null && ViewBag.Success == true)
-            {
-                    <text>
-                    setTimeout(() => {
-                        showSuccessModal();
-                    }, 500); // Small delay to ensure page is fully loaded
-                    </text>
-            }
-
-            // Alternative: Check for hidden field in form (if form posts to same page)
-            const formSubmitted = document.querySelector('input[name="FormSubmitted"]');
-            if (formSubmitted && formSubmitted.value === 'true') {
-                setTimeout(() => {
-                    showSuccessModal();
-                }, 500);
-            }
-        }
-
-        // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            checkFormSubmission();
-        });
+// Success modal functions removed - controller handles redirect
 
 document.addEventListener('DOMContentLoaded', function() {
             // Make all preview images clickable to open modal

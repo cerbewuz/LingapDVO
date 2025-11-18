@@ -1117,11 +1117,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Independent extraction function for Gender/Sex
     function extractGender(lines) {
+        console.log('🚻 Starting gender extraction...');
 
         // Try using extractFieldValue first for labeled fields
         const result = extractFieldValue(lines, 'gender');
         if (result && result.value) {
             let value = result.value.toUpperCase().trim();
+            console.log(`   Found gender label with value: "${result.value}"`);
 
             // Remove any remaining Filipino/English label fragments
             value = value
@@ -1131,18 +1133,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 .replace(/[\/:]/g, '')
                 .trim();
 
+            console.log(`   Cleaned value: "${value}"`);
 
             // Normalize the value to Male/Female
             // Check for Male indicators (M, MALE, LALAKI)
             if (/\bM\b/.test(value) || value.includes('MALE') || value.includes('LALAKI')) {
+                console.log(`   ✅ Gender detected: MALE`);
                 return 'Male';
             }
             // Check for Female indicators (F, FEMALE, BABAE)
             if (/\bF\b/.test(value) || value.includes('FEMALE') || value.includes('BABAE')) {
+                console.log(`   ✅ Gender detected: FEMALE`);
                 return 'Female';
             }
 
         }
+
+        console.log('   Label-based extraction failed, trying line-by-line scan...');
 
         // Fallback: Search all lines for gender patterns
         for (const line of lines) {
@@ -1158,6 +1165,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 upper === 'M' ||
                 upper === 'MALE' ||
                 upper === 'LALAKI') {
+                console.log(`   ✅ Gender detected (fallback): MALE from line: "${line}"`);
                 return 'Male';
             }
 
@@ -1170,10 +1178,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 upper === 'F' ||
                 upper === 'FEMALE' ||
                 upper === 'BABAE') {
+                console.log(`   ✅ Gender detected (fallback): FEMALE from line: "${line}"`);
                 return 'Female';
             }
         }
 
+        console.log('   ⚠️ Gender not detected');
         return "";
     }
 
@@ -2332,31 +2342,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
         lastAPICallTime = now;
 
-        // Realistic and aesthetic progress messages
-        const progressMessages = [
-            { percent: 5, message: '<i class="fas fa-upload fa-spin mr-2"></i>Uploading image to OCR engine...' },
-            { percent: 15, message: '<i class="fas fa-image fa-pulse mr-2"></i>Preprocessing image...' },
-            { percent: 30, message: '<i class="fas fa-search fa-spin mr-2"></i>Detecting text regions...' },
-            { percent: 70, message: '<i class="fas fa-spell-check fa-spin mr-2"></i>Extracting text data...' },
-            { percent: 85, message: '<i class="fas fa-check-double fa-pulse mr-2"></i>Validating extracted data...' },
-            { percent: 100, message: '<i class="fas fa-check-circle fa-pulse mr-2 text-green-600"></i>OCR processing complete' }
+        // Realistic progress messages matching actual OCR process
+        const ocrProgressMessages = [
+            { percent: 10, message: '<i class="fas fa-upload fa-spin mr-2"></i>Uploading ID image to OCR server...' },
+            { percent: 25, message: '<i class="fas fa-cog fa-spin mr-2"></i>Processing image with OCR engine...' },
+            { percent: 45, message: '<i class="fas fa-search fa-spin mr-2"></i>Detecting and recognizing text...' }
         ];
 
         let currentMessageIndex = 0;
-        status.innerHTML = progressMessages[0].message;
+        status.innerHTML = ocrProgressMessages[0].message;
         progressBar.classList.remove('hidden');
-        progress.style.width = progressMessages[0].percent + '%';
+        progress.style.width = ocrProgressMessages[0].percent + '%';
 
-        // Smooth, realistic progress simulation
+        // Show OCR progress with realistic timing
         const progressInterval = setInterval(() => {
-            if (currentMessageIndex < progressMessages.length - 1) {
+            if (currentMessageIndex < ocrProgressMessages.length - 1) {
                 currentMessageIndex++;
-                progress.style.width = progressMessages[currentMessageIndex].percent + '%';
-                status.innerHTML = progressMessages[currentMessageIndex].message;
-            } else {
-                clearInterval(progressInterval);
+                progress.style.width = ocrProgressMessages[currentMessageIndex].percent + '%';
+                status.innerHTML = ocrProgressMessages[currentMessageIndex].message;
             }
-        }, 400); // Slightly slower for better readability
+        }, 800); // Realistic timing for OCR API calls (typically 2-4 seconds)
 
         // OCR.space API configuration
         const apiKey = 'K89892384288957';
@@ -2382,11 +2387,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const result = await response.json();
             clearInterval(progressInterval);
-            if (progress) progress.style.width = '100%';
 
-            // Set status to complete
+            // Update progress: OCR text extraction complete
+            if (progress) progress.style.width = '60%';
             if (status) {
-                status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600"></i>OCR processing complete';
+                status.innerHTML = '<i class="fas fa-file-alt fa-pulse mr-2"></i>Text extracted, analyzing ID type...';
             }
 
             if (result.OCRExitCode !== 1 || !result.ParsedResults || result.ParsedResults.length === 0) {
@@ -2402,6 +2407,11 @@ document.addEventListener('DOMContentLoaded', function () {
             // Log all extracted OCR text to console for debugging
 
             // === STEP 1: ID TYPE DETECTION ===
+            if (status) {
+                status.innerHTML = '<i class="fas fa-id-card fa-pulse mr-2"></i>Detecting ID type...';
+            }
+            if (progress) progress.style.width = '70%';
+
             const detectedIdType = detectIdType(cleanedText);
             const selectedIdType = documentType.value;
 
@@ -2419,7 +2429,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 documentType.value = detectedIdType;
                 const detectionConfidence = 90;
                 updateIDTypeDisplay(detectedIdType, detectionConfidence);
-                status.innerHTML = `<i class="fas fa-check-circle mr-2"></i>Auto-detected: ${getIdTypeName(detectedIdType)}`;
+                if (status) {
+                    status.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-600"></i>ID Type: ${getIdTypeName(detectedIdType)}`;
+                }
+                if (progress) progress.style.width = '75%';
             }
 
             // Use detected type (auto-detection mode)
@@ -2468,6 +2481,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
             // === STEP 2 & 3: Parse ID, Validate Name, Extract Data ===
+            if (status) {
+                status.innerHTML = '<i class="fas fa-user-check fa-pulse mr-2"></i>Extracting personal information...';
+            }
+            if (progress) progress.style.width = '85%';
+
             if (idTypeToProcess === "driver-license") {
                 if (!isBack) {
                     parseDriverLicenseFront(cleanedText);
@@ -2487,6 +2505,9 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 showOCRErrorModal('Unable to detect ID type. Please ensure the image is clear and contains a valid Philippine ID.');
             }
+
+            // Note: Final progress update to 100% is handled by updateFormFieldsAdvanced()
+            // after all data extraction and validation is complete
 
         } catch (err) {
             clearInterval(progressInterval);
@@ -3140,6 +3161,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // Extract gender using unified function with label matching
         extractedData.sex = extractGender(lines);
         extractedData.confidence.sex = extractedData.sex ? 90 : 0;
+        if (extractedData.sex) {
+            console.log(`📋 Driver's License Gender Extracted: "${extractedData.sex}"`);
+        } else {
+            console.log(`⚠️ Driver's License Gender: Not found`);
+        }
 
         // Extract address - MULTI-LINE SUPPORT
         extractedData.address = extractMultiLineAddress(lines);
@@ -3222,6 +3248,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // === STEP 1.5: VALIDATE EXTRACTED DATA (NO LABELS AS VALUES) ===
         const dataValidation = validateExtractedNames(extractedData);
         if (!dataValidation.valid) {
+            // Hide progress bar on validation error
+            if (progressBar) {
+                progressBar.classList.add('hidden');
+            }
+            if (status) {
+                status.innerHTML = '<i class="fas fa-exclamation-circle mr-2 text-red-600"></i>Extraction failed - invalid data detected';
+                status.className = 'text-sm text-red-600 mt-2 font-semibold';
+            }
 
             if (resultBox) {
                 resultBox.classList.remove('hidden');
@@ -3240,6 +3274,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // === STEP 2: NAME MATCHING VALIDATION (CRITICAL) ===
+        if (status) {
+            status.innerHTML = '<i class="fas fa-user-check fa-pulse mr-2"></i>Validating name match...';
+        }
+        if (progress) progress.style.width = '90%';
+
         const nameValidation = validateNameMatch(
             extractedData.firstName,
             extractedData.middleName,
@@ -3249,6 +3288,15 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         if (!nameValidation.matches) {
+            // Hide progress bar on name mismatch
+            if (progressBar) {
+                progressBar.classList.add('hidden');
+            }
+            if (status) {
+                status.innerHTML = '<i class="fas fa-exclamation-circle mr-2 text-red-600"></i>Name validation failed';
+                status.className = 'text-sm text-red-600 mt-2 font-semibold';
+            }
+
             showNameMismatchModal(
                 nameValidation.details ? nameValidation.details.extractedName : `${extractedData.lastName}, ${extractedData.firstName} ${extractedData.middleName}`,
                 nameValidation.details ? nameValidation.details.registeredName : `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName}`,
@@ -3259,6 +3307,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         // === STEP 3: DATA EXTRACTION & POPULATION ===
+        if (status) {
+            status.innerHTML = '<i class="fas fa-database fa-pulse mr-2"></i>Populating form fields...';
+        }
+        if (progress) progress.style.width = '95%';
+
         updateFormFieldsAdvanced(
             extractedData.idNumber,
             extractedData.firstName,
@@ -4906,6 +4959,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // === STEP 1.5: VALIDATE EXTRACTED DATA (NO LABELS AS VALUES) ===
         const dataValidation = validateExtractedNames(extractedData);
         if (!dataValidation.valid) {
+            // Hide progress bar on validation error
+            if (progressBar) {
+                progressBar.classList.add('hidden');
+            }
+            if (status) {
+                status.innerHTML = '<i class="fas fa-exclamation-circle mr-2 text-red-600"></i>Extraction failed - invalid data detected';
+                status.className = 'text-sm text-red-600 mt-2 font-semibold';
+            }
 
             if (resultBox) {
                 resultBox.classList.remove('hidden');
@@ -4924,6 +4985,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // === STEP 2: NAME MATCHING VALIDATION (CRITICAL) ===
+        if (status) {
+            status.innerHTML = '<i class="fas fa-user-check fa-pulse mr-2"></i>Validating name match...';
+        }
+        if (progress) progress.style.width = '90%';
+
         const nameValidation = validateNameMatch(
             extractedData.firstName,
             extractedData.middleName,
@@ -4932,6 +4998,15 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         if (!nameValidation.matches) {
+            // Hide progress bar on name mismatch
+            if (progressBar) {
+                progressBar.classList.add('hidden');
+            }
+            if (status) {
+                status.innerHTML = '<i class="fas fa-exclamation-circle mr-2 text-red-600"></i>Name validation failed';
+                status.className = 'text-sm text-red-600 mt-2 font-semibold';
+            }
+
             showNameMismatchModal(
                 nameValidation.details ? nameValidation.details.extractedName : `${extractedData.lastName}, ${extractedData.firstName} ${extractedData.middleName}`,
                 nameValidation.details ? nameValidation.details.registeredName : `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName}`,
@@ -4942,6 +5017,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         // === STEP 3: DATA EXTRACTION & POPULATION ===
+        if (status) {
+            status.innerHTML = '<i class="fas fa-database fa-pulse mr-2"></i>Populating form fields...';
+        }
+        if (progress) progress.style.width = '95%';
+
         updateFormFieldsAdvanced(
             extractedData.idNumber,
             extractedData.firstName,
@@ -5461,6 +5541,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // Extract gender using unified function with label matching
         extractedData.sex = extractGender(lines);
         extractedData.confidence.sex = extractedData.sex ? 90 : 0;
+        if (extractedData.sex) {
+            console.log(`📋 UMID Gender Extracted: "${extractedData.sex}"`);
+        } else {
+            console.log(`⚠️ UMID Gender: Not found`);
+        }
 
         // Extract city
         extractedData.city = extractUMIDCity(lines);
@@ -5481,6 +5566,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // === STEP 1.5: VALIDATE EXTRACTED DATA (NO LABELS AS VALUES) ===
         const dataValidation = validateExtractedNames(extractedData);
         if (!dataValidation.valid) {
+            // Hide progress bar on validation error
+            if (progressBar) {
+                progressBar.classList.add('hidden');
+            }
+            if (status) {
+                status.innerHTML = '<i class="fas fa-exclamation-circle mr-2 text-red-600"></i>Extraction failed - invalid data detected';
+                status.className = 'text-sm text-red-600 mt-2 font-semibold';
+            }
 
             if (resultBox) {
                 resultBox.classList.remove('hidden');
@@ -5499,6 +5592,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // === STEP 2: NAME MATCHING VALIDATION (CRITICAL) ===
+        if (status) {
+            status.innerHTML = '<i class="fas fa-user-check fa-pulse mr-2"></i>Validating name match...';
+        }
+        if (progress) progress.style.width = '90%';
+
         const nameValidation = validateNameMatch(
             extractedData.firstName,
             extractedData.middleName,
@@ -5507,6 +5605,15 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         if (!nameValidation.matches) {
+            // Hide progress bar on name mismatch
+            if (progressBar) {
+                progressBar.classList.add('hidden');
+            }
+            if (status) {
+                status.innerHTML = '<i class="fas fa-exclamation-circle mr-2 text-red-600"></i>Name validation failed';
+                status.className = 'text-sm text-red-600 mt-2 font-semibold';
+            }
+
             showNameMismatchModal(
                 nameValidation.details ? nameValidation.details.extractedName : `${extractedData.lastName}, ${extractedData.firstName} ${extractedData.middleName}`,
                 nameValidation.details ? nameValidation.details.registeredName : `${registeredLastName}, ${registeredFirstName} ${registeredMiddleName}`,
@@ -5517,6 +5624,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         // === STEP 3: DATA EXTRACTION & POPULATION ===
+        if (status) {
+            status.innerHTML = '<i class="fas fa-database fa-pulse mr-2"></i>Populating form fields...';
+        }
+        if (progress) progress.style.width = '95%';
+
         updateFormFieldsAdvanced(
             extractedData.idNumber,
             extractedData.firstName,
@@ -6532,6 +6644,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (sex && genderField) {
                 genderField.value = sex;
+                console.log(`✅ Gender field populated with: "${sex}"`);
+            } else {
+                if (!sex) {
+                    console.log(`⚠️ Gender field NOT populated - no gender value provided`);
+                } else if (!genderField) {
+                    console.log(`⚠️ Gender field NOT populated - gender field element not found`);
+                }
             }
 
             // Auto-populate barangay - prioritize extracted barangay, fallback to address extraction
@@ -6631,7 +6750,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Update status to "Completed" with green styling (NO continuous animation)
             if (status) {
                 // Use pulse animation temporarily, then remove it after 2 seconds
-                status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600 animate-pulse" id="status-icon"></i><strong>Completed</strong> - Data extraction successful';
+                status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600 animate-pulse" id="status-icon"></i><strong>Verification Complete</strong> - ID information extracted and validated';
                 status.className = 'text-sm text-green-600 mt-2 font-semibold animate-fadeIn';
 
                 // Stop pulse animation after 2 seconds

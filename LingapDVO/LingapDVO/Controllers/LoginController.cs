@@ -2377,6 +2377,114 @@ namespace LingapDVO.Controllers
             };
         }
 
+        // ╔═══════════════════════════════════════════════════════════════════════════╗
+        // ║                        SMS TEST ENDPOINT (DEBUG)                          ║
+        // ║     Use this to test iProg SMS API configuration and connectivity         ║
+        // ╚═══════════════════════════════════════════════════════════════════════════╝
+        [HttpGet]
+        public async Task<IActionResult> TestSms(string phone = "")
+        {
+            if (string.IsNullOrEmpty(phone))
+            {
+                return Content(@"
+                    <html>
+                    <head><title>SMS Test</title></head>
+                    <body style='font-family: Arial; padding: 20px;'>
+                        <h2>📱 iProg SMS API Test</h2>
+                        <form method='get'>
+                            <label>Phone Number (09XXXXXXXXX or 639XXXXXXXXX):</label><br>
+                            <input type='text' name='phone' placeholder='09123456789' style='padding: 8px; width: 300px;' required><br><br>
+                            <button type='submit' style='padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;'>
+                                Send Test SMS
+                            </button>
+                        </form>
+                        <br><hr>
+                        <p><strong>Current Configuration:</strong></p>
+                        <ul>
+                            <li>API URL: " + _configuration["SMSSettings:ApiUrl"] + @"</li>
+                            <li>API Key: " + (_configuration["SMSSettings:ApiKey"]?.Substring(0, 10) ?? "NOT SET") + @"...</li>
+                            <li>Provider: " + _configuration["SMSSettings:DefaultProvider"] + @"</li>
+                        </ul>
+                    </body>
+                    </html>
+                ", "text/html");
+            }
+
+            // Send test SMS
+            string testMessage = "🧪 TEST SMS from LingapDVO\n\n" +
+                                "This is a test message to verify iProg SMS API configuration.\n\n" +
+                                "If you received this, SMS is working correctly!\n\n" +
+                                "LingapDVO System";
+
+            try
+            {
+                bool result = await _smsService.SendSmsAsync(phone, testMessage);
+
+                if (result)
+                {
+                    return Content($@"
+                        <html>
+                        <head><title>SMS Test Result</title></head>
+                        <body style='font-family: Arial; padding: 20px;'>
+                            <h2 style='color: green;'>✅ SMS Sent Successfully!</h2>
+                            <p><strong>Phone:</strong> {phone}</p>
+                            <p><strong>Status:</strong> Message sent to iProg API</p>
+                            <p>Check the phone {phone} for the test message.</p>
+                            <p>Also check the application logs for detailed API response.</p>
+                            <br>
+                            <a href='/TestSms' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none;'>
+                                Test Another Number
+                            </a>
+                        </body>
+                        </html>
+                    ", "text/html");
+                }
+                else
+                {
+                    return Content($@"
+                        <html>
+                        <head><title>SMS Test Result</title></head>
+                        <body style='font-family: Arial; padding: 20px;'>
+                            <h2 style='color: red;'>❌ SMS Failed to Send</h2>
+                            <p><strong>Phone:</strong> {phone}</p>
+                            <p><strong>Status:</strong> Failed</p>
+                            <p><strong>Possible reasons:</strong></p>
+                            <ul>
+                                <li>Insufficient credits in iProg account</li>
+                                <li>Invalid API token</li>
+                                <li>Invalid phone number format</li>
+                                <li>Network/connectivity issues</li>
+                            </ul>
+                            <p><strong>Check application logs for detailed error information.</strong></p>
+                            <br>
+                            <a href='/TestSms' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none;'>
+                                Try Again
+                            </a>
+                        </body>
+                        </html>
+                    ", "text/html");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content($@"
+                    <html>
+                    <head><title>SMS Test Error</title></head>
+                    <body style='font-family: Arial; padding: 20px;'>
+                        <h2 style='color: red;'>⚠️ Exception Occurred</h2>
+                        <p><strong>Error:</strong> {ex.Message}</p>
+                        <p><strong>Stack Trace:</strong></p>
+                        <pre style='background: #f5f5f5; padding: 10px; overflow: auto;'>{ex.StackTrace}</pre>
+                        <br>
+                        <a href='/TestSms' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none;'>
+                            Try Again
+                        </a>
+                    </body>
+                    </html>
+                ", "text/html");
+            }
+        }
+
         // Password validation result class
         public class PasswordValidationResult
         {

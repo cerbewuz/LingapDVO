@@ -16,8 +16,11 @@ namespace LingapDVO.Models
         [Required, MaxLength(100)]
         public string Email { get; set; } = "";
 
-        [Required, MaxLength(100)]
+        [Required]
+        [MaxLength(100)]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "Phone number must be 11 digits (e.g., 09123456789)")]
         public string Phonenumber { get; set; } = "";
+
         [Required, MaxLength(250)]
         public string Password { get; set; } = "";
 

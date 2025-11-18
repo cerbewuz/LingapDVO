@@ -615,20 +615,33 @@
     <!-- Google Sign-In Confirmation Modal -->
     <div class="modal-overlay-enhanced" id="googleConfirmationModal" style="display: none;">
         <div class="modal-content-enhanced modal-info">
-            <div class="modal-icon-wrapper info-icon-wrapper">
-                <div class="info-icon-animated">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <div class="info-circle"></div>
-                </div>
+
+            <!-- BIG WARNING ICON (Heroicons Outline) -->
+            <div class="modal-icon-wrapper info-icon-wrapper flex items-center justify-center py-4">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="2.5"
+                     stroke="currentColor"
+                     class="text-red-600 w-32 h-32 sm:w-40 sm:h-40">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M12 9v4m0 4h.01M10.478 3.332c.777-1.34 2.768-1.34
+                         3.545 0l8.163 14.086c.75 1.296-.195 2.914-1.773
+                         2.914H4.089c-1.578 0-2.523-1.618-1.773-2.914L10.478 3.332z" />
+                </svg>
             </div>
+
             <h3 class="modal-title text-lg sm:text-xl mb-3 sm:mb-4">
                 Important: Google Account Name Verification
             </h3>
+
             <div class="modal-content-scrollable">
                 <p class="modal-subtitle">
                     <i class="fas fa-info-circle text-blue-500 mr-2"></i>
                     Before proceeding, please confirm:
                 </p>
+
                 <ul class="modal-list">
                     <li class="modal-list-item">
                         <i class="fas fa-check-circle text-green-500"></i>
@@ -648,6 +661,7 @@
                     </li>
                 </ul>
             </div>
+
             <div class="modal-actions">
                 <button onclick="closeGoogleConfirmation()" class="modal-button modal-button-secondary">
                     <i class="fas fa-times mr-2"></i>Cancel

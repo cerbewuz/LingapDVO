@@ -78,6 +78,7 @@ namespace LingapDVO.Models
 
         public string? RelationshipPatient { get; set; } = "";
 
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "Contact number must be 11 digits (e.g., 09123456789)")]
         public string? ContactNo { get; set; } = "";
 
         //Requestor's Details

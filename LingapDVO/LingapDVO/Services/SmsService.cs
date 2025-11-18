@@ -69,28 +69,31 @@ namespace LingapDVO.Services
 
                 _logger.LogInformation($"   Normalized phone: {normalizedPhone}");
 
-                // Build query string according to iProg API documentation
-                var url = $"{apiUrl}?api_token={apiKey}" +
-                          $"&phone_number={normalizedPhone}" +
-                          $"&message={Uri.EscapeDataString(message)}" +
-                          $"&sms_provider={defaultProvider}";
-
-                // Add sender_id if configured
-                if (!string.IsNullOrEmpty(senderId))
+                // Build JSON payload according to iProg API documentation
+                var payload = new
                 {
-                    url += $"&sender_id={Uri.EscapeDataString(senderId)}";
-                }
+                    api_token = apiKey,
+                    phone_number = normalizedPhone,
+                    message = message,
+                    sms_provider = defaultProvider
+                };
 
                 _logger.LogInformation($"   Sending POST request to iProg API...");
-                _logger.LogInformation($"   Full URL (without token): {apiUrl}?phone_number={normalizedPhone}&message=[message]&sms_provider={defaultProvider}&sender_id={senderId}");
+                _logger.LogInformation($"   Payload: phone_number={normalizedPhone}, message_length={message.Length}, sms_provider={defaultProvider}");
 
-                var response = await _httpClient.PostAsync(url, null);
+                var jsonContent = System.Text.Json.JsonSerializer.Serialize(payload);
+                var httpContent = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(apiUrl, httpContent);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorDetails = await response.Content.ReadAsStringAsync();
                     _logger.LogError($"❌ Failed to send SMS. Status Code: {response.StatusCode}");
                     _logger.LogError($"   Response: {errorDetails}");
+                    _logger.LogError($"   Phone: {normalizedPhone}");
+                    _logger.LogError($"   API URL: {apiUrl}");
+                    _logger.LogError($"   Token present: {!string.IsNullOrEmpty(apiKey)}");
                     return false;
                 }
 
