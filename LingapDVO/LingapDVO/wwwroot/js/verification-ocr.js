@@ -3518,33 +3518,43 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Extract Multi-Line Address (1-4 Lines Support)
+    // Extract Multi-Line Address (SAME-LINE + 1-4 Lines Support)
     // ═══════════════════════════════════════════════════════════════════════════
-    // Philippine National IDs and UMID have address spanning 1-4 lines after ADDRESS label
+    // Philippine National IDs and UMID have address in various formats:
+    // - UMID: Often on SAME LINE as label ("ADDRESS: MANDUG, DAVAO CITY")
+    // - National ID: Often spanning 1-4 lines AFTER the ADDRESS label
     // This function extracts and concatenates ALL address lines for Davao City detection
     //
     // SUPPORTED FORMATS:
     //
+    // SAME-LINE ADDRESS (UMID Common Format):
+    //   ADDRESS: MANDUG, DAVAO CITY
+    //   Result: "MANDUG, DAVAO CITY"
+    //
     // 1-LINE ADDRESS:
-    //   ADDRESS: DAVAO CITY
+    //   ADDRESS:
+    //   DAVAO CITY
     //   Result: "DAVAO CITY"
     //
-    // 2-LINE ADDRESS (Most Common):
-    //   ADDRESS: BLK.5 LOT 25 DAGOHOY ST., DDF VILL., MANDUG, CITY OF
-    //            DAVAO, DAVAO DEL SUR
+    // 2-LINE ADDRESS (Most Common for National ID):
+    //   ADDRESS:
+    //   BLK.5 LOT 25 DAGOHOY ST., DDF VILL., MANDUG, CITY OF
+    //   DAVAO, DAVAO DEL SUR
     //   Result: "BLK.5 LOT 25 DAGOHOY ST., DDF VILL., MANDUG, CITY OF DAVAO, DAVAO DEL SUR"
     //
     // 3-LINE ADDRESS:
-    //   ADDRESS: BLK 10 LOT 5 PUROK 3
-    //            MATINA APLAYA BARANGAY
-    //            DAVAO CITY DAVAO DEL SUR
+    //   ADDRESS:
+    //   BLK 10 LOT 5 PUROK 3
+    //   MATINA APLAYA BARANGAY
+    //   DAVAO CITY DAVAO DEL SUR
     //   Result: "BLK 10 LOT 5 PUROK 3 MATINA APLAYA BARANGAY DAVAO CITY DAVAO DEL SUR"
     //
     // 4-LINE ADDRESS (UMID Support):
-    //   ADDRESS: BLK 5 LOT 3
-    //            PUROK 2
-    //            BARANGAY MATINA
-    //            DAVAO CITY DAVAO DEL SUR
+    //   ADDRESS:
+    //   BLK 5 LOT 3
+    //   PUROK 2
+    //   BARANGAY MATINA
+    //   DAVAO CITY DAVAO DEL SUR
     //   Result: "BLK 5 LOT 3 PUROK 2 BARANGAY MATINA DAVAO CITY DAVAO DEL SUR"
     //
     // ═══════════════════════════════════════════════════════════════════════════
@@ -3568,12 +3578,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Collect the next 1-4 lines as potential address lines
                     // NATIONAL ID / UMID: Address can span:
+                    //   SAME LINE: "ADDRESS: MANDUG, DAVAO CITY" (UMID common format)
                     //   1 line: "DAVAO CITY"
                     //   2 lines: "Street/Barangay" + "City/Province"
                     //   3 lines: "Street" + "Barangay" + "City/Province"
                     //   4 lines: "House/Block/Lot" + "Street" + "Barangay" + "City/Province"
                     const addressLines = [];
                     const maxAddressLines = 4; // Support up to 4 address lines for UMID
+
+                    // ═══════════════════════════════════════════════════════════════
+                    // CRITICAL FIX: Check if address is on SAME LINE as label
+                    // ═══════════════════════════════════════════════════════════════
+                    // UMID format: "ADDRESS: MANDUG, DAVAO CITY"
+                    // National ID format: "ADDRESS:" then next line has address
+                    // ═══════════════════════════════════════════════════════════════
+                    const labelIndex = upperLine.indexOf(label);
+                    const afterLabel = line.substring(labelIndex + label.length).trim();
+
+                    // Remove common separators (colon, dash, etc.)
+                    const cleanAfterLabel = afterLabel.replace(/^[:\-\s]+/, '').trim();
+
+                    if (cleanAfterLabel.length > 0) {
+                        // Address value is on the SAME line as the label
+                        console.log(`📍 ✅ SAME-LINE ADDRESS DETECTED: "${cleanAfterLabel}"`);
+                        addressLines.push(cleanAfterLabel);
+                    } else {
+                        console.log(`📍 Label only on this line, checking next lines...`);
+                    }
 
                     console.log(`🔍 Checking up to ${maxAddressLines} lines after ADDRESS label...`);
 
@@ -3696,12 +3727,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
 
                     // ═══════════════════════════════════════════════════════════════
-                    // CONCATENATE ADDRESS LINES (Supports 1-4 lines)
+                    // CONCATENATE ADDRESS LINES (Supports same-line + 1-4 multi-lines)
                     // ═══════════════════════════════════════════════════════════════
                     // Join all address lines with space to create complete address
                     // This ensures "CITY OF" + "DAVAO" becomes "CITY OF DAVAO"
                     //
                     // Examples:
+                    //   SAME LINE: "ADDRESS: MANDUG, DAVAO CITY"
+                    //              = "MANDUG, DAVAO CITY"
                     //   1 line:  "DAVAO CITY"
                     //   2 lines: "MANDUG, CITY OF" + "DAVAO, DAVAO DEL SUR"
                     //            = "MANDUG, CITY OF DAVAO, DAVAO DEL SUR"
@@ -3712,7 +3745,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // ═══════════════════════════════════════════════════════════════
                     if (addressLines.length > 0) {
                         // Log each extracted line
-                        console.log(`📍 Extracting ${addressLines.length}-line address (supports 1-4 lines):`);
+                        console.log(`📍 Extracting ${addressLines.length}-line address (supports same-line + multi-line):`);
                         addressLines.forEach((line, idx) => {
                             console.log(`   Address Line ${idx + 1}/${addressLines.length}: "${line}"`);
                         });
