@@ -711,10 +711,10 @@
                             <option value="date-asc">Oldest First</option>
                             <option value="name-asc">Name A-Z</option>
                             <option value="name-desc">Name Z-A</option>
-                            <option value="type-asc">Type A-Z</option>
+                            @* <option value="type-asc">Type A-Z</option>
                             <option value="type-desc">Type Z-A</option>
                             <option value="status-asc">Status A-Z</option>
-                            <option value="status-desc">Status Z-A</option>
+                            <option value="status-desc">Status Z-A</option> *@
                         </select>
                     </div>
                 </div>
@@ -869,22 +869,22 @@
                         return sortedApplications.sort((a, b) => a.name.localeCompare(b.name));
                     case 'name-desc':
                         return sortedApplications.sort((a, b) => b.name.localeCompare(a.name));
-                    case 'type-asc':
-                        return sortedApplications.sort((a, b) => a.type.localeCompare(b.type));
-                    case 'type-desc':
-                        return sortedApplications.sort((a, b) => b.type.localeCompare(a.type));
-                    case 'status-asc':
-                        return sortedApplications.sort((a, b) => {
-                            const statusA = getDisplayStatus(a);
-                            const statusB = getDisplayStatus(b);
-                            return statusA.localeCompare(statusB);
-                        });
-                    case 'status-desc':
-                        return sortedApplications.sort((a, b) => {
-                            const statusA = getDisplayStatus(a);
-                            const statusB = getDisplayStatus(b);
-                            return statusB.localeCompare(statusA);
-                        });
+                    // case 'type-asc':
+                    //     return sortedApplications.sort((a, b) => a.type.localeCompare(b.type));
+                    // case 'type-desc':
+                    //     return sortedApplications.sort((a, b) => b.type.localeCompare(a.type));
+                    // case 'status-asc':
+                    //     return sortedApplications.sort((a, b) => {
+                    //         const statusA = getDisplayStatus(a);
+                    //         const statusB = getDisplayStatus(b);
+                    //         return statusA.localeCompare(statusB);
+                    //     });
+                    // case 'status-desc':
+                    //     return sortedApplications.sort((a, b) => {
+                    //         const statusA = getDisplayStatus(a);
+                    //         const statusB = getDisplayStatus(b);
+                    //         return statusB.localeCompare(statusA);
+                    //     });
                     default:
                         return sortedApplications.sort((a, b) => b.createdAt - a.createdAt);
                 }

@@ -112,6 +112,68 @@ document.addEventListener('DOMContentLoaded', function () {
         submitButton.title = '';
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // PHONE NUMBER AUTO-FORMATTING (09123456789)
+    // ═══════════════════════════════════════════════════════════════
+    const phoneNumberField = document.getElementById('phonenumber');
+    if (phoneNumberField) {
+        phoneNumberField.addEventListener('input', function (e) {
+            let value = e.target.value;
+
+            // Remove all non-numeric characters
+            value = value.replace(/\D/g, '');
+
+            // Limit to 11 digits
+            if (value.length > 11) {
+                value = value.substring(0, 11);
+            }
+
+            // Set the value as-is (no dashes)
+            e.target.value = value;
+        });
+
+        // Also format on paste
+        phoneNumberField.addEventListener('paste', function (e) {
+            setTimeout(() => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 11) {
+                    value = value.substring(0, 11);
+                }
+                e.target.value = value;
+            }, 10);
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // VALID SUFFIXES LIST - Only these suffixes will be recognized
+    // ═══════════════════════════════════════════════════════════════
+    // Any suffix not in this list will be ignored and the suffix field
+    // will be set to "None" (which equals empty string in database)
+    const VALID_SUFFIXES = [
+        'JR', 'JR.', 'JUNIOR',
+        'SR', 'SR.', 'SENIOR',
+        'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+        'I', '1ST', '2ND', '3RD', '4TH', '5TH',
+        'FIRST', 'SECOND', 'THIRD', 'FOURTH', 'FIFTH'
+    ];
+
+    // Normalized suffix mapping (e.g., JUNIOR -> JR, SENIOR -> SR)
+    const SUFFIX_NORMALIZATION = {
+        'JUNIOR': 'JR',
+        'JR.': 'JR',
+        'SENIOR': 'SR',
+        'SR.': 'SR',
+        '1ST': 'I',
+        '2ND': 'II',
+        '3RD': 'III',
+        '4TH': 'IV',
+        '5TH': 'V',
+        'FIRST': 'I',
+        'SECOND': 'II',
+        'THIRD': 'III',
+        'FOURTH': 'IV',
+        'FIFTH': 'V'
+    };
 
     // Enhanced: List of known Filipino compound/double surnames and name particles
     const COMPOUND_NAMES = [
@@ -884,6 +946,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Independent extraction function for Suffix
+    // CASE-INSENSITIVE: Handles all letter casings (jr, Jr, JR, jR all → "JR")
     function extractSuffix(lines, alreadyParsedFromFirstName = "") {
 
         // If already extracted from first name field, use that
@@ -895,29 +958,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = extractFieldValue(lines, 'suffix');
         if (result && result.value) {
             let value = cleanName(result.value);
+            const upperValue = value.toUpperCase().trim(); // Convert to uppercase for matching
 
-            // Validate it's actually a suffix (not a label or other text)
-            const validSuffixes = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'JUNIOR', 'SENIOR'];
-            const upperValue = value.toUpperCase().trim();
-
-            if (validSuffixes.includes(upperValue)) {
-                // Normalize
-                if (upperValue === 'JUNIOR') value = 'JR';
-                if (upperValue === 'SENIOR') value = 'SR';
-                return value;
+            // Validate it's actually a suffix from VALID_SUFFIXES list (not a label or other text)
+            if (VALID_SUFFIXES.includes(upperValue) || VALID_SUFFIXES.includes(upperValue + '.')) {
+                // Normalize using mapping or keep as-is (always returns uppercase)
+                return SUFFIX_NORMALIZATION[upperValue] || upperValue;
             } else {
+                // Not a valid suffix, return empty string
             }
         }
 
-        // Fallback: Try finding suffix patterns in lines
-        const suffixPatterns = /\b(JR|SR|II|III|IV|V|JUNIOR|SENIOR)\b/i;
+        // Fallback: Try finding suffix patterns in lines (create regex from VALID_SUFFIXES)
+        // Regex flag 'i' makes it case-insensitive (matches jr, Jr, JR, jR, etc.)
+        const suffixPattern = new RegExp('\\b(' + VALID_SUFFIXES.filter(s => !s.includes('.')).join('|') + ')\\b', 'i');
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            const match = line.match(suffixPatterns);
+            const match = line.match(suffixPattern);
 
             if (match) {
-                let suffix = match[1].toUpperCase();
+                let suffix = match[1].toUpperCase(); // Convert to uppercase for normalization
 
                 // STRICT VALIDATION: Check context
                 const upperLine = line.toUpperCase();
@@ -977,9 +1038,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 // VALIDATION PASSED: This appears to be a legitimate suffix
-                // Normalize
-                if (suffix === 'JUNIOR') suffix = 'JR';
-                if (suffix === 'SENIOR') suffix = 'SR';
+                // Normalize using mapping or keep as-is
+                suffix = SUFFIX_NORMALIZATION[suffix] || suffix;
 
                 return suffix;
             }
@@ -1129,16 +1189,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
-        // === STEP 1: Check for suffix at the end ===
-        const suffixPatterns = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'JUNIOR', 'SENIOR'];
+        // === STEP 1: Check for suffix at the end (ONLY from VALID_SUFFIXES list) ===
+        // CASE-INSENSITIVE: All suffix matching is case-insensitive
+        // Examples: "jr", "Jr", "JR", "jR" all match and normalize to "JR"
+        //           "iii", "III", "Iii" all match and normalize to "III"
         let workingWords = [...words];  // Create copy to avoid modifying original
 
-        const lastWord = workingWords[workingWords.length - 1].toUpperCase().replace(/\./g, '');
-        if (suffixPatterns.includes(lastWord)) {
-            // Normalize suffix (JUNIOR -> JR, SENIOR -> SR)
-            suffix = lastWord === 'JUNIOR' ? 'JR' : (lastWord === 'SENIOR' ? 'SR' : lastWord);
+        const lastWord = workingWords[workingWords.length - 1].toUpperCase().replace(/\./g, '').trim();
+
+        // Check if the last word is a valid suffix from VALID_SUFFIXES (case-insensitive)
+        if (VALID_SUFFIXES.includes(lastWord) || VALID_SUFFIXES.includes(lastWord + '.')) {
+            // Normalize suffix using mapping or keep as-is
+            // Result will always be uppercase (JR, SR, I, II, III, etc.) to match dropdown values
+            suffix = SUFFIX_NORMALIZATION[lastWord] || lastWord;
             workingWords = workingWords.slice(0, -1);  // Remove suffix from working words
         }
+        // If not in valid suffixes list, leave suffix empty (will become "None" in the form)
 
         // === STEP 2: Handle edge case - no words left after suffix removal ===
         if (workingWords.length === 0) {
@@ -2292,10 +2358,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }, 400); // Slightly slower for better readability
 
-        const apiKey = 'K87899142388957';
+        // OCR.space API configuration
+        const apiKey = 'K89892384288957';
         const apiUrl = 'https://api.ocr.space/parse/image';
 
-        // Create form data with OPTIMIZED settings for Philippine IDs
+        // Create form data with optimized settings for Philippine IDs
         const formData = new FormData();
         formData.append('base64Image', imageSrc);
         formData.append('language', 'eng');
@@ -2305,10 +2372,6 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('OCREngine', '2');
         formData.append('isTable', 'false');
         formData.append('filetype', 'PNG');
-        formData.append('iscreatesearchablepdf', 'false');
-        formData.append('issearchablepdfhidetextlayer', 'false');
-        formData.append('detectCheckbox', 'false');
-        formData.append('checkboxtemplate', '0');
         formData.append('apikey', apiKey);
 
         try {
@@ -3211,9 +3274,9 @@ document.addEventListener('DOMContentLoaded', function () {
             overallConfidence
         );
 
-        // Check if it's Davao City
-        const isDavaoCity = checkIfDavaoCity(extractedData.city);
-        showDavaoVerificationResult(isDavaoCity, extractedData.city, 'driver-license');
+        // Check if it's Davao City using CONCATENATED ADDRESS (supports multi-line)
+        const isDavaoCityResult = isDavaoCity(extractedData.address);
+        showDavaoVerificationResult(isDavaoCityResult, extractedData.address, 'driver-license');
     }
 
     // Extract Driver's License Number
@@ -3401,20 +3464,37 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
-    // Extract Multi-Line Address
-    // Philippine IDs often have address spanning 2-3 lines after the ADDRESS label
-    // Example:
-    //   Line X: ADDRESS / TIRAHAN
-    //   Line X+1: Block 5 Lot 10 Main Street Green Valley Village Barangay Poblacion
-    //   Line X+2: Davao City Davao del Sur
-    // Result: "Block 5 Lot 10 Main Street Green Valley Village Barangay Poblacion Davao City Davao del Sur"
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Extract Multi-Line Address (1-3 Lines Support)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Philippine National IDs have address spanning 1-3 lines after ADDRESS label
+    // This function extracts and concatenates ALL address lines for Davao City detection
+    //
+    // SUPPORTED FORMATS:
+    //
+    // 1-LINE ADDRESS:
+    //   ADDRESS: DAVAO CITY
+    //   Result: "DAVAO CITY"
+    //
+    // 2-LINE ADDRESS (Most Common):
+    //   ADDRESS: BLK.5 LOT 25 DAGOHOY ST., DDF VILL., MANDUG, CITY OF
+    //            DAVAO, DAVAO DEL SUR
+    //   Result: "BLK.5 LOT 25 DAGOHOY ST., DDF VILL., MANDUG, CITY OF DAVAO, DAVAO DEL SUR"
+    //
+    // 3-LINE ADDRESS:
+    //   ADDRESS: BLK 10 LOT 5 PUROK 3
+    //            MATINA APLAYA BARANGAY
+    //            DAVAO CITY DAVAO DEL SUR
+    //   Result: "BLK 10 LOT 5 PUROK 3 MATINA APLAYA BARANGAY DAVAO CITY DAVAO DEL SUR"
+    //
+    // ═══════════════════════════════════════════════════════════════════════════
     function extractMultiLineAddress(lines) {
 
         const addressLabels = FIELD_LABELS.address || [];
         if (addressLabels.length === 0) {
+            console.log(`⚠️ No address labels configured`);
             return "";
         }
-
 
         // Find the address label
         for (let i = 0; i < lines.length; i++) {
@@ -3424,16 +3504,25 @@ document.addEventListener('DOMContentLoaded', function () {
             // Check if this line contains an address label
             for (const label of addressLabels) {
                 if (upperLine.includes(label)) {
+                    console.log(`📍 Found ADDRESS label at line ${i + 1}: "${line}"`);
 
-                    // Collect the next 2-3 lines as potential address lines
+                    // Collect the next 1-3 lines as potential address lines
+                    // NATIONAL ID: Address can span:
+                    //   1 line: "DAVAO CITY"
+                    //   2 lines: "Street/Barangay" + "City/Province"
+                    //   3 lines: "Street" + "Barangay" + "City/Province"
                     const addressLines = [];
-                    const maxAddressLines = 3; // Address can span up to 3 lines
+                    const maxAddressLines = 3; // Support up to 3 address lines
+
+                    console.log(`🔍 Checking up to ${maxAddressLines} lines after ADDRESS label...`);
 
                     for (let j = i + 1; j < Math.min(i + 1 + maxAddressLines, lines.length); j++) {
                         const nextLine = lines[j].trim();
+                        console.log(`\n🔎 Checking line ${j + 1}: "${nextLine}"`);
 
                         // Skip completely empty lines
                         if (!nextLine || nextLine.length === 0) {
+                            console.log(`   ⏭️ SKIPPED: Empty line`);
                             continue;
                         }
 
@@ -3460,6 +3549,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             upperNextLine.includes('NAME OF');
 
                         if (isNameLabel) {
+                            console.log(`   ❌ STOPPED: Name label detected`);
                             break;
                         }
 
@@ -3473,6 +3563,20 @@ document.addEventListener('DOMContentLoaded', function () {
                         // - Not too long (names are typically < 50 chars)
                         const isLikelyName = (text) => {
                             const cleanText = text.trim();
+
+                            // FIRST: Check if line contains address keywords
+                            // If it has address keywords, it's NOT a name (even if it has comma)
+                            const addressKeywords = ['STREET', 'ST', 'BLVD', 'BOULEVARD', 'AVENUE', 'AVE', 'ROAD', 'RD',
+                                'BLOCK', 'LOT', 'BLK', 'BARANGAY', 'BRGY', 'CITY', 'DAVAO',
+                                'SUBDIVISION', 'VILLAGE', 'VILL', 'PUROK', 'SITIO', 'ZONE', 'DISTRICT',
+                                'PROVINCE', 'DEL SUR', 'DEL NORTE', 'ORIENTAL', 'OCCIDENTAL'];
+                            const upperText = cleanText.toUpperCase();
+                            const hasAddressKeyword = addressKeywords.some(kw => upperText.includes(kw));
+
+                            if (hasAddressKeyword) {
+                                // Contains address keywords - definitely NOT a name
+                                return false;
+                            }
 
                             // Name patterns: all caps, 1-4 words, no numbers
                             const wordCount = cleanText.split(/\s+/).length;
@@ -3488,23 +3592,15 @@ document.addEventListener('DOMContentLoaded', function () {
                                 return true;
                             }
 
-                            if (wordCount >= 1 && wordCount <= 3 && isAllCaps && !hasNumbers && !hasSpecialChars) {
-                                // But NOT if it contains address keywords
-                                const addressKeywords = ['STREET', 'ST', 'BLVD', 'AVENUE', 'AVE', 'ROAD', 'RD',
-                                    'BLOCK', 'LOT', 'BLK', 'BARANGAY', 'BRGY', 'CITY', 'DAVAO',
-                                    'SUBDIVISION', 'VILLAGE', 'PUROK', 'SITIO', 'ZONE', 'DISTRICT'];
-                                const upperText = cleanText.toUpperCase();
-                                const hasAddressKeyword = addressKeywords.some(kw => upperText.includes(kw));
-
-                                if (!hasAddressKeyword && cleanText.length < 50) {
-                                    return true;
-                                }
+                            if (wordCount >= 1 && wordCount <= 3 && isAllCaps && !hasNumbers && !hasSpecialChars && cleanText.length < 50) {
+                                return true;
                             }
 
                             return false;
                         };
 
                         if (isLikelyName(nextLine)) {
+                            console.log(`   ⏭️ SKIPPED: Line rejected by isLikelyName() - looks like a person name`);
                             continue; // Skip this line but continue looking for address lines
                         }
 
@@ -3523,23 +3619,53 @@ document.addEventListener('DOMContentLoaded', function () {
                             upperNextLine.includes('NATIONALITY');
 
                         if (isAnotherFieldLabel) {
+                            console.log(`   ❌ STOPPED: Another field label detected (BIRTHDATE/SEX/CIVIL STATUS/etc.)`);
                             break;
                         }
 
                         // Check if line is a label itself (not a value)
                         if (isExtractedTextALabel(nextLine)) {
+                            console.log(`   ❌ STOPPED: Line is a label (detected by isExtractedTextALabel)`);
                             break;
                         }
 
                         // This line appears to be part of the address
+                        console.log(`   ✅ ACCEPTED: Line added as address line ${addressLines.length + 1}`);
                         addressLines.push(nextLine);
                     }
 
-                    // Concatenate all address lines into one complete address
+                    // ═══════════════════════════════════════════════════════════════
+                    // CONCATENATE ADDRESS LINES (Supports 1-3 lines)
+                    // ═══════════════════════════════════════════════════════════════
+                    // Join all address lines with space to create complete address
+                    // This ensures "CITY OF" + "DAVAO" becomes "CITY OF DAVAO"
+                    //
+                    // Examples:
+                    //   1 line:  "DAVAO CITY"
+                    //   2 lines: "MANDUG, CITY OF" + "DAVAO, DAVAO DEL SUR"
+                    //            = "MANDUG, CITY OF DAVAO, DAVAO DEL SUR"
+                    //   3 lines: "BLK 10" + "MATINA APLAYA" + "DAVAO CITY"
+                    //            = "BLK 10 MATINA APLAYA DAVAO CITY"
+                    // ═══════════════════════════════════════════════════════════════
                     if (addressLines.length > 0) {
-                        const completeAddress = addressLines.join(' ');
+                        // Log each extracted line
+                        console.log(`📍 Extracting ${addressLines.length}-line National ID address (supports 1-3 lines):`);
+                        addressLines.forEach((line, idx) => {
+                            console.log(`   Address Line ${idx + 1}/${addressLines.length}: "${line}"`);
+                        });
+
+                        // Concatenate all lines with single space separator
+                        let completeAddress = addressLines.join(' ');
+
+                        // Clean up any extra spaces from concatenation
+                        completeAddress = completeAddress.replace(/\s+/g, ' ').trim();
+
+                        console.log(`📍 ✅ Complete concatenated address (${addressLines.length} line${addressLines.length > 1 ? 's' : ''}): "${completeAddress}"`);
+                        console.log(`📍 Address will be checked for Davao City variants (DAVAO CITY, CITY OF DAVAO, DVO CITY, etc.)`);
+
                         return completeAddress;
                     } else {
+                        console.log(`⚠️ No address lines found after ADDRESS label`);
                         return "";
                     }
                 }
@@ -3547,6 +3673,109 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         return "";
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // DAVAO CITY VALIDATION - Detects all variants in concatenated multi-line addresses
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // This function validates Davao City from CONCATENATED ADDRESS (1-3 lines combined)
+    // Works with addresses extracted from National ID where address may span multiple lines
+    //
+    // INPUT EXAMPLES (After Concatenation):
+    //   1 line:  "DAVAO CITY"
+    //   2 lines: "BLK.5 LOT 25 DAGOHOY ST., DDF VILL., MANDUG, CITY OF DAVAO, DAVAO DEL SUR"
+    //   3 lines: "BLK 10 LOT 5 PUROK 3 MATINA APLAYA BARANGAY DAVAO CITY DAVAO DEL SUR"
+    //
+    // DETECTION: Checks for Davao City variants anywhere in the concatenated address
+    // ═══════════════════════════════════════════════════════════════════════════════
+    function isDavaoCity(address) {
+        if (!address || typeof address !== 'string') {
+            return false;
+        }
+
+        const upperAddress = address.toUpperCase().trim();
+
+        // Comprehensive list of Davao City variants (case-insensitive)
+        const DAVAO_CITY_VARIANTS = [
+            // Standard formats
+            'DAVAO CITY',
+            'DAVAO CITY,',
+            'DAVAO CITY PHILIPPINES',
+            'DAVAO CITY, PHILIPPINES',
+
+            // City of format
+            'CITY OF DAVAO',
+            'CITY OF DAVAO,',
+
+            // Abbreviated formats
+            'DVO CITY',
+            'DVO. CITY',
+            'DVAO CITY',
+            'DABAW CITY',  // Bisaya spelling
+
+            // Simple "Davao" (when not followed by other city names)
+            'DAVAO,',
+            'DAVAO PHILIPPINES',
+            'DAVAO, PHILIPPINES',
+
+            // Common typos/variations
+            'DAVAO CITY PH',
+            'DAVAO CITY PHIL',
+            'DAVAO CITY PHILS',
+            'DAVAO CTY',
+
+            // With Davao del Sur (old format before cityhood)
+            'DAVAO CITY DAVAO DEL SUR',
+            'DAVAO CITY, DAVAO DEL SUR',
+
+            // Region indicator
+            'DAVAO CITY REGION XI',
+            'DAVAO CITY R-XI',
+            'DAVAO CITY XI'
+        ];
+
+        // Check if concatenated address contains any Davao City variant
+        console.log(`🔍 Checking concatenated address for Davao City variants...`);
+        console.log(`   Address to check: "${address.substring(0, 100)}${address.length > 100 ? '...' : ''}"`);
+
+        for (const variant of DAVAO_CITY_VARIANTS) {
+            if (upperAddress.includes(variant)) {
+                console.log(`✅ DAVAO CITY DETECTED: Found "${variant}" in concatenated address`);
+                console.log(`   ✓ Address is from Davao City - ACCEPTED`);
+                return true;
+            }
+        }
+
+        // Special check for standalone "DAVAO" (only if not followed by other cities)
+        const OTHER_DAVAO_CITIES = [
+            'DAVAO DEL NORTE',
+            'DAVAO DEL SUR',
+            'DAVAO DE ORO',
+            'DAVAO OCCIDENTAL',
+            'DAVAO ORIENTAL'
+        ];
+
+        // Check if "DAVAO" appears without other city names
+        if (upperAddress.includes('DAVAO')) {
+            // Make sure it's not referring to other Davao provinces/cities
+            const hasOtherDavaoCity = OTHER_DAVAO_CITIES.some(city => upperAddress.includes(city));
+
+            if (!hasOtherDavaoCity) {
+                // Check if it's not referring to other specific cities in Davao region
+                const otherCities = ['DIGOS', 'TAGUM', 'PANABO', 'SAMAL', 'MATI', 'MACO'];
+                const hasOtherCity = otherCities.some(city => upperAddress.includes(city));
+
+                if (!hasOtherCity) {
+                    console.log(`✅ DAVAO CITY DETECTED: Found standalone "DAVAO" without other city indicators`);
+                    console.log(`   ✓ Address is from Davao City - ACCEPTED`);
+                    return true;
+                }
+            }
+        }
+
+        console.log(`❌ NOT DAVAO CITY: Address does not contain valid Davao City variant`);
+        console.log(`   ✗ Address rejected - not from Davao City`);
+        return false;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -4611,6 +4840,7 @@ document.addEventListener('DOMContentLoaded', function () {
             birthdate: "",
             civilStatus: "",
             city: "",
+            address: "",
             confidence: {}
         };
 
@@ -4649,7 +4879,15 @@ document.addEventListener('DOMContentLoaded', function () {
             extractedData.confidence.birthdate = validation.confidence;
         }
 
-        // Extract city for Davao verification
+        // Extract address - MULTI-LINE SUPPORT (1-3 lines concatenated)
+        extractedData.address = extractMultiLineAddress(lines);
+        if (extractedData.address) {
+            console.log(`📍 National ID Address Extracted: "${extractedData.address}"`);
+        } else {
+            console.log(`⚠️ National ID Address: Not found`);
+        }
+
+        // Extract city for Davao verification (legacy - address is now preferred)
         extractedData.city = extractPhilSysCity(lines);
 
         // Store extracted data for debugging
@@ -4719,9 +4957,9 @@ document.addEventListener('DOMContentLoaded', function () {
             overallConfidence
         );
 
-        // Check if it's Davao City for National ID
-        const isDavaoCity = checkIfDavaoCity(extractedData.city);
-        showDavaoVerificationResult(isDavaoCity, extractedData.city, 'national-id');
+        // Check if it's Davao City using CONCATENATED ADDRESS (supports 1-3 line addresses)
+        const isDavaoCityResult = isDavaoCity(extractedData.address);
+        showDavaoVerificationResult(isDavaoCityResult, extractedData.address, 'national-id');
     }
 
     // Extract PhilSys Number
@@ -5294,9 +5532,9 @@ document.addEventListener('DOMContentLoaded', function () {
             overallConfidence
         );
 
-        // Check if it's Davao City
-        const isDavaoCity = checkIfDavaoCity(extractedData.city);
-        showDavaoVerificationResult(isDavaoCity, extractedData.city, 'umid');
+        // Check if it's Davao City using CONCATENATED ADDRESS (supports multi-line)
+        const isDavaoCityResult = isDavaoCity(extractedData.address);
+        showDavaoVerificationResult(isDavaoCityResult, extractedData.address, 'umid');
     }
 
     // Extract UMID Number (CRN - Common Reference Number)
@@ -6307,9 +6545,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 civilStatusField.value = civilStatus;
             }
 
-            // Update suffix if field exists and value is not "None"
-            if (suffix && suffixField) {
-                suffixField.value = suffix;
+            // Update suffix - set to detected suffix or "None" if empty
+            if (suffixField) {
+                // If suffix is empty or not detected, default to "None"
+                suffixField.value = suffix && suffix.trim() !== '' ? suffix : 'None';
             }
 
             // Enable form submission (location and names validated)

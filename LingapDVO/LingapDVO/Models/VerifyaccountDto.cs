@@ -57,7 +57,9 @@ namespace LingapDVO.Models
         public string District { get; set; } = "";
 
 
-        [Required, MaxLength(100)]
+        [Required]
+        [MaxLength(100)]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "Phone number must be 11 digits (e.g., 09123456789)")]
         public string Phonenumber { get; set; } = "";
 
         [Required, MaxLength(100)]

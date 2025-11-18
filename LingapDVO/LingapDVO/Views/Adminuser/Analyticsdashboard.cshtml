@@ -133,10 +133,10 @@
             width: auto;
         }
 
-        /* When sidebar is hidden, expand content to full width */
-        .main-content-with-sidebar.sidebar-hidden {
-            margin-left: 0;
-        }
+            /* When sidebar is hidden, expand content to full width */
+            .main-content-with-sidebar.sidebar-hidden {
+                margin-left: 0;
+            }
 
         .dashboard-header {
             background: white;
@@ -509,44 +509,45 @@
             white-space: nowrap;
         }
 
-        .priority-alert-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
+            .priority-alert-box:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            }
 
-        .priority-alert-box.high {
-            background: rgba(231, 76, 60, 0.1);
-            color: #e74c3c;
-            border: 1px solid rgba(231, 76, 60, 0.3);
-        }
+            .priority-alert-box.high {
+                background: rgba(231, 76, 60, 0.1);
+                color: #e74c3c;
+                border: 1px solid rgba(231, 76, 60, 0.3);
+            }
 
-        .priority-alert-box.high:hover {
-            background: rgba(231, 76, 60, 0.15);
-        }
+                .priority-alert-box.high:hover {
+                    background: rgba(231, 76, 60, 0.15);
+                }
 
-        .priority-alert-box.medium {
-            background: rgba(243, 156, 18, 0.1);
-            color: #f39c12;
-            border: 1px solid rgba(243, 156, 18, 0.3);
-        }
+            .priority-alert-box.medium {
+                background: rgba(243, 156, 18, 0.1);
+                color: #f39c12;
+                border: 1px solid rgba(243, 156, 18, 0.3);
+            }
 
-        .priority-alert-box.medium:hover {
-            background: rgba(243, 156, 18, 0.15);
-        }
+                .priority-alert-box.medium:hover {
+                    background: rgba(243, 156, 18, 0.15);
+                }
 
-        .priority-alert-box i {
-            font-size: 1rem;
-        }
+            .priority-alert-box i {
+                font-size: 1rem;
+            }
 
-        .priority-alert-box .count {
-            font-weight: 700;
-            font-size: 1rem;
-        }
+            .priority-alert-box .count {
+                font-weight: 700;
+                font-size: 1rem;
+            }
 
         @@keyframes priorityPulse {
             0%, 100% {
                 transform: scale(1);
             }
+
             50% {
                 transform: scale(1.05);
             }
@@ -566,11 +567,11 @@
             transition: all 0.3s ease;
         }
 
-        .claim-metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary);
-        }
+            .claim-metric-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+                border-color: var(--primary);
+            }
 
         .claim-metric-label {
             font-size: 0.9rem;
@@ -715,9 +716,6 @@
             <!-- Header -->
             <div class="dashboard-header">
                 <div style="display: flex; align-items: center;">
-                    <button class="menu-toggle" id="menuToggle">
-                        <i class="bi bi-list"></i>
-                    </button>
                     <div class="header-title">
                         <h1>Analytics Dashboard</h1>
                         <p>Click on any status card below to view detailed applications</p>
@@ -1006,58 +1004,58 @@
             // Add Hospital Assistance following Admin.cshtml pattern
             @foreach (var f in Model.HospitalAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Hospital Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()", // ADDED status3
-                        brgy: "@f.Brgy",
-                        typeassistance: "@f.Typeassistance",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Hospital Assistance",
+                            name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()", // ADDED status3
+                            brgy: "@f.Brgy",
+                            typeassistance: "@f.Typeassistance",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // Add Other Assistance following Admin.cshtml pattern
             @foreach (var f in Model.OtherAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Other Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "@f.Typeassistance",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Other Assistance",
+                            name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            brgy: "@f.Brgy",
+                            typeassistance: "@f.Typeassistance",
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             // Add Funeral Forms following Admin.cshtml pattern
             @foreach (var f in Model.FuneralAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Funeral Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "Funeral Assistance", // Default for funeral forms
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Funeral Assistance",
+                            name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@f.Status?.ToLower()",
+                            status2: "@f.Status2?.ToLower()",
+                            status3: "@f.Status3?.ToLower()",
+                            brgy: "@f.Brgy",
+                            typeassistance: "Funeral Assistance", // Default for funeral forms
+                            formId: @f.Id,
+                            controller: "Dashboard"
+                        });
+                        </text>
             }
 
             originalData = {
@@ -2020,7 +2018,7 @@
         // Global chart variables for new visualizations
         let trendsChart, approvalRateChart, processingTimeChart, statusByTypeChart;
 
-        // Application Trends Over Time
+        // Application Trends Over Time - UPDATED WITH VALUE LABELS
         function updateTrendsChart() {
             const ctx = document.getElementById('trendsChart');
             if (!ctx || !filteredData) return;
@@ -2031,13 +2029,23 @@
             const timeframe = document.getElementById('trendsTimeframe').value;
             const trendsData = processTrendsData(filteredData.allApplications, timeframe);
 
+            // Calculate total counts for each assistance type for the labels
+            const hospitalTotal = trendsData.hospital.reduce((a, b) => a + b, 0);
+            const medicalTotal = trendsData.medical.reduce((a, b) => a + b, 0);
+            const funeralTotal = trendsData.funeral.reduce((a, b) => a + b, 0);
+
+            // Create labels with values as requested: "Hospital Assistance (15 Applications)"
+            const hospitalLabel = `Hospital Assistance (${hospitalTotal} Applications)`;
+            const medicalLabel = `Other Assistance (${medicalTotal} Applications)`;
+            const funeralLabel = `Funeral Assistance (${funeralTotal} Applications)`;
+
             trendsChart = new Chart(context, {
                 type: 'line',
                 data: {
                     labels: trendsData.labels,
                     datasets: [
                         {
-                            label: 'Hospital Bill Assistance',
+                            label: hospitalLabel,
                             data: trendsData.hospital,
                             borderColor: colors.hospital,
                             backgroundColor: colors.hospital + '20',
@@ -2047,7 +2055,7 @@
                             pointHoverRadius: 6
                         },
                         {
-                            label: 'Medical and Laboratory',
+                            label: medicalLabel,
                             data: trendsData.medical,
                             borderColor: colors.medical,
                             backgroundColor: colors.medical + '20',
@@ -2057,7 +2065,7 @@
                             pointHoverRadius: 6
                         },
                         {
-                            label: 'Funeral and Burial',
+                            label: funeralLabel,
                             data: trendsData.funeral,
                             borderColor: colors.funeral,
                             backgroundColor: colors.funeral + '20',
@@ -2088,7 +2096,16 @@
                             mode: 'index',
                             intersect: false,
                             titleFont: { size: 14 },
-                            bodyFont: { size: 14 }
+                            bodyFont: { size: 14 },
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw || 0;
+                                    // Remove the count from label for tooltip to avoid duplication
+                                    const cleanLabel = label.replace(/ \(\d+ Applications\)/, '');
+                                    return `${cleanLabel}: ${value} applications`;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -2210,7 +2227,7 @@
             approvalRateChart = new Chart(context, {
                 type: 'bar',
                 data: {
-                    labels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                    labels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
                     datasets: [
                         {
                             label: 'Approved',
@@ -2328,7 +2345,7 @@
             processingTimeChart = new Chart(context, {
                 type: 'bar',
                 data: {
-                    labels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                    labels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
                     datasets: [{
                         label: 'Average Days',
                         data: processingData.averageDays,
@@ -2419,7 +2436,7 @@
             statusByTypeChart = new Chart(context, {
                 type: 'bar',
                 data: {
-                    labels: ['Hospital Bill', 'Medical/Lab', 'Funeral/Burial'],
+                    labels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
                     datasets: [
                         {
                             label: 'Approved',
@@ -2563,7 +2580,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="claim-metric-card">
-                        <div class="claim-metric-label">Hospital Bill Claims</div>
+                        <div class="claim-metric-label">Hospital Assistance Claims</div>
                         <div class="claim-metric-value" style="color: ${colors.hospital};">${claimData.hospital.rate}%</div>
                         <div class="claim-progress-bar">
                             <div class="claim-progress-fill" style="width: ${claimData.hospital.rate}%; background: ${colors.hospital};"></div>
@@ -2573,7 +2590,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="claim-metric-card">
-                        <div class="claim-metric-label">Medical/Lab Claims</div>
+                        <div class="claim-metric-label">Other Assistance Claims</div>
                         <div class="claim-metric-value" style="color: ${colors.medical};">${claimData.medical.rate}%</div>
                         <div class="claim-progress-bar">
                             <div class="claim-progress-fill" style="width: ${claimData.medical.rate}%; background: ${colors.medical};"></div>
@@ -2583,7 +2600,7 @@
                 </div>
                 <div class="col-md-3">
                     <div class="claim-metric-card">
-                        <div class="claim-metric-label">Funeral/Burial Claims</div>
+                        <div class="claim-metric-label">Funeral Assistance Claims</div>
                         <div class="claim-metric-value" style="color: ${colors.funeral};">${claimData.funeral.rate}%</div>
                         <div class="claim-progress-bar">
                             <div class="claim-progress-fill" style="width: ${claimData.funeral.rate}%; background: ${colors.funeral};"></div>
