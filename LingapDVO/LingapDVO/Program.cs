@@ -73,6 +73,9 @@ builder.Services.AddScoped<FormSubmissionSecurityService>();
 // Session Configuration Service
 builder.Services.AddSingleton<ISessionConfigurationService, SessionConfigurationService>();
 
+// DateTime Service - Philippine Timezone (Asia/Manila, UTC+8)
+builder.Services.AddSingleton<IDateTimeService, DateTimeService>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 

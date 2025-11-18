@@ -23,14 +23,16 @@ namespace LingapDVO.Controllers
         private readonly IConfiguration _configuration;
         private readonly FormSubmissionSecurityService _securityService;
         private readonly ISessionConfigurationService _sessionConfig;
+        private readonly IDateTimeService _dateTimeService;
 
-        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, FormSubmissionSecurityService securityService, ISessionConfigurationService sessionConfig)
+        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, FormSubmissionSecurityService securityService, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService)
         {
             this.context = context;
             this.environment = environment;
             _configuration = configuration;
             _securityService = securityService;
             _sessionConfig = sessionConfig;
+            _dateTimeService = dateTimeService;
         }
     
         public IActionResult Index()
@@ -633,7 +635,7 @@ namespace LingapDVO.Controllers
             string userBackID = HttpContext.Session.GetString("BackID") ?? "";
 
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
-            var oneMonthAgo = DateTime.Now.AddMonths(-1);
+            var oneMonthAgo = _dateTimeService.Now.AddMonths(-1);
 
             // Check for forms with Status = "Approve" within the last month
             var hasRecentApproval = context.HospitalAssistance
@@ -695,7 +697,7 @@ namespace LingapDVO.Controllers
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
                 // Generate unique encrypted timestamp for filenames
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
@@ -783,7 +785,7 @@ namespace LingapDVO.Controllers
                     Status = "Pending",
 
                     // Created Timestamp
-                    CreatedAt = DateTime.Now
+                    CreatedAt = _dateTimeService.Now
                 };
 
                 context.HospitalAssistance.Add(HospitalAssistance);
@@ -1115,7 +1117,7 @@ namespace LingapDVO.Controllers
             try
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeName = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
@@ -1207,7 +1209,7 @@ namespace LingapDVO.Controllers
                 if (!string.IsNullOrEmpty(backID)) existing.ValidBackimage = backID;
 
                 // ? 9. Update timestamp properly
-                existing.CreatedAt = DateTime.Now;
+                existing.CreatedAt = _dateTimeService.Now;
 
                 // ? 10. Save changes
                 context.Entry(existing).State = EntityState.Modified;
@@ -1361,7 +1363,7 @@ namespace LingapDVO.Controllers
             string userBackID = HttpContext.Session.GetString("BackID") ?? "";
 
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
-            var oneMonthAgo = DateTime.Now.AddMonths(-1);
+            var oneMonthAgo = _dateTimeService.Now.AddMonths(-1);
 
             // Check for forms with Status = "Approve" within the last month
             var hasRecentApproval = context.OtherAssistance
@@ -1428,7 +1430,7 @@ namespace LingapDVO.Controllers
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
                 // Generate unique encrypted timestamp for filenames
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
@@ -1533,7 +1535,7 @@ namespace LingapDVO.Controllers
                     Status = "Pending",
 
                     // Created Timestamp
-                    CreatedAt = DateTime.Now
+                    CreatedAt = _dateTimeService.Now
                 };
 
                 context.OtherAssistance.Add(OtherAssistance);
@@ -1884,7 +1886,7 @@ namespace LingapDVO.Controllers
             try
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeName = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
@@ -2044,7 +2046,7 @@ namespace LingapDVO.Controllers
                 existing.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
 
                 // ? 10. Update timestamp properly
-                existing.CreatedAt = DateTime.Now;
+                existing.CreatedAt = _dateTimeService.Now;
 
                 // ? 11. Save changes
                 context.Entry(existing).State = EntityState.Modified;
@@ -2145,7 +2147,7 @@ namespace LingapDVO.Controllers
             string userBackID = HttpContext.Session.GetString("BackID") ?? "";
 
             // FIRST: Check for recently approved forms (cooldown period) - THIS SHOULD BE FIRST
-            var oneMonthAgo = DateTime.Now.AddMonths(-1);
+            var oneMonthAgo = _dateTimeService.Now.AddMonths(-1);
 
             // Check for forms with Status = "Approve" within the last month
             var hasRecentApproval = context.FuneralAssistance
@@ -2213,7 +2215,7 @@ namespace LingapDVO.Controllers
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
                 // Generate unique encrypted timestamp for filenames
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
@@ -2301,7 +2303,7 @@ namespace LingapDVO.Controllers
                     Status = "Pending",
 
                     // Created Timestamp
-                    CreatedAt = DateTime.Now
+                    CreatedAt = _dateTimeService.Now
                 };
 
                 context.FuneralAssistance.Add(FuneralAssistance);
@@ -2607,7 +2609,7 @@ namespace LingapDVO.Controllers
             try
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeName = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
@@ -2742,7 +2744,7 @@ namespace LingapDVO.Controllers
                 existing.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
 
                 // ? 9. Update timestamp properly
-                existing.CreatedAt = DateTime.Now;
+                existing.CreatedAt = _dateTimeService.Now;
 
                 // ? 10. Save changes
                 context.Entry(existing).State = EntityState.Modified;
@@ -2931,7 +2933,7 @@ namespace LingapDVO.Controllers
                         medicalLabForms,
                         funeralForms
                     },
-                    timestamp = DateTime.Now
+                    timestamp = _dateTimeService.Now
                 });
             }
             catch (Exception ex)
@@ -3995,7 +3997,7 @@ namespace LingapDVO.Controllers
             {
                 // Set IP address
                 feedback.IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-                feedback.SubmittedAt = DateTime.UtcNow;
+                feedback.SubmittedAt = _dateTimeService.Now;
 
                 context.Feedbacks.Add(feedback);
                 await context.SaveChangesAsync();

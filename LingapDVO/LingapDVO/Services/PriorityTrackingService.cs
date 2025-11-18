@@ -13,15 +13,18 @@ namespace LingapDVO.Services
         private readonly ApplicationDbContext _context;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ILogger<PriorityTrackingService> _logger;
+        private readonly IDateTimeService _dateTimeService;
 
         public PriorityTrackingService(
             ApplicationDbContext context,
             IHubContext<NotificationHub> hubContext,
-            ILogger<PriorityTrackingService> logger)
+            ILogger<PriorityTrackingService> logger,
+            IDateTimeService dateTimeService)
         {
             _context = context;
             _hubContext = hubContext;
             _logger = logger;
+            _dateTimeService = dateTimeService;
         }
 
         /// <summary>
@@ -79,7 +82,7 @@ namespace LingapDVO.Services
             // Combine all pending/processing applications from all three application types
             var allApplications = medicalApps.Concat(funeralApps).Concat(hospitalApps).ToList();
 
-            var now = DateTime.Now;
+            var now = _dateTimeService.Now;
 
             // Calculate time waiting for each application (hours since submission)
             var waitingTimes = allApplications
@@ -110,14 +113,14 @@ namespace LingapDVO.Services
                     highPriority = high,
                     mediumPriority = medium,
                     totalPriority = total,
-                    timestamp = DateTime.UtcNow
+                    timestamp = _dateTimeService.Now
                 });
 
                 // Also update the sidebar badge count
                 await _hubContext.Clients.Group("AdminUsers").SendAsync("UpdateSidebarBadge", new
                 {
                     count = total,
-                    timestamp = DateTime.UtcNow
+                    timestamp = _dateTimeService.Now
                 });
 
                 _logger.LogInformation($"Priority counts broadcasted: High={high}, Medium={medium}, Total={total}");
@@ -138,7 +141,7 @@ namespace LingapDVO.Services
         {
             try
             {
-                var now = DateTime.Now;
+                var now = _dateTimeService.Now;
                 var twoHoursAgo = now.AddHours(-2);
                 var oneHourAgo = now.AddHours(-1);
 
@@ -160,7 +163,7 @@ namespace LingapDVO.Services
                         applicationType = "Other Assistance",
                         message = GetDelayMessage(priority, hoursElapsed),
                         formId = app.Id,
-                        timestamp = DateTime.UtcNow
+                        timestamp = _dateTimeService.Now
                     });
 
                     _logger.LogInformation($"Delay notification sent to User {app.UserId} for Other Assistance Form {app.Id}");
@@ -184,7 +187,7 @@ namespace LingapDVO.Services
                         applicationType = "Funeral Assistance",
                         message = GetDelayMessage(priority, hoursElapsed),
                         formId = app.Id,
-                        timestamp = DateTime.UtcNow
+                        timestamp = _dateTimeService.Now
                     });
 
                     _logger.LogInformation($"Delay notification sent to User {app.UserId} for Funeral Assistance Form {app.Id}");
@@ -208,7 +211,7 @@ namespace LingapDVO.Services
                         applicationType = "Hospital Assistance",
                         message = GetDelayMessage(priority, hoursElapsed),
                         formId = app.Id,
-                        timestamp = DateTime.UtcNow
+                        timestamp = _dateTimeService.Now
                     });
 
                     _logger.LogInformation($"Delay notification sent to User {app.UserId} for Hospital Assistance Form {app.Id}");
@@ -229,7 +232,7 @@ namespace LingapDVO.Services
             try
             {
                 // For pending applications, calculate wait time using current time
-                var priority = CalculatePriority(applicationDate, DateTime.Now);
+                var priority = CalculatePriority(applicationDate, _dateTimeService.Now);
 
                 // Only notify if medium or high priority
                 if (priority == "medium" || priority == "high")
@@ -240,7 +243,7 @@ namespace LingapDVO.Services
                         applicantName = applicantName,
                         priority = priority,
                         formId = formId,
-                        timestamp = DateTime.UtcNow
+                        timestamp = _dateTimeService.Now
                     });
 
                     _logger.LogInformation($"New priority application notification sent: {applicationType} - {applicantName} ({priority})");
@@ -268,7 +271,7 @@ namespace LingapDVO.Services
                     formId = formId,
                     status = status,
                     applicationType = applicationType,
-                    timestamp = DateTime.UtcNow
+                    timestamp = _dateTimeService.Now
                 });
 
                 _logger.LogInformation($"Status update notification sent to User {userId}: {applicationType} - {status}");

@@ -22,8 +22,9 @@ namespace LingapDVO.Controllers
         private readonly ISessionConfigurationService _sessionConfig;
         private readonly IMultiChannelNotificationService _notificationService;
         private readonly PriorityTrackingService _priorityService;
+        private readonly IDateTimeService _dateTimeService;
 
-        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig, IMultiChannelNotificationService notificationService, PriorityTrackingService priorityService)
+        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig, IMultiChannelNotificationService notificationService, PriorityTrackingService priorityService, IDateTimeService dateTimeService)
         {
             this.context = context;
             this.environment = environment;
@@ -31,6 +32,7 @@ namespace LingapDVO.Controllers
             _sessionConfig = sessionConfig;
             _notificationService = notificationService;
             _priorityService = priorityService;
+            _dateTimeService = dateTimeService;
         }
         public IActionResult Index()
         {
@@ -189,7 +191,7 @@ namespace LingapDVO.Controllers
                 HospitalAssistance.ForCMOPERSONNEL = HospitalAssistanceDto.ForCMOPERSONNEL;
                 HospitalAssistance.Comments = HospitalAssistanceDto.Comments;
                 HospitalAssistance.Processby = HospitalAssistanceDto.Processby;
-                HospitalAssistance.ProcessAt = DateTime.Now;
+                HospitalAssistance.ProcessAt = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -234,7 +236,7 @@ namespace LingapDVO.Controllers
                     APPLICATION DETAILS:
                     • Application Type: Hospital Bill Assistance
                     • Status: Processing
-                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {HospitalAssistanceDto.Comments ?? "N/A"}
@@ -387,7 +389,7 @@ namespace LingapDVO.Controllers
                 OtherAssistance.Status = "Processing";
                 OtherAssistance.Comments = OtherAssistanceDto.Comments;
                 OtherAssistance.Processby = OtherAssistanceDto.Processby;
-                OtherAssistance.ProcessAt = DateTime.Now;
+                OtherAssistance.ProcessAt = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -432,7 +434,7 @@ namespace LingapDVO.Controllers
                     APPLICATION DETAILS:
                     • Application Type: Medical and Laboratory Assistance
                     • Status: Processing
-                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {OtherAssistanceDto.Comments ?? "N/A"}
@@ -583,7 +585,7 @@ namespace LingapDVO.Controllers
                 FuneralAssistance.Status = "Processing";
                 FuneralAssistance.Comments = FuneralAssistanceDto.Comments;
                 FuneralAssistance.Processby = FuneralAssistanceDto.Processby;
-                FuneralAssistance.ProcessAt = DateTime.Now;
+                FuneralAssistance.ProcessAt = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -628,7 +630,7 @@ namespace LingapDVO.Controllers
                     APPLICATION DETAILS:
                     • Application Type: Funeral and Burial Assistance
                     • Status: Processing
-                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {FuneralAssistanceDto.Comments ?? "N/A"}
@@ -3510,7 +3512,7 @@ namespace LingapDVO.Controllers
                 HospitalAssistance.ForCMOPERSONNEL = HospitalAssistanceDto.ForCMOPERSONNEL;
                 HospitalAssistance.Comments = HospitalAssistanceDto.Comments;
                 HospitalAssistance.Processby = HospitalAssistanceDto.Processby;
-                HospitalAssistance.Result = DateTime.Now;
+                HospitalAssistance.Result = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -3560,7 +3562,7 @@ namespace LingapDVO.Controllers
                             • Application Type: Hospital Bill Assistance
                             • Application ID: {HospitalAssistance.Id}
                             • Status: Approve
-                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Date Approved: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {HospitalAssistanceDto.Processby}
 
                             REMARKS:
@@ -3589,7 +3591,7 @@ namespace LingapDVO.Controllers
                                     • Application Type: Hospital Bill Assistance
                                     • Application ID: {HospitalAssistance.Id}
                                     • Status: Disapprove
-                                    • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                                    • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
                                     • Processed By: {HospitalAssistanceDto.Processby}
 
                                     REMARKS:
@@ -3666,7 +3668,7 @@ namespace LingapDVO.Controllers
                 medicallabform.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL;
                 medicallabform.Comments = OtherAssistanceDto.Comments;
                 medicallabform.Processby = OtherAssistanceDto.Processby;
-                medicallabform.Result = DateTime.Now;
+                medicallabform.Result = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -3716,7 +3718,7 @@ namespace LingapDVO.Controllers
                             • Application Type: Medical Assistance
                             • Application ID: {medicallabform.Id}
                             • Status: Approved
-                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Date Approved: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {OtherAssistanceDto.Processby}
 
                             REMARKS:
@@ -3745,7 +3747,7 @@ namespace LingapDVO.Controllers
                             • Application Type: Medical Assistance
                             • Application ID: {medicallabform.Id}
                             • Status: Disapproved
-                            • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {OtherAssistanceDto.Processby}
 
                             REMARKS:
@@ -3822,7 +3824,7 @@ namespace LingapDVO.Controllers
                 FuneralAssistance.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL;
                 FuneralAssistance.Comments = FuneralAssistanceDto.Comments;
                 FuneralAssistance.Processby = FuneralAssistanceDto.Processby;
-                FuneralAssistance.Result = DateTime.Now;
+                FuneralAssistance.Result = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -3872,7 +3874,7 @@ namespace LingapDVO.Controllers
                             • Application Type: Funeral Assistance
                             • Application ID: {FuneralAssistance.Id}
                             • Status: Approved
-                            • Date Approved: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Date Approved: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {FuneralAssistanceDto.Processby}
 
                             REMARKS:
@@ -3901,7 +3903,7 @@ namespace LingapDVO.Controllers
                             • Application Type: Funeral Assistance
                             • Application ID: {FuneralAssistance.Id}
                             • Status: Disapproved
-                            • Date Updated: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                            • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
                             • Processed By: {FuneralAssistanceDto.Processby}
 
                             REMARKS:
@@ -3973,7 +3975,7 @@ namespace LingapDVO.Controllers
                 HospitalAssistance.ForCMOPERSONNEL = HospitalAssistanceDto.ForCMOPERSONNEL;
                 HospitalAssistance.Comments = HospitalAssistanceDto.Comments;
                 HospitalAssistance.Processby = HospitalAssistanceDto.Processby;
-                HospitalAssistance.ClaimedAt = DateTime.Now;
+                HospitalAssistance.ClaimedAt = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -4003,13 +4005,13 @@ namespace LingapDVO.Controllers
                     string body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                    We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed as of {_dateTimeService.Now:MMMM dd, yyyy}.
 
                     APPLICATION DETAILS:
                     • Application Type: Hospital Bill Assistance
                     • Status: Claimed
                     • Processed By: {HospitalAssistanceDto.Processby ?? "LINGAP Personnel"}
-                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Date Claimed: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {HospitalAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
@@ -4073,7 +4075,7 @@ namespace LingapDVO.Controllers
                 otherAssistance.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL;
                 otherAssistance.Comments = OtherAssistanceDto.Comments;
                 otherAssistance.Processby = OtherAssistanceDto.Processby;
-                otherAssistance.ClaimedAt = DateTime.Now;
+                otherAssistance.ClaimedAt = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -4103,13 +4105,13 @@ namespace LingapDVO.Controllers
                     string body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                    We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {_dateTimeService.Now:MMMM dd, yyyy}.
 
                     APPLICATION DETAILS:
                     • Application Type: Medical and Laboratory Assistance
                     • Status: Claimed
                     • Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
-                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Date Claimed: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {OtherAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
@@ -4193,7 +4195,7 @@ namespace LingapDVO.Controllers
                 funeralAssistance.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL;
                 funeralAssistance.Comments = FuneralAssistanceDto.Comments;
                 funeralAssistance.Processby = FuneralAssistanceDto.Processby;
-                funeralAssistance.ClaimedAt = DateTime.Now;
+                funeralAssistance.ClaimedAt = _dateTimeService.Now;
 
                 context.SaveChanges();
 
@@ -4224,13 +4226,13 @@ namespace LingapDVO.Controllers
                     string body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your Funeral Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                    We are pleased to inform you that your Funeral Assistance has been successfully claimed as of {_dateTimeService.Now:MMMM dd, yyyy}.
 
                     APPLICATION DETAILS:
                     • Application Type: Funeral Assistance
                     • Status: Claimed
                     • Processed By: {FuneralAssistanceDto.Processby ?? "LINGAP Personnel"}
-                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
+                    • Date Claimed: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {FuneralAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
@@ -4347,7 +4349,7 @@ namespace LingapDVO.Controllers
         {
             try
             {
-                var now = DateTime.Now;
+                var now = _dateTimeService.Now;
 
                 // Get ONLY Pending and Processing applications
                 // Completed statuses (Approve, Disapprove, Claimed) are excluded
@@ -4486,7 +4488,7 @@ namespace LingapDVO.Controllers
                     .ToList();
 
                 // Timeline (last 30 days)
-                var timeline = feedbacks.Where(f => f.SubmittedAt >= DateTime.UtcNow.AddDays(-30))
+                var timeline = feedbacks.Where(f => f.SubmittedAt >= _dateTimeService.Now.AddDays(-30))
                     .GroupBy(f => f.SubmittedAt.Date)
                     .OrderBy(g => g.Key)
                     .Select(g => new { date = g.Key.ToString("yyyy-MM-dd"), count = g.Count() })
@@ -4594,7 +4596,7 @@ namespace LingapDVO.Controllers
                 // await context.SaveChangesAsync();
 
                 var random = new Random(42); // Fixed seed for reproducibility
-                var now = DateTime.Now;
+                var now = _dateTimeService.Now;
 
                 // Arrays of realistic Filipino data
                 var firstNames = new[] { "Juan", "Maria", "Jose", "Ana", "Pedro", "Rosa", "Miguel", "Elena", "Roberto", "Carmen", "Luis", "Sofia", "Carlos", "Isabella", "Diego", "Gabriela", "Fernando", "Valentina", "Antonio", "Camila", "Manuel", "Victoria", "Rafael", "Lucia", "Andres", "Mariana", "Jorge", "Paula", "Ricardo", "Diana", "Francisco", "Catalina", "Alejandro", "Daniela", "Martin", "Adriana", "Javier", "Natalia", "Raul", "Angela" };
@@ -4714,7 +4716,7 @@ namespace LingapDVO.Controllers
                     var createdDate = now.AddDays(-random.Next(1, 180)); // Within last 6 months
                     var status = DetermineStatus(random);
                     var age = random.Next(18, 80);
-                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var dateOfBirth = _dateTimeService.Now.AddYears(-age).ToString("yyyy-MM-dd");
                     var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
 
                     var record = new HospitalAssistance
@@ -4774,7 +4776,7 @@ namespace LingapDVO.Controllers
                     var createdDate = now.AddDays(-random.Next(1, 180));
                     var status = DetermineStatus(random);
                     var age = random.Next(18, 80);
-                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var dateOfBirth = _dateTimeService.Now.AddYears(-age).ToString("yyyy-MM-dd");
                     var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
 
                     var record = new OtherAssistance
@@ -4835,7 +4837,7 @@ namespace LingapDVO.Controllers
                     var createdDate = now.AddDays(-random.Next(1, 180));
                     var status = DetermineStatus(random);
                     var age = random.Next(18, 80);
-                    var dateOfBirth = DateTime.Now.AddYears(-age).ToString("yyyy-MM-dd");
+                    var dateOfBirth = _dateTimeService.Now.AddYears(-age).ToString("yyyy-MM-dd");
                     var assignedUser = createdUsers[random.Next(createdUsers.Count)]; // Random user
 
                     var record = new FuneralAssistance

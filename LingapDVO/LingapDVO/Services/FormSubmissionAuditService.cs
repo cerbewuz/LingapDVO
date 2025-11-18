@@ -16,11 +16,13 @@ namespace LingapDVO.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IDateTimeService _dateTimeService;
 
-        public FormSubmissionAuditService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public FormSubmissionAuditService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, IDateTimeService dateTimeService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _dateTimeService = dateTimeService;
         }
 
         /// <summary>
@@ -42,8 +44,8 @@ namespace LingapDVO.Services
                 UserId = userId,
                 IpAddress = ipAddress,
                 UserAgent = userAgent,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddHours(2), // 2 hour expiry
+                CreatedAt = _dateTimeService.Now,
+                ExpiresAt = _dateTimeService.Now.AddHours(2), // 2 hour expiry
                 IsUsed = false,
                 IsRevoked = false
             };
@@ -94,7 +96,7 @@ namespace LingapDVO.Services
                 return (false, "This form is no longer valid");
             }
 
-            if (tokenRecord.ExpiresAt < DateTime.UtcNow)
+            if (tokenRecord.ExpiresAt < _dateTimeService.Now)
             {
                 LogFormSubmissionAttempt(formType, userId, "BLOCKED", "WEB_FORM", null, null,
                     "Token expired", token, false, true, "Token expired");
@@ -103,7 +105,7 @@ namespace LingapDVO.Services
 
             // Mark token as used
             tokenRecord.IsUsed = true;
-            tokenRecord.UsedAt = DateTime.UtcNow;
+            tokenRecord.UsedAt = _dateTimeService.Now;
             tokenRecord.SubmittedFormId = submittedFormId;
             _context.SaveChanges();
 
@@ -148,7 +150,7 @@ namespace LingapDVO.Services
                 HasValidToken = hasValidToken,
                 SuspiciousActivity = suspiciousActivity,
                 SuspiciousReasons = suspiciousReasons,
-                AttemptedAt = DateTime.UtcNow,
+                AttemptedAt = _dateTimeService.Now,
                 SubmittedFormId = submittedFormId,
                 IsDuplicate = isDuplicate,
                 DuplicateDetails = duplicateDetails,
@@ -186,7 +188,7 @@ namespace LingapDVO.Services
                            l.UserId == userId &&
                            l.FormDataHash == formDataHash &&
                            l.Action == "SUCCESS" &&
-                           l.AttemptedAt > DateTime.UtcNow.AddMinutes(-minutesWindow))
+                           l.AttemptedAt > _dateTimeService.Now.AddMinutes(-minutesWindow))
                 .OrderByDescending(l => l.AttemptedAt)
                 .FirstOrDefault();
 
@@ -224,7 +226,7 @@ namespace LingapDVO.Services
             var recentSubmissions = _context.FormSubmissionAuditLogs
                 .Where(l => l.UserId == userId &&
                            l.FormType == formType &&
-                           l.AttemptedAt > DateTime.UtcNow.AddMinutes(-5))
+                           l.AttemptedAt > _dateTimeService.Now.AddMinutes(-5))
                 .Count();
 
             if (recentSubmissions > 3)
@@ -236,7 +238,7 @@ namespace LingapDVO.Services
             var failedAttempts = _context.FormSubmissionAuditLogs
                 .Where(l => l.IpAddress == ipAddress &&
                            l.Action == "FAILED" &&
-                           l.AttemptedAt > DateTime.UtcNow.AddMinutes(-10))
+                           l.AttemptedAt > _dateTimeService.Now.AddMinutes(-10))
                 .Count();
 
             if (failedAttempts > 5)

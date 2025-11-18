@@ -15,11 +15,13 @@ namespace LingapDVO.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IDateTimeService _dateTimeService;
 
-        public RegistrationAuditService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public RegistrationAuditService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, IDateTimeService dateTimeService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _dateTimeService = dateTimeService;
         }
 
         /// <summary>
@@ -39,8 +41,8 @@ namespace LingapDVO.Services
                 Token = token,
                 IpAddress = ipAddress,
                 UserAgent = userAgent,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(30), // 30 minute expiry
+                CreatedAt = _dateTimeService.Now,
+                ExpiresAt = _dateTimeService.Now.AddMinutes(30), // 30 minute expiry
                 IsUsed = false,
                 IsRevoked = false
             };
@@ -82,7 +84,7 @@ namespace LingapDVO.Services
                 return (false, "This registration form is no longer valid");
             }
 
-            if (tokenRecord.ExpiresAt < DateTime.UtcNow)
+            if (tokenRecord.ExpiresAt < _dateTimeService.Now)
             {
                 LogRegistrationAttempt(token, email, "BLOCKED", "WEB_FORM", "Token expired", false, true, "Token expired");
                 return (false, "Registration form has expired. Please refresh the page.");
@@ -90,7 +92,7 @@ namespace LingapDVO.Services
 
             // Mark token as used
             tokenRecord.IsUsed = true;
-            tokenRecord.UsedAt = DateTime.UtcNow;
+            tokenRecord.UsedAt = _dateTimeService.Now;
             tokenRecord.UsedByEmail = email;
             _context.SaveChanges();
 
@@ -130,7 +132,7 @@ namespace LingapDVO.Services
                 HasValidToken = hasValidToken,
                 SuspiciousActivity = suspiciousActivity,
                 SuspiciousReasons = suspiciousReasons,
-                AttemptedAt = DateTime.UtcNow,
+                AttemptedAt = _dateTimeService.Now,
                 RegisteredUserId = registeredUserId
             };
 
@@ -165,7 +167,7 @@ namespace LingapDVO.Services
             // Check for suspicious rapid attempts from same IP (more than 5 in last 5 minutes)
             var recentAttempts = _context.RegistrationAuditLogs
                 .Where(l => l.IpAddress == ipAddress &&
-                           l.AttemptedAt > DateTime.UtcNow.AddMinutes(-5))
+                           l.AttemptedAt > _dateTimeService.Now.AddMinutes(-5))
                 .Count();
 
             if (recentAttempts > 5)
@@ -211,7 +213,7 @@ namespace LingapDVO.Services
             var failedAttempts = _context.RegistrationAuditLogs
                 .Where(l => l.IpAddress == ipAddress &&
                            l.Action == "FAILED" &&
-                           l.AttemptedAt > DateTime.UtcNow.AddMinutes(-10))
+                           l.AttemptedAt > _dateTimeService.Now.AddMinutes(-10))
                 .Count();
 
             if (failedAttempts > 3)
