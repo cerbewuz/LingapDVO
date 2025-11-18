@@ -1,13 +1,16 @@
 ﻿@model FuneralAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Funeral Assistance View";
+    ViewData["Title"] = "Hospital Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
 <style>
+    .align-first-checkbox {
+        margin-top: 0 !important;
+    }
     /* Remove borders since layout already has them */
     .receipt-container {
         border: none !important;
@@ -21,6 +24,71 @@
 
     .receipt-body {
         padding: 1rem !important;
+    }
+
+    /* Fixed CMO Details Styling */
+    .cmo-details {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .cmo-section-title {
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .cmo-checkbox-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .cmo-checkbox-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+
+        .cmo-checkbox-item:hover {
+            border-color: var(--primary-light);
+            background-color: #f0f8ff;
+        }
+
+        .cmo-checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .cmo-checkbox-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+    .cmo-notes-section {
+        margin-top: 1.5rem;
+    }
+
+    .cmo-processed-by {
+        background-color: white;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 12px;
+        text-align: center;
+        font-weight: 600;
+        color: var(--primary-color);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .zoom-modal {
@@ -446,6 +514,21 @@
         color: #28a745;
         margin-bottom: 1rem;
     }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .cmo-checkbox-group {
+            grid-template-columns: 1fr;
+        }
+
+        .info-row {
+            flex-direction: column;
+        }
+
+        .info-label {
+            margin-bottom: 0.3rem;
+        }
+    }
 </style>
 
 <!-- Image Zoom Modal -->
@@ -611,64 +694,63 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- CMO Section -->
+            <!-- CMO Section - UPDATED DESIGN -->
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
-                <div class="mt-3">
-                    <div class="row g-3 mt-2">
+                <div class="cmo-details">
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Bill Amount:</label>
+                            <label class="form-label cmo-section-title">Bill Amount:</label>
                             <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <label class="form-label">Supporting Documents Attached:</label>
-                        <div class="row g-3 mt-1">
-                            <div class="col-md-6">
-                                <div class="form-check">
-                                    <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
-                                    <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
-                                </div>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input supporting-doc" type="checkbox" id="hospitalBill" name="SupportingDocs" value="Hospital Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
-                                    <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
-                                </div>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input supporting-doc" type="checkbox" id="medicalCertificate" name="SupportingDocs" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
-                                    <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
-                                </div>
+
+                    <div class="mt-4">
+                        <label class="form-label cmo-section-title">Supporting Documents Attached:</label>
+                        <div class="cmo-checkbox-group">
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
+                                <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-check">
-                                    <input class="form-check-input supporting-doc" type="checkbox" id="funeralBill" name="SupportingDocs" value="Funeral Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "")>
-                                    <label class="form-check-label" for="funeralBill">Funeral Bill</label>
-                                </div>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input supporting-doc" type="checkbox" id="deathCertificate" name="SupportingDocs" value="Death Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "")>
-                                    <label class="form-check-label" for="deathCertificate">Death Certificate</label>
-                                </div>
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
-                                    <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
-                                </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc" type="checkbox" id="hospitalBill" name="SupportingDocs" value="Hospital Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
+                                <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
+                            </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc" type="checkbox" id="medicalCertificate" name="SupportingDocs" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
+                                <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
+                            </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc" type="checkbox" id="funeralBill" name="SupportingDocs" value="Funeral Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "")>
+                                <label class="form-check-label" for="funeralBill">Funeral Bill</label>
+                            </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc" type="checkbox" id="deathCertificate" name="SupportingDocs" value="Death Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "")>
+                                <label class="form-check-label" for="deathCertificate">Death Certificate</label>
+                            </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
+                                <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
                             </div>
                         </div>
                     </div>
-                    <div class="row g-3 mt-3">
+
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label">Others:</label>
+                            <div class="cmo-notes-section">
+                                <label class="form-label cmo-section-title">Others:</label>
                                 <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-floating position-relative" style="height: 100px;">
-                                <input type="text" class="form-control border rounded p-3 h-100 d-flex align-items-center justify-content-center text-center" id="processedBy" value="@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")" readonly style="font-size: 1.2rem;">
-                                <label class="form-label text-center w-100 position-absolute bottom-0 start-0">Processed by:</label>
+                            <div class="cmo-processed-by">
+                                <div>Processed by:</div>
+                                <div>@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")</div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
+
+                    <div class="form-group" style="display: none">
                         <label class="form-label">CMO Reflection info:</label>
                         <input type="text" class="form-control" id="cmoReflectionField" name="ForCMOPERSONNEL" placeholder="Auto-generated info..." value="@ViewData["ForCMOPERSONNEL"]">
                     </div>
@@ -813,6 +895,7 @@
         </div>
     </form>
 </div>
+
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -976,28 +1059,27 @@
             }
         }
 
-        // Status Submission Functions
+        // Status Submission Functions - FIXED VERSION
         function submitApprove() {
             console.log('Submitting approve...');
+
+            // Update CMO reflection before submission
+            updateReflection();
 
             // Set the status and comments
             document.getElementById('statusInput').value = 'Approve';
             document.getElementById('commentsInput').value = ''; // Empty comments for approval
-            document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
-            document.getElementById('processByInput').value = document.getElementById('processedBy').value;
 
             // Show loading modal
             showSuccessModal();
 
-            // Submit the form
-            setTimeout(() => {
-                console.log('Final form submission - Approve');
-                console.log('Status:', document.getElementById('statusInput').value);
-                console.log('Comments:', document.getElementById('commentsInput').value);
-                console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+            // Submit the form immediately
+            console.log('Final form submission - Approve');
+            console.log('Status:', document.getElementById('statusInput').value);
+            console.log('Comments:', document.getElementById('commentsInput').value);
+            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
 
-                document.getElementById('statusForm').submit();
-            }, 500);
+            document.getElementById('statusForm').submit();
         }
 
         function showCommentsModal() {
@@ -1023,34 +1105,68 @@
 
             console.log('Submitting disapprove...');
 
+            // Update CMO reflection before submission
+            updateReflection();
+
             document.getElementById('statusInput').value = 'Disapprove';
             document.getElementById('commentsInput').value = comments;
-            document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
-            document.getElementById('processByInput').value = document.getElementById('processedBy').value;
 
             // Show loading modal
             showSuccessModal();
 
-            // Submit the form
-            setTimeout(() => {
-                console.log('Final form submission - Disapprove');
-                console.log('Status:', document.getElementById('statusInput').value);
-                console.log('Comments:', document.getElementById('commentsInput').value);
+            // Submit the form immediately
+            console.log('Final form submission - Disapprove');
+            console.log('Status:', document.getElementById('statusInput').value);
+            console.log('Comments:', document.getElementById('commentsInput').value);
 
-                document.getElementById('statusForm').submit();
-            }, 500);
+            document.getElementById('statusForm').submit();
         }
 
         function showSuccessModal() {
             document.getElementById('successModal').style.display = 'block';
         }
 
-        // CMO Reflection Auto-generation
+        // CMO Reflection Auto-generation - FIXED VERSION
+        function updateReflection() {
+            const billInput = document.getElementById('billAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            const reflectionField = document.getElementById('cmoReflectionField');
+            const docCheckboxes = document.querySelectorAll('.supporting-doc:checked');
+
+            let parts = [];
+
+            // Add bill amount if exists
+            if (billInput && billInput.value.trim()) {
+                parts.push(`Bill: ${billInput.value.trim()}`);
+            }
+
+            // Add checked documents
+            const checkedDocs = Array.from(docCheckboxes).map(cb => cb.value);
+            if (checkedDocs.length > 0) {
+                parts.push(`Docs: ${checkedDocs.join(', ')}`);
+            }
+
+            // Add other notes if exists
+            if (cmoNotes && cmoNotes.value.trim()) {
+                parts.push(`Others: ${cmoNotes.value.trim()}`);
+            }
+
+            const reflectionValue = parts.join(' , ');
+            reflectionField.value = reflectionValue;
+
+            // Update the hidden field as well
+            document.getElementById('forCMOPersonnelInput').value = reflectionValue;
+
+            console.log('CMO Reflection updated:', reflectionValue);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize checkbox behavior
             const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
             cmoCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     if (this.checked) {
+                        // Uncheck all other checkboxes (single selection)
                         cmoCheckboxes.forEach(cb => {
                             if (cb !== this) cb.checked = false;
                         });
@@ -1059,38 +1175,14 @@
                 });
             });
 
-            function updateReflection() {
-                const billInput = document.getElementById('billAmountInput');
-                const cmoNotes = document.getElementById('cmoNotesInput');
-                const reflectionField = document.getElementById('cmoReflectionField');
-                const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-                let parts = [];
-                if (billInput.value.trim()) {
-                    parts.push(`Bill: ${billInput.value.trim()}`);
-                }
-                const checkedDocs = [];
-                docCheckboxes.forEach(cb => {
-                    if (cb.checked) checkedDocs.push(cb.value);
-                });
-                if (checkedDocs.length) {
-                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                }
-                if (cmoNotes.value.trim()) {
-                    parts.push(`Others: ${cmoNotes.value.trim()}`);
-                }
-                reflectionField.value = parts.join(' , ');
-
-                // Update the hidden field as well
-                document.getElementById('forCMOPersonnelInput').value = reflectionField.value;
-            }
-
+            // Add event listeners for inputs
             const billInput = document.getElementById('billAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
+
             if (billInput) billInput.addEventListener('input', updateReflection);
             if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
 
-            // Initialize reflection field
+            // Initialize reflection field on page load
             updateReflection();
         });
 
@@ -1103,6 +1195,7 @@
             console.log('Comments:', document.getElementById('commentsInput').value);
             console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
             console.log('Processed By:', document.getElementById('processByInput').value);
+            console.log('Form data:', new FormData(this));
             console.log('==============================');
         });
 

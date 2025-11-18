@@ -52,14 +52,6 @@
             line-height: 1.6;
         }
 
-        .text-primary {
-            color: var(--primary) !important;
-        }
-
-        .bg-primary {
-            background-color: var(--primary) !important;
-        }
-
         /* Header Styles */
         .header {
             background: white;
@@ -77,31 +69,15 @@
             text-decoration: none;
         }
 
+        /* User Actions - Responsive */
         .user-actions {
             display: flex;
             gap: 0.5rem;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-            .user-actions .btn-icon {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: var(--gray-100);
-                color: var(--gray-500);
-                border: none;
-                transition: var(--transition);
-            }
-
-                .user-actions .btn-icon:hover {
-                    background: #2f4f4f;
-                    color: white;
-                    transform: translateY(-2px);
-                }
-
+            .user-actions .btn-icon,
             .user-actions .btn-link {
                 width: 40px;
                 height: 40px;
@@ -114,8 +90,10 @@
                 border: none;
                 transition: var(--transition);
                 text-decoration: none;
+                flex-shrink: 0;
             }
 
+                .user-actions .btn-icon:hover,
                 .user-actions .btn-link:hover {
                     background: #2f4f4f;
                     color: white;
@@ -123,7 +101,7 @@
                     text-decoration: none;
                 }
 
-        /* Notification Styles */
+        /* Notification Styles - Responsive */
         .notification-container {
             position: relative;
         }
@@ -136,21 +114,23 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                border: 2px solid white;
             }
 
-        /* Notification dropdown positioned outside greeting card */
+        /* Notification Dropdown - Mobile First */
         .notification-dropdown {
             position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 400px;
+            top: 70px;
+            right: 10px;
+            width: 95vw;
+            max-width: 400px;
             background: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-lg);
             z-index: 1000;
             display: none;
             border: 1px solid var(--gray-200);
-            max-height: 500px;
+            max-height: 70vh;
             overflow: hidden;
         }
 
@@ -161,10 +141,12 @@
             justify-content: space-between;
             align-items: center;
             background: var(--gray-100);
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .notification-body {
-            max-height: 400px;
+            max-height: 60vh;
             overflow-y: auto;
         }
 
@@ -190,19 +172,21 @@
             margin-bottom: 0.25rem;
             color: var(--secondary);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.5rem;
+            font-size: 0.9rem;
         }
 
         .notification-message {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             color: var(--gray-500);
             margin-bottom: 0.5rem;
             line-height: 1.4;
+            word-wrap: break-word;
         }
 
         .notification-time {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--gray-500);
         }
 
@@ -220,6 +204,8 @@
             align-items: center;
             justify-content: center;
             font-size: 0.7rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
         }
 
         .notification-type-submitted {
@@ -253,46 +239,22 @@
         }
 
         .notification-type-waiting {
-            background: var(--secondary-color);
+            background: var(--secondary);
             color: white;
         }
 
-        /* Mark all as read animation */
-        #markAllRead {
-            transition: all 0.3s ease;
-        }
-
-            #markAllRead.reading {
-                animation: markAsReadPulse 0.6s ease;
-            }
-
-        @@keyframes markAsReadPulse {
-            0% {
-                transform: scale(1);
-                color: var(--gray-500);
-            }
-            50% {
-                transform: scale(1.1);
-                color: var(--success);
-            }
-            100% {
-                transform: scale(1);
-                color: var(--success);
-            }
-        }
-
-        /* Main Content */
+        /* Main Content - Responsive */
         .main-content {
-            padding: 2rem 0;
+            padding: 1rem 0;
         }
 
-        /* Greeting Card */
+        /* Greeting Card - Responsive */
         .greeting-card {
             background: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-md);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
             position: relative;
             overflow: hidden;
         }
@@ -308,8 +270,8 @@
             }
 
         .profile-img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid var(--primary-light);
@@ -318,11 +280,44 @@
         .greeting-text h2 {
             font-weight: 700;
             margin-bottom: 0.25rem;
+            font-size: 1.25rem;
         }
 
         .greeting-text p {
             color: var(--gray-500);
             margin-bottom: 0;
+        }
+
+        /* Verification Badges - Responsive */
+        .verification-badge,
+        .verification-required {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .verification-badge {
+            background: var(--success);
+            color: white;
+        }
+
+        .verification-required {
+            background: var(--warning);
+            color: white;
+        }
+
+        .verification-alert {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--warning);
         }
 
         /* Services Section */
@@ -410,21 +405,6 @@
             margin-bottom: 0;
         }
 
-        /* Footer */
-        .footer {
-            background: var(--secondary);
-            color: white;
-            padding: 1.5rem 0;
-            margin-top: 3rem;
-        }
-
-            .footer p {
-                margin-bottom: 0;
-                text-align: center;
-                color: var(--gray-300);
-            }
-
-        /* Verification Styles */
         .service-card.disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -452,39 +432,6 @@
                 transform: none;
             }
 
-        .verification-badge {
-            background: var(--success);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .verification-required {
-            background: var(--warning);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .verification-alert {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--warning);
-        }
-
         /* Real-time indicator */
         .real-time-indicator {
             position: fixed;
@@ -506,6 +453,197 @@
         .pulse {
             opacity: 1;
             transition: opacity 1s ease-in-out;
+        }
+
+        /* Mark all as read animation */
+        #markAllRead {
+            transition: all 0.3s ease;
+        }
+
+            #markAllRead.reading {
+                animation: markAsReadPulse 0.6s ease;
+            }
+
+        @@keyframes markAsReadPulse {
+            0% {
+                transform: scale(1);
+                color: var(--gray-500);
+            }
+
+            50% {
+                transform: scale(1.1);
+                color: var(--success);
+            }
+
+            100% {
+                transform: scale(1);
+                color: var(--success);
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--secondary);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+        }
+
+            .footer p {
+                margin-bottom: 0;
+                text-align: center;
+                color: var(--gray-300);
+            }
+
+        /* ========================================= */
+        /* RESPONSIVE MEDIA QUERIES */
+        /* ========================================= */
+
+        /* Small devices (landscape phones, 576px and up) */
+        @@media (min-width: 576px) {
+            .notification-dropdown {
+                right: 20px;
+                width: 400px;
+            }
+
+            .greeting-card {
+                padding: 1.5rem;
+            }
+
+            .profile-img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .greeting-text h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Medium devices (tablets, 768px and up) */
+        @@media (min-width: 768px) {
+            .main-content {
+                padding: 2rem 0;
+            }
+
+            .greeting-card {
+                margin-bottom: 2rem;
+            }
+
+            .notification-dropdown {
+                top: 80px;
+            }
+
+            .verification-alert {
+                padding: 1rem 1.5rem;
+            }
+        }
+
+        /* Large devices (desktops, 992px and up) */
+        @@media (min-width: 992px) {
+            .notification-dropdown {
+                width: 450px;
+            }
+        }
+
+        /* Extra small devices (phones, less than 576px) */
+        @@media (max-width: 575.98px) {
+            .user-actions {
+                gap: 0.25rem;
+            }
+
+                .user-actions .btn-icon,
+                .user-actions .btn-link {
+                    width: 36px;
+                    height: 36px;
+                    font-size: 0.9rem;
+                }
+
+            .logo {
+                font-size: 1.25rem;
+            }
+
+            .notification-header {
+                padding: 0.75rem;
+            }
+
+                .notification-header h6 {
+                    font-size: 0.9rem;
+                }
+
+                .notification-header .btn-sm {
+                    font-size: 0.75rem;
+                    padding: 0.25rem 0.5rem;
+                }
+
+            .notification-item {
+                padding: 0.75rem;
+            }
+
+            .verification-badge,
+            .verification-required {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.6rem;
+            }
+
+            .service-card {
+                padding: 1.25rem;
+            }
+
+            .greeting-text h2 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Extra extra small devices (very small phones) */
+        @@media (max-width: 400px) {
+            .user-actions .btn-icon,
+            .user-actions .btn-link {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+
+            .notification-dropdown {
+                width: 92vw;
+                right: 4vw;
+                left: 4vw;
+            }
+
+            .greeting-card {
+                padding: 1rem;
+            }
+
+            .profile-img {
+                width: 45px;
+                height: 45px;
+            }
+
+            .verification-badge,
+            .verification-required {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.5rem;
+            }
+        }
+
+        /* Height adjustments for landscape mobile */
+        @@media (max-height: 600px) and (orientation: landscape) {
+            .notification-dropdown {
+                max-height: 50vh;
+            }
+
+            .notification-body {
+                max-height: 40vh;
+            }
+        }
+
+        /* Print styles */
+        @@media print {
+            .notification-dropdown,
+            .real-time-indicator,
+            .user-actions {
+                display: none !important;
+            }
         }
     </style>
 
@@ -697,8 +835,8 @@
                     {
                         <!-- Verification Alert -->
                         <div class="verification-alert">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center justify-content-between flex-column flex-md-row">
+                                <div class="d-flex align-items-center mb-2 mb-md-0">
                                     <i class="fas fa-info-circle text-warning me-3" style="font-size: 1.5rem;"></i>
                                     <div>
                                         <strong class="d-block">Account Verification Required</strong>
@@ -865,7 +1003,7 @@
             return new bootstrap.Tooltip(tooltipTriggerEl)
         });
 
-        // REAL Notification functionality that checks ACTUAL application status
+        // REAL Notification functionality
         document.addEventListener('DOMContentLoaded', function() {
             const notificationButton = document.getElementById('notificationButton');
             const notificationDropdown = document.getElementById('notificationDropdown');
@@ -876,9 +1014,9 @@
             const realTimeIndicator = document.getElementById('realTimeIndicator');
 
             let currentNotifications = [];
-            let lastApplicationState = null; // Track previous state to detect changes
+            let lastApplicationState = null;
 
-            // Pulse animation using JavaScript (replaces keyframes)
+            // Pulse animation
             const pulseElements = document.querySelectorAll('.pulse');
             pulseElements.forEach(element => {
                 let opacity = 1;
@@ -892,7 +1030,7 @@
                         if (opacity >= 1) decreasing = true;
                     }
                     element.style.opacity = opacity;
-                }, 50); // 50ms * 20 steps = 1000ms per half cycle = 2s full cycle
+                }, 50);
             });
 
             // Helper function to check if a date is valid
@@ -971,22 +1109,17 @@
                 loadRealNotifications(true);
             });
 
-            // ---------------------------------------------------------------
-            // NOTIFICATION SETTINGS FUNCTIONALITY
-            // ---------------------------------------------------------------
+            // Notification Settings functionality
             const notificationSettings = document.getElementById('notificationSettings');
             const notificationSettingsModal = new bootstrap.Modal(document.getElementById('notificationSettingsModal'));
 
-            // Open notification settings modal
             notificationSettings.addEventListener('click', function(e) {
                 e.stopPropagation();
                 loadNotificationPreferences();
                 notificationSettingsModal.show();
-                // Close notification dropdown when opening settings
                 notificationDropdown.style.display = 'none';
             });
 
-            // Load current notification preferences
             async function loadNotificationPreferences() {
                 try {
                     const response = await fetch('/Dashboard/GetNotificationPreferences');
@@ -1004,7 +1137,6 @@
                 }
             }
 
-            // Save notification preferences
             document.getElementById('saveNotificationSettings').addEventListener('click', async function() {
                 const preferInApp = document.getElementById('preferInAppNotification').checked;
                 const preferEmail = document.getElementById('preferEmailNotification').checked;
@@ -1026,7 +1158,6 @@
                     const data = await response.json();
 
                     if (data.success) {
-                        // Show success toast
                         showToast('Notification preferences saved successfully!', 'success');
                         notificationSettingsModal.hide();
                     } else {
@@ -1038,7 +1169,6 @@
                 }
             });
 
-            // Helper function to show toast messages
             function showToast(message, type = 'info') {
                 const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
                 const toastHtml = `
@@ -1063,21 +1193,14 @@
                 });
             }
 
-            // Initialize real-time connection
             function initRealTimeConnection() {
-                // Initialize SignalR connection for real-time updates
                 initSignalRConnection();
-
-                // Check for application status updates every 10 seconds (fallback)
                 setInterval(() => {
                     checkForStatusChanges();
                 }, 10000);
-
-                // Initial load
                 loadRealNotifications();
             }
 
-            // Initialize SignalR Connection for Real-time Notifications
             function initSignalRConnection() {
                 try {
                     const connection = new signalR.HubConnectionBuilder()
@@ -1086,47 +1209,34 @@
                         .configureLogging(signalR.LogLevel.Information)
                         .build();
 
-                    // Handle status update notifications
                     connection.on("ReceiveStatusUpdate", function (message) {
                         console.log("SignalR: Received status update:", message);
-                        // Refresh notifications when status updates
                         loadRealNotifications(false);
-
-                        // Show toast notification
                         showToast(message, 'info');
                     });
 
-                    // Handle new application notifications
                     connection.on("ReceiveNotification", function (title, message, type) {
                         console.log("SignalR: Received notification:", title, message, type);
-                        // Refresh notifications
                         loadRealNotifications(false);
-
-                        // Show toast notification
                         showToast(`${title}: ${message}`, type || 'info');
                     });
 
-                    // Start connection
                     connection.start()
                         .then(function () {
                             console.log("SignalR: Connected successfully to notification hub");
-                            // Update real-time indicator
                             if (realTimeIndicator) {
                                 realTimeIndicator.style.backgroundColor = 'var(--success)';
                             }
                         })
                         .catch(function (err) {
                             console.error("SignalR: Connection error:", err.toString());
-                            // Keep polling as fallback
                         });
 
-                    // Handle reconnection
                     connection.onreconnected((connectionId) => {
                         console.log("SignalR: Reconnected with connection ID:", connectionId);
                         loadRealNotifications(false);
                     });
 
-                    // Handle disconnection
                     connection.onclose((error) => {
                         console.log("SignalR: Connection closed", error);
                         if (realTimeIndicator) {
@@ -1139,27 +1249,21 @@
                 }
             }
 
-            // Check for status changes and generate notifications
             async function checkForStatusChanges() {
                 try {
                     const applications = await getRealApplicationData();
                     const currentState = JSON.stringify(applications);
 
-                    // Only check for changes if state has changed
                     if (lastApplicationState !== currentState) {
                         const newNotifications = detectStatusChanges(applications);
                         if (newNotifications.length > 0) {
-                            // Add new notifications to current list
                             newNotifications.forEach(notification => {
                                 if (!currentNotifications.some(n => n.id === notification.id)) {
-                                    currentNotifications.unshift(notification); // Add to beginning
+                                    currentNotifications.unshift(notification);
                                 }
                             });
-
-                            // Update UI
                             updateNotificationUI(currentNotifications);
                         }
-
                         lastApplicationState = currentState;
                     }
                 } catch (error) {
@@ -1167,14 +1271,11 @@
                 }
             }
 
-            // Detect REAL-TIME status changes (like push notifications on other websites)
-            // Only notify about NEW transitions, not continuously show all states
             function detectStatusChanges(applications) {
                 const newNotifications = [];
                 const now = new Date();
                 const readIds = getStoredReadNotifications();
 
-                // Check all applications for RECENT status changes (last 10 minutes)
                 const allApplications = [
                     ...(applications.hospitalBills || []).map(app => ({ ...app, type: 'Hospital' })),
                     ...(applications.medicalForms || []).map(app => ({ ...app, type: 'Medical Procedure' })),
@@ -1184,10 +1285,6 @@
                 allApplications.forEach(app => {
                     const appId = app.id || app.Id;
 
-                    // Only notify if there's a RECENT change (within last 10 minutes)
-                    // This mimics real-time push notifications like Amazon order updates
-
-                    // Check if application JUST started being reviewed (NEW status transition)
                     if (app.processAt && isValidDate(app.processAt) &&
                         app.processby && app.processby.trim() !== '') {
                         const processingDate = new Date(app.processAt);
@@ -1207,7 +1304,6 @@
                         }
                     }
 
-                    // Check if application JUST got approved (NEW status transition)
                     if (app.result && isValidDate(app.result) && app.status2 === 'Approve') {
                         const resultDate = new Date(app.result);
                         if ((now - resultDate) < 10 * 60 * 1000) {
@@ -1226,7 +1322,6 @@
                         }
                     }
 
-                    // Check if application JUST got disapproved (NEW status transition)
                     if (app.result && isValidDate(app.result) && app.status2 === 'Unapproved') {
                         const resultDate = new Date(app.result);
                         if ((now - resultDate) < 10 * 60 * 1000) {
@@ -1245,7 +1340,6 @@
                         }
                     }
 
-                    // Check if assistance JUST got claimed (NEW status transition)
                     if (app.status2 === 'Approve' &&
                         app.claimedAt && isValidDate(app.claimedAt) &&
                         app.status3 && app.status3.trim() !== '') {
@@ -1270,7 +1364,6 @@
                 return newNotifications;
             }
 
-            // Load REAL notifications based on ACTUAL application data
             async function loadRealNotifications(showLoading = false) {
                 try {
                     if (showLoading) {
@@ -1282,21 +1375,13 @@
                         `;
                     }
 
-                    // Get actual application data from your backend
                     const applications = await getRealApplicationData();
-
-                    // Generate notifications based on ACTUAL application status
                     const notifications = generateNotificationsFromRealData(applications);
-
-                    // Update UI with real notifications
                     updateNotificationUI(notifications);
-
-                    // Store current state for change detection
                     lastApplicationState = JSON.stringify(applications);
 
                 } catch (error) {
                     console.error('Failed to load real notifications:', error);
-                    // Fallback to basic status check
                     updateNotificationUI([{
                         id: 1,
                         title: "Application Status",
@@ -1309,10 +1394,8 @@
                 }
             }
 
-            // Get REAL application data from your backend
             async function getRealApplicationData() {
                 try {
-                    // Try to get application data from the server
                     const response = await fetch('/Dashboard/GetUserApplications');
                     if (response.ok) {
                         const data = await response.json();
@@ -1324,7 +1407,6 @@
                             };
                         } else {
                             console.error('API returned error:', data.error);
-                            // Use model data as fallback
                             return {
                                 hospitalBills: @Json.Serialize(Model.HospitalAssistance),
                                 medicalForms: @Json.Serialize(Model.OtherAssistance),
@@ -1333,7 +1415,6 @@
                         }
                     } else {
                         console.error('HTTP error:', response.status);
-                        // If server returns error, use the data from the model
                         return {
                             hospitalBills: @Json.Serialize(Model.HospitalAssistance),
                             medicalForms: @Json.Serialize(Model.OtherAssistance),
@@ -1342,7 +1423,6 @@
                     }
                 } catch (error) {
                     console.error('Error fetching applications:', error);
-                    // Use model data as fallback
                     return {
                         hospitalBills: @Json.Serialize(Model.HospitalAssistance),
                         medicalForms: @Json.Serialize(Model.OtherAssistance),
@@ -1351,19 +1431,16 @@
                 }
             }
 
-            // Generate notifications from REAL application data
             function generateNotificationsFromRealData(applications) {
                 const notifications = [];
                 const now = new Date();
                 const readIds = getStoredReadNotifications();
 
-                // Check if user has any applications
                 const hasApplications = (applications.hospitalBills && applications.hospitalBills.length > 0) ||
                                       (applications.medicalForms && applications.medicalForms.length > 0) ||
                                       (applications.funeralForms && applications.funeralForms.length > 0);
 
                 if (!hasApplications) {
-                    // No applications yet
                     notifications.push({
                         id: 'no_applications',
                         title: "Welcome to LingapDVO",
@@ -1376,57 +1453,39 @@
                     return notifications;
                 }
 
-                // Check Hospitals
                 if (applications.hospitalBills && applications.hospitalBills.length > 0) {
                     applications.hospitalBills.forEach(app => {
                         notifications.push(...getApplicationStatusNotifications(app, 'Hospital'));
                     });
                 }
 
-                // Check Medical Forms
                 if (applications.medicalForms && applications.medicalForms.length > 0) {
                     applications.medicalForms.forEach(app => {
                         notifications.push(...getApplicationStatusNotifications(app, 'Medical Procedure'));
                     });
                 }
 
-                // Check Funeral Forms
                 if (applications.funeralForms && applications.funeralForms.length > 0) {
                     applications.funeralForms.forEach(app => {
                         notifications.push(...getApplicationStatusNotifications(app, 'Funeral Assistance'));
                     });
                 }
 
-                // Apply stored read status
                 notifications.forEach(notification => {
                     if (readIds.includes(notification.id)) {
                         notification.isRead = true;
                     }
                 });
 
-                // Sort by date (newest first)
                 return notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             }
 
-            // Get notifications for a single application based on ACTUAL status
-            // REALISTIC PATTERN: Shows only the LATEST/CURRENT status (like real websites)
-            // Not all historical steps - just the current state that matters to the user
             function getApplicationStatusNotifications(application, type) {
                 const notifications = [];
                 const now = new Date();
                 const appId = application.id || application.Id;
                 const readIds = getStoredReadNotifications();
 
-                // Helper function to get the most recent valid date
-                function getMostRecentValidDate(...dates) {
-                    const validDates = dates
-                        .filter(date => date && isValidDate(date))
-                        .map(date => new Date(date))
-                        .sort((a, b) => b - a); // Sort descending (most recent first)
-                    return validDates.length > 0 ? validDates[0].toISOString() : new Date().toISOString();
-                }
-
-                // Helper function to calculate hours elapsed
                 function getHoursElapsed(dateString) {
                     if (!dateString || !isValidDate(dateString)) return 0;
                     const date = new Date(dateString);
@@ -1434,37 +1493,8 @@
                     return Math.floor(diffTime / (1000 * 60 * 60));
                 }
 
-                // Helper function to format date for display
-                function formatDateForDisplay(dateString) {
-                    if (!dateString || !isValidDate(dateString)) return '';
-                    const date = new Date(dateString);
-                    return date.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
-                }
-
-                // Helper function to format time ago
-                function getTimeAgo(dateString) {
-                    if (!dateString || !isValidDate(dateString)) return '';
-                    const hours = getHoursElapsed(dateString);
-                    if (hours < 1) return 'just now';
-                    if (hours === 1) return '1 hour ago';
-                    if (hours < 24) return `${hours} hours ago`;
-                    const days = Math.floor(hours / 24);
-                    if (days === 1) return 'yesterday';
-                    if (days < 7) return `${days} days ago`;
-                    return formatDateForDisplay(dateString);
-                }
-
-                // REALISTIC NOTIFICATION PATTERN: Show only ONE notification per application
-                // Display the CURRENT/LATEST status, like real websites (Amazon, Facebook, etc.)
-                // Priority order: Claimed > Approved/Disapproved > Processing > Pending
-
                 let notificationId, title, message, notificationType, createdDate;
 
-                // Priority 1: Check if assistance has been claimed (FINAL STATE)
                 if (application.status2 === 'Approve' &&
                     application.claimedAt && isValidDate(application.claimedAt) &&
                     application.status3 && application.status3.trim() !== '') {
@@ -1475,7 +1505,6 @@
                     notificationType = "claimed";
                     createdDate = application.claimedAt;
                 }
-                // Priority 2: Check if approved and waiting to be claimed
                 else if (application.status2 === 'Approve') {
                     const hoursApproved = getHoursElapsed(application.result);
                     const daysSinceApproval = Math.floor(hoursApproved / 24);
@@ -1492,7 +1521,6 @@
                     }
                     createdDate = application.result;
                 }
-                // Priority 3: Check if disapproved
                 else if (application.result && isValidDate(application.result) && application.status2 === 'Unapproved') {
                     notificationId = `status_${appId}`;
                     title = `${type} Application Not Approved`;
@@ -1500,7 +1528,6 @@
                     notificationType = "unapproved";
                     createdDate = application.result;
                 }
-                // Priority 4: Check if under review
                 else if (application.processAt && isValidDate(application.processAt) &&
                          application.processby && application.processby.trim() !== '') {
 
@@ -1519,7 +1546,6 @@
                     }
                     createdDate = application.processAt;
                 }
-                // Priority 5: Pending review (initial state)
                 else if (application.createdAt && isValidDate(application.createdAt)) {
                     const hoursWaiting = getHoursElapsed(application.createdAt);
 
@@ -1537,7 +1563,6 @@
                     createdDate = application.createdAt;
                 }
 
-                // Create the single notification for this application's current status
                 if (notificationId) {
                     notifications.push({
                         id: notificationId,
@@ -1553,7 +1578,6 @@
                 return notifications;
             }
 
-            // Function to hide notification badge
             function hideNotificationBadge() {
                 if (notificationBadge) {
                     notificationBadge.style.display = 'none';
@@ -1561,25 +1585,18 @@
                 }
             }
 
-            // Mark all notifications as read
             async function markAllNotificationsAsRead() {
                 try {
-                    // Add animation to button
                     const markAllBtn = document.getElementById('markAllRead');
                     markAllBtn.classList.add('reading');
 
-                    // Get all notification IDs
                     const allNotificationIds = currentNotifications.map(n => n.id);
-
-                    // Store in localStorage
                     markAllStoredAsRead(allNotificationIds);
 
-                    // Update locally for immediate feedback
                     currentNotifications.forEach(n => n.isRead = true);
                     updateNotificationUI(currentNotifications);
                     hideNotificationBadge();
 
-                    // Remove animation class after animation completes
                     setTimeout(() => {
                         markAllBtn.classList.remove('reading');
                     }, 600);
@@ -1588,13 +1605,10 @@
                 }
             }
 
-            // Update notification UI
             function updateNotificationUI(notifications) {
                 if (!notificationList) return;
 
-                // Store current notifications
                 currentNotifications = notifications;
-
                 notificationList.innerHTML = '';
 
                 if (notifications.length === 0) {
@@ -1611,7 +1625,6 @@
 
                 const unreadCount = notifications.filter(n => !n.isRead).length;
 
-                // Update badge
                 if (unreadCount > 0) {
                     notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
                     notificationBadge.style.display = 'block';
@@ -1619,7 +1632,6 @@
                     hideNotificationBadge();
                 }
 
-                // Populate notifications list
                 notifications.forEach(notification => {
                     const notificationItem = document.createElement('div');
                     const typeIcon = getNotificationTypeIcon(notification.type);
@@ -1644,7 +1656,6 @@
                 });
             }
 
-            // Get icon and class for notification type
             function getNotificationTypeIcon(type) {
                 const types = {
                     submitted: { class: 'notification-type-submitted', icon: 'fas fa-file-upload' },
@@ -1659,14 +1670,12 @@
             }
 
             async function handleNotificationClick(notification) {
-                // Mark as read in localStorage
                 if (!notification.isRead) {
                     addToStoredReadNotifications(notification.id);
                     notification.isRead = true;
                     updateNotificationUI(currentNotifications);
                 }
 
-                // Navigate if there's a link
                 if (notification.link && notification.link !== '#') {
                     setTimeout(() => {
                         window.location.href = notification.link;
@@ -1675,7 +1684,6 @@
             }
 
             function formatTime(dateString) {
-                // Validate date before processing
                 if (!dateString || !isValidDate(dateString)) {
                     return 'Recently';
                 }
@@ -1683,16 +1691,13 @@
                 const date = new Date(dateString);
                 const now = new Date();
 
-                // Check if date is in the future
                 if (date > now) {
                     return 'Just now';
                 }
 
-                // Check if date is unreasonably old (more than 2 years)
                 const twoYearsAgo = new Date();
                 twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
                 if (date < twoYearsAgo) {
-                    // Return formatted date instead of huge day count
                     return date.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
@@ -1702,26 +1707,18 @@
 
                 const diffInMinutes = Math.floor((now - date) / (1000 * 60));
 
-                // Less than 1 minute
                 if (diffInMinutes < 1) return 'Just now';
-
-                // Less than 1 hour
                 if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-
-                // Less than 24 hours
                 if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
 
-                // Less than 30 days
                 const days = Math.floor(diffInMinutes / 1440);
                 if (days < 30) return `${days}d ago`;
 
-                // Less than 365 days (show months)
                 if (days < 365) {
                     const months = Math.floor(days / 30);
                     return `${months} month${months > 1 ? 's' : ''} ago`;
                 }
 
-                // More than 365 days (show years)
                 const years = Math.floor(days / 365);
                 return `${years} year${years > 1 ? 's' : ''} ago`;
             }
@@ -1739,133 +1736,5 @@
             loadRealNotifications();
         });
     </script>
-
-    <!-- --------------------------------------------------------------- -->
-    <!-- Account Verification Success Modal -->
-    @if (TempData["VerificationSuccess"] != null && TempData["VerificationSuccess"] is bool verificationSuccess && verificationSuccess)
-    {
-        <div class="modal fade" id="verificationSuccessModal" tabindex="-1" aria-labelledby="verificationSuccessModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden bg-gradient-to-br from-green-50 via-white to-emerald-50">
-                    <!-- Compact Body -->
-                    <div class="modal-body p-8 text-center">
-                        <!-- Success Icon with Animation -->
-                        <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg" style="animation: scaleIn 0.5s ease-out;">
-                            <i class="fas fa-check text-white text-3xl"></i>
-                        </div>
-
-                        <!-- Success Message -->
-                        <h4 class="font-bold text-gray-800 text-xl mb-2">Verification Complete!</h4>
-                        <p class="text-gray-600 text-sm mb-6">
-                            Your account has been successfully verified. You're all set to access our assistance programs!
-                        </p>
-
-                        <!-- Quick Guide Section -->
-                        <div class="bg-white rounded-xl p-4 mb-6 text-left shadow-sm border border-green-100">
-                            <h6 class="font-semibold text-gray-800 text-sm mb-3 flex items-center gap-2">
-                                <i class="fas fa-hand-holding-heart text-green-600"></i>
-                                Available Assistance Programs
-                            </h6>
-                            <div class="space-y-2">
-                                <div class="flex items-start gap-2">
-                                    <i class="fas fa-hospital text-green-600 text-xs mt-1"></i>
-                                    <span class="text-xs text-gray-700">Hospital Assistance</span>
-                                </div>
-                                <div class="flex items-start gap-2">
-                                    <i class="fas fa-pills text-green-600 text-xs mt-1"></i>
-                                    <span class="text-xs text-gray-700">Medical & Laboratory Assistance</span>
-                                </div>
-                                <div class="flex items-start gap-2">
-                                    <i class="fas fa-praying-hands text-green-600 text-xs mt-1"></i>
-                                    <span class="text-xs text-gray-700">Funeral & Burial Assistance</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Next Steps -->
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-6 text-left border border-blue-100">
-                            <h6 class="font-semibold text-gray-800 text-sm mb-2 flex items-center gap-2">
-                                <i class="fas fa-route text-blue-600"></i>
-                                How to Apply
-                            </h6>
-                            <ol class="text-xs text-gray-700 space-y-1 ml-4 list-decimal">
-                                <li>Click on "Application Tracking" in the menu</li>
-                                <li>Choose your needed assistance type</li>
-                                <li>Fill out the form completely</li>
-                                <li>Upload required documents</li>
-                                <li>Submit and wait for review (1-3 business days)</li>
-                            </ol>
-                        </div>
-
-                        <!-- Action Button -->
-                        <button type="button" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200" data-bs-dismiss="modal">
-                            <i class="fas fa-arrow-right mr-2"></i>Get Started
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <style>
-            @@keyframes scaleIn {
-                0% {
-                    transform: scale(0);
-                    opacity: 0;
-                }
-                50% {
-                    transform: scale(1.1);
-                }
-                100% {
-                    transform: scale(1);
-                    opacity: 1;
-                }
-            }
-        </style>
-
-        <script>
-            // Auto-show verification success modal when page loads
-            document.addEventListener('DOMContentLoaded', function() {
-                const verificationModal = new bootstrap.Modal(document.getElementById('verificationSuccessModal'));
-                verificationModal.show();
-            });
-        </script>
-    }
-
-    @* <script>
-        // Service Reliability Notification Script with Toast
-        document.addEventListener('DOMContentLoaded', function() {
-            const hasApplications = @(Model.HospitalAssistance.Any() || Model.OtherAssistance.Any() || Model.FuneralAssistance.Any() ? "true" : "false");
-
-            if (hasApplications) {
-                setTimeout(() => {
-                    // Create toast element
-                    const toastHtml = `
-                        <div class="toast align-items-center text-bg-warning border-0 position-fixed top-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="8000">
-                            <div class="d-flex">
-                                <div class="toast-body">
-                                    <i class="bi bi-info-circle-fill me-2"></i>
-                                    Sorry for the inconvenience. Your data is being processed. Please wait for a while as we make our service becomes reliable.
-                                </div>
-                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                        </div>
-                    `;
-
-                    // Add toast to body
-                    document.body.insertAdjacentHTML('beforeend', toastHtml);
-
-                    // Show toast
-                    const toastElement = document.querySelector('.toast');
-                    const toast = new bootstrap.Toast(toastElement);
-                    toast.show();
-
-                    // Remove toast from DOM when hidden
-                    toastElement.addEventListener('hidden.bs.toast', function() {
-                        this.remove();
-                    });
-                }, 1000);
-            }
-        });
-    </script> *@
 </body>
 </html>
