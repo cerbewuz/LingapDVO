@@ -2814,28 +2814,85 @@ namespace LingapDVO.Controllers
             // Pass userId to ViewBag for SignalR/tracking
             ViewBag.UserId = userId;
 
-            // Get data from database filtered by userId
-            var hospitalBills = context.HospitalAssistance
+            // Calculate cutoff date: 1 month ago from now (Philippine time)
+            var oneMonthAgo = _dateTimeService.Now.AddMonths(-1);
+
+            // Get all applications for this user
+            var allHospitalBills = context.HospitalAssistance
                 .Where(f => f.UserId == userId)
+                .ToList();
+
+            var allMedicalLabForms = context.OtherAssistance
+                .Where(f => f.UserId == userId)
+                .ToList();
+
+            var allFuneralAssistance = context.FuneralAssistance
+                .Where(f => f.UserId == userId)
+                .ToList();
+
+            // Auto-archive applications older than 1 month and update database
+            foreach (var app in allHospitalBills.Where(a => a.CreatedAt < oneMonthAgo && !a.IsArchived))
+            {
+                app.IsArchived = true;
+            }
+            foreach (var app in allMedicalLabForms.Where(a => a.CreatedAt < oneMonthAgo && !a.IsArchived))
+            {
+                app.IsArchived = true;
+            }
+            foreach (var app in allFuneralAssistance.Where(a => a.CreatedAt < oneMonthAgo && !a.IsArchived))
+            {
+                app.IsArchived = true;
+            }
+
+            // Save changes to database if any applications were archived
+            if (context.ChangeTracker.HasChanges())
+            {
+                context.SaveChanges();
+            }
+
+            // Separate into active and archived lists
+            var activeHospitalBills = allHospitalBills
+                .Where(f => !f.IsArchived)
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            var medicalLabForms = context.OtherAssistance
-                .Where(f => f.UserId == userId)
+            var archivedHospitalBills = allHospitalBills
+                .Where(f => f.IsArchived)
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            var FuneralAssistance = context.FuneralAssistance
-             .Where(f => f.UserId == userId)
-             .OrderByDescending(f => f.CreatedAt)
-             .ToList();
+            var activeMedicalLabForms = allMedicalLabForms
+                .Where(f => !f.IsArchived)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            var archivedMedicalLabForms = allMedicalLabForms
+                .Where(f => f.IsArchived)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            var activeFuneralAssistance = allFuneralAssistance
+                .Where(f => !f.IsArchived)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            var archivedFuneralAssistance = allFuneralAssistance
+                .Where(f => f.IsArchived)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
 
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel
             {
-                HospitalAssistance = hospitalBills,
-                OtherAssistance = medicalLabForms,
-                FuneralAssistance = FuneralAssistance //
+                // Active applications (less than 1 month old)
+                HospitalAssistance = activeHospitalBills,
+                OtherAssistance = activeMedicalLabForms,
+                FuneralAssistance = activeFuneralAssistance,
+
+                // Archived applications (1 month or older)
+                ArchivedHospitalAssistance = archivedHospitalBills,
+                ArchivedOtherAssistance = archivedMedicalLabForms,
+                ArchivedFuneralAssistance = archivedFuneralAssistance
             };
 
             // Pass the view model to the view

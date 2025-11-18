@@ -1956,6 +1956,23 @@
         function collectAllApplications() {
             const applications = [];
 
+            // First, add all archived applications from server data
+            if (window.archivedApplications && window.archivedApplications.length > 0) {
+                window.archivedApplications.forEach(app => {
+                    applications.push({
+                        type: app.type,
+                        name: app.name,
+                        status: app.status,
+                        claimStatus: app.claimStatus,
+                        submittedDate: new Date(app.submittedDate),
+                        processedDate: app.processedDate ? new Date(app.processedDate) : null,
+                        resultDate: app.resultDate ? new Date(app.resultDate) : null,
+                        claimedDate: app.claimedDate ? new Date(app.claimedDate) : null,
+                        id: app.id
+                    });
+                });
+            }
+
             // Helper function to detect status for each card - FIXED VERSION
             function detectStatus(card) {
                 // Check if there's a final result (approved/unapproved)
@@ -2543,6 +2560,58 @@
                     status: "@f.Status?.ToLower()",
                     createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
                     userId: '@ViewBag.UserId'
+                },
+                </text>
+            }
+        ];
+
+        // Archived applications data (older than 1 month)
+        window.archivedApplications = [
+            @foreach (var f in Model.ArchivedHospitalAssistance)
+            {
+                <text>
+                {
+                    id: @f.Id,
+                    type: "Hospital Assistance",
+                    name: "@f.Firstname @f.Middlename @f.Lastname",
+                    status: "@(string.IsNullOrEmpty(f.Status2) ? "Pending" : f.Status2)",
+                    claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
+                    submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
+                    processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
+                    resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
+                    claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
+                },
+                </text>
+            }
+            @foreach (var f in Model.ArchivedOtherAssistance)
+            {
+                <text>
+                {
+                    id: @f.Id,
+                    type: "Medical Procedure",
+                    name: "@f.Firstname @f.Middlename @f.Lastname",
+                    status: "@(string.IsNullOrEmpty(f.Status2) ? "Pending" : f.Status2)",
+                    claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
+                    submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
+                    processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
+                    resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
+                    claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
+                },
+                </text>
+            }
+            @foreach (var f in Model.ArchivedFuneralAssistance)
+            {
+                <text>
+                {
+                    id: @f.Id,
+                    type: "Funeral Assistance",
+                    name: "@f.Firstname @f.Middlename @f.Lastname",
+                    status: "@(string.IsNullOrEmpty(f.Status2) ? "Pending" : f.Status2)",
+                    claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
+                    submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
+                    processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
+                    resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
+                    claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
                 },
                 </text>
             }
