@@ -293,7 +293,7 @@ namespace LingapDVO.Services
             if (priority == "high")
             {
                 return $"Your application has been pending for {Math.Floor(hoursElapsed)} hours. " +
-                       "We apologize for the delay. Our team is working on it with high priority and will process it ASAP.";
+                       "We apologize for the delay. Our team is working on it with high priority and will process it as soon as possible.";
             }
             else if (priority == "medium")
             {

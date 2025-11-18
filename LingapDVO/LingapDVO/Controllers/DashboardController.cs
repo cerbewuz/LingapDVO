@@ -703,8 +703,8 @@ namespace LingapDVO.Controllers
                 string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
 
-                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
+                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
+                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
 
                 // Ensure directories exist
                 Directory.CreateDirectory(uploadsFolder1);
@@ -902,8 +902,8 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -1122,7 +1122,7 @@ namespace LingapDVO.Controllers
                 // ? 5. Update Doctor Prescription (optional)
                 if (dto.DoctorPrescriptionimage != null)
                 {
-                    string folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+                    string folder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
                     // Delete old file if exists
@@ -1147,7 +1147,7 @@ namespace LingapDVO.Controllers
                 // ? 6. Update Death Certificate (optional)
                 if (dto.DeathCertificateimage != null)
                 {
-                    string folder = Path.Combine(environment.WebRootPath, "Funeralimg");
+                    string folder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
                     // Delete old file if exists
@@ -1437,9 +1437,9 @@ namespace LingapDVO.Controllers
                 string? newFileNameDeathCertificate = null;
                 string? newFileNameMedCertificate = null;
 
-                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
-                string uploadsFolder3 = Path.Combine(environment.WebRootPath, "MedCertificateimage");
+                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+                string uploadsFolder3 = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
 
                 // Ensure directories exist
                 Directory.CreateDirectory(uploadsFolder1);
@@ -1653,9 +1653,9 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
-            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -1891,7 +1891,7 @@ namespace LingapDVO.Controllers
                 // ? 5. Update Doctor Prescription (optional)
                 if (OtherAssistanceDto.DoctorPrescriptionimage != null)
                 {
-                    string folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+                    string folder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
                     // Delete old file if exists
@@ -1916,7 +1916,7 @@ namespace LingapDVO.Controllers
                 // ? 6. Update Death Certificate (optional)
                 if (OtherAssistanceDto.DeathCertificateimage != null)
                 {
-                    string folder = Path.Combine(environment.WebRootPath, "Funeralimg");
+                    string folder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
                     // Delete old file if exists
@@ -1941,7 +1941,7 @@ namespace LingapDVO.Controllers
                 // ? 7. Update Medical Certificate (optional)
                 if (OtherAssistanceDto.MedCertificateimage != null)
                 {
-                    string folder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
+                    string folder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
                     // Delete old file if exists
@@ -2221,8 +2221,8 @@ namespace LingapDVO.Controllers
                 string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
 
-                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "Funeralimg");
+                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
+                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
 
                 // Ensure directories exist
                 Directory.CreateDirectory(uploadsFolder1);
@@ -2420,8 +2420,8 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -2614,7 +2614,7 @@ namespace LingapDVO.Controllers
                 // ? 5. Update Doctor Prescription (optional)
                 if (FuneralAssistanceDto.DoctorPrescriptionimage != null)
                 {
-                    string folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
+                    string folder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
                     // Delete old file if exists
@@ -2639,7 +2639,7 @@ namespace LingapDVO.Controllers
                 // ? 6. Update Death Certificate (optional)
                 if (FuneralAssistanceDto.DeathCertificateimage != null)
                 {
-                    string folder = Path.Combine(environment.WebRootPath, "Funeralimg");
+                    string folder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
                     // Delete old file if exists
@@ -3084,8 +3084,8 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -3272,8 +3272,8 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -3459,9 +3459,9 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
-            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -3656,19 +3656,52 @@ namespace LingapDVO.Controllers
                 // Security: Prevent directory traversal
                 string safeFileName = Path.GetFileName(fileName);
 
-                // Define the directory based on file type
-                string folderPath = fileType.ToLower() switch
+                // Define possible directories to search based on file type
+                List<string> possibleFolders = new List<string>();
+
+                // NEW: Search in form-specific folders first
+                if (fileType.ToLower() == "doctorprescription" || fileType.ToLower() == "deathcertificate")
                 {
-                    "doctorprescription" => Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage"),
-                    "deathcertificate" => Path.Combine(environment.WebRootPath, "Funeralimg"),
-                    "medicalcertificate" => Path.Combine(environment.WebRootPath, "MedCertificateimage"),
-                    _ => Path.Combine(environment.WebRootPath, "Validimg")
-                };
+                    // These file types could be in Hospital, Funeral, or Other assistance
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage"));
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage"));
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage"));
+                }
+                else if (fileType.ToLower() == "medicalcertificate")
+                {
+                    // Medical certificates are only in Other assistance
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage"));
+                }
+                else
+                {
+                    // Default for valid ID images
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "Validimg"));
+                }
 
-                Console.WriteLine($"?? Folder path: {folderPath}");
+                Console.WriteLine($"?? Searching in {possibleFolders.Count} possible folders");
 
-                string encryptedFilePath = Path.Combine(folderPath, safeFileName);
-                Console.WriteLine($"?? Full file path: {encryptedFilePath}");
+                // Search for the file in possible folders
+                string encryptedFilePath = null;
+                string folderPath = null;
+
+                foreach (var folder in possibleFolders)
+                {
+                    string testPath = Path.Combine(folder, safeFileName);
+                    if (System.IO.File.Exists(testPath))
+                    {
+                        encryptedFilePath = testPath;
+                        folderPath = folder;
+                        Console.WriteLine($"? File found in: {folderPath}");
+                        break;
+                    }
+                }
+
+                // Check if file exists
+                if (string.IsNullOrEmpty(encryptedFilePath) || !System.IO.File.Exists(encryptedFilePath))
+                {
+                    Console.WriteLine($"? File does not exist in any expected folder: {safeFileName}");
+                    return NotFound($"File not found: {fileName}");
+                }
 
                 // Additional security: Verify the resolved path is within the expected directory
                 string resolvedPath = Path.GetFullPath(encryptedFilePath);
@@ -3677,13 +3710,6 @@ namespace LingapDVO.Controllers
                 {
                     Console.WriteLine("? Security: Path traversal attempt detected");
                     return BadRequest("Invalid file path");
-                }
-
-                // Check if file exists
-                if (!System.IO.File.Exists(encryptedFilePath))
-                {
-                    Console.WriteLine($"? File does not exist: {encryptedFilePath}");
-                    return NotFound($"File not found: {fileName}");
                 }
 
                 Console.WriteLine($"? File exists. Size: {new FileInfo(encryptedFilePath).Length} bytes");
@@ -3745,28 +3771,43 @@ namespace LingapDVO.Controllers
                 return Unauthorized();
             }
 
-            string folder;
+            // Define possible directories to search based on file type
+            List<string> possibleFolders = new List<string>();
 
-            switch (fileType.ToLower())
+            // NEW: Search in form-specific folders first
+            if (fileType.ToLower() == "doctorprescription" || fileType.ToLower() == "deathcertificate")
             {
-                case "doctorprescription":
-                    folder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-                    break;
-                case "deathcertificate":
-                    folder = Path.Combine(environment.WebRootPath, "Funeralimg");
-                    break;
-                case "medicalcertificate":
-                    folder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
-                    break;
-                default:
-                    folder = Path.Combine(environment.WebRootPath, "Validimg");
-                    break;
+                // These file types could be in Hospital, Funeral, or Other assistance
+                possibleFolders.Add(Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage"));
+                possibleFolders.Add(Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage"));
+                possibleFolders.Add(Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage"));
+            }
+            else if (fileType.ToLower() == "medicalcertificate")
+            {
+                // Medical certificates are only in Other assistance
+                possibleFolders.Add(Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage"));
+            }
+            else
+            {
+                // Default for valid ID images
+                possibleFolders.Add(Path.Combine(environment.WebRootPath, "Validimg"));
             }
 
             string safeFileName = Path.GetFileName(fileName);
-            string filePath = Path.Combine(folder, safeFileName);
+            string filePath = null;
 
-            if (!System.IO.File.Exists(filePath))
+            // Search for the file in possible folders
+            foreach (var folder in possibleFolders)
+            {
+                string testPath = Path.Combine(folder, safeFileName);
+                if (System.IO.File.Exists(testPath))
+                {
+                    filePath = testPath;
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
             {
                 return Json(new { exists = false, isPdf = false });
             }

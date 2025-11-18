@@ -29,6 +29,9 @@
   <ItemGroup>
     <Folder Include="wwwroot\DoctorPrescriptionimage\" />
     <Folder Include="wwwroot\Funeralimg\" />
+    <Folder Include="wwwroot\HospitalAssistanceFileStorage\" />
+    <Folder Include="wwwroot\FuneralAssistanceFileStorage\" />
+    <Folder Include="wwwroot\OtherAssistanceFileStorage\" />
     <Folder Include="wwwroot\Validimg\" />
     <Folder Include="wwwroot\UsersImg\" />
   </ItemGroup>

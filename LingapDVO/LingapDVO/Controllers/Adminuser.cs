@@ -4001,26 +4001,31 @@ namespace LingapDVO.Controllers
 
                     string subject = "Hospital Bill Assistance Claimed - LINGAP DVO";
                     string body = $@"
-                        Dear {firstName},
+                    Dear {firstName},
 
-                        We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                    We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
-                        APPLICATION DETAILS:
-                        � Application Type: Hospital Bill Assistance
-                        � Status: Claimed
-                        � Processed By: {HospitalAssistanceDto.Processby ?? "LINGAP Personnel"}
-                        � Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                    APPLICATION DETAILS:
+                    • Application Type: Hospital Bill Assistance
+                    • Status: Claimed
+                    • Processed By: {HospitalAssistanceDto.Processby ?? "LINGAP Personnel"}
+                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
-                        REMARKS:
-                        {HospitalAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
+                    REMARKS:
+                    {HospitalAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                        Thank you for your patience and cooperation throughout the process.  
-                        Should you have any further questions, please contact our support team at [Support Email/Phone Number].
+                    Thank you for your patience and cooperation throughout the process.
 
-                        Sincerely,  
-                        {fromName}  
-                        LINGAP DVO Medical Assistance Program
-                        ";
+                    ---
+                    SHARE YOUR EXPERIENCE
+                    We would love to hear about your experience with our service. Your feedback helps us improve and serve you better.
+                    Please take a moment to share your thoughts: https://lingapdvo.com/Dashboard/Feedback
+
+                    Sincerely,
+                    {fromName}
+                    LINGAP DVO Medical Assistance Program
+
+                    Note: This is an automated email. Please do not reply to this message.";
 
                     // ? Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -4102,19 +4107,22 @@ namespace LingapDVO.Controllers
 
                     APPLICATION DETAILS:
                     • Application Type: Medical and Laboratory Assistance
-                    • Application ID: {otherAssistance.Id}
                     • Status: Claimed
                     • Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
-                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {OtherAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                    Thank you for your patience and cooperation throughout the process.  
-                    Should you have any further questions, please contact our support team.
+                    Thank you for your patience and cooperation throughout the process.
 
-                    Sincerely,  
-                    {fromName}  
+                    ---
+                    SHARE YOUR EXPERIENCE
+                    We would love to hear about your experience with our service. Your feedback helps us improve and serve you better.
+                    Please take a moment to share your thoughts: https://lingapdvo.com/Dashboard/Feedback
+
+                    Sincerely,
+                    {fromName}
                     LINGAP DVO Medical Assistance Program
 
                     Note: This is an automated email. Please do not reply to this message.";
@@ -4212,28 +4220,33 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Your LINGAP Funeral Assistance Has Been Claimed";
+                    string subject = "Funeral Assistance Claimed - LINGAP DVO";
                     string body = $@"
                     Dear {firstName},
 
-                    We are pleased to inform you that your LINGAP Funeral Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
+                    We are pleased to inform you that your Funeral Assistance has been successfully claimed as of {DateTime.Now:MMMM dd, yyyy}.
 
                     APPLICATION DETAILS:
                     • Application Type: Funeral Assistance
                     • Status: Claimed
                     • Processed By: {FuneralAssistanceDto.Processby ?? "LINGAP Personnel"}
-                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy HH:mm tt}
+                    • Date Claimed: {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}
 
                     REMARKS:
                     {FuneralAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
 
-                    Thank you for your patience and cooperation throughout the process.  
-                    Should you have any further questions, please contact our support team at [Support Email/Phone Number].
+                    Thank you for your patience and cooperation throughout the process.
 
-                    Sincerely,  
-                    {fromName}  
+                    ---
+                    SHARE YOUR EXPERIENCE
+                    We would love to hear about your experience with our service. Your feedback helps us improve and serve you better.
+                    Please take a moment to share your thoughts: https://lingapdvo.com/Dashboard/Feedback
+
+                    Sincerely,
+                    {fromName}
                     LINGAP DVO Medical Assistance Program
-                    ";
+
+                    Note: This is an automated email. Please do not reply to this message.";
 
                     // Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)

@@ -167,8 +167,8 @@
     // Show local delay notification - NOW INTEGRATED INTO TIMELINE
     function showDelayNotificationLocal(app, priority, hoursElapsed) {
         const message = priority === 'high'
-            ? `Your application has been pending for ${Math.floor(hoursElapsed)} hours. We apologize for the delay. Our team is working on it with high priority and will process it ASAP.`
-            : `Your application has been pending for over an hour. Don't worry! It's in our queue and will be reviewed shortly.`;
+            ? `We sincerely apologize for the delay in processing your application. Your request has been pending for ${Math.floor(hoursElapsed)} hours, and our team has been notified to prioritize it. We're working to process it as quickly as possible.`
+            : `Your application has been in our system for over an hour. Please don't worry - it's currently in our review queue and will be processed shortly. Thank you for your patience.`;
 
         // Add delay timeline item to the tracking card
         addDelayTimelineItem(app, priority, hoursElapsed, message);
@@ -207,7 +207,7 @@
             const priorityColor = priority === 'high' ? 'var(--danger-color)' : 'var(--warning-color)';
             const priorityBg = priority === 'high' ? '#fee2e2' : '#fef3c7';
             const priorityIcon = priority === 'high' ? 'fa-exclamation-triangle' : 'fa-clock';
-            const priorityLabel = priority === 'high' ? 'High Priority Delay' : 'Processing Delay Notice';
+            const priorityLabel = priority === 'high' ? 'Your Application Has Experienced a Delay' : 'Your Application Has Experienced a Slight Delay';
 
             delayItem.innerHTML = `
                 <div class="timeline-marker" style="background: ${priorityColor};">
