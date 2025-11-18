@@ -5302,6 +5302,37 @@ document.addEventListener('DOMContentLoaded', function () {
             resultBox.className = "p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down";
             resultBox.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${extractedFields.join(' and ')} extracted from National ID back. Please verify.`;
         }
+
+        // ===================================================================
+        // COMPLETION: Update progress bar to 100% and show completion status
+        // ===================================================================
+
+        // Set progress bar to 100%
+        if (progress) {
+            progress.style.width = '100%';
+            progress.style.transition = 'width 0.5s ease-in-out';
+        }
+
+        // Update status to "Completed" with green styling
+        if (status) {
+            status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600 animate-pulse" id="status-icon-philsys"></i><strong>Verification Complete</strong> - National ID back side processed';
+            status.className = 'text-sm text-green-600 mt-2 font-semibold animate-fadeIn';
+
+            // Stop pulse animation after 2 seconds
+            setTimeout(() => {
+                const statusIcon = document.getElementById('status-icon-philsys');
+                if (statusIcon) {
+                    statusIcon.classList.remove('animate-pulse');
+                }
+            }, 2000);
+        }
+
+        // Hide progress bar after a delay to show the completed state
+        if (progressBar) {
+            setTimeout(() => {
+                progressBar.classList.add('hidden');
+            }, 2000); // 2 second delay to show the completed state
+        }
     }
 
     // Extract PhilSys Gender (uses unified extractGender function)
@@ -6047,6 +6078,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 resultBox.className = "p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 slide-down";
                 resultBox.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Gender information extracted from UMID back. Please verify.';
             }
+        }
+
+        // ===================================================================
+        // COMPLETION: Update progress bar to 100% and show completion status
+        // ===================================================================
+
+        // Set progress bar to 100%
+        if (progress) {
+            progress.style.width = '100%';
+            progress.style.transition = 'width 0.5s ease-in-out';
+        }
+
+        // Update status to "Completed" with green styling
+        if (status) {
+            status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600 animate-pulse" id="status-icon"></i><strong>Verification Complete</strong> - UMID back side processed';
+            status.className = 'text-sm text-green-600 mt-2 font-semibold animate-fadeIn';
+
+            // Stop pulse animation after 2 seconds
+            setTimeout(() => {
+                const statusIcon = document.getElementById('status-icon');
+                if (statusIcon) {
+                    statusIcon.classList.remove('animate-pulse');
+                }
+            }, 2000);
+        }
+
+        // Hide progress bar after a delay to show the completed state
+        if (progressBar) {
+            setTimeout(() => {
+                progressBar.classList.add('hidden');
+            }, 2000); // 2 second delay to show the completed state
         }
     }
 
