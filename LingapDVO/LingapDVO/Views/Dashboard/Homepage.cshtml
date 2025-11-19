@@ -284,7 +284,7 @@
                 border: 2px solid white;
             }
 
-        /* Notification Dropdown - Mobile First */
+        /* Notification Dropdown - Mobile First (Default: Centered for all mobile/tablet) */
         .notification-dropdown {
             position: fixed;
             top: 50%;
@@ -302,10 +302,23 @@
             overflow: hidden;
         }
 
-        /* Mobile: Centered with close button */
+        /* Small phones: Adjust width */
         @@media (max-width: 575.98px) {
             .notification-dropdown {
                 width: calc(100vw - 40px);
+                max-width: 400px;
+                max-height: 80vh;
+            }
+        }
+
+        /* Tablets and larger phones: Keep centered */
+        @@media (min-width: 576px) and (max-width: 991.98px) {
+            .notification-dropdown {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90vw;
                 max-width: 400px;
                 max-height: 80vh;
             }
@@ -1404,6 +1417,10 @@
                     mobileUserActions.classList.toggle('active');
                     mobileMenuOverlay.classList.toggle('active');
                     document.body.style.overflow = mobileUserActions.classList.contains('active') ? 'hidden' : '';
+                    // Hide burger button when sidebar is open
+                    if (mobileUserActions.classList.contains('active')) {
+                        burgerMenuBtn.style.display = 'none';
+                    }
                 });
             }
 
@@ -1415,6 +1432,10 @@
                     mobileUserActions.classList.remove('active');
                     mobileMenuOverlay.classList.remove('active');
                     document.body.style.overflow = '';
+                    // Show burger button again when sidebar closes
+                    if (burgerMenuBtn) {
+                        burgerMenuBtn.style.display = '';
+                    }
                 });
             }
 
@@ -1424,6 +1445,10 @@
                     mobileUserActions.classList.remove('active');
                     mobileMenuOverlay.classList.remove('active');
                     document.body.style.overflow = '';
+                    // Show burger button again when sidebar closes
+                    if (burgerMenuBtn) {
+                        burgerMenuBtn.style.display = '';
+                    }
                 });
             }
 
@@ -2149,8 +2174,20 @@
                 if (unreadCount > 0) {
                     notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
                     notificationBadge.style.display = 'block';
+                    // Update mobile notification badge
+                    const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+                    if (mobileNotificationBadge) {
+                        mobileNotificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                        mobileNotificationBadge.style.display = 'inline-block';
+                    }
                 } else {
                     hideNotificationBadge();
+                    // Hide mobile notification badge
+                    const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+                    if (mobileNotificationBadge) {
+                        mobileNotificationBadge.style.display = 'none';
+                        mobileNotificationBadge.textContent = '0';
+                    }
                 }
 
                 notifications.forEach(notification => {
