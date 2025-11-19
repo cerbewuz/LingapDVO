@@ -333,12 +333,12 @@
             }
         }
 
-        /* Desktop: Position below notification icon at top right, outside greeting card */
+        /* Desktop: Position to the left of notification icon */
         @@media (min-width: 992px) {
             .notification-dropdown {
-                position: fixed;
-                top: 80px;
-                right: 20px;
+                position: absolute;
+                top: calc(100% + 10px);
+                right: calc(100% + 10px);
                 left: auto;
                 transform: none;
                 width: 400px;
