@@ -318,6 +318,158 @@
                 transform: rotate(180deg);
             }
 
+        /* Mobile Notification Settings Toast */
+        .mobile-notification-toast {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+            .mobile-notification-toast.active {
+                display: flex;
+            }
+
+        .mobile-toast-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .mobile-toast-content {
+            position: relative;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            width: 100%;
+            max-width: 100vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @@keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .mobile-toast-header {
+            padding: 1.25rem 1rem;
+            border-bottom: 2px solid var(--gray-200);
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 16px 16px 0 0;
+            flex-shrink: 0;
+        }
+
+            .mobile-toast-header h6 {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 600;
+            }
+
+            .mobile-toast-header i.fa-cog {
+                margin-right: 0.5rem;
+            }
+
+        .mobile-toast-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+            .mobile-toast-close:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+
+        .mobile-toast-body {
+            padding: 1.25rem 1rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+            .mobile-toast-body::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .mobile-toast-body::-webkit-scrollbar-track {
+                background: var(--gray-100);
+            }
+
+            .mobile-toast-body::-webkit-scrollbar-thumb {
+                background: var(--gray-400);
+                border-radius: 3px;
+            }
+
+            .mobile-toast-body::-webkit-scrollbar-thumb:hover {
+                background: var(--gray-500);
+            }
+
+            .mobile-toast-body .form-check-label {
+                display: block;
+                padding-left: 0.5rem;
+            }
+
+            .mobile-toast-body .form-check-label i {
+                margin-right: 0.5rem;
+            }
+
+            .mobile-toast-body .alert {
+                font-size: 0.875rem;
+                padding: 0.75rem;
+            }
+
+        .mobile-toast-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+
+            .mobile-toast-footer .btn {
+                flex: 1;
+                max-width: 150px;
+            }
+
+        /* Hide toast on desktop */
+        @@media (min-width: 768px) {
+            .mobile-notification-toast {
+                display: none !important;
+            }
+        }
+
         @@media (max-width: 767.98px) {
             .user-actions {
                 display: none !important;
@@ -1105,8 +1257,11 @@
             <!-- Mobile Notification Dropdown (inside menu) -->
             <div class="mobile-notification-dropdown" id="mobileNotificationDropdown">
                 <div class="mobile-notification-header">
+                    <button class="btn btn-sm btn-link text-muted" id="mobileNotificationSettings" title="Notification Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
                     <button class="btn btn-sm btn-link text-muted" id="mobileMarkAllRead" title="Mark all as read">
-                        <i class="fas fa-check-double"></i> Mark all read
+                        <i class="fas fa-check-double"></i>
                     </button>
                     <button class="btn btn-sm btn-link text-muted" id="mobileRefreshNotifications" title="Refresh">
                         <i class="fas fa-sync-alt"></i>
@@ -1192,6 +1347,57 @@
                         <i class="fas fa-save"></i> Save Preferences
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Notification Settings Toast -->
+    <div class="mobile-notification-toast" id="mobileNotificationSettingsToast">
+        <div class="mobile-toast-overlay" id="mobileToastOverlay"></div>
+        <div class="mobile-toast-content">
+            <div class="mobile-toast-header">
+                <h6 class="mb-0"><i class="fas fa-cog"></i> Notification Preferences</h6>
+                <button class="mobile-toast-close" id="mobileToastClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mobile-toast-body">
+                <p class="text-muted mb-3 small">Choose how you want to receive notifications</p>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="mobilePreferInAppNotification" checked>
+                    <label class="form-check-label" for="mobilePreferInAppNotification">
+                        <i class="fas fa-bell text-primary"></i> <strong>In-App Notifications</strong>
+                        <small class="d-block text-muted">Receive real-time notifications in the application</small>
+                    </label>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="mobilePreferEmailNotification" checked>
+                    <label class="form-check-label" for="mobilePreferEmailNotification">
+                        <i class="fas fa-envelope text-info"></i> <strong>Email Notifications</strong>
+                        <small class="d-block text-muted">Get notified via email about status updates</small>
+                    </label>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="mobilePreferSmsNotification">
+                    <label class="form-check-label" for="mobilePreferSmsNotification">
+                        <i class="fas fa-sms text-success"></i> <strong>SMS Notifications</strong>
+                        <small class="d-block text-muted">Receive text message alerts on your phone</small>
+                    </label>
+                </div>
+
+                <div class="alert alert-info mb-3" role="alert">
+                    <i class="fas fa-info-circle"></i>
+                    <small>You will receive notifications when your application status changes (Pending, Processing, Approve, Disapprove, Claimed)</small>
+                </div>
+            </div>
+            <div class="mobile-toast-footer">
+                <button type="button" class="btn btn-secondary btn-sm" id="mobileCancelNotificationSettings">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="mobileSaveNotificationSettings">
+                    <i class="fas fa-save"></i> Save Preferences
+                </button>
             </div>
         </div>
     </div>
@@ -2515,6 +2721,92 @@
                     e.preventDefault();
                     e.stopPropagation();
                     loadMobileNotifications();
+                });
+            }
+
+            // Mobile notification settings button (opens toast)
+            const mobileNotificationSettings = document.getElementById('mobileNotificationSettings');
+            const mobileNotificationSettingsToast = document.getElementById('mobileNotificationSettingsToast');
+            const mobileToastOverlay = document.getElementById('mobileToastOverlay');
+            const mobileToastClose = document.getElementById('mobileToastClose');
+            const mobileCancelNotificationSettings = document.getElementById('mobileCancelNotificationSettings');
+            const mobileSaveNotificationSettings = document.getElementById('mobileSaveNotificationSettings');
+
+            if (mobileNotificationSettings) {
+                mobileNotificationSettings.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Sync settings from desktop to mobile
+                    const desktopInApp = document.getElementById('preferInAppNotification');
+                    const desktopEmail = document.getElementById('preferEmailNotification');
+                    const desktopSms = document.getElementById('preferSmsNotification');
+                    const mobileInApp = document.getElementById('mobilePreferInAppNotification');
+                    const mobileEmail = document.getElementById('mobilePreferEmailNotification');
+                    const mobileSms = document.getElementById('mobilePreferSmsNotification');
+
+                    if (desktopInApp && mobileInApp) mobileInApp.checked = desktopInApp.checked;
+                    if (desktopEmail && mobileEmail) mobileEmail.checked = desktopEmail.checked;
+                    if (desktopSms && mobileSms) mobileSms.checked = desktopSms.checked;
+
+                    // Show toast
+                    mobileNotificationSettingsToast.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            }
+
+            // Close mobile toast with close button
+            if (mobileToastClose) {
+                mobileToastClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mobileNotificationSettingsToast.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Close mobile toast with overlay
+            if (mobileToastOverlay) {
+                mobileToastOverlay.addEventListener('click', function() {
+                    mobileNotificationSettingsToast.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Cancel button in mobile toast
+            if (mobileCancelNotificationSettings) {
+                mobileCancelNotificationSettings.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mobileNotificationSettingsToast.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Save button in mobile toast
+            if (mobileSaveNotificationSettings) {
+                mobileSaveNotificationSettings.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Sync settings from mobile to desktop
+                    const desktopInApp = document.getElementById('preferInAppNotification');
+                    const desktopEmail = document.getElementById('preferEmailNotification');
+                    const desktopSms = document.getElementById('preferSmsNotification');
+                    const mobileInApp = document.getElementById('mobilePreferInAppNotification');
+                    const mobileEmail = document.getElementById('mobilePreferEmailNotification');
+                    const mobileSms = document.getElementById('mobilePreferSmsNotification');
+
+                    if (desktopInApp && mobileInApp) desktopInApp.checked = mobileInApp.checked;
+                    if (desktopEmail && mobileEmail) desktopEmail.checked = mobileEmail.checked;
+                    if (desktopSms && mobileSms) desktopSms.checked = mobileSms.checked;
+
+                    // Save settings (trigger desktop save logic)
+                    const saveBtn = document.getElementById('saveNotificationSettings');
+                    if (saveBtn) {
+                        saveBtn.click();
+                    }
+
+                    // Close toast
+                    mobileNotificationSettingsToast.classList.remove('active');
+                    document.body.style.overflow = '';
                 });
             }
 
