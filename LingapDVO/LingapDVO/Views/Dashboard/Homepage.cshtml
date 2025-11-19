@@ -284,12 +284,12 @@
                 border: 2px solid white;
             }
 
-        /* Notification Dropdown - Mobile First (Default: Centered for all mobile/tablet) */
+        /* Notification Dropdown - Mobile First (Default: Upper middle for all mobile/tablet) */
         .notification-dropdown {
             position: fixed;
-            top: 50%;
+            top: 80px;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             width: 95vw;
             max-width: 400px;
             background: white;
@@ -298,29 +298,32 @@
             z-index: 1060;
             display: none;
             border: 1px solid var(--gray-200);
-            max-height: 80vh;
+            max-height: calc(100vh - 100px);
             overflow: hidden;
         }
 
-        /* Small phones: Adjust width */
+        /* Small phones: Upper middle positioning */
         @@media (max-width: 575.98px) {
             .notification-dropdown {
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
                 width: calc(100vw - 40px);
                 max-width: 400px;
-                max-height: 80vh;
+                max-height: calc(100vh - 100px);
             }
         }
 
-        /* Tablets and larger phones: Keep centered */
+        /* Tablets and larger phones: Upper middle positioning */
         @@media (min-width: 576px) and (max-width: 991.98px) {
             .notification-dropdown {
                 position: fixed;
-                top: 50%;
+                top: 80px;
                 left: 50%;
-                transform: translate(-50%, -50%);
+                transform: translateX(-50%);
                 width: 90vw;
                 max-width: 400px;
-                max-height: 80vh;
+                max-height: calc(100vh - 100px);
             }
         }
 
