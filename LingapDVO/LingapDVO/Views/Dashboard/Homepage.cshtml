@@ -112,31 +112,16 @@
             cursor: pointer;
             position: relative;
             z-index: 1060;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--secondary);
+            transition: var(--transition);
         }
 
             .burger-menu-btn:hover {
                 background: var(--primary-light);
-            }
-
-            .burger-menu-btn span {
-                display: block;
-                width: 20px;
-                height: 2px;
-                background: var(--secondary);
-                margin: 4px auto;
-                transition: var(--transition);
-            }
-
-            .burger-menu-btn.active span:nth-child(1) {
-                transform: rotate(45deg) translate(5px, 5px);
-            }
-
-            .burger-menu-btn.active span:nth-child(2) {
-                opacity: 0;
-            }
-
-            .burger-menu-btn.active span:nth-child(3) {
-                transform: rotate(-45deg) translate(5px, -5px);
+                color: var(--primary);
             }
 
         .mobile-menu-overlay {
@@ -177,11 +162,35 @@
             border-bottom: 2px solid var(--gray-200);
             background: var(--primary);
             color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
             .mobile-menu-header h5 {
                 margin: 0;
                 font-size: 1.1rem;
+                flex: 1;
+            }
+
+        .mobile-menu-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+            .mobile-menu-close-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.1);
             }
 
         .mobile-menu-items {
@@ -274,9 +283,9 @@
         /* Notification Dropdown - Mobile First */
         .notification-dropdown {
             position: fixed;
-            top: 70px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             width: 95vw;
             max-width: 400px;
             background: white;
@@ -285,18 +294,29 @@
             z-index: 1050;
             display: none;
             border: 1px solid var(--gray-200);
-            max-height: calc(100vh - 90px);
+            max-height: 80vh;
             overflow: hidden;
         }
 
-        /* Mobile: Full width with margin */
+        /* Mobile: Centered with close button */
         @@media (max-width: 575.98px) {
             .notification-dropdown {
-                width: calc(100vw - 20px);
-                left: 10px;
-                right: 10px;
+                width: calc(100vw - 40px);
+                max-width: 400px;
+                max-height: 80vh;
+            }
+        }
+
+        /* Desktop: Position near notification icon */
+        @@media (min-width: 992px) {
+            .notification-dropdown {
+                position: absolute;
+                top: calc(100% + 10px);
+                right: 0;
+                left: auto;
                 transform: none;
-                max-height: calc(100vh - 90px);
+                width: 400px;
+                max-height: 600px;
             }
         }
 
@@ -309,7 +329,58 @@
             background: var(--gray-100);
             flex-wrap: wrap;
             gap: 0.5rem;
+            position: relative;
         }
+
+        .notification-close-btn {
+            display: none;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            border: none;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-600);
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+            .notification-close-btn:hover {
+                background: var(--danger);
+                color: white;
+            }
+
+        /* Show close button on mobile */
+        @@media (max-width: 991.98px) {
+            .notification-close-btn {
+                display: flex;
+            }
+
+            .notification-header {
+                padding-right: 3rem;
+            }
+        }
+
+        /* Notification dropdown overlay for mobile */
+        .notification-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1045;
+        }
+
+            .notification-overlay.active {
+                display: block;
+            }
 
         .notification-body {
             max-height: 60vh;
@@ -331,6 +402,28 @@
             .notification-item.unread {
                 background: var(--primary-light);
                 border-left: 4px solid var(--primary);
+            }
+
+            /* Priority notifications - High priority (2+ hours delay) */
+            .notification-item.priority-high {
+                background: #FEF2F2; /* Light red background */
+                border-left: 4px solid #EF4444; /* Red border */
+            }
+
+            .notification-item.priority-high.unread {
+                background: #FEE2E2; /* Slightly darker for unread */
+                border-left: 4px solid #DC2626; /* Darker red */
+            }
+
+            /* Priority notifications - Medium priority (1-2 hours delay) */
+            .notification-item.priority-medium {
+                background: #FEF3C7; /* Light yellow background */
+                border-left: 4px solid #F59E0B; /* Orange border */
+            }
+
+            .notification-item.priority-medium.unread {
+                background: #FDE68A; /* Slightly darker for unread */
+                border-left: 4px solid #D97706; /* Darker orange */
             }
 
         .notification-title {
@@ -407,6 +500,38 @@
         .notification-type-waiting {
             background: var(--secondary);
             color: white;
+        }
+
+        /* Priority badges for notifications */
+        .priority-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-badge.high {
+            background: #DC2626;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .priority-badge.medium {
+            background: #F59E0B;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
         }
 
         /* Main Content - Responsive */
@@ -832,9 +957,15 @@
         </div>
     </header>
 
+    <!-- Notification Dropdown Overlay (for mobile) -->
+    <div class="notification-overlay" id="notificationOverlay"></div>
+
     <!-- Notification Dropdown -->
     <div class="notification-dropdown" id="notificationDropdown">
         <div class="notification-header">
+            <button class="notification-close-btn" id="notificationCloseBtn" title="Close">
+                <i class="fas fa-times"></i>
+            </button>
             <h6 class="mb-0">Notifications</h6>
             <div>
                 <button class="btn btn-sm btn-link text-muted" id="notificationSettings" title="Notification Settings">
@@ -860,6 +991,9 @@
     <div class="mobile-user-actions" id="mobileUserActions">
         <div class="mobile-menu-header">
             <h5><i class="fas fa-user-circle me-2"></i>Account Menu</h5>
+            <button class="mobile-menu-close-btn" id="mobileMenuCloseBtn" title="Close Menu">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         <div class="mobile-menu-items">
             <!-- Verification Status -->
@@ -1056,10 +1190,8 @@
                             </div>
 
                             <!-- Mobile Burger Menu Button -->
-                            <button class="burger-menu-btn" id="burgerMenuBtn" aria-label="Menu">
-                                <span></span>
-                                <span></span>
-                                <span></span>
+                            <button class="burger-menu-btn" id="burgerMenuBtn" aria-label="Menu" title="Menu">
+                                <i class="fas fa-bars"></i>
                             </button>
                         </div>
                     </div>
@@ -1248,17 +1380,26 @@
             if (burgerMenuBtn) {
                 burgerMenuBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    burgerMenuBtn.classList.toggle('active');
                     mobileUserActions.classList.toggle('active');
                     mobileMenuOverlay.classList.toggle('active');
                     document.body.style.overflow = mobileUserActions.classList.contains('active') ? 'hidden' : '';
                 });
             }
 
+            // Close mobile menu with close button
+            const mobileMenuCloseBtn = document.getElementById('mobileMenuCloseBtn');
+            if (mobileMenuCloseBtn) {
+                mobileMenuCloseBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    mobileUserActions.classList.remove('active');
+                    mobileMenuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
             // Close mobile menu when clicking overlay
             if (mobileMenuOverlay) {
                 mobileMenuOverlay.addEventListener('click', function() {
-                    burgerMenuBtn.classList.remove('active');
                     mobileUserActions.classList.remove('active');
                     mobileMenuOverlay.classList.remove('active');
                     document.body.style.overflow = '';
@@ -1269,13 +1410,14 @@
             if (mobileNotificationBtn) {
                 mobileNotificationBtn.addEventListener('click', function(e) {
                     e.preventDefault();
+                    const notificationOverlay = document.getElementById('notificationOverlay');
                     // Close mobile menu
-                    burgerMenuBtn.classList.remove('active');
                     mobileUserActions.classList.remove('active');
                     mobileMenuOverlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                    // Open notification dropdown
+                    // Open notification dropdown with overlay
                     document.getElementById('notificationDropdown').style.display = 'block';
+                    notificationOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
                     loadRealNotifications();
                 });
             }
@@ -1378,16 +1520,52 @@
             notificationButton.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const isVisible = notificationDropdown.style.display === 'block';
-                notificationDropdown.style.display = isVisible ? 'none' : 'block';
-                if (!isVisible) {
+                const notificationOverlay = document.getElementById('notificationOverlay');
+
+                if (isVisible) {
+                    notificationDropdown.style.display = 'none';
+                    notificationOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                } else {
+                    notificationDropdown.style.display = 'block';
+                    // Show overlay on mobile/tablet only
+                    if (window.innerWidth < 992) {
+                        notificationOverlay.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
                     loadRealNotifications();
                 }
             });
 
-            // Close dropdown when clicking outside
+            // Close notification dropdown with close button
+            const notificationCloseBtn = document.getElementById('notificationCloseBtn');
+            if (notificationCloseBtn) {
+                notificationCloseBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notificationDropdown.style.display = 'none';
+                    const notificationOverlay = document.getElementById('notificationOverlay');
+                    notificationOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Close notification dropdown when clicking overlay
+            const notificationOverlay = document.getElementById('notificationOverlay');
+            if (notificationOverlay) {
+                notificationOverlay.addEventListener('click', function() {
+                    notificationDropdown.style.display = 'none';
+                    notificationOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Close dropdown when clicking outside (desktop only)
             document.addEventListener('click', function(e) {
                 if (!notificationDropdown.contains(e.target) && e.target !== notificationButton) {
                     notificationDropdown.style.display = 'none';
+                    const notificationOverlay = document.getElementById('notificationOverlay');
+                    notificationOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
                 }
             });
 
@@ -1930,13 +2108,33 @@
                     const notificationItem = document.createElement('div');
                     const typeIcon = getNotificationTypeIcon(notification.type);
 
-                    notificationItem.className = `notification-item ${notification.isRead ? '' : 'unread'}`;
+                    // Build class list with priority
+                    let classNames = 'notification-item';
+                    if (!notification.isRead) {
+                        classNames += ' unread';
+                    }
+                    if (notification.priority === 'high') {
+                        classNames += ' priority-high';
+                    } else if (notification.priority === 'medium') {
+                        classNames += ' priority-medium';
+                    }
+                    notificationItem.className = classNames;
+
+                    // Build priority badge HTML
+                    let priorityBadgeHtml = '';
+                    if (notification.priority === 'high') {
+                        priorityBadgeHtml = '<span class="priority-badge high">High Priority</span>';
+                    } else if (notification.priority === 'medium') {
+                        priorityBadgeHtml = '<span class="priority-badge medium">Medium Priority</span>';
+                    }
+
                     notificationItem.innerHTML = `
                         <div class="notification-title">
                             <div class="notification-type-icon ${typeIcon.class}">
                                 <i class="${typeIcon.icon}"></i>
                             </div>
                             ${escapeHtml(notification.title)}
+                            ${priorityBadgeHtml}
                         </div>
                         <div class="notification-message">${escapeHtml(notification.message)}</div>
                         <div class="notification-time">${formatTime(notification.createdAt)}</div>

@@ -62,6 +62,7 @@ public class NotificationsController : Controller
                 var isRead = readNotificationIds.Contains(notificationId);
 
                 var (title, message, type) = GetStatusNotificationDetails("Hospital Assistance", bill.Status, bill.CreatedAt);
+                var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -72,7 +73,8 @@ public class NotificationsController : Controller
                     createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
                     link = "/Applicationtracking",
-                    status = bill.Status
+                    status = bill.Status,
+                    priority = priority
                 });
             }
 
@@ -83,6 +85,7 @@ public class NotificationsController : Controller
                 var isRead = readNotificationIds.Contains(notificationId);
 
                 var (title, message, type) = GetStatusNotificationDetails("Other Assistance", medical.Status, medical.CreatedAt);
+                var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -93,7 +96,8 @@ public class NotificationsController : Controller
                     createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
                     link = "/Applicationtracking",
-                    status = medical.Status
+                    status = medical.Status,
+                    priority = priority
                 });
             }
 
@@ -104,6 +108,7 @@ public class NotificationsController : Controller
                 var isRead = readNotificationIds.Contains(notificationId);
 
                 var (title, message, type) = GetStatusNotificationDetails("Funeral Assistance", funeral.Status, funeral.CreatedAt);
+                var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -114,7 +119,8 @@ public class NotificationsController : Controller
                     createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
                     link = "/Applicationtracking",
-                    status = funeral.Status
+                    status = funeral.Status,
+                    priority = priority
                 });
             }
 
@@ -345,5 +351,45 @@ public class NotificationsController : Controller
                 "status_change"
             )
         };
+    }
+
+    /// <summary>
+    /// Calculate priority level for applications in pending or processing state
+    /// Priority is based on waiting time since submission
+    /// High Priority: 2+ hours | Medium Priority: 1-2 hours | Normal: < 1 hour
+    /// </summary>
+    private string CalculateApplicationPriority(string status, string status2, DateTime createdAt)
+    {
+        // Only calculate priority for pending or processing applications
+        // If already approved/disapproved/claimed, no priority needed
+        if (!string.IsNullOrEmpty(status2) && (status2.Equals("Approve", StringComparison.OrdinalIgnoreCase) ||
+            status2.Equals("Disapprove", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "normal";
+        }
+
+        // Check if still in pending or processing state
+        if (string.IsNullOrEmpty(status) ||
+            (!status.Equals("Pending", StringComparison.OrdinalIgnoreCase) &&
+             !status.Equals("Processing", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "normal";
+        }
+
+        // Calculate hours elapsed since submission (using Philippine time)
+        var hoursElapsed = (_dateTimeService.Now - createdAt).TotalHours;
+
+        if (hoursElapsed >= 2)
+        {
+            return "high";
+        }
+        else if (hoursElapsed >= 1)
+        {
+            return "medium";
+        }
+        else
+        {
+            return "normal";
+        }
     }
 }
