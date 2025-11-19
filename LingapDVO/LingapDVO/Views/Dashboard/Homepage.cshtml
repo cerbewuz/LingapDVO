@@ -1749,13 +1749,13 @@
 
                 if (applications.hospitalBills && applications.hospitalBills.length > 0) {
                     applications.hospitalBills.forEach(app => {
-                        notifications.push(...getApplicationStatusNotifications(app, 'Hospital'));
+                        notifications.push(...getApplicationStatusNotifications(app, 'Hospital Assistance'));
                     });
                 }
 
                 if (applications.medicalForms && applications.medicalForms.length > 0) {
                     applications.medicalForms.forEach(app => {
-                        notifications.push(...getApplicationStatusNotifications(app, 'Medical Procedure'));
+                        notifications.push(...getApplicationStatusNotifications(app, 'Other Assistance'));
                     });
                 }
 
