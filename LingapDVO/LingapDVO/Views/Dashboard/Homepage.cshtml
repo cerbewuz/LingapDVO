@@ -255,6 +255,69 @@
                     color: white;
                 }
 
+        /* Mobile Notification Dropdown (inside mobile menu) */
+        .mobile-notification-dropdown {
+            display: none;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin: 0 1rem 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+            .mobile-notification-dropdown.active {
+                display: block;
+                max-height: 400px;
+            }
+
+        .mobile-notification-header {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-300);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+
+            .mobile-notification-header .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+
+        .mobile-notification-body {
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+        }
+
+            .mobile-notification-body::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .mobile-notification-body::-webkit-scrollbar-track {
+                background: var(--gray-100);
+            }
+
+            .mobile-notification-body::-webkit-scrollbar-thumb {
+                background: var(--gray-400);
+                border-radius: 3px;
+            }
+
+            .mobile-notification-body::-webkit-scrollbar-thumb:hover {
+                background: var(--gray-500);
+            }
+
+        #mobileNotificationChevron {
+            transition: transform 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+            #mobileNotificationChevron.rotate {
+                transform: rotate(180deg);
+            }
+
         @@media (max-width: 767.98px) {
             .user-actions {
                 display: none !important;
@@ -1036,7 +1099,23 @@
                 <i class="fas fa-bell"></i>
                 <span>Notifications</span>
                 <span class="badge bg-danger rounded-pill ms-auto" id="mobileNotificationBadge" style="display: none;">0</span>
+                <i class="fas fa-chevron-down ms-2" id="mobileNotificationChevron"></i>
             </a>
+
+            <!-- Mobile Notification Dropdown (inside menu) -->
+            <div class="mobile-notification-dropdown" id="mobileNotificationDropdown">
+                <div class="mobile-notification-header">
+                    <button class="btn btn-sm btn-link text-muted" id="mobileMarkAllRead" title="Mark all as read">
+                        <i class="fas fa-check-double"></i> Mark all read
+                    </button>
+                    <button class="btn btn-sm btn-link text-muted" id="mobileRefreshNotifications" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="mobile-notification-body" id="mobileNotificationList">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
 
             <!-- Profile -->
             @if (isVerified)
@@ -1466,24 +1545,131 @@
                 });
             }
 
-            // Mobile notification button - opens notification dropdown
+            // Mobile notification button - toggles notification dropdown inside mobile menu
             if (mobileNotificationBtn) {
+                const mobileNotificationDropdown = document.getElementById('mobileNotificationDropdown');
+                const mobileNotificationChevron = document.getElementById('mobileNotificationChevron');
+
                 mobileNotificationBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const notificationOverlay = document.getElementById('notificationOverlay');
-                    // Close mobile menu
-                    mobileUserActions.classList.remove('active');
-                    mobileMenuOverlay.classList.remove('active');
-                    // Open notification dropdown with overlay
-                    document.getElementById('notificationDropdown').style.display = 'block';
-                    notificationOverlay.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                    // Hide burger icon on mobile when notification dropdown is showing
-                    if (burgerMenuBtn) {
-                        burgerMenuBtn.classList.add('hidden');
+                    e.stopPropagation();
+
+                    // Toggle dropdown visibility
+                    mobileNotificationDropdown.classList.toggle('active');
+                    mobileNotificationChevron.classList.toggle('rotate');
+
+                    // Load notifications if dropdown is opened
+                    if (mobileNotificationDropdown.classList.contains('active')) {
+                        loadMobileNotifications();
                     }
-                    loadRealNotifications();
                 });
+            }
+
+            // Mobile mark all as read button
+            const mobileMarkAllRead = document.getElementById('mobileMarkAllRead');
+            if (mobileMarkAllRead) {
+                mobileMarkAllRead.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    markAllNotificationsAsRead();
+                });
+            }
+
+            // Mobile refresh notifications button
+            const mobileRefreshNotifications = document.getElementById('mobileRefreshNotifications');
+            if (mobileRefreshNotifications) {
+                mobileRefreshNotifications.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    loadMobileNotifications();
+                });
+            }
+
+            // Load notifications for mobile dropdown (inside mobile menu)
+            async function loadMobileNotifications() {
+                const mobileNotificationList = document.getElementById('mobileNotificationList');
+                if (!mobileNotificationList) return;
+
+                try {
+                    // Show loading state
+                    mobileNotificationList.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading notifications...</p>
+                        </div>
+                    `;
+
+                    const applications = await getRealApplicationData();
+                    const notifications = generateNotificationsFromRealData(applications);
+
+                    // Clear loading state
+                    mobileNotificationList.innerHTML = '';
+
+                    if (notifications.length === 0) {
+                        mobileNotificationList.innerHTML = `
+                            <div class="notification-empty">
+                                <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                                <p>No notifications</p>
+                                <small class="text-muted">Check your application status for updates</small>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Render notifications
+                    notifications.forEach(notification => {
+                        const notificationItem = document.createElement('div');
+                        const typeIcon = getNotificationTypeIcon(notification.type);
+
+                        // Build class list with priority
+                        let classNames = 'notification-item';
+                        if (!notification.isRead) {
+                            classNames += ' unread';
+                        }
+                        if (notification.priority === 'high') {
+                            classNames += ' priority-high';
+                        } else if (notification.priority === 'medium') {
+                            classNames += ' priority-medium';
+                        }
+                        notificationItem.className = classNames;
+
+                        // Build priority badge HTML
+                        let priorityBadgeHtml = '';
+                        if (notification.priority === 'high') {
+                            priorityBadgeHtml = '<span class="priority-badge high">High Priority</span>';
+                        } else if (notification.priority === 'medium') {
+                            priorityBadgeHtml = '<span class="priority-badge medium">Medium Priority</span>';
+                        }
+
+                        notificationItem.innerHTML = `
+                            <div class="notification-title">
+                                <div class="notification-type-icon ${typeIcon.class}">
+                                    <i class="${typeIcon.icon}"></i>
+                                </div>
+                                ${escapeHtml(notification.title)}
+                                ${priorityBadgeHtml}
+                            </div>
+                            <div class="notification-message">${escapeHtml(notification.message)}</div>
+                            <div class="notification-time">${formatTime(notification.createdAt)}</div>
+                        `;
+
+                        notificationItem.addEventListener('click', function() {
+                            handleNotificationClick(notification);
+                        });
+
+                        mobileNotificationList.appendChild(notificationItem);
+                    });
+
+                } catch (error) {
+                    console.error('Failed to load mobile notifications:', error);
+                    mobileNotificationList.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2 text-warning"></i>
+                            <p>Unable to load notifications</p>
+                            <small class="text-muted">Please try again later</small>
+                        </div>
+                    `;
+                }
             }
 
             // Sync notification badge between desktop and mobile
