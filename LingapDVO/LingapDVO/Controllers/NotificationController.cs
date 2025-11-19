@@ -219,7 +219,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log exception
+            _logger.LogError(ex, "Error occurred while loading notifications for user");
             return Json(new { error = "An error occurred while loading notifications" });
         }
     }
@@ -248,7 +248,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log exception
+            _logger.LogError(ex, "Error occurred while marking notification {NotificationId} as read", notificationId);
             return Json(new { success = false, error = "An error occurred while marking notification as read" });
         }
     }
@@ -275,7 +275,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log the exception
+            _logger.LogError(ex, "Error occurred while marking all notifications as read for user {UserId}", userId);
             return Json(new { success = false, error = "An error occurred while marking all notifications as read" });
         }
     }
@@ -349,7 +349,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log error and return at least the welcome notification
+            _logger.LogError(ex, "Error occurred while getting current notification IDs for user {UserId}", userId);
             if (!notificationIds.Any())
             {
                 notificationIds.Add("welcome_1");
@@ -369,7 +369,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log error and return empty hashset
+            _logger.LogError(ex, "Error occurred while getting read notification IDs from session for user {UserId}", userId);
             return new HashSet<string>();
         }
     }
@@ -394,7 +394,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log error
+            _logger.LogError(ex, "Error occurred while updating session read notifications for user {UserId}", userId);
             throw;
         }
     }
