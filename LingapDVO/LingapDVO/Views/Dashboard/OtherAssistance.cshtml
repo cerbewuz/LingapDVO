@@ -31,9 +31,9 @@
             color: #495057 !important;
         }
 
-        .readonly-field::placeholder {
-            color: #6c757d !important;
-        }
+            .readonly-field::placeholder {
+                color: #6c757d !important;
+            }
 
         /* Compact checkbox and radio button styling */
         .form-check-input {
@@ -373,38 +373,6 @@
             <span asp-validation-for="ContactNo"></span>
             <small class="text-muted">Format: 09123456789 (11 digits)</small>
         </div>
-
-        <script>
-            const contactNoInput = document.getElementById('contactNoInput');
-
-            contactNoInput.addEventListener('input', function(e) {
-                let value = this.value;
-
-                // Only accept numeric digits
-                value = value.replace(/\D/g, '');
-
-                // Limit to 11 digits (09XXXXXXXXX format)
-                if (value.length > 11) {
-                    value = value.substring(0, 11);
-                }
-
-                this.value = value;
-            });
-
-            // Validation on blur
-            contactNoInput.addEventListener('blur', function() {
-                const value = this.value.trim();
-                if (!value) return; // Skip validation if empty
-
-                // Only accept 09XXXXXXXXX format (11 digits)
-                const validFormat = /^09\d{9}$/;
-
-                if (!validFormat.test(value)) {
-                    alert("Please enter a valid Philippine mobile number in format: 09123456789 (11 digits)");
-                    this.focus();
-                }
-            });
-        </script>
     </div>
     <!-- Applying for self button -->
     <div class="mb-3 mt-3">
@@ -651,70 +619,6 @@
                 <span asp-validation-for="PhilHealthNo"></span>
             </div>
 
-            <script>
-                const philHealthInput = document.getElementById('philHealthInput');
-                const philHealthSelect = document.getElementById('philHealthSelect');
-
-                // Format PhilHealth number with hyphens
-                philHealthInput.addEventListener('input', function(e) {
-                    // Remove all non-digit characters
-                    let value = this.value.replace(/\D/g, '');
-
-                    // Add hyphens after every 4 digits
-                    if (value.length > 4) {
-                        value = value.substring(0, 4) + '-' + value.substring(4);
-                    }
-                    if (value.length > 9) {
-                        value = value.substring(0, 9) + '-' + value.substring(9);
-                    }
-
-                    // Limit to 12 digits (14 characters with hyphens)
-                    if (value.length > 14) {
-                        value = value.substring(0, 14);
-                    }
-
-                    this.value = value;
-                });
-
-                // Handle conditional PhilHealth No. validation
-                philHealthSelect.addEventListener('change', function() {
-                    if (this.value === 'Without PhilHealth') {
-                        // Remove required attribute and clear the field
-                        philHealthInput.removeAttribute('required');
-                        philHealthInput.value = '';
-                        philHealthInput.disabled = true; // Disable the input field
-                        philHealthInput.readOnly = true; // Make it readonly
-                        philHealthInput.classList.add('readonly-field'); // Add readonly styling
-                        philHealthInput.classList.remove('is-invalid'); // Remove validation error
-                    } else if (this.value === 'With PhilHealth') {
-                        // Add required attribute when "With PhilHealth" is selected
-                        philHealthInput.setAttribute('required', 'required');
-                        philHealthInput.disabled = false; // Enable the input field
-                        philHealthInput.readOnly = false; // Make it editable
-                        philHealthInput.classList.remove('readonly-field'); // Remove readonly styling
-                    } else {
-                        // Default: remove required for empty selection
-                        philHealthInput.removeAttribute('required');
-                        philHealthInput.disabled = false;
-                        philHealthInput.readOnly = false;
-                        philHealthInput.classList.remove('readonly-field');
-                    }
-                });
-
-                // Initialize on page load
-                if (philHealthSelect.value === 'Without PhilHealth') {
-                    philHealthInput.removeAttribute('required');
-                    philHealthInput.disabled = true;
-                    philHealthInput.readOnly = true;
-                    philHealthInput.classList.add('readonly-field');
-                } else if (philHealthSelect.value === 'With PhilHealth') {
-                    philHealthInput.setAttribute('required', 'required');
-                    philHealthInput.disabled = false;
-                    philHealthInput.readOnly = false;
-                    philHealthInput.classList.remove('readonly-field');
-                }
-            </script>
-
             <div class="col-md-2 col-sm-6">
                 <label class="form-label">Date of Birth</label>
                 <input asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" placeholder="MM/DD/YYYY" required>
@@ -726,37 +630,6 @@
                 <input asp-for="Age" type="number" class="form-control" id="ageInput" readonly>
                 <span asp-validation-for="Age" class="text-danger"></span>
             </div>
-
-            <script>
-                const dateOfBirth = document.getElementById('dateOfBirth');
-                const ageInput = document.getElementById('ageInput');
-
-                function calculateAge(dob) {
-                    if (!dob) return "";
-                    const birthDate = new Date(dob);
-                    const today = new Date();
-
-                    let age = today.getFullYear() - birthDate.getFullYear();
-                    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-                    // Adjust if birthday hasn't happened yet this year
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
-                    }
-                    return age;
-                }
-
-                // Auto-calc on page load if DOB has a value
-                if (dateOfBirth.value) {
-                    ageInput.value = calculateAge(dateOfBirth.value);
-                }
-
-                // Recalc whenever DOB changes
-                dateOfBirth.addEventListener('change', function () {
-                    ageInput.value = calculateAge(this.value);
-                });
-            </script>
-
         </div>
         <!-- End Patient Details Section wrapper -->
     </div>
@@ -816,11 +689,11 @@
             <p>Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
         </div>
         <input asp-for="MedCertificateimage" type="file" id="receipt" class="d-none"
-               accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'receiptPreview')"> <!-- Removed .doc,.docx -->
+               accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'receiptPreview')">
         <span asp-validation-for="MedCertificateimage" class="text-danger"></span>
 
         <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
-        <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p> <!-- Updated text -->
+        <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
     </div>
 
     <!-- Terms and Conditions -->
@@ -853,7 +726,6 @@
 </div>
 
 <!-- For zooming photo -->
-<!-- Add this modal HTML at the end of your form container but before the closing </div> -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -882,186 +754,572 @@
     </div>
 </div>
 
-<!-- JS Scripts -->
-<script>
-    // Function to check if form was submitted successfully and show compact modal
-    function checkFormSubmission() {
-        @if (ViewBag.Success != null && ViewBag.Success == true)
-        {
-            <text>
-            // Show compact success modal
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            successModal.show();
+@section Scripts {
+    <script>
+        // Main initialization function
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeContactNumber();
+            initializePhilHealth();
+            initializeDateOfBirth();
+            initializeAssistanceCheckboxes();
+            initializeFormValidation();
+            initializeImageModal();
+            initializeAutoFill();
+            initializePatientToggle();
+            initializeFileValidation();
 
-            // Auto-redirect after 2 seconds
-            setTimeout(() => {
-                window.location.href = '/Home';
-            }, 2000);
-            </text>
-        }
-    }
+            // Check for successful form submission
+            checkFormSubmission();
+        });
 
-    // Initialize when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        checkFormSubmission();
-    });
-</script>
-<script>
+        // Contact Number Validation
+        function initializeContactNumber() {
+            const contactNoInput = document.getElementById('contactNoInput');
+            if (!contactNoInput) return;
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Make all preview images clickable to open modal
-        const previewImages = document.querySelectorAll('.img-preview');
-        const modalImage = document.getElementById('modalImage');
-        const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-        const modalTitle = document.getElementById('imageModalLabel');
-        const imageContainer = document.getElementById('imageContainer');
-        const zoomPercentage = document.getElementById('zoomPercentage');
-        const zoomInBtn = document.getElementById('zoomIn');
-        const zoomOutBtn = document.getElementById('zoomOut');
-        const zoomResetBtn = document.getElementById('zoomReset');
-
-        // Zoom variables
-        let currentZoom = 1;
-        const zoomFactor = 0.1;
-        const maxZoom = 3;
-        const minZoom = 0.5;
-
-        // Reset zoom on modal open
-        function resetZoom() {
-            currentZoom = 1;
-            updateZoom();
-        }
-
-        // Apply zoom level
-        function updateZoom() {
-            modalImage.style.transform = `scale(${currentZoom})`;
-            zoomPercentage.textContent = `${Math.round(currentZoom * 100)}%`;
-        }
-
-        // Zoom in function
-        function zoomIn() {
-            if (currentZoom < maxZoom) {
-                currentZoom += zoomFactor;
-                updateZoom();
-            }
-        }
-
-        // Zoom out function
-        function zoomOut() {
-            if (currentZoom > minZoom) {
-                currentZoom -= zoomFactor;
-                updateZoom();
-            }
-        }
-
-        // Make images clickable
-        previewImages.forEach(img => {
-            img.style.cursor = 'pointer';
-            img.addEventListener('click', function() {
-                modalImage.src = this.src;
-                modalTitle.textContent = this.alt || 'Image Preview';
-                resetZoom();
-                imageModal.show();
+            contactNoInput.addEventListener('input', function(e) {
+                let value = this.value;
+                value = value.replace(/\D/g, '');
+                if (value.length > 11) {
+                    value = value.substring(0, 11);
+                }
+                this.value = value;
             });
-        });
 
-        // Add zoom event listeners
-        zoomInBtn.addEventListener('click', zoomIn);
-        zoomOutBtn.addEventListener('click', zoomOut);
-        zoomResetBtn.addEventListener('click', resetZoom);
+            contactNoInput.addEventListener('blur', function() {
+                const value = this.value.trim();
+                if (!value) return;
+                const validFormat = /^09\d{9}$/;
+                if (!validFormat.test(value)) {
+                    alert("Please enter a valid Philippine mobile number in format: 09123456789 (11 digits)");
+                    this.focus();
+                }
+            });
+        }
 
-        // Mouse wheel zoom
-        imageContainer.addEventListener('wheel', function(e) {
-            e.preventDefault();
-            if (e.deltaY < 0) {
-                zoomIn();
-            } else {
-                zoomOut();
+        // PhilHealth Number Handling
+        function initializePhilHealth() {
+            const philHealthInput = document.getElementById('philHealthInput');
+            const philHealthSelect = document.getElementById('philHealthSelect');
+            if (!philHealthInput || !philHealthSelect) return;
+
+            philHealthInput.addEventListener('input', function(e) {
+                let value = this.value.replace(/\D/g, '');
+                if (value.length > 4) {
+                    value = value.substring(0, 4) + '-' + value.substring(4);
+                }
+                if (value.length > 9) {
+                    value = value.substring(0, 9) + '-' + value.substring(9);
+                }
+                if (value.length > 14) {
+                    value = value.substring(0, 14);
+                }
+                this.value = value;
+            });
+
+            philHealthSelect.addEventListener('change', function() {
+                if (this.value === 'Without PhilHealth') {
+                    philHealthInput.removeAttribute('required');
+                    philHealthInput.value = '';
+                    philHealthInput.disabled = true;
+                    philHealthInput.readOnly = true;
+                    philHealthInput.classList.add('readonly-field');
+                    philHealthInput.classList.remove('is-invalid');
+                } else if (this.value === 'With PhilHealth') {
+                    philHealthInput.setAttribute('required', 'required');
+                    philHealthInput.disabled = false;
+                    philHealthInput.readOnly = false;
+                    philHealthInput.classList.remove('readonly-field');
+                } else {
+                    philHealthInput.removeAttribute('required');
+                    philHealthInput.disabled = false;
+                    philHealthInput.readOnly = false;
+                    philHealthInput.classList.remove('readonly-field');
+                }
+            });
+
+            // Initialize on page load
+            if (philHealthSelect.value === 'Without PhilHealth') {
+                philHealthInput.removeAttribute('required');
+                philHealthInput.disabled = true;
+                philHealthInput.readOnly = true;
+                philHealthInput.classList.add('readonly-field');
+            } else if (philHealthSelect.value === 'With PhilHealth') {
+                philHealthInput.setAttribute('required', 'required');
+                philHealthInput.disabled = false;
+                philHealthInput.readOnly = false;
+                philHealthInput.classList.remove('readonly-field');
             }
-        });
+        }
 
-        // Pan image when dragging
-        let isDragging = false;
-        let startX, startY, translateX = 0, translateY = 0;
+        // Date of Birth and Age Calculation
+        function initializeDateOfBirth() {
+            const dateOfBirth = document.getElementById('dateOfBirth');
+            const ageInput = document.getElementById('ageInput');
+            if (!dateOfBirth || !ageInput) return;
 
-        imageContainer.addEventListener('mousedown', function(e) {
-            isDragging = true;
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
-            imageContainer.style.cursor = 'grabbing';
-        });
-
-        window.addEventListener('mousemove', function(e) {
-            if (!isDragging) return;
-
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-
-            // Only allow panning when zoomed in
-            if (currentZoom > 1) {
-                modalImage.style.transform = `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`;
+            function calculateAge(dob) {
+                if (!dob) return "";
+                const birthDate = new Date(dob);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                return age;
             }
-        });
 
-        window.addEventListener('mouseup', function() {
-            isDragging = false;
-            imageContainer.style.cursor = 'grab';
-        });
-
-        // Allow closing modal with ESC key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                imageModal.hide();
+            if (dateOfBirth.value) {
+                ageInput.value = calculateAge(dateOfBirth.value);
             }
-        });
 
-        // Reset zoom and position when modal is closed
-        document.getElementById('imageModal').addEventListener('hidden.bs.modal', function() {
-            resetZoom();
-            translateX = 0;
-            translateY = 0;
-            modalImage.style.transform = 'scale(1) translate(0, 0)';
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
-        const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
-        const toggleBtn = document.getElementById('togglePatientBtn');
-        const patientSection = document.getElementById('patientDetailsSection');
+            dateOfBirth.addEventListener('change', function () {
+                ageInput.value = calculateAge(this.value);
+            });
+        }
 
-        // Patient form fields
-        const patientLastname = document.getElementById('Lastname');
-        const patientFirstname = document.getElementById('Firstname');
-        const patientMiddlename = document.getElementById('Middlename');
-        const patientSuffix = document.getElementById('Suffix');
-        const patientBlkLotStreet = document.getElementById('BlkLotStreet');
-        const patientSubVill = document.getElementById('SubVill');
-        const patientBrgy = document.getElementById('Brgy');
-        const patientDistrict = document.getElementById('District');
+        // Assistance Checkboxes - SINGLE SELECTION
+        function initializeAssistanceCheckboxes() {
+            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+            const assistanceReflection = document.getElementById('assistanceReflection');
 
-        // Requestor form fields
-        const requestorLastname = document.getElementById('RLastname');
-        const requestorFirstname = document.getElementById('RFirstname');
-        const requestorMiddlename = document.getElementById('RMiddlename');
-        const requestorSuffix = document.getElementById('RSuffix');
-        const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
-        const requestorSubVill = document.getElementById('RSubVill');
-        const requestorBrgy = document.getElementById('RBrgy');
-        const requestorDistrict = document.getElementById('RDistrict');
-        const relationshipPatient = document.getElementById('RelationshipPatient');
+            // Initialize - ensure no checkboxes are checked by default
+            assistanceCheckboxes.forEach(checkbox => checkbox.checked = false);
 
-        // Store original values to restore on clear
-        let originalPatientValues = {};
-        let autoFillUsed = false;
+            // Single selection function
+            assistanceCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Uncheck all other checkboxes
+                        assistanceCheckboxes.forEach(cb => {
+                            if (cb !== this) {
+                                cb.checked = false;
+                            }
+                        });
+                    }
+                    updateAssistanceReflection();
+                });
+            });
 
-        // IMPROVED SHOW/HIDE TOGGLE FUNCTIONALITY
-        if (toggleBtn && patientSection) {
+            // Update reflection function
+            function updateAssistanceReflection() {
+                let selectedOptions = [];
+                assistanceCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const label = checkbox.nextElementSibling.textContent.trim();
+                        selectedOptions.push(label);
+                    }
+                });
+                if (assistanceReflection) {
+                    assistanceReflection.value = selectedOptions.join(', ');
+                }
+            }
+
+            // Initial update
+            updateAssistanceReflection();
+        }
+
+        // Form Validation
+        function initializeFormValidation() {
+            const form = document.querySelector('form');
+            if (!form) return;
+
+            function initializeRequiredLabels() {
+                const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+                requiredInputs.forEach(input => {
+                    const label = input.closest('.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-md-12, .mb-3, .mb-4')?.querySelector('label');
+                    if (label && !label.classList.contains('form-check-label')) {
+                        label.classList.add('required');
+                    }
+                });
+            }
+
+            function updateRequiredIndicator(input) {
+                const label = input.closest('.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-md-12, .mb-3, .mb-4')?.querySelector('label.required');
+                if (label) {
+                    if (input.value.trim() !== '' || input.checked) {
+                        label.classList.add('filled');
+                    } else {
+                        label.classList.remove('filled');
+                    }
+                }
+            }
+
+            function attachInputListeners() {
+                const allInputs = form.querySelectorAll('input, select, textarea');
+                allInputs.forEach(input => {
+                    ['input', 'change', 'blur'].forEach(event => {
+                        input.addEventListener(event, () => updateRequiredIndicator(input));
+                    });
+                });
+            }
+
+            function validateAssistanceCheckboxes() {
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                const checked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
+                const assistanceSection = document.querySelector('.assistance-type')?.closest('.row');
+                const existingError = assistanceSection?.querySelector('.error-message');
+                if (existingError) existingError.remove();
+
+                if (!checked) {
+                    if (assistanceSection) {
+                        assistanceSection.classList.add('checkbox-group-error');
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message show';
+                        errorMsg.textContent = 'Please select at least one type of assistance';
+                        assistanceSection.appendChild(errorMsg);
+                    }
+                    return false;
+                } else {
+                    assistanceSection?.classList.remove('checkbox-group-error');
+                    return true;
+                }
+            }
+
+            function validateSexRadio() {
+                const sexRadios = document.querySelectorAll('input[name="Sex"]');
+                const checked = Array.from(sexRadios).some(radio => radio.checked);
+                const sexSection = document.querySelector('input[name="Sex"]')?.closest('.col-md-2');
+                const existingError = sexSection?.querySelector('.error-message');
+                if (existingError) existingError.remove();
+
+                if (!checked) {
+                    if (sexSection) {
+                        sexSection.classList.add('radio-group-error');
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message show';
+                        errorMsg.textContent = 'Please select sex';
+                        sexSection.appendChild(errorMsg);
+                    }
+                    return false;
+                } else {
+                    sexSection?.classList.remove('radio-group-error');
+                    return true;
+                }
+            }
+
+            function attachCheckboxRadioListeners() {
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                assistanceCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            const assistanceSection = checkbox.closest('.row');
+                            assistanceSection?.classList.remove('checkbox-group-error');
+                            const errorMsg = assistanceSection?.querySelector('.error-message');
+                            if (errorMsg) errorMsg.remove();
+                        }
+                    });
+                });
+
+                const sexRadios = document.querySelectorAll('input[name="Sex"]');
+                sexRadios.forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        if (radio.checked) {
+                            const sexSection = radio.closest('.col-md-2');
+                            sexSection?.classList.remove('radio-group-error');
+                            const errorMsg = sexSection?.querySelector('.error-message');
+                            if (errorMsg) errorMsg.remove();
+                        }
+                    });
+                });
+            }
+
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+
+                requiredInputs.forEach(input => {
+                    if (input.type !== 'checkbox' && input.type !== 'radio') {
+                        if (!input.value.trim()) {
+                            input.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+                    }
+                });
+
+                if (!validateAssistanceCheckboxes()) isValid = false;
+                if (!validateSexRadio()) isValid = false;
+
+                const termsCheck = document.getElementById('termsCheck');
+                if (termsCheck && !termsCheck.checked) {
+                    isValid = false;
+                    alert('Please accept the terms and conditions');
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    const firstError = form.querySelector('.is-invalid, .checkbox-group-error, .radio-group-error');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+
+            initializeRequiredLabels();
+            attachInputListeners();
+            attachCheckboxRadioListeners();
+            const allInputs = form.querySelectorAll('input, select, textarea');
+            allInputs.forEach(input => updateRequiredIndicator(input));
+        }
+
+        // Image Modal and Zoom Functionality
+        function initializeImageModal() {
+            const previewImages = document.querySelectorAll('.img-preview');
+            const modalImage = document.getElementById('modalImage');
+            const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+            const modalTitle = document.getElementById('imageModalLabel');
+            const imageContainer = document.getElementById('imageContainer');
+            const zoomPercentage = document.getElementById('zoomPercentage');
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const zoomResetBtn = document.getElementById('zoomReset');
+
+            let currentZoom = 1;
+            const zoomFactor = 0.1;
+            const maxZoom = 3;
+            const minZoom = 0.5;
+
+            function resetZoom() {
+                currentZoom = 1;
+                updateZoom();
+            }
+
+            function updateZoom() {
+                if (modalImage) {
+                    modalImage.style.transform = `scale(${currentZoom})`;
+                    zoomPercentage.textContent = `${Math.round(currentZoom * 100)}%`;
+                }
+            }
+
+            function zoomIn() {
+                if (currentZoom < maxZoom) {
+                    currentZoom += zoomFactor;
+                    updateZoom();
+                }
+            }
+
+            function zoomOut() {
+                if (currentZoom > minZoom) {
+                    currentZoom -= zoomFactor;
+                    updateZoom();
+                }
+            }
+
+            previewImages.forEach(img => {
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', function() {
+                    if (modalImage) modalImage.src = this.src;
+                    if (modalTitle) modalTitle.textContent = this.alt || 'Image Preview';
+                    resetZoom();
+                    imageModal.show();
+                });
+            });
+
+            if (zoomInBtn) zoomInBtn.addEventListener('click', zoomIn);
+            if (zoomOutBtn) zoomOutBtn.addEventListener('click', zoomOut);
+            if (zoomResetBtn) zoomResetBtn.addEventListener('click', resetZoom);
+
+            if (imageContainer) {
+                imageContainer.addEventListener('wheel', function(e) {
+                    e.preventDefault();
+                    if (e.deltaY < 0) {
+                        zoomIn();
+                    } else {
+                        zoomOut();
+                    }
+                });
+            }
+
+            document.getElementById('imageModal')?.addEventListener('hidden.bs.modal', function() {
+                resetZoom();
+                modalImage.style.transform = 'scale(1) translate(0, 0)';
+            });
+        }
+
+        // Auto-fill functionality
+        function initializeAutoFill() {
+            const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
+            const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
+            if (!sameAsPatientBtn || !clearAutoFillBtn) return;
+
+            const patientLastname = document.getElementById('Lastname');
+            const patientFirstname = document.getElementById('Firstname');
+            const patientMiddlename = document.getElementById('Middlename');
+            const patientSuffix = document.getElementById('Suffix');
+            const patientBlkLotStreet = document.getElementById('BlkLotStreet');
+            const patientSubVill = document.getElementById('SubVill');
+            const patientBrgy = document.getElementById('Brgy');
+            const patientDistrict = document.getElementById('District');
+
+            const requestorLastname = document.getElementById('RLastname');
+            const requestorFirstname = document.getElementById('RFirstname');
+            const requestorMiddlename = document.getElementById('RMiddlename');
+            const requestorSuffix = document.getElementById('RSuffix');
+            const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
+            const requestorSubVill = document.getElementById('RSubVill');
+            const requestorBrgy = document.getElementById('RBrgy');
+            const requestorDistrict = document.getElementById('RDistrict');
+            const relationshipPatient = document.getElementById('RelationshipPatient');
+
+            let originalPatientValues = {};
+            let autoFillUsed = false;
+
+            function storeOriginalValues() {
+                const fields = ['Lastname', 'Firstname', 'Middlename', 'Suffix', 'BlkLotStreet', 'SubVill', 'Brgy', 'District'];
+                originalPatientValues = {};
+                fields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) {
+                        originalPatientValues[field] = element.value;
+                    }
+                });
+            }
+
+            function restoreOriginalValues() {
+                Object.keys(originalPatientValues).forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) {
+                        element.value = originalPatientValues[field];
+                    }
+                });
+
+                const maleRadio = document.getElementById('male');
+                const femaleRadio = document.getElementById('female');
+                if (maleRadio) maleRadio.checked = false;
+                if (femaleRadio) femaleRadio.checked = false;
+
+                const dateOfBirthField = document.getElementById('dateOfBirth');
+                const ageField = document.getElementById('ageInput');
+                if (dateOfBirthField) dateOfBirthField.value = '';
+                if (ageField) ageField.value = '';
+            }
+
+            function checkIfAllPatientFieldsEmpty() {
+                const patientFieldsList = [
+                    patientLastname, patientFirstname, patientMiddlename,
+                    patientSuffix, patientBlkLotStreet, patientSubVill,
+                    patientBrgy, patientDistrict
+                ];
+                return patientFieldsList.every(field => !field || !field.value.trim());
+            }
+
+            sameAsPatientBtn.addEventListener('click', function() {
+                if (!autoFillUsed) {
+                    storeOriginalValues();
+                }
+                autoFillUsed = true;
+
+                if (requestorLastname && requestorLastname.value) patientLastname.value = requestorLastname.value;
+                if (requestorFirstname && requestorFirstname.value) patientFirstname.value = requestorFirstname.value;
+                if (requestorMiddlename && requestorMiddlename.value) patientMiddlename.value = requestorMiddlename.value;
+                if (requestorSuffix) {
+                    patientSuffix.value = (requestorSuffix.value && requestorSuffix.value.trim()) ? requestorSuffix.value : "None";
+                }
+                if (requestorBlkLotStreet && requestorBlkLotStreet.value) patientBlkLotStreet.value = requestorBlkLotStreet.value;
+                if (requestorSubVill && requestorSubVill.value) patientSubVill.value = requestorSubVill.value;
+                if (requestorBrgy && requestorBrgy.value) patientBrgy.value = requestorBrgy.value;
+                if (requestorDistrict && requestorDistrict.value) patientDistrict.value = requestorDistrict.value;
+
+                if (relationshipPatient) relationshipPatient.value = "Self";
+
+                const userGender = '@ViewBag.Gender';
+                if (userGender) {
+                    const maleRadio = document.getElementById('male');
+                    const femaleRadio = document.getElementById('female');
+                    if (userGender.toLowerCase() === 'male' && maleRadio) {
+                        maleRadio.checked = true;
+                    } else if (userGender.toLowerCase() === 'female' && femaleRadio) {
+                        femaleRadio.checked = true;
+                    }
+                }
+
+                const userDateOfBirth = '@ViewBag.Dateofbirth';
+                const dateOfBirthField = document.getElementById('dateOfBirth');
+                if (userDateOfBirth && dateOfBirthField) {
+                    dateOfBirthField.value = userDateOfBirth;
+                    const ageField = document.getElementById('ageInput');
+                    if (ageField) {
+                        ageField.value = calculateAge(userDateOfBirth);
+                    }
+                }
+
+                const userBarangay = '@ViewBag.Barangay';
+                if (userBarangay && patientBrgy) {
+                    patientBrgy.value = userBarangay;
+                }
+
+                const userDistrict = '@ViewBag.District';
+                if (userDistrict && patientDistrict) {
+                    patientDistrict.value = userDistrict;
+                }
+
+                sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
+                sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
+                sameAsPatientBtn.classList.add('btn-success', 'ring-2', 'ring-green-500');
+
+                clearAutoFillBtn.style.display = 'block';
+                clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
+                clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
+                clearAutoFillBtn.classList.add('btn-outline-warning');
+
+                const patientSection = document.getElementById('patientDetailsSection');
+                const toggleBtn = document.getElementById('togglePatientBtn');
+                if (patientSection) {
+                    patientSection.style.display = 'block';
+                    if (toggleBtn) {
+                        toggleBtn.textContent = 'Hide Patient Details';
+                        toggleBtn.classList.remove('btn-outline-primary');
+                        toggleBtn.classList.add('btn-primary');
+                    }
+                }
+
+                setTimeout(() => {
+                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> APPLY FOR MYSELF';
+                    sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
+                    sameAsPatientBtn.classList.add('btn-outline-success');
+                }, 2000);
+            });
+
+            clearAutoFillBtn.addEventListener('click', function() {
+                restoreOriginalValues();
+                autoFillUsed = false;
+                clearAutoFillBtn.innerHTML = '<i class="bi bi-check-circle"></i> Cleared!';
+                clearAutoFillBtn.classList.remove('btn-outline-warning');
+                clearAutoFillBtn.classList.add('btn-warning', 'ring-2', 'ring-yellow-500');
+
+                setTimeout(() => {
+                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
+                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
+                    clearAutoFillBtn.classList.add('btn-outline-warning');
+                    if (checkIfAllPatientFieldsEmpty()) {
+                        clearAutoFillBtn.style.display = 'none';
+                    }
+                }, 1500);
+            });
+
+            function checkInitialState() {
+                const anyFieldHasContent = !checkIfAllPatientFieldsEmpty();
+                if (anyFieldHasContent) {
+                    storeOriginalValues();
+                    autoFillUsed = true;
+                    clearAutoFillBtn.style.display = 'block';
+                }
+            }
+
+            checkInitialState();
+        }
+
+        // Patient Details Toggle
+        function initializePatientToggle() {
+            const toggleBtn = document.getElementById('togglePatientBtn');
+            const patientSection = document.getElementById('patientDetailsSection');
+            if (!toggleBtn || !patientSection) return;
+
             toggleBtn.addEventListener('click', function() {
-                // Use getComputedStyle for reliable display detection
                 const isHidden = window.getComputedStyle(patientSection).display === 'none';
-
                 if (isHidden) {
                     patientSection.style.display = 'block';
                     toggleBtn.textContent = 'Hide Patient Details';
@@ -1076,1473 +1334,139 @@
             });
         }
 
-        // "APPLY FOR MYSELF" button functionality
-        sameAsPatientBtn.addEventListener('click', function() {
-            // Store original values ONLY on first click (prevent overwriting on spam clicks)
-            if (!autoFillUsed) {
-                storeOriginalValues();
-            }
-            autoFillUsed = true;
-
-            // Auto-fill patient details with requestor information
-            if (requestorLastname && requestorLastname.value) patientLastname.value = requestorLastname.value;
-            if (requestorFirstname && requestorFirstname.value) patientFirstname.value = requestorFirstname.value;
-            if (requestorMiddlename && requestorMiddlename.value) patientMiddlename.value = requestorMiddlename.value;
-            // Handle suffix - if empty or just whitespace, set to "None"
-            if (requestorSuffix) {
-                patientSuffix.value = (requestorSuffix.value && requestorSuffix.value.trim()) ? requestorSuffix.value : "None";
-            }
-            if (requestorBlkLotStreet && requestorBlkLotStreet.value) patientBlkLotStreet.value = requestorBlkLotStreet.value;
-            if (requestorSubVill && requestorSubVill.value) patientSubVill.value = requestorSubVill.value;
-            if (requestorBrgy && requestorBrgy.value) patientBrgy.value = requestorBrgy.value;
-            if (requestorDistrict && requestorDistrict.value) patientDistrict.value = requestorDistrict.value;
-
-            // Set relationship to "Self"
-            if (relationshipPatient) relationshipPatient.value = "Self";
-
-            // Auto-fill Gender from ViewBag (VerifyAccount)
-            const userGender = '@ViewBag.Gender';
-            if (userGender) {
-                const maleRadio = document.getElementById('male');
-                const femaleRadio = document.getElementById('female');
-
-                if (userGender.toLowerCase() === 'male' && maleRadio) {
-                    maleRadio.checked = true;
-                } else if (userGender.toLowerCase() === 'female' && femaleRadio) {
-                    femaleRadio.checked = true;
-                }
-            }
-
-            // Auto-fill Date of Birth from ViewBag (VerifyAccount)
-            const userDateOfBirth = '@ViewBag.Dateofbirth';
-            const dateOfBirthField = document.getElementById('dateOfBirth');
-            if (userDateOfBirth && dateOfBirthField) {
-                // Format date if needed (ensure it's in yyyy-MM-dd format for input[type="date"])
-                dateOfBirthField.value = userDateOfBirth;
-
-                // Trigger age calculation
-                const ageField = document.getElementById('ageInput');
-                if (ageField) {
-                    ageField.value = calculateAge(userDateOfBirth);
-                }
-            }
-
-            // Auto-fill Barangay from ViewBag (VerifyAccount)
-            const userBarangay = '@ViewBag.Barangay';
-            if (userBarangay && patientBrgy) {
-                patientBrgy.value = userBarangay;
-            }
-
-            // Auto-fill District from ViewBag (VerifyAccount)
-            const userDistrict = '@ViewBag.District';
-            if (userDistrict && patientDistrict) {
-                patientDistrict.value = userDistrict;
-            }
-
-            // Visual feedback with Tailwind
-            sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
-            sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
-            sameAsPatientBtn.classList.add('btn-success', 'ring-2', 'ring-green-500');
-
-            // Show clear button PERMANENTLY (never auto-hides)
-            if (clearAutoFillBtn) {
-                clearAutoFillBtn.style.display = 'block';
-                clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                clearAutoFillBtn.classList.add('btn-outline-warning');
-            }
-
-            // Auto-show patient section
-            if (patientSection) {
-                patientSection.style.display = 'block';
-                if (toggleBtn) {
-                    toggleBtn.textContent = 'Hide Patient Details';
-                    toggleBtn.classList.remove('btn-outline-primary');
-                    toggleBtn.classList.add('btn-primary');
-                }
-            }
-
-            // Reset main button after 2 seconds
-            setTimeout(() => {
-                sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> APPLY FOR MYSELF';
-                sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
-                sameAsPatientBtn.classList.add('btn-outline-success');
-            }, 2000);
-        });
-
-        // Clear button functionality - PERMANENT until manually clicked
-        clearAutoFillBtn.addEventListener('click', function() {
-            // Restore original values (clear all auto-filled data)
-            restoreOriginalValues();
-
-            // Reset the auto-fill flag
-            autoFillUsed = false;
-
-            // Visual feedback for clear
-            clearAutoFillBtn.innerHTML = '<i class="bi bi-check-circle"></i> Cleared!';
-            clearAutoFillBtn.classList.remove('btn-outline-warning');
-            clearAutoFillBtn.classList.add('btn-warning', 'ring-2', 'ring-yellow-500');
-
-            // Reset clear button after 1.5 seconds (but keep it visible)
-            setTimeout(() => {
-                clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                clearAutoFillBtn.classList.add('btn-outline-warning');
-
-                // Only hide if ALL fields are empty after clearing
-                const allFieldsEmpty = checkIfAllPatientFieldsEmpty();
-                if (allFieldsEmpty) {
-                    clearAutoFillBtn.style.display = 'none';
-                }
-                // Otherwise, keep it visible so user can clear again if needed
-            }, 1500);
-        });
-
-        // Store original values function
-        function storeOriginalValues() {
-            const fields = [
-                'Lastname', 'Firstname', 'Middlename', 'Suffix',
-                'BlkLotStreet', 'SubVill', 'Brgy', 'District'
-            ];
-
-            originalPatientValues = {}; // Reset storage
-            fields.forEach(field => {
-                const element = document.getElementById(field);
-                if (element) {
-                    originalPatientValues[field] = element.value;
-                }
-            });
-        }
-
-        // Restore original values function
-        function restoreOriginalValues() {
-            Object.keys(originalPatientValues).forEach(field => {
-                const element = document.getElementById(field);
-                if (element) {
-                    element.value = originalPatientValues[field];
-                }
-            });
-
-            // Clear gender radio buttons
-            const maleRadio = document.getElementById('male');
-            const femaleRadio = document.getElementById('female');
-            if (maleRadio) maleRadio.checked = false;
-            if (femaleRadio) femaleRadio.checked = false;
-
-            // Clear date of birth and age
-            const dateOfBirthField = document.getElementById('dateOfBirth');
-            const ageField = document.getElementById('ageInput');
-            if (dateOfBirthField) dateOfBirthField.value = '';
-            if (ageField) ageField.value = '';
-        }
-
-        // Check if all patient fields are empty
-        function checkIfAllPatientFieldsEmpty() {
-            const patientFieldsList = [
-                patientLastname, patientFirstname, patientMiddlename,
-                patientSuffix, patientBlkLotStreet, patientSubVill,
-                patientBrgy, patientDistrict
-            ];
-
-            return patientFieldsList.every(field => !field || !field.value.trim());
-        }
-
-        // Smart hint with Tailwind (optional - can remove if not needed)
-        const requestorFields = [requestorLastname, requestorFirstname, requestorMiddlename];
-        requestorFields.forEach(field => {
-            if (field) {
-                field.addEventListener('input', function() {
-                    if (this.value &&
-                        patientLastname && !patientLastname.value &&
-                        patientFirstname && !patientFirstname.value &&
-                        !autoFillUsed) {
-                        sameAsPatientBtn.classList.add('ring-2', 'ring-green-500', 'animate-bounce');
-
-                        setTimeout(() => {
-                            sameAsPatientBtn.classList.remove('animate-bounce', 'ring-2', 'ring-green-500');
-                        }, 3000);
-                    }
-                });
-            }
-        });
-
-        // Show clear button if page loads with pre-filled data
-        function checkInitialState() {
-            const anyFieldHasContent = !checkIfAllPatientFieldsEmpty();
-            if (anyFieldHasContent) {
-                storeOriginalValues();
-                autoFillUsed = true;
-                clearAutoFillBtn.style.display = 'block';
-            }
-        }
-
-        // Run initial state check
-        checkInitialState();
-    });
-</script>
-
-<!-- Compact Success Modal Styles -->
-<style>
-    #successModal .modal-content {
-        border-radius: 16px;
-        overflow: hidden;
-    }
-
-    #successModal .success-checkmark i {
-        animation: checkmarkPop 0.5s ease-out;
-    }
-
-    @@keyframes checkmarkPop {
-        0% {
-            transform: scale(0);
-            opacity: 0;
-        }
-        50% {
-            transform: scale(1.2);
-        }
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
-    #successModal .modal-dialog {
-        animation: slideDown 0.3s ease-out;
-    }
-
-    @@keyframes slideDown {
-        from {
-            transform: translateY(-50px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-</style>
-
-<style>
-    .img-preview {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-        .img-preview:hover {
-            transform: scale(1.05);
-        }
-
-    #imageContainer {
-        overflow: hidden;
-        height: 70vh;
-        position: relative;
-        cursor: grab;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    #modalImage {
-        max-height: 100%;
-        max-width: 100%;
-        object-fit: contain;
-        transition: transform 0.2s ease-out;
-    }
-
-    .modal-content {
-        border-radius: 8px;
-        border: none;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-
-    .modal-header {
-        border-bottom: 1px solid var(--primary-light);
-        background-color: white;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-        display: flex;
-        align-items: center;
-    }
-
-    .zoom-controls {
-        display: flex;
-        align-items: center;
-        margin-left: auto;
-        margin-right: 10px;
-    }
-
-    #zoomPercentage {
-        min-width: 48px;
-        text-align: center;
-    }
-
-    .modal-body {
-        padding: 0;
-        background-color: #f8f9fa;
-    }
-
-    .btn-close:focus {
-        box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
-    }
-</style>
-<!-- For zooming photo -->
-
-<script>
-    function previewImage(input, previewId) {
-        const file = input.files[0];
-        const preview = document.getElementById(previewId);
-        const uploadBox = input.previousElementSibling;
-
-        if (file) {
-            if (file.type.startsWith("image/")) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.src = e.target.result;
-                    preview.style.display = "block";
-                };
-                reader.readAsDataURL(file);
-            }
-
-            // Update upload box text
-            uploadBox.querySelector('p:first-of-type').textContent = file.name;
-            uploadBox.style.borderColor = "var(--primary-color)";
-            uploadBox.style.backgroundColor = "var(--primary-light)";
-        }
-
-    }
-</script>
-
-<script>
-           const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-
-    assistanceCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                // Uncheck all other checkboxes
-                assistanceCheckboxes.forEach(cb => {
-                    if (cb !== this) {
-                        cb.checked = false;
-                        // Hide any specification fields for unchecked boxes
-                        const specField = cb.closest('.form-check').querySelector('.assistance-spec');
-                        if (specField) specField.style.display = 'none';
-                    }
-                });
-
-                // Show specification field for checked box if it exists
-                const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                if (specField) {
-                    specField.style.display = this.checked ? 'block' : 'none';
-                }
-            }
-            updateAssistanceReflection();
-        });
-    });
-    //1box only
-
-     document.addEventListener('DOMContentLoaded', function() {
-        // Type of Assistance Reflection
-        const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-        const assistanceSpecs = document.querySelectorAll('.assistance-spec');
-        const assistanceReflection = document.getElementById('assistanceReflection');
-
-        // Initialize - hide all specification fields
-        assistanceSpecs.forEach(field => field.style.display = 'none');
-
-        // Update reflection function
-        function updateAssistanceReflection() {
-            let selectedOptions = [];
-
-            assistanceCheckboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    const label = checkbox.nextElementSibling.textContent.trim();
-                    const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
-
-                    if (specField && specField.value.trim() !== '') {
-                        selectedOptions.push(`${label}: ${specField.value.trim()}`);
-                    } else {
-                        selectedOptions.push(label);
-                    }
-                }
-            });
-
-            assistanceReflection.value = selectedOptions.join(', ');
-        }
-
-        // Add event listeners
-        assistanceCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                if (specField) {
-                    specField.style.display = this.checked ? 'block' : 'none';
-                }
-                updateAssistanceReflection();
-            });
-        });
-
-        assistanceSpecs.forEach(field => {
-            field.addEventListener('input', updateAssistanceReflection);
-        });
-
-        // Initial update
-        updateAssistanceReflection();
-    });
-</script>
-
-<script>
-
-            document.addEventListener('DOMContentLoaded', function() {
-        // CMO Single Checkbox Selection
-        const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-
-        cmoCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    // Uncheck all other checkboxes
-                    cmoCheckboxes.forEach(cb => {
-                        if (cb !== this) cb.checked = false;
-                    });
-                }
-                updateReflection(); // Update the reflection field
-            });
-        });
-    });
-    //1 box only
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get all elements
-        const billInput = document.getElementById('billAmountInput');
-        const cmoNotes = document.getElementById('cmoNotesInput');
-        const reflectionField = document.getElementById('cmoReflectionField');
-        const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-        // Update reflection function
-        function updateReflection() {
-            let parts = [];
-
-            // Add bill amount if exists
-            if (billInput.value.trim()) {
-                parts.push(`Bill: ${billInput.value.trim()}`);
-            }
-
-            // Add checked documents
-            const checkedDocs = [];
-            docCheckboxes.forEach(cb => {
-                if (cb.checked) checkedDocs.push(cb.value);
-            });
-            if (checkedDocs.length) {
-                parts.push(`Docs: ${checkedDocs.join(', ')}`);
-            }
-
-            // Add CMO notes if exists
-            if (cmoNotes.value.trim()) {
-                parts.push(`Others: ${cmoNotes.value.trim()}`);
-            }
-
-            // Update reflection field
-            reflectionField.value = parts.join(' , ');
-        }
-
-        // Set up event listeners
-        billInput.addEventListener('input', updateReflection);
-        cmoNotes.addEventListener('input', updateReflection);
-        docCheckboxes.forEach(cb => {
-            cb.addEventListener('change', updateReflection);
-        });
-
-        // Initial update
-        updateReflection();
-    });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // File validation for all file inputs
-        const fileInputs = document.querySelectorAll('input[type="file"]');
-
-        fileInputs.forEach(input => {
-            input.addEventListener('change', function(e) {
-                validateFile(this);
-            });
-        });
-
-        function validateFile(input) {
-            const file = input.files[0];
-            const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
-            const uploadBox = input.previousElementSibling;
-
-            if (!file) return;
-
-            // File type validation
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-
-            // Check file type
-            if (!allowedTypes.includes(file.type)) {
-                showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
-                return;
-            }
-
-            // Check file size
-            if (file.size > maxSize) {
-                showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
-                return;
-            }
-
-            // If validation passes, proceed with preview
-            clearFileError(input);
-
-            if (file.type.startsWith("image/") && previewId) {
-                const preview = document.getElementById(previewId);
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = "block";
-                };
-                reader.readAsDataURL(file);
-            } else if (previewId) {
-                // For PDF files, hide the image preview
-                const preview = document.getElementById(previewId);
-                preview.style.display = "none";
-            }
-
-            // Update upload box text
-            if (uploadBox) {
-                uploadBox.querySelector('p:first-of-type').textContent = file.name;
-                uploadBox.style.borderColor = "var(--primary-color)";
-                uploadBox.style.backgroundColor = "var(--primary-light)";
-            }
-        }
-
-        function showFileError(input, message) {
-            // Clear the file input
-            input.value = '';
-
-            // Remove any existing error message
-            clearFileError(input);
-
-            // Create error message element
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'alert alert-danger mt-2';
-            errorDiv.innerHTML = `
-                <i class="fas fa-exclamation-triangle"></i>
-                ${message}
-            `;
-
-            // Insert after the upload box
-            const uploadBox = input.previousElementSibling;
-            uploadBox.parentNode.insertBefore(errorDiv, uploadBox.nextSibling);
-
-            // Reset upload box styling
-            uploadBox.querySelector('p:first-of-type').textContent = 'Click to upload document';
-            uploadBox.style.borderColor = "#ddd";
-            uploadBox.style.backgroundColor = "#fafafa";
-
-            // Hide any preview
-            const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
-            if (previewId) {
-                const preview = document.getElementById(previewId);
-                preview.style.display = "none";
-            }
-        }
-
-        function clearFileError(input) {
-            // Remove any existing error messages
-            const existingError = input.parentNode.querySelector('.alert-danger');
-            if (existingError) {
-                existingError.remove();
-            }
-        }
-
-        // Enhance the existing previewImage function to include validation
-        const originalPreviewImage = window.previewImage;
-        window.previewImage = function(input, previewId) {
-            const file = input.files[0];
-            if (!file) return;
-
-            // Validate before preview
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-            const maxSize = 10 * 1024 * 1024;
-
-            if (!allowedTypes.includes(file.type)) {
-                showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
-                return;
-            }
-
-            if (file.size > maxSize) {
-                showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
-                return;
-            }
-
-            // If validation passes, call original function
-            if (originalPreviewImage) {
-                originalPreviewImage(input, previewId);
-            }
-        }
-    });
-</script>
-
-@section Scripts {
-    <script>
-                // Enhanced Form Validation and Required Field Management
-                document.addEventListener('DOMContentLoaded', function() {
-                    const form = document.querySelector('form');
-
-                    // Add required class to all labels with required inputs
-                    function initializeRequiredLabels() {
-                        const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
-                        requiredInputs.forEach(input => {
-                            const label = input.closest('.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-md-12, .mb-3, .mb-4')?.querySelector('label');
-                            if (label && !label.classList.contains('form-check-label')) {
-                                label.classList.add('required');
-                            }
-                        });
-                    }
-
-                    // Check if field is filled and update required indicator asynchronously
-                    async function updateRequiredIndicator(input) {
-                        return new Promise((resolve) => {
-                            const label = input.closest('.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-md-12, .mb-3, .mb-4')?.querySelector('label.required');
-                            if (label) {
-                                if (input.value.trim() !== '' || input.checked) {
-                                    label.classList.add('filled');
-                                } else {
-                                    label.classList.remove('filled');
-                                }
-                            }
-                            setTimeout(() => resolve(), 50);
-                        });
-                    }
-
-                    // Add listeners to all form inputs
-                    function attachInputListeners() {
-                        const allInputs = form.querySelectorAll('input, select, textarea');
-                        allInputs.forEach(input => {
-                            ['input', 'change', 'blur'].forEach(event => {
-                                input.addEventListener(event, () => updateRequiredIndicator(input));
-                            });
-                        });
-                    }
-
-                    // Validate assistance type checkboxes (at least one must be selected)
-                    function validateAssistanceCheckboxes() {
-                        const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-                        const checked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
-                        const assistanceSection = document.querySelector('.assistance-type')?.closest('.row');
-
-                        // Remove existing error message
-                        const existingError = assistanceSection?.querySelector('.error-message');
-                        if (existingError) existingError.remove();
-
-                        if (!checked) {
-                            if (assistanceSection) {
-                                assistanceSection.classList.add('checkbox-group-error');
-                                const errorMsg = document.createElement('div');
-                                errorMsg.className = 'error-message show';
-                                errorMsg.textContent = 'Please select at least one type of assistance';
-                                assistanceSection.appendChild(errorMsg);
-                            }
-                            return false;
-                        } else {
-                            assistanceSection?.classList.remove('checkbox-group-error');
-                            return true;
-                        }
-                    }
-
-                    // Validate Sex radio buttons
-                    function validateSexRadio() {
-                        const sexRadios = document.querySelectorAll('input[name="Sex"]');
-                        const checked = Array.from(sexRadios).some(radio => radio.checked);
-                        const sexSection = document.querySelector('input[name="Sex"]')?.closest('.col-md-2');
-
-                        // Remove existing error message
-                        const existingError = sexSection?.querySelector('.error-message');
-                        if (existingError) existingError.remove();
-
-                        if (!checked) {
-                            if (sexSection) {
-                                sexSection.classList.add('radio-group-error');
-                                const errorMsg = document.createElement('div');
-                                errorMsg.className = 'error-message show';
-                                errorMsg.textContent = 'Please select sex';
-                                sexSection.appendChild(errorMsg);
-                            }
-                            return false;
-                        } else {
-                            sexSection?.classList.remove('radio-group-error');
-                            return true;
-                        }
-                    }
-
-                    // Add change listeners to checkboxes and radios to remove error on selection
-                    function attachCheckboxRadioListeners() {
-                        // Assistance checkboxes
-                        const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-                        assistanceCheckboxes.forEach(checkbox => {
-                            checkbox.addEventListener('change', () => {
-                                if (checkbox.checked) {
-                                    const assistanceSection = checkbox.closest('.row');
-                                    assistanceSection?.classList.remove('checkbox-group-error');
-                                    const errorMsg = assistanceSection?.querySelector('.error-message');
-                                    if (errorMsg) errorMsg.remove();
-                                }
-                            });
-                        });
-
-                        // Sex radios
-                        const sexRadios = document.querySelectorAll('input[name="Sex"]');
-                        sexRadios.forEach(radio => {
-                            radio.addEventListener('change', () => {
-                                if (radio.checked) {
-                                    const sexSection = radio.closest('.col-md-2');
-                                    sexSection?.classList.remove('radio-group-error');
-                                    const errorMsg = sexSection?.querySelector('.error-message');
-                                    if (errorMsg) errorMsg.remove();
-                                }
-                            });
-                        });
-                    }
-
-                    // Form submission validation
-                    form.addEventListener('submit', function(e) {
-                        let isValid = true;
-
-                        // Validate all required fields
-                        const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
-                        requiredInputs.forEach(input => {
-                            if (input.type !== 'checkbox' && input.type !== 'radio') {
-                                if (!input.value.trim()) {
-                                    input.classList.add('is-invalid');
-                                    isValid = false;
-                                } else {
-                                    input.classList.remove('is-invalid');
-                                }
-                            }
-                        });
-
-                        // Validate assistance checkboxes
-                        if (!validateAssistanceCheckboxes()) {
-                            isValid = false;
-                        }
-
-                        // Validate sex radio
-                        if (!validateSexRadio()) {
-                            isValid = false;
-                        }
-
-                        // Validate terms checkbox
-                        const termsCheck = document.getElementById('termsCheck');
-                        if (termsCheck && !termsCheck.checked) {
-                            isValid = false;
-                            alert('Please accept the terms and conditions');
-                        }
-
-                        if (!isValid) {
-                            e.preventDefault();
-                            // Scroll to first error
-                            const firstError = form.querySelector('.is-invalid, .checkbox-group-error, .radio-group-error');
-                            if (firstError) {
-                                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                        }
-                    });
-
-                    // Initialize
-                    initializeRequiredLabels();
-                    attachInputListeners();
-                    attachCheckboxRadioListeners();
-
-                    // Initial check for pre-filled values
-                    const allInputs = form.querySelectorAll('input, select, textarea');
-                    allInputs.forEach(input => updateRequiredIndicator(input));
-                });
-
-        const philHealthInput = document.getElementById('philHealthInput');
-
-                            philHealthInput.addEventListener('input', function(e) {
-                                // Remove all non-digit characters
-                                let value = this.value.replace(/\D/g, '');
-
-                                // Add hyphens after every 4 digits
-                                if (value.length > 4) {
-                                    value = value.substring(0, 4) + '-' + value.substring(4);
-                                }
-                                if (value.length > 9) {
-                                    value = value.substring(0, 9) + '-' + value.substring(9);
-                                }
-
-                                // Limit to 12 digits (14 characters with hyphens)
-                                if (value.length > 14) {
-                                    value = value.substring(0, 14);
-                                }
-
-                                this.value = value;
-                            });
-
-        const dateOfBirth = document.getElementById('dateOfBirth');
-                            const ageInput = document.getElementById('ageInput');
-
-                            function calculateAge(dob) {
-                                if (!dob) return "";
-                                const birthDate = new Date(dob);
-                                const today = new Date();
-
-                                let age = today.getFullYear() - birthDate.getFullYear();
-                                const monthDiff = today.getMonth() - birthDate.getMonth();
-
-                                // Adjust if birthday hasn't happened yet this year
-                                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                                    age--;
-                                }
-                                return age;
-                            }
-
-                            // Auto-calc on page load if DOB has a value
-                            if (dateOfBirth.value) {
-                                ageInput.value = calculateAge(dateOfBirth.value);
-                            }
-
-                            // Recalc whenever DOB changes
-                            dateOfBirth.addEventListener('change', function () {
-                                ageInput.value = calculateAge(this.value);
-                            });
-
-        const contactNoInput = document.getElementById('contactNoInput');
-
-                                contactNoInput.addEventListener('input', function(e) {
-                                    // Remove all non-digit characters (extra safety)
-                                    let value = this.value.replace(/\D/g, '');
-
-                                    // Mobile number (09XXXXXXXXX)
-                                    if (value.startsWith('09') && value.length <= 11) {
-                                        if (value.length > 4) {
-                                            value = value.substring(0, 4) + '-' + value.substring(4);
-                                        }
-                                        if (value.length > 8) {
-                                            value = value.substring(0, 8) + '-' + value.substring(8);
-                                        }
-                                    }
-                                    // Landline (02XXXXXXXX or area code)
-                                    else if ((value.startsWith('02') || /^[1-9]\d{1}$/.test(value.substring(0,2)))) {
-                                        if (value.length > 2) {
-                                            value = value.substring(0, 2) + '-' + value.substring(2);
-                                        }
-                                        if (value.length > 6) {
-                                            value = value.substring(0, 6) + '-' + value.substring(6);
-                                        }
-                                    }
-
-                                    // Limit length (11 digits for mobile, 10 for landline)
-                                    const maxLength = value.startsWith('09') ? 13 : 11; // Includes hyphens
-                                    if (value.length > maxLength) {
-                                        value = value.substring(0, maxLength);
-                                    }
-
-                                    this.value = value;
-                                });
-
-
-        // Success modal functions removed - controller handles redirect
-
-        document.addEventListener('DOMContentLoaded', function() {
-                    // Make all preview images clickable to open modal
-                    const previewImages = document.querySelectorAll('.img-preview');
-                    const modalImage = document.getElementById('modalImage');
-                    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-                    const modalTitle = document.getElementById('imageModalLabel');
-                    const imageContainer = document.getElementById('imageContainer');
-                    const zoomPercentage = document.getElementById('zoomPercentage');
-                    const zoomInBtn = document.getElementById('zoomIn');
-                    const zoomOutBtn = document.getElementById('zoomOut');
-                    const zoomResetBtn = document.getElementById('zoomReset');
-
-                    // Zoom variables
-                    let currentZoom = 1;
-                    const zoomFactor = 0.1;
-                    const maxZoom = 3;
-                    const minZoom = 0.5;
-
-                    // Reset zoom on modal open
-                    function resetZoom() {
-                        currentZoom = 1;
-                        updateZoom();
-                    }
-
-                    // Apply zoom level
-                    function updateZoom() {
-                        modalImage.style.transform = `scale(${currentZoom})`;
-                        zoomPercentage.textContent = `${Math.round(currentZoom * 100)}%`;
-                    }
-
-                    // Zoom in function
-                    function zoomIn() {
-                        if (currentZoom < maxZoom) {
-                            currentZoom += zoomFactor;
-                            updateZoom();
-                        }
-                    }
-
-                    // Zoom out function
-                    function zoomOut() {
-                        if (currentZoom > minZoom) {
-                            currentZoom -= zoomFactor;
-                            updateZoom();
-                        }
-                    }
-
-                    // Make images clickable
-                    previewImages.forEach(img => {
-                        img.style.cursor = 'pointer';
-                        img.addEventListener('click', function() {
-                            modalImage.src = this.src;
-                            modalTitle.textContent = this.alt || 'Image Preview';
-                            resetZoom();
-                            imageModal.show();
-                        });
-                    });
-
-                    // Add zoom event listeners
-                    zoomInBtn.addEventListener('click', zoomIn);
-                    zoomOutBtn.addEventListener('click', zoomOut);
-                    zoomResetBtn.addEventListener('click', resetZoom);
-
-                    // Mouse wheel zoom
-                    imageContainer.addEventListener('wheel', function(e) {
-                        e.preventDefault();
-                        if (e.deltaY < 0) {
-                            zoomIn();
-                        } else {
-                            zoomOut();
-                        }
-                    });
-
-                    // Pan image when dragging
-                    let isDragging = false;
-                    let startX, startY, translateX = 0, translateY = 0;
-
-                    imageContainer.addEventListener('mousedown', function(e) {
-                        isDragging = true;
-                        startX = e.clientX - translateX;
-                        startY = e.clientY - translateY;
-                        imageContainer.style.cursor = 'grabbing';
-                    });
-
-                    window.addEventListener('mousemove', function(e) {
-                        if (!isDragging) return;
-
-                        translateX = e.clientX - startX;
-                        translateY = e.clientY - startY;
-
-                        // Only allow panning when zoomed in
-                        if (currentZoom > 1) {
-                            modalImage.style.transform = `scale(${currentZoom}) translate(${translateX/currentZoom}px, ${translateY/currentZoom}px)`;
-                        }
-                    });
-
-                    window.addEventListener('mouseup', function() {
-                        isDragging = false;
-                        imageContainer.style.cursor = 'grab';
-                    });
-
-                    // Allow closing modal with ESC key
-                    document.addEventListener('keydown', function(e) {
-                        if (e.key === 'Escape') {
-                            imageModal.hide();
-                        }
-                    });
-
-                    // Reset zoom and position when modal is closed
-                    document.getElementById('imageModal').addEventListener('hidden.bs.modal', function() {
-                        resetZoom();
-                        translateX = 0;
-                        translateY = 0;
-                        modalImage.style.transform = 'scale(1) translate(0, 0)';
-                    });
-                });
-
-        document.addEventListener('DOMContentLoaded', function() {
-                    const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
-                    const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
-                    const toggleBtn = document.getElementById('toggleRequestorBtn');
-                    const requestorSection = document.getElementById('requestorDetailsSection');
-
-                    // Patient form fields
-                    const patientLastname = document.getElementById('Lastname');
-                    const patientFirstname = document.getElementById('Firstname');
-                    const patientMiddlename = document.getElementById('Middlename');
-                    const patientSuffix = document.getElementById('Suffix');
-                    const patientBlkLotStreet = document.getElementById('BlkLotStreet');
-                    const patientSubVill = document.getElementById('SubVill');
-                    const patientBrgy = document.getElementById('Brgy');
-                    const patientDistrict = document.getElementById('District');
-
-                    // Requestor form fields
-                    const requestorLastname = document.getElementById('RLastname');
-                    const requestorFirstname = document.getElementById('RFirstname');
-                    const requestorMiddlename = document.getElementById('RMiddlename');
-                    const requestorSuffix = document.getElementById('RSuffix');
-                    const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
-                    const requestorSubVill = document.getElementById('RSubVill');
-                    const requestorBrgy = document.getElementById('RBrgy');
-                    const requestorDistrict = document.getElementById('RDistrict');
-                    const relationshipPatient = document.getElementById('RelationshipPatient');
-
-                    // Store original values to restore on clear
-                    let originalRequestorValues = {};
-                    let autoFillUsed = false;
-
-                    // IMPROVED SHOW/HIDE TOGGLE FUNCTIONALITY
-                    if (toggleBtn && requestorSection) {
-                        toggleBtn.addEventListener('click', function() {
-                            // Use getComputedStyle for reliable display detection
-                            const isHidden = window.getComputedStyle(requestorSection).display === 'none';
-
-                            if (isHidden) {
-                                requestorSection.style.display = 'block';
-                                toggleBtn.textContent = 'Hide Requestor Details';
-                                toggleBtn.classList.remove('btn-outline-primary');
-                                toggleBtn.classList.add('btn-primary');
-                            } else {
-                                requestorSection.style.display = 'none';
-                                toggleBtn.textContent = 'Show Requestor Details';
-                                toggleBtn.classList.remove('btn-primary');
-                                toggleBtn.classList.add('btn-outline-primary');
-                            }
-                        });
-                    }
-
-                    // "APPLY FOR MYSELF" button functionality
-                    sameAsPatientBtn.addEventListener('click', function() {
-                        // Store original values ONLY on first click (prevent overwriting on spam clicks)
-                        if (!autoFillUsed) {
-                            storeOriginalValues();
-                        }
-                        autoFillUsed = true;
-
-                        // Auto-fill requestor details with patient information
-                        if (patientLastname && patientLastname.value) requestorLastname.value = patientLastname.value;
-                        if (patientFirstname && patientFirstname.value) requestorFirstname.value = patientFirstname.value;
-                        if (patientMiddlename && patientMiddlename.value) requestorMiddlename.value = patientMiddlename.value;
-                        if (patientSuffix && patientSuffix.value) requestorSuffix.value = patientSuffix.value;
-                        if (patientBlkLotStreet && patientBlkLotStreet.value) requestorBlkLotStreet.value = patientBlkLotStreet.value;
-                        if (patientSubVill && patientSubVill.value) requestorSubVill.value = patientSubVill.value;
-                        if (patientBrgy && patientBrgy.value) requestorBrgy.value = patientBrgy.value;
-                        if (patientDistrict && patientDistrict.value) requestorDistrict.value = patientDistrict.value;
-
-                        // Set relationship to "Self"
-                        if (relationshipPatient) relationshipPatient.value = "Self";
-
-                        // Visual feedback with Tailwind
-                        sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
-                        sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
-                        sameAsPatientBtn.classList.add('btn-success', 'ring-2', 'ring-green-500');
-
-                        // Show clear button PERMANENTLY (never auto-hides)
-                        if (clearAutoFillBtn) {
-                            clearAutoFillBtn.style.display = 'block';
-                            clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                            clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                            clearAutoFillBtn.classList.add('btn-outline-warning');
-                        }
-
-                        // Auto-show patient section
-                        if (patientSection) {
-                            patientSection.style.display = 'block';
-                            if (toggleBtn) {
-                                toggleBtn.textContent = 'Hide Patient Details';
-                                toggleBtn.classList.remove('btn-outline-primary');
-                                toggleBtn.classList.add('btn-primary');
-                            }
-                        }
-
-                        // Reset main button after 2 seconds
-                        setTimeout(() => {
-                            sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> APPLY FOR MYSELF';
-                            sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
-                            sameAsPatientBtn.classList.add('btn-outline-success');
-                        }, 2000);
-                    });
-
-                    // Clear button functionality - PERMANENT until manually clicked
-                    clearAutoFillBtn.addEventListener('click', function() {
-                        // Restore original values (clear all auto-filled data)
-                        restoreOriginalValues();
-
-                        // Reset the auto-fill flag
-                        autoFillUsed = false;
-
-                        // Visual feedback for clear
-                        clearAutoFillBtn.innerHTML = '<i class="bi bi-check-circle"></i> Cleared!';
-                        clearAutoFillBtn.classList.remove('btn-outline-warning');
-                        clearAutoFillBtn.classList.add('btn-warning', 'ring-2', 'ring-yellow-500');
-
-                        // Reset clear button after 1.5 seconds (but keep it visible)
-                        setTimeout(() => {
-                            clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                            clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                            clearAutoFillBtn.classList.add('btn-outline-warning');
-
-                            // Only hide if ALL fields are empty after clearing
-                            const allFieldsEmpty = checkIfAllRequestorFieldsEmpty();
-                            if (allFieldsEmpty) {
-                                clearAutoFillBtn.style.display = 'none';
-                            }
-                            // Otherwise, keep it visible so user can clear again if needed
-                        }, 1500);
-                    });
-
-                    // Store original values function
-                    function storeOriginalValues() {
-                        const fields = [
-                            'RLastname', 'RFirstname', 'RMiddlename', 'RSuffix',
-                            'RBlkLotStreet', 'RSubVill', 'RBrgy', 'RDistrict', 'RelationshipPatient'
-                        ];
-
-                        originalRequestorValues = {}; // Reset storage
-                        fields.forEach(field => {
-                            const element = document.getElementById(field);
-                            if (element) {
-                                originalRequestorValues[field] = element.value;
-                            }
-                        });
-                    }
-
-                    // Restore original values function
-                    function restoreOriginalValues() {
-                        Object.keys(originalRequestorValues).forEach(field => {
-                            const element = document.getElementById(field);
-                            if (element) {
-                                element.value = originalRequestorValues[field];
-                            }
-                        });
-                    }
-
-                    // Check if all requestor fields are empty
-                    function checkIfAllRequestorFieldsEmpty() {
-                        const requestorFields = [
-                            requestorLastname, requestorFirstname, requestorMiddlename,
-                            requestorSuffix, requestorBlkLotStreet, requestorSubVill,
-                            requestorBrgy, requestorDistrict, relationshipPatient
-                        ];
-
-                        return requestorFields.every(field => !field || !field.value.trim());
-                    }
-
-                    // Smart hint with Tailwind (optional - can remove if not needed)
-                    const patientFields = [patientLastname, patientFirstname, patientMiddlename];
-                    patientFields.forEach(field => {
-                        if (field) {
-                            field.addEventListener('input', function() {
-                                if (this.value &&
-                                    requestorLastname && !requestorLastname.value &&
-                                    requestorFirstname && !requestorFirstname.value &&
-                                    !autoFillUsed) {
-                                    sameAsPatientBtn.classList.add('ring-2', 'ring-green-500', 'animate-bounce');
-
-                                    setTimeout(() => {
-                                        sameAsPatientBtn.classList.remove('animate-bounce', 'ring-2', 'ring-green-500');
-                                    }, 3000);
-                                }
-                            });
-                        }
-                    });
-
-                    // Show clear button if page loads with pre-filled data
-                    function checkInitialState() {
-                        const anyFieldHasContent = !checkIfAllRequestorFieldsEmpty();
-                        if (anyFieldHasContent) {
-                            storeOriginalValues();
-                            autoFillUsed = true;
-                            clearAutoFillBtn.style.display = 'block';
-                        }
-                    }
-
-                    // Run initial state check
-                    checkInitialState();
-                });
-
+        // File Upload and Preview
         function previewImage(input, previewId) {
-                    const file = input.files[0];
-                    const preview = document.getElementById(previewId);
-                    const uploadBox = input.previousElementSibling;
+            const file = input.files[0];
+            const preview = document.getElementById(previewId);
+            const uploadBox = input.previousElementSibling;
 
-                    if (file) {
-                        if (file.type.startsWith("image/")) {
-                            const reader = new FileReader();
-                            reader.onload = function (e) {
-                                preview.src = e.target.result;
-                                preview.style.display = "block";
-                            };
-                            reader.readAsDataURL(file);
-                        }
-
-                        // Update upload box text
-                        uploadBox.querySelector('p:first-of-type').textContent = file.name;
-                        uploadBox.style.borderColor = "var(--primary-color)";
-                        uploadBox.style.backgroundColor = "var(--primary-light)";
-                    }
-
+            if (file) {
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type === "application/pdf") {
+                    preview.style.display = "none";
                 }
 
-        const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                if (uploadBox) {
+                    uploadBox.querySelector('p:first-of-type').textContent = file.name;
+                    uploadBox.style.borderColor = "var(--primary-color)";
+                    uploadBox.style.backgroundColor = "var(--primary-light)";
+                }
+            }
+        }
 
-                assistanceCheckboxes.forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
-                        if (this.checked) {
-                            // Uncheck all other checkboxes
-                            assistanceCheckboxes.forEach(cb => {
-                                if (cb !== this) {
-                                    cb.checked = false;
-                                    // Hide any specification fields for unchecked boxes
-                                    const specField = cb.closest('.form-check').querySelector('.assistance-spec');
-                                    if (specField) specField.style.display = 'none';
-                                }
-                            });
+        // File Validation
+        function initializeFileValidation() {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
 
-                            // Show specification field for checked box if it exists
-                            const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                            if (specField) {
-                                specField.style.display = this.checked ? 'block' : 'none';
-                            }
-                        }
-                        updateAssistanceReflection();
-                    });
+            fileInputs.forEach(input => {
+                input.addEventListener('change', function(e) {
+                    validateFile(this);
                 });
-                //1box only
+            });
 
-                 document.addEventListener('DOMContentLoaded', function() {
-                    // Type of Assistance Reflection
-                    const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-                    const assistanceSpecs = document.querySelectorAll('.assistance-spec');
-                    const assistanceReflection = document.getElementById('assistanceReflection');
+            function validateFile(input) {
+                const file = input.files[0];
+                const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
+                const uploadBox = input.previousElementSibling;
 
-                    // Initialize - hide all specification fields
-                    assistanceSpecs.forEach(field => field.style.display = 'none');
+                if (!file) return;
 
-                    // Update reflection function
-                    function updateAssistanceReflection() {
-                        let selectedOptions = [];
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const maxSize = 10 * 1024 * 1024;
 
-                        assistanceCheckboxes.forEach(checkbox => {
-                            if (checkbox.checked) {
-                                const label = checkbox.nextElementSibling.textContent.trim();
-                                const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
+                if (!allowedTypes.includes(file.type)) {
+                    showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
+                    return;
+                }
 
-                                if (specField && specField.value.trim() !== '') {
-                                    selectedOptions.push(`${label}: ${specField.value.trim()}`);
-                                } else {
-                                    selectedOptions.push(label);
-                                }
-                            }
-                        });
+                if (file.size > maxSize) {
+                    showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
+                    return;
+                }
 
-                        assistanceReflection.value = selectedOptions.join(', ');
-                    }
+                clearFileError(input);
 
-                    // Add event listeners
-                    assistanceCheckboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            const specField = this.closest('.form-check').querySelector('.assistance-spec');
-                            if (specField) {
-                                specField.style.display = this.checked ? 'block' : 'none';
-                            }
-                            updateAssistanceReflection();
-                        });
-                    });
+                if (file.type.startsWith("image/") && previewId) {
+                    const preview = document.getElementById(previewId);
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                } else if (previewId) {
+                    const preview = document.getElementById(previewId);
+                    preview.style.display = "none";
+                }
 
-                    assistanceSpecs.forEach(field => {
-                        field.addEventListener('input', updateAssistanceReflection);
-                    });
+                if (uploadBox) {
+                    uploadBox.querySelector('p:first-of-type').textContent = file.name;
+                    uploadBox.style.borderColor = "var(--primary-color)";
+                    uploadBox.style.backgroundColor = "var(--primary-light)";
+                }
+            }
 
-                    // Initial update
-                    updateAssistanceReflection();
-                });
+            function showFileError(input, message) {
+                input.value = '';
+                clearFileError(input);
 
-        document.addEventListener('DOMContentLoaded', function() {
-                    // CMO Single Checkbox Selection
-                    const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger mt-2';
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
 
-                    cmoCheckboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            if (this.checked) {
-                                // Uncheck all other checkboxes
-                                cmoCheckboxes.forEach(cb => {
-                                    if (cb !== this) cb.checked = false;
-                                });
-                            }
-                            updateReflection(); // Update the reflection field
-                        });
-                    });
-                });
-                //1 box only
+                const uploadBox = input.previousElementSibling;
+                uploadBox.parentNode.insertBefore(errorDiv, uploadBox.nextSibling);
 
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Get all elements
-                    const billInput = document.getElementById('billAmountInput');
-                    const cmoNotes = document.getElementById('cmoNotesInput');
-                    const reflectionField = document.getElementById('cmoReflectionField');
-                    const docCheckboxes = document.querySelectorAll('.supporting-doc');
+                uploadBox.querySelector('p:first-of-type').textContent = 'Click to upload document';
+                uploadBox.style.borderColor = "#ddd";
+                uploadBox.style.backgroundColor = "#fafafa";
 
-                    // Update reflection function
-                    function updateReflection() {
-                        let parts = [];
+                const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
+                if (previewId) {
+                    const preview = document.getElementById(previewId);
+                    preview.style.display = "none";
+                }
+            }
 
-                        // Add bill amount if exists
-                        if (billInput.value.trim()) {
-                            parts.push(`Bill: ${billInput.value.trim()}`);
-                        }
+            function clearFileError(input) {
+                const existingError = input.parentNode.querySelector('.alert-danger');
+                if (existingError) {
+                    existingError.remove();
+                }
+            }
+        }
 
-                        // Add checked documents
-                        const checkedDocs = [];
-                        docCheckboxes.forEach(cb => {
-                            if (cb.checked) checkedDocs.push(cb.value);
-                        });
-                        if (checkedDocs.length) {
-                            parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                        }
+        // Form Submission Success
+        function checkFormSubmission() {
+            @if (ViewBag.Success != null && ViewBag.Success == true)
+            {
+                    <text>
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                    setTimeout(() => {
+                        window.location.href = '/Home';
+                    }, 2000);
+                    </text>
+            }
+        }
 
-                        // Add CMO notes if exists
-                        if (cmoNotes.value.trim()) {
-                            parts.push(`Others: ${cmoNotes.value.trim()}`);
-                        }
-
-                        // Update reflection field
-                        reflectionField.value = parts.join(' , ');
-                    }
-
-                    // Set up event listeners
-                    billInput.addEventListener('input', updateReflection);
-                    cmoNotes.addEventListener('input', updateReflection);
-                    docCheckboxes.forEach(cb => {
-                        cb.addEventListener('change', updateReflection);
-                    });
-
-                    // Initial update
-                    updateReflection();
-                });
-
-        document.addEventListener('DOMContentLoaded', function() {
-                    // File validation for all file inputs
-                    const fileInputs = document.querySelectorAll('input[type="file"]');
-
-                    fileInputs.forEach(input => {
-                        input.addEventListener('change', function(e) {
-                            validateFile(this);
-                        });
-                    });
-
-                    function validateFile(input) {
-                        const file = input.files[0];
-                        const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
-                        const uploadBox = input.previousElementSibling;
-
-                        if (!file) return;
-
-                        // File type validation
-                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-                        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-
-                        // Check file type
-                        if (!allowedTypes.includes(file.type)) {
-                            showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
-                            return;
-                        }
-
-                        // Check file size
-                        if (file.size > maxSize) {
-                            showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
-                            return;
-                        }
-
-                        // If validation passes, proceed with preview
-                        clearFileError(input);
-
-                        if (file.type.startsWith("image/") && previewId) {
-                            const preview = document.getElementById(previewId);
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                preview.src = e.target.result;
-                                preview.style.display = "block";
-                            };
-                            reader.readAsDataURL(file);
-                        } else if (previewId) {
-                            // For PDF files, hide the image preview
-                            const preview = document.getElementById(previewId);
-                            preview.style.display = "none";
-                        }
-
-                        // Update upload box text
-                        if (uploadBox) {
-                            uploadBox.querySelector('p:first-of-type').textContent = file.name;
-                            uploadBox.style.borderColor = "var(--primary-color)";
-                            uploadBox.style.backgroundColor = "var(--primary-light)";
-                        }
-                    }
-
-                    function showFileError(input, message) {
-                        // Clear the file input
-                        input.value = '';
-
-                        // Remove any existing error message
-                        clearFileError(input);
-
-                        // Create error message element
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'alert alert-danger mt-2';
-                        errorDiv.innerHTML = `
-                            <i class="fas fa-exclamation-triangle"></i>
-                            ${message}
-                        `;
-
-                        // Insert after the upload box
-                        const uploadBox = input.previousElementSibling;
-                        uploadBox.parentNode.insertBefore(errorDiv, uploadBox.nextSibling);
-
-                        // Reset upload box styling
-                        uploadBox.querySelector('p:first-of-type').textContent = 'Click to upload document';
-                        uploadBox.style.borderColor = "#ddd";
-                        uploadBox.style.backgroundColor = "#fafafa";
-
-                        // Hide any preview
-                        const previewId = input.id === 'receipt' ? 'receiptPreview' : '';
-                        if (previewId) {
-                            const preview = document.getElementById(previewId);
-                            preview.style.display = "none";
-                        }
-                    }
-
-                    function clearFileError(input) {
-                        // Remove any existing error messages
-                        const existingError = input.parentNode.querySelector('.alert-danger');
-                        if (existingError) {
-                            existingError.remove();
-                        }
-                    }
-
-                    // Enhance the existing previewImage function to include validation
-                    const originalPreviewImage = window.previewImage;
-                    window.previewImage = function(input, previewId) {
-                        const file = input.files[0];
-                        if (!file) return;
-
-                        // Validate before preview
-                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-                        const maxSize = 10 * 1024 * 1024;
-
-                        if (!allowedTypes.includes(file.type)) {
-                            showFileError(input, 'Invalid file type. Please upload only JPG, PNG, or PDF files.');
-                            return;
-                        }
-
-                        if (file.size > maxSize) {
-                            showFileError(input, 'File size exceeds 10MB limit. Please choose a smaller file.');
-                            return;
-                        }
-
-                        // If validation passes, call original function
-                        if (originalPreviewImage) {
-                            originalPreviewImage(input, previewId);
-                        }
-                    }
-                });
+        // Age calculation helper function
+        function calculateAge(dob) {
+            if (!dob) return "";
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
     </script>
 }
