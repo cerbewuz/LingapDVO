@@ -124,6 +124,10 @@
                 color: var(--primary);
             }
 
+            .burger-menu-btn.hidden {
+                display: none !important;
+            }
+
         .mobile-menu-overlay {
             display: none;
             position: fixed;
@@ -291,7 +295,7 @@
             background: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-lg);
-            z-index: 1050;
+            z-index: 1060;
             display: none;
             border: 1px solid var(--gray-200);
             max-height: 80vh;
@@ -307,16 +311,17 @@
             }
         }
 
-        /* Desktop: Position near notification icon */
+        /* Desktop: Position near notification icon, outside greeting card */
         @@media (min-width: 992px) {
             .notification-dropdown {
-                position: absolute;
-                top: calc(100% + 10px);
-                right: 0;
+                position: fixed;
+                top: 80px;
+                right: 20px;
                 left: auto;
                 transform: none;
                 width: 400px;
                 max-height: 600px;
+                z-index: 1060;
             }
         }
 
@@ -1422,6 +1427,10 @@
                     document.getElementById('notificationDropdown').style.display = 'block';
                     notificationOverlay.classList.add('active');
                     document.body.style.overflow = 'hidden';
+                    // Hide burger icon on mobile when notification dropdown is showing
+                    if (burgerMenuBtn) {
+                        burgerMenuBtn.classList.add('hidden');
+                    }
                     loadRealNotifications();
                 });
             }
@@ -1525,17 +1534,26 @@
                 e.stopPropagation();
                 const isVisible = notificationDropdown.style.display === 'block';
                 const notificationOverlay = document.getElementById('notificationOverlay');
+                const burgerMenuBtn = document.getElementById('burgerMenuBtn');
 
                 if (isVisible) {
                     notificationDropdown.style.display = 'none';
                     notificationOverlay.classList.remove('active');
                     document.body.style.overflow = '';
+                    // Show burger icon again on mobile
+                    if (burgerMenuBtn && window.innerWidth < 992) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
                 } else {
                     notificationDropdown.style.display = 'block';
                     // Show overlay on mobile/tablet only
                     if (window.innerWidth < 992) {
                         notificationOverlay.classList.add('active');
                         document.body.style.overflow = 'hidden';
+                        // Hide burger icon on mobile when notification dropdown is showing
+                        if (burgerMenuBtn) {
+                            burgerMenuBtn.classList.add('hidden');
+                        }
                     }
                     loadRealNotifications();
                 }
@@ -1550,6 +1568,11 @@
                     const notificationOverlay = document.getElementById('notificationOverlay');
                     notificationOverlay.classList.remove('active');
                     document.body.style.overflow = '';
+                    // Show burger icon again on mobile
+                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+                    if (burgerMenuBtn && window.innerWidth < 992) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
                 });
             }
 
@@ -1560,6 +1583,11 @@
                     notificationDropdown.style.display = 'none';
                     notificationOverlay.classList.remove('active');
                     document.body.style.overflow = '';
+                    // Show burger icon again on mobile
+                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+                    if (burgerMenuBtn && window.innerWidth < 992) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
                 });
             }
 
@@ -1570,6 +1598,11 @@
                     const notificationOverlay = document.getElementById('notificationOverlay');
                     notificationOverlay.classList.remove('active');
                     document.body.style.overflow = '';
+                    // Show burger icon again on mobile
+                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+                    if (burgerMenuBtn && window.innerWidth < 992) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
                 }
             });
 
