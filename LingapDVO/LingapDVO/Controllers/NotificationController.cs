@@ -8,12 +8,14 @@ public class NotificationsController : Controller
     public readonly ApplicationDbContext context;
     private readonly IWebHostEnvironment environment;
     private readonly IDateTimeService _dateTimeService;
+    private readonly ILogger<NotificationsController> _logger;
 
-    public  NotificationsController(ApplicationDbContext context, IWebHostEnvironment environment, IDateTimeService dateTimeService)
+    public  NotificationsController(ApplicationDbContext context, IWebHostEnvironment environment, IDateTimeService dateTimeService, ILogger<NotificationsController> logger)
     {
         this.context = context;
         this.environment = environment;
         _dateTimeService = dateTimeService;
+        _logger = logger;
     }
 
 
@@ -62,6 +64,7 @@ public class NotificationsController : Controller
                 var isRead = readNotificationIds.Contains(notificationId);
 
                 var (title, message, type) = GetStatusNotificationDetails("Hospital Assistance", bill.Status, bill.CreatedAt);
+                var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -72,8 +75,30 @@ public class NotificationsController : Controller
                     createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
                     link = "/Applicationtracking",
-                    status = bill.Status
+                    status = bill.Status,
+                    priority = priority
                 });
+
+                // Add separate delay notification if priority is high or medium
+                if (priority == "high" || priority == "medium")
+                {
+                    var delayNotificationId = $"delay_hospital_{bill.Id}";
+                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Hospital Assistance", priority, bill.CreatedAt);
+
+                    notifications.Add(new
+                    {
+                        id = delayNotificationId,
+                        title = delayTitle,
+                        message = delayMessage,
+                        isRead = isDelayRead,
+                        createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        type = "delay_alert",
+                        link = "/Applicationtracking",
+                        status = bill.Status,
+                        priority = priority
+                    });
+                }
             }
 
             // Create notifications for medical lab forms
@@ -83,6 +108,7 @@ public class NotificationsController : Controller
                 var isRead = readNotificationIds.Contains(notificationId);
 
                 var (title, message, type) = GetStatusNotificationDetails("Other Assistance", medical.Status, medical.CreatedAt);
+                var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -93,8 +119,30 @@ public class NotificationsController : Controller
                     createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
                     link = "/Applicationtracking",
-                    status = medical.Status
+                    status = medical.Status,
+                    priority = priority
                 });
+
+                // Add separate delay notification if priority is high or medium
+                if (priority == "high" || priority == "medium")
+                {
+                    var delayNotificationId = $"delay_medical_{medical.Id}";
+                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Other Assistance", priority, medical.CreatedAt);
+
+                    notifications.Add(new
+                    {
+                        id = delayNotificationId,
+                        title = delayTitle,
+                        message = delayMessage,
+                        isRead = isDelayRead,
+                        createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        type = "delay_alert",
+                        link = "/Applicationtracking",
+                        status = medical.Status,
+                        priority = priority
+                    });
+                }
             }
 
             // Create notifications for funeral forms
@@ -104,6 +152,7 @@ public class NotificationsController : Controller
                 var isRead = readNotificationIds.Contains(notificationId);
 
                 var (title, message, type) = GetStatusNotificationDetails("Funeral Assistance", funeral.Status, funeral.CreatedAt);
+                var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
 
                 notifications.Add(new
                 {
@@ -114,8 +163,30 @@ public class NotificationsController : Controller
                     createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
                     link = "/Applicationtracking",
-                    status = funeral.Status
+                    status = funeral.Status,
+                    priority = priority
                 });
+
+                // Add separate delay notification if priority is high or medium
+                if (priority == "high" || priority == "medium")
+                {
+                    var delayNotificationId = $"delay_funeral_{funeral.Id}";
+                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Funeral Assistance", priority, funeral.CreatedAt);
+
+                    notifications.Add(new
+                    {
+                        id = delayNotificationId,
+                        title = delayTitle,
+                        message = delayMessage,
+                        isRead = isDelayRead,
+                        createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        type = "delay_alert",
+                        link = "/Applicationtracking",
+                        status = funeral.Status,
+                        priority = priority
+                    });
+                }
             }
 
             // Add a demo notification if no forms found
@@ -150,7 +221,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log exception
+            _logger.LogError(ex, "Error occurred while loading notifications for user");
             return Json(new { error = "An error occurred while loading notifications" });
         }
     }
@@ -179,7 +250,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log exception
+            _logger.LogError(ex, "Error occurred while marking notification {NotificationId} as read", notificationId);
             return Json(new { success = false, error = "An error occurred while marking notification as read" });
         }
     }
@@ -187,10 +258,10 @@ public class NotificationsController : Controller
     [HttpPost]
     public JsonResult MarkAllNotificationsAsRead()
     {
+        var userIdString = HttpContext.Session.GetString("UserId");
+
         try
         {
-            var userIdString = HttpContext.Session.GetString("UserId");
-
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
                 return Json(new { success = false, error = "User not authenticated" });
@@ -206,7 +277,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log the exception
+            _logger.LogError(ex, "Error occurred while marking all notifications as read for user {UserIdString}", userIdString);
             return Json(new { success = false, error = "An error occurred while marking all notifications as read" });
         }
     }
@@ -240,16 +311,37 @@ public class NotificationsController : Controller
             foreach (var bill in recentHospitalBills)
             {
                 notificationIds.Add($"hospital_{bill.Id}_{bill.Status}");
+
+                // Add delay notification ID if applicable
+                var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
+                if (priority == "high" || priority == "medium")
+                {
+                    notificationIds.Add($"delay_hospital_{bill.Id}");
+                }
             }
 
             foreach (var medical in recentMedicalLabForms)
             {
                 notificationIds.Add($"medical_{medical.Id}_{medical.Status}");
+
+                // Add delay notification ID if applicable
+                var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
+                if (priority == "high" || priority == "medium")
+                {
+                    notificationIds.Add($"delay_medical_{medical.Id}");
+                }
             }
 
             foreach (var funeral in recentFuneralForms)
             {
                 notificationIds.Add($"funeral_{funeral.Id}_{funeral.Status}");
+
+                // Add delay notification ID if applicable
+                var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
+                if (priority == "high" || priority == "medium")
+                {
+                    notificationIds.Add($"delay_funeral_{funeral.Id}");
+                }
             }
 
             if (!notificationIds.Any())
@@ -259,7 +351,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log error and return at least the welcome notification
+            _logger.LogError(ex, "Error occurred while getting current notification IDs for user {UserId}", userId);
             if (!notificationIds.Any())
             {
                 notificationIds.Add("welcome_1");
@@ -279,7 +371,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log error and return empty hashset
+            _logger.LogError(ex, "Error occurred while getting read notification IDs from session for user {UserId}", userId);
             return new HashSet<string>();
         }
     }
@@ -304,7 +396,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            // Log error
+            _logger.LogError(ex, "Error occurred while updating session read notifications for user {UserId}", userId);
             throw;
         }
     }
@@ -345,5 +437,70 @@ public class NotificationsController : Controller
                 "status_change"
             )
         };
+    }
+
+    /// <summary>
+    /// Get delay notification details based on priority level
+    /// Messages match the Application Tracking timeline content for delays
+    /// </summary>
+    private (string title, string message) GetDelayNotificationDetails(string formType, string priority, DateTime createdAt)
+    {
+        var hoursElapsed = (_dateTimeService.Now - createdAt).TotalHours;
+
+        return priority switch
+        {
+            "high" => (
+                $"{formType} - Experiencing Delay",
+                $"Your application has been waiting for more than 2 hours. We apologize for the delay. We will review it within 1-2 hours and are working to process it as soon as possible."
+            ),
+            "medium" => (
+                $"{formType} - Processing Delay",
+                $"Your application has been waiting for over 1 hour. We are reviewing your application and will make a decision within 1-2 hours."
+            ),
+            _ => (
+                $"{formType} - Update",
+                $"Your application is waiting to be reviewed. We will review it within 1-2 hours."
+            )
+        };
+    }
+
+    /// <summary>
+    /// Calculate priority level for applications in pending or processing state
+    /// Priority is based on waiting time since submission
+    /// High Priority: 2+ hours | Medium Priority: 1-2 hours | Normal: < 1 hour
+    /// </summary>
+    private string CalculateApplicationPriority(string status, string status2, DateTime createdAt)
+    {
+        // Only calculate priority for pending or processing applications
+        // If already approved/disapproved/claimed, no priority needed
+        if (!string.IsNullOrEmpty(status2) && (status2.Equals("Approve", StringComparison.OrdinalIgnoreCase) ||
+            status2.Equals("Disapprove", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "normal";
+        }
+
+        // Check if still in pending or processing state
+        if (string.IsNullOrEmpty(status) ||
+            (!status.Equals("Pending", StringComparison.OrdinalIgnoreCase) &&
+             !status.Equals("Processing", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "normal";
+        }
+
+        // Calculate hours elapsed since submission (using Philippine time)
+        var hoursElapsed = (_dateTimeService.Now - createdAt).TotalHours;
+
+        if (hoursElapsed >= 2)
+        {
+            return "high";
+        }
+        else if (hoursElapsed >= 1)
+        {
+            return "medium";
+        }
+        else
+        {
+            return "normal";
+        }
     }
 }

@@ -2999,39 +2999,9 @@ namespace LingapDVO.Controllers
             }
         }
 
+        // Public page - no authentication required
         public IActionResult Nearbyoffices()
         {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
-            {
-                return RedirectToAction("Landingpage", "Dashboard");
-            }
-
-            var userIdString = HttpContext.Session.GetString("UserId");
-            if (!int.TryParse(userIdString, out int userId))
-            {
-                // If the UserId is not in session or invalid, redirect to login
-                return RedirectToAction("Login", "Account");
-            }
-
-            // Get data from database filtered by userId
-            var hospitalBills = context.HospitalAssistance
-                .Where(f => f.UserId == userId)
-                .OrderByDescending(f => f.CreatedAt)
-                .ToList();
-
-            var medicalLabForms = context.OtherAssistance
-                .Where(f => f.UserId == userId)
-                .OrderByDescending(f => f.CreatedAt)
-                .ToList();
-
-            // Create and populate the view model
-            var viewModel = new CombinedFormsViewModel
-            {
-                HospitalAssistance = hospitalBills,
-                OtherAssistance = medicalLabForms
-            };
-
-            // Pass the view model to the view
             return View();
         }
 
@@ -4061,7 +4031,7 @@ namespace LingapDVO.Controllers
 
                 return Json(new { success = true, message = "Thank you for your feedback!" });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { success = false, message = "An error occurred while submitting your feedback. Please try again." });
             }

@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\DoctorPrescriptionimage\**" />
+    <Compile Remove="wwwroot\Funeralimg\**" />
+    <Content Remove="wwwroot\DoctorPrescriptionimage\**" />
+    <Content Remove="wwwroot\Funeralimg\**" />
+    <EmbeddedResource Remove="wwwroot\DoctorPrescriptionimage\**" />
+    <EmbeddedResource Remove="wwwroot\Funeralimg\**" />
+    <None Remove="wwwroot\DoctorPrescriptionimage\**" />
+    <None Remove="wwwroot\Funeralimg\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="itext7" Version="9.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="9.0.10" />
@@ -27,8 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\DoctorPrescriptionimage\" />
-    <Folder Include="wwwroot\Funeralimg\" />
     <Folder Include="wwwroot\HospitalAssistanceFileStorage\" />
     <Folder Include="wwwroot\FuneralAssistanceFileStorage\" />
     <Folder Include="wwwroot\OtherAssistanceFileStorage\" />

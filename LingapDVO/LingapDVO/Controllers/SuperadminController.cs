@@ -385,7 +385,7 @@ namespace LingapDVO.Controllers
                 TempData["SuccessMessage"] = "Your profile has been updated successfully.";
                 return RedirectToAction("Homepage", "Dashboard");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["ErrorMessage"] = "An unexpected error occurred. Please try again.";
                 return View(superadminaccountdto);
