@@ -4003,31 +4003,81 @@ namespace LingapDVO.Controllers
 
                     string subject = "Hospital Bill Assistance Claimed - LINGAP DVO";
                     string body = $@"
-                    Dear {firstName},
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #dc143c; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #dc143c; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #dc143c; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .feedback-section {{ margin-top: 25px; padding: 20px; background-color: #e8f4f8; border-left: 4px solid #0066cc; border-radius: 4px; }}
+        .feedback-section h3 {{ color: #0066cc; margin-top: 0; font-size: 18px; }}
+        .feedback-section p {{ color: #555; margin-bottom: 15px; }}
+        .button {{ display: inline-block; padding: 12px 30px; background-color: #0066cc; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 10px; }}
+        .button:hover {{ background-color: #0052a3; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>✓ Assistance Successfully Claimed</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Dear {firstName},</p>
+            <p class='message'>
+                We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed.
+                Thank you for your patience and cooperation throughout the process.
+            </p>
 
-                    We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed as of {_dateTimeService.Now:MMMM dd, yyyy}.
+            <div class='details-box'>
+                <h3>APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application Type:</span>
+                    <span class='detail-value'>Hospital Bill Assistance</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Claimed</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Processed By:</span>
+                    <span class='detail-value'>{HospitalAssistanceDto.Processby ?? "LINGAP Personnel"}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Claimed:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                {(!string.IsNullOrEmpty(HospitalAssistanceDto.Comments) ? $@"
+                <div class='detail-item'>
+                    <span class='detail-label'>Remarks:</span>
+                    <span class='detail-value'>{HospitalAssistanceDto.Comments}</span>
+                </div>" : "")}
+            </div>
 
-                    APPLICATION DETAILS:
-                    • Application Type: Hospital Bill Assistance
-                    • Status: Claimed
-                    • Processed By: {HospitalAssistanceDto.Processby ?? "LINGAP Personnel"}
-                    • Date Claimed: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
-
-                    REMARKS:
-                    {HospitalAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
-
-                    Thank you for your patience and cooperation throughout the process.
-
-                    ---
-                    SHARE YOUR EXPERIENCE
-                    We would love to hear about your experience with our service. Your feedback helps us improve and serve you better.
-                    Please take a moment to share your thoughts: https://lingapdvo.com/Dashboard/Feedback
-
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Medical Assistance Program
-
-                    Note: This is an automated email. Please do not reply to this message.";
+            <div class='feedback-section'>
+                <h3>📝 We Value Your Feedback!</h3>
+                <p>Your opinion matters to us. Please take a moment to share your experience with our service. Your feedback helps us improve and serve you better.</p>
+                <a href='https://lingap.online/Feedback' class='button'>Submit Feedback</a>
+            </div>
+        </div>
+        <div class='footer'>
+            <p><strong>LINGAP DVO Medical Assistance Program</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
 
                     // ? Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -4040,7 +4090,8 @@ namespace LingapDVO.Controllers
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
-                        Body = body
+                        Body = body,
+                        IsBodyHtml = true
                     })
                     {
                         smtp.Send(message);
@@ -4103,31 +4154,81 @@ namespace LingapDVO.Controllers
 
                     string subject = "Medical and Laboratory Assistance Claimed - LINGAP DVO";
                     string body = $@"
-                    Dear {firstName},
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #dc143c; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #dc143c; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #dc143c; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .feedback-section {{ margin-top: 25px; padding: 20px; background-color: #e8f4f8; border-left: 4px solid #0066cc; border-radius: 4px; }}
+        .feedback-section h3 {{ color: #0066cc; margin-top: 0; font-size: 18px; }}
+        .feedback-section p {{ color: #555; margin-bottom: 15px; }}
+        .button {{ display: inline-block; padding: 12px 30px; background-color: #0066cc; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 10px; }}
+        .button:hover {{ background-color: #0052a3; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>✓ Assistance Successfully Claimed</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Dear {firstName},</p>
+            <p class='message'>
+                We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed.
+                Thank you for your patience and cooperation throughout the process.
+            </p>
 
-                    We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed as of {_dateTimeService.Now:MMMM dd, yyyy}.
+            <div class='details-box'>
+                <h3>APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application Type:</span>
+                    <span class='detail-value'>Medical and Laboratory Assistance</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Claimed</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Processed By:</span>
+                    <span class='detail-value'>{OtherAssistanceDto.Processby ?? "LINGAP Personnel"}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Claimed:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                {(!string.IsNullOrEmpty(OtherAssistanceDto.Comments) ? $@"
+                <div class='detail-item'>
+                    <span class='detail-label'>Remarks:</span>
+                    <span class='detail-value'>{OtherAssistanceDto.Comments}</span>
+                </div>" : "")}
+            </div>
 
-                    APPLICATION DETAILS:
-                    • Application Type: Medical and Laboratory Assistance
-                    • Status: Claimed
-                    • Processed By: {OtherAssistanceDto.Processby ?? "LINGAP Personnel"}
-                    • Date Claimed: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
-
-                    REMARKS:
-                    {OtherAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
-
-                    Thank you for your patience and cooperation throughout the process.
-
-                    ---
-                    SHARE YOUR EXPERIENCE
-                    We would love to hear about your experience with our service. Your feedback helps us improve and serve you better.
-                    Please take a moment to share your thoughts: https://lingapdvo.com/Dashboard/Feedback
-
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Medical Assistance Program
-
-                    Note: This is an automated email. Please do not reply to this message.";
+            <div class='feedback-section'>
+                <h3>📝 We Value Your Feedback!</h3>
+                <p>Your opinion matters to us. Please take a moment to share your experience with our service. Your feedback helps us improve and serve you better.</p>
+                <a href='https://lingap.online/Feedback' class='button'>Submit Feedback</a>
+            </div>
+        </div>
+        <div class='footer'>
+            <p><strong>LINGAP DVO Medical Assistance Program</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
 
                     // Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -4140,7 +4241,8 @@ namespace LingapDVO.Controllers
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
-                        Body = body
+                        Body = body,
+                        IsBodyHtml = true
                     })
                     {
                         await smtp.SendMailAsync(message);
@@ -4224,31 +4326,81 @@ namespace LingapDVO.Controllers
 
                     string subject = "Funeral Assistance Claimed - LINGAP DVO";
                     string body = $@"
-                    Dear {firstName},
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #dc143c; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #dc143c; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #dc143c; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .feedback-section {{ margin-top: 25px; padding: 20px; background-color: #e8f4f8; border-left: 4px solid #0066cc; border-radius: 4px; }}
+        .feedback-section h3 {{ color: #0066cc; margin-top: 0; font-size: 18px; }}
+        .feedback-section p {{ color: #555; margin-bottom: 15px; }}
+        .button {{ display: inline-block; padding: 12px 30px; background-color: #0066cc; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 10px; }}
+        .button:hover {{ background-color: #0052a3; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>✓ Assistance Successfully Claimed</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Dear {firstName},</p>
+            <p class='message'>
+                We are pleased to inform you that your Funeral Assistance has been successfully claimed.
+                Thank you for your patience and cooperation throughout the process.
+            </p>
 
-                    We are pleased to inform you that your Funeral Assistance has been successfully claimed as of {_dateTimeService.Now:MMMM dd, yyyy}.
+            <div class='details-box'>
+                <h3>APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application Type:</span>
+                    <span class='detail-value'>Funeral Assistance</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Claimed</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Processed By:</span>
+                    <span class='detail-value'>{FuneralAssistanceDto.Processby ?? "LINGAP Personnel"}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Claimed:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                {(!string.IsNullOrEmpty(FuneralAssistanceDto.Comments) ? $@"
+                <div class='detail-item'>
+                    <span class='detail-label'>Remarks:</span>
+                    <span class='detail-value'>{FuneralAssistanceDto.Comments}</span>
+                </div>" : "")}
+            </div>
 
-                    APPLICATION DETAILS:
-                    • Application Type: Funeral Assistance
-                    • Status: Claimed
-                    • Processed By: {FuneralAssistanceDto.Processby ?? "LINGAP Personnel"}
-                    • Date Claimed: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
-
-                    REMARKS:
-                    {FuneralAssistanceDto.Comments ?? "Your claim has been processed and recorded successfully."}
-
-                    Thank you for your patience and cooperation throughout the process.
-
-                    ---
-                    SHARE YOUR EXPERIENCE
-                    We would love to hear about your experience with our service. Your feedback helps us improve and serve you better.
-                    Please take a moment to share your thoughts: https://lingapdvo.com/Dashboard/Feedback
-
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Medical Assistance Program
-
-                    Note: This is an automated email. Please do not reply to this message.";
+            <div class='feedback-section'>
+                <h3>📝 We Value Your Feedback!</h3>
+                <p>Your opinion matters to us. Please take a moment to share your experience with our service. Your feedback helps us improve and serve you better.</p>
+                <a href='https://lingap.online/Feedback' class='button'>Submit Feedback</a>
+            </div>
+        </div>
+        <div class='footer'>
+            <p><strong>LINGAP DVO Medical Assistance Program</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
 
                     // Send email
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -4261,7 +4413,8 @@ namespace LingapDVO.Controllers
                     using (var message = new MailMessage(fromAddress, toAddress)
                     {
                         Subject = subject,
-                        Body = body
+                        Body = body,
+                        IsBodyHtml = true
                     })
                     {
                         await smtp.SendMailAsync(message);
