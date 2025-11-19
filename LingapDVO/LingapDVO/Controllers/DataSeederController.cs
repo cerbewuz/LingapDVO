@@ -102,19 +102,22 @@ namespace LingapDVO.Controllers
                 _context.OtherAssistance.RemoveRange(_context.OtherAssistance);
                 await _context.SaveChangesAsync();
 
-                // Clear uploaded files
-                string uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
-                if (Directory.Exists(uploadsPath))
+                // Clear uploaded files - using system's folder structure
+                var storageFolders = new[]
                 {
-                    foreach (var dir in new[] { "valid_ids", "prescriptions", "certificates" })
+                    Path.Combine(_environment.WebRootPath, "Validimg"),
+                    Path.Combine(_environment.WebRootPath, "HospitalAssistanceFileStorage"),
+                    Path.Combine(_environment.WebRootPath, "FuneralAssistanceFileStorage"),
+                    Path.Combine(_environment.WebRootPath, "OtherAssistanceFileStorage")
+                };
+
+                foreach (var dirPath in storageFolders)
+                {
+                    if (Directory.Exists(dirPath))
                     {
-                        string dirPath = Path.Combine(uploadsPath, dir);
-                        if (Directory.Exists(dirPath))
+                        foreach (var file in Directory.GetFiles(dirPath, "*.enc"))
                         {
-                            foreach (var file in Directory.GetFiles(dirPath, "*.enc"))
-                            {
-                                System.IO.File.Delete(file);
-                            }
+                            System.IO.File.Delete(file);
                         }
                     }
                 }

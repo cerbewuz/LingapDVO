@@ -20,11 +20,12 @@ This data seeder generates **250 dummy applications** with realistic Filipino na
 - **Complete Workflow**: Applications in various states (Waiting, Processing, Approved, Rejected, Claimed)
 
 ### Encrypted Files Generated
-1. **Valid ID (Front)** - Encrypted with AES-256
-2. **Valid ID (Back)** - Encrypted with AES-256
-3. **Doctor Prescriptions** - For hospital/medical assistance
-4. **Death Certificates** - For funeral assistance
-5. **Medical Certificates** - For medical procedure assistance
+All files are stored in the system's designated folders:
+1. **Valid ID (Front)** - Encrypted with AES-256 (stored in `wwwroot/Validimg`)
+2. **Valid ID (Back)** - Encrypted with AES-256 (stored in `wwwroot/Validimg`)
+3. **Doctor Prescriptions** - For hospital/medical assistance (stored in respective FileStorage folders)
+4. **Death Certificates** - For funeral assistance (stored in `wwwroot/FuneralAssistanceFileStorage`)
+5. **Medical Certificates** - For medical procedure assistance (stored in `wwwroot/OtherAssistanceFileStorage`)
 
 ## Encryption Details
 
@@ -146,14 +147,21 @@ The seeder creates a realistic distribution of:
 
 ## File Locations
 
-After running the seeder, encrypted files are stored in:
+After running the seeder, encrypted files are stored in the system's designated folders:
 
 ```
-wwwroot/uploads/
-├── valid_ids/          # Encrypted ID front and back images
-├── prescriptions/      # Encrypted doctor prescriptions
-└── certificates/       # Encrypted death and medical certificates
+wwwroot/
+├── Validimg/                           # All encrypted Valid ID front and back images (500 files)
+├── HospitalAssistanceFileStorage/      # Hospital prescriptions and death certificates
+├── FuneralAssistanceFileStorage/       # Funeral death certificates
+└── OtherAssistanceFileStorage/         # Medical procedure prescriptions and medical certificates
 ```
+
+### File Distribution by Folder:
+- **Validimg**: ~500 encrypted ID files (250 front + 250 back) for all form types
+- **HospitalAssistanceFileStorage**: ~83 prescription files for hospital assistance applications
+- **FuneralAssistanceFileStorage**: ~83 death certificate files for funeral assistance applications
+- **OtherAssistanceFileStorage**: ~168 files (~84 prescriptions + ~84 medical certificates) for medical procedure applications
 
 ## Safety Features
 
@@ -201,15 +209,32 @@ SELECT
 
 ### Check Files
 ```bash
+# Count encrypted ID files (should be 500: 250 front + 250 back)
+ls -1 wwwroot/Validimg/*.enc | wc -l
+
+# Count hospital assistance files (should be ~83 prescriptions)
+ls -1 wwwroot/HospitalAssistanceFileStorage/*.enc | wc -l
+
+# Count funeral assistance files (should be ~83 death certificates)
+ls -1 wwwroot/FuneralAssistanceFileStorage/*.enc | wc -l
+
+# Count other assistance files (should be ~168: ~84 prescriptions + ~84 medical certificates)
+ls -1 wwwroot/OtherAssistanceFileStorage/*.enc | wc -l
+```
+
+**Windows PowerShell:**
+```powershell
 # Count encrypted ID files
-ls -1 wwwroot/uploads/valid_ids/*.enc | wc -l
-# Should show 500 files (250 front + 250 back)
+(Get-ChildItem wwwroot\Validimg\*.enc).Count
 
-# Count prescription files
-ls -1 wwwroot/uploads/prescriptions/*.enc | wc -l
+# Count hospital assistance files
+(Get-ChildItem wwwroot\HospitalAssistanceFileStorage\*.enc).Count
 
-# Count certificate files
-ls -1 wwwroot/uploads/certificates/*.enc | wc -l
+# Count funeral assistance files
+(Get-ChildItem wwwroot\FuneralAssistanceFileStorage\*.enc).Count
+
+# Count other assistance files
+(Get-ChildItem wwwroot\OtherAssistanceFileStorage\*.enc).Count
 ```
 
 ### Verify Encryption
@@ -228,7 +253,7 @@ The encrypted files should:
 **Solution**: Verify the AES key is correctly set in the seeder class
 
 ### Files not created
-**Solution**: Check that the wwwroot/uploads directory exists and has write permissions
+**Solution**: Check that the wwwroot directory exists and has write permissions. The seeder will automatically create the required subdirectories (Validimg, HospitalAssistanceFileStorage, FuneralAssistanceFileStorage, OtherAssistanceFileStorage)
 
 ### Database constraint errors
 **Solution**: Ensure user accounts exist (UserId 1-50) before running the seeder

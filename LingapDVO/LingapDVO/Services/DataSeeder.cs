@@ -122,14 +122,16 @@ namespace LingapDVO.Services
         {
             Console.WriteLine("Starting data seeding with 250 dummy applications...");
 
-            // Ensure directories exist
-            string uploadsPath = Path.Combine(_environment.WebRootPath, "uploads", "valid_ids");
-            string prescriptionsPath = Path.Combine(_environment.WebRootPath, "uploads", "prescriptions");
-            string certificatesPath = Path.Combine(_environment.WebRootPath, "uploads", "certificates");
+            // Ensure directories exist - matching system's folder structure
+            string validImgPath = Path.Combine(_environment.WebRootPath, "Validimg");
+            string hospitalStoragePath = Path.Combine(_environment.WebRootPath, "HospitalAssistanceFileStorage");
+            string funeralStoragePath = Path.Combine(_environment.WebRootPath, "FuneralAssistanceFileStorage");
+            string otherStoragePath = Path.Combine(_environment.WebRootPath, "OtherAssistanceFileStorage");
 
-            Directory.CreateDirectory(uploadsPath);
-            Directory.CreateDirectory(prescriptionsPath);
-            Directory.CreateDirectory(certificatesPath);
+            Directory.CreateDirectory(validImgPath);
+            Directory.CreateDirectory(hospitalStoragePath);
+            Directory.CreateDirectory(funeralStoragePath);
+            Directory.CreateDirectory(otherStoragePath);
 
             // Generate 250 applications
             List<object> applications = new List<object>();
@@ -143,22 +145,22 @@ namespace LingapDVO.Services
                 // Generate person data
                 var personData = GeneratePersonData(i, idType);
 
-                // Create encrypted ID files
-                string frontIdFileName = await CreateEncryptedIdFile(uploadsPath, $"front_{i + 1}_{idType.Replace(" ", "_")}.enc", true, idType);
-                string backIdFileName = await CreateEncryptedIdFile(uploadsPath, $"back_{i + 1}_{idType.Replace(" ", "_")}.enc", false, idType);
+                // Create encrypted ID files in Validimg folder
+                string frontIdFileName = await CreateEncryptedIdFile(validImgPath, $"front_{i + 1}_{idType.Replace(" ", "_")}.enc", true, idType);
+                string backIdFileName = await CreateEncryptedIdFile(validImgPath, $"back_{i + 1}_{idType.Replace(" ", "_")}.enc", false, idType);
 
                 switch (formType)
                 {
                     case 0: // Hospital Assistance
-                        var hospital = CreateHospitalAssistance(personData, frontIdFileName, backIdFileName, prescriptionsPath, certificatesPath);
+                        var hospital = CreateHospitalAssistance(personData, frontIdFileName, backIdFileName, hospitalStoragePath);
                         _context.HospitalAssistance.Add(hospital);
                         break;
                     case 1: // Funeral Assistance
-                        var funeral = CreateFuneralAssistance(personData, frontIdFileName, backIdFileName, prescriptionsPath, certificatesPath);
+                        var funeral = CreateFuneralAssistance(personData, frontIdFileName, backIdFileName, funeralStoragePath);
                         _context.FuneralAssistance.Add(funeral);
                         break;
                     case 2: // Other Assistance
-                        var other = CreateOtherAssistance(personData, frontIdFileName, backIdFileName, prescriptionsPath, certificatesPath);
+                        var other = CreateOtherAssistance(personData, frontIdFileName, backIdFileName, otherStoragePath);
                         _context.OtherAssistance.Add(other);
                         break;
                 }
@@ -204,10 +206,10 @@ namespace LingapDVO.Services
             };
         }
 
-        private HospitalAssistance CreateHospitalAssistance(Dictionary<string, string> personData, string frontId, string backId, string prescriptionsPath, string certificatesPath)
+        private HospitalAssistance CreateHospitalAssistance(Dictionary<string, string> personData, string frontId, string backId, string storagePath)
         {
             bool hasDifferentRequestor = _random.Next(0, 3) == 0; // 33% chance
-            var prescriptionFile = CreateEncryptedPrescriptionFile(prescriptionsPath, $"prescription_{Guid.NewGuid()}.enc").Result;
+            var prescriptionFile = CreateEncryptedPrescriptionFile(storagePath, $"prescription_{Guid.NewGuid()}.enc").Result;
 
             int daysAgo = _random.Next(1, 60);
             DateTime createdAt = _dateTimeService.Now.AddDays(-daysAgo);
@@ -260,10 +262,10 @@ namespace LingapDVO.Services
             };
         }
 
-        private FuneralAssistance CreateFuneralAssistance(Dictionary<string, string> personData, string frontId, string backId, string prescriptionsPath, string certificatesPath)
+        private FuneralAssistance CreateFuneralAssistance(Dictionary<string, string> personData, string frontId, string backId, string storagePath)
         {
             bool hasDifferentRequestor = _random.Next(0, 2) == 0; // 50% chance for funeral (usually different person)
-            var deathCertFile = CreateEncryptedDeathCertFile(certificatesPath, $"deathcert_{Guid.NewGuid()}.enc").Result;
+            var deathCertFile = CreateEncryptedDeathCertFile(storagePath, $"deathcert_{Guid.NewGuid()}.enc").Result;
 
             int daysAgo = _random.Next(1, 60);
             DateTime createdAt = _dateTimeService.Now.AddDays(-daysAgo);
@@ -316,11 +318,11 @@ namespace LingapDVO.Services
             };
         }
 
-        private OtherAssistance CreateOtherAssistance(Dictionary<string, string> personData, string frontId, string backId, string prescriptionsPath, string certificatesPath)
+        private OtherAssistance CreateOtherAssistance(Dictionary<string, string> personData, string frontId, string backId, string storagePath)
         {
             bool hasDifferentRequestor = _random.Next(0, 3) == 0; // 33% chance
-            var medCertFile = CreateEncryptedMedCertFile(certificatesPath, $"medcert_{Guid.NewGuid()}.enc").Result;
-            var prescriptionFile = CreateEncryptedPrescriptionFile(prescriptionsPath, $"prescription_{Guid.NewGuid()}.enc").Result;
+            var medCertFile = CreateEncryptedMedCertFile(storagePath, $"medcert_{Guid.NewGuid()}.enc").Result;
+            var prescriptionFile = CreateEncryptedPrescriptionFile(storagePath, $"prescription_{Guid.NewGuid()}.enc").Result;
 
             int daysAgo = _random.Next(1, 60);
             DateTime createdAt = _dateTimeService.Now.AddDays(-daysAgo);
