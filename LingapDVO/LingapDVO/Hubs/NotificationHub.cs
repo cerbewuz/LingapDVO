@@ -15,7 +15,7 @@ namespace LingapDVO.Hubs
         /// <summary>
         /// Send notification to a specific user by userId
         /// </summary>
-        public async Task SendNotificationToUser(int userId, string title, string message, string type, string link = null)
+        public async Task SendNotificationToUser(int userId, string title, string message, string type, string? link = null)
         {
             await Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
             {
@@ -30,7 +30,7 @@ namespace LingapDVO.Hubs
         /// <summary>
         /// Send notification to all connected clients
         /// </summary>
-        public async Task SendNotificationToAll(string title, string message, string type, string link = null)
+        public async Task SendNotificationToAll(string title, string message, string type, string? link = null)
         {
             await Clients.All.SendAsync("ReceiveNotification", new
             {
@@ -140,7 +140,7 @@ namespace LingapDVO.Hubs
         /// <summary>
         /// Called when a client disconnects
         /// </summary>
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.User?.FindFirst("UserId")?.Value;
             var userRole = Context.User?.FindFirst("UserRole")?.Value;
