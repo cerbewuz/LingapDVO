@@ -1,9 +1,17 @@
+using LingapDVO.Services;
 using Microsoft.AspNetCore.SignalR;
 
 namespace LingapDVO.Hubs
 {
     public class NotificationHub : Hub
     {
+        private readonly IDateTimeService _dateTimeService;
+
+        public NotificationHub(IDateTimeService dateTimeService)
+        {
+            _dateTimeService = dateTimeService;
+        }
+
         /// <summary>
         /// Send notification to a specific user by userId
         /// </summary>
@@ -15,7 +23,7 @@ namespace LingapDVO.Hubs
                 message = message,
                 type = type,
                 link = link,
-                createdAt = DateTime.UtcNow
+                createdAt = _dateTimeService.Now
             });
         }
 
@@ -30,7 +38,7 @@ namespace LingapDVO.Hubs
                 message = message,
                 type = type,
                 link = link,
-                createdAt = DateTime.UtcNow
+                createdAt = _dateTimeService.Now
             });
         }
 
@@ -44,7 +52,7 @@ namespace LingapDVO.Hubs
                 highPriority = highPriority,
                 mediumPriority = mediumPriority,
                 totalPriority = totalPriority,
-                timestamp = DateTime.UtcNow
+                timestamp = _dateTimeService.Now
             });
         }
 
@@ -59,7 +67,7 @@ namespace LingapDVO.Hubs
                 applicantName = applicantName,
                 priority = priority,
                 formId = formId,
-                timestamp = DateTime.UtcNow
+                timestamp = _dateTimeService.Now
             });
         }
 
@@ -74,7 +82,7 @@ namespace LingapDVO.Hubs
                 hoursElapsed = hoursElapsed,
                 applicationType = applicationType,
                 message = GetDelayMessage(priority, hoursElapsed),
-                timestamp = DateTime.UtcNow
+                timestamp = _dateTimeService.Now
             });
         }
 
@@ -88,7 +96,7 @@ namespace LingapDVO.Hubs
                 formId = formId,
                 status = status,
                 applicationType = applicationType,
-                timestamp = DateTime.UtcNow
+                timestamp = _dateTimeService.Now
             });
         }
 
@@ -101,7 +109,7 @@ namespace LingapDVO.Hubs
             {
                 message = message,
                 type = type,
-                timestamp = DateTime.UtcNow
+                timestamp = _dateTimeService.Now
             });
         }
 

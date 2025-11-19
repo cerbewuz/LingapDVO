@@ -17,19 +17,22 @@ namespace LingapDVO.Services
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ApplicationDbContext _context;
         private readonly ILogger<MultiChannelNotificationService> _logger;
+        private readonly IDateTimeService _dateTimeService;
 
         public MultiChannelNotificationService(
             ISmsService smsService,
             IEmailService emailService,
             IHubContext<NotificationHub> hubContext,
             ApplicationDbContext context,
-            ILogger<MultiChannelNotificationService> logger)
+            ILogger<MultiChannelNotificationService> logger,
+            IDateTimeService dateTimeService)
         {
             _smsService = smsService;
             _emailService = emailService;
             _hubContext = hubContext;
             _context = context;
             _logger = logger;
+            _dateTimeService = dateTimeService;
         }
 
         public async Task SendNotificationAsync(int userId, string title, string message, string type, string link = null)
@@ -53,7 +56,7 @@ namespace LingapDVO.Services
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = DateTime.UtcNow
+                        createdAt = _dateTimeService.Now
                     });
                 }
 
@@ -139,7 +142,7 @@ namespace LingapDVO.Services
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = DateTime.UtcNow
+                        createdAt = _dateTimeService.Now
                     });
                 }
 
@@ -203,7 +206,7 @@ namespace LingapDVO.Services
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = DateTime.UtcNow
+                        createdAt = _dateTimeService.Now
                     });
                 }
 
@@ -268,7 +271,7 @@ namespace LingapDVO.Services
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = DateTime.UtcNow
+                        createdAt = _dateTimeService.Now
                     });
                 }
 

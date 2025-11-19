@@ -27,8 +27,9 @@ namespace LingapDVO.Controllers
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ISessionConfigurationService _sessionConfig;
+        private readonly IDateTimeService _dateTimeService;
 
-        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IEmailService emailService, IConfiguration configuration, ISessionConfigurationService sessionConfig)
+        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IEmailService emailService, IConfiguration configuration, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService)
         {
             this.context = context;
             this.environment = environment;
@@ -36,6 +37,7 @@ namespace LingapDVO.Controllers
             _emailService = emailService;
             _configuration = configuration;
             _sessionConfig = sessionConfig;
+            _dateTimeService = dateTimeService;
         }
 
         // ╔═══════════════════════════════════════════════════════════════════════════╗
@@ -717,9 +719,9 @@ namespace LingapDVO.Controllers
             if (Request.Cookies.TryGetValue("LoginCooldown", out var cooldownValue) &&
                 DateTime.TryParse(cooldownValue, out var cooldownUntil))
             {
-                if (cooldownUntil > DateTime.Now)
+                if (cooldownUntil > _dateTimeService.Now)
                 {
-                    var remainingSeconds = (cooldownUntil - DateTime.Now).Seconds;
+                    var remainingSeconds = (cooldownUntil - _dateTimeService.Now).Seconds;
                     if (IsAjaxRequest())
                     {
                         return Json(new
@@ -979,7 +981,7 @@ namespace LingapDVO.Controllers
 
                 Response.Cookies.Append("FailedAttempts", failedAttempts.ToString(), new CookieOptions
                 {
-                    Expires = DateTime.Now.AddMinutes(30),
+                    Expires = _dateTimeService.Now.AddMinutes(30),
                     HttpOnly = true,
                     Secure = true
                 });
@@ -988,9 +990,9 @@ namespace LingapDVO.Controllers
                 if (failedAttempts >= 3)
                 {
                     // Set cooldown cookie for 30 seconds
-                    Response.Cookies.Append("LoginCooldown", DateTime.Now.AddSeconds(30).ToString(), new CookieOptions
+                    Response.Cookies.Append("LoginCooldown", _dateTimeService.Now.AddSeconds(30).ToString(), new CookieOptions
                     {
-                        Expires = DateTime.Now.AddSeconds(30),
+                        Expires = _dateTimeService.Now.AddSeconds(30),
                         HttpOnly = true,
                         Secure = true
                     });
@@ -1137,7 +1139,7 @@ namespace LingapDVO.Controllers
         public IActionResult KeepAlive()
         {
             // Update a dummy session value to refresh timeout
-            HttpContext.Session.SetString("LastActive", DateTime.UtcNow.ToString());
+            HttpContext.Session.SetString("LastActive", _dateTimeService.Now.ToString());
             return Json(new { ok = true });
         }
 
@@ -1165,8 +1167,8 @@ namespace LingapDVO.Controllers
                 Token = registrationToken,
                 IpAddress = ipAddress,
                 UserAgent = userAgent,
-                CreatedAt = DateTime.Now,
-                ExpiresAt = DateTime.Now.AddMinutes(10),
+                CreatedAt = _dateTimeService.Now,
+                ExpiresAt = _dateTimeService.Now.AddMinutes(10),
                 IsUsed = false,
                 IsRevoked = false
             };
@@ -1213,7 +1215,7 @@ namespace LingapDVO.Controllers
                 rng.GetBytes(tokenData);
 
                 // Combine with timestamp for uniqueness
-                string timestamp = DateTime.Now.Ticks.ToString();
+                string timestamp = _dateTimeService.Now.Ticks.ToString();
                 string combined = Convert.ToBase64String(tokenData) + timestamp;
 
                 // Hash the combination for additional security
@@ -1255,7 +1257,7 @@ namespace LingapDVO.Controllers
         {
             try
             {
-                var oneHourAgo = DateTime.Now.AddHours(-1);
+                var oneHourAgo = _dateTimeService.Now.AddHours(-1);
                 var expiredTokens = context.RegistrationTokens
                     .Where(t => t.ExpiresAt < oneHourAgo)
                     .ToList();
@@ -1542,7 +1544,7 @@ namespace LingapDVO.Controllers
                 Action = "ATTEMPT",
                 Source = DetermineRequestSource(),
                 RegistrationToken = registerAccDto.RegistrationToken,
-                AttemptedAt = DateTime.Now,
+                AttemptedAt = _dateTimeService.Now,
                 SuspiciousActivity = false,
                 HasValidToken = false
             };
@@ -1589,7 +1591,7 @@ namespace LingapDVO.Controllers
             }
 
             // Check if token has expired
-            if (tokenRecord.ExpiresAt < DateTime.Now)
+            if (tokenRecord.ExpiresAt < _dateTimeService.Now)
             {
                 auditLog.Action = "BLOCKED";
                 auditLog.Reason = "Token expired - session took too long or replay attack";
@@ -1689,7 +1691,7 @@ namespace LingapDVO.Controllers
             // Check for multiple registration attempts from same IP in last hour
             var recentAttemptsFromIp = context.RegistrationAuditLogs
                 .Where(log => log.IpAddress == ipAddress &&
-                              log.AttemptedAt > DateTime.Now.AddHours(-1))
+                              log.AttemptedAt > _dateTimeService.Now.AddHours(-1))
                 .Count();
 
             if (recentAttemptsFromIp > 5)
@@ -1814,7 +1816,7 @@ namespace LingapDVO.Controllers
 
                 // Mark the registration token as used
                 tokenRecord.IsUsed = true;
-                tokenRecord.UsedAt = DateTime.Now;
+                tokenRecord.UsedAt = _dateTimeService.Now;
                 tokenRecord.UsedByEmail = registerAccDto.Email;
                 context.SaveChanges();
 
@@ -2073,7 +2075,7 @@ namespace LingapDVO.Controllers
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
                 // Generate unique encrypted timestamp for filenames
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
                 string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
                 string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
@@ -2280,7 +2282,7 @@ namespace LingapDVO.Controllers
 
                 if (registerDto.ImageFile != null)
                 {
-                    string newFileName = DateTime.Now.ToString("yyyyMMddHHmmssfff") + Path.GetExtension(registerDto.ImageFile.FileName);
+                    string newFileName = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff") + Path.GetExtension(registerDto.ImageFile.FileName);
                     string newFilePath = Path.Combine(uploadsFolder, newFileName);
                     using (var stream = new FileStream(newFilePath, FileMode.Create))
                     {

@@ -7,11 +7,13 @@ public class NotificationsController : Controller
 {
     public readonly ApplicationDbContext context;
     private readonly IWebHostEnvironment environment;
+    private readonly IDateTimeService _dateTimeService;
 
-    public  NotificationsController(ApplicationDbContext context, IWebHostEnvironment environment)
+    public  NotificationsController(ApplicationDbContext context, IWebHostEnvironment environment, IDateTimeService dateTimeService)
     {
         this.context = context;
         this.environment = environment;
+        _dateTimeService = dateTimeService;
     }
 
 
@@ -39,17 +41,17 @@ public class NotificationsController : Controller
 
             // Check for recent form submissions (last 7 days)
             var recentHospitalBills = context.HospitalAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
+                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
             var recentMedicalLabForms = context.OtherAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
+                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
             var recentFuneralForms = context.FuneralAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
+                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
@@ -128,7 +130,7 @@ public class NotificationsController : Controller
                     title = "Welcome to LingapDVO",
                     message = "Get started by submitting your first application",
                     isRead = isDemoRead,
-                    createdAt = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    createdAt = _dateTimeService.Now.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = "welcome",
                     link = "#"
                 });
@@ -218,19 +220,19 @@ public class NotificationsController : Controller
         {
             // Get recent forms (same logic as GetUserNotifications but without read check)
             var recentHospitalBills = context.HospitalAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
+                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .Take(5)
                 .ToList();
 
             var recentMedicalLabForms = context.OtherAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
+                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .Take(5)
                 .ToList();
 
             var recentFuneralForms = context.FuneralAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= DateTime.Now.AddDays(-7))
+                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
                 .OrderByDescending(f => f.CreatedAt)
                 .Take(5)
                 .ToList();

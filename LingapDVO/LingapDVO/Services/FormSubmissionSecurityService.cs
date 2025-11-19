@@ -13,11 +13,13 @@ namespace LingapDVO.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IDateTimeService _dateTimeService;
 
-        public FormSubmissionSecurityService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public FormSubmissionSecurityService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, IDateTimeService dateTimeService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _dateTimeService = dateTimeService;
         }
 
         /// <summary>
@@ -40,8 +42,8 @@ namespace LingapDVO.Services
                 UserId = userId,
                 IpAddress = GetClientIpAddress(httpContext),
                 UserAgent = GetUserAgent(httpContext),
-                CreatedAt = DateTime.Now,
-                ExpiresAt = DateTime.Now.AddHours(1),
+                CreatedAt = _dateTimeService.Now,
+                ExpiresAt = _dateTimeService.Now.AddHours(1),
                 IsUsed = false,
                 IsRevoked = false
             };
@@ -70,7 +72,7 @@ namespace LingapDVO.Services
             if (submissionToken.IsUsed)
                 return (false, "Token has already been used (possible duplication attempt)");
 
-            if (DateTime.Now > submissionToken.ExpiresAt)
+            if (_dateTimeService.Now > submissionToken.ExpiresAt)
                 return (false, "Token has expired - please refresh the form");
 
             return (true, null);
@@ -87,7 +89,7 @@ namespace LingapDVO.Services
             if (submissionToken != null)
             {
                 submissionToken.IsUsed = true;
-                submissionToken.UsedAt = DateTime.Now;
+                submissionToken.UsedAt = _dateTimeService.Now;
                 submissionToken.SubmittedFormId = submittedFormId;
                 await _context.SaveChangesAsync();
             }
@@ -130,7 +132,7 @@ namespace LingapDVO.Services
                 HasValidToken = hasValidToken,
                 SuspiciousActivity = suspiciousActivity,
                 SuspiciousReasons = suspiciousReasons,
-                AttemptedAt = DateTime.Now,
+                AttemptedAt = _dateTimeService.Now,
                 SubmittedFormId = submittedFormId,
                 IsDuplicate = isDuplicate,
                 DuplicateDetails = duplicateDetails
@@ -161,7 +163,7 @@ namespace LingapDVO.Services
                     log.FormType == formType &&
                     log.FormDataHash == formDataHash &&
                     log.Action == "SUCCESS" &&
-                    log.AttemptedAt >= DateTime.Now.AddHours(-24))
+                    log.AttemptedAt >= _dateTimeService.Now.AddHours(-24))
                 .OrderByDescending(log => log.AttemptedAt)
                 .FirstOrDefaultAsync();
 
@@ -245,7 +247,7 @@ namespace LingapDVO.Services
         public async Task CleanupExpiredTokensAsync()
         {
             var expiredTokens = await _context.FormSubmissionTokens
-                .Where(t => t.ExpiresAt < DateTime.Now && !t.IsUsed)
+                .Where(t => t.ExpiresAt < _dateTimeService.Now && !t.IsUsed)
                 .ToListAsync();
 
             _context.FormSubmissionTokens.RemoveRange(expiredTokens);
