@@ -449,15 +449,15 @@ public class NotificationsController : Controller
         {
             "high" => (
                 $"{formType} - Experiencing Delay",
-                $"Your application has been experiencing a delay. It has been waiting for more than 2 hours. We apologize for the delay and are working to review it as soon as possible."
+                $"Your application has been waiting for more than 2 hours. We apologize for the delay. We will review it within 1-2 hours and are working to process it as soon as possible."
             ),
             "medium" => (
                 $"{formType} - Processing Delay",
-                $"Your application has been in our system for over 1 hour. We are working to review it soon."
+                $"Your application has been waiting for over 1 hour. We are reviewing your application and will make a decision within 1-2 hours."
             ),
             _ => (
                 $"{formType} - Update",
-                $"Your application is being processed."
+                $"Your application is waiting to be reviewed. We will review it within 1-2 hours."
             )
         };
     }

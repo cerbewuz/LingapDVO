@@ -328,20 +328,28 @@
         .notification-header {
             padding: 1rem;
             border-bottom: 1px solid var(--gray-200);
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
             align-items: center;
-            background: var(--gray-100);
-            flex-wrap: wrap;
             gap: 0.5rem;
+            background: var(--gray-100);
             position: relative;
+        }
+
+            .notification-header h6 {
+                margin: 0;
+                font-weight: 600;
+                color: var(--gray-700);
+            }
+
+        .notification-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
         .notification-close-btn {
             display: none;
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -352,7 +360,7 @@
             justify-content: center;
             color: var(--gray-600);
             transition: var(--transition);
-            z-index: 10;
+            flex-shrink: 0;
         }
 
             .notification-close-btn:hover {
@@ -360,14 +368,18 @@
                 color: white;
             }
 
-        /* Show close button on mobile */
+        /* Mobile layout: Show close button */
         @@media (max-width: 991.98px) {
             .notification-close-btn {
                 display: flex;
             }
 
             .notification-header {
-                padding-right: 3rem;
+                grid-template-columns: 1fr auto;
+            }
+
+            .notification-header-actions {
+                display: none;
             }
         }
 
@@ -1154,11 +1166,8 @@
                                     <!-- Notification Dropdown -->
                                     <div class="notification-dropdown" id="notificationDropdown">
                                         <div class="notification-header">
-                                            <button class="notification-close-btn" id="notificationCloseBtn" title="Close">
-                                                <i class="fas fa-times"></i>
-                                            </button>
                                             <h6 class="mb-0">Notifications</h6>
-                                            <div>
+                                            <div class="notification-header-actions">
                                                 <button class="btn btn-sm btn-link text-muted" id="notificationSettings" title="Notification Settings">
                                                     <i class="fas fa-cog"></i>
                                                 </button>
@@ -1169,6 +1178,9 @@
                                                     <i class="fas fa-sync-alt"></i>
                                                 </button>
                                             </div>
+                                            <button class="notification-close-btn" id="notificationCloseBtn" title="Close">
+                                                <i class="fas fa-times"></i>
+                                            </button>
                                         </div>
                                         <div class="notification-body" id="notificationList">
                                             <!-- Notifications will be loaded here -->
