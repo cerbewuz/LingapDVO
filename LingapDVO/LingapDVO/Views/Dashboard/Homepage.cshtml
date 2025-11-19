@@ -333,6 +333,28 @@
                 border-left: 4px solid var(--primary);
             }
 
+            /* Priority notifications - High priority (2+ hours delay) */
+            .notification-item.priority-high {
+                background: #FEF2F2; /* Light red background */
+                border-left: 4px solid #EF4444; /* Red border */
+            }
+
+            .notification-item.priority-high.unread {
+                background: #FEE2E2; /* Slightly darker for unread */
+                border-left: 4px solid #DC2626; /* Darker red */
+            }
+
+            /* Priority notifications - Medium priority (1-2 hours delay) */
+            .notification-item.priority-medium {
+                background: #FEF3C7; /* Light yellow background */
+                border-left: 4px solid #F59E0B; /* Orange border */
+            }
+
+            .notification-item.priority-medium.unread {
+                background: #FDE68A; /* Slightly darker for unread */
+                border-left: 4px solid #D97706; /* Darker orange */
+            }
+
         .notification-title {
             font-weight: 600;
             margin-bottom: 0.25rem;
@@ -407,6 +429,38 @@
         .notification-type-waiting {
             background: var(--secondary);
             color: white;
+        }
+
+        /* Priority badges for notifications */
+        .priority-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-badge.high {
+            background: #DC2626;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .priority-badge.medium {
+            background: #F59E0B;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
         }
 
         /* Main Content - Responsive */
@@ -1930,13 +1984,33 @@
                     const notificationItem = document.createElement('div');
                     const typeIcon = getNotificationTypeIcon(notification.type);
 
-                    notificationItem.className = `notification-item ${notification.isRead ? '' : 'unread'}`;
+                    // Build class list with priority
+                    let classNames = 'notification-item';
+                    if (!notification.isRead) {
+                        classNames += ' unread';
+                    }
+                    if (notification.priority === 'high') {
+                        classNames += ' priority-high';
+                    } else if (notification.priority === 'medium') {
+                        classNames += ' priority-medium';
+                    }
+                    notificationItem.className = classNames;
+
+                    // Build priority badge HTML
+                    let priorityBadgeHtml = '';
+                    if (notification.priority === 'high') {
+                        priorityBadgeHtml = '<span class="priority-badge high">High Priority</span>';
+                    } else if (notification.priority === 'medium') {
+                        priorityBadgeHtml = '<span class="priority-badge medium">Medium Priority</span>';
+                    }
+
                     notificationItem.innerHTML = `
                         <div class="notification-title">
                             <div class="notification-type-icon ${typeIcon.class}">
                                 <i class="${typeIcon.icon}"></i>
                             </div>
                             ${escapeHtml(notification.title)}
+                            ${priorityBadgeHtml}
                         </div>
                         <div class="notification-message">${escapeHtml(notification.message)}</div>
                         <div class="notification-time">${formatTime(notification.createdAt)}</div>
