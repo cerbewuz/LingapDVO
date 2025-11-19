@@ -8,12 +8,14 @@ public class NotificationsController : Controller
     public readonly ApplicationDbContext context;
     private readonly IWebHostEnvironment environment;
     private readonly IDateTimeService _dateTimeService;
+    private readonly ILogger<NotificationsController> _logger;
 
-    public  NotificationsController(ApplicationDbContext context, IWebHostEnvironment environment, IDateTimeService dateTimeService)
+    public  NotificationsController(ApplicationDbContext context, IWebHostEnvironment environment, IDateTimeService dateTimeService, ILogger<NotificationsController> logger)
     {
         this.context = context;
         this.environment = environment;
         _dateTimeService = dateTimeService;
+        _logger = logger;
     }
 
 
@@ -256,10 +258,10 @@ public class NotificationsController : Controller
     [HttpPost]
     public JsonResult MarkAllNotificationsAsRead()
     {
+        var userIdString = HttpContext.Session.GetString("UserId");
+
         try
         {
-            var userIdString = HttpContext.Session.GetString("UserId");
-
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
                 return Json(new { success = false, error = "User not authenticated" });
@@ -275,7 +277,7 @@ public class NotificationsController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while marking all notifications as read for user {UserId}", userId);
+            _logger.LogError(ex, "Error occurred while marking all notifications as read for user {UserIdString}", userIdString);
             return Json(new { success = false, error = "An error occurred while marking all notifications as read" });
         }
     }
