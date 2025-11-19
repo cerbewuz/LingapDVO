@@ -76,6 +76,27 @@ public class NotificationsController : Controller
                     status = bill.Status,
                     priority = priority
                 });
+
+                // Add separate delay notification if priority is high or medium
+                if (priority == "high" || priority == "medium")
+                {
+                    var delayNotificationId = $"delay_hospital_{bill.Id}";
+                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Hospital Assistance", priority, bill.CreatedAt);
+
+                    notifications.Add(new
+                    {
+                        id = delayNotificationId,
+                        title = delayTitle,
+                        message = delayMessage,
+                        isRead = isDelayRead,
+                        createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        type = "delay_alert",
+                        link = "/Applicationtracking",
+                        status = bill.Status,
+                        priority = priority
+                    });
+                }
             }
 
             // Create notifications for medical lab forms
@@ -99,6 +120,27 @@ public class NotificationsController : Controller
                     status = medical.Status,
                     priority = priority
                 });
+
+                // Add separate delay notification if priority is high or medium
+                if (priority == "high" || priority == "medium")
+                {
+                    var delayNotificationId = $"delay_medical_{medical.Id}";
+                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Other Assistance", priority, medical.CreatedAt);
+
+                    notifications.Add(new
+                    {
+                        id = delayNotificationId,
+                        title = delayTitle,
+                        message = delayMessage,
+                        isRead = isDelayRead,
+                        createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        type = "delay_alert",
+                        link = "/Applicationtracking",
+                        status = medical.Status,
+                        priority = priority
+                    });
+                }
             }
 
             // Create notifications for funeral forms
@@ -122,6 +164,27 @@ public class NotificationsController : Controller
                     status = funeral.Status,
                     priority = priority
                 });
+
+                // Add separate delay notification if priority is high or medium
+                if (priority == "high" || priority == "medium")
+                {
+                    var delayNotificationId = $"delay_funeral_{funeral.Id}";
+                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Funeral Assistance", priority, funeral.CreatedAt);
+
+                    notifications.Add(new
+                    {
+                        id = delayNotificationId,
+                        title = delayTitle,
+                        message = delayMessage,
+                        isRead = isDelayRead,
+                        createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        type = "delay_alert",
+                        link = "/Applicationtracking",
+                        status = funeral.Status,
+                        priority = priority
+                    });
+                }
             }
 
             // Add a demo notification if no forms found
@@ -246,16 +309,37 @@ public class NotificationsController : Controller
             foreach (var bill in recentHospitalBills)
             {
                 notificationIds.Add($"hospital_{bill.Id}_{bill.Status}");
+
+                // Add delay notification ID if applicable
+                var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
+                if (priority == "high" || priority == "medium")
+                {
+                    notificationIds.Add($"delay_hospital_{bill.Id}");
+                }
             }
 
             foreach (var medical in recentMedicalLabForms)
             {
                 notificationIds.Add($"medical_{medical.Id}_{medical.Status}");
+
+                // Add delay notification ID if applicable
+                var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
+                if (priority == "high" || priority == "medium")
+                {
+                    notificationIds.Add($"delay_medical_{medical.Id}");
+                }
             }
 
             foreach (var funeral in recentFuneralForms)
             {
                 notificationIds.Add($"funeral_{funeral.Id}_{funeral.Status}");
+
+                // Add delay notification ID if applicable
+                var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
+                if (priority == "high" || priority == "medium")
+                {
+                    notificationIds.Add($"delay_funeral_{funeral.Id}");
+                }
             }
 
             if (!notificationIds.Any())
@@ -349,6 +433,31 @@ public class NotificationsController : Controller
                 "Application Update",
                 $"Your {formType} application status has been updated. Submitted on {createdAt:MMM dd, yyyy}.",
                 "status_change"
+            )
+        };
+    }
+
+    /// <summary>
+    /// Get delay notification details based on priority level
+    /// Messages match the Application Tracking timeline content for delays
+    /// </summary>
+    private (string title, string message) GetDelayNotificationDetails(string formType, string priority, DateTime createdAt)
+    {
+        var hoursElapsed = (_dateTimeService.Now - createdAt).TotalHours;
+
+        return priority switch
+        {
+            "high" => (
+                $"{formType} - Experiencing Delay",
+                $"Your application has been experiencing a delay. It has been waiting for more than 2 hours. We apologize for the delay and are working to review it as soon as possible."
+            ),
+            "medium" => (
+                $"{formType} - Processing Delay",
+                $"Your application has been in our system for over 1 hour. We are working to review it soon."
+            ),
+            _ => (
+                $"{formType} - Update",
+                $"Your application is being processed."
             )
         };
     }

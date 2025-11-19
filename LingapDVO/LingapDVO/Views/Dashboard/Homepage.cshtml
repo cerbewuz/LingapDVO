@@ -497,6 +497,21 @@
             color: white;
         }
 
+        .notification-type-delay-alert {
+            background: #EF4444;
+            color: white;
+            animation: pulseIcon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseIcon {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+            }
+        }
+
         .notification-type-waiting {
             background: var(--secondary);
             color: white;
@@ -2145,7 +2160,14 @@
                     unapproved: { class: 'notification-type-unapproved', icon: 'fas fa-times-circle' },
                     claimed: { class: 'notification-type-claimed', icon: 'fas fa-hand-holding-usd' },
                     delayed: { class: 'notification-type-delayed', icon: 'fas fa-clock' },
-                    waiting: { class: 'notification-type-waiting', icon: 'fas fa-hourglass-half' }
+                    delay_alert: { class: 'notification-type-delay-alert', icon: 'fas fa-exclamation-triangle' },
+                    waiting: { class: 'notification-type-waiting', icon: 'fas fa-hourglass-half' },
+                    application_submitted: { class: 'notification-type-submitted', icon: 'fas fa-file-upload' },
+                    application_processing: { class: 'notification-type-processing', icon: 'fas fa-cog' },
+                    application_approved: { class: 'notification-type-approved', icon: 'fas fa-check-circle' },
+                    application_disapproved: { class: 'notification-type-unapproved', icon: 'fas fa-times-circle' },
+                    application_claimed: { class: 'notification-type-claimed', icon: 'fas fa-hand-holding-usd' },
+                    status_change: { class: 'notification-type-submitted', icon: 'fas fa-sync-alt' }
                 };
                 return types[type] || { class: 'notification-type-submitted', icon: 'fas fa-bell' };
             }
