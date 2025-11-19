@@ -111,7 +111,7 @@
             border: none;
             cursor: pointer;
             position: relative;
-            z-index: 1060;
+            z-index: 1050;
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
@@ -125,7 +125,9 @@
             }
 
             .burger-menu-btn.hidden {
-                display: none !important;
+                opacity: 0;
+                pointer-events: none;
+                visibility: hidden;
             }
 
         .mobile-menu-overlay {
@@ -137,6 +139,7 @@
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
             z-index: 1055;
+            transition: opacity 0.3s ease;
         }
 
             .mobile-menu-overlay.active {
@@ -144,7 +147,7 @@
             }
 
         .mobile-user-actions {
-            display: none;
+            display: block;
             position: fixed;
             top: 0;
             right: -300px;
@@ -1430,7 +1433,7 @@
                     document.body.style.overflow = mobileUserActions.classList.contains('active') ? 'hidden' : '';
                     // Hide burger button when sidebar is open
                     if (mobileUserActions.classList.contains('active')) {
-                        burgerMenuBtn.style.display = 'none';
+                        burgerMenuBtn.classList.add('hidden');
                     }
                 });
             }
@@ -1445,12 +1448,12 @@
                     document.body.style.overflow = '';
                     // Show burger button again when sidebar closes
                     if (burgerMenuBtn) {
-                        burgerMenuBtn.style.display = '';
+                        burgerMenuBtn.classList.remove('hidden');
                     }
                 });
             }
 
-            // Close mobile menu when clicking overlay
+            // Close mobile menu when clicking overlay (tap outside)
             if (mobileMenuOverlay) {
                 mobileMenuOverlay.addEventListener('click', function() {
                     mobileUserActions.classList.remove('active');
@@ -1458,7 +1461,7 @@
                     document.body.style.overflow = '';
                     // Show burger button again when sidebar closes
                     if (burgerMenuBtn) {
-                        burgerMenuBtn.style.display = '';
+                        burgerMenuBtn.classList.remove('hidden');
                     }
                 });
             }
@@ -1590,7 +1593,7 @@
                     document.body.style.overflow = '';
                     // Show burger icon again on mobile
                     if (burgerMenuBtn && window.innerWidth < 992) {
-                        burgerMenuBtn.style.display = '';
+                        burgerMenuBtn.classList.remove('hidden');
                     }
                 } else {
                     notificationDropdown.style.display = 'block';
@@ -1600,7 +1603,7 @@
                         document.body.style.overflow = 'hidden';
                         // Hide burger icon on mobile when notification dropdown is showing
                         if (burgerMenuBtn) {
-                            burgerMenuBtn.style.display = 'none';
+                            burgerMenuBtn.classList.add('hidden');
                         }
                     }
                     loadRealNotifications();
@@ -1619,7 +1622,7 @@
                     // Show burger icon again on mobile
                     const burgerMenuBtn = document.getElementById('burgerMenuBtn');
                     if (burgerMenuBtn && window.innerWidth < 992) {
-                        burgerMenuBtn.style.display = '';
+                        burgerMenuBtn.classList.remove('hidden');
                     }
                 });
             }
@@ -1634,7 +1637,7 @@
                     // Show burger icon again on mobile
                     const burgerMenuBtn = document.getElementById('burgerMenuBtn');
                     if (burgerMenuBtn && window.innerWidth < 992) {
-                        burgerMenuBtn.style.display = '';
+                        burgerMenuBtn.classList.remove('hidden');
                     }
                 });
             }
@@ -1649,7 +1652,7 @@
                     // Show burger icon again on mobile
                     const burgerMenuBtn = document.getElementById('burgerMenuBtn');
                     if (burgerMenuBtn && window.innerWidth < 992) {
-                        burgerMenuBtn.style.display = '';
+                        burgerMenuBtn.classList.remove('hidden');
                     }
                 }
             });
