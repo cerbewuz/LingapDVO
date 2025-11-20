@@ -1254,7 +1254,13 @@
                     return;
                 }
 
-                // Mark all as read via API calls
+                // Show loading message
+                const confirmMark = confirm(`Mark ${unreadNotifications.length} notification(s) as read?`);
+                if (!confirmMark) {
+                    return;
+                }
+
+                // Mark all as read via API calls in parallel
                 const promises = unreadNotifications.map(n => markAsRead(n.id, true));
                 const results = await Promise.all(promises);
 
@@ -1262,14 +1268,18 @@
                 const allSucceeded = results.every(r => r === true);
 
                 if (allSucceeded) {
-                    // Update all notifications in the array
-                    unreadNotifications.forEach(n => {
-                        n.isRead = true;
+                    // Force update all notification objects to isRead = true
+                    allNotifications.forEach(n => {
+                        if (!n.isRead) {
+                            n.isRead = true;
+                        }
                     });
 
-                    // Update the UI once
+                    // Re-apply filters to update filteredNotifications array
+                    applyFilters();
+
+                    // Update stats
                     updateStats();
-                    renderNotifications();
 
                     alert(`Successfully marked ${unreadNotifications.length} notification(s) as read!`);
                 } else {
