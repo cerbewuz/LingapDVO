@@ -1219,7 +1219,7 @@
             }
         }
 
-        async function markAsRead(notificationId) {
+        async function markAsRead(notificationId, skipRender = false) {
             try {
                 const response = await fetch('/Notifications/MarkAsRead', {
                     method: 'POST',
@@ -1231,29 +1231,50 @@
                     const notification = allNotifications.find(n => n.id === notificationId);
                     if (notification) {
                         notification.isRead = true;
-                        updateStats();
-                        renderNotifications();
+                        if (!skipRender) {
+                            updateStats();
+                            renderNotifications();
+                        }
                     }
+                    return true;
                 }
+                return false;
             } catch (error) {
                 console.error('Error marking notification as read:', error);
+                return false;
             }
         }
 
         async function markAllAsRead() {
             try {
-                const unreadIds = allNotifications.filter(n => !n.isRead).map(n => n.id);
+                const unreadNotifications = allNotifications.filter(n => !n.isRead);
 
-                if (unreadIds.length === 0) {
+                if (unreadNotifications.length === 0) {
                     alert('All notifications are already marked as read!');
                     return;
                 }
 
-                for (const id of unreadIds) {
-                    await markAsRead(id);
-                }
+                // Mark all as read via API calls
+                const promises = unreadNotifications.map(n => markAsRead(n.id, true));
+                const results = await Promise.all(promises);
 
-                alert('All notifications marked as read!');
+                // Check if all succeeded
+                const allSucceeded = results.every(r => r === true);
+
+                if (allSucceeded) {
+                    // Update all notifications in the array
+                    unreadNotifications.forEach(n => {
+                        n.isRead = true;
+                    });
+
+                    // Update the UI once
+                    updateStats();
+                    renderNotifications();
+
+                    alert(`Successfully marked ${unreadNotifications.length} notification(s) as read!`);
+                } else {
+                    alert('Some notifications could not be marked as read. Please refresh and try again.');
+                }
             } catch (error) {
                 console.error('Error marking all as read:', error);
                 alert('Failed to mark all notifications as read');
