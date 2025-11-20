@@ -623,7 +623,7 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public IActionResult HospitalAssistance(HospitalAssistanceDto HospitalAssistanceDto)
+        public async Task<IActionResult> HospitalAssistance(HospitalAssistanceDto HospitalAssistanceDto)
         {
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -1369,7 +1369,7 @@ namespace LingapDVO.Controllers
         }
         //1
         [HttpPost]
-        public IActionResult OtherAssistance(OtherAssistanceDto OtherAssistanceDto)
+        public async Task<IActionResult> OtherAssistance(OtherAssistanceDto OtherAssistanceDto)
         {
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -2171,7 +2171,7 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public IActionResult FuneralAssistance(FuneralAssistanceDto FuneralAssistanceDto)
+        public async Task<IActionResult> FuneralAssistance(FuneralAssistanceDto FuneralAssistanceDto)
         {
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
