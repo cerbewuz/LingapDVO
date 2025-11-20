@@ -44,5 +44,21 @@ namespace LingapDVO.Services
         // 📝 CITIZEN FEEDBACK
         // ═══════════════════════════════════════════════════════════════
         public DbSet<Feedback> Feedbacks { get; set; }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🔔 NOTIFICATION READ STATUS
+        // ═══════════════════════════════════════════════════════════════
+        public DbSet<NotificationReadStatus> NotificationReadStatus { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configure composite index for NotificationReadStatus
+            modelBuilder.Entity<NotificationReadStatus>()
+                .HasIndex(n => new { n.UserId, n.NotificationId })
+                .HasDatabaseName("IX_NotificationReadStatus_UserId_NotificationId")
+                .IsUnique();
+        }
     }
 }

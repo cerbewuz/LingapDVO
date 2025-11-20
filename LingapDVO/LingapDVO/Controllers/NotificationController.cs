@@ -342,13 +342,36 @@ public class NotificationsController : Controller
                 return Json(new { success = false, error = "User not authenticated" });
             }
 
-            // Get current notification IDs using the fixed method
+            // Get current notification IDs
             var notificationIds = GetCurrentUserNotificationIds(userId);
 
-            // Update session with all notification IDs marked as read
-            HttpContext.Session.SetString($"ReadNotifications_{userId}", string.Join(",", notificationIds));
+            // Get already read notification IDs from database
+            var alreadyReadIds = context.NotificationReadStatus
+                .Where(n => n.UserId == userId)
+                .Select(n => n.NotificationId)
+                .ToHashSet();
 
-            return Json(new { success = true, message = "All notifications marked as read" });
+            // Find notifications that need to be marked as read
+            var newReadNotifications = notificationIds
+                .Where(id => !alreadyReadIds.Contains(id))
+                .Select(id => new NotificationReadStatus
+                {
+                    UserId = userId,
+                    NotificationId = id,
+                    MarkedReadAt = _dateTimeService.Now
+                })
+                .ToList();
+
+            // Batch insert all new read statuses to database
+            if (newReadNotifications.Any())
+            {
+                context.NotificationReadStatus.AddRange(newReadNotifications);
+                context.SaveChanges();
+
+                _logger.LogInformation("Marked {Count} notifications as read for user {UserId}", newReadNotifications.Count, userId);
+            }
+
+            return Json(new { success = true, message = "All notifications marked as read", count = newReadNotifications.Count });
         }
         catch (Exception ex)
         {
@@ -434,17 +457,22 @@ public class NotificationsController : Controller
         return notificationIds;
     }
 
-    // Session-based methods
+    // Database-based methods for permanent read status
     private HashSet<string> GetReadNotificationIdsFromSession(int userId)
     {
         try
         {
-            var readNotificationsString = HttpContext.Session.GetString($"ReadNotifications_{userId}") ?? "";
-            return new HashSet<string>(readNotificationsString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+            // Read from database for permanent storage
+            var readNotifications = context.NotificationReadStatus
+                .Where(n => n.UserId == userId)
+                .Select(n => n.NotificationId)
+                .ToHashSet();
+
+            return readNotifications;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting read notification IDs from session for user {UserId}", userId);
+            _logger.LogError(ex, "Error occurred while getting read notification IDs from database for user {UserId}", userId);
             return new HashSet<string>();
         }
     }
@@ -453,23 +481,29 @@ public class NotificationsController : Controller
     {
         try
         {
-            var readNotificationsString = HttpContext.Session.GetString($"ReadNotifications_{userId}") ?? "";
-            var readNotificationIds = new List<string>(readNotificationsString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+            // Check if already marked as read in database
+            var existingRecord = context.NotificationReadStatus
+                .FirstOrDefault(n => n.UserId == userId && n.NotificationId == notificationId);
 
-            if (!readNotificationIds.Contains(notificationId))
+            if (existingRecord == null)
             {
-                readNotificationIds.Add(notificationId);
-                // Limit to 100 IDs to prevent session from getting too large
-                if (readNotificationIds.Count > 100)
+                // Add new read status record to database
+                var readStatus = new NotificationReadStatus
                 {
-                    readNotificationIds = readNotificationIds.Skip(readNotificationIds.Count - 100).ToList();
-                }
-                HttpContext.Session.SetString($"ReadNotifications_{userId}", string.Join(",", readNotificationIds));
+                    UserId = userId,
+                    NotificationId = notificationId,
+                    MarkedReadAt = _dateTimeService.Now
+                };
+
+                context.NotificationReadStatus.Add(readStatus);
+                context.SaveChanges();
+
+                _logger.LogInformation("Notification {NotificationId} marked as read for user {UserId}", notificationId, userId);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while updating session read notifications for user {UserId}", userId);
+            _logger.LogError(ex, "Error occurred while updating read notification status in database for user {UserId}", userId);
             throw;
         }
     }
