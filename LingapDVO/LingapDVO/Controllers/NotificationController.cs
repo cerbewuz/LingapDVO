@@ -207,8 +207,17 @@ public class NotificationsController : Controller
             var welcomeNotificationId = $"welcome_{userId}";
             var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
-            // Use a fixed old date to ensure welcome notification appears at the bottom
-            var welcomeDate = new DateTime(2020, 1, 1, 0, 0, 0);
+            // Get user's actual registration date from RegistrationAuditLog
+            var userRegistrationDate = context.RegistrationAuditLogs
+                .Where(log => log.RegisteredUserId == userId && log.Action == "SUCCESS")
+                .OrderBy(log => log.AttemptedAt)
+                .Select(log => log.AttemptedAt)
+                .FirstOrDefault();
+
+            // If no registration date found, use a default old date
+            var welcomeDate = userRegistrationDate != default(DateTime)
+                ? userRegistrationDate
+                : new DateTime(2020, 1, 1, 0, 0, 0);
 
             notifications.Add(new
             {
@@ -417,8 +426,17 @@ public class NotificationsController : Controller
             var welcomeNotificationId = $"welcome_{userId}";
             var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
-            // Use a fixed old date to ensure welcome notification appears at the bottom
-            var welcomeDate = new DateTime(2020, 1, 1, 0, 0, 0);
+            // Get user's actual registration date from RegistrationAuditLog
+            var userRegistrationDate = context.RegistrationAuditLogs
+                .Where(log => log.RegisteredUserId == userId && log.Action == "SUCCESS")
+                .OrderBy(log => log.AttemptedAt)
+                .Select(log => log.AttemptedAt)
+                .FirstOrDefault();
+
+            // If no registration date found, use a default old date
+            var welcomeDate = userRegistrationDate != default(DateTime)
+                ? userRegistrationDate
+                : new DateTime(2020, 1, 1, 0, 0, 0);
 
             notifications.Add(new
             {
