@@ -429,6 +429,11 @@
             color: #3730A3;
         }
 
+        .status-welcome {
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+            color: #1E3A8A;
+        }
+
         .priority-badge {
             padding: 0.3125rem 0.625rem;
             border-radius: 6px;
@@ -1013,6 +1018,7 @@
                     case 'approve': statusIcon = 'fa-check'; break;
                     case 'disapprove': statusIcon = 'fa-times'; break;
                     case 'claimed': statusIcon = 'fa-hand-holding'; break;
+                    case 'welcome': statusIcon = 'fa-hand-wave'; break;
                 }
 
                 // Format notification type for display

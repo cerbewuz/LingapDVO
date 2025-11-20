@@ -207,9 +207,8 @@ public class NotificationsController : Controller
             var welcomeNotificationId = $"welcome_{userId}";
             var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
-            // Get user's account creation date or use a default old date
-            var user = context.Useraccount.FirstOrDefault(u => u.Id == userId);
-            var welcomeDate = user != null ? _dateTimeService.Now.AddDays(-365) : _dateTimeService.Now.AddYears(-1);
+            // Use a fixed old date to ensure welcome notification appears at the bottom
+            var welcomeDate = new DateTime(2020, 1, 1, 0, 0, 0);
 
             notifications.Add(new
             {
@@ -220,7 +219,7 @@ public class NotificationsController : Controller
                 createdAt = welcomeDate.ToString("yyyy-MM-ddTHH:mm:ss"),
                 type = "welcome",
                 link = "/Dashboard",
-                status = (string)null,
+                status = "Welcome",
                 priority = "normal"
             });
 
@@ -418,9 +417,8 @@ public class NotificationsController : Controller
             var welcomeNotificationId = $"welcome_{userId}";
             var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
-            // Get user's account creation date or use a default old date
-            var user = context.Useraccount.FirstOrDefault(u => u.Id == userId);
-            var welcomeDate = user != null ? _dateTimeService.Now.AddDays(-365) : _dateTimeService.Now.AddYears(-1);
+            // Use a fixed old date to ensure welcome notification appears at the bottom
+            var welcomeDate = new DateTime(2020, 1, 1, 0, 0, 0);
 
             notifications.Add(new
             {
@@ -430,7 +428,9 @@ public class NotificationsController : Controller
                 isRead = isWelcomeRead,
                 createdAt = welcomeDate.ToString("yyyy-MM-ddTHH:mm:ss"),
                 type = "welcome",
-                link = "/Dashboard"
+                link = "/Dashboard",
+                status = "Welcome",
+                priority = "normal"
             });
 
             // Order by creation date (newest first)
