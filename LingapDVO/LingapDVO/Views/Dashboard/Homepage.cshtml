@@ -904,6 +904,21 @@
             color: white;
         }
 
+        /* Priority notification type icons */
+        .notification-type-priority-high {
+            background: #DC2626;
+            color: white;
+            animation: pulseIcon 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+        }
+
+        .notification-type-priority-medium {
+            background: #F59E0B;
+            color: white;
+            animation: pulseIcon 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+        }
+
         /* Compact status and priority badges for notifications */
         .notification-badges {
             display: inline-flex;
@@ -1618,11 +1633,6 @@
                 <div class="mobile-notification-body" id="mobileNotificationList">
                     <!-- Notifications will be loaded here -->
                 </div>
-                <div class="mobile-notification-footer">
-                    <a href="/Notifications/ViewAllNotifications" class="btn-view-all-notifications">
-                        View All Notifications
-                    </a>
-                </div>
             </div>
 
             <!-- Profile -->
@@ -1844,11 +1854,6 @@
                                         </div>
                                         <div class="notification-body" id="notificationList">
                                             <!-- Notifications will be loaded here -->
-                                        </div>
-                                        <div class="notification-footer">
-                                            <a href="/Notifications/ViewAllNotifications" class="btn-view-all-notifications">
-                                                View All Notifications
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -2857,7 +2862,7 @@
 
                 notifications.forEach(notification => {
                     const notificationItem = document.createElement('div');
-                    const typeIcon = getNotificationTypeIcon(notification.type);
+                    const typeIcon = getNotificationTypeIcon(notification);
 
                     // Build class list with priority
                     let classNames = 'notification-item';
@@ -2918,7 +2923,19 @@
                 });
             }
 
-            function getNotificationTypeIcon(type) {
+            function getNotificationTypeIcon(notification) {
+                // Check if notification has priority and prioritize priority icons
+                const priority = notification.priority ? notification.priority.toLowerCase() : 'normal';
+
+                // If high or medium priority, always show priority icon regardless of status
+                if (priority === 'high') {
+                    return { class: 'notification-type-priority-high', icon: 'fas fa-exclamation-circle' };
+                } else if (priority === 'medium') {
+                    return { class: 'notification-type-priority-medium', icon: 'fas fa-exclamation-triangle' };
+                }
+
+                // Otherwise, show status icon
+                const type = notification.type;
                 const types = {
                     submitted: { class: 'notification-type-submitted', icon: 'fas fa-file-upload' },
                     processing: { class: 'notification-type-processing', icon: 'fas fa-cog' },
@@ -3054,7 +3071,7 @@
                     // Render notifications
                     notifications.forEach(notification => {
                         const notificationItem = document.createElement('div');
-                        const typeIcon = getNotificationTypeIcon(notification.type);
+                        const typeIcon = getNotificationTypeIcon(notification);
 
                         // Build class list with priority
                         let classNames = 'notification-item';
