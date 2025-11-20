@@ -1,7 +1,6 @@
 using LingapDVO.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,21 +13,6 @@ builder.Services.AddAuthentication(options =>
 })
 
 .AddCookie()
-
-.AddFacebook(options =>
-{
-    options.AppId = "818350247528005";
-    options.AppSecret = "b56a1f8ab40396f09efc99ecaabcff1f";
-    options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.SaveTokens = true;
-
-    // Add this line to match your controller action
-    options.CallbackPath = new PathString("/signin-facebook");
-
-    options.Scope.Add("public_profile");
-    options.Fields.Add("picture.type(large)");
-    options.Fields.Add("id");
-})
 
 .AddGoogle(options =>
 {
@@ -171,11 +155,6 @@ app.MapControllerRoute(
     name: "route-google-login",
     pattern: "GoogleLogin",
     defaults: new { controller = "Login", action = "GoogleLogin" });
-
-app.MapControllerRoute(
-    name: "route-facebook-login",
-    pattern: "FacebookLogin",
-    defaults: new { controller = "Login", action = "FacebookLogin" });
 
 app.MapControllerRoute(
     name: "route-logout",
