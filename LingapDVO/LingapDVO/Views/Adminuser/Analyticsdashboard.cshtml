@@ -1206,8 +1206,12 @@
                         statusCounts.approve++;
                     } else if (app.status2 === 'disapprove') {
                         statusCounts.disapprove++;
+                    } else {
+                        // Status2 exists but is not approve/disapprove, use original status
+                        if (statusCounts.hasOwnProperty(app.status)) {
+                            statusCounts[app.status]++;
+                        }
                     }
-                    // DO NOT count in processing/pending if Status2 is approve/disapprove
                 } else {
                     // No Status2 or Status2 is empty, and no claims status3, use original status
                     if (statusCounts.hasOwnProperty(app.status)) {
@@ -2314,12 +2318,13 @@
                     return; // Skip claims applications
                 }
 
-                // Check status2 for approve/disapprove
-                if (app.status2 === 'approve') {
+                // Check status2 for approve/disapprove, otherwise use original status
+                if (app.status2 && app.status2.trim() !== '' && app.status2 === 'approve') {
                     types[typeKey].approved++;
-                } else if (app.status2 === 'disapprove') {
+                } else if (app.status2 && app.status2.trim() !== '' && app.status2 === 'disapprove') {
                     types[typeKey].disapproved++;
                 } else {
+                    // Use original status or default to pending
                     types[typeKey].pending++;
                 }
             });
@@ -2538,15 +2543,18 @@
                     return;
                 }
 
-                // Check status2 for approve/disapprove
-                if (app.status2 === 'approve') {
+                // Check status2 for approve/disapprove, otherwise use original status
+                if (app.status2 && app.status2.trim() !== '' && app.status2 === 'approve') {
                     types[typeKey].approved++;
-                } else if (app.status2 === 'disapprove') {
+                } else if (app.status2 && app.status2.trim() !== '' && app.status2 === 'disapprove') {
                     types[typeKey].disapproved++;
-                } else if (app.status === 'pending') {
-                    types[typeKey].pending++;
-                } else if (app.status === 'processing') {
-                    types[typeKey].processing++;
+                } else {
+                    // Use original status for pending/processing
+                    if (app.status === 'pending') {
+                        types[typeKey].pending++;
+                    } else if (app.status === 'processing') {
+                        types[typeKey].processing++;
+                    }
                 }
             });
 
@@ -2628,7 +2636,7 @@
                 else return;
 
                 // Count approved applications
-                if (app.status2 === 'approve') {
+                if (app.status2 && app.status2.trim() !== '' && app.status2 === 'approve') {
                     data[typeKey].approved++;
                     data.overall.approved++;
 
