@@ -3062,50 +3062,52 @@
                     const markAllBtn = document.getElementById('markAllRead');
                     markAllBtn.classList.add('reading');
 
-                    // FORCE mark ALL notifications as read in the backend - no exceptions for priority
                     const unreadNotifications = currentNotifications.filter(n => !n.isRead);
+                    console.log(`[markAllNotificationsAsRead] Marking ${unreadNotifications.length} unread notifications (out of ${currentNotifications.length} total) as read...`);
 
-                    console.log(`Marking ${unreadNotifications.length} notifications as read...`);
-
-                    // Mark each notification as read in the backend
-                    const markPromises = unreadNotifications.map(notification =>
-                        fetch('/Notifications/MarkNotificationAsRead', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ notificationId: notification.id })
-                        }).catch(error => {
-                            console.error(`Failed to mark notification ${notification.id} as read:`, error);
-                            return null; // Continue even if one fails
-                        })
-                    );
-
-                    // Wait for all mark operations to complete
-                    await Promise.all(markPromises);
-
-                    // FORCE all current notifications to be marked as read - including high/medium priority
-                    currentNotifications.forEach(n => {
-                        n.isRead = true;
+                    // Use batch endpoint to mark all notifications as read in database
+                    const response = await fetch('/Notifications/MarkAllNotificationsAsRead', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
                     });
 
-                    // Update local storage
-                    const allNotificationIds = currentNotifications.map(n => n.id);
-                    markAllStoredAsRead(allNotificationIds);
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            console.log(`[markAllNotificationsAsRead] Successfully marked ${result.count || currentNotifications.length} notifications as read in database`);
 
-                    // Immediately update the UI to show all notifications as read
-                    updateNotificationUI(currentNotifications);
-                    hideNotificationBadge();
+                            // Update all current notifications to read state
+                            currentNotifications.forEach(n => {
+                                n.isRead = true;
+                            });
 
-                    console.log('All notifications marked as read successfully');
+                            // Update UI to reflect read status
+                            updateNotificationUI(currentNotifications);
+                            hideNotificationBadge();
+
+                            console.log('[markAllNotificationsAsRead] All notifications marked as read successfully');
+                        } else {
+                            console.error('[markAllNotificationsAsRead] Backend returned error:', result.error);
+                            throw new Error(result.error);
+                        }
+                    } else {
+                        console.error('[markAllNotificationsAsRead] HTTP error:', response.status);
+                        throw new Error(`HTTP ${response.status}`);
+                    }
 
                     setTimeout(() => {
                         markAllBtn.classList.remove('reading');
                     }, 600);
                 } catch (error) {
-                    console.error('Failed to mark notifications as read:', error);
+                    console.error('[markAllNotificationsAsRead] Failed to mark all notifications as read:', error);
                     const markAllBtn = document.getElementById('markAllRead');
-                    markAllBtn.classList.remove('reading');
+                    if (markAllBtn) {
+                        markAllBtn.classList.remove('reading');
+                    }
+                    // Show error message to user
+                    alert('Failed to mark notifications as read. Please try again.');
                 }
             }
 
@@ -3267,9 +3269,12 @@
             }
 
             async function handleNotificationClick(notification) {
+                console.log('[handleNotificationClick] Notification clicked:', notification.id);
+
+                // Mark as read in the backend database BEFORE redirecting
                 if (!notification.isRead) {
-                    // Mark as read in the backend session
                     try {
+                        console.log('[handleNotificationClick] Marking notification as read:', notification.id);
                         const response = await fetch('/Notifications/MarkNotificationAsRead', {
                             method: 'POST',
                             headers: {
@@ -3281,25 +3286,29 @@
                         if (response.ok) {
                             const result = await response.json();
                             if (result.success) {
-                                // Also update local state
-                                addToStoredReadNotifications(notification.id);
+                                console.log('[handleNotificationClick] Successfully marked as read in database');
+                                // Update local state
                                 notification.isRead = true;
                                 updateNotificationUI(currentNotifications);
+                            } else {
+                                console.error('[handleNotificationClick] Backend returned error:', result.error);
                             }
+                        } else {
+                            console.error('[handleNotificationClick] HTTP error:', response.status);
                         }
                     } catch (error) {
-                        console.error('Failed to mark notification as read:', error);
-                        // Still update locally even if backend fails
-                        addToStoredReadNotifications(notification.id);
-                        notification.isRead = true;
-                        updateNotificationUI(currentNotifications);
+                        console.error('[handleNotificationClick] Failed to mark notification as read:', error);
+                        // Continue with redirect even if marking as read fails
                     }
                 }
 
+                // Redirect to notification link (AFTER marking as read)
                 if (notification.link && notification.link !== '#') {
+                    console.log('[handleNotificationClick] Redirecting to:', notification.link);
+                    // Small delay to ensure UI updates before redirect
                     setTimeout(() => {
                         window.location.href = notification.link;
-                    }, 200);
+                    }, 100);
                 }
             }
 
