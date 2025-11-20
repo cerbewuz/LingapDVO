@@ -19,8 +19,8 @@ public class NotificationsController : Controller
     }
 
 
-    // View action for All Notifications page
-    public IActionResult AllNotifications()
+    // View action for View All Notifications page
+    public IActionResult ViewAllNotifications()
     {
         var userIdString = HttpContext.Session.GetString("UserId");
 

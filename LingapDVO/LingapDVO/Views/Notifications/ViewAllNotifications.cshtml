@@ -1,6 +1,6 @@
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "All Notifications";
+    ViewData["Title"] = "View All Notifications";
 }
 
 @section Styles {
@@ -1129,12 +1129,7 @@
             const pendingCount = uniqueApplicationNotifications.filter(n => n.status === 'Pending').length;
             const approvedCount = uniqueApplicationNotifications.filter(n => n.status === 'Approve').length;
 
-            document.getElementById('totalCount').textContent = totalCount;
-            document.getElementById('unreadCount').textContent = unreadCount;
-            document.getElementById('pendingCount').textContent = pendingCount;
-            document.getElementById('approvedCount').textContent = approvedCount;
-
-            // Animate the numbers
+            // Animate the numbers (don't set textContent first, let animation handle it)
             animateValue('totalCount', 0, totalCount, 800);
             animateValue('unreadCount', 0, unreadCount, 800);
             animateValue('pendingCount', 0, pendingCount, 800);
@@ -1144,6 +1139,13 @@
         function animateValue(id, start, end, duration) {
             const element = document.getElementById(id);
             const range = end - start;
+
+            // Handle case where start equals end
+            if (range === 0) {
+                element.textContent = end;
+                return;
+            }
+
             const increment = end > start ? 1 : -1;
             const stepTime = Math.abs(Math.floor(duration / range));
             let current = start;
@@ -1151,7 +1153,8 @@
             const timer = setInterval(function() {
                 current += increment;
                 element.textContent = current;
-                if (current === end) {
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    element.textContent = end;
                     clearInterval(timer);
                 }
             }, stepTime);
