@@ -314,6 +314,55 @@ namespace LingapDVO.Controllers
             }
         }
 
+        // ╔═══════════════════════════════════════════════════════════════════════════╗
+        // ║                  ENCRYPTED SESSION HELPER METHODS                         ║
+        // ║          Secure Session Storage using AES-256 Encryption                 ║
+        // ╚═══════════════════════════════════════════════════════════════════════════╝
+
+        /// <summary>
+        /// Sets an encrypted session value using AES-256 encryption
+        /// </summary>
+        /// <param name="key">Session key</param>
+        /// <param name="value">Value to encrypt and store</param>
+        private void SetEncryptedSession(string key, string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                HttpContext.Session.SetString(key, "");
+                return;
+            }
+
+            var aesHelper = new AesEncryptionHelper(_configuration);
+            string encryptedValue = aesHelper.Encrypt(value);
+            HttpContext.Session.SetString(key, encryptedValue);
+        }
+
+        /// <summary>
+        /// Gets and decrypts a session value using AES-256 encryption
+        /// </summary>
+        /// <param name="key">Session key</param>
+        /// <returns>Decrypted value or empty string if not found</returns>
+        private string GetEncryptedSession(string key)
+        {
+            var encryptedValue = HttpContext.Session.GetString(key);
+
+            if (string.IsNullOrEmpty(encryptedValue))
+            {
+                return "";
+            }
+
+            try
+            {
+                var aesHelper = new AesEncryptionHelper(_configuration);
+                return aesHelper.Decrypt(encryptedValue);
+            }
+            catch
+            {
+                // If decryption fails, return empty string
+                return "";
+            }
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -389,8 +438,8 @@ namespace LingapDVO.Controllers
                 user = existingUser;
             }
 
-            // ✅ Store user ID in session
-            HttpContext.Session.SetString("UserId", user.Id.ToString());
+            // ✅ Store encrypted user ID in session using AES-256
+            SetEncryptedSession("UserId", user.Id.ToString());
 
             // ===========================
             // 🔍 Check if verified
@@ -399,39 +448,39 @@ namespace LingapDVO.Controllers
 
             if (verifiedUser != null)
             {
-                // ✅ Store full verified session
-                HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
-                HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
-                HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
-                HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
-                HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
-                HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
-                HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
-                HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
-                HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
-                HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
-                HttpContext.Session.SetString("District", verifiedUser.District ?? "");
-                HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
-                HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
-                HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
-                HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
-                HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
-                HttpContext.Session.SetString("IsVerifiedUser", "true");
-                HttpContext.Session.SetString("IsRegisteredUser", "true");
+                // ✅ Store full verified session encrypted using AES-256
+                SetEncryptedSession("IDtype", verifiedUser.IDtype ?? "");
+                SetEncryptedSession("IDnumber", verifiedUser.IDnumber ?? "");
+                SetEncryptedSession("Firstname", verifiedUser.Firstname ?? "");
+                SetEncryptedSession("Middlename", verifiedUser.Middlename ?? "");
+                SetEncryptedSession("Lastname", verifiedUser.Lastname ?? "");
+                SetEncryptedSession("Gender", verifiedUser.Gender ?? "");
+                SetEncryptedSession("Suffix", verifiedUser.Suffix ?? "");
+                SetEncryptedSession("Dateofbirth", verifiedUser.Dateofbirth ?? "");
+                SetEncryptedSession("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
+                SetEncryptedSession("SubVill", verifiedUser.SubVill ?? "");
+                SetEncryptedSession("District", verifiedUser.District ?? "");
+                SetEncryptedSession("Barangay", verifiedUser.Barangay ?? "");
+                SetEncryptedSession("CivilStatus", verifiedUser.CivilStatus ?? "");
+                SetEncryptedSession("Phonenumber", verifiedUser.Phonenumber ?? "");
+                SetEncryptedSession("FrontID", verifiedUser.FrontID ?? "");
+                SetEncryptedSession("BackID", verifiedUser.BackID ?? "");
+                SetEncryptedSession("IsVerifiedUser", "true");
+                SetEncryptedSession("IsRegisteredUser", "true");
             }
             else
             {
-                // ⚙️ Not verified yet — store basic session info
-                HttpContext.Session.SetString("Email", user.Email ?? "");
-                HttpContext.Session.SetString("Username", user.Username ?? "");
-                HttpContext.Session.SetString("IsRegisteredUser", "true");
-                HttpContext.Session.SetString("IsVerifiedUser", "false");
+                // ⚙️ Not verified yet — store basic session info encrypted using AES-256
+                SetEncryptedSession("Email", user.Email ?? "");
+                SetEncryptedSession("Username", user.Username ?? "");
+                SetEncryptedSession("IsRegisteredUser", "true");
+                SetEncryptedSession("IsVerifiedUser", "false");
             }
 
-            // ✅ Always store Facebook metadata
-            HttpContext.Session.SetString("FacebookEmail", email ?? "");
-            HttpContext.Session.SetString("FacebookName", name ?? "");
-            HttpContext.Session.SetString("Username", name ?? "Facebook User");
+            // ✅ Always store Facebook metadata encrypted using AES-256
+            SetEncryptedSession("FacebookEmail", email ?? "");
+            SetEncryptedSession("FacebookName", name ?? "");
+            SetEncryptedSession("Username", name ?? "Facebook User");
 
             // ===========================
             // 🧭 Redirect Logic
@@ -540,8 +589,8 @@ namespace LingapDVO.Controllers
                 // ✅ Perfect match - existing user logging in
                 var user = userWithSameEmail;
 
-                // Store session data
-                HttpContext.Session.SetString("UserId", user.Id.ToString());
+                // Store encrypted session data using AES-256
+                SetEncryptedSession("UserId", user.Id.ToString());
 
                 // ===========================
                 // 🔍 Check if verified
@@ -550,39 +599,39 @@ namespace LingapDVO.Controllers
 
                 if (verifiedUser != null)
                 {
-                    // ✅ Store full verified session
-                    HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
-                    HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
-                    HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
-                    HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
-                    HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
-                    HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
-                    HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
-                    HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
-                    HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
-                    HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
-                    HttpContext.Session.SetString("District", verifiedUser.District ?? "");
-                    HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
-                    HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
-                    HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
-                    HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
-                    HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
-                    HttpContext.Session.SetString("IsVerifiedUser", "true");
-                    HttpContext.Session.SetString("IsRegisteredUser", "true");
+                    // ✅ Store full verified session encrypted using AES-256
+                    SetEncryptedSession("IDtype", verifiedUser.IDtype ?? "");
+                    SetEncryptedSession("IDnumber", verifiedUser.IDnumber ?? "");
+                    SetEncryptedSession("Firstname", verifiedUser.Firstname ?? "");
+                    SetEncryptedSession("Middlename", verifiedUser.Middlename ?? "");
+                    SetEncryptedSession("Lastname", verifiedUser.Lastname ?? "");
+                    SetEncryptedSession("Gender", verifiedUser.Gender ?? "");
+                    SetEncryptedSession("Suffix", verifiedUser.Suffix ?? "");
+                    SetEncryptedSession("Dateofbirth", verifiedUser.Dateofbirth ?? "");
+                    SetEncryptedSession("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
+                    SetEncryptedSession("SubVill", verifiedUser.SubVill ?? "");
+                    SetEncryptedSession("District", verifiedUser.District ?? "");
+                    SetEncryptedSession("Barangay", verifiedUser.Barangay ?? "");
+                    SetEncryptedSession("CivilStatus", verifiedUser.CivilStatus ?? "");
+                    SetEncryptedSession("Phonenumber", verifiedUser.Phonenumber ?? "");
+                    SetEncryptedSession("FrontID", verifiedUser.FrontID ?? "");
+                    SetEncryptedSession("BackID", verifiedUser.BackID ?? "");
+                    SetEncryptedSession("IsVerifiedUser", "true");
+                    SetEncryptedSession("IsRegisteredUser", "true");
                 }
                 else
                 {
-                    // ⚙️ Not verified yet — store basic session info
-                    HttpContext.Session.SetString("Email", user.Email ?? "");
-                    HttpContext.Session.SetString("Username", user.Username ?? "");
-                    HttpContext.Session.SetString("IsRegisteredUser", "true");
-                    HttpContext.Session.SetString("IsVerifiedUser", "false");
+                    // ⚙️ Not verified yet — store basic session info encrypted using AES-256
+                    SetEncryptedSession("Email", user.Email ?? "");
+                    SetEncryptedSession("Username", user.Username ?? "");
+                    SetEncryptedSession("IsRegisteredUser", "true");
+                    SetEncryptedSession("IsVerifiedUser", "false");
                 }
 
-                // ✅ Always store Google metadata
-                HttpContext.Session.SetString("GoogleEmail", email);
-                HttpContext.Session.SetString("GoogleName", googleFullName);
-                HttpContext.Session.SetString("Username", user.Username ?? googleFullName);
+                // ✅ Always store Google metadata encrypted using AES-256
+                SetEncryptedSession("GoogleEmail", email);
+                SetEncryptedSession("GoogleName", googleFullName);
+                SetEncryptedSession("Username", user.Username ?? googleFullName);
 
                 // Redirect based on verification status
                 if (verifiedUser == null)
@@ -643,14 +692,14 @@ namespace LingapDVO.Controllers
                 context.RegisterAcc.Add(newUser);
                 context.SaveChanges();
 
-                // Store session data for new user
-                HttpContext.Session.SetString("UserId", newUser.Id.ToString());
-                HttpContext.Session.SetString("Username", newUser.Username);
-                HttpContext.Session.SetString("Email", newUser.Email);
-                HttpContext.Session.SetString("GoogleEmail", email);
-                HttpContext.Session.SetString("GoogleName", googleFullName);
-                HttpContext.Session.SetString("IsRegisteredUser", "true");
-                HttpContext.Session.SetString("IsVerifiedUser", "false");
+                // Store encrypted session data for new user using AES-256
+                SetEncryptedSession("UserId", newUser.Id.ToString());
+                SetEncryptedSession("Username", newUser.Username);
+                SetEncryptedSession("Email", newUser.Email);
+                SetEncryptedSession("GoogleEmail", email);
+                SetEncryptedSession("GoogleName", googleFullName);
+                SetEncryptedSession("IsRegisteredUser", "true");
+                SetEncryptedSession("IsVerifiedUser", "false");
 
                 // ✅ Redirect new user to Account Verification
                 TempData["WelcomeMessage"] = $"Welcome, {googleFirstName}! Please complete your account verification to access all features.";
@@ -842,12 +891,12 @@ namespace LingapDVO.Controllers
                     Response.Cookies.Delete("FailedAttempts");
                     Response.Cookies.Delete("LoginCooldown");
 
-                    // Set session for superadmin
-                    HttpContext.Session.SetString("UserId", superadmin.Id.ToString());
-                    HttpContext.Session.SetString("AdminFullname", superadmin.Fullname);
-                    HttpContext.Session.SetString("Username", superadmin.Username);
-                    HttpContext.Session.SetString("Email", superadmin.Email);
-                    HttpContext.Session.SetString("IsSuperadmin", "true");
+                    // Set encrypted session for superadmin using AES-256
+                    SetEncryptedSession("UserId", superadmin.Id.ToString());
+                    SetEncryptedSession("AdminFullname", superadmin.Fullname);
+                    SetEncryptedSession("Username", superadmin.Username);
+                    SetEncryptedSession("Email", superadmin.Email);
+                    SetEncryptedSession("IsSuperadmin", "true");
 
                     // Return JSON for AJAX requests with userType
                     if (IsAjaxRequest())
@@ -889,8 +938,9 @@ namespace LingapDVO.Controllers
                     Response.Cookies.Delete("FailedAttempts");
                     Response.Cookies.Delete("LoginCooldown");
 
-                    HttpContext.Session.SetString("IsAdmin", "true");
-                    HttpContext.Session.SetString("AdminFullname", admin.Fullname);
+                    // Set encrypted session for admin using AES-256
+                    SetEncryptedSession("IsAdmin", "true");
+                    SetEncryptedSession("AdminFullname", admin.Fullname);
 
                     // Return JSON for AJAX requests with userType
                     if (IsAjaxRequest())
@@ -928,36 +978,36 @@ namespace LingapDVO.Controllers
 
                         if (verifiedUser != null)
                         {
-                            // Set session for verified user (complete profile)
-                            HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
-                            HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
-                            HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
-                            HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
-                            HttpContext.Session.SetString("Middlename", verifiedUser.Middlename ?? "");
-                            HttpContext.Session.SetString("Lastname", verifiedUser.Lastname ?? "");
-                            HttpContext.Session.SetString("Gender", verifiedUser.Gender ?? "");
-                            HttpContext.Session.SetString("Suffix", verifiedUser.Suffix ?? "");
-                            HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
-                            HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
-                            HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
-                            HttpContext.Session.SetString("District", verifiedUser.District ?? "");
-                            HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
-                            HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
-                            HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
-                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
-                            HttpContext.Session.SetString("FrontID", verifiedUser.FrontID ?? "");
-                            HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
-                            HttpContext.Session.SetString("IsVerifiedUser", "true");
-                            HttpContext.Session.SetString("IsRegisteredUser", "true");
+                            // Set encrypted session for verified user (complete profile) using AES-256
+                            SetEncryptedSession("UserId", registerAccUser.Id.ToString());
+                            SetEncryptedSession("IDtype", verifiedUser.IDtype ?? "");
+                            SetEncryptedSession("IDnumber", verifiedUser.IDnumber ?? "");
+                            SetEncryptedSession("Firstname", verifiedUser.Firstname ?? "");
+                            SetEncryptedSession("Middlename", verifiedUser.Middlename ?? "");
+                            SetEncryptedSession("Lastname", verifiedUser.Lastname ?? "");
+                            SetEncryptedSession("Gender", verifiedUser.Gender ?? "");
+                            SetEncryptedSession("Suffix", verifiedUser.Suffix ?? "");
+                            SetEncryptedSession("Dateofbirth", verifiedUser.Dateofbirth ?? "");
+                            SetEncryptedSession("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
+                            SetEncryptedSession("SubVill", verifiedUser.SubVill ?? "");
+                            SetEncryptedSession("District", verifiedUser.District ?? "");
+                            SetEncryptedSession("Barangay", verifiedUser.Barangay ?? "");
+                            SetEncryptedSession("CivilStatus", verifiedUser.CivilStatus ?? "");
+                            SetEncryptedSession("Phonenumber", verifiedUser.Phonenumber ?? "");
+                            SetEncryptedSession("Email", registerAccUser.Email ?? "");
+                            SetEncryptedSession("FrontID", verifiedUser.FrontID ?? "");
+                            SetEncryptedSession("BackID", verifiedUser.BackID ?? "");
+                            SetEncryptedSession("IsVerifiedUser", "true");
+                            SetEncryptedSession("IsRegisteredUser", "true");
                         }
                         else
                         {
-                            // Set session for basic RegisterAcc user only
-                            HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
-                            HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
-                            HttpContext.Session.SetString("Username", registerAccUser.Username ?? "");
-                            HttpContext.Session.SetString("IsRegisteredUser", "true");
-                            HttpContext.Session.SetString("IsVerifiedUser", "false");
+                            // Set encrypted session for basic RegisterAcc user only using AES-256
+                            SetEncryptedSession("UserId", registerAccUser.Id.ToString());
+                            SetEncryptedSession("Email", registerAccUser.Email ?? "");
+                            SetEncryptedSession("Username", registerAccUser.Username ?? "");
+                            SetEncryptedSession("IsRegisteredUser", "true");
+                            SetEncryptedSession("IsVerifiedUser", "false");
                         }
 
                         // Return JSON for AJAX requests with userType
