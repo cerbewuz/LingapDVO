@@ -2461,7 +2461,7 @@
                         // Dropdown is closed: still reload to update badge count but don't render yet
                         // This keeps the badge count accurate in real-time
                         try {
-                            const response = await fetch('/Notification/GetUserNotifications');
+                            const response = await fetch('/Notifications/GetUserNotifications');
                             if (response.ok) {
                                 const notifications = await response.json();
                                 if (!notifications.error) {
@@ -2664,7 +2664,7 @@
                     }
 
                     // Fetch notifications from the backend API which includes permanent welcome notification
-                    const response = await fetch('/Notification/GetUserNotifications');
+                    const response = await fetch('/Notifications/GetUserNotifications');
                     if (response.ok) {
                         const notifications = await response.json();
 
@@ -2929,7 +2929,7 @@
                     const unreadNotifications = currentNotifications.filter(n => !n.isRead);
                     for (const notification of unreadNotifications) {
                         try {
-                            await fetch('/Notification/MarkNotificationAsRead', {
+                            await fetch('/Notifications/MarkNotificationAsRead', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'
@@ -3118,7 +3118,7 @@
                 if (!notification.isRead) {
                     // Mark as read in the backend session
                     try {
-                        const response = await fetch('/Notification/MarkNotificationAsRead', {
+                        const response = await fetch('/Notifications/MarkNotificationAsRead', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'

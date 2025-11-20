@@ -40,24 +40,24 @@ public class NotificationsController : Controller
             // Get read notification IDs from session
             var readNotificationIds = GetReadNotificationIdsFromSession(userId);
 
-            // Check for recent form submissions (last 7 days)
+            // Get ALL form submissions for the user (no date limit - keep all notifications visible)
             var recentHospitalBills = context.HospitalAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
+                .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
             var recentMedicalLabForms = context.OtherAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
+                .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
             var recentFuneralForms = context.FuneralAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
+                .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            // Create notifications for hospital bills
-            foreach (var bill in recentHospitalBills.Take(5))
+            // Create notifications for hospital bills (show up to 100 most recent)
+            foreach (var bill in recentHospitalBills.Take(100))
             {
                 var notificationId = $"hospital_{bill.Id}_{bill.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
@@ -103,7 +103,7 @@ public class NotificationsController : Controller
             }
 
             // Create notifications for medical lab forms
-            foreach (var medical in recentMedicalLabForms.Take(5))
+            foreach (var medical in recentMedicalLabForms.Take(100))
             {
                 var notificationId = $"medical_{medical.Id}_{medical.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
@@ -149,7 +149,7 @@ public class NotificationsController : Controller
             }
 
             // Create notifications for funeral forms
-            foreach (var funeral in recentFuneralForms.Take(5))
+            foreach (var funeral in recentFuneralForms.Take(100))
             {
                 var notificationId = $"funeral_{funeral.Id}_{funeral.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
