@@ -75,7 +75,8 @@ public class NotificationsController : Controller
                     type = type,
                     link = "/Applicationtracking",
                     status = bill.Status,
-                    priority = priority
+                    priority = priority,
+                    isPermanent = false
                 });
 
                 // Add separate delay notification if priority is high or medium
@@ -95,7 +96,8 @@ public class NotificationsController : Controller
                         type = "delay_alert",
                         link = "/Applicationtracking",
                         status = bill.Status,
-                        priority = priority
+                        priority = priority,
+                        isPermanent = false
                     });
                 }
             }
@@ -119,7 +121,8 @@ public class NotificationsController : Controller
                     type = type,
                     link = "/Applicationtracking",
                     status = medical.Status,
-                    priority = priority
+                    priority = priority,
+                    isPermanent = false
                 });
 
                 // Add separate delay notification if priority is high or medium
@@ -139,7 +142,8 @@ public class NotificationsController : Controller
                         type = "delay_alert",
                         link = "/Applicationtracking",
                         status = medical.Status,
-                        priority = priority
+                        priority = priority,
+                        isPermanent = false
                     });
                 }
             }
@@ -163,7 +167,8 @@ public class NotificationsController : Controller
                     type = type,
                     link = "/Applicationtracking",
                     status = funeral.Status,
-                    priority = priority
+                    priority = priority,
+                    isPermanent = false
                 });
 
                 // Add separate delay notification if priority is high or medium
@@ -183,7 +188,8 @@ public class NotificationsController : Controller
                         type = "delay_alert",
                         link = "/Applicationtracking",
                         status = funeral.Status,
-                        priority = priority
+                        priority = priority,
+                        isPermanent = false
                     });
                 }
             }
@@ -193,6 +199,7 @@ public class NotificationsController : Controller
             bool isVerified = verification != null;
 
             // Generate appropriate welcome notification based on verification status
+            // ALWAYS ADD WELCOME NOTIFICATION - it's a permanent notification
             var welcomeNotificationId = isVerified ? $"welcome_verified_{userId}" : $"welcome_unverified_{userId}";
             var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
@@ -222,6 +229,7 @@ public class NotificationsController : Controller
                 welcomeMessage = "Thank you for joining LingapDVO! To access all services and submit assistance applications, please complete your account verification.";
             }
 
+            // Add welcome notification with isPermanent flag to ensure it always appears
             notifications.Add(new
             {
                 id = welcomeNotificationId,
@@ -232,12 +240,15 @@ public class NotificationsController : Controller
                 type = "welcome",
                 link = "/Home",
                 status = "Welcome",
-                priority = "normal"
+                priority = "normal",
+                isPermanent = true  // Mark as permanent so it's always included
             });
 
-            // Order by creation date (newest first)
+            // Order notifications: temporary notifications by date (newest first), then permanent notifications at the end
+            // This ensures the welcome notification always appears at the bottom of the list
             var orderedNotifications = notifications
-                .OrderByDescending(n => ((dynamic)n).createdAt)
+                .OrderBy(n => ((dynamic)n).isPermanent)  // Non-permanent (false) first, permanent (true) last
+                .ThenByDescending(n => ((dynamic)n).createdAt)     // Then by creation date within each group
                 .ToList();
 
             // Prevent browser caching

@@ -921,6 +921,24 @@
             color: white;
         }
 
+        .notification-type-welcome {
+            background: linear-gradient(135deg, #5B9BD5 0%, #4A8BC2 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(91, 155, 213, 0.3);
+        }
+
+        /* Permanent notification styling (welcome notifications) */
+        .notification-item[data-permanent="true"] {
+            background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            border-left: 3px solid #5B9BD5;
+            position: sticky;
+            bottom: 0;
+        }
+
+            .notification-item[data-permanent="true"]:hover {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+            }
+
         /* Priority notification type icons */
         .notification-type-priority-high {
             background: #DC2626;
@@ -2958,6 +2976,11 @@
                         notificationItem.setAttribute('data-type', notification.type);
                     }
 
+                    // Add data-permanent attribute for permanent notifications (welcome)
+                    if (notification.isPermanent) {
+                        notificationItem.setAttribute('data-permanent', 'true');
+                    }
+
                     // Store timestamp for real-time updates
                     notificationItem.setAttribute('data-created-at', notification.createdAt);
 
@@ -3020,6 +3043,7 @@
                     delayed: { class: 'notification-type-delayed', icon: 'fas fa-clock' },
                     delay_alert: { class: 'notification-type-delay-alert', icon: 'fas fa-exclamation-triangle' },
                     waiting: { class: 'notification-type-waiting', icon: 'fas fa-hourglass-half' },
+                    welcome: { class: 'notification-type-welcome', icon: 'fas fa-hand-holding-heart' },
                     application_submitted: { class: 'notification-type-submitted', icon: 'fas fa-file-upload' },
                     application_processing: { class: 'notification-type-processing', icon: 'fas fa-cog' },
                     application_approved: { class: 'notification-type-approved', icon: 'fas fa-check-circle' },
@@ -3168,6 +3192,11 @@
                         // Add data-type attribute for delay alert styling
                         if (notification.type) {
                             notificationItem.setAttribute('data-type', notification.type);
+                        }
+
+                        // Add data-permanent attribute for permanent notifications (welcome)
+                        if (notification.isPermanent) {
+                            notificationItem.setAttribute('data-permanent', 'true');
                         }
 
                         // Store timestamp for real-time updates
