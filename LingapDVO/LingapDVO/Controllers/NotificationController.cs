@@ -218,7 +218,7 @@ public class NotificationsController : Controller
                 isRead = isWelcomeRead,
                 createdAt = welcomeDate.ToString("yyyy-MM-ddTHH:mm:ss"),
                 type = "welcome",
-                link = "/Dashboard",
+                link = "/Home",
                 status = "Welcome",
                 priority = "normal"
             });
@@ -428,7 +428,7 @@ public class NotificationsController : Controller
                 isRead = isWelcomeRead,
                 createdAt = welcomeDate.ToString("yyyy-MM-ddTHH:mm:ss"),
                 type = "welcome",
-                link = "/Dashboard",
+                link = "/Home",
                 status = "Welcome",
                 priority = "normal"
             });
