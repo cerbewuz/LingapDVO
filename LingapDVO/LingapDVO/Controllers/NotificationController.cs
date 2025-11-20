@@ -188,9 +188,12 @@ public class NotificationsController : Controller
                 }
             }
 
-            // Always add welcome notification (will appear at bottom since it has old date)
-            // Use same logic as GetAllUserNotifications for consistency
-            var welcomeNotificationId = $"welcome_{userId}";
+            // Check if user is verified
+            var verification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            bool isVerified = verification != null;
+
+            // Generate appropriate welcome notification based on verification status
+            var welcomeNotificationId = isVerified ? $"welcome_verified_{userId}" : $"welcome_unverified_{userId}";
             var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
             // Get user's actual registration date from RegistrationAuditLog
@@ -200,16 +203,30 @@ public class NotificationsController : Controller
                 .Select(log => log.AttemptedAt)
                 .FirstOrDefault();
 
-            // If no registration date found, use a default old date
+            // If no registration date found, use current time minus 1 hour
             var welcomeDate = userRegistrationDate != default(DateTime)
                 ? userRegistrationDate
-                : new DateTime(2020, 1, 1, 0, 0, 0);
+                : _dateTimeService.Now.AddHours(-1);
+
+            string welcomeTitle, welcomeMessage;
+            if (isVerified)
+            {
+                // Verified user - congratulations message
+                welcomeTitle = "Account Verified!";
+                welcomeMessage = "Congratulations! Your account has been successfully verified. You now have full access to all LingapDVO services and can submit assistance applications.";
+            }
+            else
+            {
+                // Unverified user - encourage verification
+                welcomeTitle = "Welcome to LingapDVO!";
+                welcomeMessage = "Thank you for joining LingapDVO! To access all services and submit assistance applications, please complete your account verification.";
+            }
 
             notifications.Add(new
             {
                 id = welcomeNotificationId,
-                title = "Welcome to LingapDVO",
-                message = "Thank you for joining LingapDVO! We're here to assist you with your medical, funeral, and other assistance needs.",
+                title = welcomeTitle,
+                message = welcomeMessage,
                 isRead = isWelcomeRead,
                 createdAt = welcomeDate.ToString("yyyy-MM-ddTHH:mm:ss"),
                 type = "welcome",
@@ -355,14 +372,16 @@ public class NotificationsController : Controller
                 }
             }
 
-            // Always include welcome notification
-            notificationIds.Add($"welcome_{userId}");
+            // Always include welcome notifications (both types to handle verification state changes)
+            notificationIds.Add($"welcome_verified_{userId}");
+            notificationIds.Add($"welcome_unverified_{userId}");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while getting current notification IDs for user {UserId}", userId);
-            // Always include welcome notification even on error
-            notificationIds.Add($"welcome_{userId}");
+            // Always include welcome notifications even on error
+            notificationIds.Add($"welcome_verified_{userId}");
+            notificationIds.Add($"welcome_unverified_{userId}");
         }
 
         return notificationIds;
