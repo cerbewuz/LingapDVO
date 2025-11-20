@@ -2564,17 +2564,27 @@
                 // Reload notifications every 15 seconds to update status and priority badges in real-time
                 // This ensures status changes (Pending -> Processing -> Approved) and priority changes are reflected quickly
                 // Works both when dropdown is open (updating visible notifications) and closed (updating badge count)
+                // Applies to both desktop and mobile dropdowns for cross-screen consistency
                 setInterval(async () => {
                     try {
-                        const dropdownVisible = notificationDropdown && notificationDropdown.style.display === 'block';
-                        if (dropdownVisible) {
-                            // Dropdown is open: silently reload notifications to update status/priority badges
-                            console.log('[Real-time Update] Reloading notifications (dropdown open)...');
-                            await loadRealNotifications(false);
+                        const desktopDropdownVisible = notificationDropdown && notificationDropdown.style.display === 'block';
+                        const mobileDropdownElement = document.getElementById('mobileNotificationDropdown');
+                        const mobileDropdownVisible = mobileDropdownElement && mobileDropdownElement.classList.contains('active');
+
+                        if (desktopDropdownVisible || mobileDropdownVisible) {
+                            // One or more dropdowns are open: reload notifications to update status/priority badges
+                            if (desktopDropdownVisible) {
+                                console.log('[Real-time Update] Reloading desktop notifications (dropdown open)...');
+                                await loadRealNotifications(false);
+                            }
+                            if (mobileDropdownVisible) {
+                                console.log('[Real-time Update] Reloading mobile notifications (dropdown open)...');
+                                await loadMobileNotifications();
+                            }
                         } else {
-                            // Dropdown is closed: still reload to update badge count but don't render yet
+                            // All dropdowns closed: still reload to update badge count but don't render yet
                             // This keeps the badge count accurate in real-time
-                            console.log('[Real-time Update] Updating badge count (dropdown closed)...');
+                            console.log('[Real-time Update] Updating badge count (all dropdowns closed)...');
                             const response = await fetch('/Notifications/GetUserNotifications');
                             if (response.ok) {
                                 const notifications = await response.json();
@@ -3380,8 +3390,29 @@
                         </div>
                     `;
 
-                    const applications = await getRealApplicationData();
-                    const notifications = generateNotificationsFromRealData(applications);
+                    // Fetch notifications from API (same as desktop)
+                    console.log('[loadMobileNotifications] Fetching from API...');
+                    const response = await fetch('/Notifications/GetUserNotifications');
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    let notifications = await response.json();
+                    console.log('[loadMobileNotifications] API returned', notifications.length, 'notifications');
+
+                    // Sort notifications: temporary by date DESC, permanent at bottom
+                    notifications.sort((a, b) => {
+                        // Permanent notifications always go to the bottom
+                        if (a.isPermanent && !b.isPermanent) return 1;
+                        if (!a.isPermanent && b.isPermanent) return -1;
+
+                        // Both permanent or both temporary: sort by date descending
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    });
+
+                    // Store current notifications for mark all as read functionality
+                    currentNotifications = notifications;
 
                     // Clear loading state
                     mobileNotificationList.innerHTML = '';
@@ -3394,8 +3425,12 @@
                                 <small class="text-muted">Check your application status for updates</small>
                             </div>
                         `;
+                        hideNotificationBadge();
                         return;
                     }
+
+                    // Update notification badge with unread count
+                    updateNotificationUI(notifications);
 
                     // Render notifications
                     notifications.forEach(notification => {
