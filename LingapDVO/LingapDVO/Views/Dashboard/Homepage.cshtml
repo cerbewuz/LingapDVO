@@ -1207,6 +1207,16 @@
         /* Large devices (desktops, 992px and up) */
         @@media (min-width: 992px) {
             /* Notification dropdown styles are defined in main dropdown section above */
+
+            /* Allow notification dropdown to be visible outside greeting card */
+            .greeting-card {
+                overflow: visible;
+            }
+
+            /* Ensure notification container can display dropdown outside card */
+            .notification-container {
+                z-index: 10;
+            }
         }
 
         /* Extra small devices (phones, less than 576px) */
