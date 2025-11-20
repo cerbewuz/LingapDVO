@@ -742,36 +742,64 @@ namespace LingapDVO.Controllers
                 if (HospitalAssistanceDto.Suffix == "None") HospitalAssistanceDto.Suffix = "";
                 if (HospitalAssistanceDto.RSuffix == "None") HospitalAssistanceDto.RSuffix = "";
 
+                // ===========================
+                // ?? ENCRYPT SENSITIVE FORM DATA
+                // ===========================
+                // Encrypt patient details
+                string encryptedLastname = aesHelper.Encrypt(HospitalAssistanceDto.Lastname);
+                string encryptedFirstname = aesHelper.Encrypt(HospitalAssistanceDto.Firstname);
+                string encryptedMiddlename = aesHelper.Encrypt(HospitalAssistanceDto.Middlename);
+                string encryptedSuffix = aesHelper.Encrypt(HospitalAssistanceDto.Suffix);
+                string encryptedBlkLotStreet = aesHelper.Encrypt(HospitalAssistanceDto.BlkLotStreet);
+                string encryptedSubVill = aesHelper.Encrypt(HospitalAssistanceDto.SubVill);
+                string encryptedBrgy = aesHelper.Encrypt(HospitalAssistanceDto.Brgy);
+                string encryptedDistrict = aesHelper.Encrypt(HospitalAssistanceDto.District);
+                string encryptedPhilHealthNo = aesHelper.Encrypt(HospitalAssistanceDto.PhilHealthNo ?? "");
+                string encryptedDateofbirth = aesHelper.Encrypt(HospitalAssistanceDto.Dateofbirth);
+                string encryptedAge = aesHelper.Encrypt(HospitalAssistanceDto.Age);
+
+                // Encrypt requestor details
+                string encryptedRLastname = aesHelper.Encrypt(HospitalAssistanceDto.RLastname ?? "");
+                string encryptedRFirstname = aesHelper.Encrypt(HospitalAssistanceDto.RFirstname ?? "");
+                string encryptedRMiddlename = aesHelper.Encrypt(HospitalAssistanceDto.RMiddlename ?? "");
+                string encryptedRSuffix = aesHelper.Encrypt(HospitalAssistanceDto.RSuffix ?? "");
+                string encryptedRBlkLotStreet = aesHelper.Encrypt(HospitalAssistanceDto.RBlkLotStreet ?? "");
+                string encryptedRSubVill = aesHelper.Encrypt(HospitalAssistanceDto.RSubVill ?? "");
+                string encryptedRBrgy = aesHelper.Encrypt(HospitalAssistanceDto.RBrgy ?? "");
+                string encryptedRDistrict = aesHelper.Encrypt(HospitalAssistanceDto.RDistrict ?? "");
+                string encryptedRelationshipPatient = aesHelper.Encrypt(HospitalAssistanceDto.RelationshipPatient ?? "");
+                string encryptedContactNo = aesHelper.Encrypt(HospitalAssistanceDto.ContactNo ?? "");
+
                 // Map data to entity
                 HospitalAssistance HospitalAssistance = new HospitalAssistance()
                 {
                     UserId = userId,
-                    // Patient Details
-                    Lastname = HospitalAssistanceDto.Lastname,
-                    Firstname = HospitalAssistanceDto.Firstname,
-                    Middlename = HospitalAssistanceDto.Middlename,
-                    Suffix = HospitalAssistanceDto.Suffix,
-                    BlkLotStreet = HospitalAssistanceDto.BlkLotStreet,
-                    SubVill = HospitalAssistanceDto.SubVill,
-                    Brgy = HospitalAssistanceDto.Brgy,
-                    District = HospitalAssistanceDto.District,
+                    // Patient Details (ENCRYPTED)
+                    Lastname = encryptedLastname,
+                    Firstname = encryptedFirstname,
+                    Middlename = encryptedMiddlename,
+                    Suffix = encryptedSuffix,
+                    BlkLotStreet = encryptedBlkLotStreet,
+                    SubVill = encryptedSubVill,
+                    Brgy = encryptedBrgy,
+                    District = encryptedDistrict,
                     Sex = HospitalAssistanceDto.Sex,
                     PhilHealth = HospitalAssistanceDto.PhilHealth,
-                    PhilHealthNo = HospitalAssistanceDto.PhilHealthNo,
-                    Dateofbirth = HospitalAssistanceDto.Dateofbirth,
-                    Age = HospitalAssistanceDto.Age,
+                    PhilHealthNo = encryptedPhilHealthNo,
+                    Dateofbirth = encryptedDateofbirth,
+                    Age = encryptedAge,
 
-                    // Requestor Details
-                    RLastname = HospitalAssistanceDto.RLastname,
-                    RFirstname = HospitalAssistanceDto.RFirstname,
-                    RMiddlename = HospitalAssistanceDto.RMiddlename,
-                    RSuffix = HospitalAssistanceDto.RSuffix,
-                    RBlkLotStreet = HospitalAssistanceDto.RBlkLotStreet,
-                    RSubVill = HospitalAssistanceDto.RSubVill,
-                    RBrgy = HospitalAssistanceDto.RBrgy,
-                    RDistrict = HospitalAssistanceDto.RDistrict,
-                    RelationshipPatient = HospitalAssistanceDto.RelationshipPatient,
-                    ContactNo = HospitalAssistanceDto.ContactNo,
+                    // Requestor Details (ENCRYPTED)
+                    RLastname = encryptedRLastname,
+                    RFirstname = encryptedRFirstname,
+                    RMiddlename = encryptedRMiddlename,
+                    RSuffix = encryptedRSuffix,
+                    RBlkLotStreet = encryptedRBlkLotStreet,
+                    RSubVill = encryptedRSubVill,
+                    RBrgy = encryptedRBrgy,
+                    RDistrict = encryptedRDistrict,
+                    RelationshipPatient = encryptedRelationshipPatient,
+                    ContactNo = encryptedContactNo,
 
                     // Assistance Type
                     Typeassistance = HospitalAssistanceDto.Typeassistance,
@@ -853,34 +881,64 @@ namespace LingapDVO.Controllers
                 return NotFound();
             }
 
+            // ===========================
+            // ?? DECRYPT SENSITIVE FORM DATA
+            // ===========================
+            var aesHelper = new AesEncryptionHelper(_configuration);
+
+            // Decrypt patient details
+            string decryptedLastname = aesHelper.Decrypt(HospitalAssistance.Lastname);
+            string decryptedFirstname = aesHelper.Decrypt(HospitalAssistance.Firstname);
+            string decryptedMiddlename = aesHelper.Decrypt(HospitalAssistance.Middlename);
+            string decryptedSuffix = aesHelper.Decrypt(HospitalAssistance.Suffix);
+            string decryptedBlkLotStreet = aesHelper.Decrypt(HospitalAssistance.BlkLotStreet);
+            string decryptedSubVill = aesHelper.Decrypt(HospitalAssistance.SubVill);
+            string decryptedBrgy = aesHelper.Decrypt(HospitalAssistance.Brgy);
+            string decryptedDistrict = aesHelper.Decrypt(HospitalAssistance.District);
+            string decryptedPhilHealthNo = aesHelper.Decrypt(HospitalAssistance.PhilHealthNo);
+            string decryptedDateofbirth = aesHelper.Decrypt(HospitalAssistance.Dateofbirth);
+            string decryptedAge = aesHelper.Decrypt(HospitalAssistance.Age);
+
+            // Decrypt requestor details
+            string decryptedRLastname = aesHelper.Decrypt(HospitalAssistance.RLastname ?? "");
+            string decryptedRFirstname = aesHelper.Decrypt(HospitalAssistance.RFirstname ?? "");
+            string decryptedRMiddlename = aesHelper.Decrypt(HospitalAssistance.RMiddlename ?? "");
+            string decryptedRSuffix = aesHelper.Decrypt(HospitalAssistance.RSuffix ?? "");
+            string decryptedRBlkLotStreet = aesHelper.Decrypt(HospitalAssistance.RBlkLotStreet ?? "");
+            string decryptedRSubVill = aesHelper.Decrypt(HospitalAssistance.RSubVill ?? "");
+            string decryptedRBrgy = aesHelper.Decrypt(HospitalAssistance.RBrgy ?? "");
+            string decryptedRDistrict = aesHelper.Decrypt(HospitalAssistance.RDistrict ?? "");
+            string decryptedRelationshipPatient = aesHelper.Decrypt(HospitalAssistance.RelationshipPatient ?? "");
+            string decryptedContactNo = aesHelper.Decrypt(HospitalAssistance.ContactNo ?? "");
+
             // Basic ViewData setup
             ViewData["Status"] = HospitalAssistance.Status;
             ViewData["Id"] = HospitalAssistance.Id;
-            ViewData["Lastname"] = HospitalAssistance.Lastname;
-            ViewData["Firstname"] = HospitalAssistance.Firstname;
-            ViewData["Middlename"] = HospitalAssistance.Middlename;
-            ViewData["Suffix"] = HospitalAssistance.Suffix;
-            ViewData["BlkLotStreet"] = HospitalAssistance.BlkLotStreet;
-            ViewData["SubVill"] = HospitalAssistance.SubVill;
-            ViewData["Brgy"] = HospitalAssistance.Brgy;
-            ViewData["District"] = HospitalAssistance.District;
+            ViewData["Lastname"] = decryptedLastname;
+            ViewData["Firstname"] = decryptedFirstname;
+            ViewData["Middlename"] = decryptedMiddlename;
+            ViewData["Suffix"] = decryptedSuffix;
+            ViewData["BlkLotStreet"] = decryptedBlkLotStreet;
+            ViewData["SubVill"] = decryptedSubVill;
+            ViewData["Brgy"] = decryptedBrgy;
+            ViewData["District"] = decryptedDistrict;
             ViewData["Sex"] = HospitalAssistance.Sex;
             ViewData["PhilHealth"] = HospitalAssistance.PhilHealth;
-            ViewData["PhilHealthNo"] = HospitalAssistance.PhilHealthNo;
-            ViewData["Dateofbirth"] = HospitalAssistance.Dateofbirth;
-            ViewData["Age"] = HospitalAssistance.Age;
+            ViewData["PhilHealthNo"] = decryptedPhilHealthNo;
+            ViewData["Dateofbirth"] = decryptedDateofbirth;
+            ViewData["Age"] = decryptedAge;
 
-            // Requestor details
-            ViewData["RLastname"] = HospitalAssistance.RLastname;
-            ViewData["RFirstname"] = HospitalAssistance.RFirstname;
-            ViewData["RMiddlename"] = HospitalAssistance.RMiddlename;
-            ViewData["RSuffix"] = HospitalAssistance.RSuffix;
-            ViewData["RBlkLotStreet"] = HospitalAssistance.RBlkLotStreet;
-            ViewData["RSubVill"] = HospitalAssistance.RSubVill;
-            ViewData["RBrgy"] = HospitalAssistance.RBrgy;
-            ViewData["RDistrict"] = HospitalAssistance.RDistrict;
-            ViewData["RelationshipPatient"] = HospitalAssistance.RelationshipPatient;
-            ViewData["ContactNo"] = HospitalAssistance.ContactNo;
+            // Requestor details (DECRYPTED)
+            ViewData["RLastname"] = decryptedRLastname;
+            ViewData["RFirstname"] = decryptedRFirstname;
+            ViewData["RMiddlename"] = decryptedRMiddlename;
+            ViewData["RSuffix"] = decryptedRSuffix;
+            ViewData["RBlkLotStreet"] = decryptedRBlkLotStreet;
+            ViewData["RSubVill"] = decryptedRSubVill;
+            ViewData["RBrgy"] = decryptedRBrgy;
+            ViewData["RDistrict"] = decryptedRDistrict;
+            ViewData["RelationshipPatient"] = decryptedRelationshipPatient;
+            ViewData["ContactNo"] = decryptedContactNo;
 
             // Type of assistance
             var typeAssistanceRaw = HospitalAssistance.Typeassistance ?? "";
@@ -1491,36 +1549,64 @@ namespace LingapDVO.Controllers
                 if (OtherAssistanceDto.Suffix == "None") OtherAssistanceDto.Suffix = "";
                 if (OtherAssistanceDto.RSuffix == "None") OtherAssistanceDto.RSuffix = "";
 
+                // ===========================
+                // ?? ENCRYPT SENSITIVE FORM DATA
+                // ===========================
+                // Encrypt patient details
+                string encryptedLastname = aesHelper.Encrypt(OtherAssistanceDto.Lastname);
+                string encryptedFirstname = aesHelper.Encrypt(OtherAssistanceDto.Firstname);
+                string encryptedMiddlename = aesHelper.Encrypt(OtherAssistanceDto.Middlename);
+                string encryptedSuffix = aesHelper.Encrypt(OtherAssistanceDto.Suffix);
+                string encryptedBlkLotStreet = aesHelper.Encrypt(OtherAssistanceDto.BlkLotStreet);
+                string encryptedSubVill = aesHelper.Encrypt(OtherAssistanceDto.SubVill);
+                string encryptedBrgy = aesHelper.Encrypt(OtherAssistanceDto.Brgy);
+                string encryptedDistrict = aesHelper.Encrypt(OtherAssistanceDto.District);
+                string encryptedPhilHealthNo = aesHelper.Encrypt(OtherAssistanceDto.PhilHealthNo ?? "");
+                string encryptedDateofbirth = aesHelper.Encrypt(OtherAssistanceDto.Dateofbirth);
+                string encryptedAge = aesHelper.Encrypt(OtherAssistanceDto.Age);
+
+                // Encrypt requestor details
+                string encryptedRLastname = aesHelper.Encrypt(OtherAssistanceDto.RLastname ?? "");
+                string encryptedRFirstname = aesHelper.Encrypt(OtherAssistanceDto.RFirstname ?? "");
+                string encryptedRMiddlename = aesHelper.Encrypt(OtherAssistanceDto.RMiddlename ?? "");
+                string encryptedRSuffix = aesHelper.Encrypt(OtherAssistanceDto.RSuffix ?? "");
+                string encryptedRBlkLotStreet = aesHelper.Encrypt(OtherAssistanceDto.RBlkLotStreet ?? "");
+                string encryptedRSubVill = aesHelper.Encrypt(OtherAssistanceDto.RSubVill ?? "");
+                string encryptedRBrgy = aesHelper.Encrypt(OtherAssistanceDto.RBrgy ?? "");
+                string encryptedRDistrict = aesHelper.Encrypt(OtherAssistanceDto.RDistrict ?? "");
+                string encryptedRelationshipPatient = aesHelper.Encrypt(OtherAssistanceDto.RelationshipPatient ?? "");
+                string encryptedContactNo = aesHelper.Encrypt(OtherAssistanceDto.ContactNo ?? "");
+
                 // Map data to entity
                 OtherAssistance OtherAssistance = new OtherAssistance()
                 {
                     UserId = userId,
-                    // Patient Details
-                    Lastname = OtherAssistanceDto.Lastname,
-                    Firstname = OtherAssistanceDto.Firstname,
-                    Middlename = OtherAssistanceDto.Middlename,
-                    Suffix = OtherAssistanceDto.Suffix,
-                    BlkLotStreet = OtherAssistanceDto.BlkLotStreet,
-                    SubVill = OtherAssistanceDto.SubVill,
-                    Brgy = OtherAssistanceDto.Brgy,
-                    District = OtherAssistanceDto.District,
+                    // Patient Details (ENCRYPTED)
+                    Lastname = encryptedLastname,
+                    Firstname = encryptedFirstname,
+                    Middlename = encryptedMiddlename,
+                    Suffix = encryptedSuffix,
+                    BlkLotStreet = encryptedBlkLotStreet,
+                    SubVill = encryptedSubVill,
+                    Brgy = encryptedBrgy,
+                    District = encryptedDistrict,
                     Sex = OtherAssistanceDto.Sex,
                     PhilHealth = OtherAssistanceDto.PhilHealth,
-                    PhilHealthNo = OtherAssistanceDto.PhilHealthNo,
-                    Dateofbirth = OtherAssistanceDto.Dateofbirth,
-                    Age = OtherAssistanceDto.Age,
+                    PhilHealthNo = encryptedPhilHealthNo,
+                    Dateofbirth = encryptedDateofbirth,
+                    Age = encryptedAge,
 
-                    // Requestor Details
-                    RLastname = OtherAssistanceDto.RLastname,
-                    RFirstname = OtherAssistanceDto.RFirstname,
-                    RMiddlename = OtherAssistanceDto.RMiddlename,
-                    RSuffix = OtherAssistanceDto.RSuffix,
-                    RBlkLotStreet = OtherAssistanceDto.RBlkLotStreet,
-                    RSubVill = OtherAssistanceDto.RSubVill,
-                    RBrgy = OtherAssistanceDto.RBrgy,
-                    RDistrict = OtherAssistanceDto.RDistrict,
-                    RelationshipPatient = OtherAssistanceDto.RelationshipPatient,
-                    ContactNo = OtherAssistanceDto.ContactNo,
+                    // Requestor Details (ENCRYPTED)
+                    RLastname = encryptedRLastname,
+                    RFirstname = encryptedRFirstname,
+                    RMiddlename = encryptedRMiddlename,
+                    RSuffix = encryptedRSuffix,
+                    RBlkLotStreet = encryptedRBlkLotStreet,
+                    RSubVill = encryptedRSubVill,
+                    RBrgy = encryptedRBrgy,
+                    RDistrict = encryptedRDistrict,
+                    RelationshipPatient = encryptedRelationshipPatient,
+                    ContactNo = encryptedContactNo,
 
                     // Assistance Type
                     Typeassistance = OtherAssistanceDto.Typeassistance,
@@ -1604,34 +1690,64 @@ namespace LingapDVO.Controllers
                 return NotFound();
             }
 
+            // ===========================
+            // ?? DECRYPT SENSITIVE FORM DATA
+            // ===========================
+            var aesHelper = new AesEncryptionHelper(_configuration);
+
+            // Decrypt patient details
+            string decryptedLastname = aesHelper.Decrypt(medicallabform.Lastname);
+            string decryptedFirstname = aesHelper.Decrypt(medicallabform.Firstname);
+            string decryptedMiddlename = aesHelper.Decrypt(medicallabform.Middlename);
+            string decryptedSuffix = aesHelper.Decrypt(medicallabform.Suffix);
+            string decryptedBlkLotStreet = aesHelper.Decrypt(medicallabform.BlkLotStreet);
+            string decryptedSubVill = aesHelper.Decrypt(medicallabform.SubVill);
+            string decryptedBrgy = aesHelper.Decrypt(medicallabform.Brgy);
+            string decryptedDistrict = aesHelper.Decrypt(medicallabform.District);
+            string decryptedPhilHealthNo = aesHelper.Decrypt(medicallabform.PhilHealthNo);
+            string decryptedDateofbirth = aesHelper.Decrypt(medicallabform.Dateofbirth);
+            string decryptedAge = aesHelper.Decrypt(medicallabform.Age);
+
+            // Decrypt requestor details
+            string decryptedRLastname = aesHelper.Decrypt(medicallabform.RLastname ?? "");
+            string decryptedRFirstname = aesHelper.Decrypt(medicallabform.RFirstname ?? "");
+            string decryptedRMiddlename = aesHelper.Decrypt(medicallabform.RMiddlename ?? "");
+            string decryptedRSuffix = aesHelper.Decrypt(medicallabform.RSuffix ?? "");
+            string decryptedRBlkLotStreet = aesHelper.Decrypt(medicallabform.RBlkLotStreet ?? "");
+            string decryptedRSubVill = aesHelper.Decrypt(medicallabform.RSubVill ?? "");
+            string decryptedRBrgy = aesHelper.Decrypt(medicallabform.RBrgy ?? "");
+            string decryptedRDistrict = aesHelper.Decrypt(medicallabform.RDistrict ?? "");
+            string decryptedRelationshipPatient = aesHelper.Decrypt(medicallabform.RelationshipPatient ?? "");
+            string decryptedContactNo = aesHelper.Decrypt(medicallabform.ContactNo ?? "");
+
             // Basic ViewData setup
             ViewData["Status"] = medicallabform.Status;
             ViewData["Id"] = medicallabform.Id;
-            ViewData["Lastname"] = medicallabform.Lastname;
-            ViewData["Firstname"] = medicallabform.Firstname;
-            ViewData["Middlename"] = medicallabform.Middlename;
-            ViewData["Suffix"] = medicallabform.Suffix;
-            ViewData["BlkLotStreet"] = medicallabform.BlkLotStreet;
-            ViewData["SubVill"] = medicallabform.SubVill;
-            ViewData["Brgy"] = medicallabform.Brgy;
-            ViewData["District"] = medicallabform.District;
+            ViewData["Lastname"] = decryptedLastname;
+            ViewData["Firstname"] = decryptedFirstname;
+            ViewData["Middlename"] = decryptedMiddlename;
+            ViewData["Suffix"] = decryptedSuffix;
+            ViewData["BlkLotStreet"] = decryptedBlkLotStreet;
+            ViewData["SubVill"] = decryptedSubVill;
+            ViewData["Brgy"] = decryptedBrgy;
+            ViewData["District"] = decryptedDistrict;
             ViewData["Sex"] = medicallabform.Sex;
             ViewData["PhilHealth"] = medicallabform.PhilHealth;
-            ViewData["PhilHealthNo"] = medicallabform.PhilHealthNo;
-            ViewData["Dateofbirth"] = medicallabform.Dateofbirth;
-            ViewData["Age"] = medicallabform.Age;
+            ViewData["PhilHealthNo"] = decryptedPhilHealthNo;
+            ViewData["Dateofbirth"] = decryptedDateofbirth;
+            ViewData["Age"] = decryptedAge;
 
-            // Requestor details
-            ViewData["RLastname"] = medicallabform.RLastname;
-            ViewData["RFirstname"] = medicallabform.RFirstname;
-            ViewData["RMiddlename"] = medicallabform.RMiddlename;
-            ViewData["RSuffix"] = medicallabform.RSuffix;
-            ViewData["RBlkLotStreet"] = medicallabform.RBlkLotStreet;
-            ViewData["RSubVill"] = medicallabform.RSubVill;
-            ViewData["RBrgy"] = medicallabform.RBrgy;
-            ViewData["RDistrict"] = medicallabform.RDistrict;
-            ViewData["RelationshipPatient"] = medicallabform.RelationshipPatient;
-            ViewData["ContactNo"] = medicallabform.ContactNo;
+            // Requestor details (DECRYPTED)
+            ViewData["RLastname"] = decryptedRLastname;
+            ViewData["RFirstname"] = decryptedRFirstname;
+            ViewData["RMiddlename"] = decryptedRMiddlename;
+            ViewData["RSuffix"] = decryptedRSuffix;
+            ViewData["RBlkLotStreet"] = decryptedRBlkLotStreet;
+            ViewData["RSubVill"] = decryptedRSubVill;
+            ViewData["RBrgy"] = decryptedRBrgy;
+            ViewData["RDistrict"] = decryptedRDistrict;
+            ViewData["RelationshipPatient"] = decryptedRelationshipPatient;
+            ViewData["ContactNo"] = decryptedContactNo;
 
             // Type of assistance
             var typeAssistanceRaw = medicallabform.Typeassistance ?? "";
@@ -2260,36 +2376,64 @@ namespace LingapDVO.Controllers
                 if (FuneralAssistanceDto.Suffix == "None") FuneralAssistanceDto.Suffix = "";
                 if (FuneralAssistanceDto.RSuffix == "None") FuneralAssistanceDto.RSuffix = "";
 
+                // ===========================
+                // ?? ENCRYPT SENSITIVE FORM DATA
+                // ===========================
+                // Encrypt patient details
+                string encryptedLastname = aesHelper.Encrypt(FuneralAssistanceDto.Lastname);
+                string encryptedFirstname = aesHelper.Encrypt(FuneralAssistanceDto.Firstname);
+                string encryptedMiddlename = aesHelper.Encrypt(FuneralAssistanceDto.Middlename);
+                string encryptedSuffix = aesHelper.Encrypt(FuneralAssistanceDto.Suffix);
+                string encryptedBlkLotStreet = aesHelper.Encrypt(FuneralAssistanceDto.BlkLotStreet);
+                string encryptedSubVill = aesHelper.Encrypt(FuneralAssistanceDto.SubVill);
+                string encryptedBrgy = aesHelper.Encrypt(FuneralAssistanceDto.Brgy);
+                string encryptedDistrict = aesHelper.Encrypt(FuneralAssistanceDto.District);
+                string encryptedPhilHealthNo = aesHelper.Encrypt(FuneralAssistanceDto.PhilHealthNo ?? "");
+                string encryptedDateofbirth = aesHelper.Encrypt(FuneralAssistanceDto.Dateofbirth);
+                string encryptedAge = aesHelper.Encrypt(FuneralAssistanceDto.Age);
+
+                // Encrypt requestor details
+                string encryptedRLastname = aesHelper.Encrypt(FuneralAssistanceDto.RLastname ?? "");
+                string encryptedRFirstname = aesHelper.Encrypt(FuneralAssistanceDto.RFirstname ?? "");
+                string encryptedRMiddlename = aesHelper.Encrypt(FuneralAssistanceDto.RMiddlename ?? "");
+                string encryptedRSuffix = aesHelper.Encrypt(FuneralAssistanceDto.RSuffix ?? "");
+                string encryptedRBlkLotStreet = aesHelper.Encrypt(FuneralAssistanceDto.RBlkLotStreet ?? "");
+                string encryptedRSubVill = aesHelper.Encrypt(FuneralAssistanceDto.RSubVill ?? "");
+                string encryptedRBrgy = aesHelper.Encrypt(FuneralAssistanceDto.RBrgy ?? "");
+                string encryptedRDistrict = aesHelper.Encrypt(FuneralAssistanceDto.RDistrict ?? "");
+                string encryptedRelationshipPatient = aesHelper.Encrypt(FuneralAssistanceDto.RelationshipPatient ?? "");
+                string encryptedContactNo = aesHelper.Encrypt(FuneralAssistanceDto.ContactNo ?? "");
+
                 // Map data to entity
                 FuneralAssistance FuneralAssistance = new FuneralAssistance()
                 {
                     UserId = userId,
-                    // Patient Details
-                    Lastname = FuneralAssistanceDto.Lastname,
-                    Firstname = FuneralAssistanceDto.Firstname,
-                    Middlename = FuneralAssistanceDto.Middlename,
-                    Suffix = FuneralAssistanceDto.Suffix,
-                    BlkLotStreet = FuneralAssistanceDto.BlkLotStreet,
-                    SubVill = FuneralAssistanceDto.SubVill,
-                    Brgy = FuneralAssistanceDto.Brgy,
-                    District = FuneralAssistanceDto.District,
+                    // Patient Details (ENCRYPTED)
+                    Lastname = encryptedLastname,
+                    Firstname = encryptedFirstname,
+                    Middlename = encryptedMiddlename,
+                    Suffix = encryptedSuffix,
+                    BlkLotStreet = encryptedBlkLotStreet,
+                    SubVill = encryptedSubVill,
+                    Brgy = encryptedBrgy,
+                    District = encryptedDistrict,
                     Sex = FuneralAssistanceDto.Sex,
                     PhilHealth = FuneralAssistanceDto.PhilHealth,
-                    PhilHealthNo = FuneralAssistanceDto.PhilHealthNo,
-                    Dateofbirth = FuneralAssistanceDto.Dateofbirth,
-                    Age = FuneralAssistanceDto.Age,
+                    PhilHealthNo = encryptedPhilHealthNo,
+                    Dateofbirth = encryptedDateofbirth,
+                    Age = encryptedAge,
 
-                    // Requestor Details
-                    RLastname = FuneralAssistanceDto.RLastname,
-                    RFirstname = FuneralAssistanceDto.RFirstname,
-                    RMiddlename = FuneralAssistanceDto.RMiddlename,
-                    RSuffix = FuneralAssistanceDto.RSuffix,
-                    RBlkLotStreet = FuneralAssistanceDto.RBlkLotStreet,
-                    RSubVill = FuneralAssistanceDto.RSubVill,
-                    RBrgy = FuneralAssistanceDto.RBrgy,
-                    RDistrict = FuneralAssistanceDto.RDistrict,
-                    RelationshipPatient = FuneralAssistanceDto.RelationshipPatient,
-                    ContactNo = FuneralAssistanceDto.ContactNo,
+                    // Requestor Details (ENCRYPTED)
+                    RLastname = encryptedRLastname,
+                    RFirstname = encryptedRFirstname,
+                    RMiddlename = encryptedRMiddlename,
+                    RSuffix = encryptedRSuffix,
+                    RBlkLotStreet = encryptedRBlkLotStreet,
+                    RSubVill = encryptedRSubVill,
+                    RBrgy = encryptedRBrgy,
+                    RDistrict = encryptedRDistrict,
+                    RelationshipPatient = encryptedRelationshipPatient,
+                    ContactNo = encryptedContactNo,
 
                     // Assistance Type - Set to default "Funeral Assistance" since no checkboxes
                     Typeassistance = "Funeral Assistance",
@@ -2371,34 +2515,64 @@ namespace LingapDVO.Controllers
                 return NotFound();
             }
 
+            // ===========================
+            // ?? DECRYPT SENSITIVE FORM DATA
+            // ===========================
+            var aesHelper = new AesEncryptionHelper(_configuration);
+
+            // Decrypt patient details
+            string decryptedLastname = aesHelper.Decrypt(FuneralAssistance.Lastname);
+            string decryptedFirstname = aesHelper.Decrypt(FuneralAssistance.Firstname);
+            string decryptedMiddlename = aesHelper.Decrypt(FuneralAssistance.Middlename);
+            string decryptedSuffix = aesHelper.Decrypt(FuneralAssistance.Suffix);
+            string decryptedBlkLotStreet = aesHelper.Decrypt(FuneralAssistance.BlkLotStreet);
+            string decryptedSubVill = aesHelper.Decrypt(FuneralAssistance.SubVill);
+            string decryptedBrgy = aesHelper.Decrypt(FuneralAssistance.Brgy);
+            string decryptedDistrict = aesHelper.Decrypt(FuneralAssistance.District);
+            string decryptedPhilHealthNo = aesHelper.Decrypt(FuneralAssistance.PhilHealthNo);
+            string decryptedDateofbirth = aesHelper.Decrypt(FuneralAssistance.Dateofbirth);
+            string decryptedAge = aesHelper.Decrypt(FuneralAssistance.Age);
+
+            // Decrypt requestor details
+            string decryptedRLastname = aesHelper.Decrypt(FuneralAssistance.RLastname ?? "");
+            string decryptedRFirstname = aesHelper.Decrypt(FuneralAssistance.RFirstname ?? "");
+            string decryptedRMiddlename = aesHelper.Decrypt(FuneralAssistance.RMiddlename ?? "");
+            string decryptedRSuffix = aesHelper.Decrypt(FuneralAssistance.RSuffix ?? "");
+            string decryptedRBlkLotStreet = aesHelper.Decrypt(FuneralAssistance.RBlkLotStreet ?? "");
+            string decryptedRSubVill = aesHelper.Decrypt(FuneralAssistance.RSubVill ?? "");
+            string decryptedRBrgy = aesHelper.Decrypt(FuneralAssistance.RBrgy ?? "");
+            string decryptedRDistrict = aesHelper.Decrypt(FuneralAssistance.RDistrict ?? "");
+            string decryptedRelationshipPatient = aesHelper.Decrypt(FuneralAssistance.RelationshipPatient ?? "");
+            string decryptedContactNo = aesHelper.Decrypt(FuneralAssistance.ContactNo ?? "");
+
             // Basic ViewData setup
             ViewData["Status2"] = FuneralAssistance.Status2;
             ViewData["Id"] = FuneralAssistance.Id;
-            ViewData["Lastname"] = FuneralAssistance.Lastname;
-            ViewData["Firstname"] = FuneralAssistance.Firstname;
-            ViewData["Middlename"] = FuneralAssistance.Middlename;
-            ViewData["Suffix"] = FuneralAssistance.Suffix;
-            ViewData["BlkLotStreet"] = FuneralAssistance.BlkLotStreet;
-            ViewData["SubVill"] = FuneralAssistance.SubVill;
-            ViewData["Brgy"] = FuneralAssistance.Brgy;
-            ViewData["District"] = FuneralAssistance.District;
+            ViewData["Lastname"] = decryptedLastname;
+            ViewData["Firstname"] = decryptedFirstname;
+            ViewData["Middlename"] = decryptedMiddlename;
+            ViewData["Suffix"] = decryptedSuffix;
+            ViewData["BlkLotStreet"] = decryptedBlkLotStreet;
+            ViewData["SubVill"] = decryptedSubVill;
+            ViewData["Brgy"] = decryptedBrgy;
+            ViewData["District"] = decryptedDistrict;
             ViewData["Sex"] = FuneralAssistance.Sex;
             ViewData["PhilHealth"] = FuneralAssistance.PhilHealth;
-            ViewData["PhilHealthNo"] = FuneralAssistance.PhilHealthNo;
-            ViewData["Dateofbirth"] = FuneralAssistance.Dateofbirth;
-            ViewData["Age"] = FuneralAssistance.Age;
+            ViewData["PhilHealthNo"] = decryptedPhilHealthNo;
+            ViewData["Dateofbirth"] = decryptedDateofbirth;
+            ViewData["Age"] = decryptedAge;
 
-            // Requestor details
-            ViewData["RLastname"] = FuneralAssistance.RLastname;
-            ViewData["RFirstname"] = FuneralAssistance.RFirstname;
-            ViewData["RMiddlename"] = FuneralAssistance.RMiddlename;
-            ViewData["RSuffix"] = FuneralAssistance.RSuffix;
-            ViewData["RBlkLotStreet"] = FuneralAssistance.RBlkLotStreet;
-            ViewData["RSubVill"] = FuneralAssistance.RSubVill;
-            ViewData["RBrgy"] = FuneralAssistance.RBrgy;
-            ViewData["RDistrict"] = FuneralAssistance.RDistrict;
-            ViewData["RelationshipPatient"] = FuneralAssistance.RelationshipPatient;
-            ViewData["ContactNo"] = FuneralAssistance.ContactNo;
+            // Requestor details (DECRYPTED)
+            ViewData["RLastname"] = decryptedRLastname;
+            ViewData["RFirstname"] = decryptedRFirstname;
+            ViewData["RMiddlename"] = decryptedRMiddlename;
+            ViewData["RSuffix"] = decryptedRSuffix;
+            ViewData["RBlkLotStreet"] = decryptedRBlkLotStreet;
+            ViewData["RSubVill"] = decryptedRSubVill;
+            ViewData["RBrgy"] = decryptedRBrgy;
+            ViewData["RDistrict"] = decryptedRDistrict;
+            ViewData["RelationshipPatient"] = decryptedRelationshipPatient;
+            ViewData["ContactNo"] = decryptedContactNo;
 
             // Type of assistance
             var typeAssistanceRaw = FuneralAssistance.Typeassistance ?? "";
