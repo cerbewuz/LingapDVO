@@ -309,6 +309,13 @@
                 background: var(--gray-500);
             }
 
+        .mobile-notification-footer {
+            padding: 0.75rem;
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            text-align: center;
+        }
+
         #mobileNotificationChevron {
             transition: transform 0.3s ease;
             font-size: 0.875rem;
@@ -1298,6 +1305,11 @@
                 </div>
                 <div class="mobile-notification-body" id="mobileNotificationList">
                     <!-- Notifications will be loaded here -->
+                </div>
+                <div class="mobile-notification-footer">
+                    <a href="/Notifications/AllNotifications" class="btn-view-all-notifications">
+                        View All Notifications
+                    </a>
                 </div>
             </div>
 
