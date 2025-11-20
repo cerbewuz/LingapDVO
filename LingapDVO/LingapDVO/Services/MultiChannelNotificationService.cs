@@ -463,6 +463,56 @@ namespace LingapDVO.Services
 </html>";
         }
 
+        private string GenerateDelayEmailBody(string title, string message, string applicantName, string formType, DateTime submittedDate, int hoursElapsed, string link)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #dc143c; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .button {{ display: inline-block; padding: 10px 20px; background-color: #dc143c; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; }}
+        .delay-section {{ margin-top: 20px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; }}
+        .info-box {{ background-color: white; padding: 15px; margin: 15px 0; border-left: 4px solid #dc143c; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2>{title}</h2>
+        </div>
+        <div class='content'>
+            <p>Dear {applicantName},</p>
+            <p>{message}</p>
+
+            <div class='info-box'>
+                <strong>Application Details:</strong><br>
+                Type: <strong>{formType}</strong><br>
+                Submitted: <strong>{submittedDate:MMMM dd, yyyy}</strong><br>
+                Processing Time: <strong>{hoursElapsed}+ hours</strong>
+            </div>
+
+            <div class='delay-section'>
+                <h3>We Apologize for the Delay</h3>
+                <p>We understand the importance of your application and are actively working to expedite the processing. Your patience and understanding are greatly appreciated.</p>
+                <p>If you have urgent concerns or need immediate assistance, please contact our office directly.</p>
+            </div>
+
+            {(string.IsNullOrEmpty(link) ? "" : $"<a href='{link}' class='button'>View Application Status</a>")}
+        </div>
+        <div class='footer'>
+            <p>This is an automated message from LingapDVO. Please do not reply to this email.</p>
+            <p>For inquiries, please contact our office during business hours.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+
         // Format formal and concise SMS message
         private string FormatFormalSmsMessage(string applicantName, string formType, string title, string message)
         {
@@ -494,19 +544,6 @@ namespace LingapDVO.Services
                 var title = "Application Processing Delay";
                 var message = $"Your {formTypeDisplay} application submitted on {submittedDate:MMM dd, yyyy} is experiencing processing delays. We are working to resolve this. Thank you for your patience.";
 
-                // Send SMS notification if preferred
-                if (user.PreferSmsNotification)
-                {
-                    var verifyAccount = await _context.Verifyaccount
-                        .FirstOrDefaultAsync(v => v.UserId == userId);
-
-                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
-                    {
-                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} application is experiencing processing delays ({hoursElapsed}+ hours). We apologize for the inconvenience and are working to expedite your request. For urgent concerns, please contact our office.";
-                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
-                    }
-                }
-
                 // Send in-app notification via SignalR if preferred
                 if (user.PreferInAppNotification)
                 {
@@ -518,6 +555,26 @@ namespace LingapDVO.Services
                         link = "/Applicationtracking",
                         createdAt = _dateTimeService.Now
                     });
+                }
+
+                // Send email notification with HTML design if preferred
+                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
+                {
+                    var emailBody = GenerateDelayEmailBody(title, message, applicantName, formTypeDisplay, submittedDate, hoursElapsed, "/Applicationtracking");
+                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
+                }
+
+                // Send SMS notification if preferred
+                if (user.PreferSmsNotification)
+                {
+                    var verifyAccount = await _context.Verifyaccount
+                        .FirstOrDefaultAsync(v => v.UserId == userId);
+
+                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
+                    {
+                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} application is experiencing processing delays ({hoursElapsed}+ hours). We apologize for the inconvenience and are working to expedite your request. For urgent concerns, please contact our office.";
+                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
+                    }
                 }
 
                 _logger.LogInformation($"Delay notification sent successfully to user {userId}");
