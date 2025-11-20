@@ -555,17 +555,77 @@
             }
         }
 
-        /* Desktop: Position to the left of notification icon, outside greeting card */
+        /* Desktop: Bubble design - Position to the left of notification icon, outside greeting card */
         @@media (min-width: 992px) {
             .notification-dropdown {
                 position: fixed;
-                top: 80px;
-                right: 80px;
+                top: 70px;
+                right: 20px;
                 left: auto;
                 transform: none;
-                width: 400px;
+                width: 420px;
                 max-height: 600px;
                 z-index: 1060;
+                border-radius: 16px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(220, 20, 60, 0.1);
+            }
+
+            /* Bubble pointer/arrow connecting to notification button */
+            .notification-dropdown::before {
+                content: '';
+                position: absolute;
+                top: -12px;
+                right: 65px;
+                width: 0;
+                height: 0;
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-bottom: 12px solid white;
+                filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
+                z-index: 1;
+            }
+
+            /* Bubble pointer border */
+            .notification-dropdown::after {
+                content: '';
+                position: absolute;
+                top: -13px;
+                right: 64px;
+                width: 0;
+                height: 0;
+                border-left: 13px solid transparent;
+                border-right: 13px solid transparent;
+                border-bottom: 13px solid rgba(220, 20, 60, 0.1);
+                z-index: 0;
+            }
+
+            /* Rounded header for bubble design */
+            .notification-dropdown .notification-header {
+                border-radius: 16px 16px 0 0;
+                background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
+            }
+
+            /* Rounded footer for bubble design */
+            .notification-dropdown .notification-footer {
+                border-radius: 0 0 16px 16px;
+            }
+
+            /* Bubble fade-in animation for desktop */
+            .notification-dropdown {
+                animation: bubbleFadeIn 0.25s ease-out;
+            }
+        }
+
+        /* Bubble animation keyframes */
+        @@keyframes bubbleFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
             }
         }
 
@@ -788,9 +848,25 @@
         }
 
         .notification-type-delay-alert {
-            background: #EF4444;
-            color: white;
+            background: #FFC107;
+            color: #856404;
             animation: pulseIcon 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+        }
+
+        /* Delay alert notification item styling */
+        .notification-item[data-type="delay_alert"] {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 193, 7, 0.05) 100%);
+            border-left: 4px solid #FFC107 !important;
+        }
+
+        .notification-item[data-type="delay_alert"].unread {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
+            border-left: 4px solid #FF9800 !important;
+        }
+
+        .notification-item[data-type="delay_alert"]:hover {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.22) 0%, rgba(255, 193, 7, 0.12) 100%);
         }
 
         @@keyframes pulseIcon {
@@ -2531,6 +2607,11 @@
                     }
                     notificationItem.className = classNames;
 
+                    // Add data-type attribute for delay alert styling
+                    if (notification.type) {
+                        notificationItem.setAttribute('data-type', notification.type);
+                    }
+
                     // Build priority badge HTML
                     let priorityBadgeHtml = '';
                     if (notification.priority === 'high') {
@@ -2689,6 +2770,11 @@
                             classNames += ' priority-medium';
                         }
                         notificationItem.className = classNames;
+
+                        // Add data-type attribute for delay alert styling
+                        if (notification.type) {
+                            notificationItem.setAttribute('data-type', notification.type);
+                        }
 
                         // Build priority badge HTML
                         let priorityBadgeHtml = '';
