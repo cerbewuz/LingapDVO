@@ -712,7 +712,7 @@
         }
 
         .notification-item {
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--gray-200);
             cursor: pointer;
             transition: var(--transition);
@@ -752,31 +752,38 @@
 
         .notification-title {
             font-weight: 600;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.375rem;
             color: var(--secondary);
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             flex-wrap: wrap;
-            line-height: 1.5;
+            line-height: 1.4;
+        }
+
+        .notification-title-text {
+            flex: 0 1 auto;
+            min-width: 0;
         }
 
         .notification-message {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--gray-500);
-            margin-bottom: 0.5rem;
-            line-height: 1.5;
+            margin-bottom: 0.375rem;
+            line-height: 1.45;
             word-wrap: break-word;
             word-break: break-word;
+            padding-left: 1.75rem;
         }
 
         .notification-time {
-            font-size: 0.7rem;
-            color: var(--gray-500);
+            font-size: 0.6875rem;
+            color: var(--gray-400);
             display: flex;
             align-items: center;
             gap: 0.25rem;
+            padding-left: 1.75rem;
         }
 
             .notification-time::before {
@@ -897,16 +904,69 @@
             color: white;
         }
 
-        /* Priority badges for notifications */
+        /* Compact status and priority badges for notifications */
+        .notification-badges {
+            display: inline-flex;
+            gap: 0.375rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.125rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            line-height: 1.2;
+        }
+
+        .status-badge.submitted {
+            background: #10B981;
+            color: white;
+        }
+
+        .status-badge.processing {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .status-badge.approved {
+            background: #059669;
+            color: white;
+        }
+
+        .status-badge.unapproved {
+            background: #DC2626;
+            color: white;
+        }
+
+        .status-badge.claimed {
+            background: #8B5CF6;
+            color: white;
+        }
+
+        .status-badge.delayed {
+            background: #F59E0B;
+            color: white;
+        }
+
+        .status-badge.waiting {
+            background: #6B7280;
+            color: white;
+        }
+
         .priority-badge {
             display: inline-block;
-            padding: 0.15rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
+            padding: 0.125rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
+            line-height: 1.2;
         }
 
         .priority-badge.high {
@@ -1240,9 +1300,14 @@
                 font-size: 0.8125rem;
             }
 
+            .status-badge {
+                font-size: 0.625rem;
+                padding: 0.125rem 0.4rem;
+            }
+
             .priority-badge {
                 font-size: 0.625rem;
-                padding: 0.1875rem 0.4375rem;
+                padding: 0.125rem 0.4rem;
             }
         }
 
@@ -1330,12 +1395,23 @@
                 padding-left: 2rem;
             }
 
-            /* Mobile priority badges - make them more compact */
+            /* Mobile badges - make them more compact */
+            .notification-badges {
+                gap: 0.25rem;
+            }
+
+            .status-badge {
+                font-size: 0.5625rem;
+                padding: 0.125rem 0.35rem;
+                border-radius: 3px;
+                letter-spacing: 0.2px;
+            }
+
             .priority-badge {
-                font-size: 0.6rem;
-                padding: 0.125rem 0.375rem;
-                border-radius: 10px;
-                letter-spacing: 0.3px;
+                font-size: 0.5625rem;
+                padding: 0.125rem 0.35rem;
+                border-radius: 3px;
+                letter-spacing: 0.2px;
                 white-space: nowrap;
             }
 
@@ -1426,9 +1502,20 @@
                 font-size: 0.7rem;
             }
 
-            .priority-badge {
-                font-size: 0.5625rem;
+            .notification-badges {
+                gap: 0.2rem;
+            }
+
+            .status-badge {
+                font-size: 0.5rem;
                 padding: 0.1rem 0.3rem;
+                border-radius: 2px;
+            }
+
+            .priority-badge {
+                font-size: 0.5rem;
+                padding: 0.1rem 0.3rem;
+                border-radius: 2px;
             }
 
             .mobile-notification-body .notification-item {
@@ -2789,12 +2876,26 @@
                         notificationItem.setAttribute('data-type', notification.type);
                     }
 
-                    // Build priority badge HTML
-                    let priorityBadgeHtml = '';
-                    if (notification.priority === 'high') {
-                        priorityBadgeHtml = '<span class="priority-badge high">High Priority</span>';
-                    } else if (notification.priority === 'medium') {
-                        priorityBadgeHtml = '<span class="priority-badge medium">Medium Priority</span>';
+                    // Build badges HTML
+                    let badgesHtml = '';
+                    const statusBadge = getStatusBadge(notification.type);
+
+                    if (statusBadge || notification.priority === 'high' || notification.priority === 'medium') {
+                        badgesHtml = '<div class="notification-badges">';
+
+                        // Add status badge
+                        if (statusBadge) {
+                            badgesHtml += `<span class="status-badge ${statusBadge.class}">${statusBadge.label}</span>`;
+                        }
+
+                        // Add priority badge
+                        if (notification.priority === 'high') {
+                            badgesHtml += '<span class="priority-badge high">High</span>';
+                        } else if (notification.priority === 'medium') {
+                            badgesHtml += '<span class="priority-badge medium">Medium</span>';
+                        }
+
+                        badgesHtml += '</div>';
                     }
 
                     notificationItem.innerHTML = `
@@ -2802,8 +2903,8 @@
                             <div class="notification-type-icon ${typeIcon.class}">
                                 <i class="${typeIcon.icon}"></i>
                             </div>
-                            ${escapeHtml(notification.title)}
-                            ${priorityBadgeHtml}
+                            <span class="notification-title-text">${escapeHtml(notification.title)}</span>
+                            ${badgesHtml}
                         </div>
                         <div class="notification-message">${escapeHtml(notification.message)}</div>
                         <div class="notification-time">${formatTime(notification.createdAt)}</div>
@@ -2835,6 +2936,25 @@
                     status_change: { class: 'notification-type-submitted', icon: 'fas fa-sync-alt' }
                 };
                 return types[type] || { class: 'notification-type-submitted', icon: 'fas fa-bell' };
+            }
+
+            function getStatusBadge(type) {
+                const statusMap = {
+                    submitted: { label: 'Submitted', class: 'submitted' },
+                    processing: { label: 'Processing', class: 'processing' },
+                    approved: { label: 'Approved', class: 'approved' },
+                    unapproved: { label: 'Not Approved', class: 'unapproved' },
+                    claimed: { label: 'Claimed', class: 'claimed' },
+                    delayed: { label: 'Pending', class: 'delayed' },
+                    delay_alert: { label: 'Delayed', class: 'delayed' },
+                    waiting: { label: 'Waiting', class: 'waiting' },
+                    application_submitted: { label: 'Submitted', class: 'submitted' },
+                    application_processing: { label: 'Processing', class: 'processing' },
+                    application_approved: { label: 'Approved', class: 'approved' },
+                    application_disapproved: { label: 'Not Approved', class: 'unapproved' },
+                    application_claimed: { label: 'Claimed', class: 'claimed' }
+                };
+                return statusMap[type] || null;
             }
 
             async function handleNotificationClick(notification) {
