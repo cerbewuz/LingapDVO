@@ -287,9 +287,10 @@
             }
 
         .mobile-notification-body {
-            max-height: 380px;
+            max-height: 420px;
             overflow-y: auto;
             background: white;
+            scroll-behavior: smooth;
         }
 
             .mobile-notification-body::-webkit-scrollbar {
@@ -298,6 +299,7 @@
 
             .mobile-notification-body::-webkit-scrollbar-track {
                 background: var(--gray-100);
+                border-radius: 3px;
             }
 
             .mobile-notification-body::-webkit-scrollbar-thumb {
@@ -706,10 +708,30 @@
             }
 
         .notification-body {
-            height: 450px;
-            max-height: 450px;
+            height: 420px;
+            max-height: 420px;
             overflow-y: auto;
+            scroll-behavior: smooth;
         }
+
+            /* Ensure scrollbar is always visible for better UX */
+            .notification-body::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .notification-body::-webkit-scrollbar-track {
+                background: var(--gray-100);
+                border-radius: 3px;
+            }
+
+            .notification-body::-webkit-scrollbar-thumb {
+                background: var(--gray-300);
+                border-radius: 3px;
+            }
+
+            .notification-body::-webkit-scrollbar-thumb:hover {
+                background: var(--gray-400);
+            }
 
         .notification-item {
             padding: 0.75rem 1rem;
@@ -2382,7 +2404,7 @@
                     checkForStatusChanges();
                 }, 10000);
                 loadRealNotifications();
-                // Start real-time update for notification times
+                // Start real-time update for notification times and status/priority
                 startRealtimeTimeUpdates();
             }
 
@@ -2398,15 +2420,49 @@
                 });
             }
 
-            // Start periodic updates of notification times
+            // Start periodic updates of notification times and reload notifications for status/priority updates
             function startRealtimeTimeUpdates() {
                 // Update immediately
                 updateAllNotificationTimes();
 
-                // Update every 30 seconds for real-time feeling
+                // Update time display every 30 seconds
                 setInterval(() => {
                     updateAllNotificationTimes();
                 }, 30000);
+
+                // Reload notifications every 45 seconds to update status and priority badges in real-time
+                // This ensures status changes (Pending -> Processing -> Approved) and priority changes are reflected
+                // Works both when dropdown is open (updating visible notifications) and closed (updating badge count)
+                setInterval(() => {
+                    const dropdownVisible = notificationDropdown && notificationDropdown.style.display === 'block';
+                    if (dropdownVisible) {
+                        // Dropdown is open: silently reload notifications to update status/priority badges
+                        loadRealNotifications(false);
+                    } else {
+                        // Dropdown is closed: still reload to update badge count but don't render yet
+                        // This keeps the badge count accurate in real-time
+                        getRealApplicationData().then(applications => {
+                            const notifications = generateNotificationsFromRealData(applications);
+                            currentNotifications = notifications;
+                            // Update badge count only
+                            const unreadCount = notifications.filter(n => !n.isRead).length;
+                            if (unreadCount > 0) {
+                                notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                                notificationBadge.style.display = 'block';
+                                // Update mobile badge
+                                const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+                                if (mobileNotificationBadge) {
+                                    mobileNotificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                                    mobileNotificationBadge.style.display = 'inline-block';
+                                }
+                            } else {
+                                hideNotificationBadge();
+                            }
+                        }).catch(error => {
+                            console.error('Failed to update badge count:', error);
+                        });
+                    }
+                }, 45000);
             }
 
             function initSignalRConnection() {
