@@ -282,6 +282,38 @@
             box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
         }
 
+        .btn-back {
+            background: white;
+            color: var(--secondary);
+            border: 1.5px solid var(--gray-300);
+            padding: 0.625rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-back:hover {
+            background: var(--gray-50);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateX(-4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-back i {
+            transition: var(--transition);
+        }
+
+        .btn-back:hover i {
+            transform: translateX(-2px);
+        }
+
         /* Notifications Table Container */
         .notifications-table-container {
             background: white;
@@ -556,6 +588,12 @@
                 padding: 1rem 0.5rem;
             }
 
+            .btn-back {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 1rem;
+            }
+
             .page-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -609,6 +647,11 @@
 }
 
 <div class="notifications-page">
+    <!-- Back Button -->
+    <button class="btn-back" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i> Go Back
+    </button>
+
     <!-- Page Header -->
     <div class="page-header">
         <div>
@@ -768,6 +811,10 @@
             loadAllNotifications();
             setupEventListeners();
         });
+
+        function goBack() {
+            window.history.back();
+        }
 
         function setupEventListeners() {
             document.getElementById('applyFilterBtn').addEventListener('click', applyFilters);
