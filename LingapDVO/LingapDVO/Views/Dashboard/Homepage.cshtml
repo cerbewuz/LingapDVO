@@ -2452,6 +2452,30 @@
                     return Math.floor(diffTime / (1000 * 60 * 60));
                 }
 
+                function calculatePriority(status, status2, createdAt) {
+                    // Only calculate priority for pending or processing applications
+                    // If already approved/disapproved/claimed, no priority needed
+                    if (status2 && (status2.toLowerCase() === 'approve' || status2.toLowerCase() === 'unapproved')) {
+                        return 'normal';
+                    }
+
+                    // Check if still in pending or processing state
+                    if (!status || (status.toLowerCase() !== 'pending' && status.toLowerCase() !== 'processing')) {
+                        return 'normal';
+                    }
+
+                    // Calculate hours elapsed since submission
+                    const hoursElapsed = getHoursElapsed(createdAt);
+
+                    if (hoursElapsed >= 2) {
+                        return 'high';
+                    } else if (hoursElapsed >= 1) {
+                        return 'medium';
+                    } else {
+                        return 'normal';
+                    }
+                }
+
                 let notificationId, title, message, notificationType, createdDate;
 
                 if (application.status2 === 'Approve' &&
@@ -2523,6 +2547,9 @@
                 }
 
                 if (notificationId) {
+                    // Calculate priority based on application status and created date
+                    const priority = calculatePriority(application.status, application.status2, application.createdAt);
+
                     notifications.push({
                         id: notificationId,
                         title: title,
@@ -2530,7 +2557,8 @@
                         isRead: readIds.includes(notificationId),
                         createdAt: createdDate,
                         type: notificationType,
-                        link: "/Applicationtracking"
+                        link: "/Applicationtracking",
+                        priority: priority
                     });
                 }
 
