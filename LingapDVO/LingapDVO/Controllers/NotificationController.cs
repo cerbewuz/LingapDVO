@@ -202,25 +202,27 @@ public class NotificationsController : Controller
                 }
             }
 
-            // Add a demo notification if no forms found
-            if (!notifications.Any())
-            {
-                var demoNotificationId = "welcome_1";
-                var isDemoRead = readNotificationIds.Contains(demoNotificationId);
+            // Always add welcome notification as the first/oldest notification
+            // This ensures it's always present in the All Notifications page
+            var welcomeNotificationId = $"welcome_{userId}";
+            var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
-                notifications.Add(new
-                {
-                    id = demoNotificationId,
-                    title = "Welcome to LingapDVO",
-                    message = "Get started by submitting your first application",
-                    isRead = isDemoRead,
-                    createdAt = _dateTimeService.Now.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    type = "welcome",
-                    link = "#",
-                    status = (string)null,
-                    priority = "normal"
-                });
-            }
+            // Get user's account creation date or use a default old date
+            var user = context.Useraccounts.FirstOrDefault(u => u.Id == userId);
+            var welcomeDate = user != null ? _dateTimeService.Now.AddDays(-365) : _dateTimeService.Now.AddYears(-1);
+
+            notifications.Add(new
+            {
+                id = welcomeNotificationId,
+                title = "Welcome to LingapDVO",
+                message = "Thank you for joining LingapDVO! We're here to assist you with your medical, funeral, and other assistance needs. Get started by submitting your first application.",
+                isRead = isWelcomeRead,
+                createdAt = welcomeDate.ToString("yyyy-MM-ddTHH:mm:ss"),
+                type = "welcome",
+                link = "/Dashboard",
+                status = (string)null,
+                priority = "normal"
+            });
 
             // Order by creation date (newest first)
             var orderedNotifications = notifications
@@ -411,23 +413,25 @@ public class NotificationsController : Controller
                 }
             }
 
-            // Add a demo notification if no forms found
-            if (!notifications.Any())
-            {
-                var demoNotificationId = "welcome_1";
-                var isDemoRead = readNotificationIds.Contains(demoNotificationId);
+            // Always add welcome notification (will appear at bottom since it has old date)
+            // Use same logic as GetAllUserNotifications for consistency
+            var welcomeNotificationId = $"welcome_{userId}";
+            var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
-                notifications.Add(new
-                {
-                    id = demoNotificationId,
-                    title = "Welcome to LingapDVO",
-                    message = "Get started by submitting your first application",
-                    isRead = isDemoRead,
-                    createdAt = _dateTimeService.Now.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    type = "welcome",
-                    link = "#"
-                });
-            }
+            // Get user's account creation date or use a default old date
+            var user = context.Useraccounts.FirstOrDefault(u => u.Id == userId);
+            var welcomeDate = user != null ? _dateTimeService.Now.AddDays(-365) : _dateTimeService.Now.AddYears(-1);
+
+            notifications.Add(new
+            {
+                id = welcomeNotificationId,
+                title = "Welcome to LingapDVO",
+                message = "Thank you for joining LingapDVO! We're here to assist you with your medical, funeral, and other assistance needs.",
+                isRead = isWelcomeRead,
+                createdAt = welcomeDate.ToString("yyyy-MM-ddTHH:mm:ss"),
+                type = "welcome",
+                link = "/Dashboard"
+            });
 
             // Order by creation date (newest first)
             var orderedNotifications = notifications
@@ -566,18 +570,14 @@ public class NotificationsController : Controller
                 }
             }
 
-            if (!notificationIds.Any())
-            {
-                notificationIds.Add("welcome_1");
-            }
+            // Always include welcome notification
+            notificationIds.Add($"welcome_{userId}");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while getting current notification IDs for user {UserId}", userId);
-            if (!notificationIds.Any())
-            {
-                notificationIds.Add("welcome_1");
-            }
+            // Always include welcome notification even on error
+            notificationIds.Add($"welcome_{userId}");
         }
 
         return notificationIds;
