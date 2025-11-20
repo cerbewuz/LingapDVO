@@ -555,16 +555,16 @@
             }
         }
 
-        /* Desktop: Bubble design - Position to the left of notification icon, outside greeting card */
+        /* Desktop: Bubble design - Position below notification icon, outside greeting card */
         @@media (min-width: 992px) {
             .notification-dropdown {
                 position: fixed;
-                top: 110px;
-                right: 20px;
+                top: 75px;
+                right: 10px;
                 left: auto;
                 transform: none;
                 width: 420px;
-                max-height: 600px;
+                max-height: calc(100vh - 90px);
                 z-index: 1060;
                 border-radius: 16px !important;
                 box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1) !important;
@@ -577,7 +577,7 @@
                 content: '';
                 position: absolute;
                 top: -12px;
-                right: 30px;
+                right: 95px;
                 width: 0;
                 height: 0;
                 border-left: 12px solid transparent;
@@ -592,7 +592,7 @@
                 content: '';
                 position: absolute;
                 top: -13px;
-                right: 29px;
+                right: 94px;
                 width: 0;
                 height: 0;
                 border-left: 13px solid transparent;
