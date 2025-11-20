@@ -2425,10 +2425,11 @@
                 // Update immediately
                 updateAllNotificationTimes();
 
-                // Update time display every 30 seconds
+                // Update time display every 10 seconds for responsive and accurate time tracking
+                // This ensures times like "Just now" -> "1m ago" -> "2m ago" transition quickly
                 setInterval(() => {
                     updateAllNotificationTimes();
-                }, 30000);
+                }, 10000);
 
                 // Reload notifications every 45 seconds to update status and priority badges in real-time
                 // This ensures status changes (Pending -> Processing -> Approved) and priority changes are reflected
@@ -3064,7 +3065,7 @@
 
             function formatTime(dateString) {
                 if (!dateString || !isValidDate(dateString)) {
-                    return 'Recently';
+                    return 'Just now';
                 }
 
                 const date = new Date(dateString);
@@ -3084,9 +3085,14 @@
                     });
                 }
 
-                const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+                const diffInSeconds = Math.floor((now - date) / 1000);
+                const diffInMinutes = Math.floor(diffInSeconds / 60);
 
-                if (diffInMinutes < 1) return 'Just now';
+                // Show "Just now" only for the first 30 seconds
+                if (diffInSeconds < 30) return 'Just now';
+
+                // Show "1m ago" starting from 30 seconds to ensure responsive updates
+                if (diffInMinutes < 1) return '1m ago';
                 if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
                 if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
 
