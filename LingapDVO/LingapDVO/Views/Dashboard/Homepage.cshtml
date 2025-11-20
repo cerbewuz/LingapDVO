@@ -637,7 +637,8 @@
             }
 
         .notification-body {
-            max-height: 60vh;
+            height: 450px;
+            max-height: 450px;
             overflow-y: auto;
         }
 
@@ -708,6 +709,34 @@
             text-align: center;
             color: var(--gray-500);
         }
+
+        .notification-footer {
+            padding: 0.75rem;
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            text-align: center;
+        }
+
+        .btn-view-all-notifications {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+            .btn-view-all-notifications:hover {
+                background: var(--primary-dark);
+                color: white;
+                text-decoration: none;
+            }
 
         .notification-type-icon {
             width: 20px;
@@ -1491,6 +1520,11 @@
                                         </div>
                                         <div class="notification-body" id="notificationList">
                                             <!-- Notifications will be loaded here -->
+                                        </div>
+                                        <div class="notification-footer">
+                                            <a href="/AllNotifications" class="btn-view-all-notifications">
+                                                View All Notifications
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

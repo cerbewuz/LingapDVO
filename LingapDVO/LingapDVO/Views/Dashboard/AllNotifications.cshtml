@@ -1,0 +1,692 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "All Notifications";
+}
+
+@section Styles {
+    <style>
+        .notifications-page {
+            padding: 2rem 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 0;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .filter-input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+            .filter-input:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+            }
+
+        .btn-filter {
+            padding: 0.5rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            align-self: end;
+        }
+
+            .btn-filter:hover {
+                background: var(--primary-dark);
+                transform: translateY(-1px);
+            }
+
+        .btn-clear {
+            padding: 0.5rem 1.5rem;
+            background: var(--gray-200);
+            color: var(--secondary);
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            align-self: end;
+        }
+
+            .btn-clear:hover {
+                background: var(--gray-300);
+            }
+
+        .notifications-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .notifications-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .notifications-table thead {
+                background: var(--gray-100);
+            }
+
+            .notifications-table th {
+                padding: 1rem;
+                text-align: left;
+                font-weight: 600;
+                color: var(--secondary);
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                border-bottom: 2px solid var(--gray-200);
+            }
+
+            .notifications-table td {
+                padding: 1rem;
+                border-bottom: 1px solid var(--gray-100);
+                font-size: 0.9rem;
+            }
+
+            .notifications-table tbody tr {
+                transition: var(--transition);
+                cursor: pointer;
+            }
+
+                .notifications-table tbody tr:hover {
+                    background: var(--gray-50);
+                }
+
+                .notifications-table tbody tr.unread {
+                    background: var(--primary-light);
+                }
+
+                    .notifications-table tbody tr.unread:hover {
+                        background: #ffe4ec;
+                    }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .status-processing {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .status-approved {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-disapproved {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .status-claimed {
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+
+        .priority-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .priority-medium {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .priority-normal {
+            background: #F3F4F6;
+            color: #4B5563;
+        }
+
+        .notification-type-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gray-500);
+        }
+
+            .empty-state i {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                color: var(--gray-400);
+            }
+
+            .empty-state h3 {
+                font-size: 1.25rem;
+                margin-bottom: 0.5rem;
+                color: var(--secondary);
+            }
+
+        .read-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .read-indicator.unread {
+            background: var(--primary);
+        }
+
+        .read-indicator.read {
+            background: var(--gray-300);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+            .pagination-btn:hover:not(:disabled) {
+                background: var(--gray-50);
+                border-color: var(--primary);
+            }
+
+            .pagination-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .pagination-btn.active {
+                background: var(--primary);
+                color: white;
+                border-color: var(--primary);
+            }
+
+        @@media (max-width: 768px) {
+            .notifications-page {
+                padding: 1rem 0.5rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .notifications-table {
+                font-size: 0.8rem;
+            }
+
+                .notifications-table th,
+                .notifications-table td {
+                    padding: 0.75rem 0.5rem;
+                }
+
+            .btn-filter,
+            .btn-clear {
+                width: 100%;
+            }
+        }
+    </style>
+}
+
+<div class="notifications-page">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-bell"></i> All Notifications
+        </h1>
+        <div>
+            <button class="btn-filter" id="markAllReadBtn">
+                <i class="fas fa-check-double"></i> Mark All as Read
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label class="filter-label">Date From</label>
+                <input type="date" class="filter-input" id="dateFrom">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Date To</label>
+                <input type="date" class="filter-input" id="dateTo">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Assistance Type</label>
+                <select class="filter-input" id="assistanceType">
+                    <option value="">All Types</option>
+                    <option value="hospital">Hospital Assistance</option>
+                    <option value="funeral">Funeral Assistance</option>
+                    <option value="other">Other Assistance</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select class="filter-input" id="statusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Approve">Approved</option>
+                    <option value="Disapprove">Disapproved</option>
+                    <option value="Claimed">Claimed</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Read Status</label>
+                <select class="filter-input" id="readFilter">
+                    <option value="">All</option>
+                    <option value="unread">Unread Only</option>
+                    <option value="read">Read Only</option>
+                </select>
+            </div>
+            <button class="btn-filter" id="applyFilterBtn">
+                <i class="fas fa-filter"></i> Apply Filters
+            </button>
+            <button class="btn-clear" id="clearFilterBtn">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Notifications Table -->
+    <div class="notifications-table-container">
+        <div class="table-responsive">
+            <table class="notifications-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;"></th>
+                        <th>Title</th>
+                        <th>Message</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Date & Time</th>
+                    </tr>
+                </thead>
+                <tbody id="notificationsTableBody">
+                    <!-- Notifications will be loaded here -->
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <h3>Loading notifications...</h3>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" id="paginationContainer">
+            <!-- Pagination will be loaded here -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let allNotifications = [];
+        let filteredNotifications = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllNotifications();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('applyFilterBtn').addEventListener('click', applyFilters);
+            document.getElementById('clearFilterBtn').addEventListener('click', clearFilters);
+            document.getElementById('markAllReadBtn').addEventListener('click', markAllAsRead);
+        }
+
+        async function loadAllNotifications() {
+            try {
+                const response = await fetch('/Notifications/GetAllUserNotifications');
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                allNotifications = data;
+                filteredNotifications = [...allNotifications];
+                renderNotifications();
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                showError('Failed to load notifications');
+            }
+        }
+
+        function applyFilters() {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const assistanceType = document.getElementById('assistanceType').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const readFilter = document.getElementById('readFilter').value;
+
+            filteredNotifications = allNotifications.filter(notification => {
+                // Date filter
+                if (dateFrom && new Date(notification.createdAt) < new Date(dateFrom)) {
+                    return false;
+                }
+                if (dateTo && new Date(notification.createdAt) > new Date(dateTo + 'T23:59:59')) {
+                    return false;
+                }
+
+                // Assistance type filter
+                if (assistanceType) {
+                    const notifId = notification.id.toLowerCase();
+                    if (!notifId.includes(assistanceType)) {
+                        return false;
+                    }
+                }
+
+                // Status filter
+                if (statusFilter && notification.status !== statusFilter) {
+                    return false;
+                }
+
+                // Read status filter
+                if (readFilter === 'unread' && notification.isRead) {
+                    return false;
+                }
+                if (readFilter === 'read' && !notification.isRead) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            currentPage = 1;
+            renderNotifications();
+        }
+
+        function clearFilters() {
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            document.getElementById('assistanceType').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('readFilter').value = '';
+
+            filteredNotifications = [...allNotifications];
+            currentPage = 1;
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const tbody = document.getElementById('notificationsTableBody');
+            const totalPages = Math.ceil(filteredNotifications.length / itemsPerPage);
+
+            if (filteredNotifications.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fas fa-bell-slash"></i>
+                                <h3>No notifications found</h3>
+                                <p>Try adjusting your filters</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('paginationContainer').innerHTML = '';
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageNotifications = filteredNotifications.slice(startIndex, endIndex);
+
+            tbody.innerHTML = pageNotifications.map(notification => {
+                const date = new Date(notification.createdAt);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const statusClass = notification.status ? `status-${notification.status.toLowerCase()}` : '';
+                const priorityClass = notification.priority ? `priority-${notification.priority}` : 'priority-normal';
+
+                return `
+                    <tr class="${notification.isRead ? '' : 'unread'}" onclick="handleNotificationClick('${notification.id}', '${notification.link}')">
+                        <td>
+                            <span class="read-indicator ${notification.isRead ? 'read' : 'unread'}"></span>
+                        </td>
+                        <td><strong>${notification.title}</strong></td>
+                        <td>${notification.message}</td>
+                        <td><span class="notification-type-badge">${formatType(notification.type)}</span></td>
+                        <td>${notification.status ? `<span class="status-badge ${statusClass}">${notification.status}</span>` : '-'}</td>
+                        <td><span class="priority-badge ${priorityClass}">${notification.priority || 'normal'}</span></td>
+                        <td>${formattedDate}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const container = document.getElementById('paginationContainer');
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `
+                        <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += '<span>...</span>';
+                }
+            }
+
+            html += `
+                <button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderNotifications();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function handleNotificationClick(notificationId, link) {
+            try {
+                // Mark as read
+                await fetch('/Notifications/MarkNotificationAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ notificationId })
+                });
+
+                // Update local state
+                const notification = allNotifications.find(n => n.id === notificationId);
+                if (notification) {
+                    notification.isRead = true;
+                }
+
+                // Redirect if link is provided
+                if (link && link !== '#') {
+                    window.location.href = link;
+                } else {
+                    renderNotifications();
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+
+        async function markAllAsRead() {
+            try {
+                const response = await fetch('/Notifications/MarkAllNotificationsAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update all notifications to read
+                    allNotifications.forEach(n => n.isRead = true);
+                    renderNotifications();
+                    alert('All notifications marked as read');
+                } else {
+                    alert('Failed to mark all as read');
+                }
+            } catch (error) {
+                console.error('Error marking all as read:', error);
+                alert('An error occurred');
+            }
+        }
+
+        function formatType(type) {
+            const typeMap = {
+                'application_submitted': 'Submitted',
+                'application_processing': 'Processing',
+                'application_approved': 'Approved',
+                'application_disapproved': 'Disapproved',
+                'application_claimed': 'Claimed',
+                'delay_alert': 'Delay Alert',
+                'status_change': 'Status Change',
+                'welcome': 'Welcome'
+            };
+            return typeMap[type] || type;
+        }
+
+        function showError(message) {
+            document.getElementById('notificationsTableBody').innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Error</h3>
+                            <p>${message}</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    </script>
+}
