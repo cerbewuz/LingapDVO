@@ -1927,6 +1927,46 @@
             }
         });
 
+        // Auto-expand Past Data section if URL contains #past-data anchor (from notifications)
+        function checkAndExpandPastData() {
+            if (window.location.hash === '#past-data') {
+                // Trigger the past data toggle if not already active
+                if (!pastDataToggle.classList.contains('active')) {
+                    const toggleText = pastDataToggle.querySelector('span');
+                    const dateFilterContent = document.getElementById('dateFilterContent');
+
+                    // Expand past data section
+                    pastDataToggle.classList.add('active');
+                    dateFilterContent.style.display = 'block';
+                    dateFilterGroup.style.display = 'flex';
+                    pastDataSection.classList.add('active');
+
+                    // Hide current tracking
+                    tabContainer.style.display = 'none';
+                    tabContent.style.display = 'none';
+
+                    toggleText.textContent = 'View Current Tracking Data';
+
+                    // Load past data
+                    loadPastData();
+
+                    // Scroll to past data section smoothly
+                    setTimeout(() => {
+                        pastDataSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+
+                    // Remove hash from URL after processing (keeps URL clean)
+                    history.replaceState(null, null, ' ');
+                }
+            }
+        }
+
+        // Check on page load
+        checkAndExpandPastData();
+
+        // Also check when navigating back/forward or hash changes
+        window.addEventListener('hashchange', checkAndExpandPastData);
+
         // Load past data
         function loadPastData() {
             const start = new Date(startDate.value);

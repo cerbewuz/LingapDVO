@@ -75,6 +75,7 @@ public class NotificationsController : Controller
                     bill.Status3
                 );
                 var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
+                var notificationLink = GetNotificationLink(bill.CreatedAt, bill.Status2, bill.ClaimedAt, bill.Status3);
 
                 notifications.Add(new
                 {
@@ -84,7 +85,7 @@ public class NotificationsController : Controller
                     isRead = isRead,
                     createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
-                    link = "/Applicationtracking",
+                    link = notificationLink,
                     status = bill.Status,
                     priority = priority,
                     isPermanent = false
@@ -105,7 +106,7 @@ public class NotificationsController : Controller
                         isRead = isDelayRead,
                         createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                         type = "delay_alert",
-                        link = "/Applicationtracking",
+                        link = notificationLink, // Use same link logic
                         status = bill.Status,
                         priority = priority,
                         isPermanent = false
@@ -132,6 +133,7 @@ public class NotificationsController : Controller
                     medical.Status3
                 );
                 var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
+                var notificationLink = GetNotificationLink(medical.CreatedAt, medical.Status2, medical.ClaimedAt, medical.Status3);
 
                 notifications.Add(new
                 {
@@ -141,7 +143,7 @@ public class NotificationsController : Controller
                     isRead = isRead,
                     createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
-                    link = "/Applicationtracking",
+                    link = notificationLink,
                     status = medical.Status,
                     priority = priority,
                     isPermanent = false
@@ -162,7 +164,7 @@ public class NotificationsController : Controller
                         isRead = isDelayRead,
                         createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                         type = "delay_alert",
-                        link = "/Applicationtracking",
+                        link = notificationLink, // Use same link logic
                         status = medical.Status,
                         priority = priority,
                         isPermanent = false
@@ -189,6 +191,7 @@ public class NotificationsController : Controller
                     funeral.Status3
                 );
                 var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
+                var notificationLink = GetNotificationLink(funeral.CreatedAt, funeral.Status2, funeral.ClaimedAt, funeral.Status3);
 
                 notifications.Add(new
                 {
@@ -198,7 +201,7 @@ public class NotificationsController : Controller
                     isRead = isRead,
                     createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                     type = type,
-                    link = "/Applicationtracking",
+                    link = notificationLink,
                     status = funeral.Status,
                     priority = priority,
                     isPermanent = false
@@ -219,7 +222,7 @@ public class NotificationsController : Controller
                         isRead = isDelayRead,
                         createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
                         type = "delay_alert",
-                        link = "/Applicationtracking",
+                        link = notificationLink, // Use same link logic
                         status = funeral.Status,
                         priority = priority,
                         isPermanent = false
@@ -469,6 +472,40 @@ public class NotificationsController : Controller
             _logger.LogError(ex, "Error occurred while updating session read notifications for user {UserId}", userId);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Determines the appropriate link for the notification based on application status and age
+    /// - Completed applications (claimed/disapproved) or applications older than 1 month → Past Tracking Data
+    /// - Active applications (Pending/Processing/Approved not yet claimed) → Main Application Tracking
+    /// </summary>
+    private string GetNotificationLink(
+        DateTime createdAt,
+        string status2 = null,
+        DateTime? claimedAt = null,
+        string status3 = null)
+    {
+        // Check if application is claimed (completed)
+        if (claimedAt.HasValue && claimedAt.Value.Year > 1 && !string.IsNullOrWhiteSpace(status3))
+        {
+            return "/Applicationtracking#past-data"; // Redirect to Past Tracking Data section
+        }
+
+        // Check if application is disapproved (completed)
+        if (!string.IsNullOrWhiteSpace(status2) && !status2.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/Applicationtracking#past-data"; // Redirect to Past Tracking Data section
+        }
+
+        // Check if application is older than 1 month
+        var oneMonthAgo = _dateTimeService.Now.AddMonths(-1);
+        if (createdAt < oneMonthAgo)
+        {
+            return "/Applicationtracking#past-data"; // Redirect to Past Tracking Data section
+        }
+
+        // Active applications (Pending, Processing, Approved awaiting claim) → Main tracking page
+        return "/Applicationtracking";
     }
 
     // Helper method to get notification details based on application timeline state (matches Application Tracking page)
