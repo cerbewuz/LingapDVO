@@ -4093,5 +4093,29 @@ namespace LingapDVO.Controllers
             }
         }
 
+        /// <summary>
+        /// Session keep-alive endpoint - called by session timeout script to prevent automatic logout
+        /// </summary>
+        [HttpPost]
+        public IActionResult KeepAlive()
+        {
+            try
+            {
+                // Accessing the session keeps it alive
+                var userId = HttpContext.Session.GetString("UserId");
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Json(new { success = false, message = "Session not found" });
+                }
+
+                return Json(new { success = true, message = "Session kept alive" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Failed to keep session alive", error = ex.Message });
+            }
+        }
+
     }
 }
