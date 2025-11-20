@@ -269,7 +269,7 @@
             <span asp-validation-for="RMiddlename"></span>
         </div>
 
-        <div class="col-lg-3 col-md-6 col-sm-12">
+        <div class="col-lg-2 col-md-3 col-sm-12">
             <label class="form-label">Suffix</label>
             <input type="text" asp-for="RSuffix" readonly
                    class="form-control readonly-field"
@@ -281,7 +281,7 @@
 
     <!-- Requestor Address -->
     <div class="row g-3 mt-2">
-        <div class="col-lg-3 col-md-6 col-sm-12">
+        <div class="col-lg-4 col-md-6 col-sm-12">
             <label class="form-label">Blk / Lot / Street</label>
             @if (isBlkLotStreetReadonly)
             {
@@ -296,7 +296,7 @@
             <span asp-validation-for="RBlkLotStreet" class="text-danger"></span>
         </div>
 
-        <div class="col-lg-3 col-md-6 col-sm-12">
+        <div class="col-lg-4 col-md-6 col-sm-12">
             <label class="form-label">Sub / Vill.</label>
             @if (isSubVillReadonly)
             {
@@ -343,13 +343,13 @@
     </div>
 
     <div class="row g-3 mt-2">
-        <div class="col-lg-6 col-md-12">
+        <div class="col-lg-4 col-md-6 col-sm-12">
             <label class="form-label">Relationship to Patient</label>
             <input asp-for="RelationshipPatient" type="text" class="form-control">
             <span asp-validation-for="RelationshipPatient" class="text-danger"></span>
         </div>
 
-        <div class="col-lg-6 col-md-12">
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">Contact No.</label>
             @if (isPhonenumberReadonly)
             {
@@ -432,7 +432,7 @@
                 <span asp-validation-for="Middlename" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-lg-2 col-md-3">
                 <label class="form-label">Suffix</label>
                 <select class="form-select" asp-for="Suffix">
                     <option value="None">None</option>
@@ -449,13 +449,13 @@
 
         <!-- Address -->
         <div class="row g-3 mt-2">
-            <div class="col-md-3">
+            <div class="col-lg-4 col-md-6">
                 <label class="form-label">Blk / Lot / Street</label>
                 <input asp-for="BlkLotStreet" type="text" class="form-control" required>
                 <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-lg-4 col-md-6">
                 <label class="form-label">Sub / Vill.</label>
                 <input asp-for="SubVill" type="text" class="form-control">
                 <span asp-validation-for="SubVill" class="text-danger"></span>
@@ -590,7 +590,7 @@
 
         <!-- Gender, PhilHealth, DOB, Age -->
         <div class="row g-3 mt-2">
-            <div class="col-md-2 col-sm-6">
+            <div class="col-lg-2 col-md-3 col-sm-6">
                 <label class="form-label">Sex</label>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="Sex" id="male" value="Male" required>
@@ -603,7 +603,7 @@
                 <span asp-validation-for="Sex" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3 col-sm-6">
+            <div class="col-lg-3 col-md-4 col-sm-6">
                 <label class="form-label">PhilHealth</label>
                 <select class="form-select" asp-for="PhilHealth" id="philHealthSelect" required>
                     <option value="">Select option</option>
@@ -613,19 +613,19 @@
                 <span asp-validation-for="PhilHealth" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3 col-sm-12">
+            <div class="col-lg-3 col-md-5 col-sm-12">
                 <label class="form-label">PhilHealth No. (if any)</label>
                 <input asp-for="PhilHealthNo" type="text" class="form-control" id="philHealthInput" placeholder="XXXX-XXXX-XXXX">
                 <span asp-validation-for="PhilHealthNo"></span>
             </div>
 
-            <div class="col-md-2 col-sm-6">
+            <div class="col-lg-3 col-md-6 col-sm-6">
                 <label class="form-label">Date of Birth</label>
                 <input asp-for="Dateofbirth" type="date" class="form-control" id="dateOfBirth" placeholder="MM/DD/YYYY" required>
                 <span asp-validation-for="Dateofbirth" class="text-danger"></span>
             </div>
 
-            <div class="col-md-2 col-sm-6">
+            <div class="col-lg-1 col-md-6 col-sm-6">
                 <label class="form-label">Age</label>
                 <input asp-for="Age" type="number" class="form-control" id="ageInput" readonly>
                 <span asp-validation-for="Age" class="text-danger"></span>
