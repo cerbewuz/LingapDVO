@@ -289,27 +289,41 @@
         .mobile-notification-body {
             max-height: 420px;
             overflow-y: auto;
+            overflow-x: hidden;
             background: white;
             scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
         }
 
             .mobile-notification-body::-webkit-scrollbar {
-                width: 6px;
+                width: 4px; /* Thinner for mobile */
             }
 
             .mobile-notification-body::-webkit-scrollbar-track {
-                background: var(--gray-100);
-                border-radius: 3px;
+                background: transparent;
             }
 
             .mobile-notification-body::-webkit-scrollbar-thumb {
-                background: var(--gray-400);
-                border-radius: 3px;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 4px;
             }
 
-            .mobile-notification-body::-webkit-scrollbar-thumb:hover {
-                background: var(--gray-500);
+            .mobile-notification-body::-webkit-scrollbar-thumb:active {
+                background: rgba(0, 0, 0, 0.4);
             }
+
+        /* Responsive mobile notification body height */
+        @@media (max-width: 575.98px) {
+            .mobile-notification-body {
+                max-height: 350px; /* Optimized for mobile screens */
+            }
+        }
+
+        @@media (max-width: 400px) {
+            .mobile-notification-body {
+                max-height: 320px; /* Further reduced for small screens */
+            }
+        }
 
         .mobile-notification-footer {
             padding: 0.75rem;
@@ -762,6 +776,7 @@
             max-height: 420px;
             overflow-y: auto;
             scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
 
             /* Ensure scrollbar is always visible for better UX */
@@ -782,6 +797,53 @@
             .notification-body::-webkit-scrollbar-thumb:hover {
                 background: var(--gray-400);
             }
+
+        /* Mobile screens: Optimize notification body for touch scrolling */
+        @@media (max-width: 575.98px) {
+            .notification-body {
+                height: auto;
+                max-height: calc(100vh - 250px); /* Responsive height based on viewport */
+                min-height: 300px; /* Minimum height to show at least 3-4 notifications */
+                overflow-y: auto;
+                overflow-x: hidden;
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
+            }
+
+            /* Mobile scrollbar - thinner and more subtle */
+            .notification-body::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .notification-body::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .notification-body::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 4px;
+            }
+
+            .notification-body::-webkit-scrollbar-thumb:active {
+                background: rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        /* Small mobile screens: Further optimize for limited space */
+        @@media (max-width: 400px) {
+            .notification-body {
+                max-height: calc(100vh - 220px);
+                min-height: 280px;
+            }
+        }
+
+        /* Landscape mobile: Reduce height to fit */
+        @@media (max-height: 600px) and (orientation: landscape) {
+            .notification-body {
+                max-height: calc(100vh - 180px);
+                min-height: 200px;
+            }
+        }
 
         .notification-item {
             padding: 0.75rem 1rem;
