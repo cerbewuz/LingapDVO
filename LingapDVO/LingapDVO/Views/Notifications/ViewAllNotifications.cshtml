@@ -781,6 +781,195 @@
                 font-size: 0.75rem;
             }
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+            z-index: 9999;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-header.info {
+            background: #EFF6FF;
+            border-bottom-color: #DBEAFE;
+        }
+
+        .modal-header.success {
+            background: #ECFDF5;
+            border-bottom-color: #D1FAE5;
+        }
+
+        .modal-header.warning {
+            background: #FFFBEB;
+            border-bottom-color: #FEF3C7;
+        }
+
+        .modal-header.error {
+            background: #FEF2F2;
+            border-bottom-color: #FEE2E2;
+        }
+
+        .modal-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .modal-header.info .modal-icon {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .modal-header.success .modal-icon {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .modal-header.warning .modal-icon {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .modal-header.error .modal-icon {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 0;
+            flex: 1;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray-500);
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--gray-100);
+            color: var(--secondary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            color: var(--gray-700);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            background: #f9fafb;
+        }
+
+        .modal-btn {
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+        }
+
+        .modal-btn-secondary {
+            background: white;
+            color: var(--secondary);
+            border: 1.5px solid var(--gray-300);
+        }
+
+        .modal-btn-secondary:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @@keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
     </style>
 }
 
@@ -936,6 +1125,29 @@
             <!-- Pagination will be loaded here -->
         </div>
     </div>
+
+    <!-- Modal Component -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header" id="modalHeader">
+                <div class="modal-icon" id="modalIcon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3 class="modal-title" id="modalTitle">Notification</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Modal content goes here
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <button class="modal-btn modal-btn-primary" onclick="closeModal()">
+                    <i class="fas fa-check"></i> OK
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -952,6 +1164,88 @@
 
         function goBack() {
             window.history.back();
+        }
+
+        // Modal Helper Functions
+        function showModal(title, message, type = 'info', icon = 'fa-info-circle') {
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalHeader = document.getElementById('modalHeader');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            const modalFooter = document.getElementById('modalFooter');
+
+            // Set header type
+            modalHeader.className = `modal-header ${type}`;
+
+            // Set icon
+            modalIcon.innerHTML = `<i class="fas ${icon}"></i>`;
+
+            // Set title and message
+            modalTitle.textContent = title;
+            modalBody.innerHTML = message;
+
+            // Set footer with OK button
+            modalFooter.innerHTML = `
+                <button class="modal-btn modal-btn-primary" onclick="closeModal()">
+                    <i class="fas fa-check"></i> OK
+                </button>
+            `;
+
+            // Show modal
+            modalOverlay.classList.add('active');
+
+            // Close on overlay click
+            modalOverlay.onclick = closeModal;
+        }
+
+        function showConfirmModal(title, message, onConfirm, type = 'warning', icon = 'fa-question-circle') {
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalHeader = document.getElementById('modalHeader');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            const modalFooter = document.getElementById('modalFooter');
+
+            // Set header type
+            modalHeader.className = `modal-header ${type}`;
+
+            // Set icon
+            modalIcon.innerHTML = `<i class="fas ${icon}"></i>`;
+
+            // Set title and message
+            modalTitle.textContent = title;
+            modalBody.innerHTML = message;
+
+            // Set footer with Cancel and Confirm buttons
+            modalFooter.innerHTML = `
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="modal-btn modal-btn-primary" id="confirmBtn">
+                    <i class="fas fa-check"></i> Confirm
+                </button>
+            `;
+
+            // Show modal
+            modalOverlay.classList.add('active');
+
+            // Close on overlay click (cancel)
+            modalOverlay.onclick = closeModal;
+
+            // Set up confirm button handler
+            document.getElementById('confirmBtn').onclick = function() {
+                closeModal();
+                if (onConfirm) {
+                    onConfirm();
+                }
+            };
+        }
+
+        function closeModal() {
+            const modalOverlay = document.getElementById('modalOverlay');
+            modalOverlay.classList.remove('active');
+            modalOverlay.onclick = null;
         }
 
         function setupEventListeners() {
@@ -1250,44 +1544,127 @@
                 const unreadNotifications = allNotifications.filter(n => !n.isRead);
 
                 if (unreadNotifications.length === 0) {
-                    alert('All notifications are already marked as read!');
+                    showModal(
+                        'No Unread Notifications',
+                        'All notifications are already marked as read!',
+                        'info',
+                        'fa-check-circle'
+                    );
                     return;
                 }
 
-                // Show loading message
-                const confirmMark = confirm(`Mark ${unreadNotifications.length} notification(s) as read?`);
-                if (!confirmMark) {
-                    return;
-                }
+                // Separate priority notifications (High/Medium) from normal ones
+                const priorityNotifications = unreadNotifications.filter(n => {
+                    const priority = (n.priority || 'normal').toLowerCase();
+                    return priority === 'high' || priority === 'medium';
+                });
 
-                // Mark all as read via API calls in parallel
-                const promises = unreadNotifications.map(n => markAsRead(n.id, true));
-                const results = await Promise.all(promises);
+                const normalNotifications = unreadNotifications.filter(n => {
+                    const priority = (n.priority || 'normal').toLowerCase();
+                    return priority !== 'high' && priority !== 'medium';
+                });
 
-                // Check if all succeeded
-                const allSucceeded = results.every(r => r === true);
-
-                if (allSucceeded) {
-                    // Force update all notification objects to isRead = true
-                    allNotifications.forEach(n => {
-                        if (!n.isRead) {
-                            n.isRead = true;
-                        }
-                    });
-
-                    // Re-apply filters to update filteredNotifications array
-                    applyFilters();
-
-                    // Update stats
-                    updateStats();
-
-                    alert(`Successfully marked ${unreadNotifications.length} notification(s) as read!`);
+                // Build confirmation message
+                let confirmMessage = '';
+                if (normalNotifications.length > 0 && priorityNotifications.length > 0) {
+                    confirmMessage = `
+                        <p><strong>${normalNotifications.length}</strong> normal notification(s) will be marked as read.</p>
+                        <p style="margin-top: 1rem; padding: 0.75rem; background: #FEF3C7; border-left: 3px solid #F59E0B; border-radius: 4px;">
+                            <i class="fas fa-exclamation-triangle" style="color: #F59E0B;"></i>
+                            <strong>${priorityNotifications.length}</strong> high/medium priority notification(s) will be skipped and remain unread.
+                        </p>
+                    `;
+                } else if (normalNotifications.length > 0) {
+                    confirmMessage = `<p>Mark <strong>${normalNotifications.length}</strong> notification(s) as read?</p>`;
                 } else {
-                    alert('Some notifications could not be marked as read. Please refresh and try again.');
+                    // Only priority notifications remain unread
+                    showModal(
+                        'Cannot Mark Priority Notifications',
+                        `<p>All <strong>${priorityNotifications.length}</strong> unread notification(s) have <strong>High</strong> or <strong>Medium</strong> priority.</p>
+                        <p style="margin-top: 1rem; padding: 0.75rem; background: #FEF3C7; border-left: 3px solid #F59E0B; border-radius: 4px;">
+                            <i class="fas fa-info-circle" style="color: #F59E0B;"></i>
+                            Priority notifications cannot be force marked as read. Please review them individually.
+                        </p>`,
+                        'warning',
+                        'fa-exclamation-triangle'
+                    );
+                    return;
                 }
+
+                // Show confirmation modal
+                showConfirmModal(
+                    'Mark Notifications as Read',
+                    confirmMessage,
+                    async function() {
+                        try {
+                            // Mark normal notifications as read via API calls in parallel
+                            const promises = normalNotifications.map(n => markAsRead(n.id, true));
+                            const results = await Promise.all(promises);
+
+                            // Check if all succeeded
+                            const allSucceeded = results.every(r => r === true);
+
+                            if (allSucceeded) {
+                                // Force update notification objects to isRead = true
+                                normalNotifications.forEach(n => {
+                                    const notification = allNotifications.find(notif => notif.id === n.id);
+                                    if (notification) {
+                                        notification.isRead = true;
+                                    }
+                                });
+
+                                // Re-apply filters to update filteredNotifications array
+                                applyFilters();
+
+                                // Update stats
+                                updateStats();
+
+                                // Show success message
+                                let successMessage = `<p>Successfully marked <strong>${normalNotifications.length}</strong> notification(s) as read!</p>`;
+                                if (priorityNotifications.length > 0) {
+                                    successMessage += `
+                                        <p style="margin-top: 1rem; padding: 0.75rem; background: #FEF3C7; border-left: 3px solid #F59E0B; border-radius: 4px;">
+                                            <i class="fas fa-info-circle" style="color: #F59E0B;"></i>
+                                            <strong>${priorityNotifications.length}</strong> priority notification(s) remain unread.
+                                        </p>
+                                    `;
+                                }
+
+                                showModal(
+                                    'Success',
+                                    successMessage,
+                                    'success',
+                                    'fa-check-circle'
+                                );
+                            } else {
+                                showModal(
+                                    'Partial Success',
+                                    '<p>Some notifications could not be marked as read.</p><p style="margin-top: 0.5rem;">Please refresh the page and try again.</p>',
+                                    'warning',
+                                    'fa-exclamation-circle'
+                                );
+                            }
+                        } catch (error) {
+                            console.error('Error marking notifications as read:', error);
+                            showModal(
+                                'Error',
+                                '<p>Failed to mark notifications as read.</p><p style="margin-top: 0.5rem;">Please check your connection and try again.</p>',
+                                'error',
+                                'fa-times-circle'
+                            );
+                        }
+                    },
+                    'info',
+                    'fa-question-circle'
+                );
             } catch (error) {
-                console.error('Error marking all as read:', error);
-                alert('Failed to mark all notifications as read');
+                console.error('Error in markAllAsRead:', error);
+                showModal(
+                    'Error',
+                    '<p>An unexpected error occurred.</p><p style="margin-top: 0.5rem;">Please refresh the page and try again.</p>',
+                    'error',
+                    'fa-times-circle'
+                );
             }
         }
 
