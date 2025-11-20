@@ -62,7 +62,18 @@ public class NotificationsController : Controller
                 var notificationId = $"hospital_{bill.Id}_{bill.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
 
-                var (title, message, type) = GetStatusNotificationDetails("Hospital Assistance", bill.Status, bill.CreatedAt);
+                // Pass all timeline fields to match Application Tracking page logic
+                var (title, message, type) = GetStatusNotificationDetails(
+                    "Hospital Assistance",
+                    bill.Status,
+                    bill.CreatedAt,
+                    bill.ProcessAt,
+                    bill.Processby,
+                    bill.Result,
+                    bill.Status2,
+                    bill.ClaimedAt,
+                    bill.Status3
+                );
                 var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
 
                 notifications.Add(new
@@ -108,7 +119,18 @@ public class NotificationsController : Controller
                 var notificationId = $"medical_{medical.Id}_{medical.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
 
-                var (title, message, type) = GetStatusNotificationDetails("Other Assistance", medical.Status, medical.CreatedAt);
+                // Pass all timeline fields to match Application Tracking page logic
+                var (title, message, type) = GetStatusNotificationDetails(
+                    "Other Assistance",
+                    medical.Status,
+                    medical.CreatedAt,
+                    medical.ProcessAt,
+                    medical.Processby,
+                    medical.Result,
+                    medical.Status2,
+                    medical.ClaimedAt,
+                    medical.Status3
+                );
                 var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
 
                 notifications.Add(new
@@ -154,7 +176,18 @@ public class NotificationsController : Controller
                 var notificationId = $"funeral_{funeral.Id}_{funeral.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
 
-                var (title, message, type) = GetStatusNotificationDetails("Funeral Assistance", funeral.Status, funeral.CreatedAt);
+                // Pass all timeline fields to match Application Tracking page logic
+                var (title, message, type) = GetStatusNotificationDetails(
+                    "Funeral Assistance",
+                    funeral.Status,
+                    funeral.CreatedAt,
+                    funeral.ProcessAt,
+                    funeral.Processby,
+                    funeral.Result,
+                    funeral.Status2,
+                    funeral.ClaimedAt,
+                    funeral.Status3
+                );
                 var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
 
                 notifications.Add(new
@@ -438,42 +471,75 @@ public class NotificationsController : Controller
         }
     }
 
-    // Helper method to get notification details based on status
-    private (string title, string message, string type) GetStatusNotificationDetails(string formType, string status, DateTime createdAt)
+    // Helper method to get notification details based on application timeline state (matches Application Tracking page)
+    private (string title, string message, string type) GetStatusNotificationDetails(
+        string formType,
+        string status,
+        DateTime createdAt,
+        DateTime? processAt = null,
+        string processBy = null,
+        DateTime? resultDate = null,
+        string status2 = null,
+        DateTime? claimedAt = null,
+        string status3 = null)
     {
-        return status switch
+        // Priority 1: Check if claimed (Status3 and ClaimedAt exist) - matches "Assistance Released" on tracking page
+        if (claimedAt.HasValue && claimedAt.Value.Year > 1 && !string.IsNullOrWhiteSpace(status3))
         {
-            "Pending" => (
-                "Application Submitted",
-                $"Your {formType} application has been submitted and is pending review. Submitted on {createdAt:MMM dd, yyyy}.",
-                "application_submitted"
-            ),
-            "Processing" => (
-                "Application Being Processed",
-                $"Your {formType} application is now being processed by our team.",
-                "application_processing"
-            ),
-            "Approve" => (
-                "Application Approved",
-                $"Good news! Your {formType} application has been approved. Please visit the office for claiming.",
-                "application_approved"
-            ),
-            "Disapprove" => (
-                "Application Disapproved",
-                $"We regret to inform you that your {formType} application has been disapproved. Please contact us for more details.",
-                "application_disapproved"
-            ),
-            "Claimed" => (
-                "Assistance Claimed",
-                $"Your {formType} has been successfully claimed. Thank you for using our service.",
+            return (
+                "Assistance Released",
+                $"Your {formType} assistance has been released and completed on {claimedAt:MMM dd, yyyy}.",
                 "application_claimed"
-            ),
-            _ => (
-                "Application Update",
-                $"Your {formType} application status has been updated. Submitted on {createdAt:MMM dd, yyyy}.",
-                "status_change"
-            )
-        };
+            );
+        }
+
+        // Priority 2: Check if approved/disapproved (Result date and Status2 exist) - matches timeline "Application Approved/Disapproved"
+        if (resultDate.HasValue && resultDate.Value.Year > 1 && !string.IsNullOrWhiteSpace(status2))
+        {
+            if (status2.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+            {
+                return (
+                    "Application Approved",
+                    $"Good news! Your {formType} application has been approved on {resultDate:MMM dd, yyyy}. Please visit our office to collect your assistance.",
+                    "application_approved"
+                );
+            }
+            else
+            {
+                return (
+                    "Application Disapproved",
+                    $"Your {formType} application was not approved on {resultDate:MMM dd, yyyy}. Please contact us for more details.",
+                    "application_disapproved"
+                );
+            }
+        }
+
+        // Priority 3: Check if being processed (ProcessAt and Processby exist) - matches "Being Reviewed" on tracking page
+        if (processAt.HasValue && processAt.Value.Year > 1 && !string.IsNullOrWhiteSpace(processBy))
+        {
+            return (
+                "Being Reviewed",
+                $"Your {formType} application is being reviewed by {processBy}. Started on {processAt:MMM dd, yyyy}.",
+                "application_processing"
+            );
+        }
+
+        // Priority 4: Waiting for review (no ProcessAt yet) - matches "Waiting for Review" on tracking page
+        if (!processAt.HasValue || processAt.Value.Year <= 1 || string.IsNullOrWhiteSpace(processBy))
+        {
+            return (
+                "Waiting for Review",
+                $"Your {formType} application is waiting to be reviewed. Submitted on {createdAt:MMM dd, yyyy}. We will review it within 1-2 hours.",
+                "application_submitted"
+            );
+        }
+
+        // Default: Application submitted (fallback)
+        return (
+            "Application Submitted",
+            $"Your {formType} application has been submitted on {createdAt:MMM dd, yyyy}.",
+            "application_submitted"
+        );
     }
 
     /// <summary>
