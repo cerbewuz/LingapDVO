@@ -544,17 +544,67 @@
             }
         }
 
-        /* Tablets and larger phones: Position below icon, relative to button */
+        /* Tablets and larger phones: Apply desktop configuration for consistent experience */
         @@media (min-width: 576px) and (max-width: 991.98px) {
             .notification-dropdown {
                 position: absolute;
-                top: calc(100% + 10px);
+                top: calc(100% + 15px);
                 right: 0;
                 left: auto;
                 transform: none;
-                width: 90vw;
-                max-width: 400px;
-                max-height: calc(100vh - 100px);
+                width: 420px;
+                max-width: 95vw; /* Prevent overflow on smaller tablets */
+                max-height: calc(100vh - 90px);
+                z-index: 1060;
+                border-radius: 16px !important;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1) !important;
+                border: 1px solid rgba(220, 20, 60, 0.1) !important;
+                overflow: visible !important;
+            }
+
+            /* Bubble pointer/arrow connecting to notification button */
+            .notification-dropdown::before {
+                content: '';
+                position: absolute;
+                top: -12px;
+                right: 10px;
+                width: 0;
+                height: 0;
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-bottom: 12px solid white;
+                filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
+                z-index: 1;
+            }
+
+            /* Bubble pointer border */
+            .notification-dropdown::after {
+                content: '';
+                position: absolute;
+                top: -13px;
+                right: 9px;
+                width: 0;
+                height: 0;
+                border-left: 13px solid transparent;
+                border-right: 13px solid transparent;
+                border-bottom: 13px solid rgba(220, 20, 60, 0.1);
+                z-index: 0;
+            }
+
+            /* Rounded header for bubble design */
+            .notification-dropdown .notification-header {
+                border-radius: 16px 16px 0 0;
+                background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
+            }
+
+            /* Rounded footer for bubble design */
+            .notification-dropdown .notification-footer {
+                border-radius: 0 0 16px 16px;
+            }
+
+            /* Bubble fade-in animation for tablets */
+            .notification-dropdown {
+                animation: bubbleFadeIn 0.25s ease-out;
             }
         }
 
