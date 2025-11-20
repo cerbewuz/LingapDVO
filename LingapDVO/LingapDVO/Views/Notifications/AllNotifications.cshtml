@@ -843,10 +843,13 @@
         }
 
         function updateStats() {
-            const totalCount = allNotifications.length;
-            const unreadCount = allNotifications.filter(n => !n.isRead).length;
-            const pendingCount = allNotifications.filter(n => n.status === 'Pending').length;
-            const approvedCount = allNotifications.filter(n => n.status === 'Approve').length;
+            // Filter out delay_alert notifications to count only unique applications
+            const uniqueApplicationNotifications = allNotifications.filter(n => n.type !== 'delay_alert');
+
+            const totalCount = uniqueApplicationNotifications.length;
+            const unreadCount = uniqueApplicationNotifications.filter(n => !n.isRead).length;
+            const pendingCount = uniqueApplicationNotifications.filter(n => n.status === 'Pending').length;
+            const approvedCount = uniqueApplicationNotifications.filter(n => n.status === 'Approve').length;
 
             document.getElementById('totalCount').textContent = totalCount;
             document.getElementById('unreadCount').textContent = unreadCount;
