@@ -208,7 +208,7 @@ public class NotificationsController : Controller
             var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
             // Get user's account creation date or use a default old date
-            var user = context.Useraccounts.FirstOrDefault(u => u.Id == userId);
+            var user = context.Useraccount.FirstOrDefault(u => u.Id == userId);
             var welcomeDate = user != null ? _dateTimeService.Now.AddDays(-365) : _dateTimeService.Now.AddYears(-1);
 
             notifications.Add(new
@@ -419,7 +419,7 @@ public class NotificationsController : Controller
             var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
 
             // Get user's account creation date or use a default old date
-            var user = context.Useraccounts.FirstOrDefault(u => u.Id == userId);
+            var user = context.Useraccount.FirstOrDefault(u => u.Id == userId);
             var welcomeDate = user != null ? _dateTimeService.Now.AddDays(-365) : _dateTimeService.Now.AddYears(-1);
 
             notifications.Add(new
