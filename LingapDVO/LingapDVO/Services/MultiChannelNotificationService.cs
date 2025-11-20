@@ -8,6 +8,7 @@ namespace LingapDVO.Services
     {
         Task SendNotificationAsync(int userId, string title, string message, string type, string link = null);
         Task SendStatusChangeNotificationAsync(int userId, string applicantName, string formType, string status, int formId);
+        Task SendDelayNotificationAsync(int userId, string applicantName, string formType, string priority, DateTime submittedDate);
     }
 
     public class MultiChannelNotificationService : IMultiChannelNotificationService
@@ -153,7 +154,7 @@ namespace LingapDVO.Services
                     await _emailService.SendEmailAsync(user.Email, title, emailBody);
                 }
 
-                // Send SMS notification if preferred (with personalized greeting and assistance type)
+                // Send SMS notification if preferred (formal and concise automated message)
                 if (user.PreferSmsNotification)
                 {
                     var verifyAccount = await _context.Verifyaccount
@@ -161,7 +162,8 @@ namespace LingapDVO.Services
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
-                        var smsMessage = $"Hi {applicantName}! {message}";
+                        // Format formal, concise SMS message
+                        var smsMessage = FormatFormalSmsMessage(applicantName, formTypeDisplay, title, message);
                         await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
@@ -217,7 +219,7 @@ namespace LingapDVO.Services
                     await _emailService.SendEmailAsync(user.Email, title, emailBody);
                 }
 
-                // Send SMS notification with nearby offices link if preferred
+                // Send SMS notification with nearby offices link if preferred (formal and concise)
                 if (user.PreferSmsNotification)
                 {
                     var verifyAccount = await _context.Verifyaccount
@@ -225,8 +227,7 @@ namespace LingapDVO.Services
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
-                        var smsMessage = $"Hi {applicantName}! Good news! Your {formTypeDisplay} application has been approved. " +
-                                       $"Please visit our office for claiming. Find nearby offices here: {nearbyOfficesUrl}";
+                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} application has been APPROVED. Please visit our office for claiming. Locate nearby offices: {nearbyOfficesUrl}";
                         await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
@@ -282,7 +283,7 @@ namespace LingapDVO.Services
                     await _emailService.SendEmailAsync(user.Email, title, emailBody);
                 }
 
-                // Send SMS notification with feedback link if preferred
+                // Send SMS notification with feedback link if preferred (formal and concise)
                 if (user.PreferSmsNotification)
                 {
                     var verifyAccount = await _context.Verifyaccount
@@ -290,8 +291,7 @@ namespace LingapDVO.Services
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
-                        var smsMessage = $"Hi {applicantName}! Your {formTypeDisplay} has been successfully claimed. " +
-                                       $"Thank you for using our service! We'd love to hear your feedback: {feedbackUrl}";
+                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} has been successfully claimed. Thank you for using our service. We value your feedback: {feedbackUrl}";
                         await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
@@ -461,6 +461,71 @@ namespace LingapDVO.Services
     </div>
 </body>
 </html>";
+        }
+
+        // Format formal and concise SMS message
+        private string FormatFormalSmsMessage(string applicantName, string formType, string title, string message)
+        {
+            // Create formal, concise automated SMS message
+            return $"LingapDVO: Dear {applicantName}, your {formType} application status has been updated. {message} For inquiries, please contact our office.";
+        }
+
+        // Send delay notification for applications experiencing delays
+        public async Task SendDelayNotificationAsync(int userId, string applicantName, string formType, string priority, DateTime submittedDate)
+        {
+            try
+            {
+                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User with ID {userId} not found");
+                    return;
+                }
+
+                var formTypeDisplay = formType switch
+                {
+                    "HospitalBill" => "Hospital Assistance",
+                    "Medical" => "Other Assistance",
+                    "Funeral" => "Funeral Assistance",
+                    _ => "Financial Assistance"
+                };
+
+                var hoursElapsed = (int)(_dateTimeService.Now - submittedDate).TotalHours;
+                var title = "Application Processing Delay";
+                var message = $"Your {formTypeDisplay} application submitted on {submittedDate:MMM dd, yyyy} is experiencing processing delays. We are working to resolve this. Thank you for your patience.";
+
+                // Send SMS notification if preferred
+                if (user.PreferSmsNotification)
+                {
+                    var verifyAccount = await _context.Verifyaccount
+                        .FirstOrDefaultAsync(v => v.UserId == userId);
+
+                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
+                    {
+                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} application is experiencing processing delays ({hoursElapsed}+ hours). We apologize for the inconvenience and are working to expedite your request. For urgent concerns, please contact our office.";
+                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
+                    }
+                }
+
+                // Send in-app notification via SignalR if preferred
+                if (user.PreferInAppNotification)
+                {
+                    await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
+                    {
+                        title = title,
+                        message = message,
+                        type = "delay_alert",
+                        link = "/Applicationtracking",
+                        createdAt = _dateTimeService.Now
+                    });
+                }
+
+                _logger.LogInformation($"Delay notification sent successfully to user {userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending delay notification to user {userId}");
+            }
         }
     }
 }

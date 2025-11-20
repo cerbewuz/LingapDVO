@@ -24,8 +24,9 @@ namespace LingapDVO.Controllers
         private readonly FormSubmissionSecurityService _securityService;
         private readonly ISessionConfigurationService _sessionConfig;
         private readonly IDateTimeService _dateTimeService;
+        private readonly IMultiChannelNotificationService _notificationService;
 
-        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, FormSubmissionSecurityService securityService, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService)
+        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, FormSubmissionSecurityService securityService, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService, IMultiChannelNotificationService notificationService)
         {
             this.context = context;
             this.environment = environment;
@@ -33,6 +34,7 @@ namespace LingapDVO.Controllers
             _securityService = securityService;
             _sessionConfig = sessionConfig;
             _dateTimeService = dateTimeService;
+            _notificationService = notificationService;
         }
     
         public IActionResult Index()
@@ -791,6 +793,24 @@ namespace LingapDVO.Controllers
                 context.HospitalAssistance.Add(HospitalAssistance);
                 context.SaveChanges();
 
+                // Send SMS notification for successful submission
+                try
+                {
+                    var userFullName = $"{HospitalAssistance.Firstname} {HospitalAssistance.Lastname}";
+                    await _notificationService.SendStatusChangeNotificationAsync(
+                        userId,
+                        userFullName,
+                        "HospitalBill",
+                        "Pending",
+                        HospitalAssistance.Id
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail the submission if notification fails
+                    Console.WriteLine($"Failed to send notification: {ex.Message}");
+                }
+
                 // ? SUCCESS: Set the success flag to trigger the modal
                 ViewBag.Success = true;
 
@@ -1540,6 +1560,24 @@ namespace LingapDVO.Controllers
 
                 context.OtherAssistance.Add(OtherAssistance);
                 context.SaveChanges();
+
+                // Send SMS notification for successful submission
+                try
+                {
+                    var userFullName = $"{OtherAssistance.Firstname} {OtherAssistance.Lastname}";
+                    await _notificationService.SendStatusChangeNotificationAsync(
+                        userId,
+                        userFullName,
+                        "Medical",
+                        "Pending",
+                        OtherAssistance.Id
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail the submission if notification fails
+                    Console.WriteLine($"Failed to send notification: {ex.Message}");
+                }
 
                 // ? SUCCESS: Set the success flag to trigger the modal
                 ViewBag.Success = true;
@@ -2308,6 +2346,24 @@ namespace LingapDVO.Controllers
 
                 context.FuneralAssistance.Add(FuneralAssistance);
                 context.SaveChanges();
+
+                // Send SMS notification for successful submission
+                try
+                {
+                    var userFullName = $"{FuneralAssistance.Firstname} {FuneralAssistance.Lastname}";
+                    await _notificationService.SendStatusChangeNotificationAsync(
+                        userId,
+                        userFullName,
+                        "Funeral",
+                        "Pending",
+                        FuneralAssistance.Id
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail the submission if notification fails
+                    Console.WriteLine($"Failed to send notification: {ex.Message}");
+                }
 
                 // ? SUCCESS: Set the success flag to trigger the modal
                 ViewBag.Success = true;
