@@ -509,11 +509,11 @@
                 border: 2px solid white;
             }
 
-        /* Notification Dropdown - Positioned below notification icon for all screen sizes, outside greeting card */
+        /* Notification Dropdown - Positioned below notification icon, relative to the button */
         .notification-dropdown {
-            position: fixed;
-            top: 80px;
-            right: 20px;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
             left: auto;
             transform: none;
             width: 95vw;
@@ -528,11 +528,12 @@
             overflow: hidden;
         }
 
-        /* Small phones: Position below icon at top right, outside greeting card */
+        /* Small phones: Position below icon, relative to button */
         @@media (max-width: 575.98px) {
             .notification-dropdown {
-                top: 80px;
-                right: 10px;
+                position: absolute;
+                top: calc(100% + 10px);
+                right: 0;
                 left: auto;
                 transform: none;
                 width: calc(100vw - 20px);
@@ -541,12 +542,12 @@
             }
         }
 
-        /* Tablets and larger phones: Position below icon at top right, outside greeting card */
+        /* Tablets and larger phones: Position below icon, relative to button */
         @@media (min-width: 576px) and (max-width: 991.98px) {
             .notification-dropdown {
-                position: fixed;
-                top: 80px;
-                right: 15px;
+                position: absolute;
+                top: calc(100% + 10px);
+                right: 0;
                 left: auto;
                 transform: none;
                 width: 90vw;
@@ -555,12 +556,12 @@
             }
         }
 
-        /* Desktop: Bubble design - Position below notification icon, outside greeting card */
+        /* Desktop: Bubble design - Position below notification icon, relative to button */
         @@media (min-width: 992px) {
             .notification-dropdown {
-                position: fixed;
-                top: 75px;
-                right: 10px;
+                position: absolute;
+                top: calc(100% + 15px);
+                right: 0;
                 left: auto;
                 transform: none;
                 width: 420px;
@@ -577,7 +578,7 @@
                 content: '';
                 position: absolute;
                 top: -12px;
-                right: 95px;
+                right: 10px;
                 width: 0;
                 height: 0;
                 border-left: 12px solid transparent;
@@ -592,7 +593,7 @@
                 content: '';
                 position: absolute;
                 top: -13px;
-                right: 94px;
+                right: 9px;
                 width: 0;
                 height: 0;
                 border-left: 13px solid transparent;
@@ -1268,8 +1269,8 @@
 
             .notification-dropdown {
                 width: 92vw;
-                right: 4vw;
-                left: 4vw;
+                right: 0;
+                left: auto;
             }
 
             .greeting-card {
