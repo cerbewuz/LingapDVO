@@ -22,8 +22,8 @@
 
     <style>
         /* ===========================
-                   MODERN DESIGN SYSTEM
-                =========================== */
+                           MODERN DESIGN SYSTEM
+                        =========================== */
         :root {
             --primary: #DC143C;
             --primary-dark: #B22222;
@@ -63,8 +63,8 @@
         }
 
         /* ===========================
-                   MODERN NAVBAR
-                =========================== */
+                           MODERN NAVBAR
+                        =========================== */
         .modern-navbar {
             position: fixed;
             top: 0;
@@ -259,8 +259,8 @@
         }
 
         /* ===========================
-                   HERO SECTION
-                =========================== */
+                           HERO SECTION
+                        =========================== */
         .hero-section {
             position: relative;
             min-height: auto;
@@ -311,10 +311,10 @@
             padding: 0 1rem;
             max-width: 1200px;
             margin: 0 auto;
-            animation: heroFadeInUp 1.2s ease-out;
+            animation: fadeInUp 1s ease-out;
         }
 
-        @@keyframes heroFadeInUp {
+        @@keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(50px);
@@ -358,16 +358,6 @@
             margin-bottom: 1rem;
             text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             letter-spacing: -1px;
-            animation: floatTitle 3s ease-in-out infinite;
-        }
-
-        @@keyframes floatTitle {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-5px);
-            }
         }
 
         .hero-subtitle {
@@ -404,7 +394,6 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            animation: pulseGlow 2s ease-in-out infinite;
         }
 
             .btn-primary-custom::before {
@@ -428,13 +417,8 @@
 
             .btn-primary-custom:hover {
                 color: var(--white);
-                transform: translateY(-4px) scale(1.05);
+                transform: translateY(-4px);
                 box-shadow: 0 12px 35px rgba(220, 20, 60, 0.4);
-                animation: none;
-            }
-
-            .btn-primary-custom:active {
-                transform: translateY(-2px) scale(1.02);
             }
 
             .btn-primary-custom span,
@@ -442,15 +426,6 @@
                 position: relative;
                 z-index: 1;
             }
-
-        @@keyframes pulseGlow {
-            0%, 100% {
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            }
-            50% {
-                box-shadow: 0 8px 35px rgba(220, 20, 60, 0.3);
-            }
-        }
 
         .btn-secondary-custom {
             padding: 1rem 2.5rem;
@@ -538,8 +513,8 @@
         }
 
         /* ===========================
-                   NEWS SECTION IN HERO
-                =========================== */
+                           NEWS SECTION IN HERO
+                        =========================== */
         .hero-news-section {
             padding: 1rem 0;
             margin-top: 1.5rem;
@@ -584,33 +559,33 @@
             background: var(--white);
         }
 
-            .hero-news-badge {
-                display: inline-block;
-                background: linear-gradient(135deg, var(--primary) 0%, #e91e63 100%);
-                color: var(--white);
-                padding: 0.3rem 0.8rem;
-                border-radius: 20px;
-                font-size: 0.7rem;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 0.75rem;
-            }
+        .hero-news-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary) 0%, #e91e63 100%);
+            color: var(--white);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
 
-            .hero-news-content h3 {
-                font-size: 1.25rem;
-                font-weight: 700;
-                color: var(--dark);
-                margin-bottom: 0.5rem;
-                line-height: 1.3;
-            }
+        .hero-news-content h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
 
-            .hero-news-content p {
-                font-size: 0.95rem;
-                color: var(--text-light);
-                line-height: 1.5;
-                margin-bottom: 0;
-            }
+        .hero-news-content p {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
 
         .hero-news-nav {
             position: absolute;
@@ -671,8 +646,8 @@
             }
 
         /* ===========================
-                   FEATURES SECTION
-                =========================== */
+                           FEATURES SECTION
+                        =========================== */
         .features-section {
             padding: 3rem 0;
             background: var(--white);
@@ -696,28 +671,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-            .section-badge::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-                animation: shine 3s infinite;
-            }
-
-        @@keyframes shine {
-            0% {
-                left: -100%;
-            }
-            50%, 100% {
-                left: 100%;
-            }
         }
 
         .section-title {
@@ -746,7 +699,6 @@
             border: 1px solid rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
-            cursor: pointer;
         }
 
             .feature-card::before {
@@ -761,26 +713,13 @@
                 transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
-            .feature-card::after {
-                content: '';
-                position: absolute;
-                inset: 0;
-                background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(220, 20, 60, 0.05) 0%, transparent 50%);
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
-
             .feature-card:hover {
-                transform: translateY(-8px) scale(1.02);
+                transform: translateY(-8px);
                 box-shadow: var(--shadow-xl);
             }
 
                 .feature-card:hover::before {
                     transform: scaleX(1);
-                }
-
-                .feature-card:hover::after {
-                    opacity: 1;
                 }
 
         .feature-icon {
@@ -816,8 +755,8 @@
         }
 
         /* ===========================
-                   ABOUT SECTION
-                =========================== */
+                           ABOUT SECTION
+                        =========================== */
         .about-section {
             padding: 3rem 0;
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
@@ -859,14 +798,7 @@
                 font-size: 1rem;
                 color: var(--dark);
                 line-height: 1.6;
-                opacity: 0;
-                animation: fadeInLeft 0.6s ease-out forwards;
             }
-
-                .about-list li:nth-child(1) { animation-delay: 0.1s; }
-                .about-list li:nth-child(2) { animation-delay: 0.2s; }
-                .about-list li:nth-child(3) { animation-delay: 0.3s; }
-                .about-list li:nth-child(4) { animation-delay: 0.4s; }
 
                 .about-list li::before {
                     content: '\f00c';
@@ -884,37 +816,11 @@
                     justify-content: center;
                     color: var(--white);
                     font-size: 0.75rem;
-                    animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
                 }
 
-        @@keyframes fadeInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @@keyframes popIn {
-            0% {
-                transform: scale(0) rotate(0deg);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.2) rotate(180deg);
-            }
-            100% {
-                transform: scale(1) rotate(360deg);
-                opacity: 1;
-            }
-        }
-
         /* ===========================
-                   PROCESS SECTION
-                =========================== */
+                           PROCESS SECTION
+                        =========================== */
         .process-section {
             padding: 3rem 0;
             background: var(--white);
@@ -952,7 +858,6 @@
             box-shadow: 0 6px 20px rgba(220, 20, 60, 0.3);
             position: relative;
             z-index: 2;
-            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
         }
 
         .process-content {
@@ -966,24 +871,9 @@
         }
 
             .process-content:hover {
-                transform: translateX(8px) scale(1.02);
+                transform: translateX(8px);
                 box-shadow: var(--shadow-lg);
-                border-color: rgba(220, 20, 60, 0.2);
             }
-
-        @@keyframes bounceIn {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.15);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
 
         .process-title {
             font-size: 1.15rem;
@@ -1010,8 +900,8 @@
         }
 
         /* ===========================
-                   CONTACT SECTION
-                =========================== */
+                           CONTACT SECTION
+                        =========================== */
         .contact-section {
             padding: 3rem 0;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -1052,17 +942,12 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            cursor: pointer;
         }
 
             .contact-card:hover {
-                transform: translateY(-6px) scale(1.03);
+                transform: translateY(-6px);
                 box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
                 background: var(--white);
-            }
-
-            .contact-card:hover .contact-icon {
-                transform: rotateY(360deg);
             }
 
         .contact-icon {
@@ -1104,8 +989,8 @@
                 }
 
         /* ===========================
-                   FOOTER
-                =========================== */
+                           FOOTER
+                        =========================== */
         .modern-footer {
             background: #1a1a1a;
             color: rgba(255, 255, 255, 0.8);
@@ -1192,8 +1077,8 @@
         }
 
         /* ===========================
-                   RESPONSIVE
-                =========================== */
+                           RESPONSIVE
+                        =========================== */
         @@media (max-width: 991px) {
             .modern-nav-links {
                 display: none;
@@ -1235,17 +1120,17 @@
                 grid-template-columns: 1fr;
             }
 
-            .hero-news-slide img {
-                height: 220px;
-            }
+                .hero-news-slide img {
+                    height: 220px;
+                }
 
             .hero-news-content {
                 padding: 1.5rem;
             }
 
-            .hero-news-content h3 {
-                font-size: 1.3rem;
-            }
+                .hero-news-content h3 {
+                    font-size: 1.3rem;
+                }
         }
 
         @@media (max-width: 767px) {
@@ -1340,13 +1225,13 @@
                 padding: 1.25rem 1.5rem;
             }
 
-            .hero-news-content h3 {
-                font-size: 1.1rem;
-            }
+                .hero-news-content h3 {
+                    font-size: 1.1rem;
+                }
 
-            .hero-news-content p {
-                font-size: 0.9rem;
-            }
+                .hero-news-content p {
+                    font-size: 0.9rem;
+                }
 
             .hero-news-nav {
                 width: 38px;
@@ -1406,13 +1291,13 @@
                 padding: 1rem 1.25rem;
             }
 
-            .hero-news-content h3 {
-                font-size: 1rem;
-            }
+                .hero-news-content h3 {
+                    font-size: 1rem;
+                }
 
-            .hero-news-content p {
-                font-size: 0.85rem;
-            }
+                .hero-news-content p {
+                    font-size: 0.85rem;
+                }
 
             .hero-news-badge {
                 font-size: 0.65rem;
@@ -1445,55 +1330,27 @@
         }
 
         /* ===========================
-                   SCROLL ANIMATIONS
-                =========================== */
+                           SCROLL ANIMATIONS
+                        =========================== */
         .fade-in-up {
             opacity: 1;
             transform: translateY(0);
-            animation: slideUpFade 0.8s ease-out forwards;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @@keyframes slideUpFade {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
+            .fade-in-up.visible {
                 opacity: 1;
                 transform: translateY(0);
             }
-        }
 
         .fade-in {
             opacity: 1;
-            animation: fadeIn 0.8s ease-out forwards;
+            transition: opacity 0.8s ease;
         }
 
-        @@keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
+            .fade-in.visible {
                 opacity: 1;
             }
-        }
-
-        /* Stagger animation delays for sequential appearance */
-        .fade-in-up:nth-child(1) {
-            animation-delay: 0.1s;
-        }
-
-        .fade-in-up:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .fade-in-up:nth-child(3) {
-            animation-delay: 0.3s;
-        }
-
-        .fade-in-up:nth-child(4) {
-            animation-delay: 0.4s;
-        }
 
         /* Loading Screen */
         .loading-screen {
@@ -1719,7 +1576,7 @@
         </div>
     </section>
 
-   
+
 
     <!-- Features Section -->
     <section class="features-section" id="features">
@@ -2166,89 +2023,6 @@
                     parallax.style.transform = 'translateY(' + scrolled * 0.5 + 'px)';
                 }
             });
-
-            // Card mouse tracking effect
-            const cards = document.querySelectorAll('.feature-card');
-            cards.forEach(card => {
-                card.addEventListener('mousemove', function(e) {
-                    const rect = card.getBoundingClientRect();
-                    const x = ((e.clientX - rect.left) / rect.width) * 100;
-                    const y = ((e.clientY - rect.top) / rect.height) * 100;
-                    card.style.setProperty('--mouse-x', x + '%');
-                    card.style.setProperty('--mouse-y', y + '%');
-                });
-            });
-
-            // Smooth reveal on scroll
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
-
-            // Observe elements for scroll animations
-            document.querySelectorAll('.section-header, .feature-card, .contact-card, .process-step').forEach(el => {
-                observer.observe(el);
-            });
-
-            // Add subtle rotation effect to feature icons on hover
-            document.querySelectorAll('.feature-icon').forEach(icon => {
-                const card = icon.closest('.feature-card');
-                if (card) {
-                    card.addEventListener('mouseenter', () => {
-                        icon.style.transform = 'rotateY(360deg)';
-                    });
-                    card.addEventListener('mouseleave', () => {
-                        icon.style.transform = 'rotateY(0deg)';
-                    });
-                }
-            });
-
-            // Add ripple effect on button click
-            document.querySelectorAll('.btn-primary-custom, .btn-secondary-custom').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    const ripple = document.createElement('span');
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - size / 2;
-                    const y = e.clientY - rect.top - size / 2;
-
-                    ripple.style.cssText = `
-                        position: absolute;
-                        width: ${size}px;
-                        height: ${size}px;
-                        border-radius: 50%;
-                        background: rgba(255, 255, 255, 0.6);
-                        left: ${x}px;
-                        top: ${y}px;
-                        pointer-events: none;
-                        animation: ripple 0.6s ease-out;
-                    `;
-
-                    this.appendChild(ripple);
-                    setTimeout(() => ripple.remove(), 600);
-                });
-            });
-
-            // Add CSS for ripple animation
-            const style = document.createElement('style');
-            style.textContent = `
-                @@keyframes ripple {
-                    to {
-                        transform: scale(2);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
         });
     </script>
 </body>
