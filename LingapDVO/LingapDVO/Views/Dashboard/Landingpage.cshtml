@@ -537,134 +537,194 @@
             position: relative;
         }
 
-        .updates-news-section {
-            padding: 2rem 0;
-            margin-top: 1rem;
+        .updates-grid-wrapper {
+            display: grid;
+            grid-template-columns: 65% 35%;
+            gap: 2rem;
+            margin-top: 2rem;
+            align-items: start;
         }
 
-        .updates-news-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+        .updates-grid-collage {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 200px);
+            gap: 0.75rem;
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
-        .updates-news-slider {
+        .grid-item {
             position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .updates-news-slides {
-            display: flex;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+            .grid-item:hover {
+                transform: scale(1.05);
+                z-index: 10;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            }
 
-        .updates-news-slide {
-            min-width: 100%;
-            display: grid;
-            grid-template-columns: 45% 55%;
-            gap: 0;
-            align-items: center;
-        }
-
-            .updates-news-slide img {
+            .grid-item img {
                 width: 100%;
-                height: 280px;
-                object-fit: contain;
+                height: 100%;
+                object-fit: cover;
                 display: block;
+                transition: transform 0.4s ease;
             }
 
-        .updates-news-content {
-            padding: 1.5rem 2rem;
-            background: var(--white);
+            .grid-item:hover img {
+                transform: scale(1.1);
+            }
+
+        .grid-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 1rem 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-            .updates-news-badge {
-                display: inline-block;
-                background: linear-gradient(135deg, var(--primary) 0%, #e91e63 100%);
-                color: var(--white);
-                padding: 0.4rem 1rem;
-                border-radius: 20px;
-                font-size: 0.75rem;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 1rem;
-            }
+        .grid-item:hover .grid-overlay {
+            opacity: 1;
+        }
 
-            .updates-news-content h3 {
-                font-size: 1.35rem;
-                font-weight: 700;
-                color: var(--dark);
-                margin-bottom: 0.75rem;
-                line-height: 1.3;
-            }
+        .grid-badge {
+            color: var(--white);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-            .updates-news-content p {
-                font-size: 1rem;
-                color: var(--gray);
-                line-height: 1.6;
-                margin-bottom: 0;
-            }
+        /* Grid item specific positioning */
+        .grid-item-1 {
+            grid-column: 1 / 3;
+            grid-row: 1 / 2;
+        }
 
-        .updates-news-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(220, 20, 60, 0.2);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            color: var(--primary);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 10;
+        .grid-item-2 {
+            grid-column: 3 / 5;
+            grid-row: 1 / 2;
+        }
+
+        .grid-item-3 {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+        }
+
+        .grid-item-4 {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+        }
+
+        .grid-item-5 {
+            grid-column: 3 / 4;
+            grid-row: 2 / 3;
+        }
+
+        .grid-item-6 {
+            grid-column: 4 / 5;
+            grid-row: 2 / 3;
+        }
+
+        .grid-item-7 {
+            grid-column: 1 / 2;
+            grid-row: 3 / 4;
+        }
+
+        .grid-item-8 {
+            grid-column: 2 / 3;
+            grid-row: 3 / 4;
+        }
+
+        .grid-item-9 {
+            grid-column: 3 / 4;
+            grid-row: 3 / 4;
+        }
+
+        .grid-item-10 {
+            grid-column: 4 / 5;
+            grid-row: 3 / 4;
+        }
+
+        /* Info Section */
+        .updates-info-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 100px;
+        }
+
+        .info-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .info-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .info-description {
+            font-size: 1rem;
+            color: var(--gray);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .info-highlights {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .highlight-item {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            color: var(--dark);
         }
 
-            .updates-news-nav:hover {
-                background: var(--primary);
-                color: var(--white);
-                border-color: var(--primary);
-                transform: translateY(-50%) scale(1.1);
+            .highlight-item i {
+                color: var(--primary);
+                font-size: 1.1rem;
             }
 
-        .updates-news-prev {
-            left: 15px;
-        }
-
-        .updates-news-next {
-            right: 15px;
-        }
-
-        .updates-news-dots {
-            display: flex;
+        .info-cta-button {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 1.25rem 0;
-            background: var(--white);
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: var(--gradient-primary);
+            color: var(--white);
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 8px 25px rgba(220, 20, 60, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 1rem;
         }
 
-        .updates-news-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(220, 20, 60, 0.25);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-            .updates-news-dot.active {
-                background: var(--primary);
-                width: 28px;
-                border-radius: 5px;
+            .info-cta-button:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 35px rgba(220, 20, 60, 0.4);
+                color: var(--white);
+                text-decoration: none;
             }
 
         /* FEATURES SECTION */
@@ -1084,20 +1144,18 @@
                 margin-bottom: 2rem;
             }
 
-            .updates-news-slide {
+            .updates-grid-wrapper {
                 grid-template-columns: 1fr;
+                gap: 2rem;
             }
 
-            .updates-news-slide img {
-                height: 250px;
+            .updates-grid-collage {
+                grid-template-rows: repeat(3, 180px);
             }
 
-            .updates-news-content {
-                padding: 1.5rem;
-            }
-
-            .updates-news-content h3 {
-                font-size: 1.2rem;
+            .updates-info-section {
+                position: relative;
+                top: auto;
             }
         }
 
@@ -1163,27 +1221,60 @@
             .process-content {
                 padding: 1rem;
             }
-            
-            .updates-news-slide img {
-                height: 220px;
+
+            .updates-grid-collage {
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(4, 150px);
             }
 
-            .updates-news-content {
-                padding: 1.25rem 1.5rem;
+            .grid-item-1 {
+                grid-column: 1 / 3;
+                grid-row: 1 / 2;
             }
 
-            .updates-news-content h3 {
-                font-size: 1.15rem;
+            .grid-item-2 {
+                grid-column: 3 / 4;
+                grid-row: 1 / 3;
             }
 
-            .updates-news-content p {
-                font-size: 0.95rem;
+            .grid-item-3 {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
             }
 
-            .updates-news-nav {
-                width: 40px;
-                height: 40px;
-                font-size: 1.1rem;
+            .grid-item-4 {
+                grid-column: 2 / 3;
+                grid-row: 2 / 3;
+            }
+
+            .grid-item-5 {
+                grid-column: 1 / 2;
+                grid-row: 3 / 4;
+            }
+
+            .grid-item-6 {
+                grid-column: 2 / 3;
+                grid-row: 3 / 4;
+            }
+
+            .grid-item-7 {
+                grid-column: 3 / 4;
+                grid-row: 3 / 4;
+            }
+
+            .grid-item-8 {
+                grid-column: 1 / 2;
+                grid-row: 4 / 5;
+            }
+
+            .grid-item-9 {
+                grid-column: 2 / 3;
+                grid-row: 4 / 5;
+            }
+
+            .grid-item-10 {
+                grid-column: 3 / 4;
+                grid-row: 4 / 5;
             }
 
             .footer-content {
@@ -1232,36 +1323,45 @@
                 padding: 1.25rem 1rem;
             }
 
-            .updates-news-section {
-                padding: 1rem 0;
-                margin-top: 0.5rem;
+            .updates-grid-collage {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(5, 140px);
+                gap: 0.5rem;
             }
 
-            .updates-news-slide img {
-                height: 180px;
+            .grid-item-1,
+            .grid-item-2,
+            .grid-item-3,
+            .grid-item-4,
+            .grid-item-5,
+            .grid-item-6,
+            .grid-item-7,
+            .grid-item-8,
+            .grid-item-9,
+            .grid-item-10 {
+                grid-column: auto;
+                grid-row: auto;
             }
 
-            .updates-news-content {
-                padding: 1rem 1.25rem;
+            .grid-item-1 {
+                grid-column: 1 / 3;
             }
 
-            .updates-news-content h3 {
-                font-size: 1.05rem;
+            .info-title {
+                font-size: 1.5rem;
             }
 
-            .updates-news-content p {
+            .info-description {
                 font-size: 0.9rem;
             }
 
-            .updates-news-badge {
-                font-size: 0.65rem;
-                padding: 0.3rem 0.75rem;
+            .highlight-item {
+                font-size: 0.85rem;
             }
 
-            .updates-news-nav {
-                width: 36px;
-                height: 36px;
-                font-size: 1rem;
+            .info-cta-button {
+                padding: 0.875rem 1.5rem;
+                font-size: 0.95rem;
             }
 
             .modern-footer {
@@ -1569,112 +1669,105 @@
                 <h2 class="section-title">Latest Update on Lingap Para sa Mahirap</h2>
             </div>
 
-            <div class="updates-news-section">
-                <div class="updates-news-container">
-                    <div class="updates-news-slider">
-                        <div class="updates-news-slides" id="updatesNewsSlides">
-                            <!-- Slide 1 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update1.jpg" alt="Lingap Program Update">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Office Update</span>
-                                    <h3>Bagong Pasilidad para sa Mas Mabilis na Serbisyo</h3>
-                                    <p>Inauguration ng bagong Lingap Center sa Davao City para sa mas mabilis at mas mahusay na serbisyo sa ating mga kababayan.</p>
-                                </div>
+            <div class="updates-grid-wrapper">
+                <!-- Grid Collage (Left Side) -->
+                <div class="updates-grid-collage">
+                    <div class="grid-item grid-item-1">
+                        <img src="/LingapUpdate/dcitizen_update1.jpg" alt="Office Update">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Office Update</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-2">
+                        <img src="/LingapUpdate/dcitizen_update3.jpg" alt="Medical Mission">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Medical Mission</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-3">
+                        <img src="/LingapUpdate/dcitizen_update4.jpg" alt="Financial Aid">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Financial Aid</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-4">
+                        <img src="/LingapUpdate/dcitizen_update5.jpg" alt="Outreach">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Outreach</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-5">
+                        <img src="/LingapUpdate/dcitizen_update6.jpg" alt="Livelihood">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Livelihood</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-6">
+                        <img src="/LingapUpdate/dcitizen_update7.jpg" alt="Education">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Education</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-7">
+                        <img src="/LingapUpdate/dcitizen_update8.jpg" alt="Health">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Health</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-8">
+                        <img src="/LingapUpdate/dcitizen_update9.jpg" alt="Senior Care">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Senior Care</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-9">
+                        <img src="/LingapUpdate/dcitizen_update2.jpg" alt="Emergency">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Emergency</span>
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-10">
+                        <img src="/LingapUpdate/dcitizen_update10.jpg" alt="Technology">
+                        <div class="grid-overlay">
+                            <span class="grid-badge">Technology</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Section (Right Side) -->
+                <div class="updates-info-section">
+                    <div class="info-content">
+                        <h3 class="info-title">Lingap in Action</h3>
+                        <p class="info-description">
+                            Witness the impact of Lingap Para sa Mahirap through our community programs and initiatives.
+                            From medical missions to educational support, we're committed to serving every Dabawenyo in need.
+                        </p>
+                        <div class="info-highlights">
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Medical & Financial Assistance</span>
                             </div>
-                            <!-- Slide 2 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update3.jpg" alt="Medical Mission">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Medical Mission</span>
-                                    <h3>Medical Mission sa Malalayong Barangay</h3>
-                                    <p>Libreng check-up at gamot para sa mga residente ng malalayong barangay sa Davao City.</p>
-                                </div>
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Community Outreach Programs</span>
                             </div>
-                            <!-- Slide 3 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update4.jpg" alt="Financial Assistance">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Financial Aid</span>
-                                    <h3>Pamamahagi ng Financial Assistance</h3>
-                                    <p>Suporta para sa mga pamilyang apektado ng pandemya upang makaahon sa kanilang pangangailangan.</p>
-                                </div>
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Educational Support</span>
                             </div>
-                            <!-- Slide 4 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update5.jpg" alt="Community Outreach">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Outreach</span>
-                                    <h3>Community Outreach Program</h3>
-                                    <p>Pagbibigay ng essential goods at relief packs sa mga nangangailangan sa ating komunidad.</p>
-                                </div>
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Emergency Response</span>
                             </div>
-                            <!-- Slide 5 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update6.jpg" alt="Training Program">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Livelihood</span>
-                                    <h3>Livelihood Training Program</h3>
-                                    <p>Skills training para sa sustainable income at kabuhayan ng mga Dabawenyo.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 6 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update7.jpg" alt="Scholarship Program">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Education</span>
-                                    <h3>Educational Assistance Program</h3>
-                                    <p>Scholarship at educational support para sa mga kabataang Dabawenyo na nag-aaral.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 7 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update8.jpg" alt="Health Awareness">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Health</span>
-                                    <h3>Health Awareness Campaign</h3>
-                                    <p>Information drive para sa preventive healthcare at health awareness sa komunidad.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 8 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update9.jpg" alt="Senior Citizen Support">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Senior Care</span>
-                                    <h3>Support for Senior Citizens</h3>
-                                    <p>Medical assistance at special support programs para sa ating mga nakatatandang Dabawenyo.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 9 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update2.jpg" alt="Disaster Response">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Emergency</span>
-                                    <h3>Disaster Response Team</h3>
-                                    <p>Mabilis na aksyon at emergency response sa mga nasalanta ng kalamidad sa Davao City.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 10 -->
-                            <div class="updates-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update10.jpg" alt="Digital Transformation">
-                                <div class="updates-news-content">
-                                    <span class="updates-news-badge">Technology</span>
-                                    <h3>Digital Transformation Initiative</h3>
-                                    <p>Online platform para sa mas mabilis, mas convenient, at mas transparent na serbisyo.</p>
-                                </div>
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Livelihood Training</span>
                             </div>
                         </div>
-
-                        <button class="updates-news-nav updates-news-prev" id="updatesNewsPrev">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button class="updates-news-nav updates-news-next" id="updatesNewsNext">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-
-                    <div class="updates-news-dots" id="updatesNewsDots">
-                        <!-- Dots will be generated by JavaScript -->
+                        <a href="/Login" class="info-cta-button">
+                            <i class="fas fa-hand-holding-heart"></i>
+                            <span>Apply for Assistance</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -1761,56 +1854,6 @@
                         });
                     }
                 });
-            });
-
-            // Updates News Slider
-            const updatesNewsSlides = document.getElementById('updatesNewsSlides');
-            const updatesNewsPrev = document.getElementById('updatesNewsPrev');
-            const updatesNewsNext = document.getElementById('updatesNewsNext');
-            const updatesNewsDots = document.getElementById('updatesNewsDots');
-            let currentNewsSlide = 0;
-            const totalNewsSlides = 10;
-
-            // Create dots
-            for (let i = 0; i < totalNewsSlides; i++) {
-                const dot = document.createElement('div');
-                dot.classList.add('updates-news-dot');
-                if (i === 0) dot.classList.add('active');
-                dot.addEventListener('click', () => goToNewsSlide(i));
-                updatesNewsDots.appendChild(dot);
-            }
-
-            function goToNewsSlide(slideIndex) {
-                currentNewsSlide = slideIndex;
-                updatesNewsSlides.style.transform = `translateX(-${currentNewsSlide * 100}%)`;
-
-                // Update dots
-                document.querySelectorAll('.updates-news-dot').forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentNewsSlide);
-                });
-            }
-
-            function nextNewsSlide() {
-                currentNewsSlide = (currentNewsSlide + 1) % totalNewsSlides;
-                goToNewsSlide(currentNewsSlide);
-            }
-
-            function prevNewsSlide() {
-                currentNewsSlide = (currentNewsSlide - 1 + totalNewsSlides) % totalNewsSlides;
-                goToNewsSlide(currentNewsSlide);
-            }
-
-            updatesNewsNext.addEventListener('click', nextNewsSlide);
-            updatesNewsPrev.addEventListener('click', prevNewsSlide);
-
-            // Auto slide every 5 seconds
-            let newsSlideInterval = setInterval(nextNewsSlide, 5000);
-
-            // Pause auto slide on hover
-            const updatesNewsSlider = document.querySelector('.updates-news-slider');
-            updatesNewsSlider.addEventListener('mouseenter', () => clearInterval(newsSlideInterval));
-            updatesNewsSlider.addEventListener('mouseleave', () => {
-                newsSlideInterval = setInterval(nextNewsSlide, 5000);
             });
 
             // Counter animation
