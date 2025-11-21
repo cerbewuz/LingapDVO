@@ -1524,6 +1524,7 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
+
             var HospitalAssistance = context.HospitalAssistance.Find(id);
             if (HospitalAssistance == null)
             {
@@ -1531,7 +1532,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] = HospitalAssistance.Status2;
+            ViewData["Status"] = HospitalAssistance.Status;
             ViewData["Id"] = HospitalAssistance.Id;
             ViewData["Lastname"] = HospitalAssistance.Lastname;
             ViewData["Firstname"] = HospitalAssistance.Firstname;
@@ -1581,8 +1582,8 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -1711,6 +1712,7 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
+
             var FuneralAssistance = context.FuneralAssistance.Find(id);
             if (FuneralAssistance == null)
             {
@@ -1768,8 +1770,8 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -1905,7 +1907,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] = medicallabform.Status2;
+            ViewData["Status"] = medicallabform.Status;
             ViewData["Id"] = medicallabform.Id;
             ViewData["Lastname"] = medicallabform.Lastname;
             ViewData["Firstname"] = medicallabform.Firstname;
@@ -1955,9 +1957,9 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
-            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 

@@ -884,7 +884,7 @@
 
             try {
                 const encodedFileName = encodeURIComponent(fileName);
-                const url = '@Url.Action("ViewPDF", "Adminuser")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
 
                 const response = await fetch(url);
                 if (!response.ok) {
