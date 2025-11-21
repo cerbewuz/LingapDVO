@@ -698,17 +698,6 @@
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
                 <div class="cmo-details">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label cmo-section-title">Bill Amount:</label>
-                            <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label cmo-section-title">Granted Amount: <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" class="form-control" id="grantedAmountInput" name="GrantedAmount" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
-                        </div>
-                    </div>
-
                     <div class="mt-4">
                         <label class="form-label cmo-section-title">Supporting Documents Attached: <span class="text-danger">*</span></label>
                         <small class="text-muted d-block mb-2">At least one document must be selected</small>
@@ -743,7 +732,7 @@
                         </div>
                     </div>
 
-                    <div class="row g-3">
+                    <div class="row g-3 mt-3">
                         <div class="col-md-6">
                             <div class="cmo-notes-section">
                                 <label class="form-label cmo-section-title">Others:</label>
@@ -751,6 +740,13 @@
                             </div>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label cmo-section-title">Amount Granted: <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="grantedAmountInput" name="GrantedAmount" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-12">
                             <div class="cmo-processed-by">
                                 <div>Processed by:</div>
                                 <div>@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")</div>
@@ -1136,16 +1132,16 @@
 
         // CMO Reflection Auto-generation - FIXED VERSION
         function updateReflection() {
-            const billInput = document.getElementById('billAmountInput');
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
             const reflectionField = document.getElementById('cmoReflectionField');
             const docCheckboxes = document.querySelectorAll('.supporting-doc:checked');
 
             let parts = [];
 
-            // Add bill amount if exists
-            if (billInput && billInput.value.trim()) {
-                parts.push(`Bill: ${billInput.value.trim()}`);
+            // Add granted amount if exists
+            if (grantedAmountInput && grantedAmountInput.value.trim()) {
+                parts.push(`GrantedAmount: ${grantedAmountInput.value.trim()}`);
             }
 
             // Add checked documents
@@ -1184,10 +1180,10 @@
             });
 
             // Add event listeners for inputs
-            const billInput = document.getElementById('billAmountInput');
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
 
-            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (grantedAmountInput) grantedAmountInput.addEventListener('input', updateReflection);
             if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
 
             // Initialize reflection field on page load
