@@ -540,17 +540,17 @@
         .updates-grid-wrapper {
             display: grid;
             grid-template-columns: 65% 35%;
-            gap: 2rem;
-            margin-top: 2rem;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
             align-items: start;
         }
 
         .updates-grid-collage {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(3, 200px);
-            gap: 0.75rem;
-            border-radius: 16px;
+            grid-template-rows: repeat(3, 160px);
+            gap: 0.5rem;
+            border-radius: 12px;
             overflow: hidden;
         }
 
@@ -657,8 +657,8 @@
         /* Info Section */
         .updates-info-section {
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border-radius: 16px;
-            padding: 2rem;
+            border-radius: 12px;
+            padding: 1.5rem;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
             position: sticky;
             top: 100px;
@@ -667,40 +667,40 @@
         .info-content {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         .info-title {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: var(--dark);
             margin: 0;
         }
 
         .info-description {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--gray);
-            line-height: 1.7;
+            line-height: 1.6;
             margin: 0;
         }
 
         .info-highlights {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .highlight-item {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
             color: var(--dark);
         }
 
             .highlight-item i {
                 color: var(--primary);
-                font-size: 1.1rem;
+                font-size: 1rem;
             }
 
         .info-cta-button {
@@ -708,16 +708,16 @@
             align-items: center;
             justify-content: center;
             gap: 0.75rem;
-            padding: 1rem 2rem;
+            padding: 0.875rem 1.75rem;
             background: var(--gradient-primary);
             color: var(--white);
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             border-radius: 50px;
             text-decoration: none;
             box-shadow: 0 8px 25px rgba(220, 20, 60, 0.3);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
 
             .info-cta-button:hover {
@@ -726,6 +726,88 @@
                 color: var(--white);
                 text-decoration: none;
             }
+
+        /* Image Modal/Lightbox */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+        }
+
+            .image-modal.active {
+                display: flex;
+            }
+
+        .modal-content-wrapper {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            animation: modalZoom 0.3s ease-out;
+        }
+
+        @@keyframes modalZoom {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: -50px;
+            right: -10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+            .modal-close:hover {
+                background: var(--primary);
+                border-color: var(--primary);
+                transform: rotate(90deg);
+            }
+
+        .modal-caption {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: var(--white);
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
         /* FEATURES SECTION */
         .features-section {
@@ -1146,11 +1228,11 @@
 
             .updates-grid-wrapper {
                 grid-template-columns: 1fr;
-                gap: 2rem;
+                gap: 1.5rem;
             }
 
             .updates-grid-collage {
-                grid-template-rows: repeat(3, 180px);
+                grid-template-rows: repeat(3, 150px);
             }
 
             .updates-info-section {
@@ -1224,7 +1306,7 @@
 
             .updates-grid-collage {
                 grid-template-columns: repeat(3, 1fr);
-                grid-template-rows: repeat(4, 150px);
+                grid-template-rows: repeat(4, 130px);
             }
 
             .grid-item-1 {
@@ -1325,8 +1407,8 @@
 
             .updates-grid-collage {
                 grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(5, 140px);
-                gap: 0.5rem;
+                grid-template-rows: repeat(5, 120px);
+                gap: 0.4rem;
             }
 
             .grid-item-1,
@@ -1773,6 +1855,17 @@
         </div>
     </section>
 
+    <!-- Image Modal -->
+    <div class="image-modal" id="imageModal">
+        <div class="modal-content-wrapper">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <img src="" alt="" class="modal-image" id="modalImage">
+            <div class="modal-caption" id="modalCaption"></div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="modern-footer">
         <div class="container">
@@ -1853,6 +1946,51 @@
                         });
                     }
                 });
+            });
+
+            // Image Modal/Lightbox functionality
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+            const modalClose = document.getElementById('modalClose');
+            const gridItems = document.querySelectorAll('.grid-item');
+
+            // Open modal when grid item is clicked
+            gridItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const img = this.querySelector('img');
+                    const badge = this.querySelector('.grid-badge');
+
+                    modalImage.src = img.src;
+                    modalImage.alt = img.alt;
+                    modalCaption.textContent = badge ? badge.textContent : img.alt;
+
+                    imageModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            // Close modal when close button is clicked
+            modalClose.addEventListener('click', function(e) {
+                e.stopPropagation();
+                imageModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            // Close modal when clicking outside the image
+            imageModal.addEventListener('click', function(e) {
+                if (e.target === imageModal) {
+                    imageModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && imageModal.classList.contains('active')) {
+                    imageModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
             });
 
             // Counter animation
