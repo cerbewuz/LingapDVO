@@ -698,15 +698,9 @@
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
                 <div class="cmo-details">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label cmo-section-title">Bill Amount:</label>
-                            <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
-                        </div>
-                    </div>
-
                     <div class="mt-4">
-                        <label class="form-label cmo-section-title">Supporting Documents Attached:</label>
+                        <label class="form-label cmo-section-title">Supporting Documents Attached: <span class="text-danger">*</span></label>
+                        <small class="text-muted d-block mb-2">At least one document must be selected</small>
                         <div class="cmo-checkbox-group">
                             <div class="cmo-checkbox-item">
                                 <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
@@ -733,16 +727,32 @@
                                 <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
                             </div>
                         </div>
+                        <div class="invalid-feedback" id="supportingDocsError" style="display: none;">
+                            Please select at least one supporting document.
+                        </div>
                     </div>
 
-                    <div class="row g-3">
+                    <div class="row g-3 mt-3">
                         <div class="col-md-6">
                             <div class="cmo-notes-section">
-                                <label class="form-label cmo-section-title">Others:</label>
-                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                <label class="form-label cmo-section-title">Others: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." required value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                <div class="invalid-feedback" id="cmoNotesError">
+                                    Please enter notes in the Others field.
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label cmo-section-title">Amount Granted: <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="grantedAmountInput" name="GrantedAmount" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
+                            <div class="invalid-feedback" id="grantedAmountError">
+                                Please enter the amount granted.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-12">
                             <div class="cmo-processed-by">
                                 <div>Processed by:</div>
                                 <div>@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")</div>
@@ -1128,16 +1138,16 @@
 
         // CMO Reflection Auto-generation - FIXED VERSION
         function updateReflection() {
-            const billInput = document.getElementById('billAmountInput');
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
             const reflectionField = document.getElementById('cmoReflectionField');
             const docCheckboxes = document.querySelectorAll('.supporting-doc:checked');
 
             let parts = [];
 
-            // Add bill amount if exists
-            if (billInput && billInput.value.trim()) {
-                parts.push(`Bill: ${billInput.value.trim()}`);
+            // Add granted amount if exists
+            if (grantedAmountInput && grantedAmountInput.value.trim()) {
+                parts.push(`GrantedAmount: ${grantedAmountInput.value.trim()}`);
             }
 
             // Add checked documents
@@ -1176,10 +1186,10 @@
             });
 
             // Add event listeners for inputs
-            const billInput = document.getElementById('billAmountInput');
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
 
-            if (billInput) billInput.addEventListener('input', updateReflection);
+            if (grantedAmountInput) grantedAmountInput.addEventListener('input', updateReflection);
             if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
 
             // Initialize reflection field on page load
@@ -1188,11 +1198,73 @@
 
         // Enhanced form submission debugging
         document.getElementById('statusForm').addEventListener('submit', function(e) {
+            let hasError = false;
+            let errorMessages = [];
+
+            // Validate that at least one supporting document is checked
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            const supportingDocsError = document.getElementById('supportingDocsError');
+
+            if (supportingDocs.length === 0) {
+                hasError = true;
+                errorMessages.push('Please select at least one supporting document.');
+                supportingDocsError.style.display = 'block';
+                supportingDocsError.classList.add('d-block');
+            } else {
+                supportingDocsError.style.display = 'none';
+                supportingDocsError.classList.remove('d-block');
+            }
+
+            // Validate Others field (CMO Notes)
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            const cmoNotesError = document.getElementById('cmoNotesError');
+
+            if (!cmoNotesInput.value.trim()) {
+                hasError = true;
+                errorMessages.push('Please enter notes in the Others field.');
+                cmoNotesInput.classList.add('is-invalid');
+                if (cmoNotesError) cmoNotesError.style.display = 'block';
+            } else {
+                cmoNotesInput.classList.remove('is-invalid');
+                if (cmoNotesError) cmoNotesError.style.display = 'none';
+            }
+
+            // Validate Amount Granted field
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            const grantedAmountError = document.getElementById('grantedAmountError');
+
+            if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                hasError = true;
+                errorMessages.push('Please enter a valid amount granted (must be greater than 0).');
+                grantedAmountInput.classList.add('is-invalid');
+                if (grantedAmountError) grantedAmountError.style.display = 'block';
+            } else {
+                grantedAmountInput.classList.remove('is-invalid');
+                if (grantedAmountError) grantedAmountError.style.display = 'none';
+            }
+
+            // If there are validation errors, prevent submission
+            if (hasError) {
+                e.preventDefault();
+
+                // Scroll to the first error (CMO section)
+                const cmoSection = document.querySelector('.cmo-details');
+                if (cmoSection) {
+                    cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                // Show alert with all error messages
+                alert('Please fix the following errors before submitting:\n\n' + errorMessages.join('\n'));
+                return false;
+            }
+
             console.log('=== FORM SUBMISSION DEBUG INFO ===');
             console.log('Form action:', this.action);
             console.log('Form method:', this.method);
             console.log('Status:', document.getElementById('statusInput').value);
             console.log('Comments:', document.getElementById('commentsInput').value);
+            console.log('Granted Amount:', document.getElementById('grantedAmountInput').value);
+            console.log('Supporting Docs Count:', supportingDocs.length);
             console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
             console.log('Processed By:', document.getElementById('processByInput').value);
             console.log('Form data:', new FormData(this));

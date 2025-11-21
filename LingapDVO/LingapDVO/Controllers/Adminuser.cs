@@ -3509,6 +3509,39 @@ namespace LingapDVO.Controllers
                     return Redirect("/Admin"); // Return to form
                 }
 
+                // Validate CMO Details Section - Required fields
+                var cmoReflection = HospitalAssistanceDto.ForCMOPERSONNEL ?? "";
+
+                // Check if at least one supporting document is selected (should be in the CMO reflection)
+                if (string.IsNullOrWhiteSpace(cmoReflection) || !cmoReflection.Contains("Docs:"))
+                {
+                    TempData["ErrorMessage"] = "Please select at least one supporting document in the CMO Details section.";
+                    return RedirectToAction("HospitalAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Extract and validate CmoNotes (Others field) from the CMO reflection
+                // Format: "GrantedAmount: X , Docs: Y , Others: Z"
+                if (!cmoReflection.Contains("Others:") || string.IsNullOrWhiteSpace(cmoReflection.Split("Others:").LastOrDefault()))
+                {
+                    TempData["ErrorMessage"] = "Please enter notes in the Others field in the CMO Details section.";
+                    return RedirectToAction("HospitalAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Extract and validate GrantedAmount
+                if (!cmoReflection.Contains("GrantedAmount:") || string.IsNullOrWhiteSpace(cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()))
+                {
+                    TempData["ErrorMessage"] = "Please enter the Amount Granted in the CMO Details section.";
+                    return RedirectToAction("HospitalAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Validate that granted amount is greater than 0
+                var grantedAmountStr = cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim();
+                if (decimal.TryParse(grantedAmountStr, out decimal grantedAmount) && grantedAmount <= 0)
+                {
+                    TempData["ErrorMessage"] = "Amount Granted must be greater than 0 in the CMO Details section.";
+                    return RedirectToAction("HospitalAssistanceProcessingStatus", new { id = id });
+                }
+
                 // Update record
                 HospitalAssistance.Status2 = HospitalAssistanceDto.Status2;
                 HospitalAssistance.ForCMOPERSONNEL = HospitalAssistanceDto.ForCMOPERSONNEL;
@@ -3665,6 +3698,39 @@ namespace LingapDVO.Controllers
                     return Redirect("/Admin"); // Return to form
                 }
 
+                // Validate CMO Details Section - Required fields
+                var cmoReflection = OtherAssistanceDto.ForCMOPERSONNEL ?? "";
+
+                // Check if at least one supporting document is selected (should be in the CMO reflection)
+                if (string.IsNullOrWhiteSpace(cmoReflection) || !cmoReflection.Contains("Docs:"))
+                {
+                    TempData["ErrorMessage"] = "Please select at least one supporting document in the CMO Details section.";
+                    return RedirectToAction("OtherAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Extract and validate CmoNotes (Others field) from the CMO reflection
+                // Format: "GrantedAmount: X , Docs: Y , Others: Z"
+                if (!cmoReflection.Contains("Others:") || string.IsNullOrWhiteSpace(cmoReflection.Split("Others:").LastOrDefault()))
+                {
+                    TempData["ErrorMessage"] = "Please enter notes in the Others field in the CMO Details section.";
+                    return RedirectToAction("OtherAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Extract and validate GrantedAmount
+                if (!cmoReflection.Contains("GrantedAmount:") || string.IsNullOrWhiteSpace(cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()))
+                {
+                    TempData["ErrorMessage"] = "Please enter the Amount Granted in the CMO Details section.";
+                    return RedirectToAction("OtherAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Validate that granted amount is greater than 0
+                var grantedAmountStr = cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim();
+                if (decimal.TryParse(grantedAmountStr, out decimal grantedAmount) && grantedAmount <= 0)
+                {
+                    TempData["ErrorMessage"] = "Amount Granted must be greater than 0 in the CMO Details section.";
+                    return RedirectToAction("OtherAssistanceProcessingStatus", new { id = id });
+                }
+
                 // Update record
                 medicallabform.Status2 = OtherAssistanceDto.Status2;
                 medicallabform.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL;
@@ -3819,6 +3885,39 @@ namespace LingapDVO.Controllers
                 {
                     TempData["ErrorMessage"] = "Status is required.";
                     return Redirect("/Admin"); // Return to form
+                }
+
+                // Validate CMO Details Section - Required fields
+                var cmoReflection = FuneralAssistanceDto.ForCMOPERSONNEL ?? "";
+
+                // Check if at least one supporting document is selected (should be in the CMO reflection)
+                if (string.IsNullOrWhiteSpace(cmoReflection) || !cmoReflection.Contains("Docs:"))
+                {
+                    TempData["ErrorMessage"] = "Please select at least one supporting document in the CMO Details section.";
+                    return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Extract and validate CmoNotes (Others field) from the CMO reflection
+                // Format: "GrantedAmount: X , Docs: Y , Others: Z"
+                if (!cmoReflection.Contains("Others:") || string.IsNullOrWhiteSpace(cmoReflection.Split("Others:").LastOrDefault()))
+                {
+                    TempData["ErrorMessage"] = "Please enter notes in the Others field in the CMO Details section.";
+                    return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Extract and validate GrantedAmount
+                if (!cmoReflection.Contains("GrantedAmount:") || string.IsNullOrWhiteSpace(cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()))
+                {
+                    TempData["ErrorMessage"] = "Please enter the Amount Granted in the CMO Details section.";
+                    return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
+                }
+
+                // Validate that granted amount is greater than 0
+                var grantedAmountStr = cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim();
+                if (decimal.TryParse(grantedAmountStr, out decimal grantedAmount) && grantedAmount <= 0)
+                {
+                    TempData["ErrorMessage"] = "Amount Granted must be greater than 0 in the CMO Details section.";
+                    return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
                 }
 
                 // Update record

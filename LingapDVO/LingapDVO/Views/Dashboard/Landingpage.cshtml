@@ -62,41 +62,79 @@
             background: var(--white);
         }
 
-        /* ===========================
-                   MODERN NAVBAR
-                =========================== */
+        /* MODERN NAVBAR */
         .modern-navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            padding: 1.5rem 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            background: transparent;
-        }
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 1.5rem 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+}
 
-            .modern-navbar.scrolled {
-                background: rgba(255, 255, 255, 0.98);
-                backdrop-filter: blur(20px);
-                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
-                padding: 1rem 0;
-            }
+.modern-navbar.scrolled {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+    padding: 1rem 0;
+}
 
-        .navbar-brand-modern {
-            font-size: 1.75rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.5px;
-            transition: all 0.3s ease;
-        }
+.navbar-brand-modern {
+    font-size: 1.75rem;
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    transition: all 0.3s ease;
+}
 
-        .modern-navbar.scrolled .navbar-brand-modern {
-            font-size: 1.5rem;
-        }
+.modern-navbar.scrolled .navbar-brand-modern {
+    font-size: 1.5rem;
+}
+
+/* Mobile menu toggle positioning */
+.menu-toggle {
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    position: relative;
+    z-index: 100;
+    margin-left: auto; 
+}
+
+.menu-toggle span {
+    width: 100%;
+    height: 3px;
+    background: var(--white);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.modern-navbar.scrolled .menu-toggle span {
+    background: var(--dark);
+}
+
+
+.row.align-items-center {
+    display: flex;
+    align-items: center;
+}
+
+.col.d-lg-none.text-end {
+    display: flex;
+    justify-content: flex-end;
+    margin-left: auto;
+}
 
         .modern-nav-link {
             font-weight: 600;
@@ -135,17 +173,6 @@
 
             .modern-nav-link:hover::before {
                 width: 100%;
-            }
-
-        .modern-nav-link.login-btn {
-            background: var(--gradient-primary);
-            color: var(--white) !important;
-            box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
-        }
-
-            .modern-nav-link.login-btn:hover {
-                box-shadow: 0 8px 25px rgba(220, 20, 60, 0.4);
-                transform: translateY(-3px);
             }
 
         /* Mobile Menu */
@@ -258,12 +285,11 @@
             background: var(--dark);
         }
 
-        /* ===========================
-                   HERO SECTION
-                =========================== */
+        /* Hero Section */
         .hero-section {
             position: relative;
-            min-height: 100vh;
+            min-height: 100vh; /* Changed from auto to 100vh */
+            padding: 8rem 0 3rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -310,10 +336,17 @@
             padding: 0 1rem;
             max-width: 1200px;
             margin: 0 auto;
-            animation: fadeInUp 1s ease-out;
+            animation: heroFadeInUp 1.2s ease-out;
         }
 
-        @@keyframes fadeInUp {
+        /* Show scroll indicator on larger screens */
+        @@media (min-width: 768px) {
+            .scroll-indicator {
+                display: block;
+            }
+        }
+
+        @@keyframes heroFadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(50px);
@@ -327,14 +360,14 @@
 
         .hero-badge {
             display: inline-block;
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.25rem;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
             border-radius: 50px;
             color: var(--white);
             font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
             animation: pulse 2s infinite;
         }
@@ -350,49 +383,60 @@
         }
 
         .hero-title {
-            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-size: clamp(1.75rem, 5vw, 3rem);
             font-weight: 800;
             color: var(--white);
             line-height: 1.1;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.875rem;
             text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             letter-spacing: -1px;
+            animation: floatTitle 3s ease-in-out infinite;
+        }
+
+        @@keyframes floatTitle {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
         }
 
         .hero-subtitle {
-            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
             color: rgba(255, 255, 255, 0.95);
-            max-width: 800px;
-            margin: 0 auto 3rem;
-            line-height: 1.8;
+            max-width: 650px;
+            margin: 0 auto 1.25rem;
+            line-height: 1.5;
             font-weight: 400;
         }
 
         .hero-buttons {
             display: flex;
-            gap: 1.5rem;
+            gap: 1.25rem;
             justify-content: center;
             flex-wrap: wrap;
-            margin-bottom: 3rem;
+            margin-bottom: 1rem;
         }
 
         .btn-primary-custom {
-            padding: 1rem 2.5rem;
+            padding: 0.8rem 1.75rem;
             background: var(--white);
             color: var(--primary);
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             border-radius: 50px;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.65rem;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            animation: pulseGlow 2s ease-in-out infinite;
         }
 
             .btn-primary-custom::before {
@@ -416,8 +460,13 @@
 
             .btn-primary-custom:hover {
                 color: var(--white);
-                transform: translateY(-4px);
+                transform: translateY(-4px) scale(1.05);
                 box-shadow: 0 12px 35px rgba(220, 20, 60, 0.4);
+                animation: none;
+            }
+
+            .btn-primary-custom:active {
+                transform: translateY(-2px) scale(1.02);
             }
 
             .btn-primary-custom span,
@@ -426,18 +475,27 @@
                 z-index: 1;
             }
 
+        @@keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            }
+            50% {
+                box-shadow: 0 8px 35px rgba(220, 20, 60, 0.3);
+            }
+        }
+
         .btn-secondary-custom {
-            padding: 1rem 2.5rem;
+            padding: 0.8rem 1.75rem;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
             color: var(--white);
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             border-radius: 50px;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.65rem;
             border: 2px solid rgba(255, 255, 255, 0.3);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
@@ -488,6 +546,7 @@
             transform: translateX(-50%);
             z-index: 10;
             animation: bounce 2s infinite;
+            display: none;
         }
 
         @@keyframes bounce {
@@ -510,144 +569,288 @@
             opacity: 0.8;
         }
 
-        /* ===========================
-                   NEWS SECTION IN HERO
-                =========================== */
-        .hero-news-section {
+        /* UPDATES SECTION */
+        .updates-section {
             padding: 2rem 0;
-            margin-top: 2rem;
-        }
-
-        .hero-news-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .hero-news-slider {
+            background: var(--white);
             position: relative;
         }
 
-        .hero-news-slides {
-            display: flex;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .hero-news-slide {
-            min-width: 100%;
+        .updates-grid-wrapper {
             display: grid;
-            grid-template-columns: 45% 55%;
-            gap: 0;
-            align-items: center;
+            grid-template-columns: 65% 35%;
+            gap: 1.25rem;
+            margin-top: 1.25rem;
+            align-items: start;
         }
 
-            .hero-news-slide img {
+        .updates-grid-collage {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 140px);
+            gap: 0.4rem;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .grid-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+            .grid-item:hover {
+                transform: scale(1.05);
+                z-index: 10;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            }
+
+            .grid-item img {
                 width: 100%;
-                height: 280px;
+                height: 100%;
                 object-fit: cover;
                 display: block;
+                transition: transform 0.4s ease;
             }
 
-        .hero-news-content {
-            padding: 2rem 2.5rem;
-            background: var(--white);
+            .grid-item:hover img {
+                transform: scale(1.1);
+            }
+
+        .grid-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 1rem 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-            .hero-news-badge {
-                display: inline-block;
-                background: linear-gradient(135deg, var(--primary) 0%, #e91e63 100%);
-                color: var(--white);
-                padding: 0.4rem 1rem;
-                border-radius: 20px;
-                font-size: 0.75rem;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 1rem;
-            }
+        .grid-item:hover .grid-overlay {
+            opacity: 1;
+        }
 
-            .hero-news-content h3 {
-                font-size: 1.5rem;
-                font-weight: 700;
-                color: var(--dark);
-                margin-bottom: 0.75rem;
-                line-height: 1.3;
-            }
+        .grid-badge {
+            color: var(--white);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-            .hero-news-content p {
-                font-size: 1rem;
-                color: var(--text-light);
-                line-height: 1.6;
-                margin-bottom: 0;
-            }
+        /* Grid item specific positioning */
+        .grid-item-1 {
+            grid-column: 1 / 3;
+            grid-row: 1 / 2;
+        }
 
-        .hero-news-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(220, 20, 60, 0.2);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            color: var(--primary);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 10;
+        .grid-item-2 {
+            grid-column: 3 / 5;
+            grid-row: 1 / 2;
+        }
+
+        .grid-item-3 {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+        }
+
+        .grid-item-4 {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+        }
+
+        .grid-item-5 {
+            grid-column: 3 / 4;
+            grid-row: 2 / 3;
+        }
+
+        .grid-item-6 {
+            grid-column: 4 / 5;
+            grid-row: 2 / 3;
+        }
+
+        .grid-item-7 {
+            grid-column: 1 / 2;
+            grid-row: 3 / 4;
+        }
+
+        .grid-item-8 {
+            grid-column: 2 / 3;
+            grid-row: 3 / 4;
+        }
+
+        .grid-item-9 {
+            grid-column: 3 / 4;
+            grid-row: 3 / 4;
+        }
+
+        .grid-item-10 {
+            grid-column: 4 / 5;
+            grid-row: 3 / 4;
+        }
+
+        /* Info Section */
+        .updates-info-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 100px;
+        }
+
+        .info-content {
             display: flex;
+            flex-direction: column;
+            gap: 0.875rem;
+        }
+
+        .info-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin: 0;
+        }
+
+        .info-description {
+            font-size: 0.85rem;
+            color: var(--gray);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .info-highlights {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .highlight-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.825rem;
+            color: var(--dark);
+        }
+
+            .highlight-item i {
+                color: #11BA3B;
+                font-size: 0.95rem;
+            }
+
+        .info-cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            padding: 0.75rem 1.5rem;
+            background: #009ED1;
+            color: black;
+            font-weight: 700;
+            font-size: 0.875rem;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: #60D3F7;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 0.35rem;
+        }
+
+            .info-cta-button:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 35px rgba(220, 20, 60, 0.4);
+                color: black;
+                text-decoration: none;
+            }
+
+        /* Image Modal/Lightbox */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
             align-items: center;
             justify-content: center;
         }
 
-            .hero-news-nav:hover {
-                background: var(--primary);
-                color: var(--white);
-                border-color: var(--primary);
-                transform: translateY(-50%) scale(1.1);
+            .image-modal.active {
+                display: flex;
             }
 
-        .hero-news-prev {
-            left: 15px;
+        .modal-content-wrapper {
+            position: relative;
+            max-width: 75%;
+            max-height: 80%;
+            animation: modalZoom 0.3s ease-out;
         }
 
-        .hero-news-next {
-            right: 15px;
+        @@keyframes modalZoom {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
-        .hero-news-dots {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            padding: 1.25rem 0;
-            background: var(--white);
-        }
+        .modal-image {
+            width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            transition: transform 0.25s ease;
+    }
 
-        .hero-news-dot {
-            width: 10px;
-            height: 10px;
+
+        .modal-close {
+            position: absolute;
+            top: -50px;
+            right: -10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: rgba(220, 20, 60, 0.25);
+            color: var(--white);
+            font-size: 1.5rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.3s ease;
         }
 
-            .hero-news-dot.active {
+            .modal-close:hover {
                 background: var(--primary);
-                width: 28px;
-                border-radius: 5px;
+                border-color: var(--primary);
+                transform: rotate(90deg);
             }
 
-        /* ===========================
-                   FEATURES SECTION
-                =========================== */
+        .modal-caption {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: var(--white);
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* FEATURES SECTION */
         .features-section {
-            padding: 5rem 0;
+            padding: 2.5rem 0;
             background: var(--white);
             position: relative;
             overflow: hidden;
@@ -655,48 +858,71 @@
 
         .section-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 1.75rem;
         }
 
         .section-badge {
             display: inline-block;
-            padding: 0.5rem 1.5rem;
+            padding: 0.45rem 1.25rem;
             background: rgba(220, 20, 60, 0.1);
             color: var(--primary);
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             border-radius: 50px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .section-badge::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                animation: shine 3s infinite;
+            }
+
+        @@keyframes shine {
+            0% {
+                left: -100%;
+            }
+            50%, 100% {
+                left: 100%;
+            }
         }
 
         .section-title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-size: clamp(1.5rem, 3.5vw, 2.25rem);
             font-weight: 800;
             color: var(--dark);
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.875rem;
             line-height: 1.2;
         }
 
         .section-description {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--gray);
-            max-width: 700px;
+            max-width: 650px;
             margin: 0 auto;
-            line-height: 1.8;
+            line-height: 1.6;
         }
 
         .feature-card {
-            padding: 2.5rem 1.5rem;
+            padding: 1.5rem 1.25rem;
             background: var(--white);
-            border-radius: 24px;
+            border-radius: 14px;
             box-shadow: var(--shadow-md);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
             border: 1px solid rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
+            cursor: pointer;
         }
 
             .feature-card::before {
@@ -711,8 +937,17 @@
                 transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
+            .feature-card::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(220, 20, 60, 0.05) 0%, transparent 50%);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
             .feature-card:hover {
-                transform: translateY(-8px);
+                transform: translateY(-8px) scale(1.02);
                 box-shadow: var(--shadow-xl);
             }
 
@@ -720,17 +955,21 @@
                     transform: scaleX(1);
                 }
 
+                .feature-card:hover::after {
+                    opacity: 1;
+                }
+
         .feature-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 20px;
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
             background: var(--gradient-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.75rem;
+            font-size: 1.35rem;
             color: var(--white);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             box-shadow: 0 8px 25px rgba(220, 20, 60, 0.3);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -740,168 +979,127 @@
         }
 
         .feature-title {
-            font-size: 1.35rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: var(--dark);
-            margin-bottom: 1rem;
+            margin-bottom: 0.65rem;
         }
 
         .feature-description {
             color: var(--gray);
-            font-size: 1rem;
-            line-height: 1.7;
+            font-size: 0.9rem;
+            line-height: 1.6;
         }
 
-        /* ===========================
-                   ABOUT SECTION
-                =========================== */
-        .about-section {
-            padding: 5rem 0;
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            position: relative;
-        }
-
-        .about-image {
-            border-radius: 24px;
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            position: relative;
-            height: 100%;
-        }
-
-            .about-image img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .about-image:hover img {
-                transform: scale(1.05);
-            }
-
-        .about-content {
-            padding-left: 2rem;
-        }
-
-        .about-list {
-            list-style: none;
-            margin-top: 2rem;
-        }
-
-            .about-list li {
-                padding: 1rem 0;
-                padding-left: 3rem;
-                position: relative;
-                font-size: 1.1rem;
-                color: var(--dark);
-                line-height: 1.8;
-            }
-
-                .about-list li::before {
-                    content: '\f00c';
-                    font-family: 'Font Awesome 6 Free';
-                    font-weight: 900;
-                    position: absolute;
-                    left: 0;
-                    top: 1.2rem;
-                    width: 32px;
-                    height: 32px;
-                    background: var(--gradient-primary);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: var(--white);
-                    font-size: 0.85rem;
-                }
-
-        /* ===========================
-                   PROCESS SECTION
-                =========================== */
+        
+        /* PROCESS SECTION */
         .process-section {
-            padding: 5rem 0;
+            padding: 2.5rem 0;
             background: var(--white);
             position: relative;
         }
 
         .process-timeline {
             position: relative;
-            padding: 2rem 0;
+            padding: 1rem 0;
         }
 
         .process-step {
             display: flex;
-            gap: 1.5rem;
-            margin-bottom: 3rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
             position: relative;
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+            .process-step.animate-in {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            .process-step:nth-child(1) { transition-delay: 0.1s; }
+            .process-step:nth-child(2) { transition-delay: 0.2s; }
+            .process-step:nth-child(3) { transition-delay: 0.3s; }
+            .process-step:nth-child(4) { transition-delay: 0.4s; }
 
             .process-step:last-child {
                 margin-bottom: 0;
             }
 
         .process-number {
-            width: 70px;
-            height: 70px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             background: var(--gradient-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.75rem;
+            font-size: 1.35rem;
             font-weight: 800;
             color: var(--white);
             flex-shrink: 0;
-            box-shadow: 0 8px 25px rgba(220, 20, 60, 0.3);
+            box-shadow: 0 6px 20px rgba(220, 20, 60, 0.3);
             position: relative;
             z-index: 2;
+            transform: scale(0);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .process-step.animate-in .process-number {
+            transform: scale(1);
         }
 
         .process-content {
             flex: 1;
-            padding: 1.5rem 1.5rem;
+            padding: 1rem 1.25rem;
             background: var(--white);
-            border-radius: 20px;
+            border-radius: 12px;
             box-shadow: var(--shadow-md);
             border: 1px solid rgba(0, 0, 0, 0.05);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
             .process-content:hover {
-                transform: translateX(8px);
+                transform: translateX(8px) scale(1.02);
                 box-shadow: var(--shadow-lg);
+                border-color: rgba(220, 20, 60, 0.2);
             }
 
         .process-title {
-            font-size: 1.35rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--dark);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .process-description {
             color: var(--gray);
-            font-size: 1.05rem;
-            line-height: 1.7;
+            font-size: 0.9rem;
+            line-height: 1.6;
         }
 
-        /* Timeline line */
         .process-timeline::before {
             content: '';
             position: absolute;
-            left: 35px;
-            top: 70px;
-            bottom: 70px;
-            width: 2px;
+            left: 27.5px;
+            top: 60px;
+            bottom: 60px;
+            width: 3px;
             background: linear-gradient(to bottom, var(--primary), var(--primary-light));
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ===========================
-                   CONTACT SECTION
-                =========================== */
+        .process-timeline.animate-line::before {
+            transform: scaleY(1);
+        }
+
+        /* CONTACT SECTION */
         .contact-section {
-            padding: 5rem 0;
+            padding: 3rem 0;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             position: relative;
             overflow: hidden;
@@ -932,47 +1130,52 @@
             }
 
         .contact-card {
-            padding: 2.5rem 1.5rem;
+            padding: 2rem 1.5rem;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 24px;
+            border-radius: 20px;
             text-align: center;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
             border: 1px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
         }
 
             .contact-card:hover {
-                transform: translateY(-8px);
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+                transform: translateY(-6px) scale(1.03);
+                box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
                 background: var(--white);
             }
 
+            .contact-card:hover .contact-icon {
+                transform: rotateY(360deg);
+            }
+
         .contact-icon {
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             background: var(--gradient-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             color: var(--white);
-            margin: 0 auto 1.5rem;
-            box-shadow: 0 8px 25px rgba(220, 20, 60, 0.3);
+            margin: 0 auto 1.25rem;
+            box-shadow: 0 6px 20px rgba(220, 20, 60, 0.3);
         }
 
         .contact-title {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--dark);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .contact-info {
             color: var(--gray);
-            font-size: 1.05rem;
-            line-height: 1.8;
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
 
             .contact-info a {
@@ -986,282 +1189,568 @@
                     text-decoration: underline;
                 }
 
-        /* ===========================
-                   FOOTER
-                =========================== */
+        /* FOOTER */
         .modern-footer {
             background: #1a1a1a;
             color: rgba(255, 255, 255, 0.8);
-            padding: 4rem 0 2rem;
+            padding: 1.5rem 0;
             position: relative;
         }
 
-        .footer-brand {
-            font-size: 2rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1.5rem;
-        }
-
-        .footer-description {
-            font-size: 1rem;
-            line-height: 1.8;
-            margin-bottom: 2rem;
-        }
-
-        .footer-heading {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--white);
-            margin-bottom: 1.5rem;
-        }
-
-        .footer-links {
-            list-style: none;
-        }
-
-            .footer-links li {
-                margin-bottom: 0.75rem;
-            }
-
-            .footer-links a {
-                color: rgba(255, 255, 255, 0.8);
-                text-decoration: none;
-                transition: all 0.3s ease;
-                display: inline-block;
-            }
-
-                .footer-links a:hover {
-                    color: var(--primary);
-                    transform: translateX(5px);
-                }
-
-        .social-links {
+        .footer-content {
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
             gap: 1rem;
-            margin-top: 2rem;
         }
 
-        .social-link {
-            width: 45px;
-            height: 45px;
+        .footer-copyright {
+            font-size: 0.9rem;
+            margin: 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .footer-contacts {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+            .footer-contacts span {
+                font-size: 0.9rem;
+                color: rgba(255, 255, 255, 0.8);
+            }
+
+        .footer-social-link {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--white);
-            font-size: 1.25rem;
+            font-size: 1rem;
             text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
         }
 
-            .social-link:hover {
+            .footer-social-link:hover {
                 background: var(--gradient-primary);
-                transform: translateY(-5px);
-                box-shadow: 0 10px 25px rgba(220, 20, 60, 0.4);
+                transform: translateY(-3px);
+                box-shadow: 0 6px 15px rgba(220, 20, 60, 0.4);
             }
 
-        .footer-bottom {
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            font-size: 0.95rem;
-        }
-
-        /* ===========================
-                   RESPONSIVE
-                =========================== */
+        /* RESPONSIVE */
         @@media (max-width: 991px) {
             .modern-nav-links {
                 display: none;
             }
-
-            .about-content {
-                padding-left: 0;
-                margin-top: 3rem;
-            }
+            
 
             .process-timeline::before {
-                left: 35px;
+                left: 27.5px;
+            }
+
+            .process-section {
+                padding: 2rem 0;
+            }
+
+            .process-number {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            .hero-section {
+                padding: 5.5rem 0 2rem;
             }
 
             .hero-title {
-                font-size: 2.5rem;
+                font-size: 1.85rem;
             }
 
             .hero-subtitle {
-                font-size: 1.1rem;
-            }
-
-            .features-section,
-            .about-section,
-            .process-section,
-            .contact-section {
-                padding: 4rem 0;
-            }
-
-            .section-header {
-                margin-bottom: 2.5rem;
-            }
-
-            .hero-news-slide {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-news-slide img {
-                height: 220px;
-            }
-
-            .hero-news-content {
-                padding: 1.5rem;
-            }
-
-            .hero-news-content h3 {
-                font-size: 1.3rem;
-            }
-        }
-
-        @@media (max-width: 767px) {
-            .hero-buttons {
-                flex-direction: column;
-                gap: 1rem;
+                font-size: 0.95rem;
             }
 
             .btn-primary-custom,
             .btn-secondary-custom {
-                width: 100%;
-                justify-content: center;
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
             }
 
-            .hero-stats {
-                gap: 1.5rem;
+            .features-section,
+            .process-section,
+            .updates-section {
+                padding: 2.25rem 0;
             }
 
-            .stat-number {
-                font-size: 2rem;
+            .section-header {
+                margin-bottom: 1.5rem;
             }
 
-            .feature-card {
-                margin-bottom: 2rem;
+            .section-title {
+                font-size: 1.75rem;
             }
 
-            .process-step {
-                gap: 1.5rem;
-            }
-
-            .process-number {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5rem;
-            }
-
-            .process-timeline::before {
-                left: 30px;
-            }
-
-            .contact-card {
-                margin-bottom: 2rem;
-            }
-
-            .about-image {
-                margin-bottom: 2rem;
-            }
-
-            .hero-news-slide img {
-                height: 200px;
-            }
-
-<<<<<<< HEAD
-            .news-caption {
-                padding: 1.5rem;
-            }
-
-                .news-caption h3 {
-                    font-size: 1.25rem;
-                }
-
-            .hero-news-content h3 {
-                font-size: 1.2rem;
-            }
-
-            .hero-news-content p {
+            .section-description {
                 font-size: 0.95rem;
             }
 
-            .hero-news-nav {
-                width: 38px;
-                height: 38px;
+            .updates-section {
+                padding: 1.75rem 0;
+            }
+
+            .updates-grid-wrapper {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .updates-grid-collage {
+                grid-template-rows: repeat(3, 130px);
+                gap: 0.35rem;
+            }
+
+            .updates-info-section {
+                position: relative;
+                top: auto;
+                padding: 1rem;
+            }
+
+            .info-title {
+                font-size: 1.25rem;
+            }
+
+            .info-description {
+                font-size: 0.825rem;
+            }
+
+            .highlight-item {
+                font-size: 0.8rem;
+            }
+
+            .info-cta-button {
+                font-size: 0.85rem;
+                padding: 0.7rem 1.35rem;
+            }
+        }
+
+        @@media (max-width: 767px) {
+            .features-section,
+            .process-section,
+            .updates-section {
+                padding: 2rem 0;
+            }
+
+            .section-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+
+            .section-description {
+                font-size: 0.95rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 0.875rem;
+                align-items: center;
+            }
+
+            .btn-primary-custom,
+            .btn-secondary-custom {
+                width: auto;
+                min-width: 240px;
+                max-width: 100%;
+                justify-content: center;
+                padding: 0.875rem 2rem;
+                font-size: 0.95rem;
+            }
+
+            .feature-card {
+                margin-bottom: 1.35rem;
+                padding: 1.35rem 1.15rem;
+            }
+
+            .feature-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+
+            .process-section {
+                padding: 1.75rem 0;
+            }
+
+            .process-step {
+                gap: 0.875rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .process-number {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+
+            .process-timeline::before {
+                left: 22.5px;
+                top: 50px;
+                bottom: 50px;
+                width: 2px;
+            }
+
+            .process-content {
+                padding: 0.875rem 1rem;
+            }
+
+            .process-title {
                 font-size: 1rem;
+            }
+
+            .process-description {
+                font-size: 0.875rem;
+            }
+
+            .updates-section {
+                padding: 1.6rem 0;
+            }
+
+            .updates-grid-wrapper {
+                gap: 0.875rem;
+                margin-top: 0.875rem;
+            }
+
+            .updates-grid-collage {
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(4, 110px);
+                gap: 0.3rem;
+            }
+
+            .grid-item-1 {
+                grid-column: 1 / 3;
+                grid-row: 1 / 2;
+            }
+
+            .grid-item-2 {
+                grid-column: 3 / 4;
+                grid-row: 1 / 3;
+            }
+
+            .grid-item-3 {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+            }
+
+            .grid-item-4 {
+                grid-column: 2 / 3;
+                grid-row: 2 / 3;
+            }
+
+            .grid-item-5 {
+                grid-column: 1 / 2;
+                grid-row: 3 / 4;
+            }
+
+            .grid-item-6 {
+                grid-column: 2 / 3;
+                grid-row: 3 / 4;
+            }
+
+            .grid-item-7 {
+                grid-column: 3 / 4;
+                grid-row: 3 / 4;
+            }
+
+            .grid-item-8 {
+                grid-column: 1 / 2;
+                grid-row: 4 / 5;
+            }
+
+            .grid-item-9 {
+                grid-column: 2 / 3;
+                grid-row: 4 / 5;
+            }
+
+            .grid-item-10 {
+                grid-column: 3 / 4;
+                grid-row: 4 / 5;
+            }
+
+            .updates-info-section {
+                padding: 0.875rem;
+            }
+
+            .info-title {
+                font-size: 1.15rem;
+            }
+
+            .info-description {
+                font-size: 0.8rem;
+            }
+
+            .info-highlights {
+                gap: 0.5rem;
+            }
+
+            .highlight-item {
+                font-size: 0.75rem;
+            }
+
+            .highlight-item i {
+                font-size: 0.85rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-contacts {
+                justify-content: center;
             }
         }
 
         @@media (max-width: 575px) {
-            .hero-stats {
-                flex-direction: column;
-                gap: 1rem;
+            .hero-section {
+                padding: 4.5rem 0 1.5rem;
+            }
+
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 0.85rem;
+            }
+
+            .hero-buttons {
+                gap: 0.75rem;
+            }
+
+            .btn-primary-custom,
+            .btn-secondary-custom {
+                min-width: 200px;
+                padding: 0.8rem 1.75rem;
+                font-size: 0.9rem;
+            }
+
+            .features-section,
+            .process-section,
+            .updates-section {
+                padding: 1.4rem 0;
+            }
+
+            .section-title {
+                font-size: 1.4rem;
+            }
+
+            .section-description {
+                font-size: 0.85rem;
             }
 
             .modern-navbar {
                 padding: 1rem 0;
             }
 
+            .hero-section {
+                padding: 5rem 0 2rem;
+            }
+
+            .process-section {
+                padding: 1.5rem 0;
+            }
+
             .process-content:hover {
                 transform: translateX(0);
             }
 
-            .hero-news-section {
-                padding: 1.5rem 0;
+            .process-step {
+                gap: 0.75rem;
+                margin-bottom: 1rem;
             }
 
-            .hero-news-slide img {
-                height: 180px;
+            .process-number {
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
             }
 
-            .hero-news-content {
-                padding: 1.25rem;
+            .process-timeline::before {
+                left: 21px;
+                width: 2px;
             }
 
-            .hero-news-content h3 {
-                font-size: 1.1rem;
+            .process-content {
+                padding: 0.75rem 0.875rem;
             }
 
-            .hero-news-content p {
-                font-size: 0.9rem;
+            .process-title {
+                font-size: 0.95rem;
             }
 
-            .hero-news-badge {
-                font-size: 0.65rem;
-                padding: 0.3rem 0.8rem;
+            .process-description {
+                font-size: 0.85rem;
+            }
+
+            .feature-card {
+                padding: 1.25rem 1rem;
+            }
+
+            .updates-section {
+                padding: 1.35rem 0;
+            }
+
+            .updates-grid-wrapper {
+                gap: 0.75rem;
+                margin-top: 0.75rem;
+            }
+
+            .updates-grid-collage {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(5, 100px);
+                gap: 0.3rem;
+            }
+
+            .grid-item-1,
+            .grid-item-2,
+            .grid-item-3,
+            .grid-item-4,
+            .grid-item-5,
+            .grid-item-6,
+            .grid-item-7,
+            .grid-item-8,
+            .grid-item-9,
+            .grid-item-10 {
+                grid-column: auto;
+                grid-row: auto;
+            }
+
+            .grid-item-1 {
+                grid-column: 1 / 3;
+            }
+
+            .updates-info-section {
+                padding: 0.75rem;
+            }
+
+            .info-content {
+                gap: 0.65rem;
+            }
+
+            .info-title {
+                font-size: 1.05rem;
+            }
+
+            .info-description {
+                font-size: 0.75rem;
+                line-height: 1.4;
+            }
+
+            .info-highlights {
+                gap: 0.45rem;
+            }
+
+            .highlight-item {
+                font-size: 0.7rem;
+            }
+
+            .highlight-item i {
+                font-size: 0.8rem;
+            }
+
+            .info-cta-button {
+                padding: 0.7rem 1.15rem;
+                font-size: 0.8rem;
+            }
+
+            .modern-footer {
+                padding: 1.25rem 0;
+            }
+
+            .footer-copyright {
+                font-size: 0.85rem;
+            }
+
+            .footer-contacts span {
+                font-size: 0.85rem;
+            }
+
+            .footer-social-link {
+                width: 32px;
+                height: 32px;
+                font-size: 0.95rem;
             }
         }
 
-        /* ===========================
-                   SCROLL ANIMATIONS
-                =========================== */
+        @@media (max-width: 400px) {
+            .btn-primary-custom,
+            .btn-secondary-custom {
+                min-width: 180px;
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+            }
+
+            .hero-buttons {
+                gap: 0.7rem;
+            }
+        }
+
+        /* SCROLL ANIMATIONS */
         .fade-in-up {
-            opacity: 0;
-            transform: translateY(50px);
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+            transform: translateY(0);
+            animation: slideUpFade 0.8s ease-out forwards;
         }
 
-            .fade-in-up.visible {
+        @@keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
                 opacity: 1;
                 transform: translateY(0);
             }
-
-        .fade-in {
-            opacity: 0;
-            transition: opacity 0.8s ease;
         }
 
-            .fade-in.visible {
+        .fade-in {
+            opacity: 1;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
                 opacity: 1;
             }
+        }
+
+        /* Stagger animation delays for sequential appearance */
+        .fade-in-up:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .fade-in-up:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .fade-in-up:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .fade-in-up:nth-child(4) {
+            animation-delay: 0.4s;
+        }
 
         /* Loading Screen */
         .loading-screen {
@@ -1310,20 +1799,19 @@
     <nav class="modern-navbar" id="navbar">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-6 col-lg-3">
+                <div class="col-auto col-lg-3">
                     <div class="navbar-brand-modern">LingapDVO</div>
                 </div>
                 <div class="col-lg-9 d-none d-lg-block">
                     <div class="modern-nav-links d-flex justify-content-end align-items-center gap-1">
                         <a href="#home" class="modern-nav-link">Home</a>
                         <a href="#features" class="modern-nav-link">Services</a>
-                        <a href="#about" class="modern-nav-link">About</a>
                         <a href="#process" class="modern-nav-link">Process</a>
-                        <a href="#contact" class="modern-nav-link">Contact</a>
-                        <a href="/Login" class="modern-nav-link login-btn">Login</a>
+                        <a href="#updates" class="modern-nav-link">Updates</a>
+                        <a href="/Login" class="modern-nav-link">Login</a>
                     </div>
                 </div>
-                <div class="col-6 d-lg-none text-end">
+                <div class="col d-lg-none text-end">
                     <button class="menu-toggle" id="menuToggle">
                         <span></span>
                         <span></span>
@@ -1343,9 +1831,8 @@
         <div class="mobile-nav-links">
             <a href="#home" class="mobile-nav-link">Home</a>
             <a href="#features" class="mobile-nav-link">Services</a>
-            <a href="#about" class="mobile-nav-link">About</a>
             <a href="#process" class="mobile-nav-link">Process</a>
-            <a href="#contact" class="mobile-nav-link">Contact</a>
+            <a href="#updates" class="mobile-nav-link">Updates</a>
             <a href="/Login" class="mobile-nav-link">Login</a>
         </div>
     </div>
@@ -1361,123 +1848,16 @@
             </h1>
 
             <p class="hero-subtitle">
-                Libreng tabang medikal ug pinansyal para sa mga nangangailangang Dabawenyo.
+                Libreng tabang medikal ug pinansyal para sa mga nanginahanglang Dabawenyo. 
+                The Lingap Program is an initiative of the Davao City Government to provide medical assistance.
             </p>
-            <!-- Office Updates - Compact News in Hero -->
-            <div class="hero-news-section">
-                <div class="hero-news-container">
-                    <div class="hero-news-slider">
-                        <div class="hero-news-slides" id="heroNewsSlides">
-                            <!-- Slide 1 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update1.jpg" alt="Lingap Program Update">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Office Update</span>
-                                    <h3>Bagong Pasilidad para sa Mas Mabilis na Serbisyo</h3>
-                                    <p>Inauguration ng bagong Lingap Center sa Davao City para sa mas mabilis at mas mahusay na serbisyo sa ating mga kababayan.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 2 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update3.jpg" alt="Medical Mission">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Medical Mission</span>
-                                    <h3>Medical Mission sa Malalayong Barangay</h3>
-                                    <p>Libreng check-up at gamot para sa mga residente ng malalayong barangay sa Davao City.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 3 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update4.jpg" alt="Financial Assistance">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Financial Aid</span>
-                                    <h3>Pamamahagi ng Financial Assistance</h3>
-                                    <p>Suporta para sa mga pamilyang apektado ng pandemya upang makaahon sa kanilang pangangailangan.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 4 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update5.jpg" alt="Community Outreach">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Outreach</span>
-                                    <h3>Community Outreach Program</h3>
-                                    <p>Pagbibigay ng essential goods at relief packs sa mga nangangailangan sa ating komunidad.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 5 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update6.jpg" alt="Training Program">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Livelihood</span>
-                                    <h3>Livelihood Training Program</h3>
-                                    <p>Skills training para sa sustainable income at kabuhayan ng mga Dabawenyo.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 6 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update7.jpg" alt="Scholarship Program">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Education</span>
-                                    <h3>Educational Assistance Program</h3>
-                                    <p>Scholarship at educational support para sa mga kabataang Dabawenyo na nag-aaral.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 7 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update8.jpg" alt="Health Awareness">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Health</span>
-                                    <h3>Health Awareness Campaign</h3>
-                                    <p>Information drive para sa preventive healthcare at health awareness sa komunidad.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 8 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update9.jpg" alt="Senior Citizen Support">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Senior Care</span>
-                                    <h3>Support for Senior Citizens</h3>
-                                    <p>Medical assistance at special support programs para sa ating mga nakatatandang Dabawenyo.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 9 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update2.jpg" alt="Disaster Response">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Emergency</span>
-                                    <h3>Disaster Response Team</h3>
-                                    <p>Mabilis na aksyon at emergency response sa mga nasalanta ng kalamidad sa Davao City.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 10 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update10.jpg" alt="Digital Transformation">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Technology</span>
-                                    <h3>Digital Transformation Initiative</h3>
-                                    <p>Online platform para sa mas mabilis, mas convenient, at mas transparent na serbisyo.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button class="hero-news-nav hero-news-prev" id="heroNewsPrev">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button class="hero-news-nav hero-news-next" id="heroNewsNext">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-
-                    <div class="hero-news-dots" id="heroNewsDots">
-                        <!-- Dots will be generated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
             <div class="hero-buttons">
                 <a href="/Login" class="btn-primary-custom" id="startApplicationBtn">
-                    <i class="fas fa-rocket"></i>
-                    <span>Simulan ang Aplikasyon</span>
+                    <span>Apply Now</span>
+                </a>
+                <a href="#process" class="btn-secondary-custom">
+                    <i class="fas fa-list-check"></i>
+                    <span>Learn How to Apply</span>
                 </a>
             </div>
         </div>
@@ -1487,17 +1867,14 @@
         </div>
     </section>
 
-   
-
     <!-- Features Section -->
     <section class="features-section" id="features">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge">Aming Serbisyo</div>
-                <h2 class="section-title">Libreng Tulong Para sa Inyo</h2>
+                <div class="section-badge">Serbisyo Alang sa Dabawenyo</div>
+                <h2 class="section-title">Services Offered</h2>
                 <p class="section-description">
-                    Nag-aalok kami ng iba't ibang libreng serbisyong medikal at pinansyal
-                    upang suportahan ang bawat Dabawenyong nangangailangan
+                    LingapDVO offers various medical financial services to support every Davaoe�os healthcare needs.
                 </p>
             </div>
 
@@ -1544,42 +1921,11 @@
         </div>
     </section>
 
-    <!-- About Section -->
-    <section class="about-section" id="about">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6 mb-5 mb-lg-0">
-                    <div class="about-image fade-in-up">
-                        <img src="/images/dabawenyos.jpeg" alt="Lingap Program" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="about-content fade-in-up">
-                        <div class="section-badge">Tungkol sa Amin</div>
-                        <h2 class="section-title">Dabawenyos Is Our Priority</h2>
-                        <p class="section-description">
-                            Ang Lingap Program ay isang libreng serbisyong handog ng pamahalaan para sa mga
-                            nangangailangang Dabawenyo. Layunin naming magbigay ng agarang tulong sa pamamagitan
-                            ng libreng serbisyong medikal at pinansyal na suporta.
-                        </p>
-
-                        <ul class="about-list">
-                            <li>Libreng serbisyong may malasakit at tunay na pagtulong para sa bawat Dabawenyo</li>
-                            <li>Mabilis na proseso ng aplikasyon at aprubahan para sa agarang pagtugon</li>
-                            <li>Walang maiiwan - pantay-pantay ang paglilingkod sa lahat ng nangangailangan</li>
-                            <li>24/7 available ang aming serbisyo para sa emergency cases</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Process Section -->
     <section class="process-section" id="process">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge">Paano Ito Gumagana</div>
+                <div class="section-badge">Steps sa Pag-apply</div>
                 <h2 class="section-title">Madaling Proseso ng Aplikasyon</h2>
                 <p class="section-description">
                     Sundin ang apat na simpleng hakbang upang makatanggap ng libreng tulong mula sa Lingap Program
@@ -1634,109 +1980,131 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section class="contact-section" id="contact">
+    <!-- Updates Section -->
+    <section class="updates-section" id="updates">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge" style="background: rgba(255,255,255,0.2); color: var(--white);">
-                    Makipag-ugnayan
-                </div>
-                <h2 class="section-title">Kontakin Kami</h2>
-                <p class="section-description">
-                    May mga katanungan ba kayo? Handa kaming tumulong at sagutin ang lahat ng inyong mga tanong
-                </p>
+                <div class="section-badge">Mga Balita ug Update</div>
+                <h2 class="section-title">Latest Update on Lingap Para sa Mahirap</h2>
             </div>
 
-            <div class="row">
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="contact-card fade-in-up">
-                        <div class="contact-icon">
-                            <i class="fas fa-map-marker-alt"></i>
+            <div class="updates-grid-wrapper">
+                <!-- Grid Collage (Left Side) -->
+                <div class="updates-grid-collage">
+                    <div class="grid-item grid-item-1">
+                        <img src="/LingapUpdate/dcitizen_update1.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
                         </div>
-                        <h3 class="contact-title">Address</h3>
-                        <div class="contact-info">
-                            SPMC Compound, beside 7/11<br>
-                            Malasakit Center, Bajada<br>
-                            Davao City, Davao del Sur 8000
+                    </div>
+                    <div class="grid-item grid-item-9">
+                        <img src="/LingapUpdate/dcitizen_update2.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-2">
+                        <img src="/LingapUpdate/dcitizen_update3.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-3">
+                        <img src="/LingapUpdate/dcitizen_update4.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-4">
+                        <img src="/LingapUpdate/dcitizen_update5.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-5">
+                        <img src="/LingapUpdate/dcitizen_update6.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-6">
+                        <img src="/LingapUpdate/dcitizen_update7.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-7"> 
+                        <img src="/LingapUpdate/dcitizen_update8.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-8">
+                        <img src="/LingapUpdate/dcitizen_update9.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
+                        </div>
+                    </div>
+                    <div class="grid-item grid-item-10">
+                        <img src="/LingapUpdate/dcitizen_update10.jpg" alt="" class="update-image">
+                        <div class="grid-overlay">
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="contact-card fade-in-up" style="transition-delay: 0.1s;">
-                        <div class="contact-icon">
-                            <i class="fas fa-phone-alt"></i>
+                <!-- Info Section (Right Side) -->
+                <div class="updates-info-section">
+                    <div class="info-content">
+                        <h3 class="info-title"></h3>
+                        <p class="info-description">
+                            Davao City is launching , a unified identification card for all residents of Davao City.
+                        </p>
+                        <div class="info-highlights">
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Davao City Residents</span>
+                            </div>
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Transients</span>
+                            </div>
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Persons with Disability</span>
+                            </div>
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Senior Citizen</span>
+                            </div>
+                            <div class="highlight-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Senior Citizens with Disability</span>
+                            </div>
                         </div>
-                        <h3 class="contact-title">Telepono</h3>
-                        <div class="contact-info">
-                            <a href="tel:(082) 298-1234">(082) 298-1234</a><br>
-                            <a href="tel:09095474763">Globe: 09095474763</a><br>
-                            <a href="tel:0951240280">Smart: 0951240280</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="contact-card fade-in-up" style="transition-delay: 0.2s;">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <h3 class="contact-title">Email</h3>
-                        <div class="contact-info">
-                            <a href="mailto:mclingapdesk@gmail.com">mclingapdesk@gmail.com</a><br><br>
-                            Available 24/7 para sa<br>
-                            emergency cases
-                        </div>
+                        <a href="https://www.facebook.com/DCitizenID/posts/pfbid0HN3qDNzqwcToxtpeTY2d5oM8SWC8ZR7RQ8mkH9cFgrYmdhVg23jbs5owamaCcKJtl" class="info-cta-button">
+                            <i class="fas fa-right-arrow"></i>
+                            <span>Know More</span>
+                        </a>  
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Image Modal -->
+    <div class="image-modal" id="imageModal">
+        <div class="modal-content-wrapper">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <img src="" alt="" class="modal-image" id="modalImage">
+            <div class="modal-caption" id="modalCaption"></div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="modern-footer">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-4 mb-lg-0">
-                    <div class="footer-brand">LingapDVO</div>
-                    <p class="footer-description">
-                        Lingap Program - Libreng serbisyong medikal at pinansyal para sa mga
-                        Dabawenyo. Walang maiiwan sa tunay na paglilingkod na may malasakit.
-                    </p>
-                    <div class="social-links">
-                        <a href="https://www.facebook.com/lingapparasamahirap" class="social-link" target="_blank">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                    </div>
+            <div class="footer-content">
+                <p class="footer-copyright">&copy; 2025 LingapDVO. All rights for Dabawenyos</p>
+                <div class="footer-contacts">
+                    <span>(082) 298-1234</span>
+                    <span>mclingapdesk@gmail.com</span>
+                    <a href="https://www.facebook.com/lingapparasamahirap" class="footer-social-link" target="_blank">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
                 </div>
-
-                <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                    <h3 class="footer-heading">Quick Links</h3>
-                    <ul class="footer-links">
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#features">Services</a></li>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#process">How It Works</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                        <li><a href="/Login">Login</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <h3 class="footer-heading">Office Hours</h3>
-                    <ul class="footer-links">
-                        <li>Monday - Friday: 8:00 AM - 5:00 PM</li>
-                        <li>Saturday: 8:00 AM - 12:00 PM</li>
-                        <li>Sunday: Closed</li>
-                        <li style="color: var(--primary); font-weight: 600; margin-top: 1rem;">
-                            Emergency Cases: 24/7
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2024 LingapDVO. All rights reserved. | Made with <i class="fas fa-heart" style="color: var(--primary);"></i> for Dabawenyos</p>
             </div>
         </div>
     </footer>
@@ -1744,6 +2112,52 @@
     <!-- Scripts -->
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+
+    <!-- Image swipe in mobile -->
+    <script>
+    const images = Array.from(document.querySelectorAll(".update-image")).map(img => img.src);
+    let currentIndex = 0;
+
+    const modal = document.getElementById("imageModal");
+    const modalImage = document.getElementById("modalImage");
+    const modalClose = document.getElementById("modalClose");
+
+    // Open modal when image is clicked
+    document.querySelectorAll(".update-image").forEach((img, index) => {
+        img.addEventListener("click", () => {
+            currentIndex = index;
+            modalImage.src = images[currentIndex];
+            modal.style.display = "flex";
+        });
+    });
+
+    // Close modal
+    modalClose.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    // SWIPE HANDLING
+    let startX = 0;
+
+    modal.addEventListener("touchstart", (e) => {
+        startX = e.touches[0].clientX;
+    });
+
+    modal.addEventListener("touchend", (e) => {
+        let endX = e.changedTouches[0].clientX;
+
+        if (endX < startX - 50) {
+            // swipe LEFT → next image
+            currentIndex = (currentIndex + 1) % images.length;
+            modalImage.src = images[currentIndex];
+        }
+        else if (endX > startX + 50) {
+            // swipe RIGHT → previous image
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            modalImage.src = images[currentIndex];
+        }
+    });
+</script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1807,54 +2221,91 @@
                 });
             });
 
-            // Hero News Slider
-            const heroNewsSlides = document.getElementById('heroNewsSlides');
-            const heroNewsPrev = document.getElementById('heroNewsPrev');
-            const heroNewsNext = document.getElementById('heroNewsNext');
-            const heroNewsDots = document.getElementById('heroNewsDots');
-            let currentNewsSlide = 0;
-            const totalNewsSlides = 10;
+            // Image Modal/Lightbox functionality
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+            const modalClose = document.getElementById('modalClose');
+            const gridItems = document.querySelectorAll('.grid-item');
 
-            // Create dots
-            for (let i = 0; i < totalNewsSlides; i++) {
-                const dot = document.createElement('div');
-                dot.classList.add('hero-news-dot');
-                if (i === 0) dot.classList.add('active');
-                dot.addEventListener('click', () => goToNewsSlide(i));
-                heroNewsDots.appendChild(dot);
-            }
+            // Open modal when grid item is clicked
+            gridItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const img = this.querySelector('img');
+                    const badge = this.querySelector('.grid-badge');
 
-            function goToNewsSlide(slideIndex) {
-                currentNewsSlide = slideIndex;
-                heroNewsSlides.style.transform = `translateX(-${currentNewsSlide * 100}%)`;
+                    modalImage.src = img.src;
+                    modalImage.alt = img.alt;
+                    modalCaption.textContent = badge ? badge.textContent : img.alt;
 
-                // Update dots
-                document.querySelectorAll('.hero-news-dot').forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentNewsSlide);
+                    imageModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
                 });
+            });
+
+            // Close modal when close button is clicked
+            modalClose.addEventListener('click', function(e) {
+                e.stopPropagation();
+                imageModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            // Close modal when clicking outside the image
+            imageModal.addEventListener('click', function(e) {
+                if (e.target === imageModal) {
+                    imageModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && imageModal.classList.contains('active')) {
+                    imageModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Process Section Scroll Animation
+            const processTimeline = document.querySelector('.process-timeline');
+            const processSteps = document.querySelectorAll('.process-step');
+
+            console.log('Process Timeline found:', processTimeline);
+            console.log('Process Steps found:', processSteps.length);
+
+            const processObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        console.log('Element entering viewport:', entry.target.className);
+
+                        // Animate timeline line
+                        if (entry.target.classList.contains('process-timeline')) {
+                            entry.target.classList.add('animate-line');
+                            console.log('Timeline animation triggered');
+                        }
+
+                        // Animate process steps
+                        if (entry.target.classList.contains('process-step')) {
+                            entry.target.classList.add('animate-in');
+                            console.log('Step animation triggered');
+                        }
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -10px 0px'
+            });
+
+            // Observe timeline
+            if (processTimeline) {
+                processObserver.observe(processTimeline);
+                console.log('Observing timeline');
             }
 
-            function nextNewsSlide() {
-                currentNewsSlide = (currentNewsSlide + 1) % totalNewsSlides;
-                goToNewsSlide(currentNewsSlide);
-            }
-
-            function prevNewsSlide() {
-                currentNewsSlide = (currentNewsSlide - 1 + totalNewsSlides) % totalNewsSlides;
-                goToNewsSlide(currentNewsSlide);
-            }
-
-            heroNewsNext.addEventListener('click', nextNewsSlide);
-            heroNewsPrev.addEventListener('click', prevNewsSlide);
-
-            // Auto slide every 5 seconds
-            let newsSlideInterval = setInterval(nextNewsSlide, 5000);
-
-            // Pause auto slide on hover
-            const heroNewsSlider = document.querySelector('.hero-news-slider');
-            heroNewsSlider.addEventListener('mouseenter', () => clearInterval(newsSlideInterval));
-            heroNewsSlider.addEventListener('mouseleave', () => {
-                newsSlideInterval = setInterval(nextNewsSlide, 5000);
+            // Observe each step
+            processSteps.forEach((step, index) => {
+                processObserver.observe(step);
+                console.log('Observing step', index + 1);
             });
 
             // Counter animation
@@ -1893,24 +2344,6 @@
             window.addEventListener('scroll', animateCounters);
             animateCounters(); // Check on load
 
-            // Scroll animations
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -100px 0px'
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, observerOptions);
-
-            document.querySelectorAll('.fade-in-up, .fade-in').forEach(el => {
-                observer.observe(el);
-            });
-
             // Start Application button - redirect to login with modal info
             document.getElementById('startApplicationBtn').addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1938,6 +2371,89 @@
                     parallax.style.transform = 'translateY(' + scrolled * 0.5 + 'px)';
                 }
             });
+
+            // Card mouse tracking effect
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', function(e) {
+                    const rect = card.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    card.style.setProperty('--mouse-x', x + '%');
+                    card.style.setProperty('--mouse-y', y + '%');
+                });
+            });
+
+            // Smooth reveal on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe elements for scroll animations
+            document.querySelectorAll('.section-header, .feature-card, .process-step, .fade-in-up, .fade-in').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Add subtle rotation effect to feature icons on hover
+            document.querySelectorAll('.feature-icon').forEach(icon => {
+                const card = icon.closest('.feature-card');
+                if (card) {
+                    card.addEventListener('mouseenter', () => {
+                        icon.style.transform = 'rotateY(360deg)';
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        icon.style.transform = 'rotateY(0deg)';
+                    });
+                }
+            });
+
+            // Add ripple effect on button click
+            document.querySelectorAll('.btn-primary-custom, .btn-secondary-custom').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        border-radius: 50%;
+                        background: rgba(255, 255, 255, 0.6);
+                        left: ${x}px;
+                        top: ${y}px;
+                        pointer-events: none;
+                        animation: ripple 0.6s ease-out;
+                    `;
+
+                    this.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+
+            // Add CSS for ripple animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @@keyframes ripple {
+                    to {
+                        transform: scale(2);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
         });
     </script>
 </body>
