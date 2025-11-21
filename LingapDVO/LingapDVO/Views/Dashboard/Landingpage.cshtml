@@ -1323,14 +1323,17 @@
             .hero-buttons {
                 flex-direction: column;
                 gap: 0.875rem;
+                align-items: center;
             }
 
             .btn-primary-custom,
             .btn-secondary-custom {
-                width: 100%;
+                width: auto;
+                min-width: 240px;
+                max-width: 100%;
                 justify-content: center;
-                padding: 0.7rem 1.35rem;
-                font-size: 0.875rem;
+                padding: 0.875rem 2rem;
+                font-size: 0.95rem;
             }
 
             .feature-card {
@@ -1490,10 +1493,15 @@
                 font-size: 0.85rem;
             }
 
+            .hero-buttons {
+                gap: 0.75rem;
+            }
+
             .btn-primary-custom,
             .btn-secondary-custom {
-                padding: 0.65rem 1.25rem;
-                font-size: 0.85rem;
+                min-width: 200px;
+                padding: 0.8rem 1.75rem;
+                font-size: 0.9rem;
             }
 
             .features-section,
@@ -1641,6 +1649,19 @@
                 width: 32px;
                 height: 32px;
                 font-size: 0.95rem;
+            }
+        }
+
+        @@media (max-width: 400px) {
+            .btn-primary-custom,
+            .btn-secondary-custom {
+                min-width: 180px;
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+            }
+
+            .hero-buttons {
+                gap: 0.7rem;
             }
         }
 
