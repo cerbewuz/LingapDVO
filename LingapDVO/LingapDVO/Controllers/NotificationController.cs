@@ -331,7 +331,7 @@ public class NotificationsController : Controller
     }
 
     [HttpPost]
-    public JsonResult MarkAllNotificationsAsRead()
+    public JsonResult MarkAllNotificationsAsRead([FromBody] MarkAllReadRequest request = null)
     {
         var userIdString = HttpContext.Session.GetString("UserId");
 
@@ -342,8 +342,22 @@ public class NotificationsController : Controller
                 return Json(new { success = false, error = "User not authenticated" });
             }
 
-            // Get current notification IDs
-            var notificationIds = GetCurrentUserNotificationIds(userId);
+            // FORCE MODE: Get ALL notification IDs regardless of date/count limits
+            bool forceMode = request?.Force ?? false;
+            List<string> notificationIds;
+
+            if (forceMode)
+            {
+                // Get ALL notification IDs without any restrictions
+                _logger.LogInformation("FORCE MODE: Getting all notification IDs for user {UserId}", userId);
+                notificationIds = GetAllUserNotificationIds(userId);
+                _logger.LogInformation("FORCE MODE: Found {Count} total notification IDs", notificationIds.Count);
+            }
+            else
+            {
+                // Normal mode: Get current notification IDs (last 7 days, limited)
+                notificationIds = GetCurrentUserNotificationIds(userId);
+            }
 
             // Get already read notification IDs from database
             var alreadyReadIds = context.NotificationReadStatus
@@ -368,7 +382,7 @@ public class NotificationsController : Controller
                 context.NotificationReadStatus.AddRange(newReadNotifications);
                 context.SaveChanges();
 
-                _logger.LogInformation("Marked {Count} notifications as read for user {UserId}", newReadNotifications.Count, userId);
+                _logger.LogInformation("FORCE MODE={ForceMode}: Marked {Count} notifications as read for user {UserId}", forceMode, newReadNotifications.Count, userId);
             }
 
             return Json(new { success = true, message = "All notifications marked as read", count = newReadNotifications.Count });
@@ -378,6 +392,89 @@ public class NotificationsController : Controller
             _logger.LogError(ex, "Error occurred while marking all notifications as read for user {UserIdString}", userIdString);
             return Json(new { success = false, error = "An error occurred while marking all notifications as read" });
         }
+    }
+
+    // Helper class for request body
+    public class MarkAllReadRequest
+    {
+        public bool Force { get; set; }
+    }
+
+    // FORCE METHOD: Get ALL notification IDs without date/count restrictions
+    private List<string> GetAllUserNotificationIds(int userId)
+    {
+        var notificationIds = new List<string>();
+
+        try
+        {
+            _logger.LogInformation("Getting ALL notifications for user {UserId} (no date/count restrictions)", userId);
+
+            // Get ALL hospital bills for this user (no date limit, no count limit)
+            var allHospitalBills = context.HospitalAssistance
+                .Where(f => f.UserId == userId)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            _logger.LogInformation("Found {Count} hospital bills", allHospitalBills.Count);
+
+            // Get ALL medical/lab forms for this user (no date limit, no count limit)
+            var allMedicalLabForms = context.OtherAssistance
+                .Where(f => f.UserId == userId)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            _logger.LogInformation("Found {Count} medical/lab forms", allMedicalLabForms.Count);
+
+            // Get ALL funeral forms for this user (no date limit, no count limit)
+            var allFuneralForms = context.FuneralAssistance
+                .Where(f => f.UserId == userId)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            _logger.LogInformation("Found {Count} funeral forms", allFuneralForms.Count);
+
+            // Add ALL hospital notification IDs
+            foreach (var bill in allHospitalBills)
+            {
+                notificationIds.Add($"hospital_{bill.Id}_{bill.Status}");
+
+                // Add delay notification ID regardless of priority
+                notificationIds.Add($"delay_hospital_{bill.Id}");
+            }
+
+            // Add ALL medical notification IDs
+            foreach (var medical in allMedicalLabForms)
+            {
+                notificationIds.Add($"medical_{medical.Id}_{medical.Status}");
+
+                // Add delay notification ID regardless of priority
+                notificationIds.Add($"delay_medical_{medical.Id}");
+            }
+
+            // Add ALL funeral notification IDs
+            foreach (var funeral in allFuneralForms)
+            {
+                notificationIds.Add($"funeral_{funeral.Id}_{funeral.Status}");
+
+                // Add delay notification ID regardless of priority
+                notificationIds.Add($"delay_funeral_{funeral.Id}");
+            }
+
+            // Always include welcome notifications
+            notificationIds.Add($"welcome_verified_{userId}");
+            notificationIds.Add($"welcome_unverified_{userId}");
+
+            _logger.LogInformation("Generated {Count} total notification IDs for user {UserId}", notificationIds.Count, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while getting ALL notification IDs for user {UserId}", userId);
+            // Always include welcome notifications even on error
+            notificationIds.Add($"welcome_verified_{userId}");
+            notificationIds.Add($"welcome_unverified_{userId}");
+        }
+
+        return notificationIds;
     }
 
     // Fixed helper method that returns List<string> instead of List<dynamic>
