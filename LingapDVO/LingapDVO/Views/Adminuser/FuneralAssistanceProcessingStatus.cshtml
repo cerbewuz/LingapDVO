@@ -698,13 +698,7 @@
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
                 <div class="cmo-details">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label cmo-section-title">Bill Amount:</label>
-                            <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
-                        </div>
-                    </div>
-
+                    
                     <div class="mt-4">
                         <label class="form-label cmo-section-title">Supporting Documents Attached:</label>
                         <div class="cmo-checkbox-group">
@@ -742,6 +736,14 @@
                                 <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
                             </div>
                         </div>
+
+                        <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label cmo-section-title">Amount Granted:</label>
+                            <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
+                        </div>
+                    </div>
+
                         <div class="col-md-6">
                             <div class="cmo-processed-by">
                                 <div>Processed by:</div>

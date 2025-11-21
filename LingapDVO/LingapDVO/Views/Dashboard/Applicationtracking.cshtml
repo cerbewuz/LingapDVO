@@ -629,7 +629,7 @@
                 border-bottom: none;
             }
 
-        .export-btn {
+        /* .export-btn {
             padding: 0.5rem 1rem;
             border-radius: 6px;
             background: var(--success-color);
@@ -645,7 +645,7 @@
 
             .export-btn:hover {
                 background: #0da271;
-            }
+            } */
 
         /* Toast notification styles */
         .toast-notification {
@@ -1321,9 +1321,9 @@
                     <button class="filter-btn" id="applyFilter">
                         <i class="fas fa-filter"></i> Apply Filter
                     </button>
-                    <button class="export-btn" id="exportData">
+                    @* <button class="export-btn" id="exportData">
                         <i class="fas fa-download"></i> Export Data
-                    </button>
+                    </button> *@
                 </div>
             </div>
         </div>
@@ -1520,15 +1520,15 @@
 
                                 <!-- Action Buttons -->
                                 <div class="application-actions">
-                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="HospitalAssistanceview" asp-route-id="@doc.Id">
+                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="HospitalAssistanceView" asp-route-id="@doc.Id">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                     @if (doc.Status?.ToLower() != "processing" && doc.Status?.ToLower() != "unapproved")
                                     {
-                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="HospitalAssistanceedit" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="HospitalAssistanceEdit" asp-route-id="@doc.Id">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
-                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="HospitalAssistancedelete" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="HospitalAssistanceDelete" asp-route-id="@doc.Id">
                                             <i class="fas fa-trash-alt"></i> Remove
                                         </a>
                                     }
@@ -1682,15 +1682,15 @@
 
                                 <!-- Action Buttons -->
                                 <div class="application-actions">
-                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="OtherAssistanceview" asp-route-id="@doc.Id">
+                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="OtherAssistanceView" asp-route-id="@doc.Id">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                     @if (doc.Status?.ToLower() != "processing" && doc.Status?.ToLower() != "unapproved")
                                     {
-                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="OtherAssistanceedit" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="OtherAssistanceEdit" asp-route-id="@doc.Id">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
-                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="OtherAssistanceedelete" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="OtherAssistanceeDelete" asp-route-id="@doc.Id">
                                             <i class="fas fa-trash-alt"></i> Remove
                                         </a>
                                     }
@@ -1844,15 +1844,15 @@
 
                                 <!-- Action Buttons -->
                                 <div class="application-actions">
-                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="FuneralAssistanceview" asp-route-id="@doc.Id">
+                                    <a class="btn-action btn-view" asp-controller="Dashboard" asp-action="FuneralAssistanceView" asp-route-id="@doc.Id">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
                                     @if (doc.Status?.ToLower() != "processing" && doc.Status?.ToLower() != "unapproved")
                                     {
-                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="FuneralAssistanceedit" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-edit" asp-controller="Dashboard" asp-action="FuneralAssistanceEdit" asp-route-id="@doc.Id">
                                             <i class="fas fa-edit"></i> Edit
                                         </a>
-                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="FuneralAssistanceedelete" asp-route-id="@doc.Id">
+                                        <a class="btn-action btn-remove" asp-controller="Dashboard" asp-action="FuneralAssistanceeDelete" asp-route-id="@doc.Id">
                                             <i class="fas fa-trash-alt"></i> Remove
                                         </a>
                                     }
@@ -2367,9 +2367,9 @@
         // Event listeners
         applyFilter.addEventListener('click', loadPastData);
 
-        exportData.addEventListener('click', function() {
-            alert('Export functionality would be implemented here. This would typically generate a CSV or PDF report of the filtered data.');
-        });
+        // exportData.addEventListener('click', function() {
+        //     alert('Export functionality would be implemented here. This would typically generate a CSV or PDF report of the filtered data.');
+        // });
 
         // Load initial data if past data section is active on page load
         if (pastDataToggle.classList.contains('active')) {
