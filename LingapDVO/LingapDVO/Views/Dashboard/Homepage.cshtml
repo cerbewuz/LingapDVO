@@ -1040,11 +1040,11 @@
         }
 
         /* Permanent notification styling (welcome notifications) */
+        /* Welcome notifications for both verified and non-verified users are fully scrollable */
         .notification-item[data-permanent="true"] {
             background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
             border-left: 3px solid #5B9BD5;
-            position: sticky;
-            bottom: 0;
+            /* Removed position: sticky and bottom: 0 to ensure full scrollability */
         }
 
             .notification-item[data-permanent="true"]:hover {
