@@ -1473,11 +1473,13 @@
             }
         }
 
-        /* Large devices (desktops, 992px and up) */
-        @@media (min-width: 992px) {
+        /* Medium and large devices (tablets and desktops, 576px and up) */
+        /* Apply to tablets (576px-991.98px) and desktops (992px+) for consistent dropdown positioning */
+        @@media (min-width: 576px) {
             /* Notification dropdown styles are defined in main dropdown section above */
 
             /* Allow notification dropdown to be visible outside greeting card */
+            /* This ensures dropdown doesn't get clipped by greeting card at 867x1291 and other tablet sizes */
             .greeting-card {
                 overflow: visible;
             }
