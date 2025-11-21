@@ -2021,24 +2021,6 @@
             window.addEventListener('scroll', animateCounters);
             animateCounters(); // Check on load
 
-            // Scroll animations
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -100px 0px'
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, observerOptions);
-
-            document.querySelectorAll('.fade-in-up, .fade-in').forEach(el => {
-                observer.observe(el);
-            });
-
             // Start Application button - redirect to login with modal info
             document.getElementById('startApplicationBtn').addEventListener('click', function(e) {
                 e.preventDefault();
@@ -2095,7 +2077,7 @@
             }, observerOptions);
 
             // Observe elements for scroll animations
-            document.querySelectorAll('.section-header, .feature-card, .process-step').forEach(el => {
+            document.querySelectorAll('.section-header, .feature-card, .process-step, .fade-in-up, .fade-in').forEach(el => {
                 observer.observe(el);
             });
 
