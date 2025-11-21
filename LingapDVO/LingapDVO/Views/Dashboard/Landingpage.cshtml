@@ -511,111 +511,136 @@
         }
 
         /* ===========================
-                   NEWS SECTION
+                   NEWS SECTION IN HERO
                 =========================== */
-        .news-section {
-            padding: 5rem 0;
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            position: relative;
+        .hero-news-section {
+            padding: 2rem 0;
+            margin-top: 2rem;
         }
 
-        .news-slider {
-            position: relative;
-            max-width: 1200px;
+        .hero-news-container {
+            max-width: 1000px;
             margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            border-radius: 20px;
-            box-shadow: var(--shadow-xl);
         }
 
-        .news-slides {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-        }
-
-        .news-slide {
-            min-width: 100%;
+        .hero-news-slider {
             position: relative;
         }
 
-            .news-slide img {
+        .hero-news-slides {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hero-news-slide {
+            min-width: 100%;
+            display: grid;
+            grid-template-columns: 45% 55%;
+            gap: 0;
+            align-items: center;
+        }
+
+            .hero-news-slide img {
                 width: 100%;
-                height: 500px;
+                height: 280px;
                 object-fit: cover;
                 display: block;
             }
 
-        .news-caption {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            color: white;
-            padding: 2rem;
-            text-align: center;
+        .hero-news-content {
+            padding: 2rem 2.5rem;
+            background: var(--white);
         }
 
-            .news-caption h3 {
+            .hero-news-badge {
+                display: inline-block;
+                background: linear-gradient(135deg, var(--primary) 0%, #e91e63 100%);
+                color: var(--white);
+                padding: 0.4rem 1rem;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 1rem;
+            }
+
+            .hero-news-content h3 {
                 font-size: 1.5rem;
                 font-weight: 700;
-                margin-bottom: 0.5rem;
+                color: var(--dark);
+                margin-bottom: 0.75rem;
+                line-height: 1.3;
             }
 
-            .news-caption p {
+            .hero-news-content p {
                 font-size: 1rem;
-                opacity: 0.9;
+                color: var(--text-light);
+                line-height: 1.6;
+                margin-bottom: 0;
             }
 
-        .news-nav {
+        .hero-news-nav {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border: none;
-            width: 50px;
-            height: 50px;
+            border: 2px solid rgba(220, 20, 60, 0.2);
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
-            color: white;
-            font-size: 1.5rem;
+            color: var(--primary);
+            font-size: 1.2rem;
             cursor: pointer;
             transition: all 0.3s ease;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-            .news-nav:hover {
+            .hero-news-nav:hover {
                 background: var(--primary);
+                color: var(--white);
+                border-color: var(--primary);
                 transform: translateY(-50%) scale(1.1);
             }
 
-        .news-prev {
-            left: 20px;
+        .hero-news-prev {
+            left: 15px;
         }
 
-        .news-next {
-            right: 20px;
+        .hero-news-next {
+            right: 15px;
         }
 
-        .news-dots {
+        .hero-news-dots {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-top: 1.5rem;
+            gap: 8px;
+            padding: 1.25rem 0;
+            background: var(--white);
         }
 
-        .news-dot {
-            width: 12px;
-            height: 12px;
+        .hero-news-dot {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: var(--gray);
+            background: rgba(220, 20, 60, 0.25);
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-            .news-dot.active {
+            .hero-news-dot.active {
                 background: var(--primary);
-                transform: scale(1.2);
+                width: 28px;
+                border-radius: 5px;
             }
 
         /* ===========================
@@ -1076,8 +1101,7 @@
             .features-section,
             .about-section,
             .process-section,
-            .contact-section,
-            .news-section {
+            .contact-section {
                 padding: 4rem 0;
             }
 
@@ -1085,8 +1109,20 @@
                 margin-bottom: 2.5rem;
             }
 
-            .news-slide img {
-                height: 400px;
+            .hero-news-slide {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-news-slide img {
+                height: 220px;
+            }
+
+            .hero-news-content {
+                padding: 1.5rem;
+            }
+
+            .hero-news-content h3 {
+                font-size: 1.3rem;
             }
         }
 
@@ -1136,10 +1172,11 @@
                 margin-bottom: 2rem;
             }
 
-            .news-slide img {
-                height: 300px;
+            .hero-news-slide img {
+                height: 200px;
             }
 
+<<<<<<< HEAD
             .news-caption {
                 padding: 1.5rem;
             }
@@ -1148,10 +1185,18 @@
                     font-size: 1.25rem;
                 }
 
-            .news-nav {
-                width: 40px;
-                height: 40px;
-                font-size: 1.25rem;
+            .hero-news-content h3 {
+                font-size: 1.2rem;
+            }
+
+            .hero-news-content p {
+                font-size: 0.95rem;
+            }
+
+            .hero-news-nav {
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
             }
         }
 
@@ -1169,21 +1214,30 @@
                 transform: translateX(0);
             }
 
-            .news-slide img {
-                height: 250px;
+            .hero-news-section {
+                padding: 1.5rem 0;
             }
 
-            .news-caption {
-                padding: 1rem;
+            .hero-news-slide img {
+                height: 180px;
             }
 
-                .news-caption h3 {
-                    font-size: 1.1rem;
-                }
+            .hero-news-content {
+                padding: 1.25rem;
+            }
 
-                .news-caption p {
-                    font-size: 0.9rem;
-                }
+            .hero-news-content h3 {
+                font-size: 1.1rem;
+            }
+
+            .hero-news-content p {
+                font-size: 0.9rem;
+            }
+
+            .hero-news-badge {
+                font-size: 0.65rem;
+                padding: 0.3rem 0.8rem;
+            }
         }
 
         /* ===========================
@@ -1262,7 +1316,6 @@
                 <div class="col-lg-9 d-none d-lg-block">
                     <div class="modern-nav-links d-flex justify-content-end align-items-center gap-1">
                         <a href="#home" class="modern-nav-link">Home</a>
-                        <a href="#news" class="modern-nav-link">News</a>
                         <a href="#features" class="modern-nav-link">Services</a>
                         <a href="#about" class="modern-nav-link">About</a>
                         <a href="#process" class="modern-nav-link">Process</a>
@@ -1289,7 +1342,6 @@
         </button>
         <div class="mobile-nav-links">
             <a href="#home" class="mobile-nav-link">Home</a>
-            <a href="#news" class="mobile-nav-link">News</a>
             <a href="#features" class="mobile-nav-link">Services</a>
             <a href="#about" class="mobile-nav-link">About</a>
             <a href="#process" class="mobile-nav-link">Process</a>
@@ -1311,114 +1363,116 @@
             <p class="hero-subtitle">
                 Libreng tabang medikal ug pinansyal para sa mga nangangailangang Dabawenyo.
             </p>
-             <!-- News Section -->
-    <section class="news-section" id="news">
-        <div class="container">
-            <div class="section-header">
-                <div class="section-badge">Mga Balita</div>
-                <h2 class="section-title">Office Updates</h2>
-                <p class="section-description">
-                    Manatiling updated sa mga pinakabagong balita at aktibidad ng Lingap Program
-                </p>
-            </div>
+            <!-- Office Updates - Compact News in Hero -->
+            <div class="hero-news-section">
+                <div class="hero-news-container">
+                    <div class="hero-news-slider">
+                        <div class="hero-news-slides" id="heroNewsSlides">
+                            <!-- Slide 1 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update1.jpg" alt="Lingap Program Update">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Office Update</span>
+                                    <h3>Bagong Pasilidad para sa Mas Mabilis na Serbisyo</h3>
+                                    <p>Inauguration ng bagong Lingap Center sa Davao City para sa mas mabilis at mas mahusay na serbisyo sa ating mga kababayan.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 2 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update3.jpg" alt="Medical Mission">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Medical Mission</span>
+                                    <h3>Medical Mission sa Malalayong Barangay</h3>
+                                    <p>Libreng check-up at gamot para sa mga residente ng malalayong barangay sa Davao City.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 3 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update4.jpg" alt="Financial Assistance">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Financial Aid</span>
+                                    <h3>Pamamahagi ng Financial Assistance</h3>
+                                    <p>Suporta para sa mga pamilyang apektado ng pandemya upang makaahon sa kanilang pangangailangan.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 4 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update5.jpg" alt="Community Outreach">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Outreach</span>
+                                    <h3>Community Outreach Program</h3>
+                                    <p>Pagbibigay ng essential goods at relief packs sa mga nangangailangan sa ating komunidad.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 5 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update6.jpg" alt="Training Program">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Livelihood</span>
+                                    <h3>Livelihood Training Program</h3>
+                                    <p>Skills training para sa sustainable income at kabuhayan ng mga Dabawenyo.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 6 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update7.jpg" alt="Scholarship Program">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Education</span>
+                                    <h3>Educational Assistance Program</h3>
+                                    <p>Scholarship at educational support para sa mga kabataang Dabawenyo na nag-aaral.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 7 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update8.jpg" alt="Health Awareness">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Health</span>
+                                    <h3>Health Awareness Campaign</h3>
+                                    <p>Information drive para sa preventive healthcare at health awareness sa komunidad.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 8 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update9.jpg" alt="Senior Citizen Support">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Senior Care</span>
+                                    <h3>Support for Senior Citizens</h3>
+                                    <p>Medical assistance at special support programs para sa ating mga nakatatandang Dabawenyo.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 9 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update2.jpg" alt="Disaster Response">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Emergency</span>
+                                    <h3>Disaster Response Team</h3>
+                                    <p>Mabilis na aksyon at emergency response sa mga nasalanta ng kalamidad sa Davao City.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 10 -->
+                            <div class="hero-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update10.jpg" alt="Digital Transformation">
+                                <div class="hero-news-content">
+                                    <span class="hero-news-badge">Technology</span>
+                                    <h3>Digital Transformation Initiative</h3>
+                                    <p>Online platform para sa mas mabilis, mas convenient, at mas transparent na serbisyo.</p>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="news-slider">
-                <div class="news-slides" id="newsSlides">
-                    <!-- Slide 1 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update1.jpgalt="Lingap Program Update">
-                        <div class="news-caption">
-                            <h3>Bagong Pasilidad para sa Mas Mabilis na Serbisyo</h3>
-                            <p>Inauguration ng bagong Lingap Center sa Davao City</p>
-                        </div>
+                        <button class="hero-news-nav hero-news-prev" id="heroNewsPrev">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="hero-news-nav hero-news-next" id="heroNewsNext">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
-                    <!-- Slide 2 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update3.jpg" alt="Medical Mission">
-                        <div class="news-caption">
-                            <h3>Medical Mission sa Malalayong Barangay</h3>
-                            <p>Libreng check-up at gamot para sa mga residente</p>
-                        </div>
-                    </div>
-                    <!-- Slide 3 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update4.jpg" alt="Financial Assistance">
-                        <div class="news-caption">
-                            <h3>Pamamahagi ng Financial Assistance</h3>
-                            <p>Suporta para sa mga pamilyang apektado ng pandemya</p>
-                        </div>
-                    </div>
-                    <!-- Slide 4 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update5.jpg" alt="Community Outreach">
-                        <div class="news-caption">
-                            <h3>Community Outreach Program</h3>
-                            <p>Pagbibigay ng essential goods sa mga nangangailangan</p>
-                        </div>
-                    </div>
-                    <!-- Slide 5 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update6.jpg" alt="Training Program">
-                        <div class="news-caption">
-                            <h3>Livelihood Training Program</h3>
-                            <p>Skills training para sa sustainable income</p>
-                        </div>
-                    </div>
-                    <!-- Slide 6 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update7.jpg" alt="Scholarship Program">
-                        <div class="news-caption">
-                            <h3>Educational Assistance Program</h3>
-                            <p>Scholarship para sa mga kabataang Dabawenyo</p>
-                        </div>
-                    </div>
-                    <!-- Slide 7 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update8.jpg" alt="Health Awareness">
-                        <div class="news-caption">
-                            <h3>Health Awareness Campaign</h3>
-                            <p>Information drive para sa preventive healthcare</p>
-                        </div>
-                    </div>
-                    <!-- Slide 8 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update9.jpg" alt="Senior Citizen Support">
-                        <div class="news-caption">
-                            <h3>Support for Senior Citizens</h3>
-                            <p>Medical assistance para sa mga nakatatanda</p>
-                        </div>
-                    </div>
-                    <!-- Slide 9 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update2.jpg" alt="Disaster Response">
-                        <div class="news-caption">
-                            <h3>Disaster Response Team</h3>
-                            <p>Mabilis na aksyon sa mga nasalanta ng kalamidad</p>
-                        </div>
-                    </div>
-                    <!-- Slide 10 -->
-                    <div class="news-slide">
-                        <img src="/LingapUpdate/dcitizen_update10.jpg" alt="Digital Transformation">
-                        <div class="news-caption">
-                            <h3>Digital Transformation Initiative</h3>
-                            <p>Online platform para sa mas mabilis na serbisyo</p>
-                        </div>
+
+                    <div class="hero-news-dots" id="heroNewsDots">
+                        <!-- Dots will be generated by JavaScript -->
                     </div>
                 </div>
-
-                <button class="news-nav news-prev" id="newsPrev">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="news-nav news-next" id="newsNext">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-
-                <div class="news-dots" id="newsDots">
-                    <!-- Dots will be generated by JavaScript -->
-                </div>
             </div>
-        </div>
-    </section>
 
             <div class="hero-buttons">
                 <a href="/Login" class="btn-primary-custom" id="startApplicationBtn">
@@ -1660,7 +1714,6 @@
                     <h3 class="footer-heading">Quick Links</h3>
                     <ul class="footer-links">
                         <li><a href="#home">Home</a></li>
-                        <li><a href="#news">News</a></li>
                         <li><a href="#features">Services</a></li>
                         <li><a href="#about">About Us</a></li>
                         <li><a href="#process">How It Works</a></li>
@@ -1754,54 +1807,54 @@
                 });
             });
 
-            // News Slider
-            const newsSlides = document.getElementById('newsSlides');
-            const newsPrev = document.getElementById('newsPrev');
-            const newsNext = document.getElementById('newsNext');
-            const newsDots = document.getElementById('newsDots');
-            let currentSlide = 0;
-            const totalSlides = 10;
+            // Hero News Slider
+            const heroNewsSlides = document.getElementById('heroNewsSlides');
+            const heroNewsPrev = document.getElementById('heroNewsPrev');
+            const heroNewsNext = document.getElementById('heroNewsNext');
+            const heroNewsDots = document.getElementById('heroNewsDots');
+            let currentNewsSlide = 0;
+            const totalNewsSlides = 10;
 
             // Create dots
-            for (let i = 0; i < totalSlides; i++) {
+            for (let i = 0; i < totalNewsSlides; i++) {
                 const dot = document.createElement('div');
-                dot.classList.add('news-dot');
+                dot.classList.add('hero-news-dot');
                 if (i === 0) dot.classList.add('active');
-                dot.addEventListener('click', () => goToSlide(i));
-                newsDots.appendChild(dot);
+                dot.addEventListener('click', () => goToNewsSlide(i));
+                heroNewsDots.appendChild(dot);
             }
 
-            function goToSlide(slideIndex) {
-                currentSlide = slideIndex;
-                newsSlides.style.transform = `translateX(-${currentSlide * 100}%)`;
+            function goToNewsSlide(slideIndex) {
+                currentNewsSlide = slideIndex;
+                heroNewsSlides.style.transform = `translateX(-${currentNewsSlide * 100}%)`;
 
                 // Update dots
-                document.querySelectorAll('.news-dot').forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentSlide);
+                document.querySelectorAll('.hero-news-dot').forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentNewsSlide);
                 });
             }
 
-            function nextSlide() {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                goToSlide(currentSlide);
+            function nextNewsSlide() {
+                currentNewsSlide = (currentNewsSlide + 1) % totalNewsSlides;
+                goToNewsSlide(currentNewsSlide);
             }
 
-            function prevSlide() {
-                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-                goToSlide(currentSlide);
+            function prevNewsSlide() {
+                currentNewsSlide = (currentNewsSlide - 1 + totalNewsSlides) % totalNewsSlides;
+                goToNewsSlide(currentNewsSlide);
             }
 
-            newsNext.addEventListener('click', nextSlide);
-            newsPrev.addEventListener('click', prevSlide);
+            heroNewsNext.addEventListener('click', nextNewsSlide);
+            heroNewsPrev.addEventListener('click', prevNewsSlide);
 
             // Auto slide every 5 seconds
-            let slideInterval = setInterval(nextSlide, 5000);
+            let newsSlideInterval = setInterval(nextNewsSlide, 5000);
 
             // Pause auto slide on hover
-            const newsSlider = document.querySelector('.news-slider');
-            newsSlider.addEventListener('mouseenter', () => clearInterval(slideInterval));
-            newsSlider.addEventListener('mouseleave', () => {
-                slideInterval = setInterval(nextSlide, 5000);
+            const heroNewsSlider = document.querySelector('.hero-news-slider');
+            heroNewsSlider.addEventListener('mouseenter', () => clearInterval(newsSlideInterval));
+            heroNewsSlider.addEventListener('mouseleave', () => {
+                newsSlideInterval = setInterval(nextNewsSlide, 5000);
             });
 
             // Counter animation
