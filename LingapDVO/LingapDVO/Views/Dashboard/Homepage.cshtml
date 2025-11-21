@@ -3075,31 +3075,34 @@
                     markAllBtn.classList.add('reading');
 
                     const unreadNotifications = currentNotifications.filter(n => !n.isRead);
-                    console.log(`[markAllNotificationsAsRead] Marking ${unreadNotifications.length} unread notifications (out of ${currentNotifications.length} total) as read...`);
+                    console.log(`[markAllNotificationsAsRead] Forcefully marking ${unreadNotifications.length} unread notifications (out of ${currentNotifications.length} total) as read, including priority notifications...`);
 
                     // Use batch endpoint to mark all notifications as read in database
+                    // Send force flag to ensure ALL notifications are marked as read, including priority ones
                     const response = await fetch('/Notifications/MarkAllNotificationsAsRead', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
-                        }
+                        },
+                        body: JSON.stringify({ force: true })
                     });
 
                     if (response.ok) {
                         const result = await response.json();
                         if (result.success) {
-                            console.log(`[markAllNotificationsAsRead] Successfully marked ${result.count || currentNotifications.length} notifications as read in database`);
+                            console.log(`[markAllNotificationsAsRead] Successfully marked ${result.count || currentNotifications.length} notifications as read in database (forcefully)`);
 
-                            // Update all current notifications to read state
+                            // FORCEFULLY update all current notifications to read state, regardless of priority
                             currentNotifications.forEach(n => {
                                 n.isRead = true;
+                                console.log(`[markAllNotificationsAsRead] Marked notification ${n.id} (priority: ${n.priority || 'normal'}) as read`);
                             });
 
                             // Update UI to reflect read status
                             updateNotificationUI(currentNotifications);
                             hideNotificationBadge();
 
-                            console.log('[markAllNotificationsAsRead] All notifications marked as read successfully');
+                            console.log('[markAllNotificationsAsRead] All notifications (including priority) marked as read successfully');
                         } else {
                             console.error('[markAllNotificationsAsRead] Backend returned error:', result.error);
                             throw new Error(result.error);
@@ -3220,9 +3223,21 @@
                         </div>
                     `;
 
-                    notificationItem.addEventListener('click', function() {
-                        handleNotificationClick(notification);
-                    });
+                    // Don't add click listener for Welcome notifications (permanent/no_applications)
+                    const isWelcomeNotification = notification.isPermanent ||
+                                                 notification.id === 'no_applications' ||
+                                                 notification.type === 'welcome';
+
+                    if (!isWelcomeNotification) {
+                        notificationItem.addEventListener('click', function() {
+                            handleNotificationClick(notification);
+                        });
+                        // Add cursor pointer style for clickable notifications
+                        notificationItem.style.cursor = 'pointer';
+                    } else {
+                        // Make welcome notifications non-clickable
+                        notificationItem.style.cursor = 'default';
+                    }
 
                     notificationList.appendChild(notificationItem);
                 });
@@ -3493,9 +3508,21 @@
                             </div>
                         `;
 
-                        notificationItem.addEventListener('click', function() {
-                            handleNotificationClick(notification);
-                        });
+                        // Don't add click listener for Welcome notifications (permanent/no_applications)
+                        const isWelcomeNotification = notification.isPermanent ||
+                                                     notification.id === 'no_applications' ||
+                                                     notification.type === 'welcome';
+
+                        if (!isWelcomeNotification) {
+                            notificationItem.addEventListener('click', function() {
+                                handleNotificationClick(notification);
+                            });
+                            // Add cursor pointer style for clickable notifications
+                            notificationItem.style.cursor = 'pointer';
+                        } else {
+                            // Make welcome notifications non-clickable
+                            notificationItem.style.cursor = 'default';
+                        }
 
                         mobileNotificationList.appendChild(notificationItem);
                     });
