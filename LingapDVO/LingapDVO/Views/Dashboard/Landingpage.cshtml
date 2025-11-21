@@ -250,8 +250,8 @@
         /* Hero Section */
         .hero-section {
             position: relative;
-            min-height: auto;
-            padding: 7rem 0 2.5rem;
+            min-height: 100vh; /* Changed from auto to 100vh */
+            padding: 8rem 0 3rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -301,6 +301,7 @@
             animation: heroFadeInUp 1.2s ease-out;
         }
 
+        /* Show scroll indicator on larger screens */
         @@media (min-width: 768px) {
             .scroll-indicator {
                 display: block;
