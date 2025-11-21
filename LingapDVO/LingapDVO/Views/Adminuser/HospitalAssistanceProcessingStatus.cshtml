@@ -735,13 +735,19 @@
                     <div class="row g-3 mt-3">
                         <div class="col-md-6">
                             <div class="cmo-notes-section">
-                                <label class="form-label cmo-section-title">Others:</label>
-                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                <label class="form-label cmo-section-title">Others: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." required value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                <div class="invalid-feedback" id="cmoNotesError">
+                                    Please enter notes in the Others field.
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label cmo-section-title">Amount Granted: <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" class="form-control" id="grantedAmountInput" name="GrantedAmount" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
+                            <div class="invalid-feedback" id="grantedAmountError">
+                                Please enter the amount granted.
+                            </div>
                         </div>
                     </div>
 
@@ -1192,23 +1198,64 @@
 
         // Enhanced form submission debugging and validation
         document.getElementById('statusForm').addEventListener('submit', function(e) {
+            let hasError = false;
+            let errorMessages = [];
+
             // Validate that at least one supporting document is checked
             const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
-            const errorDiv = document.getElementById('supportingDocsError');
+            const supportingDocsError = document.getElementById('supportingDocsError');
 
             if (supportingDocs.length === 0) {
-                e.preventDefault();
-                errorDiv.style.display = 'block';
-                errorDiv.classList.add('d-block');
-
-                // Scroll to the error
-                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                alert('Please select at least one supporting document before submitting.');
-                return false;
+                hasError = true;
+                errorMessages.push('Please select at least one supporting document.');
+                supportingDocsError.style.display = 'block';
+                supportingDocsError.classList.add('d-block');
             } else {
-                errorDiv.style.display = 'none';
-                errorDiv.classList.remove('d-block');
+                supportingDocsError.style.display = 'none';
+                supportingDocsError.classList.remove('d-block');
+            }
+
+            // Validate Others field (CMO Notes)
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            const cmoNotesError = document.getElementById('cmoNotesError');
+
+            if (!cmoNotesInput.value.trim()) {
+                hasError = true;
+                errorMessages.push('Please enter notes in the Others field.');
+                cmoNotesInput.classList.add('is-invalid');
+                if (cmoNotesError) cmoNotesError.style.display = 'block';
+            } else {
+                cmoNotesInput.classList.remove('is-invalid');
+                if (cmoNotesError) cmoNotesError.style.display = 'none';
+            }
+
+            // Validate Amount Granted field
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            const grantedAmountError = document.getElementById('grantedAmountError');
+
+            if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                hasError = true;
+                errorMessages.push('Please enter a valid amount granted (must be greater than 0).');
+                grantedAmountInput.classList.add('is-invalid');
+                if (grantedAmountError) grantedAmountError.style.display = 'block';
+            } else {
+                grantedAmountInput.classList.remove('is-invalid');
+                if (grantedAmountError) grantedAmountError.style.display = 'none';
+            }
+
+            // If there are validation errors, prevent submission
+            if (hasError) {
+                e.preventDefault();
+
+                // Scroll to the first error (CMO section)
+                const cmoSection = document.querySelector('.cmo-details');
+                if (cmoSection) {
+                    cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                // Show alert with all error messages
+                alert('Please fix the following errors before submitting:\n\n' + errorMessages.join('\n'));
+                return false;
             }
 
             console.log('=== FORM SUBMISSION DEBUG INFO ===');
