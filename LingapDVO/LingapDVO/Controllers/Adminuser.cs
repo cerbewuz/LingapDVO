@@ -2128,6 +2128,7 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
+
             var HospitalAssistance = context.HospitalAssistance.Find(id);
             if (HospitalAssistance == null)
             {
@@ -2185,8 +2186,8 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -2315,6 +2316,7 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
+
             var FuneralAssistance = context.FuneralAssistance.Find(id);
             if (FuneralAssistance == null)
             {
@@ -2372,8 +2374,8 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -2559,9 +2561,9 @@ namespace LingapDVO.Controllers
             // DECRYPTION SECTION - UPDATED TO USE CONFIGURATION-BASED KEY
             // ====================================
             string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
-            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage");
-            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "Funeralimg");
-            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "MedCertificateimage");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+            string deathCertificateFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+            string medicalCertificateFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
 
             var debugMessages = new List<string>();
 
@@ -2741,7 +2743,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status"] = HospitalAssistance.Status;
+            ViewData["Status3"] = HospitalAssistance.Status3;
             ViewData["Id"] = HospitalAssistance.Id;
             ViewData["Lastname"] = HospitalAssistance.Lastname;
             ViewData["Firstname"] = HospitalAssistance.Firstname;
@@ -2928,7 +2930,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status"] = medicallabform.Status;
+            ViewData["Status3"] = medicallabform.Status3;
             ViewData["Id"] = medicallabform.Id;
             ViewData["Lastname"] = medicallabform.Lastname;
             ViewData["Firstname"] = medicallabform.Firstname;
@@ -3155,7 +3157,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] = FuneralAssistance.Status2;
+            ViewData["Status3"] = FuneralAssistance.Status3;
             ViewData["Id"] = FuneralAssistance.Id;
             ViewData["Lastname"] = FuneralAssistance.Lastname;
             ViewData["Firstname"] = FuneralAssistance.Firstname;

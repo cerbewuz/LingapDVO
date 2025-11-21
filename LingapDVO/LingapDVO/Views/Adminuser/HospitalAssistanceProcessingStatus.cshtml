@@ -1069,9 +1069,60 @@
             }
         }
 
+        // Form Validation Function
+        function validateForm() {
+            let isValid = true;
+            let errorMessages = [];
+
+            // Reset previous errors
+            document.getElementById('supportingDocsError').style.display = 'none';
+            document.getElementById('cmoNotesInput').classList.remove('is-invalid');
+            document.getElementById('grantedAmountInput').classList.remove('is-invalid');
+
+            // Validate supporting documents
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            if (supportingDocs.length === 0) {
+                isValid = false;
+                document.getElementById('supportingDocsError').style.display = 'block';
+                errorMessages.push('Please select at least one supporting document.');
+            }
+
+            // Validate CMO Notes
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            if (!cmoNotesInput.value.trim()) {
+                isValid = false;
+                cmoNotesInput.classList.add('is-invalid');
+                errorMessages.push('Please enter notes in the Others field.');
+            }
+
+            // Validate Amount Granted
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                isValid = false;
+                grantedAmountInput.classList.add('is-invalid');
+                errorMessages.push('Please enter a valid amount granted (must be greater than 0).');
+            }
+
+            // Show errors if any
+            if (!isValid) {
+                const cmoSection = document.querySelector('.cmo-details');
+                if (cmoSection) {
+                    cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                alert('Please fix the following errors:\n\n' + errorMessages.join('\n'));
+            }
+
+            return isValid;
+        }
+
         // Status Submission Functions - FIXED VERSION
         function submitApprove() {
             console.log('Submitting approve...');
+
+            // Validate the form first
+            if (!validateForm()) {
+                return; // Stop if validation fails
+            }
 
             // Update CMO reflection before submission
             updateReflection();
@@ -1083,16 +1134,22 @@
             // Show loading modal
             showSuccessModal();
 
-            // Submit the form immediately
-            console.log('Final form submission - Approve');
-            console.log('Status:', document.getElementById('statusInput').value);
-            console.log('Comments:', document.getElementById('commentsInput').value);
-            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+            // Submit the form after a short delay to show the modal
+            setTimeout(() => {
+                console.log('Final form submission - Approve');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
+                console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
 
-            document.getElementById('statusForm').submit();
+                document.getElementById('statusForm').submit();
+            }, 1500);
         }
 
         function showCommentsModal() {
+            // Validate the form first (except comments)
+            if (!validateForm()) {
+                return; // Stop if validation fails
+            }
             document.getElementById('commentsModal').style.display = 'block';
             document.getElementById('commentsTextarea').focus();
         }
@@ -1121,19 +1178,27 @@
             document.getElementById('statusInput').value = 'Disapprove';
             document.getElementById('commentsInput').value = comments;
 
-            // Show loading modal
+            // Close comments modal and show success modal
+            closeCommentsModal();
             showSuccessModal();
 
-            // Submit the form immediately
-            console.log('Final form submission - Disapprove');
-            console.log('Status:', document.getElementById('statusInput').value);
-            console.log('Comments:', document.getElementById('commentsInput').value);
+            // Submit the form after a short delay
+            setTimeout(() => {
+                console.log('Final form submission - Disapprove');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
 
-            document.getElementById('statusForm').submit();
+                document.getElementById('statusForm').submit();
+            }, 1500);
         }
 
         function showSuccessModal() {
             document.getElementById('successModal').style.display = 'block';
+
+            // Auto-redirect after 3 seconds in case form submission fails
+            setTimeout(() => {
+                window.location.href = '/Admin';
+            }, 3000);
         }
 
         // CMO Reflection Auto-generation - FIXED VERSION
@@ -1194,70 +1259,13 @@
 
             // Initialize reflection field on page load
             updateReflection();
+
+            // Remove the form submit event listener that was blocking submission
+            // We're handling validation in the individual submit functions instead
         });
 
-        // Enhanced form submission debugging and validation
+        // Enhanced form submission debugging
         document.getElementById('statusForm').addEventListener('submit', function(e) {
-            let hasError = false;
-            let errorMessages = [];
-
-            // Validate that at least one supporting document is checked
-            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
-            const supportingDocsError = document.getElementById('supportingDocsError');
-
-            if (supportingDocs.length === 0) {
-                hasError = true;
-                errorMessages.push('Please select at least one supporting document.');
-                supportingDocsError.style.display = 'block';
-                supportingDocsError.classList.add('d-block');
-            } else {
-                supportingDocsError.style.display = 'none';
-                supportingDocsError.classList.remove('d-block');
-            }
-
-            // Validate Others field (CMO Notes)
-            const cmoNotesInput = document.getElementById('cmoNotesInput');
-            const cmoNotesError = document.getElementById('cmoNotesError');
-
-            if (!cmoNotesInput.value.trim()) {
-                hasError = true;
-                errorMessages.push('Please enter notes in the Others field.');
-                cmoNotesInput.classList.add('is-invalid');
-                if (cmoNotesError) cmoNotesError.style.display = 'block';
-            } else {
-                cmoNotesInput.classList.remove('is-invalid');
-                if (cmoNotesError) cmoNotesError.style.display = 'none';
-            }
-
-            // Validate Amount Granted field
-            const grantedAmountInput = document.getElementById('grantedAmountInput');
-            const grantedAmountError = document.getElementById('grantedAmountError');
-
-            if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
-                hasError = true;
-                errorMessages.push('Please enter a valid amount granted (must be greater than 0).');
-                grantedAmountInput.classList.add('is-invalid');
-                if (grantedAmountError) grantedAmountError.style.display = 'block';
-            } else {
-                grantedAmountInput.classList.remove('is-invalid');
-                if (grantedAmountError) grantedAmountError.style.display = 'none';
-            }
-
-            // If there are validation errors, prevent submission
-            if (hasError) {
-                e.preventDefault();
-
-                // Scroll to the first error (CMO section)
-                const cmoSection = document.querySelector('.cmo-details');
-                if (cmoSection) {
-                    cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-
-                // Show alert with all error messages
-                alert('Please fix the following errors before submitting:\n\n' + errorMessages.join('\n'));
-                return false;
-            }
-
             console.log('=== FORM SUBMISSION DEBUG INFO ===');
             console.log('Form action:', this.action);
             console.log('Form method:', this.method);
@@ -1266,7 +1274,6 @@
             console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
             console.log('Processed By:', document.getElementById('processByInput').value);
             console.log('Granted Amount:', document.getElementById('grantedAmountInput').value);
-            console.log('Supporting Docs Count:', supportingDocs.length);
             console.log('Form data:', new FormData(this));
             console.log('==============================');
         });
