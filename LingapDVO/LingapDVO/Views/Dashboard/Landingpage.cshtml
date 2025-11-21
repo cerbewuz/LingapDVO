@@ -1782,7 +1782,7 @@
                 <div class="section-badge">Serbisyo Alang sa Dabawenyo</div>
                 <h2 class="section-title">Services Offered</h2>
                 <p class="section-description">
-                    LingapDVO offers various medical financial services to support every Davaoeños healthcare needs.
+                    LingapDVO offers various medical financial services to support every Davaoeï¿½os healthcare needs.
                 </p>
             </div>
 
@@ -2143,33 +2143,42 @@
             const processTimeline = document.querySelector('.process-timeline');
             const processSteps = document.querySelectorAll('.process-step');
 
+            console.log('Process Timeline found:', processTimeline);
+            console.log('Process Steps found:', processSteps.length);
+
             const processObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
+                        console.log('Element entering viewport:', entry.target.className);
+
                         // Animate timeline line
                         if (entry.target.classList.contains('process-timeline')) {
                             entry.target.classList.add('animate-line');
+                            console.log('Timeline animation triggered');
                         }
 
                         // Animate process steps
                         if (entry.target.classList.contains('process-step')) {
                             entry.target.classList.add('animate-in');
+                            console.log('Step animation triggered');
                         }
                     }
                 });
             }, {
-                threshold: 0.2,
-                rootMargin: '0px 0px -50px 0px'
+                threshold: 0.1,
+                rootMargin: '0px 0px -10px 0px'
             });
 
             // Observe timeline
             if (processTimeline) {
                 processObserver.observe(processTimeline);
+                console.log('Observing timeline');
             }
 
             // Observe each step
-            processSteps.forEach(step => {
+            processSteps.forEach((step, index) => {
                 processObserver.observe(step);
+                console.log('Observing step', index + 1);
             });
 
             // Counter animation
