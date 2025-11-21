@@ -538,14 +538,20 @@
         }
 
         /* ===========================
-                   NEWS SECTION IN HERO
+                   UPDATES SECTION
                 =========================== */
-        .hero-news-section {
-            padding: 1rem 0;
-            margin-top: 1.5rem;
+        .updates-section {
+            padding: 3rem 0;
+            background: var(--white);
+            position: relative;
         }
 
-        .hero-news-container {
+        .updates-news-section {
+            padding: 2rem 0;
+            margin-top: 1rem;
+        }
+
+        .updates-news-container {
             max-width: 1000px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
@@ -555,16 +561,16 @@
             overflow: hidden;
         }
 
-        .hero-news-slider {
+        .updates-news-slider {
             position: relative;
         }
 
-        .hero-news-slides {
+        .updates-news-slides {
             display: flex;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .hero-news-slide {
+        .updates-news-slide {
             min-width: 100%;
             display: grid;
             grid-template-columns: 45% 55%;
@@ -572,47 +578,47 @@
             align-items: center;
         }
 
-            .hero-news-slide img {
+            .updates-news-slide img {
                 width: 100%;
-                height: 220px;
+                height: 280px;
                 object-fit: cover;
                 display: block;
             }
 
-        .hero-news-content {
+        .updates-news-content {
             padding: 1.5rem 2rem;
             background: var(--white);
         }
 
-            .hero-news-badge {
+            .updates-news-badge {
                 display: inline-block;
                 background: linear-gradient(135deg, var(--primary) 0%, #e91e63 100%);
                 color: var(--white);
-                padding: 0.3rem 0.8rem;
+                padding: 0.4rem 1rem;
                 border-radius: 20px;
-                font-size: 0.7rem;
+                font-size: 0.75rem;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
-                margin-bottom: 0.75rem;
+                margin-bottom: 1rem;
             }
 
-            .hero-news-content h3 {
-                font-size: 1.25rem;
+            .updates-news-content h3 {
+                font-size: 1.35rem;
                 font-weight: 700;
                 color: var(--dark);
-                margin-bottom: 0.5rem;
+                margin-bottom: 0.75rem;
                 line-height: 1.3;
             }
 
-            .hero-news-content p {
-                font-size: 0.95rem;
-                color: var(--text-light);
-                line-height: 1.5;
+            .updates-news-content p {
+                font-size: 1rem;
+                color: var(--gray);
+                line-height: 1.6;
                 margin-bottom: 0;
             }
 
-        .hero-news-nav {
+        .updates-news-nav {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
@@ -632,30 +638,30 @@
             justify-content: center;
         }
 
-            .hero-news-nav:hover {
+            .updates-news-nav:hover {
                 background: var(--primary);
                 color: var(--white);
                 border-color: var(--primary);
                 transform: translateY(-50%) scale(1.1);
             }
 
-        .hero-news-prev {
+        .updates-news-prev {
             left: 15px;
         }
 
-        .hero-news-next {
+        .updates-news-next {
             right: 15px;
         }
 
-        .hero-news-dots {
+        .updates-news-dots {
             display: flex;
             justify-content: center;
             gap: 8px;
-            padding: 1rem 0;
+            padding: 1.25rem 0;
             background: var(--white);
         }
 
-        .hero-news-dot {
+        .updates-news-dot {
             width: 10px;
             height: 10px;
             border-radius: 50%;
@@ -664,7 +670,7 @@
             transition: all 0.3s ease;
         }
 
-            .hero-news-dot.active {
+            .updates-news-dot.active {
                 background: var(--primary);
                 width: 28px;
                 border-radius: 5px;
@@ -1109,87 +1115,55 @@
         .modern-footer {
             background: #1a1a1a;
             color: rgba(255, 255, 255, 0.8);
-            padding: 2rem 0 1rem;
+            padding: 1.5rem 0;
             position: relative;
         }
 
-        .footer-brand {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.75rem;
-        }
-
-        .footer-description {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 1rem;
-        }
-
-        .footer-heading {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--white);
-            margin-bottom: 1rem;
-        }
-
-        .footer-links {
-            list-style: none;
-        }
-
-            .footer-links li {
-                margin-bottom: 0.5rem;
-                font-size: 0.9rem;
-            }
-
-            .footer-links a {
-                color: rgba(255, 255, 255, 0.8);
-                text-decoration: none;
-                transition: all 0.3s ease;
-                display: inline-block;
-            }
-
-                .footer-links a:hover {
-                    color: var(--primary);
-                    transform: translateX(5px);
-                }
-
-        .social-links {
+        .footer-content {
             display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .social-link {
-            width: 40px;
-            height: 40px;
+        .footer-copyright {
+            font-size: 0.9rem;
+            margin: 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .footer-contacts {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+            .footer-contacts span {
+                font-size: 0.9rem;
+                color: rgba(255, 255, 255, 0.8);
+            }
+
+        .footer-social-link {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--white);
-            font-size: 1.1rem;
+            font-size: 1rem;
             text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
         }
 
-            .social-link:hover {
+            .footer-social-link:hover {
                 background: var(--gradient-primary);
-                transform: translateY(-4px);
-                box-shadow: 0 8px 20px rgba(220, 20, 60, 0.4);
+                transform: translateY(-3px);
+                box-shadow: 0 6px 15px rgba(220, 20, 60, 0.4);
             }
-
-        .footer-bottom {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            font-size: 0.85rem;
-        }
 
         /* ===========================
                    RESPONSIVE
@@ -1223,7 +1197,7 @@
             .features-section,
             .about-section,
             .process-section,
-            .contact-section {
+            .updates-section {
                 padding: 2.5rem 0;
             }
 
@@ -1231,20 +1205,20 @@
                 margin-bottom: 2rem;
             }
 
-            .hero-news-slide {
+            .updates-news-slide {
                 grid-template-columns: 1fr;
             }
 
-            .hero-news-slide img {
-                height: 220px;
+            .updates-news-slide img {
+                height: 250px;
             }
 
-            .hero-news-content {
+            .updates-news-content {
                 padding: 1.5rem;
             }
 
-            .hero-news-content h3 {
-                font-size: 1.3rem;
+            .updates-news-content h3 {
+                font-size: 1.2rem;
             }
         }
 
@@ -1252,7 +1226,7 @@
             .features-section,
             .about-section,
             .process-section,
-            .contact-section {
+            .updates-section {
                 padding: 2rem 0;
             }
 
@@ -1312,17 +1286,6 @@
                 padding: 1rem;
             }
 
-            .contact-card {
-                margin-bottom: 1.5rem;
-                padding: 1.5rem 1.25rem;
-            }
-
-            .contact-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
-            }
-
             .about-image {
                 margin-bottom: 2rem;
                 max-height: 300px;
@@ -1332,26 +1295,35 @@
                 padding-left: 0;
             }
 
-            .hero-news-slide img {
-                height: 200px;
+            .updates-news-slide img {
+                height: 220px;
             }
 
-            .hero-news-content {
+            .updates-news-content {
                 padding: 1.25rem 1.5rem;
             }
 
-            .hero-news-content h3 {
+            .updates-news-content h3 {
+                font-size: 1.15rem;
+            }
+
+            .updates-news-content p {
+                font-size: 0.95rem;
+            }
+
+            .updates-news-nav {
+                width: 40px;
+                height: 40px;
                 font-size: 1.1rem;
             }
 
-            .hero-news-content p {
-                font-size: 0.9rem;
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
             }
 
-            .hero-news-nav {
-                width: 38px;
-                height: 38px;
-                font-size: 1rem;
+            .footer-contacts {
+                justify-content: center;
             }
         }
 
@@ -1359,7 +1331,7 @@
             .features-section,
             .about-section,
             .process-section,
-            .contact-section {
+            .updates-section {
                 padding: 1.5rem 0;
             }
 
@@ -1388,59 +1360,58 @@
                 margin-bottom: 1.5rem;
             }
 
-            .feature-card,
-            .contact-card {
+            .feature-card {
                 padding: 1.25rem 1rem;
             }
 
-            .hero-news-section {
+            .updates-news-section {
                 padding: 1rem 0;
-                margin-top: 1rem;
+                margin-top: 0.5rem;
             }
 
-            .hero-news-slide img {
-                height: 160px;
+            .updates-news-slide img {
+                height: 180px;
             }
 
-            .hero-news-content {
+            .updates-news-content {
                 padding: 1rem 1.25rem;
             }
 
-            .hero-news-content h3 {
-                font-size: 1rem;
+            .updates-news-content h3 {
+                font-size: 1.05rem;
             }
 
-            .hero-news-content p {
-                font-size: 0.85rem;
+            .updates-news-content p {
+                font-size: 0.9rem;
             }
 
-            .hero-news-badge {
+            .updates-news-badge {
                 font-size: 0.65rem;
-                padding: 0.25rem 0.75rem;
+                padding: 0.3rem 0.75rem;
+            }
+
+            .updates-news-nav {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
             }
 
             .modern-footer {
-                padding: 1.5rem 0 0.75rem;
+                padding: 1.25rem 0;
             }
 
-            .footer-brand {
-                font-size: 1.25rem;
-            }
-
-            .footer-heading {
-                font-size: 1rem;
-                margin-bottom: 0.75rem;
-            }
-
-            .footer-description,
-            .footer-links li {
+            .footer-copyright {
                 font-size: 0.85rem;
             }
 
-            .footer-bottom {
-                margin-top: 1.5rem;
-                padding-top: 1rem;
-                font-size: 0.8rem;
+            .footer-contacts span {
+                font-size: 0.85rem;
+            }
+
+            .footer-social-link {
+                width: 32px;
+                height: 32px;
+                font-size: 0.95rem;
             }
         }
 
@@ -1551,7 +1522,7 @@
                         <a href="#features" class="modern-nav-link">Services</a>
                         <a href="#about" class="modern-nav-link">About</a>
                         <a href="#process" class="modern-nav-link">Process</a>
-                        <a href="#contact" class="modern-nav-link">Contact</a>
+                        <a href="#updates" class="modern-nav-link">Updates</a>
                         <a href="/Login" class="modern-nav-link login-btn">Login</a>
                     </div>
                 </div>
@@ -1577,7 +1548,7 @@
             <a href="#features" class="mobile-nav-link">Services</a>
             <a href="#about" class="mobile-nav-link">About</a>
             <a href="#process" class="mobile-nav-link">Process</a>
-            <a href="#contact" class="mobile-nav-link">Contact</a>
+            <a href="#updates" class="mobile-nav-link">Updates</a>
             <a href="/Login" class="mobile-nav-link">Login</a>
         </div>
     </div>
@@ -1595,121 +1566,14 @@
             <p class="hero-subtitle">
                 Libreng tabang medikal ug pinansyal para sa mga nangangailangang Dabawenyo.
             </p>
-            <!-- Office Updates - Compact News in Hero -->
-            <div class="hero-news-section">
-                <div class="hero-news-container">
-                    <div class="hero-news-slider">
-                        <div class="hero-news-slides" id="heroNewsSlides">
-                            <!-- Slide 1 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update1.jpg" alt="Lingap Program Update">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Office Update</span>
-                                    <h3>Bagong Pasilidad para sa Mas Mabilis na Serbisyo</h3>
-                                    <p>Inauguration ng bagong Lingap Center sa Davao City para sa mas mabilis at mas mahusay na serbisyo sa ating mga kababayan.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 2 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update3.jpg" alt="Medical Mission">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Medical Mission</span>
-                                    <h3>Medical Mission sa Malalayong Barangay</h3>
-                                    <p>Libreng check-up at gamot para sa mga residente ng malalayong barangay sa Davao City.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 3 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update4.jpg" alt="Financial Assistance">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Financial Aid</span>
-                                    <h3>Pamamahagi ng Financial Assistance</h3>
-                                    <p>Suporta para sa mga pamilyang apektado ng pandemya upang makaahon sa kanilang pangangailangan.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 4 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update5.jpg" alt="Community Outreach">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Outreach</span>
-                                    <h3>Community Outreach Program</h3>
-                                    <p>Pagbibigay ng essential goods at relief packs sa mga nangangailangan sa ating komunidad.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 5 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update6.jpg" alt="Training Program">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Livelihood</span>
-                                    <h3>Livelihood Training Program</h3>
-                                    <p>Skills training para sa sustainable income at kabuhayan ng mga Dabawenyo.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 6 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update7.jpg" alt="Scholarship Program">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Education</span>
-                                    <h3>Educational Assistance Program</h3>
-                                    <p>Scholarship at educational support para sa mga kabataang Dabawenyo na nag-aaral.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 7 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update8.jpg" alt="Health Awareness">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Health</span>
-                                    <h3>Health Awareness Campaign</h3>
-                                    <p>Information drive para sa preventive healthcare at health awareness sa komunidad.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 8 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update9.jpg" alt="Senior Citizen Support">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Senior Care</span>
-                                    <h3>Support for Senior Citizens</h3>
-                                    <p>Medical assistance at special support programs para sa ating mga nakatatandang Dabawenyo.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 9 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update2.jpg" alt="Disaster Response">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Emergency</span>
-                                    <h3>Disaster Response Team</h3>
-                                    <p>Mabilis na aksyon at emergency response sa mga nasalanta ng kalamidad sa Davao City.</p>
-                                </div>
-                            </div>
-                            <!-- Slide 10 -->
-                            <div class="hero-news-slide">
-                                <img src="/LingapUpdate/dcitizen_update10.jpg" alt="Digital Transformation">
-                                <div class="hero-news-content">
-                                    <span class="hero-news-badge">Technology</span>
-                                    <h3>Digital Transformation Initiative</h3>
-                                    <p>Online platform para sa mas mabilis, mas convenient, at mas transparent na serbisyo.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button class="hero-news-nav hero-news-prev" id="heroNewsPrev">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button class="hero-news-nav hero-news-next" id="heroNewsNext">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-
-                    <div class="hero-news-dots" id="heroNewsDots">
-                        <!-- Dots will be generated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
             <div class="hero-buttons">
                 <a href="/Login" class="btn-primary-custom" id="startApplicationBtn">
                     <i class="fas fa-rocket"></i>
                     <span>Simulan ang Aplikasyon</span>
+                </a>
+                <a href="#process" class="btn-secondary-custom">
+                    <i class="fas fa-list-check"></i>
+                    <span>Alamin ang Proseso</span>
                 </a>
             </div>
         </div>
@@ -1866,59 +1730,123 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section class="contact-section" id="contact">
+    <!-- Updates Section -->
+    <section class="updates-section" id="updates">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge" style="background: rgba(255,255,255,0.2); color: var(--white);">
-                    Makipag-ugnayan
-                </div>
-                <h2 class="section-title">Kontakin Kami</h2>
+                <div class="section-badge">Mga Balita at Update</div>
+                <h2 class="section-title">Latest Updates</h2>
                 <p class="section-description">
-                    May mga katanungan ba kayo? Handa kaming tumulong at sagutin ang lahat ng inyong mga tanong
+                    Manatiling updated sa mga pinakabagong programa at serbisyo ng Lingap para sa mga Dabawenyo
                 </p>
             </div>
 
-            <div class="row">
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="contact-card fade-in-up">
-                        <div class="contact-icon">
-                            <i class="fas fa-map-marker-alt"></i>
+            <div class="updates-news-section">
+                <div class="updates-news-container">
+                    <div class="updates-news-slider">
+                        <div class="updates-news-slides" id="updatesNewsSlides">
+                            <!-- Slide 1 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update1.jpg" alt="Lingap Program Update">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Office Update</span>
+                                    <h3>Bagong Pasilidad para sa Mas Mabilis na Serbisyo</h3>
+                                    <p>Inauguration ng bagong Lingap Center sa Davao City para sa mas mabilis at mas mahusay na serbisyo sa ating mga kababayan.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 2 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update3.jpg" alt="Medical Mission">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Medical Mission</span>
+                                    <h3>Medical Mission sa Malalayong Barangay</h3>
+                                    <p>Libreng check-up at gamot para sa mga residente ng malalayong barangay sa Davao City.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 3 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update4.jpg" alt="Financial Assistance">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Financial Aid</span>
+                                    <h3>Pamamahagi ng Financial Assistance</h3>
+                                    <p>Suporta para sa mga pamilyang apektado ng pandemya upang makaahon sa kanilang pangangailangan.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 4 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update5.jpg" alt="Community Outreach">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Outreach</span>
+                                    <h3>Community Outreach Program</h3>
+                                    <p>Pagbibigay ng essential goods at relief packs sa mga nangangailangan sa ating komunidad.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 5 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update6.jpg" alt="Training Program">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Livelihood</span>
+                                    <h3>Livelihood Training Program</h3>
+                                    <p>Skills training para sa sustainable income at kabuhayan ng mga Dabawenyo.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 6 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update7.jpg" alt="Scholarship Program">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Education</span>
+                                    <h3>Educational Assistance Program</h3>
+                                    <p>Scholarship at educational support para sa mga kabataang Dabawenyo na nag-aaral.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 7 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update8.jpg" alt="Health Awareness">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Health</span>
+                                    <h3>Health Awareness Campaign</h3>
+                                    <p>Information drive para sa preventive healthcare at health awareness sa komunidad.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 8 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update9.jpg" alt="Senior Citizen Support">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Senior Care</span>
+                                    <h3>Support for Senior Citizens</h3>
+                                    <p>Medical assistance at special support programs para sa ating mga nakatatandang Dabawenyo.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 9 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update2.jpg" alt="Disaster Response">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Emergency</span>
+                                    <h3>Disaster Response Team</h3>
+                                    <p>Mabilis na aksyon at emergency response sa mga nasalanta ng kalamidad sa Davao City.</p>
+                                </div>
+                            </div>
+                            <!-- Slide 10 -->
+                            <div class="updates-news-slide">
+                                <img src="/LingapUpdate/dcitizen_update10.jpg" alt="Digital Transformation">
+                                <div class="updates-news-content">
+                                    <span class="updates-news-badge">Technology</span>
+                                    <h3>Digital Transformation Initiative</h3>
+                                    <p>Online platform para sa mas mabilis, mas convenient, at mas transparent na serbisyo.</p>
+                                </div>
+                            </div>
                         </div>
-                        <h3 class="contact-title">Address</h3>
-                        <div class="contact-info">
-                            SPMC Compound, beside 7/11<br>
-                            Malasakit Center, Bajada<br>
-                            Davao City, Davao del Sur 8000
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="contact-card fade-in-up" style="transition-delay: 0.1s;">
-                        <div class="contact-icon">
-                            <i class="fas fa-phone-alt"></i>
-                        </div>
-                        <h3 class="contact-title">Telepono</h3>
-                        <div class="contact-info">
-                            <a href="tel:(082) 298-1234">(082) 298-1234</a><br>
-                            <a href="tel:09095474763">Globe: 09095474763</a><br>
-                            <a href="tel:0951240280">Smart: 0951240280</a>
-                        </div>
+                        <button class="updates-news-nav updates-news-prev" id="updatesNewsPrev">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="updates-news-nav updates-news-next" id="updatesNewsNext">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
-                </div>
 
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="contact-card fade-in-up" style="transition-delay: 0.2s;">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <h3 class="contact-title">Email</h3>
-                        <div class="contact-info">
-                            <a href="mailto:mclingapdesk@gmail.com">mclingapdesk@gmail.com</a><br><br>
-                            Available 24/7 para sa<br>
-                            emergency cases
-                        </div>
+                    <div class="updates-news-dots" id="updatesNewsDots">
+                        <!-- Dots will be generated by JavaScript -->
                     </div>
                 </div>
             </div>
@@ -1928,43 +1856,15 @@
     <!-- Footer -->
     <footer class="modern-footer">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-3 mb-lg-0">
-                    <div class="footer-brand">LingapDVO</div>
-                    <p class="footer-description">
-                        Libreng serbisyong medikal at pinansyal para sa mga Dabawenyo.
-                    </p>
-                    <div class="social-links">
-                        <a href="https://www.facebook.com/lingapparasamahirap" class="social-link" target="_blank">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                    </div>
+            <div class="footer-content">
+                <p class="footer-copyright">&copy; 2025 LingapDVO. All rights for Dabawenyos</p>
+                <div class="footer-contacts">
+                    <span>(082) 298-1234</span>
+                    <span>mclingapdesk@gmail.com</span>
+                    <a href="https://www.facebook.com/lingapparasamahirap" class="footer-social-link" target="_blank">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
                 </div>
-
-                <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
-                    <h3 class="footer-heading">Quick Links</h3>
-                    <ul class="footer-links">
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#features">Services</a></li>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#process">Process</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <h3 class="footer-heading">Contact</h3>
-                    <ul class="footer-links">
-                        <li>SPMC Compound, Bajada</li>
-                        <li>Davao City 8000</li>
-                        <li>(082) 298-1234</li>
-                        <li>mclingapdesk@gmail.com</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2025 LingapDVO. All rights reserved. | Made with <i class="fas fa-heart" style="color: var(--primary);"></i> for Dabawenyos</p>
             </div>
         </div>
     </footer>
@@ -2035,29 +1935,29 @@
                 });
             });
 
-            // Hero News Slider
-            const heroNewsSlides = document.getElementById('heroNewsSlides');
-            const heroNewsPrev = document.getElementById('heroNewsPrev');
-            const heroNewsNext = document.getElementById('heroNewsNext');
-            const heroNewsDots = document.getElementById('heroNewsDots');
+            // Updates News Slider
+            const updatesNewsSlides = document.getElementById('updatesNewsSlides');
+            const updatesNewsPrev = document.getElementById('updatesNewsPrev');
+            const updatesNewsNext = document.getElementById('updatesNewsNext');
+            const updatesNewsDots = document.getElementById('updatesNewsDots');
             let currentNewsSlide = 0;
             const totalNewsSlides = 10;
 
             // Create dots
             for (let i = 0; i < totalNewsSlides; i++) {
                 const dot = document.createElement('div');
-                dot.classList.add('hero-news-dot');
+                dot.classList.add('updates-news-dot');
                 if (i === 0) dot.classList.add('active');
                 dot.addEventListener('click', () => goToNewsSlide(i));
-                heroNewsDots.appendChild(dot);
+                updatesNewsDots.appendChild(dot);
             }
 
             function goToNewsSlide(slideIndex) {
                 currentNewsSlide = slideIndex;
-                heroNewsSlides.style.transform = `translateX(-${currentNewsSlide * 100}%)`;
+                updatesNewsSlides.style.transform = `translateX(-${currentNewsSlide * 100}%)`;
 
                 // Update dots
-                document.querySelectorAll('.hero-news-dot').forEach((dot, index) => {
+                document.querySelectorAll('.updates-news-dot').forEach((dot, index) => {
                     dot.classList.toggle('active', index === currentNewsSlide);
                 });
             }
@@ -2072,16 +1972,16 @@
                 goToNewsSlide(currentNewsSlide);
             }
 
-            heroNewsNext.addEventListener('click', nextNewsSlide);
-            heroNewsPrev.addEventListener('click', prevNewsSlide);
+            updatesNewsNext.addEventListener('click', nextNewsSlide);
+            updatesNewsPrev.addEventListener('click', prevNewsSlide);
 
             // Auto slide every 5 seconds
             let newsSlideInterval = setInterval(nextNewsSlide, 5000);
 
             // Pause auto slide on hover
-            const heroNewsSlider = document.querySelector('.hero-news-slider');
-            heroNewsSlider.addEventListener('mouseenter', () => clearInterval(newsSlideInterval));
-            heroNewsSlider.addEventListener('mouseleave', () => {
+            const updatesNewsSlider = document.querySelector('.updates-news-slider');
+            updatesNewsSlider.addEventListener('mouseenter', () => clearInterval(newsSlideInterval));
+            updatesNewsSlider.addEventListener('mouseleave', () => {
                 newsSlideInterval = setInterval(nextNewsSlide, 5000);
             });
 
@@ -2195,7 +2095,7 @@
             }, observerOptions);
 
             // Observe elements for scroll animations
-            document.querySelectorAll('.section-header, .feature-card, .contact-card, .process-step').forEach(el => {
+            document.querySelectorAll('.section-header, .feature-card, .process-step').forEach(el => {
                 observer.observe(el);
             });
 
