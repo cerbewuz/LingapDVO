@@ -94,25 +94,25 @@
     <div class="form-section">
         <h5 class="section-header">Patient Information</h5>
         <div class="row g-3">
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Last Name</label>
                 <input value="@ViewData["Lastname"]" asp-for="Lastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
                 <span asp-validation-for="Lastname" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">First Name</label>
                 <input value="@ViewData["Firstname"]" asp-for="Firstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')" required>
                 <span asp-validation-for="Firstname" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Middle Name</label>
                 <input value="@ViewData["Middlename"]" asp-for="Middlename" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                 <span asp-validation-for="Middlename" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Suffix</label>
                 <select class="form-select" asp-for="Suffix">
                     <option value="">-- Select Suffix --</option>
@@ -129,25 +129,25 @@
         </div>
 
         <div class="row g-3 mt-2">
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Blk / Lot / Street</label>
                 <input value="@ViewData["BlkLotStreet"]" asp-for="BlkLotStreet" type="text" class="form-control" required>
                 <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Sub / Vill.</label>
                 <input value="@ViewData["SubVill"]" asp-for="SubVill" type="text" class="form-control">
                 <span asp-validation-for="SubVill" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Barangay</label>
                 <input value="@ViewData["Brgy"]" asp-for="Brgy" type="text" class="form-control" required>
                 <span asp-validation-for="Brgy" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">District</label>
                 <input value="@ViewData["District"]" asp-for="District" type="text" class="form-control" required>
                 <span asp-validation-for="District"></span>
@@ -155,19 +155,19 @@
         </div>
 
         <div class="row g-3 mt-2">
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Date of Birth</label>
                 <input value="@ViewData["Dateofbirth"]" asp-for="Dateofbirth" type="date" class="form-control" required>
                 <span asp-validation-for="Dateofbirth" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Age</label>
                 <input value="@ViewData["Age"]" asp-for="Age" type="number" class="form-control">
                 <span asp-validation-for="Age" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label required-field">Sex</label>
                 <select asp-for="Sex" class="form-select" required>
                     <option value="">Select Sex</option>
@@ -177,7 +177,7 @@
                 <span asp-validation-for="Sex" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">PhilHealth</label>
                 <select class="form-select" asp-for="PhilHealth" id="philHealthSelect">
                     <option value="">Select option</option>
@@ -189,7 +189,7 @@
         </div>
 
         <div class="row g-3 mt-2">
-            <div class="col-md-6">
+            <div class="col-12 col-sm-12 col-md-6 col-lg-6">
                 <label class="form-label">PhilHealth Number (if applicable)</label>
                 <input asp-for="PhilHealthNo" type="text" class="form-control" id="philHealthNo">
                 <span asp-validation-for="PhilHealthNo" class="text-danger"></span>
@@ -222,25 +222,25 @@
     <div class="form-section">
         <h5 class="section-header">Requestor's Details</h5>
         <div class="row g-3">
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Last Name</label>
                 <input value="@ViewData["RLastname"]" asp-for="RLastname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                 <span asp-validation-for="RLastname"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">First Name</label>
                 <input value="@ViewData["RFirstname"]" asp-for="RFirstname" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                 <span asp-validation-for="RFirstname"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Middle Name</label>
                 <input value="@ViewData["RMiddlename"]" asp-for="RMiddlename" type="text" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
                 <span asp-validation-for="RMiddlename"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Suffix</label>
                 <select class="form-select" asp-for="RSuffix">
                     <option value="">-- Select Suffix --</option>
@@ -257,25 +257,25 @@
         </div>
 
         <div class="row g-3 mt-2">
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Blk / Lot / Street</label>
                 <input value="@ViewData["RBlkLotStreet"]" asp-for="RBlkLotStreet" type="text" class="form-control">
                 <span asp-validation-for="RBlkLotStreet"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Sub / Vill.</label>
                 <input value="@ViewData["RSubVill"]" asp-for="RSubVill" type="text" class="form-control">
                 <span asp-validation-for="RSubVill"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Barangay</label>
                 <input value="@ViewData["RBrgy"]" asp-for="RBrgy" type="text" class="form-control">
                 <span asp-validation-for="RBrgy"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">District</label>
                 <input value="@ViewData["RDistrict"]" asp-for="RDistrict" type="text" class="form-control">
                 <span asp-validation-for="RDistrict"></span>
@@ -283,13 +283,13 @@
         </div>
 
         <div class="row g-3 mt-2">
-            <div class="col-md-6">
+            <div class="col-12 col-sm-12 col-md-6 col-lg-6">
                 <label class="form-label">Relationship to Patient</label>
                 <input value="@ViewData["RelationshipPatient"]" asp-for="RelationshipPatient" type="text" class="form-control">
                 <span asp-validation-for="RelationshipPatient"></span>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-12 col-sm-12 col-md-6 col-lg-6">
                 <label>Contact No.</label>
                 <input value="@ViewData["ContactNo"]" asp-for="ContactNo" type="text" class="form-control" id="contactNoInput"
                        placeholder="0912-345-6789 or 02-123-4567"
@@ -301,11 +301,11 @@
     </div>
 
     <!-- Type of Assistance Requested Section -->
-    <div class="card mt-4" style="width: 1200px;">
+    <div class="card mt-4">
         <div class="card-header">Type of Assistance Requested</div>
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12 col-sm-12 col-md-6 col-lg-6">
                     <!-- Column 1 -->
                     <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="checkbox"
@@ -341,7 +341,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-12 col-sm-12 col-md-6 col-lg-6">
                     <!-- Column 2 (empty but keeping structure) -->
                 </div>
             </div>
