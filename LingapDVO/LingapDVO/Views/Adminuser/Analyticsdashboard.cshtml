@@ -152,7 +152,6 @@
             gap: 1rem;
         }
 
-
         .header-title h1 {
             color: var(--dark);
             font-weight: 700;
@@ -608,6 +607,27 @@
             margin-top: 0.5rem;
         }
 
+        /* Chart Description Styles */
+        .chart-description {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
+
+        /* Stats Text Styles */
+        .stats-text {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .stats-highlight {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
         /* Mobile Responsive Enhancements */
         @@media (max-width: 768px) {
             .dashboard-header {
@@ -751,7 +771,15 @@
                 <div class="col-md-6">
                     <div class="card-analytics">
                         <div class="card-header-custom d-flex justify-content-between align-items-center">
-                            <h5 class="card-title-custom">Application Types</h5>
+                            <div>
+                                <h5 class="card-title-custom">Application Types</h5>
+                                <p class="stats-text mb-0" id="typeChartStats">
+                                    Total applications: <span class="stats-highlight" id="totalApplications">0</span> •
+                                    Hospital: <span class="stats-highlight" id="hospitalApplications">0</span> •
+                                    Other: <span class="stats-highlight" id="medicalApplications">0</span> •
+                                    Funeral: <span class="stats-highlight" id="funeralApplications">0</span>
+                                </p>
+                            </div>
                             <select class="chart-select" onchange="updateTypeChart(this.value)">
                                 <option value="doughnut">Doughnut</option>
                                 <option value="pie">Pie</option>
@@ -767,7 +795,16 @@
                 <div class="col-md-6">
                     <div class="card-analytics">
                         <div class="card-header-custom d-flex justify-content-between align-items-center">
-                            <h5 class="card-title-custom">Status Distribution</h5>
+                            <div>
+                                <h5 class="card-title-custom">Status Distribution</h5>
+                                <p class="stats-text mb-0" id="statusChartStats">
+                                    Approved: <span class="stats-highlight" id="approvedCount">0</span> •
+                                    Pending: <span class="stats-highlight" id="pendingCount">0</span> •
+                                    Processing: <span class="stats-highlight" id="processingCount">0</span> •
+                                    Disapproved: <span class="stats-highlight" id="disapprovedCount">0</span> •
+                                    Claims: <span class="stats-highlight" id="claimsCount">0</span>
+                                </p>
+                            </div>
                             <select class="chart-select" onchange="updateStatusChart(this.value)">
                                 <option value="doughnut">Doughnut</option>
                                 <option value="pie">Pie</option>
@@ -786,7 +823,14 @@
                 <div class="col-12">
                     <div class="card-analytics">
                         <div class="card-header-custom d-flex justify-content-between align-items-center">
-                            <h5 class="card-title-custom">Barangay Distribution by Specific Assistance Types</h5>
+                            <div>
+                                <h5 class="card-title-custom">Barangay Distribution by Specific Assistance Types</h5>
+                                <p class="stats-text mb-0" id="barangayChartStats">
+                                    Total barangays: <span class="stats-highlight" id="totalBarangays">0</span> •
+                                    Top barangay: <span class="stats-highlight" id="topBarangay">-</span> •
+                                    Total applications: <span class="stats-highlight" id="barangayTotalApplications">0</span>
+                                </p>
+                            </div>
                             <div class="chart-controls">
                                 <select class="chart-select" id="barangayChartType" onchange="updateBarangayChart()">
                                     <option value="bar">Bar Chart</option>
@@ -814,7 +858,14 @@
                 <div class="col-12">
                     <div class="card-analytics">
                         <div class="card-header-custom d-flex justify-content-between align-items-center">
-                            <h5 class="card-title-custom">Application Trends Over Time</h5>
+                            <div>
+                                <h5 class="card-title-custom">Application Trends Over Time</h5>
+                                <p class="stats-text mb-0" id="trendsChartStats">
+                                    Showing: <span class="stats-highlight" id="trendsTimeframeText">Last 12 Months</span> •
+                                    Total submissions: <span class="stats-highlight" id="totalSubmissions">0</span> •
+                                    Peak period: <span class="stats-highlight" id="peakPeriod">-</span>
+                                </p>
+                            </div>
                             <select class="chart-select" id="trendsTimeframe" onchange="updateTrendsChart()">
                                 <option value="daily">Last 30 Days</option>
                                 <option value="weekly">Last 12 Weeks</option>
@@ -834,7 +885,14 @@
                 <div class="col-md-6">
                     <div class="card-analytics">
                         <div class="card-header-custom">
-                            <h5 class="card-title-custom">Approval Rate by Assistance Type</h5>
+                            <div>
+                                <h5 class="card-title-custom">Approval Rate by Assistance Type</h5>
+                                <p class="stats-text mb-0" id="approvalRateStats">
+                                    Overall approval rate: <span class="stats-highlight" id="overallApprovalRate">0%</span> •
+                                    Highest approval: <span class="stats-highlight" id="highestApprovalType">-</span> •
+                                    Total reviewed: <span class="stats-highlight" id="totalReviewed">0</span>
+                                </p>
+                            </div>
                         </div>
                         <div class="chart-container">
                             <canvas id="approvalRateChart"></canvas>
@@ -845,7 +903,14 @@
                 <div class="col-md-6">
                     <div class="card-analytics">
                         <div class="card-header-custom">
-                            <h5 class="card-title-custom">Average Processing Time</h5>
+                            <div>
+                                <h5 class="card-title-custom">Average Processing Time</h5>
+                                <p class="stats-text mb-0" id="processingTimeStats">
+                                    Fastest type: <span class="stats-highlight" id="fastestType">-</span> •
+                                    Slowest type: <span class="stats-highlight" id="slowestType">-</span> •
+                                    Average across all: <span class="stats-highlight" id="overallAverageTime">0 days</span>
+                                </p>
+                            </div>
                         </div>
                         <div class="chart-container">
                             <canvas id="processingTimeChart"></canvas>
@@ -859,7 +924,14 @@
                 <div class="col-12">
                     <div class="card-analytics">
                         <div class="card-header-custom d-flex justify-content-between align-items-center">
-                            <h5 class="card-title-custom">Status Distribution by Assistance Type</h5>
+                            <div>
+                                <h5 class="card-title-custom">Status Distribution by Assistance Type</h5>
+                                <p class="stats-text mb-0" id="statusByTypeStats">
+                                    Most applications: <span class="stats-highlight" id="mostApplicationsType">-</span> •
+                                    Highest approval rate: <span class="stats-highlight" id="highestApprovalRateType">-</span> •
+                                    Most pending: <span class="stats-highlight" id="mostPendingType">-</span>
+                                </p>
+                            </div>
                             <select class="chart-select" onchange="updateStatusByTypeChart(this.value)">
                                 <option value="stackedBar">Stacked Bar</option>
                                 <option value="groupedBar">Grouped Bar</option>
@@ -878,7 +950,14 @@
                 <div class="col-12">
                     <div class="card-analytics">
                         <div class="card-header-custom">
-                            <h5 class="card-title-custom">Claim Rate Analysis</h5>
+                            <div>
+                                <h5 class="card-title-custom">Claim Rate Analysis</h5>
+                                <p class="stats-text mb-0" id="claimRateStats">
+                                    Total approved: <span class="stats-highlight" id="totalApproved">0</span> •
+                                    Total claimed: <span class="stats-highlight" id="totalClaimed">0</span> •
+                                    Overall claim rate: <span class="stats-highlight" id="overallClaimRate">0%</span>
+                                </p>
+                            </div>
                         </div>
                         <div class="card-body" style="padding: 2rem;">
                             <div class="row g-4" id="claimRateMetrics">
@@ -917,6 +996,8 @@
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard initialized');
+
             // Update sidebar priority badge
             const totalPriorityCount = @(ViewBag.TotalPriorityCount ?? 0);
             if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
@@ -998,64 +1079,66 @@
 
         // Initialize dashboard with data - FOLLOWING ADMIN.CSHTML PATTERN
         function initializeDashboard() {
+            console.log('Initializing dashboard data...');
+
             // Create combined applications array following Admin.cshtml pattern
             const allApplications = [];
 
             // Add Hospital Assistance following Admin.cshtml pattern
             @foreach (var f in Model.HospitalAssistance)
             {
-                        <text>
-                        allApplications.push({
-                            type: "Hospital Assistance",
-                            name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()", // ADDED status3
-                            brgy: "@f.Brgy",
-                            typeassistance: "@f.Typeassistance",
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                    <text>
+                    allApplications.push({
+                        type: "Hospital Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()", // ADDED status3
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
             // Add Other Assistance following Admin.cshtml pattern
             @foreach (var f in Model.OtherAssistance)
             {
-                        <text>
-                        allApplications.push({
-                            type: "Other Assistance",
-                            name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
-                            brgy: "@f.Brgy",
-                            typeassistance: "@f.Typeassistance",
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                    <text>
+                    allApplications.push({
+                        type: "Other Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
             // Add Funeral Forms following Admin.cshtml pattern
             @foreach (var f in Model.FuneralAssistance)
             {
-                        <text>
-                        allApplications.push({
-                            type: "Funeral Assistance",
-                            name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
-                            brgy: "@f.Brgy",
-                            typeassistance: "Funeral Assistance", // Default for funeral forms
-                            formId: @f.Id,
-                            controller: "Dashboard"
-                        });
-                        </text>
+                    <text>
+                    allApplications.push({
+                        type: "Funeral Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "Funeral Assistance", // Default for funeral forms
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
             originalData = {
@@ -1073,35 +1156,42 @@
 
         // Process data and update all charts
         function processDataAndUpdateCharts() {
+            console.log('Processing data and updating charts...');
             showLoading(true);
 
             // Use setTimeout to simulate processing time
             setTimeout(() => {
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
+                try {
+                    const startDate = document.getElementById('startDate').value;
+                    const endDate = document.getElementById('endDate').value;
 
-                // Filter data based on date range and status
-                filteredData = filterDataByDateRange(originalData, startDate, endDate);
-                filteredData = filterDataByStatus(filteredData, currentStatusFilter);
+                    // Filter data based on date range and status
+                    filteredData = filterDataByDateRange(originalData, startDate, endDate);
+                    filteredData = filterDataByStatus(filteredData, currentStatusFilter);
 
-                console.log('Filtered data:', filteredData);
+                    console.log('Filtered data:', filteredData);
 
-                // Update summary cards
-                updateSummaryCards(filteredData);
+                    // Update summary cards
+                    updateSummaryCards(filteredData);
 
-                // Update charts
-                updateTypeChart('doughnut');
-                updateStatusChart('doughnut');
-                updateBarangayChart();
+                    // Update charts
+                    updateTypeChart('doughnut');
+                    updateStatusChart('doughnut');
+                    updateBarangayChart();
 
-                // Update new charts
-                updateTrendsChart();
-                updateApprovalRateChart();
-                updateProcessingTimeChart();
-                updateStatusByTypeChart('stackedBar');
-                updateClaimRateMetrics();
+                    // Update new charts
+                    updateTrendsChart();
+                    updateApprovalRateChart();
+                    updateProcessingTimeChart();
+                    updateStatusByTypeChart('stackedBar');
+                    updateClaimRateMetrics();
 
-                showLoading(false);
+                    console.log('All charts updated successfully');
+                } catch (error) {
+                    console.error('Error updating charts:', error);
+                } finally {
+                    showLoading(false);
+                }
             }, 500);
         }
 
@@ -1316,6 +1406,34 @@
                 // Barangay data will be processed separately
                 ...processBarangayData(applications)
             };
+
+            // Update chart statistics
+            updateChartStats();
+        }
+
+        // Update chart statistics text
+        function updateChartStats() {
+            if (!window.chartData) return;
+
+            // Update Application Types stats
+            document.getElementById('totalApplications').textContent = window.chartData.typeData.reduce((a, b) => a + b, 0);
+            document.getElementById('hospitalApplications').textContent = window.chartData.typeData[0];
+            document.getElementById('medicalApplications').textContent = window.chartData.typeData[1];
+            document.getElementById('funeralApplications').textContent = window.chartData.typeData[2];
+
+            // Update Status Distribution stats
+            document.getElementById('approvedCount').textContent = window.chartData.statusData[0];
+            document.getElementById('pendingCount').textContent = window.chartData.statusData[1];
+            document.getElementById('processingCount').textContent = window.chartData.statusData[2];
+            document.getElementById('disapprovedCount').textContent = window.chartData.statusData[3];
+            document.getElementById('claimsCount').textContent = window.chartData.statusData[4];
+
+            // Update Barangay Distribution stats
+            if (window.chartData.barangayLabels && window.chartData.barangayLabels.length > 0) {
+                document.getElementById('totalBarangays').textContent = window.chartData.barangayLabels.length;
+                document.getElementById('topBarangay').textContent = window.chartData.barangayLabels[0];
+                document.getElementById('barangayTotalApplications').textContent = window.chartData.barangayTotals.reduce((a, b) => a + b, 0);
+            }
         }
 
         // Count application types
@@ -2043,6 +2161,18 @@
             const medicalLabel = `Other Assistance (${medicalTotal} Applications)`;
             const funeralLabel = `Funeral Assistance (${funeralTotal} Applications)`;
 
+            // Update trends stats
+            const totalSubmissions = hospitalTotal + medicalTotal + funeralTotal;
+            const peakIndex = trendsData.hospital.reduce((maxIndex, current, index, arr) =>
+                current + trendsData.medical[index] + trendsData.funeral[index] >
+                arr[maxIndex] + trendsData.medical[maxIndex] + trendsData.funeral[maxIndex] ? index : maxIndex, 0);
+            const peakPeriod = trendsData.labels[peakIndex];
+
+            document.getElementById('trendsTimeframeText').textContent =
+                timeframe === 'daily' ? 'Last 30 Days' : timeframe === 'weekly' ? 'Last 12 Weeks' : 'Last 12 Months';
+            document.getElementById('totalSubmissions').textContent = totalSubmissions;
+            document.getElementById('peakPeriod').textContent = peakPeriod;
+
             trendsChart = new Chart(context, {
                 type: 'line',
                 data: {
@@ -2228,6 +2358,23 @@
 
             const approvalData = calculateApprovalRates(filteredData.allApplications);
 
+            // Update approval rate stats
+            const totalApproved = approvalData.approved.reduce((a, b) => a + b, 0);
+            const totalDisapproved = approvalData.disapproved.reduce((a, b) => a + b, 0);
+            const totalPending = approvalData.pending.reduce((a, b) => a + b, 0);
+            const totalReviewed = totalApproved + totalDisapproved + totalPending;
+            const overallApprovalRate = totalReviewed > 0 ? Math.round((totalApproved / totalReviewed) * 100) : 0;
+
+            const approvalRates = approvalData.approved.map((approved, index) => ({
+                type: ['Hospital', 'Other', 'Funeral'][index],
+                rate: approvalData.totals[index] > 0 ? Math.round((approved / approvalData.totals[index]) * 100) : 0
+            }));
+            const highestApproval = approvalRates.reduce((max, current) => current.rate > max.rate ? current : max, {type: '-', rate: 0});
+
+            document.getElementById('overallApprovalRate').textContent = overallApprovalRate + '%';
+            document.getElementById('highestApprovalType').textContent = highestApproval.type;
+            document.getElementById('totalReviewed').textContent = totalReviewed;
+
             approvalRateChart = new Chart(context, {
                 type: 'bar',
                 data: {
@@ -2347,7 +2494,19 @@
 
             const processingData = calculateProcessingTimes(filteredData.allApplications);
 
-            processingTimeChart = new Chart(context, {
+            // Update processing time stats
+            const fastestIndex = processingData.averageDays.reduce((minIndex, current, index, arr) =>
+                current < arr[minIndex] ? index : minIndex, 0);
+            const slowestIndex = processingData.averageDays.reduce((maxIndex, current, index, arr) =>
+                current > arr[maxIndex] ? index : maxIndex, 0);
+            const overallAverage = processingData.averageDays.reduce((sum, days) => sum + days, 0) / processingData.averageDays.length;
+
+            const typeNames = ['Hospital', 'Other', 'Funeral'];
+            document.getElementById('fastestType').textContent = typeNames[fastestIndex];
+            document.getElementById('slowestType').textContent = typeNames[slowestIndex];
+            document.getElementById('overallAverageTime').textContent = overallAverage.toFixed(1) + ' days';
+
+            processingTimeChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
@@ -2437,6 +2596,23 @@
 
             const statusData = calculateStatusByType(filteredData.allApplications);
             const isPercentage = chartType === 'percentage';
+
+            // Update status by type stats
+            const typeNames = ['Hospital', 'Other', 'Funeral'];
+            const totalApps = statusData.totals.map((total, index) => ({ type: typeNames[index], total }));
+            const approvalRates = statusData.approved.map((approved, index) => ({
+                type: typeNames[index],
+                rate: statusData.totals[index] > 0 ? Math.round((approved / statusData.totals[index]) * 100) : 0
+            }));
+            const pendingCounts = statusData.pending.map((pending, index) => ({ type: typeNames[index], pending }));
+
+            const mostApplications = totalApps.reduce((max, current) => current.total > max.total ? current : max, {type: '-', total: 0});
+            const highestApproval = approvalRates.reduce((max, current) => current.rate > max.rate ? current : max, {type: '-', rate: 0});
+            const mostPending = pendingCounts.reduce((max, current) => current.pending > max.pending ? current : max, {type: '-', pending: 0});
+
+            document.getElementById('mostApplicationsType').textContent = mostApplications.type;
+            document.getElementById('highestApprovalRateType').textContent = highestApproval.type;
+            document.getElementById('mostPendingType').textContent = mostPending.type;
 
             statusByTypeChart = new Chart(context, {
                 type: 'bar',
@@ -2574,6 +2750,11 @@
 
             const claimData = calculateClaimRates(filteredData.allApplications);
             const container = document.getElementById('claimRateMetrics');
+
+            // Update claim rate stats
+            document.getElementById('totalApproved').textContent = claimData.overall.approved;
+            document.getElementById('totalClaimed').textContent = claimData.overall.claims;
+            document.getElementById('overallClaimRate').textContent = claimData.overall.rate + '%';
 
             container.innerHTML = `
                 <div class="col-md-3">
