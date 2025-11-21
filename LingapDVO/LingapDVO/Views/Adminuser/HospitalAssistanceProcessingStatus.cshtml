@@ -698,9 +698,20 @@
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
                 <div class="cmo-details">
-                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label cmo-section-title">Bill Amount:</label>
+                            <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label cmo-section-title">Granted Amount: <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="grantedAmountInput" name="GrantedAmount" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
+                        </div>
+                    </div>
+
                     <div class="mt-4">
-                        <label class="form-label cmo-section-title">Supporting Documents Attached:</label>
+                        <label class="form-label cmo-section-title">Supporting Documents Attached: <span class="text-danger">*</span></label>
+                        <small class="text-muted d-block mb-2">At least one document must be selected</small>
                         <div class="cmo-checkbox-group">
                             <div class="cmo-checkbox-item">
                                 <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" name="SupportingDocs" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
@@ -727,6 +738,9 @@
                                 <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
                             </div>
                         </div>
+                        <div class="invalid-feedback" id="supportingDocsError" style="display: none;">
+                            Please select at least one supporting document.
+                        </div>
                     </div>
 
                     <div class="row g-3">
@@ -734,13 +748,6 @@
                             <div class="cmo-notes-section">
                                 <label class="form-label cmo-section-title">Others:</label>
                                 <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
-                            </div>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label cmo-section-title">Amount Granted:</label>
-                                <input type="text" class="form-control" id="billAmountInput" name="BillAmount" value="@(checkedCMO.ContainsKey("Bill") ? checkedCMO["Bill"] : "")">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -1187,8 +1194,27 @@
             updateReflection();
         });
 
-        // Enhanced form submission debugging
+        // Enhanced form submission debugging and validation
         document.getElementById('statusForm').addEventListener('submit', function(e) {
+            // Validate that at least one supporting document is checked
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            const errorDiv = document.getElementById('supportingDocsError');
+
+            if (supportingDocs.length === 0) {
+                e.preventDefault();
+                errorDiv.style.display = 'block';
+                errorDiv.classList.add('d-block');
+
+                // Scroll to the error
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                alert('Please select at least one supporting document before submitting.');
+                return false;
+            } else {
+                errorDiv.style.display = 'none';
+                errorDiv.classList.remove('d-block');
+            }
+
             console.log('=== FORM SUBMISSION DEBUG INFO ===');
             console.log('Form action:', this.action);
             console.log('Form method:', this.method);
@@ -1196,6 +1222,8 @@
             console.log('Comments:', document.getElementById('commentsInput').value);
             console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
             console.log('Processed By:', document.getElementById('processByInput').value);
+            console.log('Granted Amount:', document.getElementById('grantedAmountInput').value);
+            console.log('Supporting Docs Count:', supportingDocs.length);
             console.log('Form data:', new FormData(this));
             console.log('==============================');
         });
