@@ -72,6 +72,9 @@
                                         <br>
                                         <i class="fas fa-info-circle text-blue-500 mr-1"></i>
                                         <em>The system will automatically detect your ID type</em>
+                                        <br>
+                                        <i class="fas fa-exclamation-circle text-amber-500 mr-1"></i>
+                                        <strong>Note:</strong> Only National ID requires back upload. Driver's License and UMID only need front side.
                                     </div>
                                     <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1 block"></span>
                                 </div>
@@ -161,6 +164,7 @@
                                             <li>Avoid glare, shadows, or reflections</li>
                                             <li>Maximum file size: 5MB per image</li>
                                             <li>Supported IDs: National ID, Driver's License, UMID</li>
+                                            <li><strong>Back upload:</strong> Required for National ID only. Driver's License and UMID don't need back upload.</li>
                                         </ul>
                                     </div>
                                 </div>

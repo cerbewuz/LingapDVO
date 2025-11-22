@@ -2714,6 +2714,61 @@ document.addEventListener('DOMContentLoaded', function () {
                     status.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-600"></i>ID Type: ${getIdTypeName(detectedIdType)}`;
                 }
                 if (progress) progress.style.width = '75%';
+
+                // === DISABLE BACK UPLOAD FOR DRIVER'S LICENSE AND UMID ===
+                // Only National ID requires back ID data extraction
+                // Driver's License and UMID don't have useful data on the back
+                if (detectedIdType === 'driver-license' || detectedIdType === 'umid') {
+                    // Disable back upload area
+                    if (uploadBack) {
+                        uploadBack.style.pointerEvents = 'none';
+                        uploadBack.style.opacity = '0.5';
+                        uploadBack.style.cursor = 'not-allowed';
+
+                        // Update the back upload area content to show it's not needed
+                        const backContent = uploadBack.querySelector('.id-upload-content');
+                        if (backContent) {
+                            backContent.innerHTML = `
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-ban text-2xl text-gray-400"></i>
+                                </div>
+                                <div class="font-semibold text-gray-500 mb-2">Back ID Not Required</div>
+                                <div class="text-gray-400 text-sm mb-4">No data to extract from back of ${getIdTypeName(detectedIdType)}</div>
+                                <div class="text-xs text-gray-400">Only front ID is needed</div>
+                            `;
+                        }
+                    }
+
+                    // Also disable the file input
+                    if (fileBack) {
+                        fileBack.disabled = true;
+                    }
+                } else if (detectedIdType === 'phil-id') {
+                    // Enable back upload area for National ID
+                    if (uploadBack) {
+                        uploadBack.style.pointerEvents = 'auto';
+                        uploadBack.style.opacity = '1';
+                        uploadBack.style.cursor = 'pointer';
+
+                        // Restore original content if it was changed
+                        const backContent = uploadBack.querySelector('.id-upload-content');
+                        if (backContent && backContent.innerHTML.includes('Not Required')) {
+                            backContent.innerHTML = `
+                                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-id-card text-2xl crimson-500"></i>
+                                </div>
+                                <div class="font-semibold text-gray-800 mb-2">Back of ID</div>
+                                <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
+                                <div class="text-xs text-gray-400 mb-2">Accepted formats: JPG, JPEG, PNG only</div>
+                            `;
+                        }
+                    }
+
+                    // Enable the file input
+                    if (fileBack) {
+                        fileBack.disabled = false;
+                    }
+                }
             }
 
             // Use detected type (auto-detection mode)
