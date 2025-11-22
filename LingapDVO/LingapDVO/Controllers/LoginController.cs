@@ -1967,15 +1967,19 @@ namespace LingapDVO.Controllers
                 }
 
                 // ==========================
-                // 🔙 Encrypt Back ID
+                // 🔙 Encrypt Back ID (Only for National ID)
                 // ==========================
-                string backFileName = safeEncryptedTimestamp + "_back.enc";
-                string backPath = Path.Combine(validFolder, backFileName);
-                using (var fileStream = new FileStream(backPath, FileMode.Create))
+                string backFileName = "";
+                if (VerifyaccountDto.ValidBackID != null)
                 {
-                    // Use AES-256 helper from configuration to encrypt file stream
-                    byte[] encryptedData = aesHelper.EncryptStream(VerifyaccountDto.ValidBackID!.OpenReadStream());
-                    fileStream.Write(encryptedData, 0, encryptedData.Length);
+                    backFileName = safeEncryptedTimestamp + "_back.enc";
+                    string backPath = Path.Combine(validFolder, backFileName);
+                    using (var fileStream = new FileStream(backPath, FileMode.Create))
+                    {
+                        // Use AES-256 helper from configuration to encrypt file stream
+                        byte[] encryptedData = aesHelper.EncryptStream(VerifyaccountDto.ValidBackID!.OpenReadStream());
+                        fileStream.Write(encryptedData, 0, encryptedData.Length);
+                    }
                 }
 
                 // ==========================
