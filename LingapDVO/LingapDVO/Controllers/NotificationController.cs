@@ -77,6 +77,15 @@ public class NotificationsController : Controller
                 var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
                 var notificationLink = GetNotificationLink(bill.CreatedAt, bill.Status2, bill.ClaimedAt, bill.Status3);
 
+                // If priority is high or medium, override with delay message
+                if (priority == "high" || priority == "medium")
+                {
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Hospital Assistance", priority, bill.CreatedAt);
+                    title = delayTitle;
+                    message = delayMessage;
+                    type = "delay_alert";
+                }
+
                 notifications.Add(new
                 {
                     id = notificationId,
@@ -90,28 +99,6 @@ public class NotificationsController : Controller
                     priority = priority,
                     isPermanent = false
                 });
-
-                // Add separate delay notification if priority is high or medium
-                if (priority == "high" || priority == "medium")
-                {
-                    var delayNotificationId = $"delay_hospital_{bill.Id}";
-                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
-                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Hospital Assistance", priority, bill.CreatedAt);
-
-                    notifications.Add(new
-                    {
-                        id = delayNotificationId,
-                        title = delayTitle,
-                        message = delayMessage,
-                        isRead = isDelayRead,
-                        createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                        type = "delay_alert",
-                        link = notificationLink, // Use same link logic
-                        status = bill.Status,
-                        priority = priority,
-                        isPermanent = false
-                    });
-                }
             }
 
             // Create notifications for medical lab forms
@@ -135,6 +122,15 @@ public class NotificationsController : Controller
                 var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
                 var notificationLink = GetNotificationLink(medical.CreatedAt, medical.Status2, medical.ClaimedAt, medical.Status3);
 
+                // If priority is high or medium, override with delay message
+                if (priority == "high" || priority == "medium")
+                {
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Other Assistance", priority, medical.CreatedAt);
+                    title = delayTitle;
+                    message = delayMessage;
+                    type = "delay_alert";
+                }
+
                 notifications.Add(new
                 {
                     id = notificationId,
@@ -148,28 +144,6 @@ public class NotificationsController : Controller
                     priority = priority,
                     isPermanent = false
                 });
-
-                // Add separate delay notification if priority is high or medium
-                if (priority == "high" || priority == "medium")
-                {
-                    var delayNotificationId = $"delay_medical_{medical.Id}";
-                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
-                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Other Assistance", priority, medical.CreatedAt);
-
-                    notifications.Add(new
-                    {
-                        id = delayNotificationId,
-                        title = delayTitle,
-                        message = delayMessage,
-                        isRead = isDelayRead,
-                        createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                        type = "delay_alert",
-                        link = notificationLink, // Use same link logic
-                        status = medical.Status,
-                        priority = priority,
-                        isPermanent = false
-                    });
-                }
             }
 
             // Create notifications for funeral forms
@@ -193,6 +167,15 @@ public class NotificationsController : Controller
                 var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
                 var notificationLink = GetNotificationLink(funeral.CreatedAt, funeral.Status2, funeral.ClaimedAt, funeral.Status3);
 
+                // If priority is high or medium, override with delay message
+                if (priority == "high" || priority == "medium")
+                {
+                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Funeral Assistance", priority, funeral.CreatedAt);
+                    title = delayTitle;
+                    message = delayMessage;
+                    type = "delay_alert";
+                }
+
                 notifications.Add(new
                 {
                     id = notificationId,
@@ -206,28 +189,6 @@ public class NotificationsController : Controller
                     priority = priority,
                     isPermanent = false
                 });
-
-                // Add separate delay notification if priority is high or medium
-                if (priority == "high" || priority == "medium")
-                {
-                    var delayNotificationId = $"delay_funeral_{funeral.Id}";
-                    var isDelayRead = readNotificationIds.Contains(delayNotificationId);
-                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Funeral Assistance", priority, funeral.CreatedAt);
-
-                    notifications.Add(new
-                    {
-                        id = delayNotificationId,
-                        title = delayTitle,
-                        message = delayMessage,
-                        isRead = isDelayRead,
-                        createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                        type = "delay_alert",
-                        link = notificationLink, // Use same link logic
-                        status = funeral.Status,
-                        priority = priority,
-                        isPermanent = false
-                    });
-                }
             }
 
             // Check if user is verified
@@ -437,27 +398,18 @@ public class NotificationsController : Controller
             foreach (var bill in allHospitalBills)
             {
                 notificationIds.Add($"hospital_{bill.Id}_{bill.Status}");
-
-                // Add delay notification ID regardless of priority
-                notificationIds.Add($"delay_hospital_{bill.Id}");
             }
 
             // Add ALL medical notification IDs
             foreach (var medical in allMedicalLabForms)
             {
                 notificationIds.Add($"medical_{medical.Id}_{medical.Status}");
-
-                // Add delay notification ID regardless of priority
-                notificationIds.Add($"delay_medical_{medical.Id}");
             }
 
             // Add ALL funeral notification IDs
             foreach (var funeral in allFuneralForms)
             {
                 notificationIds.Add($"funeral_{funeral.Id}_{funeral.Status}");
-
-                // Add delay notification ID regardless of priority
-                notificationIds.Add($"delay_funeral_{funeral.Id}");
             }
 
             // Always include welcome notifications
@@ -506,37 +458,16 @@ public class NotificationsController : Controller
             foreach (var bill in recentHospitalBills)
             {
                 notificationIds.Add($"hospital_{bill.Id}_{bill.Status}");
-
-                // Add delay notification ID if applicable
-                var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
-                if (priority == "high" || priority == "medium")
-                {
-                    notificationIds.Add($"delay_hospital_{bill.Id}");
-                }
             }
 
             foreach (var medical in recentMedicalLabForms)
             {
                 notificationIds.Add($"medical_{medical.Id}_{medical.Status}");
-
-                // Add delay notification ID if applicable
-                var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
-                if (priority == "high" || priority == "medium")
-                {
-                    notificationIds.Add($"delay_medical_{medical.Id}");
-                }
             }
 
             foreach (var funeral in recentFuneralForms)
             {
                 notificationIds.Add($"funeral_{funeral.Id}_{funeral.Status}");
-
-                // Add delay notification ID if applicable
-                var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
-                if (priority == "high" || priority == "medium")
-                {
-                    notificationIds.Add($"delay_funeral_{funeral.Id}");
-                }
             }
 
             // Always include welcome notifications (both types to handle verification state changes)
