@@ -851,38 +851,45 @@
             cursor: pointer;
             transition: var(--transition);
             position: relative;
-            background: #FFFCFA; /* Read notification background */
+            background: #FFFFFF; /* Read notification background */
         }
 
             .notification-item:hover {
-                background: var(--gray-100);
+                background: #E3E3E3;
             }
 
             .notification-item.unread {
-                background: var(--primary-light);
-                border-left: 4px solid var(--primary);
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            }
+
+            .notification-item.unread:hover {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
             }
 
             /* Priority notifications - High priority (2+ hours delay) */
             .notification-item.priority-high {
-                background: #FFFCFA; /* Read notification background */
-                border-left: 4px solid #EF4444; /* Red border */
+                background: #FFFFFF; /* Read notification background */
             }
 
             .notification-item.priority-high.unread {
-                background: #FEE2E2; /* Unread high priority background */
-                border-left: 4px solid #DC2626; /* Darker red */
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            }
+
+            .notification-item.priority-high.unread:hover {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
             }
 
             /* Priority notifications - Medium priority (1-2 hours delay) */
             .notification-item.priority-medium {
-                background: #FFFCFA; /* Read notification background */
-                border-left: 4px solid #F59E0B; /* Orange border */
+                background: #FFFFFF; /* Read notification background */
             }
 
             .notification-item.priority-medium.unread {
-                background: #FDE68A; /* Unread medium priority background */
-                border-left: 4px solid #D97706; /* Darker orange */
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            }
+
+            .notification-item.priority-medium.unread:hover {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
             }
 
         .notification-title {
@@ -1007,17 +1014,19 @@
 
         /* Delay alert notification item styling */
         .notification-item[data-type="delay_alert"] {
-            background: #FFFCFA; /* Read notification background */
-            border-left: 4px solid #FFC107 !important;
+            background: #FFFFFF; /* Read notification background */
         }
 
         .notification-item[data-type="delay_alert"].unread {
-            background: linear-gradient(135deg, rgba(255, 193, 7, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
-            border-left: 4px solid #FF9800 !important;
+            background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+        }
+
+        .notification-item[data-type="delay_alert"].unread:hover {
+            background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
         }
 
         .notification-item[data-type="delay_alert"]:hover {
-            background: linear-gradient(135deg, rgba(255, 193, 7, 0.22) 0%, rgba(255, 193, 7, 0.12) 100%);
+            background: #E3E3E3;
         }
 
         @@keyframes pulseIcon {
@@ -1044,7 +1053,6 @@
         /* Welcome notifications for both verified and non-verified users are fully scrollable */
         .notification-item[data-permanent="true"] {
             background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
-            border-left: 3px solid #5B9BD5;
             /* Removed position: sticky and bottom: 0 to ensure full scrollability */
         }
 
