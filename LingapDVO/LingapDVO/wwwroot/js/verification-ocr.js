@@ -1539,7 +1539,207 @@ document.addEventListener('DOMContentLoaded', function () {
         reader.readAsDataURL(file);
     }
 
-    // Minimal preprocessing - OCR.space has better built-in algorithms (Async)
+    // ═══════════════════════════════════════════════════════════════
+    // IMAGE QUALITY VALIDATION FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Check if image is too blurry using Laplacian variance method
+     * Returns: { isBlurry: boolean, variance: number, quality: string }
+     */
+    function checkImageBlur(canvas, ctx) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Convert to grayscale and calculate Laplacian variance
+        const gray = [];
+        for (let i = 0; i < data.length; i += 4) {
+            gray.push(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+        }
+
+        // Calculate Laplacian variance (blur metric)
+        let laplacian = 0;
+        let count = 0;
+
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                const idx = y * width + x;
+                const lap = Math.abs(
+                    -gray[idx - width - 1] - gray[idx - width] - gray[idx - width + 1] +
+                    -gray[idx - 1] + 8 * gray[idx] - gray[idx + 1] +
+                    -gray[idx + width - 1] - gray[idx + width] - gray[idx + width + 1]
+                );
+                laplacian += lap;
+                count++;
+            }
+        }
+
+        const variance = laplacian / count;
+
+        // Thresholds (tuned for ID cards)
+        // Higher variance = sharper image
+        const CRITICAL_BLUR_THRESHOLD = 8;   // Too blurry - reject
+        const WARNING_BLUR_THRESHOLD = 15;   // Slightly blurry - try to process with enhancement
+        const GOOD_BLUR_THRESHOLD = 25;      // Good quality
+
+        let quality = 'good';
+        let isBlurry = false;
+
+        if (variance < CRITICAL_BLUR_THRESHOLD) {
+            quality = 'critical';  // Too blurry
+            isBlurry = true;
+        } else if (variance < WARNING_BLUR_THRESHOLD) {
+            quality = 'warning';   // Slightly blurry
+            isBlurry = false;      // Allow but will enhance
+        } else if (variance < GOOD_BLUR_THRESHOLD) {
+            quality = 'acceptable';
+        }
+
+        return { isBlurry, variance, quality };
+    }
+
+    /**
+     * Check image brightness and contrast
+     * Returns: { brightness: number, contrast: number, isDark: boolean, isLowContrast: boolean }
+     */
+    function checkImageBrightnessContrast(canvas, ctx) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        let sum = 0;
+        let min = 255;
+        let max = 0;
+
+        // Calculate average brightness and range
+        for (let i = 0; i < data.length; i += 4) {
+            const brightness = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            sum += brightness;
+            min = Math.min(min, brightness);
+            max = Math.max(max, brightness);
+        }
+
+        const avgBrightness = sum / (data.length / 4);
+        const contrast = max - min;
+
+        // Thresholds
+        const CRITICAL_DARK_THRESHOLD = 40;    // Too dark - reject
+        const WARNING_DARK_THRESHOLD = 70;     // Slightly dark - enhance
+        const CRITICAL_BRIGHT_THRESHOLD = 240; // Too bright - reject
+        const LOW_CONTRAST_THRESHOLD = 50;     // Low contrast - enhance
+        const CRITICAL_LOW_CONTRAST = 30;      // Critical low contrast - reject
+
+        const isDark = avgBrightness < WARNING_DARK_THRESHOLD;
+        const isTooDark = avgBrightness < CRITICAL_DARK_THRESHOLD;
+        const isTooBright = avgBrightness > CRITICAL_BRIGHT_THRESHOLD;
+        const isLowContrast = contrast < LOW_CONTRAST_THRESHOLD;
+        const isCriticalLowContrast = contrast < CRITICAL_LOW_CONTRAST;
+
+        return {
+            brightness: avgBrightness,
+            contrast: contrast,
+            isDark: isDark && !isTooDark,
+            isTooDark,
+            isTooBright,
+            isLowContrast: isLowContrast && !isCriticalLowContrast,
+            isCriticalLowContrast
+        };
+    }
+
+    /**
+     * Enhance image quality for slightly problematic images
+     * Applies brightness, contrast, and sharpening adjustments
+     */
+    function enhanceImageQuality(canvas, ctx, qualityIssues) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Calculate enhancement factors based on issues
+        let brightnessFactor = 1.0;
+        let contrastFactor = 1.0;
+
+        if (qualityIssues.isDark) {
+            brightnessFactor = 1.3;  // Increase brightness by 30%
+        }
+
+        if (qualityIssues.isLowContrast) {
+            contrastFactor = 1.4;    // Increase contrast by 40%
+        }
+
+        // Apply brightness and contrast adjustments
+        for (let i = 0; i < data.length; i += 4) {
+            // Brightness adjustment
+            data[i] *= brightnessFactor;
+            data[i + 1] *= brightnessFactor;
+            data[i + 2] *= brightnessFactor;
+
+            // Contrast adjustment
+            data[i] = ((data[i] - 128) * contrastFactor) + 128;
+            data[i + 1] = ((data[i + 1] - 128) * contrastFactor) + 128;
+            data[i + 2] = ((data[i + 2] - 128) * contrastFactor) + 128;
+
+            // Clamp values to 0-255
+            data[i] = Math.max(0, Math.min(255, data[i]));
+            data[i + 1] = Math.max(0, Math.min(255, data[i + 1]));
+            data[i + 2] = Math.max(0, Math.min(255, data[i + 2]));
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    /**
+     * Show image quality error modal with specific guidance
+     */
+    function showImageQualityErrorModal(issues) {
+        let title = 'Image Quality Issue';
+        let message = 'The ID image you uploaded has quality issues that prevent accurate reading.\n\n';
+        let tips = [];
+
+        if (issues.isTooDark) {
+            message += '❌ Image is too dark\n';
+            tips.push('Take the photo in a well-lit area');
+            tips.push('Avoid shadows on the ID');
+            tips.push('Use natural light or good indoor lighting');
+        }
+
+        if (issues.isTooBright) {
+            message += '❌ Image is too bright/overexposed\n';
+            tips.push('Avoid direct flash on the ID');
+            tips.push('Reduce lighting or move away from direct light');
+            tips.push('Avoid glare and reflections');
+        }
+
+        if (issues.isBlurry) {
+            message += '❌ Image is too blurry\n';
+            tips.push('Hold your phone steady when taking the photo');
+            tips.push('Make sure the ID is in focus');
+            tips.push('Clean your camera lens');
+            tips.push('Get closer to the ID for a clearer shot');
+        }
+
+        if (issues.isCriticalLowContrast) {
+            message += '❌ Image has very low contrast (text is hard to read)\n';
+            tips.push('Ensure good lighting conditions');
+            tips.push('Avoid photographing the ID on similar colored backgrounds');
+            tips.push('Make sure the ID surface is clean');
+        }
+
+        message += '\n📸 Tips for better ID photos:\n';
+        tips.forEach(tip => {
+            message += `  • ${tip}\n`;
+        });
+
+        message += '\n💡 For best results:\n';
+        message += '  • Place ID on a dark, flat surface\n';
+        message += '  • Use good lighting (natural light works best)\n';
+        message += '  • Hold camera parallel to the ID\n';
+        message += '  • Ensure all text is clearly visible\n';
+
+        showOCRErrorModal(message);
+    }
+
+    // Enhanced preprocessing with quality validation and enhancement (Async)
     async function preprocessAndOCR(imageSrc, preview, isBack) {
         try {
 
@@ -1573,9 +1773,69 @@ document.addEventListener('DOMContentLoaded', function () {
             ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, width, height);
 
+            // ═══════════════════════════════════════════════════════════════
+            // STEP 1: VALIDATE IMAGE QUALITY
+            // ═══════════════════════════════════════════════════════════════
+
+            // Check for blur
+            const blurCheck = checkImageBlur(canvas, ctx);
+            debugLog('BLUR-CHECK', blurCheck);
+
+            // Check brightness and contrast
+            const brightnessCheck = checkImageBrightnessContrast(canvas, ctx);
+            debugLog('BRIGHTNESS-CHECK', brightnessCheck);
+
+            // ═══════════════════════════════════════════════════════════════
+            // STEP 2: HANDLE CRITICAL QUALITY ISSUES (REJECT)
+            // ═══════════════════════════════════════════════════════════════
+
+            const criticalIssues = {
+                isBlurry: blurCheck.isBlurry,
+                isTooDark: brightnessCheck.isTooDark,
+                isTooBright: brightnessCheck.isTooBright,
+                isCriticalLowContrast: brightnessCheck.isCriticalLowContrast
+            };
+
+            const hasCriticalIssue = Object.values(criticalIssues).some(issue => issue);
+
+            if (hasCriticalIssue) {
+                // Show user-friendly error modal with specific guidance
+                showImageQualityErrorModal(criticalIssues);
+
+                // Update status
+                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Image quality too poor for processing.';
+                status.className = 'text-sm text-red-600 mt-2';
+
+                return; // Stop processing
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // STEP 3: ENHANCE SLIGHTLY PROBLEMATIC IMAGES
+            // ═══════════════════════════════════════════════════════════════
+
+            const needsEnhancement = brightnessCheck.isDark || brightnessCheck.isLowContrast;
+
+            if (needsEnhancement) {
+                debugLog('IMAGE-ENHANCEMENT', 'Applying enhancement for slight quality issues');
+                status.innerHTML = '<i class="fas fa-magic fa-spin mr-2"></i>Enhancing image quality...';
+                status.className = 'text-sm text-blue-600 mt-2';
+
+                // Apply enhancement
+                enhanceImageQuality(canvas, ctx, {
+                    isDark: brightnessCheck.isDark,
+                    isLowContrast: brightnessCheck.isLowContrast
+                });
+
+                // Small delay to show enhancement message
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // STEP 4: FINAL PROCESSING
+            // ═══════════════════════════════════════════════════════════════
+
             // Get image as data URL (JPEG for smaller size, 92% quality)
             const processedImage = canvas.toDataURL('image/jpeg', 0.92);
-
 
             // Send to OCR.space API asynchronously
             await processImageWithOCR(processedImage, isBack);
