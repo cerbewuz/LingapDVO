@@ -851,6 +851,7 @@
             cursor: pointer;
             transition: var(--transition);
             position: relative;
+            background: #FFFCFA; /* Read notification background */
         }
 
             .notification-item:hover {
@@ -864,23 +865,23 @@
 
             /* Priority notifications - High priority (2+ hours delay) */
             .notification-item.priority-high {
-                background: #FEF2F2; /* Light red background */
+                background: #FFFCFA; /* Read notification background */
                 border-left: 4px solid #EF4444; /* Red border */
             }
 
             .notification-item.priority-high.unread {
-                background: #FEE2E2; /* Slightly darker for unread */
+                background: #FEE2E2; /* Unread high priority background */
                 border-left: 4px solid #DC2626; /* Darker red */
             }
 
             /* Priority notifications - Medium priority (1-2 hours delay) */
             .notification-item.priority-medium {
-                background: #FEF3C7; /* Light yellow background */
+                background: #FFFCFA; /* Read notification background */
                 border-left: 4px solid #F59E0B; /* Orange border */
             }
 
             .notification-item.priority-medium.unread {
-                background: #FDE68A; /* Slightly darker for unread */
+                background: #FDE68A; /* Unread medium priority background */
                 border-left: 4px solid #D97706; /* Darker orange */
             }
 
@@ -1006,7 +1007,7 @@
 
         /* Delay alert notification item styling */
         .notification-item[data-type="delay_alert"] {
-            background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 193, 7, 0.05) 100%);
+            background: #FFFCFA; /* Read notification background */
             border-left: 4px solid #FFC107 !important;
         }
 
