@@ -1840,8 +1840,21 @@ document.addEventListener('DOMContentLoaded', function () {
             // Send to OCR.space API asynchronously
             await processImageWithOCR(processedImage, isBack);
         } catch (error) {
-            status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Image preprocessing failed. Please try again.';
+            status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Cannot process image. Please try uploading a different photo.';
             status.className = 'text-sm text-red-600 mt-2';
+
+            // Show user-friendly error modal
+            showOCRErrorModal(
+                'We could not process your image.\n\n' +
+                'Please try:\n\n' +
+                '• Taking a new photo of your ID\n' +
+                '• Making sure the photo is clear and well-lit\n' +
+                '• Using a different device or camera\n\n' +
+                'If the problem continues, please contact support.'
+            );
+
+            // Log technical details for developers only
+            debugLog('IMAGE-PROCESSING-ERROR', error);
         }
     }
 
@@ -2655,7 +2668,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (result.OCRExitCode !== 1 || !result.ParsedResults || result.ParsedResults.length === 0) {
-                throw new Error(result.ErrorMessage || 'OCR processing failed');
+                // Log technical error for developers
+                debugLog('OCR-API-RESPONSE-ERROR', {
+                    errorMessage: result.ErrorMessage,
+                    exitCode: result.OCRExitCode,
+                    result: result
+                });
+
+                // Throw user-friendly error (will be caught and displayed by catch block)
+                throw new Error('processing');
             }
 
             const text = result.ParsedResults[0].ParsedText;
@@ -2776,29 +2797,37 @@ document.addEventListener('DOMContentLoaded', function () {
             let errorMessage = 'Unable to process the ID image. ';
 
             if (err.message.includes('network') || err.message.includes('fetch')) {
-                errorMessage = 'Network error. Please check your internet connection and try again.';
-                status.innerHTML = '<i class="fas fa-wifi mr-2"></i>Network error';
+                errorMessage = 'Cannot connect to the verification service.\n\n' +
+                    'Please check your internet connection and try again.\n\n' +
+                    'If the problem continues, please contact support.';
+                status.innerHTML = '<i class="fas fa-wifi mr-2"></i>Connection issue';
             } else if (err.message.includes('rate') || err.message.includes('limit')) {
-                errorMessage = 'API rate limit reached. Please wait a moment and try again.';
-                status.innerHTML = '<i class="fas fa-stopwatch mr-2"></i>Rate limit reached';
+                errorMessage = 'Too many verification attempts.\n\n' +
+                    'Please wait a moment before trying again.';
+                status.innerHTML = '<i class="fas fa-stopwatch mr-2"></i>Please wait';
             } else if (err.message.includes('size') || err.message.includes('large')) {
-                errorMessage = 'Image file is too large. Please use a smaller image (max 1MB).';
+                errorMessage = 'The image file is too large.\n\n' +
+                    'Please use a smaller image (maximum 1MB).\n\n' +
+                    'Tip: You can compress the image using your phone camera settings.';
                 status.innerHTML = '<i class="fas fa-file-image mr-2"></i>File too large';
             } else if (err.message.includes('format')) {
-                errorMessage = 'Invalid image format. Please use JPEG or PNG.';
-                status.innerHTML = '<i class="fas fa-image mr-2"></i>Invalid format';
+                errorMessage = 'The image format is not supported.\n\n' +
+                    'Please use JPG or PNG format only.';
+                status.innerHTML = '<i class="fas fa-image mr-2"></i>Wrong format';
             } else {
-                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Recognition failed';
-                errorMessage = 'Unable to process the ID image. Please ensure:\n\n' +
-                    '1. Image is clear and well-lit\n' +
-                    '2. All text on the ID is readable\n' +
-                    '3. ID is fully visible in the frame\n' +
-                    '4. Image is not blurry or distorted\n\n' +
-                    'Error details: ' + err.message;
+                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Cannot read ID';
+                errorMessage = 'We could not read your ID information.\n\n' +
+                    'Please make sure:\n\n' +
+                    '✓ The image is clear and well-lit\n' +
+                    '✓ All text on the ID is readable\n' +
+                    '✓ The entire ID is visible in the photo\n' +
+                    '✓ The photo is not blurry\n\n' +
+                    'Try taking a new photo with better lighting.';
             }
 
             showOCRErrorModal(errorMessage);
 
+            // Log technical details for developers only (not shown to user)
             debugLog('OCR-API-ERROR', {
                 message: err.message,
                 stack: err.stack,
@@ -3017,7 +3046,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const modal = document.getElementById('wrongIdModal');
         if (!modal) {
-            alert(`❌ Wrong ID Side!\n\nYou uploaded the ${detectedSide.toUpperCase()} of your ${getIdTypeName(idType)}, but this area expects the ${expectedSide.toUpperCase()} side.\n\nPlease upload the correct side of your ID.`);
+            alert(`Wrong ID Side\n\nYou uploaded the ${detectedSide} side of your ${getIdTypeName(idType)}, but we need the ${expectedSide} side.\n\nPlease upload the ${expectedSide} side of your ID.`);
             return;
         }
 
@@ -6554,7 +6583,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function showNonDavaoCityModal(detectedCity, idTypeName) {
         const modal = document.getElementById('davaoVerificationModal');
         if (!modal) {
-            alert(`VERIFICATION BLOCKED\n\nThis service is only available for Davao City residents.\n\nDetected location: ${detectedCity}`);
+            alert(`Service Not Available\n\nThis service is only for Davao City residents.\n\nYour ID shows: ${detectedCity}\n\nIf you believe this is incorrect, please contact support.`);
             return;
         }
 
@@ -6571,7 +6600,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
         } catch (e) {
-            alert(`VERIFICATION BLOCKED\n\nThis service is only for Davao City residents.\nDetected: ${detectedCity}`);
+            alert(`Service Not Available\n\nThis service is only for Davao City residents.\n\nYour ID shows: ${detectedCity}\n\nIf you believe this is incorrect, please contact support.`);
         }
     }
 
@@ -7378,7 +7407,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function showFileFormatErrorModal(fileName, detectedType) {
         const modal = document.getElementById('fileErrorModal');
         if (!modal) {
-            alert(`INVALID FILE FORMAT\n\nFile: ${fileName}\nDetected type: ${detectedType}\n\nOnly JPG, JPEG, and PNG formats are accepted.`);
+            alert(`Wrong File Format\n\nThe file you selected is not supported.\n\nPlease use JPG, JPEG, or PNG images only.`);
             return;
         }
 
@@ -7433,7 +7462,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
         } catch (e) {
-            alert(`INVALID FILE FORMAT\n\nOnly JPG, JPEG, and PNG files are accepted.\n\nFile: ${fileName}\nType: ${detectedType}`);
+            alert(`Wrong File Format\n\nThe file you selected is not supported.\n\nPlease use JPG, JPEG, or PNG images only.`);
         }
     }
 
@@ -7463,7 +7492,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function showOCRErrorModal(message) {
         const modal = document.getElementById('ocrErrorModal');
         if (!modal) {
-            alert(`OCR Error: ${message}`);
+            alert(`Verification Issue\n\n${message}`);
             return;
         }
 
@@ -7474,7 +7503,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
         } catch (e) {
-            alert(`OCR Error: ${message}`);
+            alert(`Verification Issue\n\n${message}`);
         }
     }
 
@@ -7491,7 +7520,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show Bootstrap modal
         const modal = document.getElementById('nameMismatchModal');
         if (!modal) {
-            alert(`VERIFICATION BLOCKED: Name Mismatch\n\nID Name: ${extractedName}\nRegistered Name: ${registeredName}\n\nYou cannot proceed until the names match.`);
+            alert(`Name Verification Failed\n\nThe name on your ID does not match your registered name.\n\nID Name: ${extractedName}\nRegistered Name: ${registeredName}\n\nPlease ensure you are using the correct ID that matches your registered account name.`);
             return;
         }
 
@@ -7510,7 +7539,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             bsModal.show();
         } catch (e) {
-            alert(`VERIFICATION BLOCKED: Name Mismatch\n\nID Name: ${extractedName}\nRegistered Name: ${registeredName}\n\nYou cannot proceed until the names match.`);
+            alert(`Name Verification Failed\n\nThe name on your ID does not match your registered name.\n\nID Name: ${extractedName}\nRegistered Name: ${registeredName}\n\nPlease ensure you are using the correct ID that matches your registered account name.`);
         }
     }
 
@@ -7600,7 +7629,7 @@ document.addEventListener('DOMContentLoaded', function () {
             resultBox.classList.remove('hidden');
         }
 
-        alert(`VERIFICATION BLOCKED: Invalid ID Type\n\nOnly these IDs are accepted:\n- Philippine National ID\n- Driver's License\n- UMID\n\nPlease upload one of the accepted ID types.`);
+        alert(`ID Not Accepted\n\nOnly these IDs can be used for verification:\n\n✓ Philippine National ID (PhilSys)\n✓ Driver's License (LTO)\n✓ UMID\n\nPlease upload one of the accepted ID types.`);
 
         clearUploadedFiles();
     }
