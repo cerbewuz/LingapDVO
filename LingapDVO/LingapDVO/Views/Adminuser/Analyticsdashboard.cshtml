@@ -83,6 +83,7 @@
     <link rel="stylesheet" href="~/css/admin-sidebar.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <style>
         :root {
             --primary: #1e88e5;
@@ -118,8 +119,6 @@
             flex-wrap: wrap;
         }
 
-        /* Sidebar - Handled by sidebar.js */
-
         /* Main Content*/
         .main-content-with-sidebar {
             flex: 1;
@@ -133,7 +132,6 @@
             width: auto;
         }
 
-            /* When sidebar is hidden, expand content to full width */
             .main-content-with-sidebar.sidebar-hidden {
                 margin-left: 0;
             }
@@ -370,7 +368,6 @@
             display: inline-block;
         }
 
-        /* Menu Toggle */
         .menu-toggle {
             display: none;
             background: none;
@@ -381,7 +378,6 @@
             margin-right: 1rem;
         }
 
-        /* Sidebar collapsed state */
         .sidebar-collapsed {
             width: 70px;
         }
@@ -430,64 +426,6 @@
             height: 3rem;
         }
 
-        .status-filter {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .status-select {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--gray-200);
-            background: white;
-            min-width: 150px;
-        }
-
-        /* Percentage labels styling */
-        .percentage-label {
-            font-weight: bold;
-            font-size: 14px;
-            color: #2c3e50;
-        }
-
-        .chart-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-            justify-content: center;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
-
-        /* Larger font sizes for better readability */
-        .chart-title {
-            font-size: 18px !important;
-            font-weight: 700 !important;
-        }
-
-        .chart-legend-text {
-            font-size: 14px !important;
-        }
-
-        .chart-tooltip {
-            font-size: 14px !important;
-        }
-
-        /* Priority Alert Boxes */
         .priority-alerts {
             display: flex;
             gap: 0.5rem;
@@ -543,20 +481,22 @@
             }
 
         @@keyframes priorityPulse {
-            0%, 100% {
-                transform: scale(1);
-            }
+            0%, 100%
 
-            50% {
-                transform: scale(1.05);
-            }
+        {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
         }
 
         .priority-alert-box.high i {
             animation: priorityPulse 2s ease-in-out infinite;
         }
 
-        /* Claim Rate Metrics Styles */
         .claim-metric-card {
             text-align: center;
             padding: 1.5rem;
@@ -607,15 +547,6 @@
             margin-top: 0.5rem;
         }
 
-        /* Chart Description Styles */
-        .chart-description {
-            font-size: 0.875rem;
-            color: var(--gray-600);
-            margin-top: 0.25rem;
-            line-height: 1.4;
-        }
-
-        /* Stats Text Styles */
         .stats-text {
             font-size: 0.9rem;
             color: var(--gray-600);
@@ -628,95 +559,100 @@
             color: var(--primary);
         }
 
-        /* Mobile Responsive Enhancements */
         @@media (max-width: 768px) {
-            .dashboard-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+            .dashboard-header
 
-            .date-filter {
-                width: 100%;
-                flex-direction: column;
-                align-items: stretch;
-            }
+        {
+            flex-direction: column;
+            align-items: flex-start;
+        }
 
-            .date-input {
-                width: 100%;
-            }
+        .date-filter {
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+        }
 
-            .priority-alerts {
-                flex-direction: column;
-                width: 100%;
-                align-items: stretch;
-            }
+        .date-input {
+            width: 100%;
+        }
 
-            .priority-alert-box {
-                justify-content: center;
-            }
+        .priority-alerts {
+            flex-direction: column;
+            width: 100%;
+            align-items: stretch;
+        }
 
-            .chart-controls {
-                justify-content: center;
-            }
+        .priority-alert-box {
+            justify-content: center;
+        }
 
-            .chart-select,
-            .btn-custom {
-                flex: 1;
-            }
+        .chart-controls {
+            justify-content: center;
+        }
 
-            .barangay-list {
-                max-height: 200px;
-            }
+        .chart-select,
+        .btn-custom {
+            flex: 1;
+        }
 
-            .chart-container {
-                height: 300px;
-                padding: 1rem;
-            }
+        .barangay-list {
+            max-height: 200px;
+        }
+
+        .chart-container {
+            height: 300px;
+            padding: 1rem;
+        }
+
         }
 
         @@media (max-width: 576px) {
-            .menu-toggle {
-                display: block;
-            }
+            .menu-toggle
 
-            .header-title h1 {
-                font-size: 1.3rem;
-            }
+        {
+            display: block;
+        }
 
-            .date-filter {
-                gap: 0.5rem;
-            }
+        .header-title h1 {
+            font-size: 1.3rem;
+        }
 
-            .chart-controls {
-                flex-direction: column;
-                width: 100%;
-            }
+        .date-filter {
+            gap: 0.5rem;
+        }
 
-            .chart-select,
-            .btn-custom {
-                width: 100%;
-            }
+        .chart-controls {
+            flex-direction: column;
+            width: 100%;
+        }
 
-            .summary-card {
-                padding: 1rem;
-            }
+        .chart-select,
+        .btn-custom {
+            width: 100%;
+        }
 
-            .claim-metric-card {
-                padding: 1rem;
-            }
+        .summary-card {
+            padding: 1rem;
+        }
 
-            .claim-metric-value {
-                font-size: 2rem;
-            }
+        .claim-metric-card {
+            padding: 1rem;
+        }
 
-            .chart-container {
-                height: 250px;
-                padding: 0.75rem;
-            }
+        .claim-metric-value {
+            font-size: 2rem;
+        }
 
-            .barangay-item {
-                font-size: 0.85rem;
-            }
+        .chart-container {
+            height: 250px;
+            padding: 0.75rem;
+        }
+
+        .barangay-item {
+            font-size: 0.85rem;
+        }
+
         }
     </style>
 </head>
@@ -728,12 +664,9 @@
     </div>
 
     <div class="dashboard-container">
-        <!-- Include Shared Admin Sidebar -->
         @await Html.PartialAsync("_AdminSidebar")
 
-        <!-- Main Content -->
         <div class="main-content-with-sidebar" id="mainContent">
-            <!-- Header -->
             <div class="dashboard-header">
                 <div style="display: flex; align-items: center;">
                     <div class="header-title">
@@ -764,10 +697,9 @@
                 </div>
             </div>
 
-            <div class="row g-3 mb-4" id="summaryCards">
-            </div>
+            <div class="row g-3 mb-4" id="summaryCards"></div>
+
             <div class="row g-3">
-                <!-- Application Types -->
                 <div class="col-md-6">
                     <div class="card-analytics">
                         <div class="card-header-custom d-flex justify-content-between align-items-center">
@@ -791,7 +723,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Status Distribution -->
+
                 <div class="col-md-6">
                     <div class="card-analytics">
                         <div class="card-header-custom d-flex justify-content-between align-items-center">
@@ -818,7 +750,6 @@
                 </div>
             </div>
 
-            <!-- Barangay Distribution by Specific Assistance Types -->
             <div class="row g-3 mt-3">
                 <div class="col-12">
                     <div class="card-analytics">
@@ -853,7 +784,6 @@
                 </div>
             </div>
 
-            <!-- NEW: Application Trends Over Time -->
             <div class="row g-3 mt-3">
                 <div class="col-12">
                     <div class="card-analytics">
@@ -879,9 +809,7 @@
                 </div>
             </div>
 
-            <!-- NEW: Approval Rates and Processing Time Analysis -->
             <div class="row g-3 mt-3">
-                <!-- Approval Rate by Assistance Type -->
                 <div class="col-md-6">
                     <div class="card-analytics">
                         <div class="card-header-custom">
@@ -899,7 +827,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Processing Time Analysis -->
+
                 <div class="col-md-6">
                     <div class="card-analytics">
                         <div class="card-header-custom">
@@ -919,7 +847,6 @@
                 </div>
             </div>
 
-            <!-- NEW: Status Distribution by Assistance Type -->
             <div class="row g-3 mt-3">
                 <div class="col-12">
                     <div class="card-analytics">
@@ -945,7 +872,6 @@
                 </div>
             </div>
 
-            <!-- NEW: Claim Rate Metrics -->
             <div class="row g-3 mt-3 mb-4">
                 <div class="col-12">
                     <div class="card-analytics">
@@ -960,9 +886,7 @@
                             </div>
                         </div>
                         <div class="card-body" style="padding: 2rem;">
-                            <div class="row g-4" id="claimRateMetrics">
-                                <!-- Will be populated by JavaScript -->
-                            </div>
+                            <div class="row g-4" id="claimRateMetrics"></div>
                         </div>
                     </div>
                 </div>
@@ -970,18 +894,19 @@
         </div>
     </div>
 
-    <!-- Load admin sidebar utilities and session timeout scripts -->
     <script src="~/js/adminsidebar.js"></script>
     @await Html.PartialAsync("_SessionTimeout")
 
     <script>
-        // Global variables to store chart instances and data
+        // Register the datalabels plugin
+        Chart.register(ChartDataLabels);
+
         let typeChart, statusChart, barangayChart;
         let originalData = null;
         let filteredData = null;
         let currentStatusFilter = 'all';
+        let trendsChart, approvalRateChart, processingTimeChart, statusByTypeChart;
 
-        // Colors for different assistance types and statuses - Modern Blue Palette
         const colors = {
             primary: '#1e88e5',
             success: '#43a047',
@@ -994,22 +919,17 @@
             funeral: '#e53935'
         };
 
-        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard initialized');
 
-            // Update sidebar priority badge
             const totalPriorityCount = @(ViewBag.TotalPriorityCount ?? 0);
             if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
                 window.AdminSidebar.updatePriorityBadge(totalPriorityCount);
-                console.log('[Analytics] Sidebar badge updated:', totalPriorityCount);
             }
 
-            // Set default dates (last 3 months)
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth() - 3, 1);
 
-            // Format dates for input fields (YYYY-MM-DD)
             const formatDateForInput = (date) => {
                 return date.toISOString().split('T')[0];
             };
@@ -1017,44 +937,15 @@
             document.getElementById('endDate').value = formatDateForInput(today);
             document.getElementById('startDate').value = formatDateForInput(firstDay);
 
-            // Initialize dashboard with all data
             initializeDashboard();
-
-            // Sidebar toggle functionality
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-
-            if (menuToggle && sidebar && mainContent) {
-                menuToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('sidebar-collapsed');
-                    mainContent.classList.toggle('main-content-expanded');
-
-                    // Change icon based on state
-                    const icon = menuToggle.querySelector('i');
-                    if (sidebar.classList.contains('sidebar-collapsed')) {
-                        icon.className = 'bi bi-justify-left';
-                    } else {
-                        icon.className = 'bi bi-list';
-                    }
-                });
-            }
         });
 
-        // Function to redirect to Application Dashboard with status filter
         function redirectToApplicationDashboard(status) {
-            // Store the selected status in localStorage (more reliable than sessionStorage)
             localStorage.setItem('selectedStatus', status);
-
-            console.log('Redirecting to Application Dashboard with status:', status);
-
-            // Redirect to Application Dashboard
             window.location.href = '/Admin';
         }
 
-        // Helper function to format names with proper case
         function formatName(lastname, firstname, middlename, suffix) {
-            // Helper to capitalize first letter of each word
             const toProperCase = (str) => {
                 if (!str) return '';
                 return str.split(' ').map(word =>
@@ -1062,14 +953,12 @@
                 ).join(' ');
             };
 
-            // Format: "Lastname, Firstname Middlename"
             let formattedName = `${toProperCase(lastname)}, ${toProperCase(firstname)}`;
 
             if (middlename && middlename.trim() !== '') {
                 formattedName += ` ${toProperCase(middlename)}`;
             }
 
-            // Only add suffix if it exists and is not "None"
             if (suffix && suffix.trim() !== '' && suffix.toLowerCase() !== 'none') {
                 formattedName += ` ${toProperCase(suffix)}`;
             }
@@ -1077,68 +966,61 @@
             return formattedName;
         }
 
-        // Initialize dashboard with data - FOLLOWING ADMIN.CSHTML PATTERN
         function initializeDashboard() {
-            console.log('Initializing dashboard data...');
-
-            // Create combined applications array following Admin.cshtml pattern
             const allApplications = [];
 
-            // Add Hospital Assistance following Admin.cshtml pattern
             @foreach (var f in Model.HospitalAssistance)
             {
-                            <text>
-                            allApplications.push({
-                                type: "Hospital Assistance",
-                                name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                status: "@f.Status?.ToLower()",
-                                status2: "@f.Status2?.ToLower()",
-                                status3: "@f.Status3?.ToLower()", // ADDED status3
-                                brgy: "@f.Brgy",
-                                typeassistance: "@f.Typeassistance",
-                                formId: @f.Id,
-                                controller: "Dashboard"
-                            });
-                            </text>
+                    <text>
+                    allApplications.push({
+                        type: "Hospital Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
-            // Add Other Assistance following Admin.cshtml pattern
             @foreach (var f in Model.OtherAssistance)
             {
-                            <text>
-                            allApplications.push({
-                                type: "Other Assistance",
-                                name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                status: "@f.Status?.ToLower()",
-                                status2: "@f.Status2?.ToLower()",
-                                status3: "@f.Status3?.ToLower()",
-                                brgy: "@f.Brgy",
-                                typeassistance: "@f.Typeassistance",
-                                formId: @f.Id,
-                                controller: "Dashboard"
-                            });
-                            </text>
+                    <text>
+                    allApplications.push({
+                        type: "Other Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "@f.Typeassistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
-            // Add Funeral Forms following Admin.cshtml pattern
             @foreach (var f in Model.FuneralAssistance)
             {
-                            <text>
-                            allApplications.push({
-                                type: "Funeral Assistance",
-                                name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                                status: "@f.Status?.ToLower()",
-                                status2: "@f.Status2?.ToLower()",
-                                status3: "@f.Status3?.ToLower()",
-                                brgy: "@f.Brgy",
-                                typeassistance: "Funeral Assistance", // Default for funeral forms
-                                formId: @f.Id,
-                                controller: "Dashboard"
-                            });
-                            </text>
+                    <text>
+                    allApplications.push({
+                        type: "Funeral Assistance",
+                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                        status: "@f.Status?.ToLower()",
+                        status2: "@f.Status2?.ToLower()",
+                        status3: "@f.Status3?.ToLower()",
+                        brgy: "@f.Brgy",
+                        typeassistance: "Funeral Assistance",
+                        formId: @f.Id,
+                        controller: "Dashboard"
+                    });
+                    </text>
             }
 
             originalData = {
@@ -1148,45 +1030,29 @@
                 funeralForms: @Html.Raw(Json.Serialize(Model.FuneralAssistance))
             };
 
-            console.log('Initial data loaded following Admin.cshtml pattern:', originalData);
-
-            // Process data for the initial view
             processDataAndUpdateCharts();
         }
 
-        // Process data and update all charts
         function processDataAndUpdateCharts() {
-            console.log('Processing data and updating charts...');
             showLoading(true);
 
-            // Use setTimeout to simulate processing time
             setTimeout(() => {
                 try {
                     const startDate = document.getElementById('startDate').value;
                     const endDate = document.getElementById('endDate').value;
 
-                    // Filter data based on date range and status
                     filteredData = filterDataByDateRange(originalData, startDate, endDate);
                     filteredData = filterDataByStatus(filteredData, currentStatusFilter);
 
-                    console.log('Filtered data:', filteredData);
-
-                    // Update summary cards
                     updateSummaryCards(filteredData);
-
-                    // Update charts
                     updateTypeChart('doughnut');
                     updateStatusChart('doughnut');
                     updateBarangayChart();
-
-                    // Update new charts
                     updateTrendsChart();
                     updateApprovalRateChart();
                     updateProcessingTimeChart();
                     updateStatusByTypeChart('stackedBar');
                     updateClaimRateMetrics();
-
-                    console.log('All charts updated successfully');
                 } catch (error) {
                     console.error('Error updating charts:', error);
                 } finally {
@@ -1195,14 +1061,12 @@
             }, 500);
         }
 
-        // Filter data by date range using createdAt field
         function filterDataByDateRange(data, startDate, endDate) {
-            // If no dates selected, return all data
             if (!startDate || !endDate) return data;
 
             const start = new Date(startDate);
             const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999); // Include the entire end date
+            end.setHours(23, 59, 59, 999);
 
             const filtered = {
                 allApplications: [],
@@ -1211,16 +1075,10 @@
                 funeralForms: []
             };
 
-            // Filter all applications using createdAt
             if (data.allApplications) {
                 filtered.allApplications = data.allApplications.filter(item => {
-                    if (!item.createdAt) return true; // Keep items without createdAt
-
-                    // Check if the date is valid
-                    if (isNaN(item.createdAt.getTime())) {
-                        return true; // Keep items with invalid dates
-                    }
-
+                    if (!item.createdAt) return true;
+                    if (isNaN(item.createdAt.getTime())) return true;
                     return item.createdAt >= start && item.createdAt <= end;
                 });
             }
@@ -1228,9 +1086,7 @@
             return filtered;
         }
 
-        // Filter data by status - UPDATED VERSION
         function filterDataByStatus(data, status) {
-            // If "all" status is selected, return all data
             if (status === 'all') return data;
 
             const filtered = {
@@ -1240,23 +1096,18 @@
                 funeralForms: []
             };
 
-            // Filter applications by status following updated pattern
             if (data.allApplications) {
                 filtered.allApplications = data.allApplications.filter(app => {
-                    // For claims status, check ONLY status3 field
                     if (status === 'claims') {
                         return app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed');
                     }
 
-                    // For other statuses, EXCLUDE applications that have status3 = claims
-                    // Then check status2 for approve/disapprove
                     if (status === 'approve' || status === 'disapprove') {
                         return app.status2 && app.status2.trim() !== '' &&
                                app.status2 === status &&
                                (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed'));
                     }
 
-                    // For pending/processing, use original status but exclude claims status3
                     return app.status === status &&
                            (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed')) &&
                            (!app.status2 || app.status2.trim() === '' ||
@@ -1267,7 +1118,6 @@
             return filtered;
         }
 
-        // Update summary cards with filtered data - UPDATED VERSION WITH CLICKABLE CARDS
         function updateSummaryCards(data) {
             const applications = data.allApplications || [];
 
@@ -1284,42 +1134,33 @@
             let mediumPriority = 0;
             const now = new Date();
 
-            // Count applications by status following updated pattern
             applications.forEach(app => {
-                // Check status3 FIRST for "claims" status - if claims, count ONLY in claims
                 if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
                     statusCounts.claims++;
                 }
-                // If NOT claims, then check status2 for approve/disapprove
                 else if (app.status2 && app.status2.trim() !== '') {
                     if (app.status2 === 'approve') {
                         statusCounts.approve++;
                     } else if (app.status2 === 'disapprove') {
                         statusCounts.disapprove++;
                     } else {
-                        // Status2 exists but is not approve/disapprove, use original status
                         if (statusCounts.hasOwnProperty(app.status)) {
                             statusCounts[app.status]++;
                         }
                     }
                 } else {
-                    // No Status2 or Status2 is empty, and no claims status3, use original status
                     if (statusCounts.hasOwnProperty(app.status)) {
                         statusCounts[app.status]++;
                     }
                 }
 
-                // Calculate priority counts (ONLY for Pending and Processing that are NOT approved/disapproved/claims)
-                // Exclude if status3 is claims
                 if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
-                    return; // Skip claims applications
+                    return;
                 }
-                // Exclude if status2 is approve or disapprove
                 if (app.status2 && app.status2.trim() !== '' &&
                     (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) {
-                    return; // Skip approved/disapproved applications
+                    return;
                 }
-                // Only count if original status is pending or processing
                 if (app.status === 'pending' || app.status === 'processing') {
                     const hoursSinceSubmission = (now - new Date(app.createdAt)) / (1000 * 60 * 60);
                     if (hoursSinceSubmission >= 2) {
@@ -1330,10 +1171,8 @@
                 }
             });
 
-            // Calculate total
             statusCounts.total = applications.length;
 
-            // Update priority counts
             const highPriorityCount = document.getElementById('high-priority-count');
             const mediumPriorityCount = document.getElementById('medium-priority-count');
             if (highPriorityCount) highPriorityCount.textContent = highPriority;
@@ -1343,92 +1182,73 @@
             summaryCards.innerHTML = `
                 <div class="col-md-2">
                     <div class="card-analytics summary-card summary-total" onclick="redirectToApplicationDashboard('all')">
-                        <div class="summary-icon">
-                            <i class="bi bi-files"></i>
-                        </div>
+                        <div class="summary-icon"><i class="bi bi-files"></i></div>
                         <div class="summary-number">${statusCounts.total}</div>
                         <div class="summary-label">Total Applications</div>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="card-analytics summary-card summary-approved" onclick="redirectToApplicationDashboard('approve')">
-                        <div class="summary-icon">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
+                        <div class="summary-icon"><i class="bi bi-check-circle"></i></div>
                         <div class="summary-number">${statusCounts.approve}</div>
                         <div class="summary-label">Approve</div>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="card-analytics summary-card summary-pending" onclick="redirectToApplicationDashboard('pending')">
-                        <div class="summary-icon">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
+                        <div class="summary-icon"><i class="bi bi-hourglass-split"></i></div>
                         <div class="summary-number">${statusCounts.pending}</div>
                         <div class="summary-label">Pending</div>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="card-analytics summary-card summary-processing" onclick="redirectToApplicationDashboard('processing')">
-                        <div class="summary-icon">
-                            <i class="bi bi-gear"></i>
-                        </div>
+                        <div class="summary-icon"><i class="bi bi-gear"></i></div>
                         <div class="summary-number">${statusCounts.processing}</div>
                         <div class="summary-label">Processing</div>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="card-analytics summary-card summary-disapproved" onclick="redirectToApplicationDashboard('disapprove')">
-                        <div class="summary-icon">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
+                        <div class="summary-icon"><i class="bi bi-x-circle"></i></div>
                         <div class="summary-number">${statusCounts.disapprove}</div>
                         <div class="summary-label">Disapprove</div>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="card-analytics summary-card summary-claims" onclick="redirectToApplicationDashboard('claims')">
-                        <div class="summary-icon">
-                            <i class="bi bi-box-seam"></i>
-                        </div>
+                        <div class="summary-icon"><i class="bi bi-box-seam"></i></div>
                         <div class="summary-number">${statusCounts.claims}</div>
                         <div class="summary-label">Claims</div>
                     </div>
                 </div>
             `;
 
-            // Update global chart data
             window.chartData = {
                 statusData: [statusCounts.approve, statusCounts.pending, statusCounts.processing, statusCounts.disapprove, statusCounts.claims],
                 typeData: countApplicationTypes(applications),
                 statusLabels: ['Approve', 'Pending', 'Processing', 'Disapprove', 'Claimed'],
                 typeLabels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
-                // Barangay data will be processed separately
                 ...processBarangayData(applications)
             };
 
-            // Update chart statistics
             updateChartStats();
         }
 
-        // Update chart statistics text
         function updateChartStats() {
             if (!window.chartData) return;
 
-            // Update Application Types stats
             document.getElementById('totalApplications').textContent = window.chartData.typeData.reduce((a, b) => a + b, 0);
             document.getElementById('hospitalApplications').textContent = window.chartData.typeData[0];
             document.getElementById('medicalApplications').textContent = window.chartData.typeData[1];
             document.getElementById('funeralApplications').textContent = window.chartData.typeData[2];
 
-            // Update Status Distribution stats
             document.getElementById('approvedCount').textContent = window.chartData.statusData[0];
             document.getElementById('pendingCount').textContent = window.chartData.statusData[1];
             document.getElementById('processingCount').textContent = window.chartData.statusData[2];
             document.getElementById('disapprovedCount').textContent = window.chartData.statusData[3];
             document.getElementById('claimsCount').textContent = window.chartData.statusData[4];
 
-            // Update Barangay Distribution stats
             if (window.chartData.barangayLabels && window.chartData.barangayLabels.length > 0) {
                 document.getElementById('totalBarangays').textContent = window.chartData.barangayLabels.length;
                 document.getElementById('topBarangay').textContent = window.chartData.barangayLabels[0];
@@ -1436,13 +1256,8 @@
             }
         }
 
-        // Count application types
         function countApplicationTypes(applications) {
-            const counts = {
-                hospital: 0,
-                medical: 0,
-                funeral: 0
-            };
+            const counts = { hospital: 0, medical: 0, funeral: 0 };
 
             applications.forEach(app => {
                 if (app.type === "Hospital Assistance") counts.hospital++;
@@ -1453,11 +1268,9 @@
             return [counts.hospital, counts.medical, counts.funeral];
         }
 
-        // Process barangay data for charts - UPDATED TO USE COMBINED APPLICATIONS
         function processBarangayData(applications) {
             const barangayDetailedData = {};
 
-            // Process all applications following the same pattern
             applications.forEach(app => {
                 if (!app.brgy) return;
 
@@ -1466,13 +1279,11 @@
                     barangayDetailedData[barangay] = {};
                 }
 
-                // Use typeassistance if available, otherwise use type
                 const assistanceType = app.typeassistance ? app.typeassistance.trim() : app.type;
                 barangayDetailedData[barangay][assistanceType] =
                     (barangayDetailedData[barangay][assistanceType] || 0) + 1;
             });
 
-            // Sort barangays by total applications
             const allBarangaysDetailed = Object.entries(barangayDetailedData)
                 .sort((a, b) => {
                     const totalA = Object.values(a[1]).reduce((sum, count) => sum + count, 0);
@@ -1484,12 +1295,10 @@
             const barangayTotalsDetailed = allBarangaysDetailed.map(b =>
                 Object.values(b[1]).reduce((sum, count) => sum + count, 0));
 
-            // Get all unique assistance types
             const allAssistanceTypes = [...new Set(
                 allBarangaysDetailed.flatMap(b => Object.keys(b[1]))
             )].sort();
 
-            // Prepare data for each assistance type
             const assistanceTypeData = {};
             allAssistanceTypes.forEach(type => {
                 assistanceTypeData[type] = allBarangaysDetailed.map(b => b[1][type] || 0);
@@ -1503,7 +1312,6 @@
             };
         }
 
-        // Type Chart functions with percentages
         function updateTypeChart(type) {
             const ctx = document.getElementById('typeChart');
             if (!ctx || !window.chartData) return;
@@ -1511,21 +1319,17 @@
             const context = ctx.getContext('2d');
             if (typeChart) typeChart.destroy();
 
-            // Calculate percentages
             const total = window.chartData.typeData.reduce((a, b) => a + b, 0);
             const percentages = window.chartData.typeData.map(value =>
                 total > 0 ? Math.round((value / total) * 100) : 0
             );
 
-            // Create labels with percentages on the left side
-            const labelsWithPercentages = window.chartData.typeLabels.map((label, index) =>
-                `${percentages[index]}% - ${label}`
-            );
+            const isPie = type === 'pie' || type === 'doughnut';
 
             typeChart = new Chart(context, {
                 type: type,
                 data: {
-                    labels: labelsWithPercentages,
+                    labels: window.chartData.typeLabels,
                     datasets: [{
                         data: window.chartData.typeData,
                         backgroundColor: [colors.hospital, colors.medical, colors.funeral],
@@ -1533,149 +1337,56 @@
                         borderColor: '#ffffff'
                     }]
                 },
-                options: getTypeChartOptions(type, total, percentages)
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: isPie ? 'right' : 'top',
+                            labels: {
+                                padding: 15,
+                                font: { size: 14 }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: `Application Types - Total: ${total}`,
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 16
+                            },
+                            formatter: (value, ctx) => {
+                                const percentage = percentages[ctx.dataIndex];
+                                return `${percentage}%\n(${value})`;
+                            },
+                            anchor: 'center',
+                            align: 'center'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const percentage = percentages[context.dataIndex];
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: isPie ? {} : {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
             });
         }
 
-        // Enhanced chart options for type chart with percentages
-        function getTypeChartOptions(type, total, percentages) {
-            const isPie = type === 'pie' || type === 'doughnut';
-
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: {
-                    padding: {
-                        left: 20,
-                        right: 20,
-                        top: 20,
-                        bottom: 20
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: isPie ? 'right' : 'top',
-                        labels: {
-                            padding: 15,
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            font: {
-                                size: 14 // Larger font for legend
-                            },
-                            generateLabels: function(chart) {
-                                const data = chart.data;
-                                if (data.labels.length && data.datasets.length) {
-                                    return data.labels.map((label, i) => {
-                                        const value = data.datasets[0].data[i];
-                                        const percentage = percentages[i];
-                                        const cleanLabel = label.replace(/^\d+% - /, '');
-                                        return {
-                                            text: `${cleanLabel}: ${value} (${percentage}%)`,
-                                            fillStyle: data.datasets[0].backgroundColor[i],
-                                            strokeStyle: data.datasets[0].backgroundColor[i],
-                                            lineWidth: 2,
-                                            pointStyle: 'circle',
-                                            hidden: false,
-                                            index: i
-                                        };
-                                    });
-                                }
-                                return [];
-                            }
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: `Application Types - Total: ${total} Applications`,
-                        font: {
-                            size: 18, // Larger title
-                            weight: 'bold'
-                        },
-                        padding: {
-                            top: 10,
-                            bottom: 20
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#ffffff',
-                        borderColor: '#ffffff',
-                        borderWidth: 1,
-                        titleFont: {
-                            size: 14 // Larger tooltip font
-                        },
-                        bodyFont: {
-                            size: 14 // Larger tooltip font
-                        },
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label.replace(/^\d+% - /, '');
-                                const value = context.raw || 0;
-                                const percentage = percentages[context.dataIndex];
-                                return [
-                                    `Type: ${label}`,
-                                    `Count: ${value}`,
-                                    `Percentage: ${percentage}%`
-                                ];
-                            }
-                        }
-                    }
-                },
-                scales: isPie ? {} : {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                            font: {
-                                size: 14 // Larger font for y-axis
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Number of Applications',
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            }
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 13 // Larger font for x-axis
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Application Types with Percentages',
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            }
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                // Animation configuration
-                animation: {
-                    duration: 1000,
-                    easing: 'easeOutQuart'
-                },
-                // Interaction configuration
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
-            };
-        }
-
-        // Status Chart functions with real-time percentages
         function updateStatusChart(type) {
             const ctx = document.getElementById('statusChart');
             if (!ctx || !window.chartData) return;
@@ -1683,21 +1394,17 @@
             const context = ctx.getContext('2d');
             if (statusChart) statusChart.destroy();
 
-            // Calculate percentages
             const total = window.chartData.statusData.reduce((a, b) => a + b, 0);
             const percentages = window.chartData.statusData.map(value =>
                 total > 0 ? Math.round((value / total) * 100) : 0
             );
 
-            // Create labels with percentages on the left side
-            const labelsWithPercentages = window.chartData.statusLabels.map((label, index) =>
-                `${percentages[index]}% - ${label}`
-            );
+            const isPie = type === 'pie' || type === 'doughnut';
 
             statusChart = new Chart(context, {
                 type: type,
                 data: {
-                    labels: labelsWithPercentages,
+                    labels: window.chartData.statusLabels,
                     datasets: [{
                         data: window.chartData.statusData,
                         backgroundColor: [colors.success, colors.warning, colors.processing, colors.danger, colors.info],
@@ -1705,156 +1412,62 @@
                         borderColor: '#ffffff'
                     }]
                 },
-                options: getStatusChartOptions(type, total, percentages)
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: isPie ? 'right' : 'top',
+                            labels: {
+                                padding: 15,
+                                font: { size: 14 }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: `Status Distribution - Total: ${total}`,
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 16
+                            },
+                            formatter: (value, ctx) => {
+                                const percentage = percentages[ctx.dataIndex];
+                                return `${percentage}%\n(${value})`;
+                            },
+                            anchor: 'center',
+                            align: 'center'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const percentage = percentages[context.dataIndex];
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: isPie ? {} : {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
             });
         }
 
-        // Enhanced chart options for status chart with percentages
-        function getStatusChartOptions(type, total, percentages) {
-            const isPie = type === 'pie' || type === 'doughnut';
-
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: {
-                    padding: {
-                        left: 20,
-                        right: 20,
-                        top: 20,
-                        bottom: 20
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: isPie ? 'right' : 'top',
-                        labels: {
-                            padding: 15,
-                            usePointStyle: true,
-                            pointStyle: 'circle',
-                            font: {
-                                size: 14 // Larger font for legend
-                            },
-                            generateLabels: function(chart) {
-                                const data = chart.data;
-                                if (data.labels.length && data.datasets.length) {
-                                    return data.labels.map((label, i) => {
-                                        const value = data.datasets[0].data[i];
-                                        const percentage = percentages[i];
-                                        const cleanLabel = label.replace(/^\d+% - /, '');
-                                        return {
-                                            text: `${cleanLabel}: ${value} (${percentage}%)`,
-                                            fillStyle: data.datasets[0].backgroundColor[i],
-                                            strokeStyle: data.datasets[0].backgroundColor[i],
-                                            lineWidth: 2,
-                                            pointStyle: 'circle',
-                                            hidden: false,
-                                            index: i
-                                        };
-                                    });
-                                }
-                                return [];
-                            }
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: `Status Distribution - Total: ${total} Applications`,
-                        font: {
-                            size: 18, // Larger title
-                            weight: 'bold'
-                        },
-                        padding: {
-                            top: 10,
-                            bottom: 20
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#ffffff',
-                        borderColor: '#ffffff',
-                        borderWidth: 1,
-                        titleFont: {
-                            size: 14 // Larger tooltip font
-                        },
-                        bodyFont: {
-                            size: 14 // Larger tooltip font
-                        },
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label.replace(/^\d+% - /, '');
-                                const value = context.raw || 0;
-                                const percentage = percentages[context.dataIndex];
-                                return [
-                                    `Status: ${label}`,
-                                    `Count: ${value}`,
-                                    `Percentage: ${percentage}%`
-                                ];
-                            }
-                        }
-                    }
-                },
-                scales: isPie ? {} : {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                            font: {
-                                size: 14 // Larger font for y-axis
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Number of Applications',
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            }
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            font: {
-                                size: 13 // Larger font for x-axis
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Status with Percentages',
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            }
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                // Animation configuration
-                animation: {
-                    duration: 1000,
-                    easing: 'easeOutQuart'
-                },
-                // Interaction configuration
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
-            };
-        }
-
-        // Barangay Chart functions with percentages
         function updateBarangayChart() {
             if (!window.chartData) return;
 
             const chartType = document.getElementById('barangayChartType').value;
             const viewType = document.getElementById('barangayView').value;
 
-            // Get data based on view type
             let labels, totals;
             let assistanceData = {};
 
@@ -1879,7 +1492,6 @@
             const context = ctx.getContext('2d');
             if (barangayChart) barangayChart.destroy();
 
-            // Show/hide barangay list
             const listContainer = document.getElementById('barangayListContainer');
             if (listContainer) {
                 if (chartType === 'pie' || chartType === 'doughnut') {
@@ -1890,7 +1502,6 @@
                 }
             }
 
-            // Create chart based on type
             if (chartType === 'bar' || chartType === 'stackedBar') {
                 createBarChart(context, labels, assistanceData, chartType);
             } else {
@@ -1903,13 +1514,9 @@
             const assistanceTypes = Object.keys(assistanceData);
             const assistanceColors = generateAssistanceTypeColors(assistanceTypes.length);
 
-            // Calculate total for each barangay for percentages
             const barangayTotals = labels.map((_, index) =>
                 assistanceTypes.reduce((sum, type) => sum + (assistanceData[type][index] || 0), 0)
             );
-
-            // Calculate overall total for percentage calculations
-            const overallTotal = barangayTotals.reduce((a, b) => a + b, 0);
 
             const datasets = assistanceTypes.map((type, index) => ({
                 label: type,
@@ -1930,27 +1537,29 @@
                     plugins: {
                         legend: {
                             position: 'top',
-                            labels: {
-                                font: {
-                                    size: 14 // Larger legend font
-                                }
-                            }
+                            labels: { font: { size: 14 } }
                         },
                         title: {
                             display: true,
                             text: 'Applications by Barangay and Specific Assistance Type',
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        datalabels: {
+                            color: '#fff',
                             font: {
-                                size: 18, // Larger title
-                                weight: 'bold'
-                            }
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: (value, ctx) => {
+                                if (value === 0) return '';
+                                const total = barangayTotals[ctx.dataIndex];
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return `${percentage}%`;
+                            },
+                            anchor: 'center',
+                            align: 'center'
                         },
                         tooltip: {
-                            titleFont: {
-                                size: 14 // Larger tooltip font
-                            },
-                            bodyFont: {
-                                size: 14 // Larger tooltip font
-                            },
                             callbacks: {
                                 label: function(context) {
                                     const label = context.dataset.label || '';
@@ -1965,89 +1574,33 @@
                     scales: {
                         x: {
                             stacked: isStacked,
-                            ticks: {
-                                font: {
-                                    size: 12 // Larger x-axis font
-                                }
-                            }
+                            ticks: { font: { size: 12 } }
                         },
                         y: {
                             stacked: isStacked,
                             beginAtZero: true,
-                            ticks: {
-                                precision: 0,
-                                font: {
-                                    size: 12 // Larger y-axis font
-                                }
-                            },
+                            ticks: { precision: 0, font: { size: 12 } },
                             title: {
                                 display: true,
                                 text: 'Number of Applications',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                }
+                                font: { size: 14, weight: 'bold' }
                             }
                         }
                     }
                 }
             });
-
-            // Add percentage labels for top barangays in the chart
-            if (chartType === 'bar') {
-                // Add percentage labels to the top of each bar
-                const chartInstance = barangayChart;
-                const originalDraw = chartInstance.draw;
-
-                chartInstance.draw = function() {
-                    originalDraw.apply(this, arguments);
-
-                    const ctx = this.ctx;
-                    ctx.save();
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-                    ctx.font = 'bold 12px Arial';
-                    ctx.fillStyle = '#2c3e50';
-
-                    this.data.datasets.forEach((dataset, datasetIndex) => {
-                        const meta = this.getDatasetMeta(datasetIndex);
-
-                        meta.data.forEach((bar, index) => {
-                            const value = dataset.data[index];
-                            const total = barangayTotals[index];
-                            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-
-                            if (value > 0) {
-                                ctx.fillText(
-                                    `${percentage}%`,
-                                    bar.x,
-                                    bar.y - 5
-                                );
-                            }
-                        });
-                    });
-
-                    ctx.restore();
-                };
-            }
         }
 
         function createPieChart(ctx, labels, totals, chartType) {
-            // Calculate percentages for pie/doughnut charts
             const total = totals.reduce((a, b) => a + b, 0);
             const percentages = totals.map(value =>
                 total > 0 ? Math.round((value / total) * 100) : 0
             );
 
-            // Create labels with percentages
-            const labelsWithPercentages = labels.map((label, index) =>
-                `${percentages[index]}% - ${label}`
-            );
-
             barangayChart = new Chart(ctx, {
                 type: chartType,
                 data: {
-                    labels: labelsWithPercentages,
+                    labels: labels,
                     datasets: [{
                         data: totals,
                         backgroundColor: generateAssistanceTypeColors(labels.length),
@@ -2059,27 +1612,29 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         title: {
                             display: true,
                             text: 'Total Applications by Barangay',
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        datalabels: {
+                            color: '#fff',
                             font: {
-                                size: 18, // Larger title
-                                weight: 'bold'
-                            }
+                                weight: 'bold',
+                                size: 14
+                            },
+                            formatter: (value, ctx) => {
+                                const percentage = percentages[ctx.dataIndex];
+                                return `${percentage}%`;
+                            },
+                            anchor: 'center',
+                            align: 'center'
                         },
                         tooltip: {
-                            titleFont: {
-                                size: 14 // Larger tooltip font
-                            },
-                            bodyFont: {
-                                size: 14 // Larger tooltip font
-                            },
                             callbacks: {
                                 label: function(context) {
-                                    const label = context.label.replace(/^\d+% - /, '');
+                                    const label = context.label || '';
                                     const value = context.raw || 0;
                                     const percentage = percentages[context.dataIndex];
                                     return `${label}: ${value} (${percentage}%)`;
@@ -2095,7 +1650,6 @@
             const container = document.getElementById('barangayListContainer');
             if (!container) return;
 
-            // Calculate total for percentage calculations
             const total = totals.reduce((a, b) => a + b, 0);
 
             let html = '';
@@ -2114,7 +1668,7 @@
                 html += `
                     <div class="barangay-item">
                         <div class="barangay-name">
-                            ${label} <span class="percentage-label">(${barangayPercentage}%)</span>
+                            ${label} <span style="font-weight:700;color:${colors.primary};">(${barangayPercentage}%)</span>
                             <div class="assistance-details">
                                 ${barangayAssistance.map(item =>
                                     `<span class="assistance-type-badge">${item}</span>`
@@ -2129,7 +1683,6 @@
             container.innerHTML = html;
         }
 
-        // Helper functions
         function generateAssistanceTypeColors(count) {
             const colorPalette = [
                 '#1e88e5', '#1565c0', '#42a5f5', '#64b5f6', '#90caf9',
@@ -2137,9 +1690,7 @@
                 '#7e57c2', '#673ab7', '#9575cd', '#b39ddb', '#d1c4e9',
                 '#43a047', '#388e3c', '#66bb6a', '#81c784', '#a5d6a7',
                 '#fb8c00', '#f57c00', '#ffa726', '#ffb74d', '#ffcc80',
-                '#e53935', '#d32f2f', '#ef5350', '#e57373', '#ef9a9a',
-                '#00897b', '#00796b', '#26a69a', '#4db6ac', '#80cbc4',
-                '#039be5', '#0288d1', '#29b6f6', '#4fc3f7', '#81d4fa'
+                '#e53935', '#d32f2f', '#ef5350', '#e57373', '#ef9a9a'
             ];
 
             const generatedColors = [];
@@ -2156,7 +1707,6 @@
             }
         }
 
-        // Date filter functions
         function applyDateFilter() {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
@@ -2180,14 +1730,6 @@
             processDataAndUpdateCharts();
         }
 
-        // ==========================================
-        // NEW VISUALIZATION FUNCTIONS
-        // ==========================================
-
-        // Global chart variables for new visualizations
-        let trendsChart, approvalRateChart, processingTimeChart, statusByTypeChart;
-
-        // Application Trends Over Time - UPDATED WITH VALUE LABELS
         function updateTrendsChart() {
             const ctx = document.getElementById('trendsChart');
             if (!ctx || !filteredData) return;
@@ -2198,17 +1740,10 @@
             const timeframe = document.getElementById('trendsTimeframe').value;
             const trendsData = processTrendsData(filteredData.allApplications, timeframe);
 
-            // Calculate total counts for each assistance type for the labels
             const hospitalTotal = trendsData.hospital.reduce((a, b) => a + b, 0);
             const medicalTotal = trendsData.medical.reduce((a, b) => a + b, 0);
             const funeralTotal = trendsData.funeral.reduce((a, b) => a + b, 0);
 
-            // Create labels with values as requested: "Hospital Assistance (15 Applications)"
-            const hospitalLabel = `Hospital Assistance (${hospitalTotal} Applications)`;
-            const medicalLabel = `Other Assistance (${medicalTotal} Applications)`;
-            const funeralLabel = `Funeral Assistance (${funeralTotal} Applications)`;
-
-            // Update trends stats
             const totalSubmissions = hospitalTotal + medicalTotal + funeralTotal;
             const peakIndex = trendsData.hospital.reduce((maxIndex, current, index, arr) =>
                 current + trendsData.medical[index] + trendsData.funeral[index] >
@@ -2226,34 +1761,28 @@
                     labels: trendsData.labels,
                     datasets: [
                         {
-                            label: hospitalLabel,
+                            label: `Hospital Assistance (${hospitalTotal})`,
                             data: trendsData.hospital,
                             borderColor: colors.hospital,
                             backgroundColor: colors.hospital + '20',
                             tension: 0.4,
-                            fill: true,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
+                            fill: true
                         },
                         {
-                            label: medicalLabel,
+                            label: `Other Assistance (${medicalTotal})`,
                             data: trendsData.medical,
                             borderColor: colors.medical,
                             backgroundColor: colors.medical + '20',
                             tension: 0.4,
-                            fill: true,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
+                            fill: true
                         },
                         {
-                            label: funeralLabel,
+                            label: `Funeral Assistance (${funeralTotal})`,
                             data: trendsData.funeral,
                             borderColor: colors.funeral,
                             backgroundColor: colors.funeral + '20',
                             tension: 0.4,
-                            fill: true,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
+                            fill: true
                         }
                     ]
                 },
@@ -2263,56 +1792,27 @@
                     plugins: {
                         legend: {
                             position: 'top',
-                            labels: {
-                                font: { size: 14 },
-                                usePointStyle: true
-                            }
+                            labels: { font: { size: 14 } }
                         },
                         title: {
                             display: true,
-                            text: `Application Submission Trends (${timeframe === 'daily' ? 'Daily' : timeframe === 'weekly' ? 'Weekly' : 'Monthly'})`,
+                            text: `Application Submission Trends`,
                             font: { size: 18, weight: 'bold' }
                         },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            titleFont: { size: 14 },
-                            bodyFont: { size: 14 },
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.raw || 0;
-                                    // Remove the count from label for tooltip to avoid duplication
-                                    const cleanLabel = label.replace(/ \(\d+ Applications\)/, '');
-                                    return `${cleanLabel}: ${value} applications`;
-                                }
-                            }
+                        datalabels: {
+                            display: false
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                precision: 0,
-                                font: { size: 12 }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Number of Applications',
-                                font: { size: 14, weight: 'bold' }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                font: { size: 12 }
-                            }
+                            ticks: { precision: 0 }
                         }
                     }
                 }
             });
         }
 
-        // Process trends data
         function processTrendsData(applications, timeframe) {
             const now = new Date();
             const dataMap = {
@@ -2322,7 +1822,6 @@
             };
             const labels = [];
 
-            // Generate labels based on timeframe
             if (timeframe === 'daily') {
                 for (let i = 29; i >= 0; i--) {
                     const date = new Date(now);
@@ -2347,7 +1846,7 @@
                     dataMap.medical[key] = 0;
                     dataMap.funeral[key] = 0;
                 }
-            } else { // monthly
+            } else {
                 for (let i = 11; i >= 0; i--) {
                     const date = new Date(now);
                     date.setMonth(date.getMonth() - i);
@@ -2360,7 +1859,6 @@
                 }
             }
 
-            // Count applications
             applications.forEach(app => {
                 if (!app.createdAt) return;
                 const date = new Date(app.createdAt);
@@ -2372,7 +1870,7 @@
                     const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
                     const weekIndex = Math.floor(diffDays / 7);
                     if (weekIndex <= 11) key = `week-${weekIndex}`;
-                } else { // monthly
+                } else {
                     key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 }
 
@@ -2395,7 +1893,6 @@
             };
         }
 
-        // Approval Rate by Assistance Type
         function updateApprovalRateChart() {
             const ctx = document.getElementById('approvalRateChart');
             if (!ctx || !filteredData) return;
@@ -2405,7 +1902,6 @@
 
             const approvalData = calculateApprovalRates(filteredData.allApplications);
 
-            // Update approval rate stats
             const totalApproved = approvalData.approved.reduce((a, b) => a + b, 0);
             const totalDisapproved = approvalData.disapproved.reduce((a, b) => a + b, 0);
             const totalPending = approvalData.pending.reduce((a, b) => a + b, 0);
@@ -2425,7 +1921,7 @@
             approvalRateChart = new Chart(context, {
                 type: 'bar',
                 data: {
-                    labels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
+                    labels: ['Hospital', 'Other', 'Funeral'],
                     datasets: [
                         {
                             label: 'Approved',
@@ -2457,40 +1953,34 @@
                             text: 'Approval Rate by Type',
                             font: { size: 18, weight: 'bold' }
                         },
-                        tooltip: {
-                            callbacks: {
-                                afterLabel: function(context) {
-                                    const total = approvalData.totals[context.dataIndex];
-                                    const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
-                                    return `${percentage}% of total`;
-                                }
-                            }
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: (value, ctx) => {
+                                if (value === 0) return '';
+                                const total = approvalData.totals[ctx.dataIndex];
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return `${percentage}%`;
+                            },
+                            anchor: 'center',
+                            align: 'center'
                         }
                     },
                     scales: {
-                        x: {
-                            stacked: true,
-                            ticks: { font: { size: 12 } }
-                        },
+                        x: { stacked: true },
                         y: {
                             stacked: true,
                             beginAtZero: true,
-                            ticks: {
-                                precision: 0,
-                                font: { size: 12 }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Number of Applications',
-                                font: { size: 14, weight: 'bold' }
-                            }
+                            ticks: { precision: 0 }
                         }
                     }
                 }
             });
         }
 
-        // Calculate approval rates
         function calculateApprovalRates(applications) {
             const types = {
                 hospital: { approved: 0, disapproved: 0, pending: 0, total: 0 },
@@ -2507,18 +1997,15 @@
 
                 types[typeKey].total++;
 
-                // Check status3 first for claims (don't count)
                 if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
-                    return; // Skip claims applications
+                    return;
                 }
 
-                // Check status2 for approve/disapprove, otherwise use original status
                 if (app.status2 && app.status2.trim() !== '' && app.status2 === 'approve') {
                     types[typeKey].approved++;
                 } else if (app.status2 && app.status2.trim() !== '' && app.status2 === 'disapprove') {
                     types[typeKey].disapproved++;
                 } else {
-                    // Use original status or default to pending
                     types[typeKey].pending++;
                 }
             });
@@ -2531,7 +2018,6 @@
             };
         }
 
-        // Processing Time Analysis
         function updateProcessingTimeChart() {
             const ctx = document.getElementById('processingTimeChart');
             if (!ctx || !filteredData) return;
@@ -2541,7 +2027,6 @@
 
             const processingData = calculateProcessingTimes(filteredData.allApplications);
 
-            // Update processing time stats
             const fastestIndex = processingData.averageDays.reduce((minIndex, current, index, arr) =>
                 current < arr[minIndex] ? index : minIndex, 0);
             const slowestIndex = processingData.averageDays.reduce((maxIndex, current, index, arr) =>
@@ -2556,7 +2041,7 @@
             processingTimeChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
+                    labels: ['Hospital', 'Other', 'Funeral'],
                     datasets: [{
                         label: 'Average Days',
                         data: processingData.averageDays,
@@ -2567,41 +2052,39 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         title: {
                             display: true,
-                            text: 'Average Processing Time (Days)',
+                            text: 'Average Processing Time',
                             font: { size: 18, weight: 'bold' }
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.raw.toFixed(1)} days average`;
-                                }
-                            }
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            formatter: (value) => {
+                                return value.toFixed(1) + ' days';
+                            },
+                            anchor: 'center',
+                            align: 'center'
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { font: { size: 12 } },
                             title: {
                                 display: true,
                                 text: 'Days',
                                 font: { size: 14, weight: 'bold' }
                             }
-                        },
-                        x: {
-                            ticks: { font: { size: 12 } }
                         }
                     }
                 }
             });
         }
 
-        // Calculate processing times
         function calculateProcessingTimes(applications) {
             const types = {
                 hospital: { total: 0, count: 0 },
@@ -2618,7 +2101,6 @@
                 else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
                 else return;
 
-                // Calculate days since submission
                 const daysSinceSubmission = (now - new Date(app.createdAt)) / (1000 * 60 * 60 * 24);
                 types[typeKey].total += daysSinceSubmission;
                 types[typeKey].count++;
@@ -2633,7 +2115,6 @@
             };
         }
 
-        // Status Distribution by Assistance Type
         function updateStatusByTypeChart(chartType) {
             const ctx = document.getElementById('statusByTypeChart');
             if (!ctx || !filteredData) return;
@@ -2642,9 +2123,7 @@
             if (statusByTypeChart) statusByTypeChart.destroy();
 
             const statusData = calculateStatusByType(filteredData.allApplications);
-            const isPercentage = chartType === 'percentage';
 
-            // Update status by type stats
             const typeNames = ['Hospital', 'Other', 'Funeral'];
             const totalApps = statusData.totals.map((total, index) => ({ type: typeNames[index], total }));
             const approvalRates = statusData.approved.map((approved, index) => ({
@@ -2664,7 +2143,7 @@
             statusByTypeChart = new Chart(context, {
                 type: 'bar',
                 data: {
-                    labels: ['Hospital Assistance', 'Other Assistance', 'Funeral Assistance'],
+                    labels: ['Hospital', 'Other', 'Funeral'],
                     datasets: [
                         {
                             label: 'Approved',
@@ -2703,47 +2182,37 @@
                         },
                         title: {
                             display: true,
-                            text: 'Status Distribution by Assistance Type',
+                            text: 'Status Distribution by Type',
                             font: { size: 18, weight: 'bold' }
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const total = statusData.totals[context.dataIndex];
-                                    const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
-                                    return `${context.dataset.label}: ${context.raw} (${percentage}%)`;
-                                }
-                            }
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            },
+                            formatter: (value, ctx) => {
+                                if (value === 0) return '';
+                                const total = statusData.totals[ctx.dataIndex];
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return `${percentage}%`;
+                            },
+                            anchor: 'center',
+                            align: 'center'
                         }
                     },
                     scales: {
-                        x: {
-                            stacked: chartType !== 'groupedBar',
-                            ticks: { font: { size: 12 } }
-                        },
+                        x: { stacked: chartType !== 'groupedBar' },
                         y: {
                             stacked: chartType !== 'groupedBar',
                             beginAtZero: true,
-                            max: isPercentage ? 100 : undefined,
-                            ticks: {
-                                precision: 0,
-                                font: { size: 12 },
-                                callback: function(value) {
-                                    return isPercentage ? value + '%' : value;
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: isPercentage ? 'Percentage' : 'Number of Applications',
-                                font: { size: 14, weight: 'bold' }
-                            }
+                            ticks: { precision: 0 }
                         }
                     }
                 }
             });
         }
 
-        // Calculate status by type
         function calculateStatusByType(applications) {
             const types = {
                 hospital: { approved: 0, disapproved: 0, pending: 0, processing: 0, claims: 0, total: 0 },
@@ -2760,19 +2229,16 @@
 
                 types[typeKey].total++;
 
-                // Check status3 first for claims
                 if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
                     types[typeKey].claims++;
                     return;
                 }
 
-                // Check status2 for approve/disapprove, otherwise use original status
                 if (app.status2 && app.status2.trim() !== '' && app.status2 === 'approve') {
                     types[typeKey].approved++;
                 } else if (app.status2 && app.status2.trim() !== '' && app.status2 === 'disapprove') {
                     types[typeKey].disapproved++;
                 } else {
-                    // Use original status for pending/processing
                     if (app.status === 'pending') {
                         types[typeKey].pending++;
                     } else if (app.status === 'processing') {
@@ -2791,14 +2257,12 @@
             };
         }
 
-        // Claim Rate Metrics
         function updateClaimRateMetrics() {
             if (!filteredData) return;
 
             const claimData = calculateClaimRates(filteredData.allApplications);
             const container = document.getElementById('claimRateMetrics');
 
-            // Update claim rate stats
             document.getElementById('totalApproved').textContent = claimData.overall.approved;
             document.getElementById('totalClaimed').textContent = claimData.overall.claims;
             document.getElementById('overallClaimRate').textContent = claimData.overall.rate + '%';
@@ -2847,7 +2311,6 @@
             `;
         }
 
-        // Calculate claim rates
         function calculateClaimRates(applications) {
             const data = {
                 overall: { approved: 0, claims: 0, rate: 0 },
@@ -2863,12 +2326,10 @@
                 else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
                 else return;
 
-                // Count approved applications
                 if (app.status2 && app.status2.trim() !== '' && app.status2 === 'approve') {
                     data[typeKey].approved++;
                     data.overall.approved++;
 
-                    // Count claims among approved
                     if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
                         data[typeKey].claims++;
                         data.overall.claims++;
@@ -2876,7 +2337,6 @@
                 }
             });
 
-            // Calculate rates
             data.overall.rate = data.overall.approved > 0 ? Math.round((data.overall.claims / data.overall.approved) * 100) : 0;
             data.hospital.rate = data.hospital.approved > 0 ? Math.round((data.hospital.claims / data.hospital.approved) * 100) : 0;
             data.medical.rate = data.medical.approved > 0 ? Math.round((data.medical.claims / data.medical.approved) * 100) : 0;
