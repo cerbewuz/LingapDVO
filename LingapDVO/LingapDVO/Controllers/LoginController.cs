@@ -1917,7 +1917,14 @@ namespace LingapDVO.Controllers
 
             // Back ID is only required for National ID (phil-id), not for Driver's License or UMID
             if (VerifyaccountDto.IDtype == "phil-id" && VerifyaccountDto.ValidBackID == null)
+            {
                 ModelState.AddModelError("ValidBackID", "Back ID image is required for National ID");
+            }
+            else if (VerifyaccountDto.IDtype != "phil-id")
+            {
+                // Remove any ValidBackID errors if ID type is not National ID
+                ModelState.Remove("ValidBackID");
+            }
 
             if (!ModelState.IsValid)
             {
