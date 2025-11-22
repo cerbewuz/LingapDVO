@@ -2733,7 +2733,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <i class="fas fa-ban text-2xl text-gray-400"></i>
                                 </div>
                                 <div class="font-semibold text-gray-500 mb-2">Back ID Not Required</div>
-                                <div class="text-gray-400 text-sm mb-4">No data to extract from back of ${getIdTypeName(detectedIdType)}</div>
+                                <div class="text-gray-400 text-sm mb-4">This is not needed for ${getIdTypeName(detectedIdType)}</div>
                                 <div class="text-xs text-gray-400">Only front ID is needed</div>
                             `;
                         }
