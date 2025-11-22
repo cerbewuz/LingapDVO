@@ -1087,58 +1087,58 @@
             // Add Hospital Assistance following Admin.cshtml pattern
             @foreach (var f in Model.HospitalAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Hospital Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()", // ADDED status3
-                        brgy: "@f.Brgy",
-                        typeassistance: "@f.Typeassistance",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                            <text>
+                            allApplications.push({
+                                type: "Hospital Assistance",
+                                name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                status: "@f.Status?.ToLower()",
+                                status2: "@f.Status2?.ToLower()",
+                                status3: "@f.Status3?.ToLower()", // ADDED status3
+                                brgy: "@f.Brgy",
+                                typeassistance: "@f.Typeassistance",
+                                formId: @f.Id,
+                                controller: "Dashboard"
+                            });
+                            </text>
             }
 
             // Add Other Assistance following Admin.cshtml pattern
             @foreach (var f in Model.OtherAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Other Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "@f.Typeassistance",
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                            <text>
+                            allApplications.push({
+                                type: "Other Assistance",
+                                name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                status: "@f.Status?.ToLower()",
+                                status2: "@f.Status2?.ToLower()",
+                                status3: "@f.Status3?.ToLower()",
+                                brgy: "@f.Brgy",
+                                typeassistance: "@f.Typeassistance",
+                                formId: @f.Id,
+                                controller: "Dashboard"
+                            });
+                            </text>
             }
 
             // Add Funeral Forms following Admin.cshtml pattern
             @foreach (var f in Model.FuneralAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Funeral Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "Funeral Assistance", // Default for funeral forms
-                        formId: @f.Id,
-                        controller: "Dashboard"
-                    });
-                    </text>
+                            <text>
+                            allApplications.push({
+                                type: "Funeral Assistance",
+                                name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                                status: "@f.Status?.ToLower()",
+                                status2: "@f.Status2?.ToLower()",
+                                status3: "@f.Status3?.ToLower()",
+                                brgy: "@f.Brgy",
+                                typeassistance: "Funeral Assistance", // Default for funeral forms
+                                formId: @f.Id,
+                                controller: "Dashboard"
+                            });
+                            </text>
             }
 
             originalData = {
@@ -1908,6 +1908,9 @@
                 assistanceTypes.reduce((sum, type) => sum + (assistanceData[type][index] || 0), 0)
             );
 
+            // Calculate overall total for percentage calculations
+            const overallTotal = barangayTotals.reduce((a, b) => a + b, 0);
+
             const datasets = assistanceTypes.map((type, index) => ({
                 label: type,
                 data: assistanceData[type],
@@ -1989,6 +1992,44 @@
                     }
                 }
             });
+
+            // Add percentage labels for top barangays in the chart
+            if (chartType === 'bar') {
+                // Add percentage labels to the top of each bar
+                const chartInstance = barangayChart;
+                const originalDraw = chartInstance.draw;
+
+                chartInstance.draw = function() {
+                    originalDraw.apply(this, arguments);
+
+                    const ctx = this.ctx;
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = '#2c3e50';
+
+                    this.data.datasets.forEach((dataset, datasetIndex) => {
+                        const meta = this.getDatasetMeta(datasetIndex);
+
+                        meta.data.forEach((bar, index) => {
+                            const value = dataset.data[index];
+                            const total = barangayTotals[index];
+                            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+
+                            if (value > 0) {
+                                ctx.fillText(
+                                    `${percentage}%`,
+                                    bar.x,
+                                    bar.y - 5
+                                );
+                            }
+                        });
+                    });
+
+                    ctx.restore();
+                };
+            }
         }
 
         function createPieChart(ctx, labels, totals, chartType) {
@@ -2054,20 +2095,26 @@
             const container = document.getElementById('barangayListContainer');
             if (!container) return;
 
+            // Calculate total for percentage calculations
+            const total = totals.reduce((a, b) => a + b, 0);
+
             let html = '';
             labels.forEach((label, index) => {
                 const barangayAssistance = [];
                 Object.keys(assistanceData).forEach(type => {
                     const count = assistanceData[type][index];
                     if (count > 0) {
-                        barangayAssistance.push(`${type}: ${count}`);
+                        const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+                        barangayAssistance.push(`${type}: ${count} (${percentage}%)`);
                     }
                 });
+
+                const barangayPercentage = total > 0 ? Math.round((totals[index] / total) * 100) : 0;
 
                 html += `
                     <div class="barangay-item">
                         <div class="barangay-name">
-                            ${label}
+                            ${label} <span class="percentage-label">(${barangayPercentage}%)</span>
                             <div class="assistance-details">
                                 ${barangayAssistance.map(item =>
                                     `<span class="assistance-type-badge">${item}</span>`
