@@ -1748,7 +1748,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Optional: Light compression if image is too large (>1MB for free tier)
             const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
             // Keep original dimensions or scale down if too large
             let width = img.width;
