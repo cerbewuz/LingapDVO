@@ -692,12 +692,12 @@ public class NotificationsController : Controller
             );
         }
 
-        // Priority 4: Waiting for review (no ProcessAt yet) - matches "Waiting for Review" on tracking page
+        // Priority 4: In Queue (no ProcessAt yet) - matches "In Queue" on tracking page
         if (!processAt.HasValue || processAt.Value.Year <= 1 || string.IsNullOrWhiteSpace(processBy))
         {
             return (
-                "Waiting for Review",
-                $"Your {formType} application is waiting to be reviewed. Submitted on {createdAt:MMM dd, yyyy}. We will review it within 1-2 hours.",
+                "In Queue",
+                $"Your {formType} application is now in queue. Submitted on {createdAt:MMM dd, yyyy}. You will receive an update within an hour.",
                 "application_submitted"
             );
         }
@@ -713,6 +713,7 @@ public class NotificationsController : Controller
     /// <summary>
     /// Get delay notification details based on priority level
     /// Messages match the Application Tracking timeline content for delays
+    /// Standard Delay (medium): 1-2 hours | Critical Delay (high): 2+ hours
     /// </summary>
     private (string title, string message) GetDelayNotificationDetails(string formType, string priority, DateTime createdAt)
     {
@@ -721,16 +722,16 @@ public class NotificationsController : Controller
         return priority switch
         {
             "high" => (
-                $"{formType} - Experiencing Delay",
-                $"Your application has been waiting for more than 2 hours. We apologize for the delay. We will review it within 1-2 hours and are working to process it as soon as possible."
+                $"{formType} - Critical Delay",
+                $"Your application has been waiting for more than 2 hours. We apologize for the delay and are working to process it as soon as possible."
             ),
             "medium" => (
-                $"{formType} - Processing Delay",
-                $"Your application has been waiting for over 1 hour. We are reviewing your application and will make a decision within 1-2 hours."
+                $"{formType} - Standard Delay",
+                $"Your application has been waiting for 1-2 hours. We are reviewing your application and will provide an update soon."
             ),
             _ => (
                 $"{formType} - Update",
-                $"Your application is waiting to be reviewed. We will review it within 1-2 hours."
+                $"Your application is in queue. You will receive an update within an hour."
             )
         };
     }
@@ -738,7 +739,7 @@ public class NotificationsController : Controller
     /// <summary>
     /// Calculate priority level for applications in pending or processing state
     /// Priority is based on waiting time since submission
-    /// High Priority: 2+ hours | Medium Priority: 1-2 hours | Normal: < 1 hour
+    /// Critical Delay (High Priority): 2+ hours | Standard Delay (Medium Priority): 1-2 hours | Normal: < 1 hour
     /// </summary>
     private string CalculateApplicationPriority(string status, string status2, DateTime createdAt)
     {
