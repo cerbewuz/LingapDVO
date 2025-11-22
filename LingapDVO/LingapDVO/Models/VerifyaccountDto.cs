@@ -19,7 +19,7 @@ namespace LingapDVO.Models
         [Required]
         public IFormFile? ValidFrontID { get; set; }
 
-        [Required]
+        // Back ID is only required for National ID (phil-id), not for Driver's License or UMID
         public IFormFile? ValidBackID { get; set; }
 
 

@@ -1914,8 +1914,10 @@ namespace LingapDVO.Controllers
             // File validation
             if (VerifyaccountDto.ValidFrontID == null)
                 ModelState.AddModelError("ValidFrontID", "Front ID image is required");
-            if (VerifyaccountDto.ValidBackID == null)
-                ModelState.AddModelError("ValidBackID", "Back ID image is required");
+
+            // Back ID is only required for National ID (phil-id), not for Driver's License or UMID
+            if (VerifyaccountDto.IDtype == "phil-id" && VerifyaccountDto.ValidBackID == null)
+                ModelState.AddModelError("ValidBackID", "Back ID image is required for National ID");
 
             if (!ModelState.IsValid)
             {
