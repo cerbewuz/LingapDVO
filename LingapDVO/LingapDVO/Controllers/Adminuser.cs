@@ -3362,19 +3362,52 @@ namespace LingapDVO.Controllers
                 // Security: Prevent directory traversal
                 string safeFileName = Path.GetFileName(fileName);
 
-                // Define the directory based on file type
-                string folderPath = fileType.ToLower() switch
+                // Define possible directories to search based on file type
+                List<string> possibleFolders = new List<string>();
+
+                // NEW: Search in form-specific folders first
+                if (fileType.ToLower() == "doctorprescription" || fileType.ToLower() == "deathcertificate")
                 {
-                    "doctorprescription" => Path.Combine(environment.WebRootPath, "DoctorPrescriptionimage"),
-                    "deathcertificate" => Path.Combine(environment.WebRootPath, "Funeralimg"),
-                    "medicalcertificate" => Path.Combine(environment.WebRootPath, "MedCertificateimage"),
-                    _ => Path.Combine(environment.WebRootPath, "Validimg")
-                };
+                    // These file types could be in Hospital, Funeral, or Other assistance
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage"));
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage"));
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage"));
+                }
+                else if (fileType.ToLower() == "medicalcertificate")
+                {
+                    // Medical certificates are only in Other assistance
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage"));
+                }
+                else
+                {
+                    // Default for valid ID images
+                    possibleFolders.Add(Path.Combine(environment.WebRootPath, "Validimg"));
+                }
 
-                Console.WriteLine($"?? Folder path: {folderPath}");
+                Console.WriteLine($"?? Searching in {possibleFolders.Count} possible folders");
 
-                string encryptedFilePath = Path.Combine(folderPath, safeFileName);
-                Console.WriteLine($"?? Full file path: {encryptedFilePath}");
+                // Search for the file in possible folders
+                string encryptedFilePath = null;
+                string folderPath = null;
+
+                foreach (var folder in possibleFolders)
+                {
+                    string testPath = Path.Combine(folder, safeFileName);
+                    if (System.IO.File.Exists(testPath))
+                    {
+                        encryptedFilePath = testPath;
+                        folderPath = folder;
+                        Console.WriteLine($"? File found in: {folderPath}");
+                        break;
+                    }
+                }
+
+                // Check if file exists
+                if (string.IsNullOrEmpty(encryptedFilePath) || !System.IO.File.Exists(encryptedFilePath))
+                {
+                    Console.WriteLine($"? File does not exist in any expected folder: {safeFileName}");
+                    return NotFound($"File not found: {fileName}");
+                }
 
                 // Additional security: Verify the resolved path is within the expected directory
                 string resolvedPath = Path.GetFullPath(encryptedFilePath);
@@ -3383,13 +3416,6 @@ namespace LingapDVO.Controllers
                 {
                     Console.WriteLine("? Security: Path traversal attempt detected");
                     return BadRequest("Invalid file path");
-                }
-
-                // Check if file exists
-                if (!System.IO.File.Exists(encryptedFilePath))
-                {
-                    Console.WriteLine($"? File does not exist: {encryptedFilePath}");
-                    return NotFound($"File not found: {fileName}");
                 }
 
                 Console.WriteLine($"? File exists. Size: {new FileInfo(encryptedFilePath).Length} bytes");
