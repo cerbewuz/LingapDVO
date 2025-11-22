@@ -845,6 +845,13 @@
         let totalPages = 1;
         let currentScale = 1.2;
 
+        // Requestor's Name Variables
+        const requestorFirstname = '@ViewData["RFirstname"]';
+        const requestorMiddlename = '@ViewData["RMiddlename"]';
+        const requestorLastname = '@ViewData["RLastname"]';
+        const requestorSuffix = '@ViewData["RSuffix"]';
+        const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
+
         // Image Zoom Functionality
         function zoomImage(src) {
             const modal = document.getElementById("zoomModal");
@@ -1067,7 +1074,7 @@
 
             // Set the status to "Claimed"
             document.getElementById('statusInput').value = 'Claimed';
-            document.getElementById('commentsInput').value = 'Application marked as claimed by user';
+            document.getElementById('commentsInput').value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
             document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
             document.getElementById('processByInput').value = document.getElementById('processedBy').value;
 
