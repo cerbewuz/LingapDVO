@@ -205,7 +205,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-hospitalbill-edit",
-    pattern: "HospitalAssistanceedit/{id?}",
+    pattern: "HospitalAssistanceEdit/{id?}",
     defaults: new { controller = "Dashboard", action = "HospitalAssistanceedit" });
 
 app.MapControllerRoute(
@@ -215,8 +215,8 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-hospitalbill-view",
-    pattern: "HospitalAssistanceview/{id?}",
-    defaults: new { controller = "Dashboard", action = "HospitalAssistanceview" });
+    pattern: "HospitalAssistanceView/{id?}",
+    defaults: new { controller = "Dashboard", action = "HospitalAssistanceView" });
 
 app.MapControllerRoute(
     name: "route-medicallab",
@@ -225,7 +225,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-medicallab-edit",
-    pattern: "OtherAssistanceedit/{id?}",
+    pattern: "OtherAssistanceEdit/{id?}",
     defaults: new { controller = "Dashboard", action = "OtherAssistanceedit" });
 
 app.MapControllerRoute(
@@ -235,7 +235,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-medicallab-view",
-    pattern: "OtherAssistanceview/{id?}",
+    pattern: "OtherAssistanceView/{id?}",
     defaults: new { controller = "Dashboard", action = "OtherAssistanceview" });
 
 app.MapControllerRoute(
@@ -245,7 +245,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-FuneralAssistance-edit",
-    pattern: "FuneralAssistanceedit/{id?}",
+    pattern: "FuneralAssistanceEdit/{id?}",
     defaults: new { controller = "Dashboard", action = "FuneralAssistanceedit" });
 
 app.MapControllerRoute(
@@ -255,7 +255,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-FuneralAssistance-view",
-    pattern: "FuneralAssistanceview/{id?}",
+    pattern: "FuneralAssistanceView/{id?}",
     defaults: new { controller = "Dashboard", action = "FuneralAssistanceview" });
 
 app.MapControllerRoute(
