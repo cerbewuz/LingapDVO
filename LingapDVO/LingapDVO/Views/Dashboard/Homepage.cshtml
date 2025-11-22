@@ -1051,13 +1051,14 @@
 
         /* Permanent notification styling (welcome notifications) */
         /* Welcome notifications for both verified and non-verified users are fully scrollable */
+        /* Background colors are controlled by read/unread state, not permanent status */
         .notification-item[data-permanent="true"] {
-            background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            /* Removed hardcoded background - will inherit from .notification-item or .notification-item.unread */
             /* Removed position: sticky and bottom: 0 to ensure full scrollability */
         }
 
             .notification-item[data-permanent="true"]:hover {
-                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+                /* Removed hardcoded hover background - will inherit from .notification-item:hover or .notification-item.unread:hover */
             }
 
         /* Priority notification type icons */
