@@ -1693,48 +1693,57 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function showImageQualityErrorModal(issues) {
         let title = 'Image Quality Issue';
-        let message = 'The ID image you uploaded has quality issues that prevent accurate reading.\n\n';
-        let tips = [];
+        let message = '❌ Image Quality Issues Detected\n\n';
+        let issuesList = [];
+        let tipsList = [];
+
+        message += 'PROBLEMS FOUND:\n';
 
         if (issues.isTooDark) {
-            message += '❌ Image is too dark\n';
-            tips.push('Take the photo in a well-lit area');
-            tips.push('Avoid shadows on the ID');
-            tips.push('Use natural light or good indoor lighting');
+            issuesList.push('• Image is too dark');
+            tipsList.push('Take the photo in a well-lit area');
+            tipsList.push('Avoid shadows on the ID');
+            tipsList.push('Use natural light or good indoor lighting');
         }
 
         if (issues.isTooBright) {
-            message += '❌ Image is too bright/overexposed\n';
-            tips.push('Avoid direct flash on the ID');
-            tips.push('Reduce lighting or move away from direct light');
-            tips.push('Avoid glare and reflections');
+            issuesList.push('• Image is too bright/overexposed');
+            tipsList.push('Avoid direct flash on the ID');
+            tipsList.push('Reduce lighting or move away from direct light');
+            tipsList.push('Avoid glare and reflections');
         }
 
         if (issues.isBlurry) {
-            message += '❌ Image is too blurry\n';
-            tips.push('Hold your phone steady when taking the photo');
-            tips.push('Make sure the ID is in focus');
-            tips.push('Clean your camera lens');
-            tips.push('Get closer to the ID for a clearer shot');
+            issuesList.push('• Image is too blurry');
+            tipsList.push('Hold your phone steady when taking the photo');
+            tipsList.push('Make sure the ID is in focus');
+            tipsList.push('Clean your camera lens');
+            tipsList.push('Get closer to the ID for a clearer shot');
         }
 
         if (issues.isCriticalLowContrast) {
-            message += '❌ Image has very low contrast (text is hard to read)\n';
-            tips.push('Ensure good lighting conditions');
-            tips.push('Avoid photographing the ID on similar colored backgrounds');
-            tips.push('Make sure the ID surface is clean');
+            issuesList.push('• Image has very low contrast (text is hard to read)');
+            tipsList.push('Ensure good lighting conditions');
+            tipsList.push('Avoid photographing the ID on similar colored backgrounds');
+            tipsList.push('Make sure the ID surface is clean');
         }
 
-        message += '\n📸 Tips for better ID photos:\n';
-        tips.forEach(tip => {
-            message += `  • ${tip}\n`;
+        issuesList.forEach(issue => {
+            message += `${issue}\n`;
         });
 
-        message += '\n💡 For best results:\n';
-        message += '  • Place ID on a dark, flat surface\n';
-        message += '  • Use good lighting (natural light works best)\n';
-        message += '  • Hold camera parallel to the ID\n';
-        message += '  • Ensure all text is clearly visible\n';
+        message += '\nWHAT TO DO:\n';
+        // Remove duplicates from tips
+        const uniqueTips = [...new Set(tipsList)];
+        uniqueTips.forEach(tip => {
+            message += `• ${tip}\n`;
+        });
+
+        message += '\n💡 BEST PRACTICES:\n';
+        message += '• Place ID on a dark, flat surface\n';
+        message += '• Use good lighting (natural light works best)\n';
+        message += '• Hold camera parallel to the ID\n';
+        message += '• Ensure all text is clearly visible';
 
         showOCRErrorModal(message);
     }
@@ -1845,11 +1854,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Show user-friendly error modal
             showOCRErrorModal(
-                'We could not process your image.\n\n' +
-                'Please try:\n\n' +
-                '• Taking a new photo of your ID\n' +
-                '• Making sure the photo is clear and well-lit\n' +
-                '• Using a different device or camera\n\n' +
+                '❌ Cannot process your image\n\n' +
+                'POSSIBLE ISSUES:\n' +
+                '• The image file may be corrupted\n' +
+                '• The file format is not supported\n' +
+                '• The image is too large or too small\n' +
+                '• There was a network connection issue\n\n' +
+                'WHAT TO DO:\n' +
+                '• Take a new photo of your ID\n' +
+                '• Make sure the photo is clear and well-lit\n' +
+                '• Try using a different device or camera\n' +
+                '• Check your internet connection\n\n' +
                 'If the problem continues, please contact support.'
             );
 
@@ -2687,6 +2702,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Log all extracted OCR text to console for debugging
 
+            // Check if OCR extracted minimal or no text (image quality issue)
+            if (!cleanedText || cleanedText.trim().length < 10) {
+                let errorMessage = '❌ Unable to read text from your ID image\n\n';
+                errorMessage += 'POSSIBLE ISSUES:\n';
+                errorMessage += '• The image is too blurry or out of focus\n';
+                errorMessage += '• Poor lighting (too dark or too bright)\n';
+                errorMessage += '• Glare or shadows covering the text\n';
+                errorMessage += '• Image quality is too low\n\n';
+                errorMessage += 'WHAT TO DO:\n';
+                errorMessage += '• Take a new photo with better lighting\n';
+                errorMessage += '• Hold your phone steady to avoid blur\n';
+                errorMessage += '• Make sure all text on the ID is clearly visible\n';
+                errorMessage += '• Avoid shadows and reflections\n';
+                errorMessage += '• Use natural daylight if possible';
+
+                showOCRErrorModal(errorMessage);
+                return;
+            }
+
             // === STEP 1: ID TYPE DETECTION ===
             if (status) {
                 status.innerHTML = '<i class="fas fa-id-card fa-pulse mr-2"></i>Detecting ID type...';
@@ -2777,20 +2811,31 @@ document.addEventListener('DOMContentLoaded', function () {
             // Final check: If still no valid ID type, show error with detailed guidance
             if (!idTypeToProcess || !ALLOWED_ID_TYPES.includes(idTypeToProcess)) {
 
-                let errorMessage = 'Unable to detect ID type from the uploaded image.\n\n';
-                errorMessage += 'Please ensure:\n';
-                errorMessage += '1. The image is clear and well-lit\n';
-                errorMessage += '2. All text on the ID is readable\n';
-                errorMessage += '3. The entire ID is visible in the image\n';
-                errorMessage += '4. You are using one of these ACCEPTED IDs ONLY:\n';
-                errorMessage += '   • Philippine National ID (PhilSys)\n';
-                errorMessage += '   • Driver\'s License (LTO)\n';
-                errorMessage += '   • UMID (Unified Multi-Purpose ID)\n';
-                errorMessage += '   ❌ NOT ACCEPTED: PhilHealth, Senior Citizen, PWD, Postal ID, etc.\n\n';
-                errorMessage += 'Tips:\n';
-                errorMessage += '• Make sure the ID text is not blurry\n';
-                errorMessage += '• Avoid shadows and glare\n';
-                errorMessage += '• Try taking a new photo with better lighting';
+                let errorMessage = '❌ Cannot identify your ID type\n\n';
+                errorMessage += 'POSSIBLE REASONS:\n';
+                errorMessage += '• You may be using an ID that is NOT accepted\n';
+                errorMessage += '• The ID text is not clear enough to identify\n';
+                errorMessage += '• Important ID information is covered or cut off\n\n';
+                errorMessage += '✅ ACCEPTED IDs ONLY:\n';
+                errorMessage += '• Philippine National ID (PhilSys)\n';
+                errorMessage += '• Driver\'s License (LTO)\n';
+                errorMessage += '• UMID (Unified Multi-Purpose ID)\n\n';
+                errorMessage += '❌ NOT ACCEPTED:\n';
+                errorMessage += '• PhilHealth ID\n';
+                errorMessage += '• Senior Citizen ID\n';
+                errorMessage += '• PWD ID\n';
+                errorMessage += '• Postal ID\n';
+                errorMessage += '• SSS ID\n';
+                errorMessage += '• Voter\'s ID\n';
+                errorMessage += '• Barangay ID\n';
+                errorMessage += '• TIN ID\n';
+                errorMessage += '• PRC ID\n\n';
+                errorMessage += 'WHAT TO DO:\n';
+                errorMessage += '• Make sure you\'re using one of the 3 accepted IDs above\n';
+                errorMessage += '• Ensure the entire ID is visible in the photo\n';
+                errorMessage += '• Check that all text is clear and readable\n';
+                errorMessage += '• Retake the photo with better lighting\n';
+                errorMessage += '• Avoid shadows, glare, and blur';
 
                 showOCRErrorModal(errorMessage);
                 return;
@@ -2839,7 +2884,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     parseUMIDBack(cleanedText);
                 }
             } else {
-                showOCRErrorModal('Unable to detect ID type. Please ensure the image is clear and contains a valid Philippine ID.');
+                showOCRErrorModal(
+                    '❌ Unable to detect ID type\n\n' +
+                    'POSSIBLE ISSUES:\n' +
+                    '• The image may not be clear enough\n' +
+                    '• The ID type cannot be identified\n' +
+                    '• The ID might not be a valid Philippine ID\n\n' +
+                    'WHAT TO DO:\n' +
+                    '• Make sure you\'re using an accepted ID (National ID, Driver\'s License, or UMID)\n' +
+                    '• Retake the photo with better lighting\n' +
+                    '• Ensure all text on the ID is clear and readable\n' +
+                    '• Make sure the entire ID is visible'
+                );
             }
 
             // Note: Final progress update to 100% is handled by updateFormFieldsAdvanced()
@@ -2871,13 +2927,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 status.innerHTML = '<i class="fas fa-image mr-2"></i>Wrong format';
             } else {
                 status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Cannot read ID';
-                errorMessage = 'We could not read your ID information.\n\n' +
-                    'Please make sure:\n\n' +
-                    '✓ The image is clear and well-lit\n' +
-                    '✓ All text on the ID is readable\n' +
-                    '✓ The entire ID is visible in the photo\n' +
-                    '✓ The photo is not blurry\n\n' +
-                    'Try taking a new photo with better lighting.';
+                errorMessage = '❌ Cannot read your ID information\n\n' +
+                    'POSSIBLE ISSUES:\n' +
+                    '• The image is too blurry or out of focus\n' +
+                    '• Text on the ID is not readable\n' +
+                    '• Part of the ID is cut off or hidden\n' +
+                    '• Poor lighting or glare on the ID\n\n' +
+                    'WHAT TO DO:\n' +
+                    '• Retake the photo with better lighting\n' +
+                    '• Make sure all text on the ID is clear\n' +
+                    '• Ensure the entire ID is visible\n' +
+                    '• Hold your phone steady to avoid blur\n' +
+                    '• Avoid shadows and reflections';
             }
 
             showOCRErrorModal(errorMessage);
@@ -4836,17 +4897,18 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Show user-friendly error modal for age validation failures
                             if (validation.reason && validation.reason.includes('years old')) {
                                 const errorMessage =
-                                    `Age Requirement Not Met\n\n` +
-                                    `The birthdate extracted from your ID shows you are ${validation.age || 'under 18'} years old.\n\n` +
-                                    `To use this service, you must be at least 18 years of age.\n\n` +
-                                    `Requirements:\n` +
-                                    `• Minimum age: 18 years\n` +
-                                    `• Current year: ${new Date().getFullYear()}\n` +
-                                    `• Your birth year must be ${new Date().getFullYear() - 18} or earlier\n\n` +
-                                    `If you believe this is an error, please ensure:\n` +
-                                    `1. Your ID is clear and readable\n` +
-                                    `2. The birthdate on your ID is clearly visible\n` +
-                                    `3. You are using a valid government-issued ID`;
+                                    `❌ Age Requirement Not Met\n\n` +
+                                    `WHAT WE FOUND:\n` +
+                                    `• Your birthdate shows you are ${validation.age || 'under 18'} years old\n` +
+                                    `• Minimum required age: 18 years\n\n` +
+                                    `REQUIREMENT:\n` +
+                                    `• You must be born in ${new Date().getFullYear() - 18} or earlier\n` +
+                                    `• Current year: ${new Date().getFullYear()}\n\n` +
+                                    `IF THIS IS AN ERROR:\n` +
+                                    `• Make sure your ID is clear and readable\n` +
+                                    `• Ensure the birthdate on your ID is clearly visible\n` +
+                                    `• Retake the photo with better lighting\n` +
+                                    `• Verify you are using a valid government-issued ID`;
                                 showOCRErrorModal(errorMessage);
                             }
 
@@ -5329,15 +5391,20 @@ document.addEventListener('DOMContentLoaded', function () {
         // If we reach here, label was found but no valid date
 
         const errorMessage =
-            `Birthdate field detected on Driver's License but value could not be read.\n\n` +
-            `The OCR system found a "${detectedLabel}" label on your ID, ` +
-            `but could not find a valid date value nearby.\n\n` +
-            `Please ensure:\n` +
-            `1. The birthdate on the ID is clear and readable\n` +
-            `2. The ID image is well-lit with no glare or shadows\n` +
-            `3. The entire ID is visible in the photo\n` +
-            `4. The image is not blurry or distorted\n\n` +
-            `Try taking a new photo with better clarity.`;
+            `❌ Cannot read birthdate from your Driver's License\n\n` +
+            `WHAT WE FOUND:\n` +
+            `• We detected a "${detectedLabel}" label on your ID\n` +
+            `• But we could not read the birthdate value clearly\n\n` +
+            `POSSIBLE ISSUES:\n` +
+            `• The birthdate text is too blurry or faded\n` +
+            `• Poor lighting or glare covering the birthdate\n` +
+            `• The birthdate area is partially hidden\n\n` +
+            `WHAT TO DO:\n` +
+            `• Take a new photo with better lighting\n` +
+            `• Make sure the birthdate is clearly visible\n` +
+            `• Ensure no shadows or glare on that area\n` +
+            `• Hold the camera steady to avoid blur\n` +
+            `• Make sure the entire ID is in the photo`;
 
         showOCRErrorModal(errorMessage);
         return "";
