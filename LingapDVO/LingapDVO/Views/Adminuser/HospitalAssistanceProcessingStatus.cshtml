@@ -1,7 +1,7 @@
 ﻿@model HospitalAssistanceDto
 @{
-    Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Hospital Assistance View";
+    Layout = "_AdminProcessingLayout";
+    ViewData["Title"] = "Process Hospital Assistance";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
