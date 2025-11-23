@@ -56,11 +56,14 @@
                 pulseElement('medium-priority-count');
             }
 
-            // Refresh priority list after short delay (allow animation to complete)
+            // ⚡ PERFORMANCE: Update DOM instead of full page reload
+            // If renderPriorities function exists, call it to refresh the list
+            // Otherwise, the counter animation is sufficient for real-time feedback
             setTimeout(() => {
                 if (typeof renderPriorities === 'function') {
-                    window.location.reload();
+                    renderPriorities(); // Call function to update DOM dynamically
                 }
+                // Note: Removed window.location.reload() - was wasting bandwidth and creating poor UX
             }, 1500);
         });
 
@@ -80,8 +83,13 @@
             console.log('[Priority System] Reconnected:', connectionId);
             updateConnectionStatus('connected');
 
-            // Refresh data after reconnection
-            setTimeout(() => window.location.reload(), 1000);
+            // ⚡ PERFORMANCE: Update DOM instead of full page reload after reconnection
+            setTimeout(() => {
+                if (typeof renderPriorities === 'function') {
+                    renderPriorities(); // Refresh data dynamically
+                }
+                // Note: Removed window.location.reload() - DOM update is more efficient
+            }, 1000);
         });
 
         connection.onclose((error) => {

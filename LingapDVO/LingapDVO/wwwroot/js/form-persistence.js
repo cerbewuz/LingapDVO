@@ -8,6 +8,19 @@
 (function() {
     'use strict';
 
+    // ⚡ PERFORMANCE: Debounce helper function to limit localStorage writes
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     // Get unique form identifier based on current page
     function getFormKey() {
         const path = window.location.pathname;
@@ -26,6 +39,10 @@
             console.error('Error saving field value:', error);
         }
     }
+
+    // Debounced version of saveFieldValue (500ms delay to reduce I/O)
+    // Previous: Saved on every keystroke, causing excessive localStorage operations
+    const debouncedSaveFieldValue = debounce(saveFieldValue, 500);
 
     // Get saved form field value from localStorage
     function getSavedFieldValue(fieldName) {
@@ -105,14 +122,17 @@
         if (!form) return;
 
         // Save text inputs, textareas, and selects on change
+        // Use debounced save for 'input' events to avoid excessive writes
         form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="date"], textarea, select').forEach(field => {
+            // Debounced save on input (typing) - 500ms delay
             field.addEventListener('input', function() {
                 const fieldName = this.name || this.id;
                 if (fieldName) {
-                    saveFieldValue(fieldName, this.value);
+                    debouncedSaveFieldValue(fieldName, this.value);
                 }
             });
 
+            // Immediate save on change (blur, selection change)
             field.addEventListener('change', function() {
                 const fieldName = this.name || this.id;
                 if (fieldName) {

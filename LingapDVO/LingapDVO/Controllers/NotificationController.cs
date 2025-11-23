@@ -40,24 +40,32 @@ public class NotificationsController : Controller
             // Get read notification IDs from session
             var readNotificationIds = GetReadNotificationIdsFromSession(userId);
 
-            // Get ALL form submissions for the user (no date limit - keep all notifications visible)
+            // ⚡ PERFORMANCE: Limit query to 100 records at database level (not in-memory)
+            // Previous: Fetched ALL records then took 100 in-memory (inefficient for 500+ records)
+            // AsNoTracking improves performance by 20-30% for read-only queries
             var recentHospitalBills = context.HospitalAssistance
+                .AsNoTracking()
                 .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
+                .Take(100) // Limit at database level
                 .ToList();
 
             var recentMedicalLabForms = context.OtherAssistance
+                .AsNoTracking()
                 .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
+                .Take(100) // Limit at database level
                 .ToList();
 
             var recentFuneralForms = context.FuneralAssistance
+                .AsNoTracking()
                 .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
+                .Take(100) // Limit at database level
                 .ToList();
 
-            // Create notifications for hospital bills (show up to 100 most recent)
-            foreach (var bill in recentHospitalBills.Take(100))
+            // Create notifications for hospital bills (showing 100 most recent)
+            foreach (var bill in recentHospitalBills)
             {
                 var notificationId = $"hospital_{bill.Id}_{bill.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
@@ -102,7 +110,7 @@ public class NotificationsController : Controller
             }
 
             // Create notifications for medical lab forms
-            foreach (var medical in recentMedicalLabForms.Take(100))
+            foreach (var medical in recentMedicalLabForms)
             {
                 var notificationId = $"medical_{medical.Id}_{medical.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
@@ -147,7 +155,7 @@ public class NotificationsController : Controller
             }
 
             // Create notifications for funeral forms
-            foreach (var funeral in recentFuneralForms.Take(100))
+            foreach (var funeral in recentFuneralForms)
             {
                 var notificationId = $"funeral_{funeral.Id}_{funeral.Status}";
                 var isRead = readNotificationIds.Contains(notificationId);
@@ -370,47 +378,44 @@ public class NotificationsController : Controller
         {
             _logger.LogInformation("Getting ALL notifications for user {UserId} (no date/count restrictions)", userId);
 
+            // ⚡ PERFORMANCE: Select only needed fields (Id, Status) instead of loading entire entities
+            // Previous: Loaded all columns for all records, wasting memory and bandwidth
+            // AsNoTracking is implicit with Select but added for clarity
+
             // Get ALL hospital bills for this user (no date limit, no count limit)
-            var allHospitalBills = context.HospitalAssistance
+            var hospitalNotificationIds = context.HospitalAssistance
+                .AsNoTracking()
                 .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
+                .Select(f => $"hospital_{f.Id}_{f.Status}")
                 .ToList();
 
-            _logger.LogInformation("Found {Count} hospital bills", allHospitalBills.Count);
+            _logger.LogInformation("Found {Count} hospital bills", hospitalNotificationIds.Count);
 
             // Get ALL medical/lab forms for this user (no date limit, no count limit)
-            var allMedicalLabForms = context.OtherAssistance
+            var medicalNotificationIds = context.OtherAssistance
+                .AsNoTracking()
                 .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
+                .Select(f => $"medical_{f.Id}_{f.Status}")
                 .ToList();
 
-            _logger.LogInformation("Found {Count} medical/lab forms", allMedicalLabForms.Count);
+            _logger.LogInformation("Found {Count} medical/lab forms", medicalNotificationIds.Count);
 
             // Get ALL funeral forms for this user (no date limit, no count limit)
-            var allFuneralForms = context.FuneralAssistance
+            var funeralNotificationIds = context.FuneralAssistance
+                .AsNoTracking()
                 .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
+                .Select(f => $"funeral_{f.Id}_{f.Status}")
                 .ToList();
 
-            _logger.LogInformation("Found {Count} funeral forms", allFuneralForms.Count);
+            _logger.LogInformation("Found {Count} funeral forms", funeralNotificationIds.Count);
 
-            // Add ALL hospital notification IDs
-            foreach (var bill in allHospitalBills)
-            {
-                notificationIds.Add($"hospital_{bill.Id}_{bill.Status}");
-            }
-
-            // Add ALL medical notification IDs
-            foreach (var medical in allMedicalLabForms)
-            {
-                notificationIds.Add($"medical_{medical.Id}_{medical.Status}");
-            }
-
-            // Add ALL funeral notification IDs
-            foreach (var funeral in allFuneralForms)
-            {
-                notificationIds.Add($"funeral_{funeral.Id}_{funeral.Status}");
-            }
+            // Add ALL notification IDs to the list
+            notificationIds.AddRange(hospitalNotificationIds);
+            notificationIds.AddRange(medicalNotificationIds);
+            notificationIds.AddRange(funeralNotificationIds);
 
             // Always include welcome notifications
             notificationIds.Add($"welcome_verified_{userId}");

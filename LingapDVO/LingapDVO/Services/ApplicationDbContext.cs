@@ -59,6 +59,59 @@ namespace LingapDVO.Services
                 .HasIndex(n => new { n.UserId, n.NotificationId })
                 .HasDatabaseName("IX_NotificationReadStatus_UserId_NotificationId")
                 .IsUnique();
+
+            // ═══════════════════════════════════════════════════════════════
+            // 🚀 PERFORMANCE INDEXES - Optimize frequently queried columns
+            // ═══════════════════════════════════════════════════════════════
+
+            // HospitalAssistance indexes
+            modelBuilder.Entity<HospitalAssistance>()
+                .HasIndex(h => new { h.UserId, h.CreatedAt })
+                .HasDatabaseName("IX_HospitalAssistance_UserId_CreatedAt");
+
+            modelBuilder.Entity<HospitalAssistance>()
+                .HasIndex(h => new { h.Status, h.Status2, h.CreatedAt })
+                .HasDatabaseName("IX_HospitalAssistance_Status_Status2_CreatedAt");
+
+            modelBuilder.Entity<HospitalAssistance>()
+                .HasIndex(h => new { h.Status3, h.CreatedAt })
+                .HasDatabaseName("IX_HospitalAssistance_Status3_CreatedAt");
+
+            // OtherAssistance indexes
+            modelBuilder.Entity<OtherAssistance>()
+                .HasIndex(o => new { o.UserId, o.CreatedAt })
+                .HasDatabaseName("IX_OtherAssistance_UserId_CreatedAt");
+
+            modelBuilder.Entity<OtherAssistance>()
+                .HasIndex(o => new { o.Status, o.Status2, o.CreatedAt })
+                .HasDatabaseName("IX_OtherAssistance_Status_Status2_CreatedAt");
+
+            modelBuilder.Entity<OtherAssistance>()
+                .HasIndex(o => new { o.Status3, o.CreatedAt })
+                .HasDatabaseName("IX_OtherAssistance_Status3_CreatedAt");
+
+            // FuneralAssistance indexes
+            modelBuilder.Entity<FuneralAssistance>()
+                .HasIndex(f => new { f.UserId, f.CreatedAt })
+                .HasDatabaseName("IX_FuneralAssistance_UserId_CreatedAt");
+
+            modelBuilder.Entity<FuneralAssistance>()
+                .HasIndex(f => new { f.Status, f.Status2, f.CreatedAt })
+                .HasDatabaseName("IX_FuneralAssistance_Status_Status2_CreatedAt");
+
+            modelBuilder.Entity<FuneralAssistance>()
+                .HasIndex(f => new { f.Status3, f.CreatedAt })
+                .HasDatabaseName("IX_FuneralAssistance_Status3_CreatedAt");
+
+            // FormSubmissionToken index for faster token lookups
+            modelBuilder.Entity<FormSubmissionToken>()
+                .HasIndex(t => new { t.UserId, t.ApplicationType, t.CreatedAt })
+                .HasDatabaseName("IX_FormSubmissionToken_UserId_ApplicationType_CreatedAt");
+
+            // FormSubmissionAuditLog index for audit queries
+            modelBuilder.Entity<FormSubmissionAuditLog>()
+                .HasIndex(a => new { a.UserId, a.CreatedAt })
+                .HasDatabaseName("IX_FormSubmissionAuditLog_UserId_CreatedAt");
         }
     }
 }

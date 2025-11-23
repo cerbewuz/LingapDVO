@@ -5181,8 +5181,13 @@ namespace LingapDVO.Controllers
                 await context.SaveChangesAsync();
 
                 // STEP 4: Generate FormSubmissionTokens and FormSubmissionAuditLogs for each application
+                // Optimize: Batch operations to avoid N+1 query problem
+                var tokensToAdd = new List<FormSubmissionToken>();
+                var auditLogsToAdd = new List<FormSubmissionAuditLog>();
+
                 // Generate tokens and audit logs for Hospital Assistance
-                foreach (var app in context.HospitalAssistance.Where(h => h.CreatedAt >= now.AddDays(-180)))
+                var hospitalApps = context.HospitalAssistance.Where(h => h.CreatedAt >= now.AddDays(-180)).ToList();
+                foreach (var app in hospitalApps)
                 {
                     var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60)); // Token created before submission
                     var token = $"TOKEN-HOSP-{Guid.NewGuid():N}";
@@ -5190,7 +5195,7 @@ namespace LingapDVO.Controllers
                     var userAgent = userAgents[random.Next(userAgents.Length)];
 
                     // Create FormSubmissionToken
-                    var submissionToken = new FormSubmissionToken
+                    tokensToAdd.Add(new FormSubmissionToken
                     {
                         Token = token,
                         FormType = "HospitalBill",
@@ -5203,11 +5208,10 @@ namespace LingapDVO.Controllers
                         UsedAt = app.CreatedAt,
                         SubmittedFormId = app.Id,
                         IsRevoked = false
-                    };
-                    context.Add(submissionToken);
+                    });
 
                     // Create FormSubmissionAuditLog
-                    var auditLog = new FormSubmissionAuditLog
+                    auditLogsToAdd.Add(new FormSubmissionAuditLog
                     {
                         FormType = "HospitalBill",
                         UserId = app.UserId,
@@ -5225,12 +5229,12 @@ namespace LingapDVO.Controllers
                         AttemptedAt = app.CreatedAt,
                         SubmittedFormId = app.Id,
                         IsDuplicate = false
-                    };
-                    context.Add(auditLog);
+                    });
                 }
 
                 // Generate tokens and audit logs for Medical/Laboratory Assistance
-                foreach (var app in context.OtherAssistance.Where(o => o.CreatedAt >= now.AddDays(-180)))
+                var otherApps = context.OtherAssistance.Where(o => o.CreatedAt >= now.AddDays(-180)).ToList();
+                foreach (var app in otherApps)
                 {
                     var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60));
                     var token = $"TOKEN-MED-{Guid.NewGuid():N}";
@@ -5238,7 +5242,7 @@ namespace LingapDVO.Controllers
                     var userAgent = userAgents[random.Next(userAgents.Length)];
 
                     // Create FormSubmissionToken
-                    var submissionToken = new FormSubmissionToken
+                    tokensToAdd.Add(new FormSubmissionToken
                     {
                         Token = token,
                         FormType = "MedicalLab",
@@ -5251,11 +5255,10 @@ namespace LingapDVO.Controllers
                         UsedAt = app.CreatedAt,
                         SubmittedFormId = app.Id,
                         IsRevoked = false
-                    };
-                    context.Add(submissionToken);
+                    });
 
                     // Create FormSubmissionAuditLog
-                    var auditLog = new FormSubmissionAuditLog
+                    auditLogsToAdd.Add(new FormSubmissionAuditLog
                     {
                         FormType = "MedicalLab",
                         UserId = app.UserId,
@@ -5273,12 +5276,12 @@ namespace LingapDVO.Controllers
                         AttemptedAt = app.CreatedAt,
                         SubmittedFormId = app.Id,
                         IsDuplicate = false
-                    };
-                    context.Add(auditLog);
+                    });
                 }
 
                 // Generate tokens and audit logs for Funeral Assistance
-                foreach (var app in context.FuneralAssistance.Where(f => f.CreatedAt >= now.AddDays(-180)))
+                var funeralApps = context.FuneralAssistance.Where(f => f.CreatedAt >= now.AddDays(-180)).ToList();
+                foreach (var app in funeralApps)
                 {
                     var tokenCreatedAt = app.CreatedAt.AddSeconds(-random.Next(10, 60));
                     var token = $"TOKEN-FUN-{Guid.NewGuid():N}";
@@ -5286,7 +5289,7 @@ namespace LingapDVO.Controllers
                     var userAgent = userAgents[random.Next(userAgents.Length)];
 
                     // Create FormSubmissionToken
-                    var submissionToken = new FormSubmissionToken
+                    tokensToAdd.Add(new FormSubmissionToken
                     {
                         Token = token,
                         FormType = "Funeral",
@@ -5299,11 +5302,10 @@ namespace LingapDVO.Controllers
                         UsedAt = app.CreatedAt,
                         SubmittedFormId = app.Id,
                         IsRevoked = false
-                    };
-                    context.Add(submissionToken);
+                    });
 
                     // Create FormSubmissionAuditLog
-                    var auditLog = new FormSubmissionAuditLog
+                    auditLogsToAdd.Add(new FormSubmissionAuditLog
                     {
                         FormType = "Funeral",
                         UserId = app.UserId,
@@ -5321,9 +5323,12 @@ namespace LingapDVO.Controllers
                         AttemptedAt = app.CreatedAt,
                         SubmittedFormId = app.Id,
                         IsDuplicate = false
-                    };
-                    context.Add(auditLog);
+                    });
                 }
+
+                // Batch add all tokens and audit logs
+                context.AddRange(tokensToAdd);
+                context.AddRange(auditLogsToAdd);
 
                 // Save tokens and audit logs
                 await context.SaveChangesAsync();

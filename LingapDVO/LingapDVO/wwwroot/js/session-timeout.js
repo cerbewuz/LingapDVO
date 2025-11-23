@@ -185,14 +185,30 @@
 
     // ====== EVENT LISTENERS ======
 
-    // User activity tracking
+    // ⚡ PERFORMANCE: Debounce helper function to limit event handler calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // User activity tracking with debouncing (1 second delay to reduce overhead)
+    // Previous: Every mousemove triggered handler, causing performance issues
     const activityEvents = ['click', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    const debouncedResetTimer = debounce(() => {
+        if (!modalShown && CONFIG_LOADED) {
+            resetInactivityTimer();
+        }
+    }, 1000); // Debounce by 1 second
+
     activityEvents.forEach(evt => {
-        window.addEventListener(evt, () => {
-            if (!modalShown && CONFIG_LOADED) {
-                resetInactivityTimer();
-            }
-        });
+        window.addEventListener(evt, debouncedResetTimer, { passive: true });
     });
 
     // Modal button handlers

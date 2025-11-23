@@ -63,6 +63,17 @@ builder.Services.AddSingleton<IDateTimeService, DateTimeService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 
+// ⚡ PERFORMANCE: Memory caching for frequently accessed data
+builder.Services.AddMemoryCache();
+
+// ⚡ PERFORMANCE: Response compression (gzip/brotli) to reduce bandwidth
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider>();
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
+});
+
 // MVC
 builder.Services.AddControllersWithViews();
 
@@ -113,6 +124,9 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+// ⚡ PERFORMANCE: Enable response compression middleware
+app.UseResponseCompression();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

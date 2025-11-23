@@ -22,8 +22,10 @@
         // Load user applications
         loadUserApplications();
 
-        // Check for delays periodically (every 30 seconds)
-        setInterval(checkForDelays, 30000);
+        // ⚡ PERFORMANCE: Removed client-side polling for delays (previously every 30 seconds)
+        // SignalR ReceiveDelayNotification handles server-pushed delay notifications
+        // This eliminates 12,000+ unnecessary requests per hour with 100 active users
+        // setInterval(checkForDelays, 30000); // REMOVED - Server pushes delays via SignalR
     }
 
     // Initialize SignalR connection

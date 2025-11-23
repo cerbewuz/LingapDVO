@@ -389,8 +389,10 @@
         initSidebar();
     }
 
-    // Refresh notification count every 2 minutes
-    setInterval(loadNotificationCount, 120000);
+    // ⚡ PERFORMANCE: Removed polling for notification count (previously every 2 minutes)
+    // SignalR push notifications handle real-time updates more efficiently
+    // This eliminates 300+ unnecessary requests per hour with 10 active admins
+    // setInterval(loadNotificationCount, 120000); // REMOVED - Use SignalR instead
 
     console.log('Sidebar: Module loaded successfully');
 })();
