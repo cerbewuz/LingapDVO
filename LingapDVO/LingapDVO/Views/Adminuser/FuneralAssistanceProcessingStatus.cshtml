@@ -897,6 +897,9 @@
                     <button type="button" class="btn btn-approved" onclick="submitApprove()">
                         <i class="bi bi-check-circle"></i> Approve
                     </button>
+                    <button type="button" class="btn btn-warning" onclick="submitRetake()" style="background-color: #ff9800; border-color: #ff9800; color: white;">
+                        <i class="bi bi-arrow-clockwise"></i> Retake Application
+                    </button>
                     <button type="button" class="btn btn-disapproved" onclick="showCommentsModal()">
                         <i class="bi bi-x-circle"></i> Disapprove
                     </button>
@@ -1185,6 +1188,32 @@
             // Submit the form after a short delay
             setTimeout(() => {
                 console.log('Final form submission - Disapprove');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
+
+                document.getElementById('statusForm').submit();
+            }, 1500);
+        }
+
+        function submitRetake() {
+            if (!confirm('Are you sure you want to request the applicant to retake/resubmit their attachments? This will allow them to edit only their document submissions.')) {
+                return;
+            }
+
+            console.log('Submitting retake...');
+
+            // Update CMO reflection before submission
+            updateReflection();
+
+            document.getElementById('statusInput').value = 'Retake';
+            document.getElementById('commentsInput').value = 'Please resubmit your attachments. Your other information will remain unchanged.';
+
+            // Show success modal
+            showSuccessModal();
+
+            // Submit the form after a short delay
+            setTimeout(() => {
+                console.log('Final form submission - Retake');
                 console.log('Status:', document.getElementById('statusInput').value);
                 console.log('Comments:', document.getElementById('commentsInput').value);
 

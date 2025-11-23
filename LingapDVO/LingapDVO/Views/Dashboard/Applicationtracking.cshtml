@@ -280,6 +280,23 @@
             background: var(--claimed-color);
         }
 
+        .timeline-marker.retake {
+            background: #ff9800;
+        }
+
+        .timeline-item.clickable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item.clickable:hover {
+            transform: translateX(5px);
+        }
+
+        .timeline-item.clickable:hover .timeline-content {
+            background: #f8f9fa;
+        }
+
         /* Delay notification timeline styling */
         .timeline-item[data-delay-notification="true"] {
             animation: slideInDelay 0.4s ease-out;
@@ -1447,6 +1464,28 @@
                                             </div>
                                         }
 
+                                        @* Step 2.5: Retake Required *@
+                                        @if (doc.Status == "Retake")
+                                        {
+                                            <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("HospitalAssistanceedit", "Dashboard", new { id = doc.Id })'">
+                                                <div class="timeline-marker retake">
+                                                    <i class="fas fa-arrow-rotate-left"></i>
+                                                </div>
+                                                <div class="timeline-content">
+                                                    <h6>Action Required - Retake Application</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">
+                                                        Your application requires document resubmission. Please update your attachments to continue processing.
+                                                        <strong style="color: #ff9800;">Click here to update your attachments.</strong>
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+
                                         @* Step 3: Result *@
                                         @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1)
                                         {
@@ -1595,7 +1634,7 @@
                                             </div>
                                             <div class="timeline-content">
                                                 <h6>In Queue</h6>
-                                                <p class="waiting-text">Your application is now in queue. You will receive an update within an hour.</p>
+                                                <p class="timeline-text">Your application is now in queue. You will receive an update within an hour.</p>
                                             </div>
                                         </div>
                                     }
@@ -1612,6 +1651,28 @@
                                                     <h6>Being Reviewed</h6>
                                                     <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                     <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @* Step 2.5: Retake Required *@
+                                        @if (doc.Status == "Retake")
+                                        {
+                                            <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("OtherAssistanceedit", "Dashboard", new { id = doc.Id })'">
+                                                <div class="timeline-marker retake">
+                                                    <i class="fas fa-arrow-rotate-left"></i>
+                                                </div>
+                                                <div class="timeline-content">
+                                                    <h6>Action Required - Retake Application</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">
+                                                        Your application requires document resubmission. Please update your attachments to continue processing.
+                                                        <strong style="color: #ff9800;">Click here to update your attachments.</strong>
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
                                                 </div>
                                             </div>
                                         }
@@ -1781,6 +1842,28 @@
                                                     <h6>Being Reviewed</h6>
                                                     <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                     <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        @* Step 2.5: Retake Required *@
+                                        @if (doc.Status == "Retake")
+                                        {
+                                            <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("FuneralAssistanceedit", "Dashboard", new { id = doc.Id })'">
+                                                <div class="timeline-marker retake">
+                                                    <i class="fas fa-arrow-rotate-left"></i>
+                                                </div>
+                                                <div class="timeline-content">
+                                                    <h6>Action Required - Retake Application</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">
+                                                        Your application requires document resubmission. Please update your attachments to continue processing.
+                                                        <strong style="color: #ff9800;">Click here to update your attachments.</strong>
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
                                                 </div>
                                             </div>
                                         }

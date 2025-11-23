@@ -134,11 +134,12 @@ app.Use(async (context, next) =>
     // Content Security Policy
     context.Response.Headers.Append("Content-Security-Policy",
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " +
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net data:; " +
         "img-src 'self' data: https:; " +
-        "connect-src 'self' https://www.facebook.com; " +
+        "connect-src 'self' https://www.facebook.com https://www.google.com; " +
+        "frame-src 'self' https://www.google.com https://www.gstatic.com; " +
         "frame-ancestors 'self'; " +
         "base-uri 'self'; " +
         "form-action 'self'");

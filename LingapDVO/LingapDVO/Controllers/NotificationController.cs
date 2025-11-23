@@ -588,7 +588,17 @@ public class NotificationsController : Controller
         DateTime? claimedAt = null,
         string status3 = null)
     {
-        // Priority 1: Check if claimed (Status3 and ClaimedAt exist) - matches "Assistance Released" on tracking page
+        // Priority 1: Check if retake is required (Status == "Retake") - Action Required
+        if (status == "Retake")
+        {
+            return (
+                "Action Required - Retake Application",
+                $"Your {formType} application requires document resubmission. Please update your attachments to continue processing.",
+                "application_retake"
+            );
+        }
+
+        // Priority 2: Check if claimed (Status3 and ClaimedAt exist) - matches "Assistance Released" on tracking page
         if (claimedAt.HasValue && claimedAt.Value.Year > 1 && !string.IsNullOrWhiteSpace(status3))
         {
             return (
@@ -598,7 +608,7 @@ public class NotificationsController : Controller
             );
         }
 
-        // Priority 2: Check if approved/disapproved (Result date and Status2 exist) - matches timeline "Application Approved/Disapproved"
+        // Priority 3: Check if approved/disapproved (Result date and Status2 exist) - matches timeline "Application Approved/Disapproved"
         if (resultDate.HasValue && resultDate.Value.Year > 1 && !string.IsNullOrWhiteSpace(status2))
         {
             if (status2.Equals("Approve", StringComparison.OrdinalIgnoreCase))

@@ -84,8 +84,36 @@
     </div>
 </div>
 
-<form asp-action="OtherAssistanceEdit" enctype="multipart/form-data" method="post">
+<form asp-action="OtherAssistanceEdit" enctype="multipart/form-data" method="post" id="editForm">
     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    @if (ViewData["IsRetakeMode"] != null && (bool)ViewData["IsRetakeMode"])
+    {
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-info-circle"></i> <strong>Retake Mode:</strong> You can only update your attachments (PDF, JPG, PNG files). All other fields are readonly.
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('editForm');
+                const inputs = form.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select, textarea');
+                inputs.forEach(input => {
+                    if (input.tagName === 'SELECT') {
+                        input.disabled = true;
+                    } else {
+                        input.readOnly = true;
+                        input.style.backgroundColor = '#e9ecef';
+                        input.style.cursor = 'not-allowed';
+                    }
+                });
+
+                const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.disabled = true;
+                    checkbox.style.cursor = 'not-allowed';
+                });
+            });
+        </script>
+    }
 
     <!-- Patient Information -->
     <div class="form-section">

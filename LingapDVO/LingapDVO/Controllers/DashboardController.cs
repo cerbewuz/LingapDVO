@@ -875,6 +875,7 @@ namespace LingapDVO.Controllers
 
             // Basic ViewData setup
             ViewData["Status"] = HospitalAssistance.Status;
+            ViewData["IsRetakeMode"] = HospitalAssistance.Status == "Retake"; // Check if in retake mode
             ViewData["Id"] = HospitalAssistance.Id;
             ViewData["Lastname"] = HospitalAssistance.Lastname;
             ViewData["Firstname"] = HospitalAssistance.Firstname;
@@ -1644,6 +1645,7 @@ namespace LingapDVO.Controllers
 
             // Basic ViewData setup
             ViewData["Status"] = medicallabform.Status;
+            ViewData["IsRetakeMode"] = medicallabform.Status == "Retake"; // Check if in retake mode
             ViewData["Id"] = medicallabform.Id;
             ViewData["Lastname"] = medicallabform.Lastname;
             ViewData["Firstname"] = medicallabform.Firstname;
@@ -2429,6 +2431,7 @@ namespace LingapDVO.Controllers
 
             // Basic ViewData setup
             ViewData["Status2"] = FuneralAssistance.Status2;
+            ViewData["IsRetakeMode"] = FuneralAssistance.Status == "Retake"; // Check if in retake mode
             ViewData["Id"] = FuneralAssistance.Id;
             ViewData["Lastname"] = FuneralAssistance.Lastname;
             ViewData["Firstname"] = FuneralAssistance.Firstname;
