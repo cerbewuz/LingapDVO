@@ -2542,11 +2542,12 @@
 
             function initRealTimeConnection() {
                 initSignalRConnection();
-                setInterval(() => {
-                    checkForStatusChanges();
-                }, 10000);
+                // Auto-polling disabled - notifications now only load on page refresh or manual refresh button click
+                // setInterval(() => {
+                //     checkForStatusChanges();
+                // }, 10000);
                 loadRealNotifications();
-                // Start real-time update for notification times and status/priority
+                // Start real-time update for notification times only (no auto-reload)
                 startRealtimeTimeUpdates();
             }
 
@@ -2562,7 +2563,7 @@
                 });
             }
 
-            // Start periodic updates of notification times and reload notifications for status/priority updates
+            // Start periodic updates of notification times only (auto-reload disabled)
             function startRealtimeTimeUpdates() {
                 // Update immediately
                 updateAllNotificationTimes();
@@ -2573,62 +2574,9 @@
                     updateAllNotificationTimes();
                 }, 10000);
 
-                // Reload notifications every 15 seconds to update status and priority badges in real-time
-                // This ensures status changes (Pending -> Processing -> Approved) and priority changes are reflected quickly
-                // Works both when dropdown is open (updating visible notifications) and closed (updating badge count)
-                // Applies to both desktop and mobile dropdowns for cross-screen consistency
-                setInterval(async () => {
-                    try {
-                        const desktopDropdownVisible = notificationDropdown && notificationDropdown.style.display === 'block';
-                        const mobileDropdownElement = document.getElementById('mobileNotificationDropdown');
-                        const mobileDropdownVisible = mobileDropdownElement && mobileDropdownElement.classList.contains('active');
-
-                        if (desktopDropdownVisible || mobileDropdownVisible) {
-                            // One or more dropdowns are open: reload notifications to update status/priority badges
-                            if (desktopDropdownVisible) {
-                                console.log('[Real-time Update] Reloading desktop notifications (dropdown open)...');
-                                await loadRealNotifications(false);
-                            }
-                            if (mobileDropdownVisible) {
-                                console.log('[Real-time Update] Reloading mobile notifications (dropdown open)...');
-                                await loadMobileNotifications();
-                            }
-                        } else {
-                            // All dropdowns closed: still reload to update badge count but don't render yet
-                            // This keeps the badge count accurate in real-time
-                            console.log('[Real-time Update] Updating badge count (all dropdowns closed)...');
-                            const response = await fetch('/Notifications/GetUserNotifications');
-                            if (response.ok) {
-                                const notifications = await response.json();
-                                if (!notifications.error) {
-                                    const oldCount = currentNotifications.filter(n => !n.isRead).length;
-                                    currentNotifications = notifications;
-                                    const newCount = notifications.filter(n => !n.isRead).length;
-
-                                    if (oldCount !== newCount) {
-                                        console.log(`[Real-time Update] Unread count changed: ${oldCount} -> ${newCount}`);
-                                    }
-
-                                    // Update badge count only
-                                    if (newCount > 0) {
-                                        notificationBadge.textContent = newCount > 99 ? '99+' : newCount;
-                                        notificationBadge.style.display = 'block';
-                                        // Update mobile badge
-                                        const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
-                                        if (mobileNotificationBadge) {
-                                            mobileNotificationBadge.textContent = newCount > 99 ? '99+' : newCount;
-                                            mobileNotificationBadge.style.display = 'inline-block';
-                                        }
-                                    } else {
-                                        hideNotificationBadge();
-                                    }
-                                }
-                            }
-                        }
-                    } catch (error) {
-                        console.error('[Real-time Update] Failed:', error);
-                    }
-                }, 15000); // Update every 15 seconds for responsive status changes
+                // Auto-reload disabled - notifications now only fetch when user refreshes page or clicks refresh button
+                // The previous auto-reload interval has been removed to give users full control over when notifications are fetched
+                // Users can manually refresh notifications using the refresh button in the notification header
             }
 
             function initSignalRConnection() {
