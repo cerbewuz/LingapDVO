@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
 
         window.visualProgressLoader.initialize(ocrSteps);
-        console.log('✓ Visual Progress Loader initialized with', ocrSteps.length, 'steps');
     }
 });
 */
@@ -40,7 +39,6 @@ if (window.visualProgressLoader) {
     window.visualProgressLoader.updateTitle('Processing Your ID');
     window.visualProgressLoader.updateSubtitle('Please wait while we extract and verify your information');
     window.visualProgressLoader.goToStep(1, 'Uploading image to OCR engine...');
-    console.log('✓ Visual progress loader started');
 }
 */
 
@@ -58,7 +56,6 @@ if (!selectedIdType && detectedIdType) {
     // Update progress: ID type detected
     if (window.visualProgressLoader) {
         window.visualProgressLoader.nextStep(`ID type detected: ${getIdTypeName(detectedIdType)}`);
-        console.log('✓ Progress: ID type detected -', getIdTypeName(detectedIdType));
     }
 }
 */
@@ -68,12 +65,10 @@ if (!selectedIdType && detectedIdType) {
 // ═══════════════════════════════════════════════════════════════════════════════
 /*
 // === STEP 2: PARSE ID DATA ===
-console.log('\n=== STEP 2: PARSE ID DATA ===');
 
 // Update progress: Starting data extraction
 if (window.visualProgressLoader) {
     window.visualProgressLoader.nextStep('Extracting text data from ID...');
-    console.log('✓ Progress: Extracting data');
 }
 */
 
@@ -84,7 +79,6 @@ if (window.visualProgressLoader) {
 // After successfully extracting names, add:
 if (window.visualProgressLoader) {
     window.visualProgressLoader.nextStep('Parsing name fields (First, Middle, Last)');
-    console.log('✓ Progress: Name fields parsed');
 }
 */
 
@@ -95,7 +89,6 @@ if (window.visualProgressLoader) {
 // After extracting address/barangay, add:
 if (window.visualProgressLoader) {
     window.visualProgressLoader.nextStep('Extracting address and barangay information');
-    console.log('✓ Progress: Address extracted');
 }
 */
 
@@ -106,7 +99,6 @@ if (window.visualProgressLoader) {
 // After Davao City validation, add:
 if (window.visualProgressLoader) {
     window.visualProgressLoader.nextStep('Validating Davao City residency');
-    console.log('✓ Progress: Davao validation complete');
 }
 */
 
@@ -117,7 +109,6 @@ if (window.visualProgressLoader) {
 // Before calling updateFormFieldsAdvanced, add:
 if (window.visualProgressLoader) {
     window.visualProgressLoader.nextStep('Populating form fields with extracted data');
-    console.log('✓ Progress: Populating form fields');
 }
 */
 
@@ -129,44 +120,29 @@ if (window.visualProgressLoader) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPLETION STATUS UPDATE - Show "Completed" with animation
 // ═══════════════════════════════════════════════════════════════════════════════
-console.log('\n╔════════════════════════════════════════════════╗');
-console.log('║  FINALIZING OCR EXTRACTION PROCESS            ║');
-console.log('╚════════════════════════════════════════════════╝');
 
 // Set progress bar to 100%
 if (progress) {
     progress.style.width = '100%';
     progress.style.transition = 'width 0.5s ease-in-out';
-    console.log('✓ Progress bar set to 100%');
 }
 
 // Update status to "Completed"
 if (status) {
     status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600"></i><strong>Completed</strong> - Data extraction successful';
     status.className = 'text-sm text-green-600 mt-2 font-semibold';
-    console.log('✓ OCR Status updated to: "Completed"');
 }
 
 // Show completion in visual progress loader
 if (window.visualProgressLoader) {
     window.visualProgressLoader.showSuccess('All data extracted and validated successfully!');
-    console.log('✓ Visual progress loader: Success shown');
 }
 
-console.log('\n╔════════════════════════════════════════════════╗');
-console.log('║  ✓✓✓ OCR PROCESS COMPLETED SUCCESSFULLY      ║');
-console.log('╚════════════════════════════════════════════════╝');
-console.log(`📊 Fields populated: ${populatedFields.length}`);
-console.log(`📋 Populated fields: ${populatedFields.join(', ')}`);
-console.log('🎯 Auto-population: Complete');
-console.log('✅ Status: Completed with animation');
-console.log('════════════════════════════════════════════════\n');
 
 // Hide progress bar after a delay to show the completed state
 if (progressBar) {
     setTimeout(() => {
         progressBar.classList.add('hidden');
-        console.log('✓ Progress bar hidden after 2s delay');
     }, 2000); // 2 second delay to show the completed state
 }
 */
@@ -183,7 +159,6 @@ if (progressBar) {
     // Show error in visual progress loader
     if (window.visualProgressLoader) {
         window.visualProgressLoader.showError(error.message || 'OCR processing failed. Please try again.');
-        console.log('✗ Visual progress loader: Error shown');
     }
 
     progressBar.classList.add('hidden');

@@ -1,0 +1,51 @@
+{
+  "name": "Lingap Para sa Mahirap - Davao City",
+  "short_name": "LingapDVO",
+  "description": "Free medical and financial assistance for Davao City residents",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#DC143C",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en-PH",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/Icon/lingaplogo.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/Icon/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Icon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["government", "healthcare", "social"],
+  "shortcuts": [
+    {
+      "name": "Apply for Assistance",
+      "short_name": "Apply",
+      "description": "Start your assistance application",
+      "url": "/Login",
+      "icons": [
+        {
+          "src": "/Icon/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

@@ -128,8 +128,52 @@ if (!app.Environment.IsDevelopment())
 // ⚡ PERFORMANCE: Enable response compression middleware
 app.UseResponseCompression();
 
+// 🔒 SECURITY: Add security headers
+app.Use(async (context, next) =>
+{
+    // Content Security Policy
+    context.Response.Headers.Append("Content-Security-Policy",
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " +
+        "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net data:; " +
+        "img-src 'self' data: https:; " +
+        "connect-src 'self' https://www.facebook.com; " +
+        "frame-ancestors 'self'; " +
+        "base-uri 'self'; " +
+        "form-action 'self'");
+
+    // Prevent clickjacking
+    context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
+
+    // Prevent MIME type sniffing
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+
+    // Enable XSS filter
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+
+    // Referrer policy
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+
+    // Permissions policy
+    context.Response.Headers.Append("Permissions-Policy",
+        "geolocation=(), microphone=(), camera=(), payment=()");
+
+    await next();
+});
+
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+
+// ⚡ PERFORMANCE: Configure static files with caching
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        // Cache static assets for 1 year (for versioned files like CSS, JS, images)
+        const int durationInSeconds = 60 * 60 * 24 * 365; // 1 year
+        ctx.Context.Response.Headers.Append("Cache-Control", $"public,max-age={durationInSeconds}");
+    }
+});
 
 app.UseRouting();
 

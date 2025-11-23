@@ -608,7 +608,10 @@
             lastName: '@ViewBag.RegisteredLastName',
             suffix: '@ViewBag.RegisteredSuffix'
         };
-        console.log('Registered User Name from Database:', window.registeredUserName);
+        // Only show warnings for debugging purposes
+        if (!window.registeredUserName.firstName || !window.registeredUserName.lastName) {
+            console.warn('Warning: Registered user name data is incomplete', window.registeredUserName);
+        }
     </script>
 
     <!-- Go Back Button Behavior -->

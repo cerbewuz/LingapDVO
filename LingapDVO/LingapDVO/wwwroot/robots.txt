@@ -1,0 +1,12 @@
+# robots.txt for LingapDVO
+User-agent: *
+Allow: /
+Disallow: /Admin
+Disallow: /Superadmin
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://lingap.online/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 10
