@@ -1,6 +1,7 @@
 using LingapDVO.Models;
 using LingapDVO.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 public class NotificationsController : Controller

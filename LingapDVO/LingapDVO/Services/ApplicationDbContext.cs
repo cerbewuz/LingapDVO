@@ -105,13 +105,13 @@ namespace LingapDVO.Services
 
             // FormSubmissionToken index for faster token lookups
             modelBuilder.Entity<FormSubmissionToken>()
-                .HasIndex(t => new { t.UserId, t.ApplicationType, t.CreatedAt })
-                .HasDatabaseName("IX_FormSubmissionToken_UserId_ApplicationType_CreatedAt");
+                .HasIndex(t => new { t.UserId, t.FormType, t.CreatedAt })
+                .HasDatabaseName("IX_FormSubmissionToken_UserId_FormType_CreatedAt");
 
             // FormSubmissionAuditLog index for audit queries
             modelBuilder.Entity<FormSubmissionAuditLog>()
-                .HasIndex(a => new { a.UserId, a.CreatedAt })
-                .HasDatabaseName("IX_FormSubmissionAuditLog_UserId_CreatedAt");
+                .HasIndex(a => new { a.UserId, a.AttemptedAt })
+                .HasDatabaseName("IX_FormSubmissionAuditLog_UserId_AttemptedAt");
         }
     }
 }
