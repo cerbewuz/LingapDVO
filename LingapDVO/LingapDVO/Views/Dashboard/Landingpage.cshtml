@@ -802,12 +802,6 @@
             }
         }
 
-        .modal-image {
-            width: 100%;
-            max-height: 80vh;
-            object-fit: contain;
-            transition: transform 0.25s ease;
-    }
 
 
         .modal-close {
@@ -845,6 +839,132 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* Navigation Arrows */
+        .modal-nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10001;
+        }
+
+        .modal-nav-arrow:hover {
+            background: rgba(220, 20, 60, 0.9);
+            border-color: var(--primary);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .modal-nav-arrow.left {
+            left: 20px;
+        }
+
+        .modal-nav-arrow.right {
+            right: 20px;
+        }
+
+        /* Zoom Controls */
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10001;
+        }
+
+        .zoom-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--white);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .zoom-btn:hover {
+            background: rgba(220, 20, 60, 0.9);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .zoom-indicator {
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            min-width: 60px;
+            justify-content: center;
+        }
+
+        /* Modal image zoom support */
+        .modal-image {
+            width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            transition: transform 0.25s ease;
+            cursor: zoom-in;
+        }
+
+        .modal-image.zoomed {
+            cursor: move;
+        }
+
+        /* Responsive adjustments for arrows and zoom */
+        @@media (max-width: 768px) {
+            .modal-nav-arrow {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .modal-nav-arrow.left {
+                left: 10px;
+            }
+
+            .modal-nav-arrow.right {
+                right: 10px;
+            }
+
+            .zoom-controls {
+                bottom: 10px;
+                gap: 8px;
+            }
+
+            .zoom-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            .zoom-indicator {
+                font-size: 0.8rem;
+                padding: 4px 12px;
+            }
         }
 
         /* FEATURES SECTION */
@@ -2087,7 +2207,27 @@
             <button class="modal-close" id="modalClose">
                 <i class="fas fa-times"></i>
             </button>
+            <!-- Navigation Arrows -->
+            <button class="modal-nav-arrow left" id="prevImageBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="modal-nav-arrow right" id="nextImageBtn">
+                <i class="fas fa-chevron-right"></i>
+            </button>
             <img src="" alt="" class="modal-image" id="modalImage">
+            <!-- Zoom Controls -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoomOutBtn" title="Zoom Out">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <div class="zoom-indicator" id="zoomIndicator">100%</div>
+                <button class="zoom-btn" id="zoomInBtn" title="Zoom In">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="zoom-btn" id="resetZoomBtn" title="Reset Zoom">
+                    <i class="fas fa-undo"></i>
+                </button>
+            </div>
             <div class="modal-caption" id="modalCaption"></div>
         </div>
     </div>
@@ -2112,48 +2252,292 @@
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
 
-    <!-- Image swipe in mobile -->
+    <!-- Image Gallery with Zoom and Navigation -->
     <script>
     const images = Array.from(document.querySelectorAll(".update-image")).map(img => img.src);
     let currentIndex = 0;
+    let currentZoom = 1;
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let translateX = 0, translateY = 0;
+    let initialDistance = 0;
+    let lastTapTime = 0;
 
     const modal = document.getElementById("imageModal");
     const modalImage = document.getElementById("modalImage");
     const modalClose = document.getElementById("modalClose");
+    const prevBtn = document.getElementById("prevImageBtn");
+    const nextBtn = document.getElementById("nextImageBtn");
+    const zoomInBtn = document.getElementById("zoomInBtn");
+    const zoomOutBtn = document.getElementById("zoomOutBtn");
+    const resetZoomBtn = document.getElementById("resetZoomBtn");
+    const zoomIndicator = document.getElementById("zoomIndicator");
+
+    // Reset zoom when changing images
+    function resetZoom() {
+        currentZoom = 1;
+        translateX = 0;
+        translateY = 0;
+        updateImageTransform();
+        modalImage.classList.remove('zoomed');
+    }
+
+    // Update image transform
+    function updateImageTransform() {
+        modalImage.style.transform = `scale(${currentZoom}) translate(${translateX}px, ${translateY}px)`;
+        zoomIndicator.textContent = Math.round(currentZoom * 100) + '%';
+    }
+
+    // Show image
+    function showImage(index) {
+        currentIndex = index;
+        modalImage.src = images[currentIndex];
+        resetZoom();
+    }
+
+    // Navigate to previous image
+    function previousImage() {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        showImage(currentIndex);
+    }
+
+    // Navigate to next image
+    function nextImage() {
+        currentIndex = (currentIndex + 1) % images.length;
+        showImage(currentIndex);
+    }
+
+    // Zoom in
+    function zoomIn() {
+        if (currentZoom < 3) {
+            currentZoom = Math.min(currentZoom + 0.25, 3);
+            updateImageTransform();
+            modalImage.classList.add('zoomed');
+        }
+    }
+
+    // Zoom out
+    function zoomOut() {
+        if (currentZoom > 1) {
+            currentZoom = Math.max(currentZoom - 0.25, 1);
+            if (currentZoom === 1) {
+                translateX = 0;
+                translateY = 0;
+                modalImage.classList.remove('zoomed');
+            }
+            updateImageTransform();
+        }
+    }
 
     // Open modal when image is clicked
     document.querySelectorAll(".update-image").forEach((img, index) => {
         img.addEventListener("click", () => {
-            currentIndex = index;
-            modalImage.src = images[currentIndex];
+            showImage(index);
             modal.style.display = "flex";
         });
     });
 
     // Close modal
-    modalClose.addEventListener("click", () => {
+    function closeModal() {
         modal.style.display = "none";
+        resetZoom();
+    }
+
+    modalClose.addEventListener("click", closeModal);
+
+    // Click outside to close
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
     });
 
-    // SWIPE HANDLING
-    let startX = 0;
+    // Arrow button handlers
+    prevBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        previousImage();
+    });
+
+    nextBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        nextImage();
+    });
+
+    // Zoom button handlers
+    zoomInBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        zoomIn();
+    });
+
+    zoomOutBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        zoomOut();
+    });
+
+    resetZoomBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        resetZoom();
+    });
+
+    // Keyboard navigation
+    document.addEventListener("keydown", (e) => {
+        if (modal.style.display === "flex") {
+            if (e.key === "ArrowLeft") {
+                previousImage();
+            } else if (e.key === "ArrowRight") {
+                nextImage();
+            } else if (e.key === "Escape") {
+                closeModal();
+            } else if (e.key === "+" || e.key === "=") {
+                zoomIn();
+            } else if (e.key === "-") {
+                zoomOut();
+            } else if (e.key === "0") {
+                resetZoom();
+            }
+        }
+    });
+
+    // Mouse wheel zoom
+    modalImage.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+            zoomIn();
+        } else {
+            zoomOut();
+        }
+    });
+
+    // Touch events for mobile
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    // Double tap to zoom
+    modalImage.addEventListener("touchend", (e) => {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+
+        if (tapLength < 300 && tapLength > 0) {
+            // Double tap detected
+            if (currentZoom === 1) {
+                currentZoom = 2;
+                modalImage.classList.add('zoomed');
+            } else {
+                resetZoom();
+            }
+            updateImageTransform();
+        }
+        lastTapTime = currentTime;
+    });
+
+    // Pinch to zoom
+    modalImage.addEventListener("touchstart", (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            initialDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+        } else if (e.touches.length === 1 && currentZoom > 1) {
+            touchStartX = e.touches[0].clientX - translateX;
+            touchStartY = e.touches[0].clientY - translateY;
+            isDragging = true;
+        }
+    });
+
+    modalImage.addEventListener("touchmove", (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const currentDistance = Math.hypot(
+                touch2.clientX - touch1.clientX,
+                touch2.clientY - touch1.clientY
+            );
+
+            const scale = currentDistance / initialDistance;
+            currentZoom = Math.max(1, Math.min(3, currentZoom * scale));
+            initialDistance = currentDistance;
+
+            if (currentZoom > 1) {
+                modalImage.classList.add('zoomed');
+            } else {
+                modalImage.classList.remove('zoomed');
+                translateX = 0;
+                translateY = 0;
+            }
+            updateImageTransform();
+        } else if (e.touches.length === 1 && isDragging && currentZoom > 1) {
+            e.preventDefault();
+            translateX = e.touches[0].clientX - touchStartX;
+            translateY = e.touches[0].clientY - touchStartY;
+            updateImageTransform();
+        }
+    });
+
+    modalImage.addEventListener("touchend", (e) => {
+        if (e.touches.length === 0) {
+            isDragging = false;
+        }
+    });
+
+    // Mouse drag when zoomed
+    modalImage.addEventListener("mousedown", (e) => {
+        if (currentZoom > 1) {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            modalImage.style.cursor = 'grabbing';
+        }
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (isDragging && currentZoom > 1) {
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateImageTransform();
+        }
+    });
+
+    document.addEventListener("mouseup", () => {
+        if (isDragging) {
+            isDragging = false;
+            if (currentZoom > 1) {
+                modalImage.style.cursor = 'move';
+            } else {
+                modalImage.style.cursor = 'zoom-in';
+            }
+        }
+    });
+
+    // Swipe navigation (only when not zoomed)
+    let swipeStartX = 0;
+    let swipeStartY = 0;
 
     modal.addEventListener("touchstart", (e) => {
-        startX = e.touches[0].clientX;
+        if (currentZoom === 1 && e.target !== modalImage) {
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+        }
     });
 
     modal.addEventListener("touchend", (e) => {
-        let endX = e.changedTouches[0].clientX;
+        if (currentZoom === 1 && e.target !== modalImage) {
+            const swipeEndX = e.changedTouches[0].clientX;
+            const swipeEndY = e.changedTouches[0].clientY;
+            const deltaX = swipeEndX - swipeStartX;
+            const deltaY = Math.abs(swipeEndY - swipeStartY);
 
-        if (endX < startX - 50) {
-            // swipe LEFT → next image
-            currentIndex = (currentIndex + 1) % images.length;
-            modalImage.src = images[currentIndex];
-        }
-        else if (endX > startX + 50) {
-            // swipe RIGHT → previous image
-            currentIndex = (currentIndex - 1 + images.length) % images.length;
-            modalImage.src = images[currentIndex];
+            // Only trigger swipe if horizontal movement is dominant
+            if (Math.abs(deltaX) > 50 && deltaY < 100) {
+                if (deltaX < 0) {
+                    nextImage();
+                } else {
+                    previousImage();
+                }
+            }
         }
     });
 </script>
