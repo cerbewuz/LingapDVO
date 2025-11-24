@@ -271,6 +271,79 @@ namespace LingapDVO.Controllers
                 // Step 5.9: Return Base64-encoded encrypted timestamp
                 return Convert.ToBase64String(encryptedBytes);
             }
+
+            /// <summary>
+            /// Encrypts the original filename (including extension) using AES-256 encryption
+            /// Returns a filesystem-safe encrypted filename suitable for storage
+            /// </summary>
+            /// <param name="originalFileName">Original filename with extension (e.g., "document.pdf")</param>
+            /// <returns>Encrypted filename in Base64 URL-safe format</returns>
+            public string EncryptFilename(string originalFileName)
+            {
+                if (string.IsNullOrWhiteSpace(originalFileName))
+                    throw new ArgumentException("Filename cannot be null or empty");
+
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+                aes.GenerateIV();
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var encryptor = aes.CreateEncryptor();
+                using var memoryStream = new MemoryStream();
+
+                // Write IV first
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Encrypt the filename
+                byte[] inputBytes = Encoding.UTF8.GetBytes(originalFileName);
+                byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                memoryStream.Write(encryptedBytes, 0, encryptedBytes.Length);
+
+                // Convert to Base64 and make it filesystem-safe
+                string base64 = Convert.ToBase64String(memoryStream.ToArray());
+                // Replace characters that are not filesystem-safe
+                string safeFilename = base64.Replace("+", "-").Replace("/", "_").Replace("=", "");
+
+                return safeFilename;
+            }
+
+            /// <summary>
+            /// Decrypts an encrypted filename back to its original form
+            /// </summary>
+            /// <param name="encryptedFileName">Encrypted filename (without .enc extension)</param>
+            /// <returns>Original filename with extension</returns>
+            public string DecryptFilename(string encryptedFileName)
+            {
+                if (string.IsNullOrWhiteSpace(encryptedFileName))
+                    throw new ArgumentException("Encrypted filename cannot be null or empty");
+
+                // Restore Base64 characters
+                string base64 = encryptedFileName.Replace("-", "+").Replace("_", "/");
+                // Add padding if needed
+                int padding = (4 - (base64.Length % 4)) % 4;
+                base64 += new string('=', padding);
+
+                byte[] encryptedData = Convert.FromBase64String(base64);
+
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+
+                // Extract IV (first 16 bytes)
+                byte[] iv = new byte[16];
+                Array.Copy(encryptedData, 0, iv, 0, 16);
+                aes.IV = iv;
+
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var decryptor = aes.CreateDecryptor();
+                byte[] cipherText = new byte[encryptedData.Length - 16];
+                Array.Copy(encryptedData, 16, cipherText, 0, cipherText.Length);
+
+                byte[] decryptedBytes = decryptor.TransformFinalBlock(cipherText, 0, cipherText.Length);
+                return Encoding.UTF8.GetString(decryptedBytes);
+            }
             // Add this method to your controller class (before the Action methods)
             private string NormalizePhilippineName(string name)
             {
@@ -1954,17 +2027,15 @@ namespace LingapDVO.Controllers
                 // Create AES helper instance with configuration
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // Generate unique encrypted timestamp for filenames
-                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
-                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
-
                 // ==========================
                 // 🪪 Encrypt Front ID
                 // ==========================
                 string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
                 Directory.CreateDirectory(validFolder);
-                string frontFileName = safeEncryptedTimestamp + "_front.enc";
+
+                // Encrypt the original filename
+                string originalFrontFileName = VerifyaccountDto.ValidFrontID!.FileName;
+                string frontFileName = aesHelper.EncryptFilename(originalFrontFileName) + ".enc";
                 string frontPath = Path.Combine(validFolder, frontFileName);
                 using (var fileStream = new FileStream(frontPath, FileMode.Create))
                 {
@@ -1979,7 +2050,9 @@ namespace LingapDVO.Controllers
                 string backFileName = "";
                 if (VerifyaccountDto.ValidBackID != null)
                 {
-                    backFileName = safeEncryptedTimestamp + "_back.enc";
+                    // Encrypt the original filename
+                    string originalBackFileName = VerifyaccountDto.ValidBackID.FileName;
+                    backFileName = aesHelper.EncryptFilename(originalBackFileName) + ".enc";
                     string backPath = Path.Combine(validFolder, backFileName);
                     using (var fileStream = new FileStream(backPath, FileMode.Create))
                     {

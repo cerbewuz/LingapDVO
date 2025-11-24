@@ -1588,7 +1588,7 @@
                                         }
 
                                         @* Step 2.5: Retake Required *@
-                                        @if (doc.Status == "Retake")
+                                        @if (doc.Status2 == "Retake")
                                         {
                                             <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("HospitalAssistanceedit", "Dashboard", new { id = doc.Id })'">
                                                 <div class="timeline-marker retake">
@@ -1785,7 +1785,7 @@
                                         }
 
                                         @* Step 2.5: Retake Required *@
-                                        @if (doc.Status == "Retake")
+                                        @if (doc.Status2 == "Retake")
                                         {
                                             <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("OtherAssistanceedit", "Dashboard", new { id = doc.Id })'">
                                                 <div class="timeline-marker retake">
@@ -1982,7 +1982,7 @@
                                         }
 
                                         @* Step 2.5: Retake Required *@
-                                        @if (doc.Status == "Retake")
+                                        @if (doc.Status2 == "Retake")
                                         {
                                             <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("FuneralAssistanceedit", "Dashboard", new { id = doc.Id })'">
                                                 <div class="timeline-marker retake">

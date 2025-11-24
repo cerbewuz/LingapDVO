@@ -52,41 +52,51 @@ namespace LingapDVO.Services
         /// </summary>
         public async Task<(int high, int medium, int total)> GetPriorityCountsAsync()
         {
-            // Get ONLY Pending or Processing medical/other assistance applications
+            // Get ONLY Pending, Processing, or Retake medical/other assistance applications
             // EXCLUDE applications that have been approved/disapproved or claims
+            // For Retake status, use Result time as the start time for priority calculation
             var medicalApps = await _context.OtherAssistance
-                .Where(m => (m.Status == "pending" || m.Status == "processing")
-                    && (m.Status2 == null || m.Status2 == "" || (m.Status2.ToLower() != "approve" && m.Status2.ToLower() != "disapprove"))
+                .Where(m => (m.Status == "pending" || m.Status == "processing" || m.Status2 == "Retake")
+                    && (m.Status2 == null || m.Status2 == "" || m.Status2 == "Retake" || (m.Status2.ToLower() != "approve" && m.Status2.ToLower() != "disapprove"))
                     && (m.Status3 == null || m.Status3 == "" || (m.Status3.ToLower() != "claims" && m.Status3.ToLower() != "claimed")))
-                .Select(m => new { m.CreatedAt })
+                .Select(m => new { m.CreatedAt, m.Result, m.Status2 })
                 .ToListAsync();
 
-            // Get ONLY Pending or Processing funeral assistance applications
+            // Get ONLY Pending, Processing, or Retake funeral assistance applications
             // EXCLUDE applications that have been approved/disapproved or claims
+            // For Retake status, use Result time as the start time for priority calculation
             var funeralApps = await _context.FuneralAssistance
-                .Where(f => (f.Status == "pending" || f.Status == "processing")
-                    && (f.Status2 == null || f.Status2 == "" || (f.Status2.ToLower() != "approve" && f.Status2.ToLower() != "disapprove"))
+                .Where(f => (f.Status == "pending" || f.Status == "processing" || f.Status2 == "Retake")
+                    && (f.Status2 == null || f.Status2 == "" || f.Status2 == "Retake" || (f.Status2.ToLower() != "approve" && f.Status2.ToLower() != "disapprove"))
                     && (f.Status3 == null || f.Status3 == "" || (f.Status3.ToLower() != "claims" && f.Status3.ToLower() != "claimed")))
-                .Select(f => new { f.CreatedAt })
+                .Select(f => new { f.CreatedAt, f.Result, f.Status2 })
                 .ToListAsync();
 
-            // Get ONLY Pending or Processing hospital assistance applications
+            // Get ONLY Pending, Processing, or Retake hospital assistance applications
             // EXCLUDE applications that have been approved/disapproved or claims
+            // For Retake status, use Result time as the start time for priority calculation
             var hospitalApps = await _context.HospitalAssistance
-                .Where(h => (h.Status == "pending" || h.Status == "processing")
-                    && (h.Status2 == null || h.Status2 == "" || (h.Status2.ToLower() != "approve" && h.Status2.ToLower() != "disapprove"))
+                .Where(h => (h.Status == "pending" || h.Status == "processing" || h.Status2 == "Retake")
+                    && (h.Status2 == null || h.Status2 == "" || h.Status2 == "Retake" || (h.Status2.ToLower() != "approve" && h.Status2.ToLower() != "disapprove"))
                     && (h.Status3 == null || h.Status3 == "" || (h.Status3.ToLower() != "claims" && h.Status3.ToLower() != "claimed")))
-                .Select(h => new { h.CreatedAt })
+                .Select(h => new { h.CreatedAt, h.Result, h.Status2 })
                 .ToListAsync();
 
-            // Combine all pending/processing applications from all three application types
+            // Combine all pending/processing/retake applications from all three application types
             var allApplications = medicalApps.Concat(funeralApps).Concat(hospitalApps).ToList();
 
             var now = _dateTimeService.Now;
 
-            // Calculate time waiting for each application (hours since submission)
+            // Calculate time waiting for each application
+            // For Retake status: use Result time (when retake was initiated) as start time
+            // For others: use CreatedAt (submission time) as start time
             var waitingTimes = allApplications
-                .Select(app => (now - app.CreatedAt).TotalHours)
+                .Select(app => {
+                    var startTime = app.Status2 == "Retake" && app.Result > DateTime.MinValue
+                        ? app.Result
+                        : app.CreatedAt;
+                    return (now - startTime).TotalHours;
+                })
                 .ToList();
 
             // Calculate priority counts based on waiting time

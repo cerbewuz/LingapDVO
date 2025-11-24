@@ -553,6 +553,79 @@ namespace LingapDVO.Controllers
 
                 return Convert.ToBase64String(encryptedBytes);
             }
+
+            /// <summary>
+            /// Encrypts the original filename (including extension) using AES-256 encryption
+            /// Returns a filesystem-safe encrypted filename suitable for storage
+            /// </summary>
+            /// <param name="originalFileName">Original filename with extension (e.g., "document.pdf")</param>
+            /// <returns>Encrypted filename in Base64 URL-safe format</returns>
+            public string EncryptFilename(string originalFileName)
+            {
+                if (string.IsNullOrWhiteSpace(originalFileName))
+                    throw new ArgumentException("Filename cannot be null or empty");
+
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+                aes.GenerateIV();
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var encryptor = aes.CreateEncryptor();
+                using var memoryStream = new MemoryStream();
+
+                // Write IV first
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Encrypt the filename
+                byte[] inputBytes = Encoding.UTF8.GetBytes(originalFileName);
+                byte[] encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+                memoryStream.Write(encryptedBytes, 0, encryptedBytes.Length);
+
+                // Convert to Base64 and make it filesystem-safe
+                string base64 = Convert.ToBase64String(memoryStream.ToArray());
+                // Replace characters that are not filesystem-safe
+                string safeFilename = base64.Replace("+", "-").Replace("/", "_").Replace("=", "");
+
+                return safeFilename;
+            }
+
+            /// <summary>
+            /// Decrypts an encrypted filename back to its original form
+            /// </summary>
+            /// <param name="encryptedFileName">Encrypted filename (without .enc extension)</param>
+            /// <returns>Original filename with extension</returns>
+            public string DecryptFilename(string encryptedFileName)
+            {
+                if (string.IsNullOrWhiteSpace(encryptedFileName))
+                    throw new ArgumentException("Encrypted filename cannot be null or empty");
+
+                // Restore Base64 characters
+                string base64 = encryptedFileName.Replace("-", "+").Replace("_", "/");
+                // Add padding if needed
+                int padding = (4 - (base64.Length % 4)) % 4;
+                base64 += new string('=', padding);
+
+                byte[] encryptedData = Convert.FromBase64String(base64);
+
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+
+                // Extract IV (first 16 bytes)
+                byte[] iv = new byte[16];
+                Array.Copy(encryptedData, 0, iv, 0, 16);
+                aes.IV = iv;
+
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var decryptor = aes.CreateDecryptor();
+                byte[] cipherText = new byte[encryptedData.Length - 16];
+                Array.Copy(encryptedData, 16, cipherText, 0, cipherText.Length);
+
+                byte[] decryptedBytes = decryptor.TransformFinalBlock(cipherText, 0, cipherText.Length);
+                return Encoding.UTF8.GetString(decryptedBytes);
+            }
         }
 
         // 1. DECRYPTION HELPER METHOD USING CONFIGURATION-BASED AES KEY
@@ -698,12 +771,7 @@ namespace LingapDVO.Controllers
                 // Use configuration-based AES helper
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // Generate unique encrypted timestamp for filenames
-                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
-                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
-
-                // Generate encrypted filenames
+                // Generate encrypted filenames based on original filenames
                 string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
 
@@ -717,7 +785,9 @@ namespace LingapDVO.Controllers
                 // Encrypt and Save Prescription Image if provided
                 if (HospitalAssistanceDto.DoctorPrescriptionimage != null)
                 {
-                    newFileNamePrescription = safeEncryptedTimestamp + "_prescription.enc";
+                    // Encrypt the original filename
+                    string originalFileName = HospitalAssistanceDto.DoctorPrescriptionimage.FileName;
+                    newFileNamePrescription = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
@@ -730,7 +800,9 @@ namespace LingapDVO.Controllers
                 // Encrypt and Save Death Certificate Image if provided
                 if (HospitalAssistanceDto.DeathCertificateimage != null)
                 {
-                    newFileNameDeathCertificate = safeEncryptedTimestamp + "_deathcert.enc";
+                    // Encrypt the original filename
+                    string originalFileName = HospitalAssistanceDto.DeathCertificateimage.FileName;
+                    newFileNameDeathCertificate = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
@@ -875,7 +947,7 @@ namespace LingapDVO.Controllers
 
             // Basic ViewData setup
             ViewData["Status"] = HospitalAssistance.Status;
-            ViewData["IsRetakeMode"] = HospitalAssistance.Status == "Retake"; // Check if in retake mode
+            ViewData["IsRetakeMode"] = HospitalAssistance.Status2 == "Retake"; // Check if in retake mode
             ViewData["Id"] = HospitalAssistance.Id;
             ViewData["Lastname"] = HospitalAssistance.Lastname;
             ViewData["Firstname"] = HospitalAssistance.Firstname;
@@ -1073,11 +1145,14 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
-            if (existing.Status != "Pending")
+            if (existing.Status != "Pending" && existing.Status != "Retake")
             {
-                TempData["ErrorMessage"] = "You can only edit forms that are in 'Pending' status.";
+                TempData["ErrorMessage"] = "You can only edit forms that are in 'Pending' or 'Retake' status.";
                 return RedirectToAction("Homepage", "Dashboard");
             }
+
+            // If status is "Retake", change it back to "Processing" after update
+            bool isRetakeMode = existing.Status2 == "Retake";
 
             // ? 4. Remove validations for optional fields
             if (string.IsNullOrEmpty(dto.PhilHealthNo))
@@ -1138,9 +1213,6 @@ namespace LingapDVO.Controllers
             try
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
-                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
-                string safeName = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // ? 5. Update Doctor Prescription (optional)
                 if (dto.DoctorPrescriptionimage != null)
@@ -1155,7 +1227,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_prescription.enc";
+                    // Encrypt the original filename
+                    string originalFileName = dto.DoctorPrescriptionimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -1180,7 +1254,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_deathcert.enc";
+                    // Encrypt the original filename
+                    string originalFileName = dto.DeathCertificateimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -1231,6 +1307,14 @@ namespace LingapDVO.Controllers
 
                 // ? 9. Update timestamp properly
                 existing.CreatedAt = _dateTimeService.Now;
+
+                // ? 9.5. If retake mode, change status back to Processing and reset priority timer
+                if (isRetakeMode)
+                {
+                    existing.Status = "Processing";
+                    existing.Status2 = "Processing";
+                    existing.Result = _dateTimeService.Now; // Reset priority timer
+                }
 
                 // ? 10. Save changes
                 context.Entry(existing).State = EntityState.Modified;
@@ -1450,12 +1534,7 @@ namespace LingapDVO.Controllers
                 // Use configuration-based AES helper
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // Generate unique encrypted timestamp for filenames
-                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
-                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
-
-                // Generate encrypted filenames
+                // Generate encrypted filenames based on original filenames
                 string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
                 string? newFileNameMedCertificate = null;
@@ -1472,7 +1551,9 @@ namespace LingapDVO.Controllers
                 // Encrypt and Save Prescription Image if provided
                 if (OtherAssistanceDto.DoctorPrescriptionimage != null)
                 {
-                    newFileNamePrescription = safeEncryptedTimestamp + "_prescription.enc";
+                    // Encrypt the original filename
+                    string originalFileName = OtherAssistanceDto.DoctorPrescriptionimage.FileName;
+                    newFileNamePrescription = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
@@ -1485,7 +1566,9 @@ namespace LingapDVO.Controllers
                 // Encrypt and Save Death Certificate Image if provided
                 if (OtherAssistanceDto.DeathCertificateimage != null)
                 {
-                    newFileNameDeathCertificate = safeEncryptedTimestamp + "_deathcert.enc";
+                    // Encrypt the original filename
+                    string originalFileName = OtherAssistanceDto.DeathCertificateimage.FileName;
+                    newFileNameDeathCertificate = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
@@ -1498,7 +1581,9 @@ namespace LingapDVO.Controllers
                 // Encrypt and Save Medical Certificate Image if provided
                 if (OtherAssistanceDto.MedCertificateimage != null)
                 {
-                    newFileNameMedCertificate = safeEncryptedTimestamp + "_medcert.enc";
+                    // Encrypt the original filename
+                    string originalFileName = OtherAssistanceDto.MedCertificateimage.FileName;
+                    newFileNameMedCertificate = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePathMedCertificate = Path.Combine(uploadsFolder3, newFileNameMedCertificate);
                     using (var fileStream = new FileStream(filePathMedCertificate, FileMode.Create))
                     {
@@ -1645,7 +1730,7 @@ namespace LingapDVO.Controllers
 
             // Basic ViewData setup
             ViewData["Status"] = medicallabform.Status;
-            ViewData["IsRetakeMode"] = medicallabform.Status == "Retake"; // Check if in retake mode
+            ViewData["IsRetakeMode"] = medicallabform.Status2 == "Retake"; // Check if in retake mode
             ViewData["Id"] = medicallabform.Id;
             ViewData["Lastname"] = medicallabform.Lastname;
             ViewData["Firstname"] = medicallabform.Firstname;
@@ -1883,11 +1968,14 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
-            if (existing.Status != "Pending")
+            if (existing.Status != "Pending" && existing.Status != "Retake")
             {
-                TempData["ErrorMessage"] = "You can only edit forms that are in 'Pending' status.";
+                TempData["ErrorMessage"] = "You can only edit forms that are in 'Pending' or 'Retake' status.";
                 return RedirectToAction("Homepage", "Dashboard");
             }
+
+            // If status is "Retake", change it back to "Processing" after update
+            bool isRetakeMode = existing.Status2 == "Retake";
 
             // ? 4. Remove validations for optional fields
             if (string.IsNullOrEmpty(OtherAssistanceDto.PhilHealthNo))
@@ -1926,9 +2014,6 @@ namespace LingapDVO.Controllers
             try
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
-                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
-                string safeName = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // ? 5. Update Doctor Prescription (optional)
                 if (OtherAssistanceDto.DoctorPrescriptionimage != null)
@@ -1943,7 +2028,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_prescription.enc";
+                    // Encrypt the original filename
+                    string originalFileName = OtherAssistanceDto.DoctorPrescriptionimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -1968,7 +2055,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_deathcert.enc";
+                    // Encrypt the original filename
+                    string originalFileName = OtherAssistanceDto.DeathCertificateimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -1993,7 +2082,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_medcert.enc";
+                    // Encrypt the original filename
+                    string originalFileName = OtherAssistanceDto.MedCertificateimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -2087,6 +2178,14 @@ namespace LingapDVO.Controllers
 
                 // ? 10. Update timestamp properly
                 existing.CreatedAt = _dateTimeService.Now;
+
+                // ? 10.5. If retake mode, change status back to Processing and reset priority timer
+                if (isRetakeMode)
+                {
+                    existing.Status = "Processing";
+                    existing.Status2 = "Processing";
+                    existing.Result = _dateTimeService.Now; // Reset priority timer
+                }
 
                 // ? 11. Save changes
                 context.Entry(existing).State = EntityState.Modified;
@@ -2254,12 +2353,7 @@ namespace LingapDVO.Controllers
                 // Use configuration-based AES helper
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // Generate unique encrypted timestamp for filenames
-                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
-                string safeEncryptedTimestamp = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
-
-                // Generate encrypted filenames
+                // Generate encrypted filenames based on original filenames
                 string? newFileNamePrescription = null;
                 string? newFileNameDeathCertificate = null;
 
@@ -2273,7 +2367,9 @@ namespace LingapDVO.Controllers
                 // Encrypt and Save Prescription Image if provided
                 if (FuneralAssistanceDto.DoctorPrescriptionimage != null)
                 {
-                    newFileNamePrescription = safeEncryptedTimestamp + "_prescription.enc";
+                    // Encrypt the original filename
+                    string originalFileName = FuneralAssistanceDto.DoctorPrescriptionimage.FileName;
+                    newFileNamePrescription = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
                     using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
                     {
@@ -2286,7 +2382,9 @@ namespace LingapDVO.Controllers
                 // Encrypt and Save Death Certificate Image if provided
                 if (FuneralAssistanceDto.DeathCertificateimage != null)
                 {
-                    newFileNameDeathCertificate = safeEncryptedTimestamp + "_deathcert.enc";
+                    // Encrypt the original filename
+                    string originalFileName = FuneralAssistanceDto.DeathCertificateimage.FileName;
+                    newFileNameDeathCertificate = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
                     using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
                     {
@@ -2431,7 +2529,7 @@ namespace LingapDVO.Controllers
 
             // Basic ViewData setup
             ViewData["Status2"] = FuneralAssistance.Status2;
-            ViewData["IsRetakeMode"] = FuneralAssistance.Status == "Retake"; // Check if in retake mode
+            ViewData["IsRetakeMode"] = FuneralAssistance.Status2 == "Retake"; // Check if in retake mode
             ViewData["Id"] = FuneralAssistance.Id;
             ViewData["Lastname"] = FuneralAssistance.Lastname;
             ViewData["Firstname"] = FuneralAssistance.Firstname;
@@ -2629,11 +2727,14 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
-            if (existing.Status != "Pending")
+            if (existing.Status != "Pending" && existing.Status != "Retake")
             {
-                TempData["ErrorMessage"] = "You can only edit forms that are in 'Pending' status.";
+                TempData["ErrorMessage"] = "You can only edit forms that are in 'Pending' or 'Retake' status.";
                 return RedirectToAction("Homepage", "Dashboard");
             }
+
+            // If status is "Retake", change it back to "Processing" after update
+            bool isRetakeMode = existing.Status2 == "Retake";
 
             // ? 4. Remove validations for optional fields
             if (string.IsNullOrEmpty(FuneralAssistanceDto.PhilHealthNo))
@@ -2668,9 +2769,6 @@ namespace LingapDVO.Controllers
             try
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
-                string timestamp = _dateTimeService.Now.ToString("yyyyMMddHHmmssfff");
-                string encryptedTimestamp = aesHelper.EncryptTimestamp(timestamp);
-                string safeName = new string(encryptedTimestamp.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray());
 
                 // ? 5. Update Doctor Prescription (optional)
                 if (FuneralAssistanceDto.DoctorPrescriptionimage != null)
@@ -2685,7 +2783,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_prescription.enc";
+                    // Encrypt the original filename
+                    string originalFileName = FuneralAssistanceDto.DoctorPrescriptionimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -2710,7 +2810,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_deathcert.enc";
+                    // Encrypt the original filename
+                    string originalFileName = FuneralAssistanceDto.DeathCertificateimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -2804,6 +2906,14 @@ namespace LingapDVO.Controllers
 
                 // ? 9. Update timestamp properly
                 existing.CreatedAt = _dateTimeService.Now;
+
+                // ? 9.5. If retake mode, change status back to Processing and reset priority timer
+                if (isRetakeMode)
+                {
+                    existing.Status = "Processing";
+                    existing.Status2 = "Processing";
+                    existing.Result = _dateTimeService.Now; // Reset priority timer
+                }
 
                 // ? 10. Save changes
                 context.Entry(existing).State = EntityState.Modified;
