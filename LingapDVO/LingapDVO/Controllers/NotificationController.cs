@@ -301,7 +301,7 @@ public class NotificationsController : Controller
     }
 
     [HttpPost]
-    public JsonResult MarkAllNotificationsAsRead([FromBody] MarkAllReadRequest request = null)
+    public JsonResult MarkAllNotificationsAsRead([FromBody] MarkAllReadRequest? request = null)
     {
         var userIdString = HttpContext.Session.GetString("UserId");
 
@@ -549,9 +549,9 @@ public class NotificationsController : Controller
     /// </summary>
     private string GetNotificationLink(
         DateTime createdAt,
-        string status2 = null,
+        string? status2 = null,
         DateTime? claimedAt = null,
-        string status3 = null)
+        string? status3 = null)
     {
         // Check if application is claimed (completed)
         if (claimedAt.HasValue && claimedAt.Value.Year > 1 && !string.IsNullOrWhiteSpace(status3))
@@ -582,11 +582,11 @@ public class NotificationsController : Controller
         string status,
         DateTime createdAt,
         DateTime? processAt = null,
-        string processBy = null,
+        string? processBy = null,
         DateTime? resultDate = null,
-        string status2 = null,
+        string? status2 = null,
         DateTime? claimedAt = null,
-        string status3 = null)
+        string? status3 = null)
     {
         // Priority 1: Check if retake is required (Status == "Retake") - Action Required
         if (status == "Retake")

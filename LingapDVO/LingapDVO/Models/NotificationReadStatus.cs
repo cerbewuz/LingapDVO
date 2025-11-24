@@ -26,7 +26,7 @@ namespace LingapDVO.Models
         /// </summary>
         [Required]
         [MaxLength(255)]
-        public string NotificationId { get; set; }
+        public string NotificationId { get; set; } = string.Empty;
 
         /// <summary>
         /// When the notification was marked as read

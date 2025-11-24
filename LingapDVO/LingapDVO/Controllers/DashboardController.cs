@@ -648,7 +648,9 @@ namespace LingapDVO.Controllers
             if (keyField == null)
                 throw new InvalidOperationException("Cannot access AES key");
 
-            byte[] key = (byte[])keyField.GetValue(aesHelper);
+            byte[]? key = keyField.GetValue(aesHelper) as byte[];
+            if (key == null)
+                throw new InvalidOperationException("AES key is null");
 
             using var aes = Aes.Create();
             aes.Key = key;
@@ -2109,7 +2111,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_front.enc";
+                    // Encrypt the original filename
+                    string originalFileName = OtherAssistanceDto.IdFrontimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -2133,7 +2137,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_back.enc";
+                    // Encrypt the original filename
+                    string originalFileName = OtherAssistanceDto.IdBackimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -2837,7 +2843,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_front.enc";
+                    // Encrypt the original filename
+                    string originalFileName = FuneralAssistanceDto.IdFrontimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -2861,7 +2869,9 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    string fileName = safeName + "_back.enc";
+                    // Encrypt the original filename
+                    string originalFileName = FuneralAssistanceDto.IdBackimage.FileName;
+                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
@@ -3881,8 +3891,8 @@ namespace LingapDVO.Controllers
                 Console.WriteLine($"?? Searching in {possibleFolders.Count} possible folders");
 
                 // Search for the file in possible folders
-                string encryptedFilePath = null;
-                string folderPath = null;
+                string? encryptedFilePath = null;
+                string? folderPath = null;
 
                 foreach (var folder in possibleFolders)
                 {
@@ -3994,7 +4004,7 @@ namespace LingapDVO.Controllers
             }
 
             string safeFileName = Path.GetFileName(fileName);
-            string filePath = null;
+            string? filePath = null;
 
             // Search for the file in possible folders
             foreach (var folder in possibleFolders)
@@ -4180,7 +4190,7 @@ namespace LingapDVO.Controllers
         // ═══════════════════════════════════════════════════════════════
 
         [HttpGet]
-        public IActionResult Feedback(string assistanceType = null, int? assistanceId = null, int? userId = null)
+        public IActionResult Feedback(string? assistanceType = null, int? assistanceId = null, int? userId = null)
         {
             ViewBag.AssistanceType = assistanceType;
             ViewBag.AssistanceId = assistanceId;

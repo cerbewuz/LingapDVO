@@ -13,7 +13,7 @@
             if (!barangayDetailedData.ContainsKey(bill.Brgy))
                 barangayDetailedData[bill.Brgy] = new Dictionary<string, int>();
 
-            var assistanceType = bill.Typeassistance?.Trim();
+            var assistanceType = bill.Typeassistance?.Trim() ?? "";
             barangayDetailedData[bill.Brgy][assistanceType] =
                 barangayDetailedData[bill.Brgy].GetValueOrDefault(assistanceType, 0) + 1;
         }
@@ -27,7 +27,7 @@
             if (!barangayDetailedData.ContainsKey(form.Brgy))
                 barangayDetailedData[form.Brgy] = new Dictionary<string, int>();
 
-            var assistanceType = form.Typeassistance?.Trim();
+            var assistanceType = form.Typeassistance?.Trim() ?? "";
             barangayDetailedData[form.Brgy][assistanceType] =
                 barangayDetailedData[form.Brgy].GetValueOrDefault(assistanceType, 0) + 1;
         }

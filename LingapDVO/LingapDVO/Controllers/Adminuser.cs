@@ -871,7 +871,9 @@ namespace LingapDVO.Controllers
             if (keyField == null)
                 throw new InvalidOperationException("Cannot access AES key");
 
-            byte[] key = (byte[])keyField.GetValue(aesHelper);
+            byte[]? key = keyField.GetValue(aesHelper) as byte[];
+            if (key == null)
+                throw new InvalidOperationException("AES key is null");
 
             using var aes = Aes.Create();
             aes.Key = key;
@@ -3387,8 +3389,8 @@ namespace LingapDVO.Controllers
                 Console.WriteLine($"?? Searching in {possibleFolders.Count} possible folders");
 
                 // Search for the file in possible folders
-                string encryptedFilePath = null;
-                string folderPath = null;
+                string? encryptedFilePath = null;
+                string? folderPath = null;
 
                 foreach (var folder in possibleFolders)
                 {
@@ -4699,7 +4701,7 @@ namespace LingapDVO.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetFeedbackStatistics(DateTime? startDate, DateTime? endDate, string assistanceType = null)
+        public IActionResult GetFeedbackStatistics(DateTime? startDate, DateTime? endDate, string? assistanceType = null)
         {
             try
             {
@@ -4818,7 +4820,7 @@ namespace LingapDVO.Controllers
 
         private object CalculateRatingDistribution(IEnumerable<int?> ratings)
         {
-            var validRatings = ratings.Where(r => r.HasValue).Select(r => r.Value).ToList();
+            var validRatings = ratings.Where(r => r.HasValue).Select(r => r!.Value).ToList();
             var total = validRatings.Count;
 
             if (total == 0)
@@ -4858,7 +4860,7 @@ namespace LingapDVO.Controllers
                 f.R6_FairPayment,
                 f.R7_Fairness,
                 f.R8_EmployeeCourtesy
-            }.Where(r => r.HasValue).Select(r => r.Value).ToList();
+            }.Where(r => r.HasValue).Select(r => r!.Value).ToList();
 
             return ratings.Any() ? Math.Round(ratings.Average(), 2) : 0;
         }

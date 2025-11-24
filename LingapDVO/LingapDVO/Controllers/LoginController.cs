@@ -681,7 +681,7 @@ namespace LingapDVO.Controllers
             }
 
             // Verify reCAPTCHA
-            string recaptchaResponse = Request.Form["g-recaptcha-response"];
+            string? recaptchaResponse = Request.Form["g-recaptcha-response"];
             if (string.IsNullOrEmpty(recaptchaResponse))
             {
                 if (IsAjaxRequest())
@@ -1037,9 +1037,9 @@ namespace LingapDVO.Controllers
             try
             {
                 // Get all session values
-                string username = HttpContext.Session.GetString("Username");
-                string isSuperadmin = HttpContext.Session.GetString("IsSuperadmin");
-                string isAdmin = HttpContext.Session.GetString("IsAdmin");
+                string? username = HttpContext.Session.GetString("Username");
+                string? isSuperadmin = HttpContext.Session.GetString("IsSuperadmin");
+                string? isAdmin = HttpContext.Session.GetString("IsAdmin");
 
                 // Determine user type and validate required session data
                 bool isValidSession = false;
@@ -1177,14 +1177,14 @@ namespace LingapDVO.Controllers
         private string GetClientIpAddress()
         {
             // Check for forwarded IP (behind proxy/load balancer)
-            string forwardedFor = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            string? forwardedFor = Request.Headers["X-Forwarded-For"].FirstOrDefault();
             if (!string.IsNullOrEmpty(forwardedFor))
             {
                 return forwardedFor.Split(',')[0].Trim();
             }
 
             // Check for real IP header
-            string realIp = Request.Headers["X-Real-IP"].FirstOrDefault();
+            string? realIp = Request.Headers["X-Real-IP"].FirstOrDefault();
             if (!string.IsNullOrEmpty(realIp))
             {
                 return realIp;
@@ -2076,11 +2076,11 @@ namespace LingapDVO.Controllers
                     UserId = userId,
                     FrontID = frontFileName,
                     BackID = backFileName,
-                    IDtype = VerifyaccountDto.IDtype,
-                    IDnumber = VerifyaccountDto.IDnumber,
-                    Lastname = VerifyaccountDto.Lastname,
-                    Firstname = VerifyaccountDto.Firstname,
-                    Middlename = VerifyaccountDto.Middlename,
+                    IDtype = VerifyaccountDto.IDtype ?? "",
+                    IDnumber = VerifyaccountDto.IDnumber ?? "",
+                    Lastname = VerifyaccountDto.Lastname ?? "",
+                    Firstname = VerifyaccountDto.Firstname ?? "",
+                    Middlename = VerifyaccountDto.Middlename ?? "",
                     Suffix = normalizedSuffix,
                     Gender = VerifyaccountDto.Gender,
                     Dateofbirth = VerifyaccountDto.Dateofbirth,

@@ -6,7 +6,7 @@ namespace LingapDVO.Services
 {
     public interface IMultiChannelNotificationService
     {
-        Task SendNotificationAsync(int userId, string title, string message, string type, string link = null);
+        Task SendNotificationAsync(int userId, string title, string message, string type, string? link = null);
         Task SendStatusChangeNotificationAsync(int userId, string applicantName, string formType, string status, int formId);
         Task SendDelayNotificationAsync(int userId, string applicantName, string formType, string priority, DateTime submittedDate);
     }
@@ -36,7 +36,7 @@ namespace LingapDVO.Services
             _dateTimeService = dateTimeService;
         }
 
-        public async Task SendNotificationAsync(int userId, string title, string message, string type, string link = null)
+        public async Task SendNotificationAsync(int userId, string title, string message, string type, string? link = null)
         {
             try
             {
