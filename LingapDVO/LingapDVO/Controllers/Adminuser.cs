@@ -227,27 +227,71 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Hospital Bill Assistance Update - LINGAP DVO";
+                    string subject = "Your Hospital Bill Help is Being Checked - LingapDVO";
                     string body = $@"
-                    Dear {firstName},
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #0066cc; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #0066cc; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #0066cc; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>📋 We Are Checking Your Application</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Hello {firstName},</p>
+            <p class='message'>
+                Good news! We are now checking your Hospital Bill Help request.
+                We will send you another message soon to let you know the result.
+            </p>
 
-                    Your Hospital Bill Assistance application is now being processed.
+            <div class='details-box'>
+                <h3>YOUR APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Help Type:</span>
+                    <span class='detail-value'>Hospital Bill Help</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Being Checked</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Updated:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Notes:</span>
+                    <span class='detail-value'>{HospitalAssistanceDto.Comments ?? "None"}</span>
+                </div>
+            </div>
 
-                    APPLICATION DETAILS:
-                    • Application Type: Hospital Bill Assistance
-                    • Status: Processing
-                    • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
-
-                    REMARKS:
-                    {HospitalAssistanceDto.Comments ?? "N/A"}
-
-                    Thank you for your patience. We will notify you once your application status is updated.
-
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Medical Assistance Program
-
-                    Note: This is an automated email. Please do not reply to this message.";
+            <p class='message'>
+                Thank you for waiting. We will update you within 1-2 hours.
+            </p>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO Medical Help Program</strong></p>
+            <p>This is an automatic message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
 
                     // Send the email safely using async
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -261,7 +305,7 @@ namespace LingapDVO.Controllers
                     {
                         Subject = subject,
                         Body = body,
-                        IsBodyHtml = false
+                        IsBodyHtml = true
                     })
                     {
                         await smtp.SendMailAsync(message);
@@ -425,27 +469,71 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Medical and Laboratory Assistance Update - LINGAP DVO";
+                    string subject = "Your Medical Help is Being Checked - LingapDVO";
                     string body = $@"
-                    Dear {firstName},
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #0066cc; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #0066cc; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #0066cc; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>📋 We Are Checking Your Application</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Hello {firstName},</p>
+            <p class='message'>
+                Good news! We are now checking your Medical and Laboratory Help request.
+                We will send you another message soon to let you know the result.
+            </p>
 
-                    Your Medical and Laboratory Assistance application is now being processed.
+            <div class='details-box'>
+                <h3>YOUR APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Help Type:</span>
+                    <span class='detail-value'>Medical and Laboratory Help</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Being Checked</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Updated:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Notes:</span>
+                    <span class='detail-value'>{OtherAssistanceDto.Comments ?? "None"}</span>
+                </div>
+            </div>
 
-                    APPLICATION DETAILS:
-                    • Application Type: Medical and Laboratory Assistance
-                    • Status: Processing
-                    • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
-
-                    REMARKS:
-                    {OtherAssistanceDto.Comments ?? "N/A"}
-
-                    Thank you for your patience. We will notify you once your application status has been updated.
-
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Medical Assistance Program
-
-                    Note: This is an automated email. Please do not reply to this message.";
+            <p class='message'>
+                Thank you for waiting. We will update you within 1-2 hours.
+            </p>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO Medical Help Program</strong></p>
+            <p>This is an automatic message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
 
                     // Send email using async
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -459,7 +547,7 @@ namespace LingapDVO.Controllers
                     {
                         Subject = subject,
                         Body = body,
-                        IsBodyHtml = false
+                        IsBodyHtml = true
                     })
                     {
                         await smtp.SendMailAsync(message);
@@ -621,27 +709,71 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Funeral and Burial Assistance Update - LINGAP DVO";
+                    string subject = "Your Funeral Help is Being Checked - LingapDVO";
                     string body = $@"
-                    Dear {firstName},
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #6c757d; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #6c757d; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #6c757d; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>📋 We Are Checking Your Application</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Hello {firstName},</p>
+            <p class='message'>
+                We are now checking your Funeral and Burial Help request.
+                We will send you another message soon to let you know the result.
+            </p>
 
-                    Your Funeral and Burial Assistance application is now being processed.
+            <div class='details-box'>
+                <h3>YOUR APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Help Type:</span>
+                    <span class='detail-value'>Funeral and Burial Help</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Being Checked</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Updated:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Notes:</span>
+                    <span class='detail-value'>{FuneralAssistanceDto.Comments ?? "None"}</span>
+                </div>
+            </div>
 
-                    APPLICATION DETAILS:
-                    • Application Type: Funeral and Burial Assistance
-                    • Status: Processing
-                    • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
-
-                    REMARKS:
-                    {FuneralAssistanceDto.Comments ?? "N/A"}
-
-                    Thank you for your patience. We will notify you once your application status has been updated.
-
-                    Sincerely,
-                    {fromName}
-                    LINGAP DVO Funeral and Burial Assistance Program
-
-                    Note: This is an automated email. Please do not reply to this message.";
+            <p class='message'>
+                Thank you for waiting. We will update you within 1-2 hours.
+            </p>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO Funeral Help Program</strong></p>
+            <p>This is an automatic message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
 
                     // Send email using async
                     using (var smtp = new SmtpClient("smtp.gmail.com", 587)
@@ -655,7 +787,7 @@ namespace LingapDVO.Controllers
                     {
                         Subject = subject,
                         Body = body,
-                        IsBodyHtml = false
+                        IsBodyHtml = true
                     })
                     {
                         await smtp.SendMailAsync(message);
@@ -3583,11 +3715,29 @@ namespace LingapDVO.Controllers
                 HospitalAssistance.Processby = HospitalAssistanceDto.Processby;
                 HospitalAssistance.Result = _dateTimeService.Now;
 
+                // Handle Retake status - move back to Pending and track retake information
+                var status = HospitalAssistanceDto.Status2?.Trim();
+                if (!string.IsNullOrEmpty(status) && status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+                {
+                    HospitalAssistance.Status = "Pending"; // Move back to Pending
+                    HospitalAssistance.IsRetakeApplication = true;
+                    HospitalAssistance.RetakeRequestedAt = _dateTimeService.Now;
+
+                    // Extract retake reason from Comments (format: "RETAKE REQUEST: reason")
+                    if (!string.IsNullOrEmpty(HospitalAssistanceDto.Comments) && HospitalAssistanceDto.Comments.StartsWith("RETAKE REQUEST: "))
+                    {
+                        HospitalAssistance.RetakeReason = HospitalAssistanceDto.Comments.Substring("RETAKE REQUEST: ".Length);
+                    }
+                    else
+                    {
+                        HospitalAssistance.RetakeReason = HospitalAssistanceDto.Comments;
+                    }
+                }
+
                 context.SaveChanges();
 
                 // Send multi-channel notification
-                var status = HospitalAssistanceDto.Status2?.Trim();
-                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) || status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
                     var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
@@ -3621,11 +3771,11 @@ namespace LingapDVO.Controllers
 
                         if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Hospital Bill Assistance Has Been Approved - LINGAP DVO";
+                            subject = "Good News! Your Hospital Bill Assistance is Approved - LingapDVO";
                             body = $@"
                             Dear {firstName},
 
-                            We are pleased to inform you that your Hospital Bill Assistance application has been APPROVED.
+                            We are happy to tell you that your Hospital Bill Assistance application has been APPROVED.
 
                             APPLICATION DETAILS:
                             • Application Type: Hospital Bill Assistance
@@ -3640,17 +3790,17 @@ namespace LingapDVO.Controllers
                             NEXT STEPS:
                             Please visit our office to complete the necessary documentation and receive your assistance.
 
-                            Thank you for choosing LINGAP DVO. We are committed to supporting your healthcare needs.
+                            Thank you for using LingapDVO. We are here to help with your healthcare needs.
 
                             Sincerely,
                             {fromName}
-                            LINGAP DVO Medical Assistance Program
+                            LingapDVO Medical Help Program
 
                             Note: This is an automated email. Please do not reply to this message.";
                                 }
                                 else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    subject = "Update on Your Hospital Bill Assistance Application - LINGAP DVO";
+                                    subject = "Update on Your Hospital Bill Assistance Application - LingapDVO";
                                     body = $@"
                                     Dear {firstName},
 
@@ -3666,15 +3816,114 @@ namespace LingapDVO.Controllers
                                     REMARKS:
                                     {HospitalAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
 
-                                    If you have questions or would like to discuss this decision further, please visit our office during business hours.
+                                    If you have questions or would like to discuss this decision further, please visit our office during office hours.
 
                                     We appreciate your understanding.
 
                                     Sincerely,
                                     {fromName}
-                                    LINGAP DVO Medical Assistance Program
+                                    LingapDVO Medical Help Program
 
                                     Note: This is an automated email. Please do not reply to this message.";
+                        }
+                        else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+                        {
+                            subject = "Please Send Papers Again for Your Hospital Bill Assistance - LingapDVO";
+                            var retakeReason = HospitalAssistance.RetakeReason ?? HospitalAssistanceDto.Comments ?? "Please review and resubmit your documents.";
+                            body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #dc3545; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #dc3545; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #dc3545; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .reason-box {{ margin-top: 25px; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; }}
+        .reason-box h3 {{ color: #856404; margin-top: 0; font-size: 16px; }}
+        .reason-box p {{ color: #856404; margin: 0; }}
+        .steps-box {{ margin-top: 25px; padding: 20px; background-color: #e7f3ff; border-left: 4px solid #0066cc; border-radius: 4px; }}
+        .steps-box h3 {{ color: #0066cc; margin-top: 0; font-size: 16px; }}
+        .steps-box ol {{ margin: 10px 0; padding-left: 20px; }}
+        .steps-box li {{ margin: 8px 0; color: #555; }}
+        .button {{ display: inline-block; padding: 12px 30px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 15px; }}
+        .button:hover {{ background-color: #c82333; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>⚠ Action Required - Retake Application</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Dear {firstName},</p>
+            <p class='message'>
+                We have checked your Hospital Bill Assistance application and need you to send some papers again.
+                Your application details will stay the same - you only need to upload the fixed papers.
+            </p>
+
+            <div class='details-box'>
+                <h3>APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application Type:</span>
+                    <span class='detail-value'>Hospital Bill Assistance</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application ID:</span>
+                    <span class='detail-value'>{HospitalAssistance.Id}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Please Send Papers Again</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Updated:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Processed By:</span>
+                    <span class='detail-value'>{HospitalAssistanceDto.Processby}</span>
+                </div>
+            </div>
+
+            <div class='reason-box'>
+                <h3>📋 WHY YOU NEED TO SEND PAPERS AGAIN</h3>
+                <p>{retakeReason}</p>
+            </div>
+
+            <div class='steps-box'>
+                <h3>📝 HOW TO SEND YOUR PAPERS AGAIN</h3>
+                <ol>
+                    <li>Log in to your LingapDVO account</li>
+                    <li>Go to Application Tracking</li>
+                    <li>Find this application and click on it</li>
+                    <li>Upload the needed papers</li>
+                </ol>
+                <a href='https://lingap.online/Applicationtracking' class='button'>Go to Application Tracking</a>
+            </div>
+
+            <p class='message' style='margin-top: 20px;'>
+                If you have any questions, please visit our office during office hours or contact us for assistance.
+                Thank you for your help.
+            </p>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO Medical Help Program</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
                         }
 
                         // Send the email
@@ -3689,7 +3938,7 @@ namespace LingapDVO.Controllers
                         {
                             Subject = subject,
                             Body = body,
-                            IsBodyHtml = false
+                            IsBodyHtml = true
                         })
                         {
                             await smtp.SendMailAsync(message);
@@ -3772,11 +4021,29 @@ namespace LingapDVO.Controllers
                 medicallabform.Processby = OtherAssistanceDto.Processby;
                 medicallabform.Result = _dateTimeService.Now;
 
+                // Handle Retake status - move back to Pending and track retake information
+                var status = OtherAssistanceDto.Status2?.Trim();
+                if (!string.IsNullOrEmpty(status) && status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+                {
+                    medicallabform.Status = "Pending"; // Move back to Pending
+                    medicallabform.IsRetakeApplication = true;
+                    medicallabform.RetakeRequestedAt = _dateTimeService.Now;
+
+                    // Extract retake reason from Comments (format: "RETAKE REQUEST: reason")
+                    if (!string.IsNullOrEmpty(OtherAssistanceDto.Comments) && OtherAssistanceDto.Comments.StartsWith("RETAKE REQUEST: "))
+                    {
+                        medicallabform.RetakeReason = OtherAssistanceDto.Comments.Substring("RETAKE REQUEST: ".Length);
+                    }
+                    else
+                    {
+                        medicallabform.RetakeReason = OtherAssistanceDto.Comments;
+                    }
+                }
+
                 context.SaveChanges();
 
                 // Send multi-channel notification
-                var status = OtherAssistanceDto.Status2?.Trim();
-                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) || status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
                     var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == medicallabform.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
@@ -3810,14 +4077,14 @@ namespace LingapDVO.Controllers
 
                         if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Medical Assistance Has Been Approved - LINGAP DVO";
+                            subject = "Good News! Your Medical Help is Approved - LingapDVO";
                             body = $@"
                             Dear {firstName},
 
-                            We are pleased to inform you that your Medical Assistance application has been APPROVED.
+                            We are happy to tell you that your Medical Help application has been APPROVED.
 
                             APPLICATION DETAILS:
-                            • Application Type: Medical Assistance
+                            • Application Type: Medical Help
                             • Application ID: {medicallabform.Id}
                             • Status: Approved
                             • Date Approved: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
@@ -3829,24 +4096,24 @@ namespace LingapDVO.Controllers
                             NEXT STEPS:
                             Please visit our office to complete the necessary documentation and receive your assistance.
 
-                            Thank you for choosing LINGAP DVO. We are committed to supporting your healthcare needs.
+                            Thank you for using LingapDVO. We are here to help with your healthcare needs.
 
                             Sincerely,
                             {fromName}
-                            LINGAP DVO Medical Assistance Program
+                            LingapDVO Medical Help Program
 
                             Note: This is an automated email. Please do not reply to this message.";
                                 }
                                 else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    subject = "Update on Your Medical Assistance Application - LINGAP DVO";
+                                    subject = "Update on Your Medical Help Application - LingapDVO";
                                     body = $@"
                             Dear {firstName},
 
-                            After careful review, we regret to inform you that your Medical Assistance application has been DISAPPROVED.
+                            After careful review, we regret to inform you that your Medical Help application has been DISAPPROVED.
 
                             APPLICATION DETAILS:
-                            • Application Type: Medical Assistance
+                            • Application Type: Medical Help
                             • Application ID: {medicallabform.Id}
                             • Status: Disapproved
                             • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
@@ -3855,15 +4122,114 @@ namespace LingapDVO.Controllers
                             REMARKS:
                             {OtherAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
 
-                            If you have questions or would like to discuss this decision further, please visit our office during business hours.
+                            If you have questions or would like to discuss this decision further, please visit our office during office hours.
 
                             We appreciate your understanding.
 
                             Sincerely,
                             {fromName}
-                            LINGAP DVO Medical Assistance Program
+                            LingapDVO Medical Help Program
 
                             Note: This is an automated email. Please do not reply to this message.";
+                        }
+                        else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+                        {
+                            subject = "Please Send Papers Again for Your Medical Help - LingapDVO";
+                            var retakeReason = medicallabform.RetakeReason ?? OtherAssistanceDto.Comments ?? "Please review and resubmit your documents.";
+                            body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #dc3545; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #dc3545; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #dc3545; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .reason-box {{ margin-top: 25px; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; }}
+        .reason-box h3 {{ color: #856404; margin-top: 0; font-size: 16px; }}
+        .reason-box p {{ color: #856404; margin: 0; }}
+        .steps-box {{ margin-top: 25px; padding: 20px; background-color: #e7f3ff; border-left: 4px solid #0066cc; border-radius: 4px; }}
+        .steps-box h3 {{ color: #0066cc; margin-top: 0; font-size: 16px; }}
+        .steps-box ol {{ margin: 10px 0; padding-left: 20px; }}
+        .steps-box li {{ margin: 8px 0; color: #555; }}
+        .button {{ display: inline-block; padding: 12px 30px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 15px; }}
+        .button:hover {{ background-color: #c82333; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>⚠ Action Required - Retake Application</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Dear {firstName},</p>
+            <p class='message'>
+                We have checked your Medical Help application and need you to send some papers again.
+                Your application details will stay the same - you only need to upload the fixed papers.
+            </p>
+
+            <div class='details-box'>
+                <h3>APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application Type:</span>
+                    <span class='detail-value'>Medical Help</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application ID:</span>
+                    <span class='detail-value'>{medicallabform.Id}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Please Send Papers Again</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Updated:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Processed By:</span>
+                    <span class='detail-value'>{OtherAssistanceDto.Processby}</span>
+                </div>
+            </div>
+
+            <div class='reason-box'>
+                <h3>📋 WHY YOU NEED TO SEND PAPERS AGAIN</h3>
+                <p>{retakeReason}</p>
+            </div>
+
+            <div class='steps-box'>
+                <h3>📝 HOW TO SEND YOUR PAPERS AGAIN</h3>
+                <ol>
+                    <li>Log in to your LingapDVO account</li>
+                    <li>Go to Application Tracking</li>
+                    <li>Find this application and click on it</li>
+                    <li>Upload the needed papers</li>
+                </ol>
+                <a href='https://lingap.online/Applicationtracking' class='button'>Go to Application Tracking</a>
+            </div>
+
+            <p class='message' style='margin-top: 20px;'>
+                If you have any questions, please visit our office during office hours or contact us for assistance.
+                Thank you for your help.
+            </p>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO Medical Help Program</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
                         }
 
                         // Send the email
@@ -3878,7 +4244,7 @@ namespace LingapDVO.Controllers
                         {
                             Subject = subject,
                             Body = body,
-                            IsBodyHtml = false
+                            IsBodyHtml = true
                         })
                         {
                             await smtp.SendMailAsync(message);
@@ -3961,11 +4327,29 @@ namespace LingapDVO.Controllers
                 FuneralAssistance.Processby = FuneralAssistanceDto.Processby;
                 FuneralAssistance.Result = _dateTimeService.Now;
 
+                // Handle Retake status - move back to Pending and track retake information
+                var status = FuneralAssistanceDto.Status2?.Trim();
+                if (!string.IsNullOrEmpty(status) && status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+                {
+                    FuneralAssistance.Status = "Pending"; // Move back to Pending
+                    FuneralAssistance.IsRetakeApplication = true;
+                    FuneralAssistance.RetakeRequestedAt = _dateTimeService.Now;
+
+                    // Extract retake reason from Comments (format: "RETAKE REQUEST: reason")
+                    if (!string.IsNullOrEmpty(FuneralAssistanceDto.Comments) && FuneralAssistanceDto.Comments.StartsWith("RETAKE REQUEST: "))
+                    {
+                        FuneralAssistance.RetakeReason = FuneralAssistanceDto.Comments.Substring("RETAKE REQUEST: ".Length);
+                    }
+                    else
+                    {
+                        FuneralAssistance.RetakeReason = FuneralAssistanceDto.Comments;
+                    }
+                }
+
                 context.SaveChanges();
 
                 // Send multi-channel notification
-                var status = FuneralAssistanceDto.Status2?.Trim();
-                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) || status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
                     var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == FuneralAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
@@ -3999,14 +4383,14 @@ namespace LingapDVO.Controllers
 
                         if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
                         {
-                            subject = "Congratulations! Your Funeral Assistance Has Been Approved - LINGAP DVO";
+                            subject = "Good News! Your Funeral Help is Approved - LingapDVO";
                             body = $@"
                             Dear {firstName},
 
-                            We are pleased to inform you that your Funeral Assistance application has been APPROVED.
+                            We are happy to tell you that your Funeral Help application has been APPROVED.
 
                             APPLICATION DETAILS:
-                            • Application Type: Funeral Assistance
+                            • Application Type: Funeral Help
                             • Application ID: {FuneralAssistance.Id}
                             • Status: Approved
                             • Date Approved: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
@@ -4018,24 +4402,24 @@ namespace LingapDVO.Controllers
                             NEXT STEPS:
                             Please visit our office to complete the necessary documentation and receive your assistance.
 
-                            Thank you for choosing LINGAP DVO. We are committed to supporting your needs during this difficult time.
+                            Thank you for using LingapDVO. We are here to help with your needs during this hard time.
 
                             Sincerely,
                             {fromName}
-                            LINGAP DVO Funeral Assistance Program
+                            LingapDVO Funeral Help Program
 
                             Note: This is an automated email. Please do not reply to this message.";
                                 }
                                 else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    subject = "Update on Your Funeral Assistance Application - LINGAP DVO";
+                                    subject = "Update on Your Funeral Help Application - LingapDVO";
                                     body = $@"
                             Dear {firstName},
 
-                            After careful review, we regret to inform you that your Funeral Assistance application has been DISAPPROVED.
+                            After careful review, we regret to inform you that your Funeral Help application has been DISAPPROVED.
 
                             APPLICATION DETAILS:
-                            • Application Type: Funeral Assistance
+                            • Application Type: Funeral Help
                             • Application ID: {FuneralAssistance.Id}
                             • Status: Disapproved
                             • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
@@ -4044,15 +4428,114 @@ namespace LingapDVO.Controllers
                             REMARKS:
                             {FuneralAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
 
-                            If you have questions or would like to discuss this decision further, please visit our office during business hours.
+                            If you have questions or would like to discuss this decision further, please visit our office during office hours.
 
                             We appreciate your understanding.
 
                             Sincerely,
                             {fromName}
-                            LINGAP DVO Funeral Assistance Program
+                            LingapDVO Funeral Help Program
 
                             Note: This is an automated email. Please do not reply to this message.";
+                        }
+                        else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+                        {
+                            subject = "Please Send Papers Again for Your Funeral Help - LingapDVO";
+                            var retakeReason = FuneralAssistance.RetakeReason ?? FuneralAssistanceDto.Comments ?? "Please review and resubmit your documents.";
+                            body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background-color: #dc3545; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #dc3545; margin: 20px 0; border-radius: 4px; }}
+        .details-box h3 {{ margin-top: 0; color: #dc3545; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .reason-box {{ margin-top: 25px; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; }}
+        .reason-box h3 {{ color: #856404; margin-top: 0; font-size: 16px; }}
+        .reason-box p {{ color: #856404; margin: 0; }}
+        .steps-box {{ margin-top: 25px; padding: 20px; background-color: #e7f3ff; border-left: 4px solid #0066cc; border-radius: 4px; }}
+        .steps-box h3 {{ color: #0066cc; margin-top: 0; font-size: 16px; }}
+        .steps-box ol {{ margin: 10px 0; padding-left: 20px; }}
+        .steps-box li {{ margin: 8px 0; color: #555; }}
+        .button {{ display: inline-block; padding: 12px 30px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 15px; }}
+        .button:hover {{ background-color: #c82333; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>⚠ Action Required - Retake Application</h1>
+        </div>
+        <div class='content'>
+            <p class='greeting'>Dear {firstName},</p>
+            <p class='message'>
+                We have checked your Funeral Help application and need you to send some papers again.
+                Your application details will stay the same - you only need to upload the fixed papers.
+            </p>
+
+            <div class='details-box'>
+                <h3>APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application Type:</span>
+                    <span class='detail-value'>Funeral Help</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application ID:</span>
+                    <span class='detail-value'>{FuneralAssistance.Id}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value'><strong>Please Send Papers Again</strong></span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Updated:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Processed By:</span>
+                    <span class='detail-value'>{FuneralAssistanceDto.Processby}</span>
+                </div>
+            </div>
+
+            <div class='reason-box'>
+                <h3>📋 WHY YOU NEED TO SEND PAPERS AGAIN</h3>
+                <p>{retakeReason}</p>
+            </div>
+
+            <div class='steps-box'>
+                <h3>📝 HOW TO SEND YOUR PAPERS AGAIN</h3>
+                <ol>
+                    <li>Log in to your LingapDVO account</li>
+                    <li>Go to Application Tracking</li>
+                    <li>Find this application and click on it</li>
+                    <li>Upload the needed papers</li>
+                </ol>
+                <a href='https://lingap.online/Applicationtracking' class='button'>Go to Application Tracking</a>
+            </div>
+
+            <p class='message' style='margin-top: 20px;'>
+                If you have any questions, please visit our office during office hours or contact us for assistance.
+                Thank you for your help.
+            </p>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO Funeral Help Program</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
                         }
 
                         // Send the email
@@ -4067,7 +4550,7 @@ namespace LingapDVO.Controllers
                         {
                             Subject = subject,
                             Body = body,
-                            IsBodyHtml = false
+                            IsBodyHtml = true
                         })
                         {
                             await smtp.SendMailAsync(message);
@@ -4136,7 +4619,7 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Hospital Bill Assistance Claimed - LINGAP DVO";
+                    string subject = "Hospital Bill Assistance Received - LingapDVO";
                     string body = $@"
 <!DOCTYPE html>
 <html>
@@ -4166,12 +4649,12 @@ namespace LingapDVO.Controllers
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>✓ Assistance Successfully Claimed</h1>
+            <h1>✓ Assistance Received</h1>
         </div>
         <div class='content'>
             <p class='greeting'>Dear {firstName},</p>
             <p class='message'>
-                We are pleased to inform you that your Hospital Bill Assistance has been successfully claimed.
+                We are happy to tell you that your Hospital Bill Assistance has been received.
                 Thank you for your patience and cooperation throughout the process.
             </p>
 
@@ -4201,13 +4684,13 @@ namespace LingapDVO.Controllers
             </div>
 
             <div class='feedback-section'>
-                <h3>📝 We Value Your Feedback!</h3>
-                <p>Your opinion matters to us. Please take a moment to share your experience with our service. Your feedback helps us improve and serve you better.</p>
-                <a href='https://lingap.online/Feedback' class='button'>Submit Feedback</a>
+                <h3>📝 Tell Us What You Think!</h3>
+                <p>We want to know what you think. Please take a moment to tell us about your experience with our service. Your feedback helps us serve you better.</p>
+                <a href='https://lingap.online/Feedback' class='button'>Give Feedback</a>
             </div>
         </div>
         <div class='footer'>
-            <p><strong>LINGAP DVO Medical Assistance Program</strong></p>
+            <p><strong>LingapDVO Medical Help Program</strong></p>
             <p>This is an automated message. Please do not reply to this email.</p>
         </div>
     </div>
@@ -4287,7 +4770,7 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Medical and Laboratory Assistance Claimed - LINGAP DVO";
+                    string subject = "Medical and Laboratory Assistance Received - LingapDVO";
                     string body = $@"
 <!DOCTYPE html>
 <html>
@@ -4317,12 +4800,12 @@ namespace LingapDVO.Controllers
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>✓ Assistance Successfully Claimed</h1>
+            <h1>✓ Assistance Received</h1>
         </div>
         <div class='content'>
             <p class='greeting'>Dear {firstName},</p>
             <p class='message'>
-                We are pleased to inform you that your Medical and Laboratory Assistance has been successfully claimed.
+                We are happy to tell you that your Medical and Laboratory Assistance has been received.
                 Thank you for your patience and cooperation throughout the process.
             </p>
 
@@ -4352,13 +4835,13 @@ namespace LingapDVO.Controllers
             </div>
 
             <div class='feedback-section'>
-                <h3>📝 We Value Your Feedback!</h3>
-                <p>Your opinion matters to us. Please take a moment to share your experience with our service. Your feedback helps us improve and serve you better.</p>
-                <a href='https://lingap.online/Feedback' class='button'>Submit Feedback</a>
+                <h3>📝 Tell Us What You Think!</h3>
+                <p>We want to know what you think. Please take a moment to tell us about your experience with our service. Your feedback helps us serve you better.</p>
+                <a href='https://lingap.online/Feedback' class='button'>Give Feedback</a>
             </div>
         </div>
         <div class='footer'>
-            <p><strong>LINGAP DVO Medical Assistance Program</strong></p>
+            <p><strong>LingapDVO Medical Help Program</strong></p>
             <p>This is an automated message. Please do not reply to this email.</p>
         </div>
     </div>
@@ -4459,7 +4942,7 @@ namespace LingapDVO.Controllers
                     var fromAddress = new MailAddress(fromEmail, fromName);
                     var toAddress = new MailAddress(user.Email, firstName);
 
-                    string subject = "Funeral Assistance Claimed - LINGAP DVO";
+                    string subject = "Funeral Help Received - LingapDVO";
                     string body = $@"
 <!DOCTYPE html>
 <html>
@@ -4489,12 +4972,12 @@ namespace LingapDVO.Controllers
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>✓ Assistance Successfully Claimed</h1>
+            <h1>✓ Assistance Received</h1>
         </div>
         <div class='content'>
             <p class='greeting'>Dear {firstName},</p>
             <p class='message'>
-                We are pleased to inform you that your Funeral Assistance has been successfully claimed.
+                We are happy to tell you that your Funeral Help has been received.
                 Thank you for your patience and cooperation throughout the process.
             </p>
 
@@ -4502,7 +4985,7 @@ namespace LingapDVO.Controllers
                 <h3>APPLICATION DETAILS</h3>
                 <div class='detail-item'>
                     <span class='detail-label'>Application Type:</span>
-                    <span class='detail-value'>Funeral Assistance</span>
+                    <span class='detail-value'>Funeral Help</span>
                 </div>
                 <div class='detail-item'>
                     <span class='detail-label'>Status:</span>
@@ -4524,13 +5007,13 @@ namespace LingapDVO.Controllers
             </div>
 
             <div class='feedback-section'>
-                <h3>📝 We Value Your Feedback!</h3>
-                <p>Your opinion matters to us. Please take a moment to share your experience with our service. Your feedback helps us improve and serve you better.</p>
-                <a href='https://lingap.online/Feedback' class='button'>Submit Feedback</a>
+                <h3>📝 Tell Us What You Think!</h3>
+                <p>We want to know what you think. Please take a moment to tell us about your experience with our service. Your feedback helps us serve you better.</p>
+                <a href='https://lingap.online/Feedback' class='button'>Give Feedback</a>
             </div>
         </div>
         <div class='footer'>
-            <p><strong>LINGAP DVO Medical Assistance Program</strong></p>
+            <p><strong>LingapDVO Medical Help Program</strong></p>
             <p>This is an automated message. Please do not reply to this email.</p>
         </div>
     </div>
@@ -4566,7 +5049,7 @@ namespace LingapDVO.Controllers
                     _ = _notificationService.SendStatusChangeNotificationAsync(
                         funeralAssistance.UserId,
                         applicantName,
-                        "Funeral Assistance",
+                        "Funeral Help",
                         status,
                         funeralAssistance.Id
                     );
@@ -5119,7 +5602,7 @@ namespace LingapDVO.Controllers
                     generatedRecords++;
                 }
 
-                // Generate Funeral Assistance records
+                // Generate Funeral Help records
                 for (int i = 0; i < funeralCount; i++)
                 {
                     var createdDate = now.AddDays(-random.Next(1, 180));
@@ -5281,7 +5764,7 @@ namespace LingapDVO.Controllers
                     });
                 }
 
-                // Generate tokens and audit logs for Funeral Assistance
+                // Generate tokens and audit logs for Funeral Help
                 var funeralApps = context.FuneralAssistance.Where(f => f.CreatedAt >= now.AddDays(-180)).ToList();
                 foreach (var app in funeralApps)
                 {
@@ -5336,7 +5819,7 @@ namespace LingapDVO.Controllers
                 await context.SaveChangesAsync();
 
                 // STEP 5: Generate Feedbacks for claimed applications (about 30% of claimed applications)
-                var serviceTypes = new[] { "Hospital Bill Assistance", "Other Assistance", "Funeral Assistance" };
+                var serviceTypes = new[] { "Hospital Bill Assistance", "Other Assistance", "Funeral Help" };
                 var offices = new[] { "City Health Office", "Social Welfare Office", "CDVO", "Mayor's Office" };
                 var clientTypes = new[] { "Citizen", "Business", "Government Employee", "Senior Citizen", "PWD" };
                 var ccResponses = new[] { "Yes", "No", "Not Sure", "Somewhat" };
@@ -5439,7 +5922,7 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                // Generate feedbacks for claimed Funeral Assistance
+                // Generate feedbacks for claimed Funeral Help
                 var claimedFuneral = context.FuneralAssistance
                     .Where(f => f.Status3 == "claimed" && f.CreatedAt >= now.AddDays(-180))
                     .ToList();
@@ -5552,7 +6035,7 @@ namespace LingapDVO.Controllers
             {
                 var comments = new[] {
                     "Application approved. Documents verified. Assistance claimed.",
-                    "Assistance granted and successfully claimed.",
+                    "Assistance granted and received.",
                     "Approved and claimed. Process completed.",
                     "Application successful. Assistance provided.",
                     "Verified, approved, and claimed successfully."

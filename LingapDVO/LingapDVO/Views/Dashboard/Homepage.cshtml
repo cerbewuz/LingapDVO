@@ -995,6 +995,11 @@
             color: white;
         }
 
+        .notification-type-retake {
+            background: #ff9800;
+            color: white;
+        }
+
         .notification-type-claimed {
             background: var(--info);
             color: white;
@@ -2719,6 +2724,24 @@
                         }
                     }
 
+                    if (app.result && isValidDate(app.result) && app.status2 === 'Retake') {
+                        const resultDate = new Date(app.result);
+                        if ((now - resultDate) < 10 * 60 * 1000) {
+                            const notificationId = `change_retake_${appId}`;
+                            if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
+                                newNotifications.push({
+                                    id: notificationId,
+                                    title: `Action Required - Retake Application`,
+                                    message: `Your ${app.type} application requires document resubmission. Please update your attachments to continue processing.`,
+                                    isRead: false,
+                                    createdAt: app.result,
+                                    type: "retake",
+                                    link: "/Applicationtracking"
+                                });
+                            }
+                        }
+                    }
+
                     if (app.status2 === 'Approve' &&
                         app.claimedAt && isValidDate(app.claimedAt) &&
                         app.status3 && app.status3.trim() !== '') {
@@ -2965,6 +2988,13 @@
                     title = `${type} Application Not Approved`;
                     message = `Your application was not approved. Check Application History for details.`;
                     notificationType = "unapproved";
+                    createdDate = application.result;
+                }
+                else if (application.result && isValidDate(application.result) && application.status2 === 'Retake') {
+                    notificationId = `status_${appId}`;
+                    title = `Action Required - Retake Application`;
+                    message = `Your ${type} application requires document resubmission. Please update your attachments to continue processing.`;
+                    notificationType = "retake";
                     createdDate = application.result;
                 }
                 else if (application.processAt && isValidDate(application.processAt) &&
@@ -3317,6 +3347,7 @@
                     processing: { class: 'notification-type-processing', icon: 'fas fa-cog' },
                     approved: { class: 'notification-type-approved', icon: 'fas fa-check-circle' },
                     unapproved: { class: 'notification-type-unapproved', icon: 'fas fa-times-circle' },
+                    retake: { class: 'notification-type-retake', icon: 'fas fa-arrow-rotate-left' },
                     claimed: { class: 'notification-type-claimed', icon: 'fas fa-hand-holding-usd' },
                     delayed: { class: 'notification-type-delayed', icon: 'fas fa-clock' },
                     delay_alert: { class: 'notification-type-delay-alert', icon: 'fas fa-exclamation-triangle' },

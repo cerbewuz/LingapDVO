@@ -792,7 +792,9 @@
                             status2: "@f.Status2?.ToLower()",
                             status3: "@f.Status3?.ToLower()",
                             formId: @f.Id,
-                            controller: "Dashboard"
+                            controller: "Dashboard",
+                            isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
+                            retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
                         });
                         </text>
             }
@@ -809,7 +811,9 @@
                             status2: "@f.Status2?.ToLower()",
                             status3: "@f.Status3?.ToLower()",
                             formId: @f.Id,
-                            controller: "Dashboard"
+                            controller: "Dashboard",
+                            isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
+                            retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
                         });
                         </text>
             }
@@ -826,7 +830,9 @@
                             status2: "@f.Status2?.ToLower()",
                             status3: "@f.Status3?.ToLower()",
                             formId: @f.Id,
-                            controller: "Dashboard"
+                            controller: "Dashboard",
+                            isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
+                            retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
                         });
                         </text>
             }
@@ -1053,7 +1059,9 @@
                     }
                     // Only count if original status is pending or processing
                     if (app.status === 'pending' || app.status === 'processing') {
-                        const hoursSinceSubmission = (now - app.createdAt) / (1000 * 60 * 60);
+                        // Use retakeRequestedAt for retake applications, otherwise use createdAt
+                        const referenceDate = (app.isRetakeApplication && app.retakeRequestedAt) ? app.retakeRequestedAt : app.createdAt;
+                        const hoursSinceSubmission = (now - referenceDate) / (1000 * 60 * 60);
                         if (hoursSinceSubmission >= 2) {
                             highPriority++;
                         } else if (hoursSinceSubmission >= 1) {
@@ -1139,10 +1147,16 @@
 
                 const statusInfo = statusMap[displayStatus] || { class: '', icon: 'bi-question-circle', text: displayText };
 
+                // Add retake badge if this is a retake application
+                let retakeBadge = '';
+                if (app.isRetakeApplication && displayStatus === 'pending') {
+                    retakeBadge = '<span class="status-badge" style="background: rgba(255, 152, 0, 0.15); color: #ff9800; margin-left: 0.5rem; font-size: 0.75rem;"><i class="bi bi-arrow-clockwise"></i> Retake</span>';
+                }
+
                 return `
                     <span class="status-badge ${statusInfo.class}">
                         <i class="bi ${statusInfo.icon}"></i> ${statusInfo.text}
-                    </span>
+                    </span>${retakeBadge}
                 `;
             }
 

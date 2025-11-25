@@ -1307,15 +1307,22 @@ namespace LingapDVO.Controllers
                 if (!string.IsNullOrEmpty(frontID)) existing.Validfrontimage = frontID;
                 if (!string.IsNullOrEmpty(backID)) existing.ValidBackimage = backID;
 
-                // ? 9. Update timestamp properly
-                existing.CreatedAt = _dateTimeService.Now;
+                // ? 9. Update timestamp properly (preserve original CreatedAt for non-retake mode)
+                if (!isRetakeMode)
+                {
+                    existing.CreatedAt = _dateTimeService.Now;
+                }
 
-                // ? 9.5. If retake mode, change status back to Processing and reset priority timer
+                // ? 9.5. If retake mode, reset to Pending status and clear retake flags
                 if (isRetakeMode)
                 {
-                    existing.Status = "Processing";
-                    existing.Status2 = "Processing";
-                    existing.Result = _dateTimeService.Now; // Reset priority timer
+                    existing.Status = "Pending"; // Move back to Pending for admin review
+                    existing.Status2 = ""; // Clear Status2
+                    existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
+                    existing.IsRetakeApplication = false; // Clear retake flag
+                    existing.RetakeReason = ""; // Clear retake reason
+                    existing.RetakeRequestedAt = null; // Clear retake timestamp
+                    existing.Comments = "Documents resubmitted by applicant"; // Add comment
                 }
 
                 // ? 10. Save changes
@@ -2182,15 +2189,22 @@ namespace LingapDVO.Controllers
                 existing.Typeassistance = OtherAssistanceDto.Typeassistance ?? existing.Typeassistance;
                 existing.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
 
-                // ? 10. Update timestamp properly
-                existing.CreatedAt = _dateTimeService.Now;
+                // ? 10. Update timestamp properly (preserve original CreatedAt for non-retake mode)
+                if (!isRetakeMode)
+                {
+                    existing.CreatedAt = _dateTimeService.Now;
+                }
 
-                // ? 10.5. If retake mode, change status back to Processing and reset priority timer
+                // ? 10.5. If retake mode, reset to Pending status and clear retake flags
                 if (isRetakeMode)
                 {
-                    existing.Status = "Processing";
-                    existing.Status2 = "Processing";
-                    existing.Result = _dateTimeService.Now; // Reset priority timer
+                    existing.Status = "Pending"; // Move back to Pending for admin review
+                    existing.Status2 = ""; // Clear Status2
+                    existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
+                    existing.IsRetakeApplication = false; // Clear retake flag
+                    existing.RetakeReason = ""; // Clear retake reason
+                    existing.RetakeRequestedAt = null; // Clear retake timestamp
+                    existing.Comments = "Documents resubmitted by applicant"; // Add comment
                 }
 
                 // ? 11. Save changes
@@ -2914,15 +2928,22 @@ namespace LingapDVO.Controllers
                 existing.Typeassistance = FuneralAssistanceDto.Typeassistance ?? existing.Typeassistance;
                 existing.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
 
-                // ? 9. Update timestamp properly
-                existing.CreatedAt = _dateTimeService.Now;
+                // ? 9. Update timestamp properly (preserve original CreatedAt for non-retake mode)
+                if (!isRetakeMode)
+                {
+                    existing.CreatedAt = _dateTimeService.Now;
+                }
 
-                // ? 9.5. If retake mode, change status back to Processing and reset priority timer
+                // ? 9.5. If retake mode, reset to Pending status and clear retake flags
                 if (isRetakeMode)
                 {
-                    existing.Status = "Processing";
-                    existing.Status2 = "Processing";
-                    existing.Result = _dateTimeService.Now; // Reset priority timer
+                    existing.Status = "Pending"; // Move back to Pending for admin review
+                    existing.Status2 = ""; // Clear Status2
+                    existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
+                    existing.IsRetakeApplication = false; // Clear retake flag
+                    existing.RetakeReason = ""; // Clear retake reason
+                    existing.RetakeRequestedAt = null; // Clear retake timestamp
+                    existing.Comments = "Documents resubmitted by applicant"; // Add comment
                 }
 
                 // ? 10. Save changes

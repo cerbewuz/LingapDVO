@@ -93,29 +93,8 @@
     @if (ViewData["IsRetakeMode"] != null && (bool)ViewData["IsRetakeMode"])
     {
         <div class="alert alert-warning" role="alert">
-            <i class="fas fa-info-circle"></i> <strong>Retake Mode:</strong> You can only update your attachments (PDF, JPG, PNG files). All other fields are readonly.
+            <i class="fas fa-info-circle"></i> <strong>Retake Mode:</strong> Please review and update your information and attachments as needed.
         </div>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const form = document.getElementById('editForm');
-                const inputs = form.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select, textarea');
-                inputs.forEach(input => {
-                    if (input.tagName === 'SELECT') {
-                        input.disabled = true;
-                    } else {
-                        input.readOnly = true;
-                        input.style.backgroundColor = '#e9ecef';
-                        input.style.cursor = 'not-allowed';
-                    }
-                });
-
-                const checkboxes = form.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => {
-                    checkbox.disabled = true;
-                    checkbox.style.cursor = 'not-allowed';
-                });
-            });
-        </script>
     }
 
     <!-- Patient Information -->
@@ -143,7 +122,6 @@
             <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Suffix</label>
                 <select class="form-select" asp-for="Suffix">
-                    <option value="">-- Select Suffix --</option>
                     <option value="None" selected="@(ViewData["Suffix"]?.ToString() == "None")">None</option>
                     <option value="Jr." selected="@(ViewData["Suffix"]?.ToString() == "Jr.")">Jr.</option>
                     <option value="Sr." selected="@(ViewData["Suffix"]?.ToString() == "Sr.")">Sr.</option>
@@ -270,7 +248,6 @@
             <div class="col-12 col-sm-6 col-md-3 col-lg-3">
                 <label class="form-label">Suffix</label>
                 <select class="form-select" asp-for="RSuffix">
-                    <option value="">-- Select Suffix --</option>
                     <option value="None" selected="@(ViewData["RSuffix"]?.ToString() == "None")">None</option>
                     <option value="Jr." selected="@(ViewData["RSuffix"]?.ToString() == "Jr.")">Jr.</option>
                     <option value="Sr." selected="@(ViewData["RSuffix"]?.ToString() == "Sr.")">Sr.</option>

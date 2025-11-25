@@ -597,6 +597,41 @@
     </div>
 </div>
 
+<!-- Retake Modal -->
+<div id="retakeModal" class="comments-modal">
+    <div class="comments-modal-content">
+        <div class="comments-modal-header" style="background: linear-gradient(135deg, #ff9800, #ff5722);">
+            <h5 class="comments-modal-title"><i class="bi bi-arrow-clockwise me-2"></i>Retake Application Request</h5>
+            <button class="comments-modal-close" onclick="closeRetakeModal()">&times;</button>
+        </div>
+        <div class="alert alert-warning mb-3" style="font-size: 0.9rem;">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Important:</strong> Requesting a retake will allow the applicant to re-upload their attachments. Please provide a clear reason explaining what needs to be corrected.
+        </div>
+        <div class="mb-3">
+            <label for="retakeReasonTextarea" class="form-label"><strong>Reason for Retake (Required):</strong></label>
+            <textarea class="form-control" id="retakeReasonTextarea" rows="4"
+                placeholder="Example: The uploaded medical certificate is unclear/incomplete. Please upload a clearer copy with all pages visible..."
+                required></textarea>
+            <div class="invalid-feedback" style="display: block; color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem;">
+                <span id="retakeReasonError" style="display: none;"><i class="bi bi-exclamation-triangle me-1"></i>A detailed reason is required for retake requests.</span>
+            </div>
+            <small class="text-muted d-block mt-2">
+                <i class="bi bi-lightbulb me-1"></i>
+                Tip: Be specific about which documents need to be updated and why.
+            </small>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeRetakeModal()">
+                <i class="bi bi-x-circle me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-warning" onclick="confirmRetake()" style="background-color: #ff9800; border-color: #ff9800; color: white;">
+                <i class="bi bi-check-circle me-1"></i>Request Retake
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Success Modal -->
 <div id="successModal" class="success-modal">
     <div class="success-modal-content">
@@ -1196,19 +1231,47 @@
         }
 
         function submitRetake() {
-            if (!confirm('Are you sure you want to request the applicant to retake/resubmit their attachments? This will allow them to edit only their document submissions.')) {
+            // Validate the form first
+            if (!validateForm()) {
+                return; // Stop if validation fails
+            }
+
+            // Show the retake modal to get the reason
+            document.getElementById('retakeModal').style.display = 'block';
+            document.getElementById('retakeReasonTextarea').focus();
+        }
+
+        function closeRetakeModal() {
+            document.getElementById('retakeModal').style.display = 'none';
+            document.getElementById('retakeReasonTextarea').value = '';
+            document.getElementById('retakeReasonTextarea').classList.remove('is-invalid');
+            document.getElementById('retakeReasonError').style.display = 'none';
+        }
+
+        function confirmRetake() {
+            const retakeReasonTextarea = document.getElementById('retakeReasonTextarea');
+            const retakeReason = retakeReasonTextarea.value.trim();
+            const retakeReasonError = document.getElementById('retakeReasonError');
+
+            // Validate that reason is provided and meets minimum length
+            if (retakeReason === '' || retakeReason.length < 10) {
+                retakeReasonTextarea.classList.add('is-invalid');
+                retakeReasonError.style.display = 'block';
+                retakeReasonTextarea.focus();
                 return;
             }
 
-            console.log('Submitting retake...');
+            console.log('Submitting retake with reason...');
 
             // Update CMO reflection before submission
             updateReflection();
 
+            // Set status to Retake and add the reason to comments
             document.getElementById('statusInput').value = 'Retake';
-            document.getElementById('commentsInput').value = 'Please resubmit your attachments. Your other information will remain unchanged.';
+            document.getElementById('commentsInput').value = 'RETAKE REQUEST: ' + retakeReason;
 
-            // Show success modal
+            // Close retake modal and show success modal
+            closeRetakeModal();
             showSuccessModal();
 
             // Submit the form after a short delay
@@ -1344,6 +1407,7 @@
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
             const commentsModal = document.getElementById("commentsModal");
+            const retakeModal = document.getElementById("retakeModal");
             const successModal = document.getElementById("successModal");
 
             if (event.target == zoomModal) {
@@ -1354,6 +1418,9 @@
             }
             if (event.target == commentsModal) {
                 closeCommentsModal();
+            }
+            if (event.target == retakeModal) {
+                closeRetakeModal();
             }
             if (event.target == successModal) {
                 successModal.style.display = "none";

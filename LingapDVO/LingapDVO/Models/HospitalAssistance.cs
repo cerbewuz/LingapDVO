@@ -142,6 +142,11 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string Status3 { get; set; } = "";
 
+        // Retake Application fields
+        public string? RetakeReason { get; set; } = "";
+        public DateTime? RetakeRequestedAt { get; set; }
+        public bool IsRetakeApplication { get; set; } = false;
+
         // Archiving: Applications older than 1 month are automatically archived
         public bool IsArchived { get; set; } = false;
 

@@ -107,6 +107,11 @@ namespace LingapDVO.Services
             {
                 await SendClaimedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId);
             }
+            // Special handling for "Retake" status to include application tracking link
+            else if (status == "Retake")
+            {
+                await SendRetakeNotificationAsync(userId, applicantName, title, message, type, link, formType);
+            }
             else
             {
                 await SendStatusNotificationAsync(userId, applicantName, title, message, type, link, formType);
@@ -128,9 +133,9 @@ namespace LingapDVO.Services
                 // Get assistance type display
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Assistance",
-                    "Medical" => "Other Assistance",
-                    "Funeral" => "Funeral Assistance",
+                    "HospitalBill" => "Hospital Help",
+                    "Medical" => "Medical Help",
+                    "Funeral" => "Funeral Help",
                     _ => "Financial Assistance"
                 };
 
@@ -191,9 +196,9 @@ namespace LingapDVO.Services
                 // Get assistance type display
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Assistance",
-                    "Medical" => "Other Assistance",
-                    "Funeral" => "Funeral Assistance",
+                    "HospitalBill" => "Hospital Help",
+                    "Medical" => "Medical Help",
+                    "Funeral" => "Funeral Help",
                     _ => "Financial Assistance"
                 };
 
@@ -227,7 +232,7 @@ namespace LingapDVO.Services
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
-                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} application has been APPROVED. Please visit our office for claiming. Locate nearby offices: {nearbyOfficesUrl}";
+                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} request is approved! Please visit our office to get your help. Locate nearby offices: {nearbyOfficesUrl}";
                         await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
@@ -255,9 +260,9 @@ namespace LingapDVO.Services
                 // Get assistance type display
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Assistance",
-                    "Medical" => "Other Assistance",
-                    "Funeral" => "Funeral Assistance",
+                    "HospitalBill" => "Hospital Help",
+                    "Medical" => "Medical Help",
+                    "Funeral" => "Funeral Help",
                     _ => "Financial Assistance"
                 };
 
@@ -291,7 +296,7 @@ namespace LingapDVO.Services
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
-                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} has been successfully claimed. Thank you for using our service. We value your feedback: {feedbackUrl}";
+                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} has been received. Thank you for using our service. Please tell us what you think: {feedbackUrl}";
                         await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
@@ -304,16 +309,79 @@ namespace LingapDVO.Services
             }
         }
 
+        private async Task SendRetakeNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType)
+        {
+            try
+            {
+                // Get user preferences
+                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User with ID {userId} not found");
+                    return;
+                }
+
+                // Get assistance type display
+                var formTypeDisplay = formType switch
+                {
+                    "HospitalBill" => "Hospital Help",
+                    "Medical" => "Medical Help",
+                    "Funeral" => "Funeral Help",
+                    _ => "Help"
+                };
+
+                // Send in-app notification via SignalR if preferred
+                if (user.PreferInAppNotification)
+                {
+                    await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
+                    {
+                        title = title,
+                        message = message,
+                        type = type,
+                        link = link,
+                        createdAt = _dateTimeService.Now
+                    });
+                }
+
+                // Send email notification with application tracking link if preferred
+                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
+                {
+                    var emailBody = GenerateRetakeEmailBody(title, message, link);
+                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
+                }
+
+                // Send SMS notification with application tracking link if preferred
+                if (user.PreferSmsNotification)
+                {
+                    var verifyAccount = await _context.Verifyaccount
+                        .FirstOrDefaultAsync(v => v.UserId == userId);
+
+                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
+                    {
+                        var smsMessage = $"LingapDVO: Hello {applicantName}, we need you to send some papers again for your {formTypeDisplay} request. Please check your application at lingap.online and upload the needed papers.";
+                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
+                    }
+                }
+
+                _logger.LogInformation($"Multi-channel retake notification sent successfully to user {userId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending multi-channel retake notification to user {userId}");
+            }
+        }
+
         private string GetStatusTitle(string status)
         {
             return status switch
             {
-                "Pending" => "Application Submitted",
-                "Processing" => "Application Being Processed",
-                "Approve" => "Application Approved",
-                "Disapprove" => "Application Disapproved",
-                "Claimed" => "Assistance Claimed",
-                _ => "Application Status Update"
+                "Pending" => "Application Sent",
+                "Processing" => "We Are Checking Your Application",
+                "Approve" => "Good News! Your Application is Approved",
+                "Disapprove" => "Application Not Approved",
+                "Retake" => "Please Send Papers Again",
+                "Claimed" => "Help Received",
+                _ => "Application Update"
             };
         }
 
@@ -321,20 +389,21 @@ namespace LingapDVO.Services
         {
             var formTypeDisplay = formType switch
             {
-                "HospitalBill" => "Hospital Assistance",
-                "Medical" => "Other Assistance",
-                "Funeral" => "Funeral Assistance",
-                _ => "Financial Assistance"
+                "HospitalBill" => "Hospital Help",
+                "Medical" => "Medical Help",
+                "Funeral" => "Funeral Help",
+                _ => "Help"
             };
 
             return status switch
             {
-                "Pending" => $"Your {formTypeDisplay} application has been submitted and is pending review.",
-                "Processing" => $"Your {formTypeDisplay} application is now being processed by our team.",
-                "Approve" => $"Good news! Your {formTypeDisplay} application has been approved. Please visit the office for claiming.",
-                "Disapprove" => $"We regret to inform you that your {formTypeDisplay} application has been disapproved. Please contact us for more details.",
-                "Claimed" => $"Your {formTypeDisplay} has been successfully claimed. Thank you for using our service.",
-                _ => $"Your {formTypeDisplay} application status has been updated to {status}."
+                "Pending" => $"We received your {formTypeDisplay} request. We will start checking it soon.",
+                "Processing" => $"We are now checking your {formTypeDisplay} request. We will send you another message soon.",
+                "Approve" => $"Your {formTypeDisplay} request is approved! Please visit our office to get your help.",
+                "Disapprove" => $"We are sorry, but your {formTypeDisplay} request is not approved. You can contact us for more information.",
+                "Retake" => $"We need you to send some papers again for your {formTypeDisplay} request. Please check your application and upload the needed papers.",
+                "Claimed" => $"You have received your {formTypeDisplay}. Thank you for using LingapDVO.",
+                _ => $"Your {formTypeDisplay} request status changed to {status}."
             };
         }
 
@@ -346,6 +415,7 @@ namespace LingapDVO.Services
                 "Processing" => "application_processing",
                 "Approve" => "application_approved",
                 "Disapprove" => "application_disapproved",
+                "Retake" => "application_retake",
                 "Claimed" => "application_claimed",
                 _ => "status_change"
             };
@@ -451,12 +521,56 @@ namespace LingapDVO.Services
 
             <div class='feedback-section'>
                 <h3>We Value Your Feedback!</h3>
-                <p>Your opinion matters to us. Please take a moment to share your experience with our service.</p>
-                <a href='{feedbackUrl}' class='feedback-button'>Submit Feedback</a>
+                <p>We want to know what you think. Please tell us about your experience with our service.</p>
+                <a href='{feedbackUrl}' class='feedback-button'>Give Feedback</a>
             </div>
         </div>
         <div class='footer'>
             <p>This is an automated message from LingapDVO. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+
+        private string GenerateRetakeEmailBody(string title, string message, string link)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #ff9800; color: white; padding: 20px; text-align: center; }}
+        .content {{ padding: 20px; background-color: #f9f9f9; }}
+        .button {{ display: inline-block; padding: 10px 20px; background-color: #ff9800; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; }}
+        .retake-section {{ margin-top: 20px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ff9800; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2>{title}</h2>
+        </div>
+        <div class='content'>
+            <p>{message}</p>
+
+            <div class='retake-section'>
+                <h3>What to do next:</h3>
+                <ol>
+                    <li>Go to your Application Tracking page</li>
+                    <li>Find your application</li>
+                    <li>Upload the papers we need</li>
+                    <li>Send your application again</li>
+                </ol>
+            </div>
+
+            {(string.IsNullOrEmpty(link) ? "" : $"<a href='{link}' class='button'>Go to My Applications</a>")}
+        </div>
+        <div class='footer'>
+            <p>This is an automatic message from LingapDVO. Please do not reply to this email.</p>
         </div>
     </div>
 </body>
@@ -534,9 +648,9 @@ namespace LingapDVO.Services
 
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Assistance",
-                    "Medical" => "Other Assistance",
-                    "Funeral" => "Funeral Assistance",
+                    "HospitalBill" => "Hospital Help",
+                    "Medical" => "Medical Help",
+                    "Funeral" => "Funeral Help",
                     _ => "Financial Assistance"
                 };
 
