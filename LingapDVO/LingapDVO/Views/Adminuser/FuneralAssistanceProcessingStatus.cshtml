@@ -1184,10 +1184,7 @@
         }
 
         function showCommentsModal() {
-            // Validate the form first (except comments)
-            if (!validateForm()) {
-                return; // Stop if validation fails
-            }
+            // No validation needed for Disapprove - just show the modal
             document.getElementById('commentsModal').style.display = 'block';
             document.getElementById('commentsTextarea').focus();
         }
@@ -1231,12 +1228,7 @@
         }
 
         function submitRetake() {
-            // Validate the form first
-            if (!validateForm()) {
-                return; // Stop if validation fails
-            }
-
-            // Show the retake modal to get the reason
+            // No validation needed for Retake - just show the modal
             document.getElementById('retakeModal').style.display = 'block';
             document.getElementById('retakeReasonTextarea').focus();
         }

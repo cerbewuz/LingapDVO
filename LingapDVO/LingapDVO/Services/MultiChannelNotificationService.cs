@@ -1,4 +1,5 @@
 using LingapDVO.Hubs;
+using LingapDVO.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,8 +8,8 @@ namespace LingapDVO.Services
     public interface IMultiChannelNotificationService
     {
         Task SendNotificationAsync(int userId, string title, string message, string type, string? link = null);
-        Task SendStatusChangeNotificationAsync(int userId, string applicantName, string formType, string status, int formId);
-        Task SendDelayNotificationAsync(int userId, string applicantName, string formType, string priority, DateTime submittedDate);
+        Task SendStatusChangeNotificationAsync(int userId, string applicantName, string formType, string status, int formId, string? comments = null, string? processedBy = null);
+        Task SendDelayNotificationAsync(int userId, string applicantName, string formType, string priority, DateTime submittedDate, int applicationId);
     }
 
     public class MultiChannelNotificationService : IMultiChannelNotificationService
@@ -48,16 +49,50 @@ namespace LingapDVO.Services
                     return;
                 }
 
+                // Get user's full name
+                var verifyAccount = await _context.Verifyaccount.FirstOrDefaultAsync(v => v.UserId == userId);
+                var userName = verifyAccount != null
+                    ? $"{verifyAccount.Firstname} {verifyAccount.Middlename} {verifyAccount.Lastname}".Trim()
+                    : user.Username ?? "User";
+
+                // Save notification to database FIRST
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    ApplicationType = "System", // Generic system notification
+                    ApplicationId = null,
+                    ApplicantName = userName,
+                    Title = title,
+                    Message = message,
+                    Type = type,
+                    Link = link ?? "/Home",
+                    ProcessStage = "system",
+                    CreatedAt = _dateTimeService.Now,
+                    EventTimestamp = _dateTimeService.Now,
+                    SentViaInApp = user.PreferInAppNotification,
+                    SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
+                    SentViaSms = user.PreferSmsNotification,
+                    NotificationIdentifier = $"system_{type}_{userId}_{_dateTimeService.Now.Ticks}",
+                    DisplayOrder = 0,
+                    IsRead = false,
+                    IsPermanent = type == "welcome"
+                };
+
+                await _context.Notifications.AddAsync(notification);
+                await _context.SaveChangesAsync();
+
                 // Send in-app notification via SignalR if preferred
                 if (user.PreferInAppNotification)
                 {
                     await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
                     {
+                        id = notification.Id,
                         title = title,
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = _dateTimeService.Now
+                        createdAt = _dateTimeService.Now,
+                        isRead = false
                     });
                 }
 
@@ -71,10 +106,6 @@ namespace LingapDVO.Services
                 // Send SMS notification if preferred
                 if (user.PreferSmsNotification)
                 {
-                    // Get phone number from Verifyaccount table
-                    var verifyAccount = await _context.Verifyaccount
-                        .FirstOrDefaultAsync(v => v.UserId == userId);
-
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
                         var smsMessage = $"{title}: {message}";
@@ -82,7 +113,7 @@ namespace LingapDVO.Services
                     }
                 }
 
-                _logger.LogInformation($"Multi-channel notification sent successfully to user {userId}");
+                _logger.LogInformation($"Multi-channel notification sent and saved to database for user {userId}");
             }
             catch (Exception ex)
             {
@@ -90,7 +121,7 @@ namespace LingapDVO.Services
             }
         }
 
-        public async Task SendStatusChangeNotificationAsync(int userId, string applicantName, string formType, string status, int formId)
+        public async Task SendStatusChangeNotificationAsync(int userId, string applicantName, string formType, string status, int formId, string? comments = null, string? processedBy = null)
         {
             var title = GetStatusTitle(status);
             var message = GetStatusMessage(applicantName, formType, status);
@@ -100,25 +131,25 @@ namespace LingapDVO.Services
             // Special handling for "Approved" status to include nearby offices link
             if (status == "Approve")
             {
-                await SendApprovedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId);
+                await SendApprovedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, comments, processedBy);
             }
             // Special handling for "Claimed" status to include feedback link
             else if (status == "Claimed")
             {
-                await SendClaimedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId);
+                await SendClaimedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, comments, processedBy);
             }
             // Special handling for "Retake" status to include application tracking link
             else if (status == "Retake")
             {
-                await SendRetakeNotificationAsync(userId, applicantName, title, message, type, link, formType);
+                await SendRetakeNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, comments, processedBy);
             }
             else
             {
-                await SendStatusNotificationAsync(userId, applicantName, title, message, type, link, formType);
+                await SendStatusNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, status, comments, processedBy);
             }
         }
 
-        private async Task SendStatusNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType)
+        private async Task SendStatusNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId, string status, string? comments, string? processedBy)
         {
             try
             {
@@ -129,6 +160,40 @@ namespace LingapDVO.Services
                     _logger.LogWarning($"User with ID {userId} not found");
                     return;
                 }
+
+                // Map formType to ApplicationType
+                var applicationType = MapFormTypeToApplicationType(formType);
+
+                // Get process stage based on status
+                var processStage = GetProcessStage(status);
+
+                // **SAVE NOTIFICATION TO DATABASE FIRST**
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    ApplicationType = applicationType,
+                    ApplicationId = formId,
+                    ApplicantName = applicantName,
+                    Title = title,
+                    Message = message,
+                    Type = type,
+                    Link = link,
+                    Status = status,
+                    Comments = comments,
+                    ProcessedBy = processedBy,
+                    ProcessStage = processStage,
+                    CreatedAt = _dateTimeService.Now,
+                    EventTimestamp = _dateTimeService.Now,
+                    SentViaInApp = user.PreferInAppNotification,
+                    SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
+                    SentViaSms = user.PreferSmsNotification,
+                    NotificationIdentifier = $"{applicationType.ToLower()}_{formId}_{status.ToLower()}_{_dateTimeService.Now.Ticks}",
+                    DisplayOrder = GetDisplayOrder(status),
+                    IsRead = false
+                };
+
+                await _context.Notifications.AddAsync(notification);
+                await _context.SaveChangesAsync();
 
                 // Get assistance type display
                 var formTypeDisplay = formType switch
@@ -144,11 +209,13 @@ namespace LingapDVO.Services
                 {
                     await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
                     {
+                        id = notification.Id,
                         title = title,
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = _dateTimeService.Now
+                        createdAt = _dateTimeService.Now,
+                        isRead = false
                     });
                 }
 
@@ -173,7 +240,7 @@ namespace LingapDVO.Services
                     }
                 }
 
-                _logger.LogInformation($"Multi-channel status notification sent successfully to user {userId}");
+                _logger.LogInformation($"Multi-channel status notification sent and saved to database for user {userId}, application {formId}");
             }
             catch (Exception ex)
             {
@@ -181,7 +248,7 @@ namespace LingapDVO.Services
             }
         }
 
-        private async Task SendApprovedNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId)
+        private async Task SendApprovedNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId, string? comments, string? processedBy)
         {
             try
             {
@@ -192,6 +259,38 @@ namespace LingapDVO.Services
                     _logger.LogWarning($"User with ID {userId} not found");
                     return;
                 }
+
+                // Map formType to ApplicationType
+                var applicationType = MapFormTypeToApplicationType(formType);
+
+                // **SAVE NOTIFICATION TO DATABASE FIRST**
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    ApplicationType = applicationType,
+                    ApplicationId = formId,
+                    ApplicantName = applicantName,
+                    Title = title,
+                    Message = message,
+                    Type = type,
+                    Link = link,
+                    Status = "Approved",
+                    Status2 = "Approve",
+                    Comments = comments,
+                    ProcessedBy = processedBy,
+                    ProcessStage = "result",
+                    CreatedAt = _dateTimeService.Now,
+                    EventTimestamp = _dateTimeService.Now,
+                    SentViaInApp = user.PreferInAppNotification,
+                    SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
+                    SentViaSms = user.PreferSmsNotification,
+                    NotificationIdentifier = $"{applicationType.ToLower()}_{formId}_approved_{_dateTimeService.Now.Ticks}",
+                    DisplayOrder = 3,
+                    IsRead = false
+                };
+
+                await _context.Notifications.AddAsync(notification);
+                await _context.SaveChangesAsync();
 
                 // Get assistance type display
                 var formTypeDisplay = formType switch
@@ -209,11 +308,13 @@ namespace LingapDVO.Services
                 {
                     await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
                     {
+                        id = notification.Id,
                         title = title,
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = _dateTimeService.Now
+                        createdAt = _dateTimeService.Now,
+                        isRead = false
                     });
                 }
 
@@ -237,7 +338,7 @@ namespace LingapDVO.Services
                     }
                 }
 
-                _logger.LogInformation($"Multi-channel approved notification sent successfully to user {userId}");
+                _logger.LogInformation($"Multi-channel approved notification sent and saved to database for user {userId}, application {formId}");
             }
             catch (Exception ex)
             {
@@ -245,7 +346,7 @@ namespace LingapDVO.Services
             }
         }
 
-        private async Task SendClaimedNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId)
+        private async Task SendClaimedNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId, string? comments, string? processedBy)
         {
             try
             {
@@ -256,6 +357,38 @@ namespace LingapDVO.Services
                     _logger.LogWarning($"User with ID {userId} not found");
                     return;
                 }
+
+                // Map formType to ApplicationType
+                var applicationType = MapFormTypeToApplicationType(formType);
+
+                // **SAVE NOTIFICATION TO DATABASE FIRST**
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    ApplicationType = applicationType,
+                    ApplicationId = formId,
+                    ApplicantName = applicantName,
+                    Title = title,
+                    Message = message,
+                    Type = type,
+                    Link = link,
+                    Status = "Claimed",
+                    Status3 = "Claimed",
+                    Comments = comments,
+                    ProcessedBy = processedBy,
+                    ProcessStage = "claimed",
+                    CreatedAt = _dateTimeService.Now,
+                    EventTimestamp = _dateTimeService.Now,
+                    SentViaInApp = user.PreferInAppNotification,
+                    SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
+                    SentViaSms = user.PreferSmsNotification,
+                    NotificationIdentifier = $"{applicationType.ToLower()}_{formId}_claimed_{_dateTimeService.Now.Ticks}",
+                    DisplayOrder = 4,
+                    IsRead = false
+                };
+
+                await _context.Notifications.AddAsync(notification);
+                await _context.SaveChangesAsync();
 
                 // Get assistance type display
                 var formTypeDisplay = formType switch
@@ -273,11 +406,13 @@ namespace LingapDVO.Services
                 {
                     await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
                     {
+                        id = notification.Id,
                         title = title,
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = _dateTimeService.Now
+                        createdAt = _dateTimeService.Now,
+                        isRead = false
                     });
                 }
 
@@ -301,7 +436,7 @@ namespace LingapDVO.Services
                     }
                 }
 
-                _logger.LogInformation($"Multi-channel claimed notification sent successfully to user {userId}");
+                _logger.LogInformation($"Multi-channel claimed notification sent and saved to database for user {userId}, application {formId}");
             }
             catch (Exception ex)
             {
@@ -309,7 +444,7 @@ namespace LingapDVO.Services
             }
         }
 
-        private async Task SendRetakeNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType)
+        private async Task SendRetakeNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId, string? comments, string? processedBy)
         {
             try
             {
@@ -320,6 +455,44 @@ namespace LingapDVO.Services
                     _logger.LogWarning($"User with ID {userId} not found");
                     return;
                 }
+
+                // Map formType to ApplicationType
+                var applicationType = MapFormTypeToApplicationType(formType);
+
+                // Get retake iteration count
+                var retakeCount = await _context.Notifications
+                    .Where(n => n.UserId == userId && n.ApplicationId == formId && n.IsRetake)
+                    .CountAsync();
+
+                // **SAVE NOTIFICATION TO DATABASE FIRST**
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    ApplicationType = applicationType,
+                    ApplicationId = formId,
+                    ApplicantName = applicantName,
+                    Title = title,
+                    Message = message,
+                    Type = type,
+                    Link = link,
+                    Status = "Retake",
+                    Comments = comments,
+                    ProcessedBy = processedBy,
+                    ProcessStage = "retake",
+                    CreatedAt = _dateTimeService.Now,
+                    EventTimestamp = _dateTimeService.Now,
+                    RetakeIteration = retakeCount + 1,
+                    IsRetake = true,
+                    SentViaInApp = user.PreferInAppNotification,
+                    SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
+                    SentViaSms = user.PreferSmsNotification,
+                    NotificationIdentifier = $"{applicationType.ToLower()}_{formId}_retake_{retakeCount + 1}_{_dateTimeService.Now.Ticks}",
+                    DisplayOrder = 2,
+                    IsRead = false
+                };
+
+                await _context.Notifications.AddAsync(notification);
+                await _context.SaveChangesAsync();
 
                 // Get assistance type display
                 var formTypeDisplay = formType switch
@@ -335,11 +508,13 @@ namespace LingapDVO.Services
                 {
                     await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
                     {
+                        id = notification.Id,
                         title = title,
                         message = message,
                         type = type,
                         link = link,
-                        createdAt = _dateTimeService.Now
+                        createdAt = _dateTimeService.Now,
+                        isRead = false
                     });
                 }
 
@@ -363,12 +538,150 @@ namespace LingapDVO.Services
                     }
                 }
 
-                _logger.LogInformation($"Multi-channel retake notification sent successfully to user {userId}");
+                _logger.LogInformation($"Multi-channel retake notification sent and saved to database for user {userId}, application {formId}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error sending multi-channel retake notification to user {userId}");
             }
+        }
+
+        // Send delay notification for applications experiencing delays
+        public async Task SendDelayNotificationAsync(int userId, string applicantName, string formType, string priority, DateTime submittedDate, int applicationId)
+        {
+            try
+            {
+                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User with ID {userId} not found");
+                    return;
+                }
+
+                // Map formType to ApplicationType
+                var applicationType = MapFormTypeToApplicationType(formType);
+
+                var formTypeDisplay = formType switch
+                {
+                    "HospitalBill" => "Hospital Help",
+                    "Medical" => "Medical Help",
+                    "Funeral" => "Funeral Help",
+                    _ => "Financial Assistance"
+                };
+
+                var hoursElapsed = (int)(_dateTimeService.Now - submittedDate).TotalHours;
+                var title = "Application Processing Delay";
+                var message = $"Your {formTypeDisplay} application submitted on {submittedDate:MMM dd, yyyy} is experiencing processing delays. We are working to resolve this. Thank you for your patience.";
+
+                // **SAVE NOTIFICATION TO DATABASE FIRST**
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    ApplicationType = applicationType,
+                    ApplicationId = applicationId,
+                    ApplicantName = applicantName,
+                    Title = title,
+                    Message = message,
+                    Type = "delay_alert",
+                    Link = "/Applicationtracking",
+                    ProcessStage = "delayed",
+                    Priority = priority,
+                    CreatedAt = _dateTimeService.Now,
+                    EventTimestamp = _dateTimeService.Now,
+                    SentViaInApp = user.PreferInAppNotification,
+                    SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
+                    SentViaSms = user.PreferSmsNotification,
+                    NotificationIdentifier = $"{applicationType.ToLower()}_{applicationId}_delay_{priority}_{_dateTimeService.Now.Ticks}",
+                    DisplayOrder = 1,
+                    IsRead = false
+                };
+
+                await _context.Notifications.AddAsync(notification);
+                await _context.SaveChangesAsync();
+
+                // Send in-app notification via SignalR if preferred
+                if (user.PreferInAppNotification)
+                {
+                    await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
+                    {
+                        id = notification.Id,
+                        title = title,
+                        message = message,
+                        type = "delay_alert",
+                        link = "/Applicationtracking",
+                        createdAt = _dateTimeService.Now,
+                        isRead = false
+                    });
+                }
+
+                // Send email notification with HTML design if preferred
+                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
+                {
+                    var emailBody = GenerateDelayEmailBody(title, message, applicantName, formTypeDisplay, submittedDate, hoursElapsed, "/Applicationtracking");
+                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
+                }
+
+                // Send SMS notification if preferred
+                if (user.PreferSmsNotification)
+                {
+                    var verifyAccount = await _context.Verifyaccount
+                        .FirstOrDefaultAsync(v => v.UserId == userId);
+
+                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
+                    {
+                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} application is experiencing processing delays ({hoursElapsed}+ hours). We apologize for the inconvenience and are working to expedite your request. For urgent concerns, please contact our office.";
+                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
+                    }
+                }
+
+                _logger.LogInformation($"Delay notification sent and saved to database for user {userId}, application {applicationId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending delay notification to user {userId}");
+            }
+        }
+
+        // Helper method to map form type to ApplicationType
+        private string MapFormTypeToApplicationType(string formType)
+        {
+            return formType switch
+            {
+                "HospitalBill" => "HospitalAssistance",
+                "Medical" => "OtherAssistance",
+                "Funeral" => "FuneralAssistance",
+                _ => "System"
+            };
+        }
+
+        // Helper method to get process stage based on status
+        private string GetProcessStage(string status)
+        {
+            return status switch
+            {
+                "Pending" => "submitted",
+                "Processing" => "processing",
+                "Approve" => "result",
+                "Disapprove" => "result",
+                "Retake" => "retake",
+                "Claimed" => "claimed",
+                _ => "submitted"
+            };
+        }
+
+        // Helper method to get display order based on status (for timeline rendering)
+        private int GetDisplayOrder(string status)
+        {
+            return status switch
+            {
+                "Pending" => 0,
+                "Processing" => 1,
+                "Retake" => 2,
+                "Approve" => 3,
+                "Disapprove" => 3,
+                "Claimed" => 4,
+                _ => 0
+            };
         }
 
         private string GetStatusTitle(string status)
@@ -421,7 +734,7 @@ namespace LingapDVO.Services
             };
         }
 
-        private string GenerateEmailBody(string title, string message, string link)
+        private string GenerateEmailBody(string title, string message, string? link)
         {
             return $@"
 <!DOCTYPE html>
@@ -632,71 +945,6 @@ namespace LingapDVO.Services
         {
             // Create formal, concise automated SMS message
             return $"LingapDVO: Dear {applicantName}, your {formType} application status has been updated. {message} For inquiries, please contact our office.";
-        }
-
-        // Send delay notification for applications experiencing delays
-        public async Task SendDelayNotificationAsync(int userId, string applicantName, string formType, string priority, DateTime submittedDate)
-        {
-            try
-            {
-                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
-                if (user == null)
-                {
-                    _logger.LogWarning($"User with ID {userId} not found");
-                    return;
-                }
-
-                var formTypeDisplay = formType switch
-                {
-                    "HospitalBill" => "Hospital Help",
-                    "Medical" => "Medical Help",
-                    "Funeral" => "Funeral Help",
-                    _ => "Financial Assistance"
-                };
-
-                var hoursElapsed = (int)(_dateTimeService.Now - submittedDate).TotalHours;
-                var title = "Application Processing Delay";
-                var message = $"Your {formTypeDisplay} application submitted on {submittedDate:MMM dd, yyyy} is experiencing processing delays. We are working to resolve this. Thank you for your patience.";
-
-                // Send in-app notification via SignalR if preferred
-                if (user.PreferInAppNotification)
-                {
-                    await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
-                    {
-                        title = title,
-                        message = message,
-                        type = "delay_alert",
-                        link = "/Applicationtracking",
-                        createdAt = _dateTimeService.Now
-                    });
-                }
-
-                // Send email notification with HTML design if preferred
-                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
-                {
-                    var emailBody = GenerateDelayEmailBody(title, message, applicantName, formTypeDisplay, submittedDate, hoursElapsed, "/Applicationtracking");
-                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
-                }
-
-                // Send SMS notification if preferred
-                if (user.PreferSmsNotification)
-                {
-                    var verifyAccount = await _context.Verifyaccount
-                        .FirstOrDefaultAsync(v => v.UserId == userId);
-
-                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
-                    {
-                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} application is experiencing processing delays ({hoursElapsed}+ hours). We apologize for the inconvenience and are working to expedite your request. For urgent concerns, please contact our office.";
-                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
-                    }
-                }
-
-                _logger.LogInformation($"Delay notification sent successfully to user {userId}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error sending delay notification to user {userId}");
-            }
         }
     }
 }

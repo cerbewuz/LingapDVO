@@ -2921,6 +2921,226 @@
                             </text>
                 }
             ];
+
+            // Timeline Loading Functions - Load from unified Notifications table
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Loading timelines from database...');
+
+                // Load timelines for all applications on the page
+                // Hospital Assistance applications
+                document.querySelectorAll('#hospital .tracking-card').forEach(card => {
+                    const timeline = card.querySelector('.timeline');
+                    const appId = extractAppIdFromCard(card);
+                    if (appId && timeline) {
+                        loadApplicationTimeline('HospitalAssistance', appId, timeline);
+                    }
+                });
+
+                // Other Assistance applications
+                document.querySelectorAll('#medical .tracking-card').forEach(card => {
+                    const timeline = card.querySelector('.timeline');
+                    const appId = extractAppIdFromCard(card);
+                    if (appId && timeline) {
+                        loadApplicationTimeline('OtherAssistance', appId, timeline);
+                    }
+                });
+
+                // Funeral Assistance applications
+                document.querySelectorAll('#funeral .tracking-card').forEach(card => {
+                    const timeline = card.querySelector('.timeline');
+                    const appId = extractAppIdFromCard(card);
+                    if (appId && timeline) {
+                        loadApplicationTimeline('FuneralAssistance', appId, timeline);
+                    }
+                });
+            });
+
+            function extractAppIdFromCard(card) {
+                // Extract application ID from action buttons
+                const viewBtn = card.querySelector('.btn-view');
+                if (viewBtn) {
+                    const href = viewBtn.getAttribute('href');
+                    const match = href.match(/id=(\d+)/);
+                    if (match) {
+                        return parseInt(match[1]);
+                    }
+                }
+                return null;
+            }
+
+            async function loadApplicationTimeline(appType, appId, timelineContainer) {
+                try {
+                    const response = await fetch(`/Notifications/GetApplicationNotifications?appType=${appType}&appId=${appId}`);
+                    const data = await response.json();
+
+                    if (!response.ok || data.error) {
+                        console.warn(`No timeline data found for ${appType}/${appId}`);
+                        return;
+                    }
+
+                    const notifications = data.notifications || [];
+
+                    if (notifications.length === 0) {
+                        return; // No timeline to render from database yet
+                    }
+
+                    // Clear existing timeline (keep only the submitted step which is rendered server-side)
+                    const existingTimelineItems = timelineContainer.querySelectorAll('.timeline-item');
+                    if (existingTimelineItems.length > 1) {
+                        // Keep first item (submitted), remove rest
+                        for (let i = 1; i < existingTimelineItems.length; i++) {
+                            existingTimelineItems[i].remove();
+                        }
+                    }
+
+                    // Render timeline from notifications
+                    notifications.forEach((notification, index) => {
+                        // Skip if it's the initial submission (already rendered by server)
+                        if (notification.processStage === 'submitted' && index === 0) {
+                            return;
+                        }
+
+                        renderTimelineItem(notification, timelineContainer);
+                    });
+
+                    console.log(`Loaded ${notifications.length} timeline items for ${appType}/${appId}`);
+                } catch (error) {
+                    console.error(`Error loading timeline for ${appType}/${appId}:`, error);
+                }
+            }
+
+            function renderTimelineItem(notification, container) {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+
+                // Add special attributes for retake and delay notifications
+                if (notification.isRetake) {
+                    timelineItem.setAttribute('data-retake-iteration', notification.retakeIteration);
+                }
+                if (notification.priority) {
+                    timelineItem.setAttribute('data-delay-notification', 'true');
+                }
+
+                // Determine marker class and icon based on process stage and status
+                const markerInfo = getTimelineMarkerInfo(notification.processStage, notification.status2, notification.priority);
+
+                // Format date
+                const eventDate = new Date(notification.eventTimestamp || notification.createdAt);
+                const formattedDate = formatDateTime(eventDate);
+
+                // Build retake badge if applicable
+                const retakeBadge = notification.isRetake && notification.retakeIteration
+                    ? `<span class="badge bg-warning text-dark ms-2">${getOrdinal(notification.retakeIteration)} Retake</span>`
+                    : '';
+
+                // Build priority badge if applicable
+                const priorityBadge = notification.priority
+                    ? `<span class="priority-badge ${notification.priority}">${notification.priority.toUpperCase()} PRIORITY</span>`
+                    : '';
+
+                // Make retake items clickable to navigate to edit page
+                const isClickable = notification.status2 === 'Retake';
+                if (isClickable) {
+                    timelineItem.classList.add('clickable');
+                    timelineItem.setAttribute('onclick', `window.location.href='${notification.link}'`);
+                }
+
+                timelineItem.innerHTML = `
+                    <div class="timeline-marker ${markerInfo.class}">
+                        ${markerInfo.icon}
+                    </div>
+                    <div class="timeline-content">
+                        <h6>${notification.title}${retakeBadge}${priorityBadge}</h6>
+                        <span class="timeline-date">${formattedDate}</span>
+                        <p class="timeline-description">${notification.message}</p>
+                        ${notification.processedBy ? `<p class="timeline-description mt-2"><strong>Processed by:</strong> ${notification.processedBy}</p>` : ''}
+                        ${notification.comments ? `<p class="timeline-description mt-2"><strong>Comments:</strong> ${notification.comments}</p>` : ''}
+                        ${isClickable ? '<p class="timeline-description mt-2 text-warning"><strong>Click here to update your documents.</strong></p>' : ''}
+                    </div>
+                `;
+
+                container.appendChild(timelineItem);
+            }
+
+            function getTimelineMarkerInfo(processStage, status2, priority) {
+                // Determine timeline marker appearance based on stage, status, and priority
+
+                // Priority/delay notifications
+                if (processStage === 'delayed' || priority) {
+                    return {
+                        class: 'waiting',
+                        icon: '<i class="fas fa-clock"></i>'
+                    };
+                }
+
+                // Process stage based
+                switch (processStage) {
+                    case 'submitted':
+                        return {
+                            class: 'submitted',
+                            icon: '<i class="fas fa-paper-plane"></i>'
+                        };
+
+                    case 'processing':
+                        return {
+                            class: 'processing',
+                            icon: '<i class="fas fa-user-check"></i>'
+                        };
+
+                    case 'result':
+                        // Result depends on status2
+                        if (status2 === 'Approve') {
+                            return {
+                                class: 'approved',
+                                icon: '<i class="fas fa-check-circle"></i>'
+                            };
+                        } else if (status2 === 'Disapprove' || status2 === 'Unapproved') {
+                            return {
+                                class: 'unapproved',
+                                icon: '<i class="fas fa-times-circle"></i>'
+                            };
+                        } else if (status2 === 'Retake') {
+                            return {
+                                class: 'retake',
+                                icon: '<i class="fas fa-exclamation-circle"></i>'
+                            };
+                        }
+                        return {
+                            class: 'waiting',
+                            icon: '<i class="fas fa-clock"></i>'
+                        };
+
+                    case 'claimed':
+                        return {
+                            class: 'claimed',
+                            icon: '<i class="fas fa-hands-helping"></i>'
+                        };
+
+                    default:
+                        return {
+                            class: 'waiting',
+                            icon: '<i class="fas fa-list-ul"></i>'
+                        };
+                }
+            }
+
+            function formatDateTime(date) {
+                const options = {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                };
+                return date.toLocaleString('en-US', options);
+            }
+
+            function getOrdinal(n) {
+                const s = ["th", "st", "nd", "rd"];
+                const v = n % 100;
+                return n + (s[(v - 20) % 10] || s[v] || s[0]);
+            }
         </script>
         <script src="~/js/upload-tracking.js?v=2.0"></script>
 </body>

@@ -2333,42 +2333,7 @@
                 return !isNaN(date.getTime()) && date > new Date(0);
             }
 
-            // Storage functions for persistent notification state
-            function getStoredReadNotifications() {
-                try {
-                    const stored = localStorage.getItem('lingap_read_notifications');
-                    return stored ? JSON.parse(stored) : [];
-                } catch (error) {
-                    console.error('Error reading stored notifications:', error);
-                    return [];
-                }
-            }
-
-            function setStoredReadNotifications(readIds) {
-                try {
-                    localStorage.setItem('lingap_read_notifications', JSON.stringify(readIds));
-                } catch (error) {
-                    console.error('Error storing notifications:', error);
-                }
-            }
-
-            function addToStoredReadNotifications(notificationId) {
-                const readIds = getStoredReadNotifications();
-                if (!readIds.includes(notificationId)) {
-                    readIds.push(notificationId);
-                    setStoredReadNotifications(readIds);
-                }
-            }
-
-            function markAllStoredAsRead(notificationIds) {
-                const readIds = getStoredReadNotifications();
-                notificationIds.forEach(id => {
-                    if (!readIds.includes(id)) {
-                        readIds.push(id);
-                    }
-                });
-                setStoredReadNotifications(readIds);
-            }
+            // localStorage functions removed - database now handles all read status tracking
 
             // Initialize real-time connection
             initRealTimeConnection();
@@ -2595,14 +2560,24 @@
 
                     connection.on("ReceiveStatusUpdate", function (message) {
                         console.log("SignalR: Received status update:", message);
+                        // Reload notifications from database to get the saved notification
                         loadRealNotifications(false);
                         showToast(message, 'info');
                     });
 
-                    connection.on("ReceiveNotification", function (title, message, type) {
-                        console.log("SignalR: Received notification:", title, message, type);
-                        loadRealNotifications(false);
-                        showToast(`${title}: ${message}`, type || 'info');
+                    connection.on("ReceiveNotification", function (notification) {
+                        console.log("SignalR: Received notification:", notification);
+
+                        // Reload notifications from database to get the saved notification
+                        loadRealNotifications(true);
+
+                        // Show browser notification if supported and permitted
+                        if ("Notification" in window && Notification.permission === "granted") {
+                            new Notification(notification.title, {
+                                body: notification.message,
+                                icon: "/Icon/lingaplogo.ico"
+                            });
+                        }
                     });
 
                     connection.start()
@@ -2658,7 +2633,6 @@
             function detectStatusChanges(applications) {
                 const newNotifications = [];
                 const now = new Date();
-                const readIds = getStoredReadNotifications();
 
                 const allApplications = [
                     ...(applications.hospitalBills || []).map(app => ({ ...app, type: 'Hospital' })),
@@ -2674,7 +2648,7 @@
                         const processingDate = new Date(app.processAt);
                         if ((now - processingDate) < 10 * 60 * 1000) {
                             const notificationId = `change_processing_${appId}`;
-                            if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
                                     title: `${app.type} Application Update`,
@@ -2692,7 +2666,7 @@
                         const resultDate = new Date(app.result);
                         if ((now - resultDate) < 10 * 60 * 1000) {
                             const notificationId = `change_approved_${appId}`;
-                            if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
                                     title: `${app.type} Application Approved!`,
@@ -2710,7 +2684,7 @@
                         const resultDate = new Date(app.result);
                         if ((now - resultDate) < 10 * 60 * 1000) {
                             const notificationId = `change_unapproved_${appId}`;
-                            if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
                                     title: `${app.type} Application Update`,
@@ -2728,7 +2702,7 @@
                         const resultDate = new Date(app.result);
                         if ((now - resultDate) < 10 * 60 * 1000) {
                             const notificationId = `change_retake_${appId}`;
-                            if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
                                     title: `Action Required - Retake Application`,
@@ -2748,7 +2722,7 @@
                         const claimedDate = new Date(app.claimedAt);
                         if ((now - claimedDate) < 10 * 60 * 1000) {
                             const notificationId = `change_claimed_${appId}`;
-                            if (!currentNotifications.some(n => n.id === notificationId) && !readIds.includes(notificationId)) {
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
                                 newNotifications.push({
                                     id: notificationId,
                                     title: `${app.type} Assistance Completed`,
@@ -2768,67 +2742,43 @@
 
             async function loadRealNotifications(showLoading = false) {
                 try {
-                    console.log('[loadRealNotifications] Starting to load notifications...');
+                    console.log('[loadRealNotifications] Starting to load unified notifications from database...');
 
                     if (showLoading) {
                         notificationList.innerHTML = `
                             <div class="notification-empty">
                                 <i class="fas fa-spinner fa-spin"></i>
-                                <p>Checking application status...</p>
+                                <p>Loading notifications...</p>
                             </div>
                         `;
                     }
 
-                    // Fetch notifications from the backend API which includes permanent welcome notification
-                    const response = await fetch('/Notifications/GetUserNotifications');
-                    if (response.ok) {
-                        const notifications = await response.json();
+                    // Fetch unified notifications from database
+                    const response = await fetch('/Notifications/GetUnifiedNotifications');
+                    const data = await response.json();
 
-                        // Check for error in response
-                        if (notifications.error) {
-                            console.error('[loadRealNotifications] API returned error:', notifications.error);
-                            throw new Error(notifications.error);
-                        }
-
-                        console.log(`[loadRealNotifications] Loaded ${notifications.length} notifications from backend`);
-
-                        // Convert notification dates to Date objects for proper handling
-                        const processedNotifications = notifications.map(n => ({
-                            ...n,
-                            createdAt: n.createdAt // Keep as string, it will be parsed when needed
-                        }));
-
-                        // Log notification details for debugging
-                        const notifSummary = processedNotifications.map(n => ({
-                            id: n.id,
-                            type: n.type,
-                            status: n.status,
-                            priority: n.priority,
-                            isRead: n.isRead,
-                            isPermanent: n.isPermanent
-                        }));
-                        console.log('[loadRealNotifications] Notification details:', notifSummary);
-
-                        updateNotificationUI(processedNotifications);
-                        currentNotifications = processedNotifications;
-                        console.log('[loadRealNotifications] Notifications loaded and UI updated successfully');
-                    } else {
-                        console.error(`[loadRealNotifications] HTTP error: ${response.status}`);
-                        throw new Error(`HTTP error: ${response.status}`);
+                    if (!response.ok || data.error) {
+                        console.error('[loadRealNotifications] API returned error:', data.error);
+                        throw new Error(data.error || 'Failed to load notifications');
                     }
+
+                    const notifications = data.notifications || [];
+                    currentNotifications = notifications;
+
+                    console.log(`[loadRealNotifications] Loaded ${notifications.length} unified notifications from database`);
+
+                    // Update badge count (unread notifications)
+                    const unreadCount = notifications.filter(n => !n.isRead && !n.isPermanent).length;
+                    updateNotificationBadge(unreadCount);
+
+                    // Render notifications
+                    updateNotificationUI(notifications);
+
+                    console.log('[loadRealNotifications] Notifications loaded and UI updated successfully');
 
                 } catch (error) {
                     console.error('[loadRealNotifications] Failed to load notifications:', error);
-                    updateNotificationUI([{
-                        id: 'error_notification',
-                        title: "Application Status",
-                        message: "Unable to load application status. Please check your Application History for updates.",
-                        isRead: false,
-                        createdAt: new Date().toISOString(),
-                        type: "submitted",
-                        link: "/Applicationtracking",
-                        isPermanent: false
-                    }]);
+                    notificationList.innerHTML = '<div class="text-center py-3 text-danger"><i class="fas fa-exclamation-triangle"></i> Failed to load notifications</div>';
                 }
             }
 
@@ -2909,12 +2859,6 @@
                     });
                 }
 
-                notifications.forEach(notification => {
-                    if (readIds.includes(notification.id)) {
-                        notification.isRead = true;
-                    }
-                });
-
                 return notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             }
 
@@ -2922,7 +2866,6 @@
                 const notifications = [];
                 const now = new Date();
                 const appId = application.id || application.Id;
-                const readIds = getStoredReadNotifications();
 
                 function getHoursElapsed(dateString) {
                     if (!dateString || !isValidDate(dateString)) return 0;
@@ -3040,7 +2983,7 @@
                         id: notificationId,
                         title: title,
                         message: message,
-                        isRead: readIds.includes(notificationId),
+                        isRead: false,  // Will be managed by database
                         createdAt: createdDate,
                         type: notificationType,
                         link: "/Applicationtracking",
@@ -3051,11 +2994,31 @@
                 return notifications;
             }
 
-            function hideNotificationBadge() {
+            function updateNotificationBadge(count) {
                 if (notificationBadge) {
-                    notificationBadge.style.display = 'none';
-                    notificationBadge.textContent = '0';
+                    if (count > 0) {
+                        notificationBadge.textContent = count > 99 ? '99+' : count;
+                        notificationBadge.style.display = 'block';
+                    } else {
+                        notificationBadge.style.display = 'none';
+                        notificationBadge.textContent = '0';
+                    }
                 }
+                // Update mobile notification badge
+                const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+                if (mobileNotificationBadge) {
+                    if (count > 0) {
+                        mobileNotificationBadge.textContent = count > 99 ? '99+' : count;
+                        mobileNotificationBadge.style.display = 'inline-block';
+                    } else {
+                        mobileNotificationBadge.style.display = 'none';
+                        mobileNotificationBadge.textContent = '0';
+                    }
+                }
+            }
+
+            function hideNotificationBadge() {
+                updateNotificationBadge(0);
             }
 
             async function markAllNotificationsAsRead() {
@@ -3063,56 +3026,38 @@
                     const markAllBtn = document.getElementById('markAllRead');
                     markAllBtn.classList.add('reading');
 
-                    const unreadNotifications = currentNotifications.filter(n => !n.isRead);
-                    console.log(`[markAllNotificationsAsRead] Forcefully marking ${unreadNotifications.length} unread notifications (out of ${currentNotifications.length} total) as read, including priority notifications...`);
-
-                    // Use batch endpoint to mark all notifications as read in database
-                    // Send force flag to ensure ALL notifications are marked as read, including priority ones
                     const response = await fetch('/Notifications/MarkAllNotificationsAsRead', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ force: true })
+                        }
                     });
 
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success) {
-                            console.log(`[markAllNotificationsAsRead] Successfully marked ${result.count || currentNotifications.length} notifications as read in database (forcefully)`);
+                    const data = await response.json();
 
-                            // FORCEFULLY update all current notifications to read state, regardless of priority
-                            currentNotifications.forEach(n => {
-                                n.isRead = true;
-                                console.log(`[markAllNotificationsAsRead] Marked notification ${n.id} (priority: ${n.priority || 'normal'}) as read`);
-                            });
+                    if (data.success) {
+                        // Update UI - remove unread class from all notifications
+                        document.querySelectorAll('.notification-item.unread').forEach(item => {
+                            item.classList.remove('unread');
+                        });
 
-                            // Update UI to reflect read status for both desktop and mobile
-                            updateNotificationUI(currentNotifications);
-                            updateMobileNotificationList(currentNotifications);
-                            hideNotificationBadge();
+                        // Update badge
+                        updateNotificationBadge(0);
 
-                            console.log('[markAllNotificationsAsRead] All notifications (including priority) marked as read successfully');
-                        } else {
-                            console.error('[markAllNotificationsAsRead] Backend returned error:', result.error);
-                            throw new Error(result.error);
-                        }
+                        // Show animation
+                        setTimeout(() => markAllBtn.classList.remove('reading'), 600);
+
+                        console.log(`Marked ${data.count} notifications as read`);
                     } else {
-                        console.error('[markAllNotificationsAsRead] HTTP error:', response.status);
-                        throw new Error(`HTTP ${response.status}`);
+                        console.error('Failed to mark all notifications as read:', data.error);
+                        setTimeout(() => markAllBtn.classList.remove('reading'), 600);
                     }
-
-                    setTimeout(() => {
-                        markAllBtn.classList.remove('reading');
-                    }, 600);
                 } catch (error) {
-                    console.error('[markAllNotificationsAsRead] Failed to mark all notifications as read:', error);
+                    console.error('Error marking all notifications as read:', error);
                     const markAllBtn = document.getElementById('markAllRead');
                     if (markAllBtn) {
                         markAllBtn.classList.remove('reading');
                     }
-                    // Show error message to user
-                    alert('Failed to mark notifications as read. Please try again.');
                 }
             }
 
@@ -3385,44 +3330,54 @@
             async function handleNotificationClick(notification) {
                 console.log('[handleNotificationClick] Notification clicked:', notification.id);
 
-                // Mark as read in the backend database BEFORE redirecting
+                // Mark as read if not already read
                 if (!notification.isRead) {
-                    try {
-                        console.log('[handleNotificationClick] Marking notification as read:', notification.id);
-                        const response = await fetch('/Notifications/MarkNotificationAsRead', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ notificationId: notification.id })
-                        });
-
-                        if (response.ok) {
-                            const result = await response.json();
-                            if (result.success) {
-                                console.log('[handleNotificationClick] Successfully marked as read in database');
-                                // Update local state
-                                notification.isRead = true;
-                                updateNotificationUI(currentNotifications);
-                            } else {
-                                console.error('[handleNotificationClick] Backend returned error:', result.error);
-                            }
-                        } else {
-                            console.error('[handleNotificationClick] HTTP error:', response.status);
-                        }
-                    } catch (error) {
-                        console.error('[handleNotificationClick] Failed to mark notification as read:', error);
-                        // Continue with redirect even if marking as read fails
-                    }
+                    await markNotificationAsRead(notification.id);
                 }
 
-                // Redirect to notification link (AFTER marking as read)
+                // Navigate to link if provided
                 if (notification.link && notification.link !== '#') {
                     console.log('[handleNotificationClick] Redirecting to:', notification.link);
-                    // Small delay to ensure UI updates before redirect
-                    setTimeout(() => {
-                        window.location.href = notification.link;
-                    }, 100);
+                    window.location.href = notification.link;
+                }
+            }
+
+            async function markNotificationAsRead(notificationId) {
+                try {
+                    const response = await fetch(`/Notifications/MarkNotificationAsRead?notificationId=${notificationId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Update UI to show as read
+                        const notifElement = document.querySelector(`[data-id="${notificationId}"]`);
+                        if (notifElement) {
+                            notifElement.classList.remove('unread');
+                        }
+
+                        // Update badge count
+                        await updateUnreadCount();
+                    }
+                } catch (error) {
+                    console.error('Error marking notification as read:', error);
+                }
+            }
+
+            async function updateUnreadCount() {
+                try {
+                    const response = await fetch('/Notifications/GetUnreadNotificationCount');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        updateNotificationBadge(data.count);
+                    }
+                } catch (error) {
+                    console.error('Error getting unread count:', error);
                 }
             }
 
@@ -3494,15 +3449,17 @@
                         </div>
                     `;
 
-                    // Fetch notifications from API (same as desktop)
-                    console.log('[loadMobileNotifications] Fetching from API...');
-                    const response = await fetch('/Notifications/GetUserNotifications');
+                    // Fetch unified notifications from database (same as desktop)
+                    console.log('[loadMobileNotifications] Fetching from unified API...');
+                    const response = await fetch('/Notifications/GetUnifiedNotifications');
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+
+                    if (!response.ok || data.error) {
+                        throw new Error(data.error || 'Failed to load notifications');
                     }
 
-                    let notifications = await response.json();
+                    let notifications = data.notifications || [];
                     console.log('[loadMobileNotifications] API returned', notifications.length, 'notifications');
 
                     // Sort notifications: temporary by date DESC, permanent at bottom

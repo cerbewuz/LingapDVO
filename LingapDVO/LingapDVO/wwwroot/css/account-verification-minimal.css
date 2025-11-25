@@ -18,25 +18,19 @@ body {
     position: relative;
 }
 
-/* Subtle Background Texture */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    opacity: 0.4;
-    background-image: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 1px,
-        rgba(74, 144, 226, 0.02) 1px,
-        rgba(74, 144, 226, 0.02) 2px
-    );
-    pointer-events: none;
-}
+    /* Subtle Background Texture */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        opacity: 0.4;
+        background-image: repeating-linear-gradient( 0deg, transparent, transparent 1px, rgba(74, 144, 226, 0.02) 1px, rgba(74, 144, 226, 0.02) 2px );
+        pointer-events: none;
+    }
 
 .container {
     position: relative;
@@ -52,16 +46,16 @@ body::before {
     overflow: hidden;
 }
 
-.glass-effect::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #4A90E2 0%, #5BA3F5 100%);
-    z-index: 2;
-}
+    .glass-effect::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #4A90E2 0%, #5BA3F5 100%);
+        z-index: 2;
+    }
 
 /* Calm Blue Accent Colors */
 .crimson-500,
@@ -128,23 +122,23 @@ textarea {
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="date"]:focus,
-select:focus,
-textarea:focus {
-    border-color: #4A90E2 !important;
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
-    outline: none !important;
-}
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="date"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #4A90E2 !important;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+        outline: none !important;
+    }
 
-input[type="text"]:hover,
-input[type="email"]:hover,
-input[type="date"]:hover,
-select:hover,
-textarea:hover {
-    border-color: #90CAF9 !important;
-}
+    input[type="text"]:hover,
+    input[type="email"]:hover,
+    input[type="date"]:hover,
+    select:hover,
+    textarea:hover {
+        border-color: #90CAF9 !important;
+    }
 
 /* Blue focus rings */
 .focus\:border-crimson-500:focus {
@@ -167,16 +161,16 @@ textarea:hover {
     transition: all 0.3s ease !important;
 }
 
-.upload-area:hover {
-    background: #E3F2FD !important;
-    border-color: #4A90E2 !important;
-    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15) !important;
-}
+    .upload-area:hover {
+        background: #E3F2FD !important;
+        border-color: #4A90E2 !important;
+        box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15) !important;
+    }
 
-.upload-area.has-image {
-    border-color: #4A90E2 !important;
-    background: white !important;
-}
+    .upload-area.has-image {
+        border-color: #4A90E2 !important;
+        background: white !important;
+    }
 
 /* Hide upload area contents when image is uploaded (preview mode) */
 .id-upload-content.preview-mode > .w-16.h-16,
@@ -211,15 +205,15 @@ textarea:hover {
     box-shadow: 0 2px 8px rgba(74, 144, 226, 0.12) !important;
 }
 
-#davao-verification.success-result {
-    border-left-color: #48bb78 !important;
-    background: #f0fdf4 !important;
-}
+    #davao-verification.success-result {
+        border-left-color: #48bb78 !important;
+        background: #f0fdf4 !important;
+    }
 
-#davao-verification.error-result {
-    border-left-color: #ef4444 !important;
-    background: #fff5f5 !important;
-}
+    #davao-verification.error-result {
+        border-left-color: #ef4444 !important;
+        background: #fff5f5 !important;
+    }
 
 /* Submit Button - Calm Blue */
 button[type="submit"],
@@ -235,29 +229,29 @@ button[type="submit"],
     box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3) !important;
 }
 
-button[type="submit"]:hover,
-.submit-btn:hover,
-.submitbtn-color:hover {
-    background: linear-gradient(135deg, #3A7BC8 0%, #4A90E2 100%) !important;
-    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4) !important;
-    transform: translateY(-2px) !important;
-}
+    button[type="submit"]:hover,
+    .submit-btn:hover,
+    .submitbtn-color:hover {
+        background: linear-gradient(135deg, #3A7BC8 0%, #4A90E2 100%) !important;
+        box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
 
-button[type="submit"]:active,
-.submit-btn:active,
-.submitbtn-color:active {
-    transform: translateY(0) !important;
-    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3) !important;
-}
+    button[type="submit"]:active,
+    .submit-btn:active,
+    .submitbtn-color:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3) !important;
+    }
 
-button[type="submit"]:disabled,
-.submit-btn:disabled,
-.submitbtn-color:disabled {
-    background: #e0e0e0 !important;
-    color: #9e9e9e !important;
-    cursor: not-allowed !important;
-    box-shadow: none !important;
-}
+    button[type="submit"]:disabled,
+    .submit-btn:disabled,
+    .submitbtn-color:disabled {
+        background: #e0e0e0 !important;
+        color: #9e9e9e !important;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+    }
 
 /* Modals - Keep Original Styles */
 .modal-content {
@@ -322,18 +316,18 @@ button[type="submit"]:disabled,
     background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%) !important;
 }
 
-.modal-footer button.bg-gradient-to-r.from-red-600:hover {
-    background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%) !important;
-}
+    .modal-footer button.bg-gradient-to-r.from-red-600:hover {
+        background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%) !important;
+    }
 
 /* Blue buttons in modals (like terms modal) */
 .modal-footer button.bg-gradient-to-r.from-blue-600 {
     background: linear-gradient(90deg, #4A90E2 0%, #5BA3F5 100%) !important;
 }
 
-.modal-footer button.bg-gradient-to-r.from-blue-600:hover {
-    background: linear-gradient(90deg, #3A7BC8 0%, #4A90E2 100%) !important;
-}
+    .modal-footer button.bg-gradient-to-r.from-blue-600:hover {
+        background: linear-gradient(90deg, #3A7BC8 0%, #4A90E2 100%) !important;
+    }
 
 /* Status Badges */
 #davao-status-badge {
@@ -342,17 +336,17 @@ button[type="submit"]:disabled,
     border: 1px solid #90CAF9 !important;
 }
 
-#davao-status-badge.success {
-    background: #f0fdf4 !important;
-    color: #2f855a !important;
-    border-color: #48bb78 !important;
-}
+    #davao-status-badge.success {
+        background: #f0fdf4 !important;
+        color: #2f855a !important;
+        border-color: #48bb78 !important;
+    }
 
-#davao-status-badge.error {
-    background: #fff5f5 !important;
-    color: #c53030 !important;
-    border-color: #ef4444 !important;
-}
+    #davao-status-badge.error {
+        background: #fff5f5 !important;
+        color: #c53030 !important;
+        border-color: #ef4444 !important;
+    }
 
 /* Smooth Animations */
 .fade-in {
@@ -372,6 +366,7 @@ button[type="submit"]:disabled,
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -383,6 +378,7 @@ button[type="submit"]:disabled,
         opacity: 0;
         transform: scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -394,6 +390,7 @@ button[type="submit"]:disabled,
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

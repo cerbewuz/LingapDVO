@@ -46,19 +46,44 @@ namespace LingapDVO.Services
         public DbSet<Feedback> Feedbacks { get; set; }
 
         // ═══════════════════════════════════════════════════════════════
-        // 🔔 NOTIFICATION READ STATUS
+        // 🔔 UNIFIED NOTIFICATIONS SYSTEM
+        // Comprehensive notification tracking with built-in read status
+        // Synchronized across Homepage and Application Tracking pages
         // ═══════════════════════════════════════════════════════════════
-        public DbSet<NotificationReadStatus> NotificationReadStatus { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure composite index for NotificationReadStatus
-            modelBuilder.Entity<NotificationReadStatus>()
-                .HasIndex(n => new { n.UserId, n.NotificationId })
-                .HasDatabaseName("IX_NotificationReadStatus_UserId_NotificationId")
-                .IsUnique();
+            // ═══════════════════════════════════════════════════════════════
+            // 🔔 UNIFIED NOTIFICATIONS INDEXES
+            // ═══════════════════════════════════════════════════════════════
+
+            // Primary query: Get user notifications ordered by date
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.UserId, n.CreatedAt, n.IsArchived })
+                .HasDatabaseName("IX_Notifications_UserId_CreatedAt_IsArchived");
+
+            // Query unread notifications
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.UserId, n.IsRead, n.CreatedAt })
+                .HasDatabaseName("IX_Notifications_UserId_IsRead_CreatedAt");
+
+            // Query by application
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.ApplicationType, n.ApplicationId, n.CreatedAt })
+                .HasDatabaseName("IX_Notifications_ApplicationType_ApplicationId_CreatedAt");
+
+            // Query by notification identifier (for deduplication)
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => n.NotificationIdentifier)
+                .HasDatabaseName("IX_Notifications_NotificationIdentifier");
+
+            // Query by type and stage (for timeline rendering)
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.Type, n.ProcessStage, n.DisplayOrder })
+                .HasDatabaseName("IX_Notifications_Type_ProcessStage_DisplayOrder");
 
             // ═══════════════════════════════════════════════════════════════
             // 🚀 PERFORMANCE INDEXES - Optimize frequently queried columns

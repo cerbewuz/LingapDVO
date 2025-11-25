@@ -19,528 +19,12 @@ public class NotificationsController : Controller
         _logger = logger;
     }
 
-    [HttpGet]
-    public JsonResult GetUserNotifications()
-    {
-        var userIdString = HttpContext.Session.GetString("UserId");
-
-        if (string.IsNullOrEmpty(userIdString))
-        {
-            return Json(new { error = "User not authenticated" });
-        }
-
-        if (!int.TryParse(userIdString, out int userId))
-        {
-            return Json(new { error = "Invalid user ID" });
-        }
-
-        var notifications = new List<object>();
-
-        try
-        {
-            // Get read notification IDs from session
-            var readNotificationIds = GetReadNotificationIdsFromSession(userId);
-
-            // ⚡ PERFORMANCE: Limit query to 100 records at database level (not in-memory)
-            // Previous: Fetched ALL records then took 100 in-memory (inefficient for 500+ records)
-            // AsNoTracking improves performance by 20-30% for read-only queries
-            var recentHospitalBills = context.HospitalAssistance
-                .AsNoTracking()
-                .Where(f => f.UserId == userId)
-                .OrderByDescending(f => f.CreatedAt)
-                .Take(100) // Limit at database level
-                .ToList();
-
-            var recentMedicalLabForms = context.OtherAssistance
-                .AsNoTracking()
-                .Where(f => f.UserId == userId)
-                .OrderByDescending(f => f.CreatedAt)
-                .Take(100) // Limit at database level
-                .ToList();
-
-            var recentFuneralForms = context.FuneralAssistance
-                .AsNoTracking()
-                .Where(f => f.UserId == userId)
-                .OrderByDescending(f => f.CreatedAt)
-                .Take(100) // Limit at database level
-                .ToList();
-
-            // Create notifications for hospital bills (showing 100 most recent)
-            foreach (var bill in recentHospitalBills)
-            {
-                var notificationId = $"hospital_{bill.Id}_{bill.Status}";
-                var isRead = readNotificationIds.Contains(notificationId);
-
-                // Pass all timeline fields to match Application Tracking page logic
-                var (title, message, type) = GetStatusNotificationDetails(
-                    "Hospital Assistance",
-                    bill.Status,
-                    bill.CreatedAt,
-                    bill.ProcessAt,
-                    bill.Processby,
-                    bill.Result,
-                    bill.Status2,
-                    bill.ClaimedAt,
-                    bill.Status3
-                );
-                var priority = CalculateApplicationPriority(bill.Status, bill.Status2, bill.CreatedAt);
-                var notificationLink = GetNotificationLink(bill.CreatedAt, bill.Status2, bill.ClaimedAt, bill.Status3);
-
-                // If priority is high or medium, override with delay message
-                if (priority == "high" || priority == "medium")
-                {
-                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Hospital Assistance", priority, bill.CreatedAt);
-                    title = delayTitle;
-                    message = delayMessage;
-                    type = "delay_alert";
-                }
-
-                notifications.Add(new
-                {
-                    id = notificationId,
-                    title = title,
-                    message = message,
-                    isRead = isRead,
-                    createdAt = bill.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    type = type,
-                    link = notificationLink,
-                    status = bill.Status,
-                    priority = priority,
-                    isPermanent = false
-                });
-            }
-
-            // Create notifications for medical lab forms
-            foreach (var medical in recentMedicalLabForms)
-            {
-                var notificationId = $"medical_{medical.Id}_{medical.Status}";
-                var isRead = readNotificationIds.Contains(notificationId);
-
-                // Pass all timeline fields to match Application Tracking page logic
-                var (title, message, type) = GetStatusNotificationDetails(
-                    "Other Assistance",
-                    medical.Status,
-                    medical.CreatedAt,
-                    medical.ProcessAt,
-                    medical.Processby,
-                    medical.Result,
-                    medical.Status2,
-                    medical.ClaimedAt,
-                    medical.Status3
-                );
-                var priority = CalculateApplicationPriority(medical.Status, medical.Status2, medical.CreatedAt);
-                var notificationLink = GetNotificationLink(medical.CreatedAt, medical.Status2, medical.ClaimedAt, medical.Status3);
-
-                // If priority is high or medium, override with delay message
-                if (priority == "high" || priority == "medium")
-                {
-                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Other Assistance", priority, medical.CreatedAt);
-                    title = delayTitle;
-                    message = delayMessage;
-                    type = "delay_alert";
-                }
-
-                notifications.Add(new
-                {
-                    id = notificationId,
-                    title = title,
-                    message = message,
-                    isRead = isRead,
-                    createdAt = medical.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    type = type,
-                    link = notificationLink,
-                    status = medical.Status,
-                    priority = priority,
-                    isPermanent = false
-                });
-            }
-
-            // Create notifications for funeral forms
-            foreach (var funeral in recentFuneralForms)
-            {
-                var notificationId = $"funeral_{funeral.Id}_{funeral.Status}";
-                var isRead = readNotificationIds.Contains(notificationId);
-
-                // Pass all timeline fields to match Application Tracking page logic
-                var (title, message, type) = GetStatusNotificationDetails(
-                    "Funeral Assistance",
-                    funeral.Status,
-                    funeral.CreatedAt,
-                    funeral.ProcessAt,
-                    funeral.Processby,
-                    funeral.Result,
-                    funeral.Status2,
-                    funeral.ClaimedAt,
-                    funeral.Status3
-                );
-                var priority = CalculateApplicationPriority(funeral.Status, funeral.Status2, funeral.CreatedAt);
-                var notificationLink = GetNotificationLink(funeral.CreatedAt, funeral.Status2, funeral.ClaimedAt, funeral.Status3);
-
-                // If priority is high or medium, override with delay message
-                if (priority == "high" || priority == "medium")
-                {
-                    var (delayTitle, delayMessage) = GetDelayNotificationDetails("Funeral Assistance", priority, funeral.CreatedAt);
-                    title = delayTitle;
-                    message = delayMessage;
-                    type = "delay_alert";
-                }
-
-                notifications.Add(new
-                {
-                    id = notificationId,
-                    title = title,
-                    message = message,
-                    isRead = isRead,
-                    createdAt = funeral.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    type = type,
-                    link = notificationLink,
-                    status = funeral.Status,
-                    priority = priority,
-                    isPermanent = false
-                });
-            }
-
-            // Check if user is verified
-            var verification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
-            bool isVerified = verification != null;
-
-            // Generate appropriate welcome notification based on verification status
-            // ALWAYS ADD WELCOME NOTIFICATION - it's a permanent notification
-            var welcomeNotificationId = isVerified ? $"welcome_verified_{userId}" : $"welcome_unverified_{userId}";
-            var isWelcomeRead = readNotificationIds.Contains(welcomeNotificationId);
-
-            // Get user's actual registration date from RegistrationAuditLog
-            var userRegistrationDate = context.RegistrationAuditLogs
-                .Where(log => log.RegisteredUserId == userId && log.Action == "SUCCESS")
-                .OrderBy(log => log.AttemptedAt)
-                .Select(log => log.AttemptedAt)
-                .FirstOrDefault();
-
-            // If no registration date found, use current time minus 1 hour
-            var welcomeDate = userRegistrationDate != default(DateTime)
-                ? userRegistrationDate
-                : _dateTimeService.Now.AddHours(-1);
-
-            string welcomeTitle, welcomeMessage;
-            if (isVerified)
-            {
-                // Verified user - congratulations message
-                welcomeTitle = "Account Verified!";
-                welcomeMessage = "Congratulations! Your account has been successfully verified. You now have full access to all LingapDVO services and can submit assistance applications.";
-            }
-            else
-            {
-                // Unverified user - encourage verification
-                welcomeTitle = "Welcome to LingapDVO!";
-                welcomeMessage = "Thank you for joining LingapDVO! To access all services and submit assistance applications, please complete your account verification.";
-            }
-
-            // Add welcome notification with isPermanent flag to ensure it always appears
-            notifications.Add(new
-            {
-                id = welcomeNotificationId,
-                title = welcomeTitle,
-                message = welcomeMessage,
-                isRead = isWelcomeRead,
-                createdAt = welcomeDate.ToString("yyyy-MM-ddTHH:mm:ss"),
-                type = "welcome",
-                link = "/Home",
-                status = "Welcome",
-                priority = "normal",
-                isPermanent = true  // Mark as permanent so it's always included
-            });
-
-            // Order notifications: temporary notifications by date (newest first), then permanent notifications at the end
-            // This ensures the welcome notification always appears at the bottom of the list
-            var orderedNotifications = notifications
-                .OrderBy(n => ((dynamic)n).isPermanent)  // Non-permanent (false) first, permanent (true) last
-                .ThenByDescending(n => ((dynamic)n).createdAt)     // Then by creation date within each group
-                .ToList();
-
-            // Prevent browser caching
-            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
-            Response.Headers["Pragma"] = "no-cache";
-            Response.Headers["Expires"] = "0";
-
-            return Json(orderedNotifications);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while loading notifications for user");
-            return Json(new { error = "An error occurred while loading notifications" });
-        }
-    }
-
-    [HttpPost]
-    public JsonResult MarkNotificationAsRead(string notificationId)
-    {
-        var userIdString = HttpContext.Session.GetString("UserId");
-
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
-        {
-            return Json(new { success = false, error = "User not authenticated" });
-        }
-
-        if (string.IsNullOrEmpty(notificationId))
-        {
-            return Json(new { success = false, error = "Notification ID is required" });
-        }
-
-        try
-        {
-            // Update session
-            UpdateSessionReadNotifications(userId, notificationId);
-
-            return Json(new { success = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while marking notification {NotificationId} as read", notificationId);
-            return Json(new { success = false, error = "An error occurred while marking notification as read" });
-        }
-    }
-
-    [HttpPost]
-    public JsonResult MarkAllNotificationsAsRead([FromBody] MarkAllReadRequest? request = null)
-    {
-        var userIdString = HttpContext.Session.GetString("UserId");
-
-        try
-        {
-            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
-            {
-                return Json(new { success = false, error = "User not authenticated" });
-            }
-
-            // FORCE MODE: Get ALL notification IDs regardless of date/count limits
-            bool forceMode = request?.Force ?? false;
-            List<string> notificationIds;
-
-            if (forceMode)
-            {
-                // Get ALL notification IDs without any restrictions
-                _logger.LogInformation("FORCE MODE: Getting all notification IDs for user {UserId}", userId);
-                notificationIds = GetAllUserNotificationIds(userId);
-                _logger.LogInformation("FORCE MODE: Found {Count} total notification IDs", notificationIds.Count);
-            }
-            else
-            {
-                // Normal mode: Get current notification IDs (last 7 days, limited)
-                notificationIds = GetCurrentUserNotificationIds(userId);
-            }
-
-            // Get already read notification IDs from database
-            var alreadyReadIds = context.NotificationReadStatus
-                .Where(n => n.UserId == userId)
-                .Select(n => n.NotificationId)
-                .ToHashSet();
-
-            // Find notifications that need to be marked as read
-            var newReadNotifications = notificationIds
-                .Where(id => !alreadyReadIds.Contains(id))
-                .Select(id => new NotificationReadStatus
-                {
-                    UserId = userId,
-                    NotificationId = id,
-                    MarkedReadAt = _dateTimeService.Now
-                })
-                .ToList();
-
-            // Batch insert all new read statuses to database
-            if (newReadNotifications.Any())
-            {
-                context.NotificationReadStatus.AddRange(newReadNotifications);
-                context.SaveChanges();
-
-                _logger.LogInformation("FORCE MODE={ForceMode}: Marked {Count} notifications as read for user {UserId}", forceMode, newReadNotifications.Count, userId);
-            }
-
-            return Json(new { success = true, message = "All notifications marked as read", count = newReadNotifications.Count });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while marking all notifications as read for user {UserIdString}", userIdString);
-            return Json(new { success = false, error = "An error occurred while marking all notifications as read" });
-        }
-    }
-
-    // Helper class for request body
-    public class MarkAllReadRequest
-    {
-        public bool Force { get; set; }
-    }
-
-    // FORCE METHOD: Get ALL notification IDs without date/count restrictions
-    private List<string> GetAllUserNotificationIds(int userId)
-    {
-        var notificationIds = new List<string>();
-
-        try
-        {
-            _logger.LogInformation("Getting ALL notifications for user {UserId} (no date/count restrictions)", userId);
-
-            // ⚡ PERFORMANCE: Select only needed fields (Id, Status) instead of loading entire entities
-            // Previous: Loaded all columns for all records, wasting memory and bandwidth
-            // AsNoTracking is implicit with Select but added for clarity
-
-            // Get ALL hospital bills for this user (no date limit, no count limit)
-            var hospitalNotificationIds = context.HospitalAssistance
-                .AsNoTracking()
-                .Where(f => f.UserId == userId)
-                .OrderByDescending(f => f.CreatedAt)
-                .Select(f => $"hospital_{f.Id}_{f.Status}")
-                .ToList();
-
-            _logger.LogInformation("Found {Count} hospital bills", hospitalNotificationIds.Count);
-
-            // Get ALL medical/lab forms for this user (no date limit, no count limit)
-            var medicalNotificationIds = context.OtherAssistance
-                .AsNoTracking()
-                .Where(f => f.UserId == userId)
-                .OrderByDescending(f => f.CreatedAt)
-                .Select(f => $"medical_{f.Id}_{f.Status}")
-                .ToList();
-
-            _logger.LogInformation("Found {Count} medical/lab forms", medicalNotificationIds.Count);
-
-            // Get ALL funeral forms for this user (no date limit, no count limit)
-            var funeralNotificationIds = context.FuneralAssistance
-                .AsNoTracking()
-                .Where(f => f.UserId == userId)
-                .OrderByDescending(f => f.CreatedAt)
-                .Select(f => $"funeral_{f.Id}_{f.Status}")
-                .ToList();
-
-            _logger.LogInformation("Found {Count} funeral forms", funeralNotificationIds.Count);
-
-            // Add ALL notification IDs to the list
-            notificationIds.AddRange(hospitalNotificationIds);
-            notificationIds.AddRange(medicalNotificationIds);
-            notificationIds.AddRange(funeralNotificationIds);
-
-            // Always include welcome notifications
-            notificationIds.Add($"welcome_verified_{userId}");
-            notificationIds.Add($"welcome_unverified_{userId}");
-
-            _logger.LogInformation("Generated {Count} total notification IDs for user {UserId}", notificationIds.Count, userId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while getting ALL notification IDs for user {UserId}", userId);
-            // Always include welcome notifications even on error
-            notificationIds.Add($"welcome_verified_{userId}");
-            notificationIds.Add($"welcome_unverified_{userId}");
-        }
-
-        return notificationIds;
-    }
-
-    // Fixed helper method that returns List<string> instead of List<dynamic>
-    private List<string> GetCurrentUserNotificationIds(int userId)
-    {
-        var notificationIds = new List<string>();
-
-        try
-        {
-            // Get recent forms (same logic as GetUserNotifications but without read check)
-            var recentHospitalBills = context.HospitalAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
-                .OrderByDescending(f => f.CreatedAt)
-                .Take(5)
-                .ToList();
-
-            var recentMedicalLabForms = context.OtherAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
-                .OrderByDescending(f => f.CreatedAt)
-                .Take(5)
-                .ToList();
-
-            var recentFuneralForms = context.FuneralAssistance
-                .Where(f => f.UserId == userId && f.CreatedAt >= _dateTimeService.Now.AddDays(-7))
-                .OrderByDescending(f => f.CreatedAt)
-                .Take(5)
-                .ToList();
-
-            foreach (var bill in recentHospitalBills)
-            {
-                notificationIds.Add($"hospital_{bill.Id}_{bill.Status}");
-            }
-
-            foreach (var medical in recentMedicalLabForms)
-            {
-                notificationIds.Add($"medical_{medical.Id}_{medical.Status}");
-            }
-
-            foreach (var funeral in recentFuneralForms)
-            {
-                notificationIds.Add($"funeral_{funeral.Id}_{funeral.Status}");
-            }
-
-            // Always include welcome notifications (both types to handle verification state changes)
-            notificationIds.Add($"welcome_verified_{userId}");
-            notificationIds.Add($"welcome_unverified_{userId}");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while getting current notification IDs for user {UserId}", userId);
-            // Always include welcome notifications even on error
-            notificationIds.Add($"welcome_verified_{userId}");
-            notificationIds.Add($"welcome_unverified_{userId}");
-        }
-
-        return notificationIds;
-    }
-
-    // Database-based methods for permanent read status
-    private HashSet<string> GetReadNotificationIdsFromSession(int userId)
-    {
-        try
-        {
-            // Read from database for permanent storage
-            var readNotifications = context.NotificationReadStatus
-                .Where(n => n.UserId == userId)
-                .Select(n => n.NotificationId)
-                .ToHashSet();
-
-            return readNotifications;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while getting read notification IDs from database for user {UserId}", userId);
-            return new HashSet<string>();
-        }
-    }
-
-    private void UpdateSessionReadNotifications(int userId, string notificationId)
-    {
-        try
-        {
-            // Check if already marked as read in database
-            var existingRecord = context.NotificationReadStatus
-                .FirstOrDefault(n => n.UserId == userId && n.NotificationId == notificationId);
-
-            if (existingRecord == null)
-            {
-                // Add new read status record to database
-                var readStatus = new NotificationReadStatus
-                {
-                    UserId = userId,
-                    NotificationId = notificationId,
-                    MarkedReadAt = _dateTimeService.Now
-                };
-
-                context.NotificationReadStatus.Add(readStatus);
-                context.SaveChanges();
-
-                _logger.LogInformation("Notification {NotificationId} marked as read for user {UserId}", notificationId, userId);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while updating read notification status in database for user {UserId}", userId);
-            throw;
-        }
-    }
+    // ═══════════════════════════════════════════════════════════════
+    // 🗑️ LEGACY NOTIFICATION SYSTEM REMOVED
+    // Old GetUserNotifications() and NotificationReadStatus-based methods removed
+    // Now using unified Notifications table with built-in IsRead/ReadAt fields
+    // See GetUnifiedNotifications() below for the current implementation
+    // ═══════════════════════════════════════════════════════════════
 
     /// <summary>
     /// Determines the appropriate link for the notification based on application status and age
@@ -720,6 +204,235 @@ public class NotificationsController : Controller
         else
         {
             return "normal";
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🔔 UNIFIED NOTIFICATIONS API - Load from Notifications Table
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Get all notifications for the current user from the unified Notifications table
+    /// Used by Homepage.cshtml for notification dropdown
+    /// </summary>
+    [HttpGet]
+    public async Task<JsonResult> GetUnifiedNotifications()
+    {
+        var userIdString = HttpContext.Session.GetString("UserId");
+
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+        {
+            return Json(new { error = "User not authenticated" });
+        }
+
+        try
+        {
+            // Get all non-archived notifications for user, ordered by creation date descending
+            var notifications = await context.Notifications
+                .AsNoTracking()
+                .Where(n => n.UserId == userId && !n.IsArchived)
+                .OrderByDescending(n => n.CreatedAt)
+                .Select(n => new
+                {
+                    id = n.Id,
+                    notificationId = n.NotificationIdentifier,
+                    applicationType = n.ApplicationType,
+                    applicationId = n.ApplicationId,
+                    applicantName = n.ApplicantName,
+                    title = n.Title,
+                    message = n.Message,
+                    type = n.Type,
+                    link = n.Link,
+                    status = n.Status,
+                    status2 = n.Status2,
+                    status3 = n.Status3,
+                    comments = n.Comments,
+                    processedBy = n.ProcessedBy,
+                    processStage = n.ProcessStage,
+                    priority = n.Priority,
+                    createdAt = n.CreatedAt,
+                    eventTimestamp = n.EventTimestamp,
+                    retakeIteration = n.RetakeIteration,
+                    isRetake = n.IsRetake,
+                    isPermanent = n.IsPermanent,
+                    isRead = n.IsRead,
+                    readAt = n.ReadAt,
+                    displayOrder = n.DisplayOrder
+                })
+                .ToListAsync();
+
+            _logger.LogInformation($"Retrieved {notifications.Count} unified notifications for user {userId}");
+
+            return Json(new { success = true, notifications });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error retrieving unified notifications for user {userId}");
+            return Json(new { error = "Failed to load notifications" });
+        }
+    }
+
+    /// <summary>
+    /// Get notifications for a specific application
+    /// Used by Applicationtracking.cshtml for timeline display
+    /// </summary>
+    [HttpGet]
+    public async Task<JsonResult> GetApplicationNotifications(string appType, int appId)
+    {
+        var userIdString = HttpContext.Session.GetString("UserId");
+
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+        {
+            return Json(new { error = "User not authenticated" });
+        }
+
+        try
+        {
+            // Get all notifications for specific application, ordered by display order and creation date
+            var notifications = await context.Notifications
+                .AsNoTracking()
+                .Where(n => n.UserId == userId &&
+                           n.ApplicationType == appType &&
+                           n.ApplicationId == appId &&
+                           !n.IsArchived)
+                .OrderBy(n => n.DisplayOrder)
+                .ThenBy(n => n.CreatedAt)
+                .Select(n => new
+                {
+                    id = n.Id,
+                    title = n.Title,
+                    message = n.Message,
+                    type = n.Type,
+                    status2 = n.Status2,
+                    comments = n.Comments,
+                    processedBy = n.ProcessedBy,
+                    processStage = n.ProcessStage,
+                    priority = n.Priority,
+                    createdAt = n.CreatedAt,
+                    eventTimestamp = n.EventTimestamp,
+                    retakeIteration = n.RetakeIteration,
+                    isRetake = n.IsRetake,
+                    displayOrder = n.DisplayOrder
+                })
+                .ToListAsync();
+
+            _logger.LogInformation($"Retrieved {notifications.Count} notifications for application {appType}/{appId}");
+
+            return Json(new { success = true, notifications });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error retrieving application notifications for {appType}/{appId}");
+            return Json(new { error = "Failed to load application notifications" });
+        }
+    }
+
+    /// <summary>
+    /// Mark a specific notification as read
+    /// </summary>
+    [HttpPost]
+    public async Task<JsonResult> MarkNotificationAsRead(int notificationId)
+    {
+        var userIdString = HttpContext.Session.GetString("UserId");
+
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+        {
+            return Json(new { error = "User not authenticated" });
+        }
+
+        try
+        {
+            var notification = await context.Notifications
+                .FirstOrDefaultAsync(n => n.Id == notificationId && n.UserId == userId);
+
+            if (notification == null)
+            {
+                return Json(new { error = "Notification not found" });
+            }
+
+            if (!notification.IsRead)
+            {
+                notification.IsRead = true;
+                notification.ReadAt = _dateTimeService.Now;
+                await context.SaveChangesAsync();
+
+                _logger.LogInformation($"Notification {notificationId} marked as read for user {userId}");
+            }
+
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error marking notification {notificationId} as read");
+            return Json(new { error = "Failed to mark notification as read" });
+        }
+    }
+
+    /// <summary>
+    /// Mark all notifications as read for current user
+    /// </summary>
+    [HttpPost]
+    public async Task<JsonResult> MarkAllNotificationsAsRead()
+    {
+        var userIdString = HttpContext.Session.GetString("UserId");
+
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+        {
+            return Json(new { error = "User not authenticated" });
+        }
+
+        try
+        {
+            var unreadNotifications = await context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead && !n.IsArchived)
+                .ToListAsync();
+
+            if (unreadNotifications.Any())
+            {
+                foreach (var notification in unreadNotifications)
+                {
+                    notification.IsRead = true;
+                    notification.ReadAt = _dateTimeService.Now;
+                }
+
+                await context.SaveChangesAsync();
+
+                _logger.LogInformation($"Marked {unreadNotifications.Count} notifications as read for user {userId}");
+            }
+
+            return Json(new { success = true, count = unreadNotifications.Count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error marking all notifications as read for user {userId}");
+            return Json(new { error = "Failed to mark all notifications as read" });
+        }
+    }
+
+    /// <summary>
+    /// Get unread notification count for current user
+    /// </summary>
+    [HttpGet]
+    public async Task<JsonResult> GetUnreadNotificationCount()
+    {
+        var userIdString = HttpContext.Session.GetString("UserId");
+
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+        {
+            return Json(new { error = "User not authenticated" });
+        }
+
+        try
+        {
+            var unreadCount = await context.Notifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead && !n.IsArchived);
+
+            return Json(new { success = true, count = unreadCount });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error getting unread notification count for user {userId}");
+            return Json(new { error = "Failed to get unread count" });
         }
     }
 }
