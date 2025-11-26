@@ -407,13 +407,13 @@
                     <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
                 </div>
 
-                <input asp-for="DoctorPrescriptionimage"
+                <input asp-for="HospitalAssistanceDocument"
                        type="file"
                        id="medicalCertificate"
                        class="d-none"
                        accept=".png,.jpg,.jpeg,.pdf"
                        onchange="handleFileSelect(this)">
-                <span asp-validation-for="DoctorPrescriptionimage"></span>
+                <span asp-validation-for="HospitalAssistanceDocument"></span>
 
                 <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
                 <div id="fileStatus" class="file-status"></div>

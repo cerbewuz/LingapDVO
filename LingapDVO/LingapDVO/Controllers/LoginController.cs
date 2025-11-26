@@ -27,8 +27,9 @@ namespace LingapDVO.Controllers
         private readonly IConfiguration _configuration;
         private readonly ISessionConfigurationService _sessionConfig;
         private readonly IDateTimeService _dateTimeService;
+        private readonly IMultiChannelNotificationService _notificationService;
 
-        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IEmailService emailService, IConfiguration configuration, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService)
+        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IEmailService emailService, IConfiguration configuration, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService, IMultiChannelNotificationService notificationService)
         {
             this.context = context;
             this.environment = environment;
@@ -37,6 +38,7 @@ namespace LingapDVO.Controllers
             _configuration = configuration;
             _sessionConfig = sessionConfig;
             _dateTimeService = dateTimeService;
+            _notificationService = notificationService;
         }
 
         // ╔═══════════════════════════════════════════════════════════════════════════╗
@@ -459,9 +461,8 @@ namespace LingapDVO.Controllers
                 googleMiddleName = string.Join(" ", nameParts.Skip(1).Take(nameParts.Length - 2));
             }
 
-            // ===========================
+            
             // 🔍 Check for Existing Users
-            // ===========================
 
             // Check for existing users with same email
             var userWithSameEmail = context.RegisterAcc.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
@@ -1786,6 +1787,27 @@ namespace LingapDVO.Controllers
                     Console.WriteLine($"⚠️ Failed to send welcome email: {emailEx.Message}");
                 }
 
+                // ═══════════════════════════════════════════════════════════════
+                // 🔔 CREATE WELCOME NOTIFICATION FOR UNVERIFIED USER
+                // ═══════════════════════════════════════════════════════════════
+                try
+                {
+                    string welcomeTitle = "Welcome to LingapDVO!";
+                    string welcomeMessage = $"Hello {registerAccDto.FirstName}! Welcome to LingapDVO. To start using our services, please verify your account by submitting your verification documents. Thank you!";
+                    await _notificationService.SendNotificationAsync(
+                        registercacc.Id,
+                        welcomeTitle,
+                        welcomeMessage,
+                        "welcome",
+                        "/Accountverification"
+                    );
+                }
+                catch (Exception notifEx)
+                {
+                    // Log notification error but don't fail registration
+                    Console.WriteLine($"⚠️ Failed to create welcome notification: {notifEx.Message}");
+                }
+
                 // ✅ SUCCESS: Return JSON for AJAX
                 if (IsAjaxRequest())
                 {
@@ -2145,6 +2167,27 @@ namespace LingapDVO.Controllers
                 {
                     // Log SMS error but don't fail verification
                     Console.WriteLine($"⚠️ Failed to send verification SMS: {smsEx.Message}");
+                }
+
+                // ═══════════════════════════════════════════════════════════════
+                // 🔔 CREATE WELCOME NOTIFICATION FOR VERIFIED USER
+                // ═══════════════════════════════════════════════════════════════
+                try
+                {
+                    string welcomeTitle = "Congratulations! Your Account is Verified";
+                    string welcomeMessage = $"Hello {verifyaccount.Firstname}! Your account has been successfully verified. You can now avail the services offered by Lingap Online. Thank you for choosing LingapDVO!";
+                    await _notificationService.SendNotificationAsync(
+                        userId,
+                        welcomeTitle,
+                        welcomeMessage,
+                        "welcome",
+                        "/Dashboard/Homepage"
+                    );
+                }
+                catch (Exception notifEx)
+                {
+                    // Log notification error but don't fail verification
+                    Console.WriteLine($"⚠️ Failed to create welcome notification for verified user: {notifEx.Message}");
                 }
 
                 // Set success flag for modal display on the verification page

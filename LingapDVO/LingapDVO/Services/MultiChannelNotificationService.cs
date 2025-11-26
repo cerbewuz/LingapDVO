@@ -125,8 +125,26 @@ namespace LingapDVO.Services
         {
             var title = GetStatusTitle(status);
             var message = GetStatusMessage(applicantName, formType, status);
-            var link = "/Applicationtracking"; // Link to user's uploads page
             var type = GetNotificationType(status);
+
+            // Generate appropriate link based on status and form type
+            string link;
+            if (status == "Retake")
+            {
+                // For retake status, link to the specific edit form
+                link = formType switch
+                {
+                    "HospitalAssistance" => $"/Dashboard/HospitalAssistanceEdit/{formId}",
+                    "OtherAssistance" => $"/Dashboard/OtherAssistanceedit/{formId}",
+                    "FuneralAssistance" => $"/Dashboard/FuneralAssistanceEdit/{formId}",
+                    _ => "/Applicationtracking"
+                };
+            }
+            else
+            {
+                // For other statuses, link to application tracking
+                link = "/Applicationtracking";
+            }
 
             // Special handling for "Approved" status to include nearby offices link
             if (status == "Approve")
@@ -138,7 +156,7 @@ namespace LingapDVO.Services
             {
                 await SendClaimedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, comments, processedBy);
             }
-            // Special handling for "Retake" status to include application tracking link
+            // Special handling for "Retake" status to include edit form link
             else if (status == "Retake")
             {
                 await SendRetakeNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, comments, processedBy);
@@ -198,9 +216,9 @@ namespace LingapDVO.Services
                 // Get assistance type display
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Help",
-                    "Medical" => "Medical Help",
-                    "Funeral" => "Funeral Help",
+                    "HospitalAssistance" => "Hospital Assistance",
+                    "OtherAssistance" => "Other Assistance",
+                    "FuneralAssistance" => "Funeral Assistance",
                     _ => "Financial Assistance"
                 };
 
@@ -295,9 +313,9 @@ namespace LingapDVO.Services
                 // Get assistance type display
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Help",
-                    "Medical" => "Medical Help",
-                    "Funeral" => "Funeral Help",
+                    "HospitalAssistance" => "Hospital Assistance",
+                    "OtherAssistance" => "Other Assistance",
+                    "FuneralAssistance" => "Funeral Assistance",
                     _ => "Financial Assistance"
                 };
 
@@ -393,9 +411,9 @@ namespace LingapDVO.Services
                 // Get assistance type display
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Help",
-                    "Medical" => "Medical Help",
-                    "Funeral" => "Funeral Help",
+                    "HospitalAssistance" => "Hospital Assistance",
+                    "OtherAssistance" => "Other Assistance",
+                    "FuneralAssistance" => "Funeral Assistance",
                     _ => "Financial Assistance"
                 };
 
@@ -497,10 +515,10 @@ namespace LingapDVO.Services
                 // Get assistance type display
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Help",
-                    "Medical" => "Medical Help",
-                    "Funeral" => "Funeral Help",
-                    _ => "Help"
+                    "HospitalAssistance" => "Hospital Assistance",
+                    "OtherAssistance" => "Other Assistance",
+                    "FuneralAssistance" => "Funeral Assistance",
+                    _ => "Assistance"
                 };
 
                 // Send in-app notification via SignalR if preferred
@@ -563,9 +581,9 @@ namespace LingapDVO.Services
 
                 var formTypeDisplay = formType switch
                 {
-                    "HospitalBill" => "Hospital Help",
-                    "Medical" => "Medical Help",
-                    "Funeral" => "Funeral Help",
+                    "HospitalAssistance" => "Hospital Assistance",
+                    "OtherAssistance" => "Other Assistance",
+                    "FuneralAssistance" => "Funeral Assistance",
                     _ => "Financial Assistance"
                 };
 
@@ -647,9 +665,9 @@ namespace LingapDVO.Services
         {
             return formType switch
             {
-                "HospitalBill" => "HospitalAssistance",
-                "Medical" => "OtherAssistance",
-                "Funeral" => "FuneralAssistance",
+                "HospitalAssistance" => "HospitalAssistance",
+                "OtherAssistance" => "OtherAssistance",
+                "FuneralAssistance" => "FuneralAssistance",
                 _ => "System"
             };
         }
@@ -692,8 +710,8 @@ namespace LingapDVO.Services
                 "Processing" => "We Are Checking Your Application",
                 "Approve" => "Good News! Your Application is Approved",
                 "Disapprove" => "Application Not Approved",
-                "Retake" => "Please Send Papers Again",
-                "Claimed" => "Help Received",
+                "Retake" => "Please Review Your Application",
+                "Claimed" => "Assistance Claimed",
                 _ => "Application Update"
             };
         }
@@ -702,10 +720,10 @@ namespace LingapDVO.Services
         {
             var formTypeDisplay = formType switch
             {
-                "HospitalBill" => "Hospital Help",
-                "Medical" => "Medical Help",
-                "Funeral" => "Funeral Help",
-                _ => "Help"
+                "HospitalAssistance" => "Hospital Assistance",
+                "OtherAssistance" => "Other Assistance",
+                "FuneralAssistance" => "Funeral Assistance",
+                _ => "Assistance"
             };
 
             return status switch

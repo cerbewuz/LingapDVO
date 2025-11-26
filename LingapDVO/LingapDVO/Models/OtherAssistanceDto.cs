@@ -99,12 +99,7 @@ namespace LingapDVO.Models
 
 
         [Required]
-        public IFormFile? DoctorPrescriptionimage { get; set; }
-
-
-        public IFormFile? DeathCertificateimage { get; set; }
-
-        public IFormFile? MedCertificateimage { get; set; }
+        public IFormFile? OtherAssistanceDocument { get; set; }
 
 
         public DateTime CreatedAt { get; set; }

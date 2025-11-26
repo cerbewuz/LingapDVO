@@ -93,16 +93,14 @@ namespace LingapDVO.Models
 
 
         [Required]
-        public IFormFile? IdFrontimage { get; set; } 
+        public IFormFile? IdFrontimage { get; set; }
 
         [Required]
-        public IFormFile? IdBackimage { get; set; } 
+        public IFormFile? IdBackimage { get; set; }
 
 
-        public IFormFile? DoctorPrescriptionimage { get; set; }
-
-
-        public IFormFile? DeathCertificateimage { get; set; }
+        [Required]
+        public IFormFile? HospitalAssistanceDocument { get; set; }
 
 
         public DateTime CreatedAt { get; set; }

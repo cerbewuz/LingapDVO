@@ -1587,10 +1587,25 @@
                                             </div>
                                         }
 
-                                        @* Step 3: Result (including Retake) *@
+                                        @* Step 3: Result (including Retake and Resubmitted) *@
                                         @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1)
                                         {
-                                            @if (doc.Status2 == "Retake")
+                                            @if (doc.Status2 == "Resubmitted")
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker" style="background-color: #fbbf24;">
+                                                        <i class="fas fa-share" style="color: white;"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Application Resubmitted</h6>
+                                                        <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                        <p class="timeline-description">
+                                                            Your resubmission of application has been successful and is now in queue.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else if (doc.Status2 == "Retake")
                                             {
                                                 <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("HospitalAssistanceedit", "Dashboard", new { id = doc.Id })'">
                                                     <div class="timeline-marker retake">
@@ -1785,10 +1800,25 @@
                                             </div>
                                         }
 
-                                        @* Step 3: Result (including Retake) *@
+                                        @* Step 3: Result (including Retake and Resubmitted) *@
                                         @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1)
                                         {
-                                            @if (doc.Status2 == "Retake")
+                                            @if (doc.Status2 == "Resubmitted")
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker" style="background-color: #fbbf24;">
+                                                        <i class="fas fa-share" style="color: white;"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Application Resubmitted</h6>
+                                                        <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                        <p class="timeline-description">
+                                                            Your resubmission of application has been successful and is now in queue.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else if (doc.Status2 == "Retake")
                                             {
                                                 <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("OtherAssistanceedit", "Dashboard", new { id = doc.Id })'">
                                                     <div class="timeline-marker retake">
@@ -1983,10 +2013,25 @@
                                             </div>
                                         }
 
-                                        @* Step 3: Result (including Retake) *@
+                                        @* Step 3: Result (including Retake and Resubmitted) *@
                                         @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1)
                                         {
-                                            @if (doc.Status2 == "Retake")
+                                            @if (doc.Status2 == "Resubmitted")
+                                            {
+                                                <div class="timeline-item">
+                                                    <div class="timeline-marker" style="background-color: #fbbf24;">
+                                                        <i class="fas fa-share" style="color: white;"></i>
+                                                    </div>
+                                                    <div class="timeline-content">
+                                                        <h6>Application Resubmitted</h6>
+                                                        <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                        <p class="timeline-description">
+                                                            Your resubmission of application has been successful and is now in queue.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else if (doc.Status2 == "Retake")
                                             {
                                                 <div class="timeline-item clickable" onclick="window.location.href='@Url.Action("FuneralAssistanceedit", "Dashboard", new { id = doc.Id })'">
                                                     <div class="timeline-marker retake">
@@ -3103,6 +3148,11 @@
                             return {
                                 class: 'retake',
                                 icon: '<i class="fas fa-exclamation-circle"></i>'
+                            };
+                        } else if (status2 === 'Resubmitted') {
+                            return {
+                                class: 'resubmitted',
+                                icon: '<i class="fas fa-share" style="color: #fbbf24;"></i>'
                             };
                         }
                         return {

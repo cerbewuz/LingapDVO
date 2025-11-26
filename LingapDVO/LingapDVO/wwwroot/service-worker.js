@@ -51,6 +51,11 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // Skip caching POST, PUT, DELETE requests - only cache GET requests
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
     // Cache-first strategy for static assets
     if (event.request.url.match(/\.(css|js|jpg|jpeg|png|webp|gif|svg|woff|woff2|ttf|eot|ico)$/)) {
         event.respondWith(

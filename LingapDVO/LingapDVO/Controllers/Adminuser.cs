@@ -3748,9 +3748,11 @@ namespace LingapDVO.Controllers
                     _ = _notificationService.SendStatusChangeNotificationAsync(
                         HospitalAssistance.UserId,
                         applicantName,
-                        "HospitalBill",
+                        "HospitalAssistance",
                         status,
-                        HospitalAssistance.Id
+                        HospitalAssistance.Id,
+                        status.Equals("Retake", StringComparison.OrdinalIgnoreCase) ? HospitalAssistance.RetakeReason : HospitalAssistanceDto.Comments,
+                        HospitalAssistanceDto.Processby
                     );
 
                     // Email feature
@@ -4029,7 +4031,6 @@ namespace LingapDVO.Controllers
                 medicallabform.Result = _dateTimeService.Now;
 
                 // Handle Retake status - move back to Pending and track retake information
-                var status = OtherAssistanceDto.Status2?.Trim();
                 if (!string.IsNullOrEmpty(status) && status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
                 {
                     medicallabform.Status = "Pending"; // Move back to Pending
@@ -4058,9 +4059,11 @@ namespace LingapDVO.Controllers
                     _ = _notificationService.SendStatusChangeNotificationAsync(
                         medicallabform.UserId,
                         applicantName,
-                        "Medical",
+                        "OtherAssistance",
                         status,
-                        medicallabform.Id
+                        medicallabform.Id,
+                        status.Equals("Retake", StringComparison.OrdinalIgnoreCase) ? medicallabform.RetakeReason : OtherAssistanceDto.Comments,
+                        OtherAssistanceDto.Processby
                     );
 
                     // Email feature
@@ -4367,9 +4370,11 @@ namespace LingapDVO.Controllers
                     _ = _notificationService.SendStatusChangeNotificationAsync(
                         FuneralAssistance.UserId,
                         applicantName,
-                        "Funeral",
+                        "FuneralAssistance",
                         status,
-                        FuneralAssistance.Id
+                        FuneralAssistance.Id,
+                        status.Equals("Retake", StringComparison.OrdinalIgnoreCase) ? FuneralAssistance.RetakeReason : FuneralAssistanceDto.Comments,
+                        FuneralAssistanceDto.Processby
                     );
 
                     // Email feature

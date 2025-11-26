@@ -625,8 +625,8 @@
                     <p>Click to upload document</p>
                     <p class="form-note">Accepted formats: JPG, PNG,Etc.. (Max 10MB)</p>
                 </div>
-                <input asp-for="DoctorPrescriptionimage" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')" disabled>
-                <span asp-validation-for="DoctorPrescriptionimage" class="text-danger"></span>
+                <input asp-for="OtherAssistanceDocument" type="file" id="receipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx" onchange="previewImage(this, 'receiptPreview')" disabled>
+                <span asp-validation-for="OtherAssistanceDocument" class="text-danger"></span>
 
                 <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview" src="@(ViewData["DoctorPrescription"] != null ? Url.Content("~/DoctorPrescriptionimage/" + ViewData["DoctorPrescription"]) : "")"
                      style="@(ViewData["DoctorPrescription"] != null ? "display: block;" : "display: none;")">
@@ -643,8 +643,8 @@
                     <p>Click to upload funeral receipt</p>
                     <p class="form-note">Accepted formats: JPG, PNG, Etc.. (Max 10MB)</p>
                 </div>
-                <input asp-for="DeathCertificateimage" type="file" id="funeralReceipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'funeralReceiptPreview')" disabled>
-                <span asp-validation-for="DeathCertificateimage" class="text-danger"></span>
+                <input asp-for="OtherAssistanceDocument" type="file" id="funeralReceipt" class="d-none" accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'funeralReceiptPreview')" disabled>
+                <span asp-validation-for="OtherAssistanceDocument" class="text-danger"></span>
 
                 <div class="text-center">
                     <!-- Added text-center class here -->

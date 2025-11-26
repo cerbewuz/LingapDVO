@@ -750,15 +750,9 @@ namespace LingapDVO.Controllers
                 ModelState.Remove("PhilHealthNo");
             }
 
-            // MODIFIED: Image validation - Only check for prescription and death certificate images
-            // Remove ID image validation since we'll use the existing ones from user account
+            // MODIFIED: Image validation - Remove ID image validation since we'll use the existing ones from user account
             ModelState.Remove("IdFrontimage");
             ModelState.Remove("IdBackimage");
-
-            if (HospitalAssistanceDto.DoctorPrescriptionimage == null && HospitalAssistanceDto.DeathCertificateimage == null)
-            {
-                ModelState.AddModelError("DoctorPrescriptionimage", "At least one image file (Doctor Prescription or Death Certificate) is required");
-            }
 
             if (!ModelState.IsValid)
             {
@@ -773,43 +767,25 @@ namespace LingapDVO.Controllers
                 // Use configuration-based AES helper
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // Generate encrypted filenames based on original filenames
-                string? newFileNamePrescription = null;
-                string? newFileNameDeathCertificate = null;
+                // Generate encrypted filename for the document
+                string? newFileNameDocument = null;
 
-                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
-                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
+                string uploadsFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
 
-                // Ensure directories exist
-                Directory.CreateDirectory(uploadsFolder1);
-                Directory.CreateDirectory(uploadsFolder2);
+                // Ensure directory exists
+                Directory.CreateDirectory(uploadsFolder);
 
-                // Encrypt and Save Prescription Image if provided
-                if (HospitalAssistanceDto.DoctorPrescriptionimage != null)
+                // Encrypt and Save Hospital Assistance Document
+                if (HospitalAssistanceDto.HospitalAssistanceDocument != null)
                 {
                     // Encrypt the original filename
-                    string originalFileName = HospitalAssistanceDto.DoctorPrescriptionimage.FileName;
-                    newFileNamePrescription = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
-                    using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
+                    string originalFileName = HospitalAssistanceDto.HospitalAssistanceDocument.FileName;
+                    newFileNameDocument = aesHelper.EncryptFilename(originalFileName) + ".enc";
+                    string filePathDocument = Path.Combine(uploadsFolder, newFileNameDocument);
+                    using (var fileStream = new FileStream(filePathDocument, FileMode.Create))
                     {
                         // Use configuration-based AES helper to encrypt file stream
-                        byte[] encryptedData = aesHelper.EncryptStream(HospitalAssistanceDto.DoctorPrescriptionimage.OpenReadStream());
-                        fileStream.Write(encryptedData, 0, encryptedData.Length);
-                    }
-                }
-
-                // Encrypt and Save Death Certificate Image if provided
-                if (HospitalAssistanceDto.DeathCertificateimage != null)
-                {
-                    // Encrypt the original filename
-                    string originalFileName = HospitalAssistanceDto.DeathCertificateimage.FileName;
-                    newFileNameDeathCertificate = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
-                    using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
-                    {
-                        // Use configuration-based AES helper to encrypt file stream
-                        byte[] encryptedData = aesHelper.EncryptStream(HospitalAssistanceDto.DeathCertificateimage.OpenReadStream());
+                        byte[] encryptedData = aesHelper.EncryptStream(HospitalAssistanceDto.HospitalAssistanceDocument.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -856,8 +832,8 @@ namespace LingapDVO.Controllers
                     // MODIFIED: Use existing ID images from user account instead of new uploads
                     Validfrontimage = userFrontID,
                     ValidBackimage = userBackID,
-                    DoctorPrescription = newFileNamePrescription ?? string.Empty,
-                    DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
+                    DoctorPrescription = newFileNameDocument ?? string.Empty,
+                    DeathCertificate = string.Empty,
                     Status = "Pending",
 
                     // Created Timestamp
@@ -1124,7 +1100,7 @@ namespace LingapDVO.Controllers
         }
 
         [HttpPost]
-        public IActionResult HospitalAssistanceEdit(int id, HospitalAssistanceDto dto)
+        public async Task<IActionResult> HospitalAssistanceEdit(int id, HospitalAssistanceDto dto)
         {
             // ? 1. Check user session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -1163,13 +1139,12 @@ namespace LingapDVO.Controllers
             ModelState.Remove("IdFrontimage");
             ModelState.Remove("IdBackimage");
 
-            // ? Require at least one doc ONLY if both existing docs are empty and no new upload
+            // ? Require document ONLY if both existing docs are empty and no new upload
             if (string.IsNullOrEmpty(existing.DoctorPrescription) &&
                 string.IsNullOrEmpty(existing.DeathCertificate) &&
-                dto.DoctorPrescriptionimage == null &&
-                dto.DeathCertificateimage == null)
+                dto.HospitalAssistanceDocument == null)
             {
-                ModelState.AddModelError("DoctorPrescriptionimage", "At least one document is required.");
+                ModelState.AddModelError("HospitalAssistanceDocument", "At least one document is required.");
             }
 
             if (!ModelState.IsValid)
@@ -1216,40 +1191,18 @@ namespace LingapDVO.Controllers
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // ? 5. Update Doctor Prescription (optional)
-                if (dto.DoctorPrescriptionimage != null)
+                // ? 5. Update Hospital Assistance Document (replaces both DoctorPrescription and DeathCertificate)
+                if (dto.HospitalAssistanceDocument != null)
                 {
                     string folder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
-                    // Delete old file if exists
+                    // Delete old files if they exist
                     if (!string.IsNullOrEmpty(existing.DoctorPrescription))
                     {
                         string oldPath = Path.Combine(folder, existing.DoctorPrescription);
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
-
-                    // Encrypt the original filename
-                    string originalFileName = dto.DoctorPrescriptionimage.FileName;
-                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        byte[] encrypted = aesHelper.EncryptStream(dto.DoctorPrescriptionimage.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
-                    }
-
-                    existing.DoctorPrescription = fileName;
-                }
-
-                // ? 6. Update Death Certificate (optional)
-                if (dto.DeathCertificateimage != null)
-                {
-                    string folder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
-                    Directory.CreateDirectory(folder);
-
-                    // Delete old file if exists
                     if (!string.IsNullOrEmpty(existing.DeathCertificate))
                     {
                         string oldPath = Path.Combine(folder, existing.DeathCertificate);
@@ -1257,17 +1210,19 @@ namespace LingapDVO.Controllers
                     }
 
                     // Encrypt the original filename
-                    string originalFileName = dto.DeathCertificateimage.FileName;
+                    string originalFileName = dto.HospitalAssistanceDocument.FileName;
                     string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
                     {
-                        byte[] encrypted = aesHelper.EncryptStream(dto.DeathCertificateimage.OpenReadStream());
+                        byte[] encrypted = aesHelper.EncryptStream(dto.HospitalAssistanceDocument.OpenReadStream());
                         fs.Write(encrypted, 0, encrypted.Length);
                     }
 
-                    existing.DeathCertificate = fileName;
+                    // Store in DoctorPrescription field (unified field)
+                    existing.DoctorPrescription = fileName;
+                    existing.DeathCertificate = ""; // Clear the other field
                 }
 
                 // ? 7. Update text fields safely
@@ -1317,17 +1272,37 @@ namespace LingapDVO.Controllers
                 if (isRetakeMode)
                 {
                     existing.Status = "Pending"; // Move back to Pending for admin review
-                    existing.Status2 = ""; // Clear Status2
+                    existing.Status2 = "Resubmitted"; // Mark as resubmitted
                     existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
                     existing.IsRetakeApplication = false; // Clear retake flag
                     existing.RetakeReason = ""; // Clear retake reason
                     existing.RetakeRequestedAt = null; // Clear retake timestamp
-                    existing.Comments = "Documents resubmitted by applicant"; // Add comment
+                    existing.Comments = ""; // Remove comments as per requirement
                 }
 
                 // ? 10. Save changes
                 context.Entry(existing).State = EntityState.Modified;
                 context.SaveChanges();
+
+                // ? 10.5. Send notification for resubmission if it was retake mode
+                if (isRetakeMode)
+                {
+                    try
+                    {
+                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
+                        await _notificationService.SendNotificationAsync(
+                            userId,
+                            "Application Resubmitted",
+                            "Your resubmission of application has been successful and is now in queue.",
+                            "resubmitted",
+                            "/Dashboard/Applicationtracking"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to send resubmission notification: {ex.Message}");
+                    }
+                }
 
                 // ? 11. Set success flag and RAF number for modal - Convert int to string for varchar field
                 ViewBag.Success = true;
@@ -1518,17 +1493,6 @@ namespace LingapDVO.Controllers
             // MODIFIED: Image validation - Remove ID image validation since we'll use existing ones from user account
             ModelState.Remove("IdFrontimage");
             ModelState.Remove("IdBackimage");
-            ModelState.Remove("DoctorPrescriptionimage");
-            ModelState.Remove("DeathCertificateimage");
-            ModelState.Remove("MedCertificateimage");
-
-            // NEW VALIDATION: At least one of the medical documents must be provided
-            if (OtherAssistanceDto.DoctorPrescriptionimage == null &&
-                OtherAssistanceDto.DeathCertificateimage == null &&
-                OtherAssistanceDto.MedCertificateimage == null)
-            {
-                ModelState.AddModelError("DoctorPrescriptionimage", "At least one medical document (Doctor Prescription, Death Certificate, or Medical Certificate) is required");
-            }
 
             if (!ModelState.IsValid)
             {
@@ -1543,61 +1507,25 @@ namespace LingapDVO.Controllers
                 // Use configuration-based AES helper
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // Generate encrypted filenames based on original filenames
-                string? newFileNamePrescription = null;
-                string? newFileNameDeathCertificate = null;
-                string? newFileNameMedCertificate = null;
+                // Generate encrypted filename for the document
+                string? newFileNameDocument = null;
 
-                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
-                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
-                string uploadsFolder3 = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+                string uploadsFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
 
-                // Ensure directories exist
-                Directory.CreateDirectory(uploadsFolder1);
-                Directory.CreateDirectory(uploadsFolder2);
-                Directory.CreateDirectory(uploadsFolder3);
+                // Ensure directory exists
+                Directory.CreateDirectory(uploadsFolder);
 
-                // Encrypt and Save Prescription Image if provided
-                if (OtherAssistanceDto.DoctorPrescriptionimage != null)
+                // Encrypt and Save Other Assistance Document
+                if (OtherAssistanceDto.OtherAssistanceDocument != null)
                 {
                     // Encrypt the original filename
-                    string originalFileName = OtherAssistanceDto.DoctorPrescriptionimage.FileName;
-                    newFileNamePrescription = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
-                    using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
+                    string originalFileName = OtherAssistanceDto.OtherAssistanceDocument.FileName;
+                    newFileNameDocument = aesHelper.EncryptFilename(originalFileName) + ".enc";
+                    string filePathDocument = Path.Combine(uploadsFolder, newFileNameDocument);
+                    using (var fileStream = new FileStream(filePathDocument, FileMode.Create))
                     {
                         // Use configuration-based AES helper to encrypt file stream
-                        byte[] encryptedData = aesHelper.EncryptStream(OtherAssistanceDto.DoctorPrescriptionimage.OpenReadStream());
-                        fileStream.Write(encryptedData, 0, encryptedData.Length);
-                    }
-                }
-
-                // Encrypt and Save Death Certificate Image if provided
-                if (OtherAssistanceDto.DeathCertificateimage != null)
-                {
-                    // Encrypt the original filename
-                    string originalFileName = OtherAssistanceDto.DeathCertificateimage.FileName;
-                    newFileNameDeathCertificate = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
-                    using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
-                    {
-                        // Use configuration-based AES helper to encrypt file stream
-                        byte[] encryptedData = aesHelper.EncryptStream(OtherAssistanceDto.DeathCertificateimage.OpenReadStream());
-                        fileStream.Write(encryptedData, 0, encryptedData.Length);
-                    }
-                }
-
-                // Encrypt and Save Medical Certificate Image if provided
-                if (OtherAssistanceDto.MedCertificateimage != null)
-                {
-                    // Encrypt the original filename
-                    string originalFileName = OtherAssistanceDto.MedCertificateimage.FileName;
-                    newFileNameMedCertificate = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePathMedCertificate = Path.Combine(uploadsFolder3, newFileNameMedCertificate);
-                    using (var fileStream = new FileStream(filePathMedCertificate, FileMode.Create))
-                    {
-                        // Use configuration-based AES helper to encrypt file stream
-                        byte[] encryptedData = aesHelper.EncryptStream(OtherAssistanceDto.MedCertificateimage.OpenReadStream());
+                        byte[] encryptedData = aesHelper.EncryptStream(OtherAssistanceDto.OtherAssistanceDocument.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -1644,9 +1572,9 @@ namespace LingapDVO.Controllers
                     // MODIFIED: Use existing ID images from user account instead of new uploads
                     Validfrontimage = userFrontID,
                     ValidBackimage = userBackID,
-                    DoctorPrescription = newFileNamePrescription ?? string.Empty,
-                    DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
-                    MedCertificate = newFileNameMedCertificate ?? string.Empty,
+                    DoctorPrescription = string.Empty,
+                    DeathCertificate = string.Empty,
+                    MedCertificate = newFileNameDocument ?? string.Empty,
                     Status = "Pending",
 
                     // Created Timestamp
@@ -1663,7 +1591,7 @@ namespace LingapDVO.Controllers
                     await _notificationService.SendStatusChangeNotificationAsync(
                         userId,
                         userFullName,
-                        "Medical",
+                        "Other",
                         "Pending",
                         OtherAssistance.Id
                     );
@@ -1954,7 +1882,7 @@ namespace LingapDVO.Controllers
         }
 
         [HttpPost]
-        public IActionResult OtherAssistanceedit(int id, OtherAssistanceDto OtherAssistanceDto)
+        public async Task<IActionResult> OtherAssistanceedit(int id, OtherAssistanceDto OtherAssistanceDto)
         {
             // ? 1. Check user session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -1993,19 +1921,14 @@ namespace LingapDVO.Controllers
             // Remove validation requirements for images if they're not provided
             if (OtherAssistanceDto.IdFrontimage == null) ModelState.Remove("IdFrontimage");
             if (OtherAssistanceDto.IdBackimage == null) ModelState.Remove("IdBackimage");
-            if (OtherAssistanceDto.DoctorPrescriptionimage == null) ModelState.Remove("DoctorPrescriptionimage");
-            if (OtherAssistanceDto.DeathCertificateimage == null) ModelState.Remove("DeathCertificateimage");
-            if (OtherAssistanceDto.MedCertificateimage == null) ModelState.Remove("MedCertificateimage");
 
-            // ? Require at least one medical document ONLY if all existing docs are empty and no new upload
+            // ? Require document ONLY if all existing docs are empty and no new upload
             if (string.IsNullOrEmpty(existing.DoctorPrescription) &&
                 string.IsNullOrEmpty(existing.DeathCertificate) &&
                 string.IsNullOrEmpty(existing.MedCertificate) &&
-                OtherAssistanceDto.DoctorPrescriptionimage == null &&
-                OtherAssistanceDto.DeathCertificateimage == null &&
-                OtherAssistanceDto.MedCertificateimage == null)
+                OtherAssistanceDto.OtherAssistanceDocument == null)
             {
-                ModelState.AddModelError("DoctorPrescriptionimage", "At least one medical document is required.");
+                ModelState.AddModelError("OtherAssistanceDocument", "At least one document is required.");
             }
 
             if (!ModelState.IsValid)
@@ -2024,67 +1947,23 @@ namespace LingapDVO.Controllers
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // ? 5. Update Doctor Prescription (optional)
-                if (OtherAssistanceDto.DoctorPrescriptionimage != null)
+                // ? 5. Update Other Assistance Document (replaces DoctorPrescription, DeathCertificate, MedCertificate)
+                if (OtherAssistanceDto.OtherAssistanceDocument != null)
                 {
                     string folder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
-                    // Delete old file if exists
+                    // Delete old files if they exist
                     if (!string.IsNullOrEmpty(existing.DoctorPrescription))
                     {
                         string oldPath = Path.Combine(folder, existing.DoctorPrescription);
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
-
-                    // Encrypt the original filename
-                    string originalFileName = OtherAssistanceDto.DoctorPrescriptionimage.FileName;
-                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        byte[] encrypted = aesHelper.EncryptStream(OtherAssistanceDto.DoctorPrescriptionimage.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
-                    }
-
-                    existing.DoctorPrescription = fileName;
-                }
-
-                // ? 6. Update Death Certificate (optional)
-                if (OtherAssistanceDto.DeathCertificateimage != null)
-                {
-                    string folder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
-                    Directory.CreateDirectory(folder);
-
-                    // Delete old file if exists
                     if (!string.IsNullOrEmpty(existing.DeathCertificate))
                     {
                         string oldPath = Path.Combine(folder, existing.DeathCertificate);
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
-
-                    // Encrypt the original filename
-                    string originalFileName = OtherAssistanceDto.DeathCertificateimage.FileName;
-                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        byte[] encrypted = aesHelper.EncryptStream(OtherAssistanceDto.DeathCertificateimage.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
-                    }
-
-                    existing.DeathCertificate = fileName;
-                }
-
-                // ? 7. Update Medical Certificate (optional)
-                if (OtherAssistanceDto.MedCertificateimage != null)
-                {
-                    string folder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
-                    Directory.CreateDirectory(folder);
-
-                    // Delete old file if exists
                     if (!string.IsNullOrEmpty(existing.MedCertificate))
                     {
                         string oldPath = Path.Combine(folder, existing.MedCertificate);
@@ -2092,20 +1971,23 @@ namespace LingapDVO.Controllers
                     }
 
                     // Encrypt the original filename
-                    string originalFileName = OtherAssistanceDto.MedCertificateimage.FileName;
+                    string originalFileName = OtherAssistanceDto.OtherAssistanceDocument.FileName;
                     string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
                     {
-                        byte[] encrypted = aesHelper.EncryptStream(OtherAssistanceDto.MedCertificateimage.OpenReadStream());
+                        byte[] encrypted = aesHelper.EncryptStream(OtherAssistanceDto.OtherAssistanceDocument.OpenReadStream());
                         fs.Write(encrypted, 0, encrypted.Length);
                     }
 
-                    existing.MedCertificate = fileName;
+                    // Store in DoctorPrescription field (unified field)
+                    existing.DoctorPrescription = fileName;
+                    existing.DeathCertificate = ""; // Clear other fields
+                    existing.MedCertificate = "";
                 }
 
-                // ? 8. Update ID images (if new ones provided)
+                // ? 6. Update ID images (if new ones provided)
                 if (OtherAssistanceDto.IdFrontimage != null)
                 {
                     string folder = Path.Combine(environment.WebRootPath, "Validimg");
@@ -2199,17 +2081,37 @@ namespace LingapDVO.Controllers
                 if (isRetakeMode)
                 {
                     existing.Status = "Pending"; // Move back to Pending for admin review
-                    existing.Status2 = ""; // Clear Status2
+                    existing.Status2 = "Resubmitted"; // Mark as resubmitted
                     existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
                     existing.IsRetakeApplication = false; // Clear retake flag
                     existing.RetakeReason = ""; // Clear retake reason
                     existing.RetakeRequestedAt = null; // Clear retake timestamp
-                    existing.Comments = "Documents resubmitted by applicant"; // Add comment
+                    existing.Comments = ""; // Remove comments as per requirement
                 }
 
                 // ? 11. Save changes
                 context.Entry(existing).State = EntityState.Modified;
                 context.SaveChanges();
+
+                // ? 11.5. Send notification for resubmission if it was retake mode
+                if (isRetakeMode)
+                {
+                    try
+                    {
+                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
+                        await _notificationService.SendNotificationAsync(
+                            userId,
+                            "Application Resubmitted",
+                            "Your resubmission of application has been successful and is now in queue.",
+                            "resubmitted",
+                            "/Dashboard/Applicationtracking"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to send resubmission notification: {ex.Message}");
+                    }
+                }
 
                 // ? 12. Set success flag and RAF number for modal
                 ViewBag.Success = true;
@@ -2350,15 +2252,6 @@ namespace LingapDVO.Controllers
             // MODIFIED: Image validation - Remove ID image validation since we'll use existing ones from user account
             ModelState.Remove("IdFrontimage");
             ModelState.Remove("IdBackimage");
-            ModelState.Remove("DoctorPrescriptionimage");
-            ModelState.Remove("DeathCertificateimage");
-
-            // NEW VALIDATION: At least one of the medical documents must be provided
-            if (FuneralAssistanceDto.DoctorPrescriptionimage == null &&
-                FuneralAssistanceDto.DeathCertificateimage == null)
-            {
-                ModelState.AddModelError("DoctorPrescriptionimage", "At least one medical document (Doctor Prescription or Death Certificate) is required");
-            }
 
             if (!ModelState.IsValid)
             {
@@ -2373,43 +2266,25 @@ namespace LingapDVO.Controllers
                 // Use configuration-based AES helper
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // Generate encrypted filenames based on original filenames
-                string? newFileNamePrescription = null;
-                string? newFileNameDeathCertificate = null;
+                // Generate encrypted filename for the document
+                string? newFileNameDocument = null;
 
-                string uploadsFolder1 = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
-                string uploadsFolder2 = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
+                string uploadsFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
 
-                // Ensure directories exist
-                Directory.CreateDirectory(uploadsFolder1);
-                Directory.CreateDirectory(uploadsFolder2);
+                // Ensure directory exists
+                Directory.CreateDirectory(uploadsFolder);
 
-                // Encrypt and Save Prescription Image if provided
-                if (FuneralAssistanceDto.DoctorPrescriptionimage != null)
+                // Encrypt and Save Funeral Assistance Document
+                if (FuneralAssistanceDto.FuneralAssistanceDocument != null)
                 {
                     // Encrypt the original filename
-                    string originalFileName = FuneralAssistanceDto.DoctorPrescriptionimage.FileName;
-                    newFileNamePrescription = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePathPrescription = Path.Combine(uploadsFolder1, newFileNamePrescription);
-                    using (var fileStream = new FileStream(filePathPrescription, FileMode.Create))
+                    string originalFileName = FuneralAssistanceDto.FuneralAssistanceDocument.FileName;
+                    newFileNameDocument = aesHelper.EncryptFilename(originalFileName) + ".enc";
+                    string filePathDocument = Path.Combine(uploadsFolder, newFileNameDocument);
+                    using (var fileStream = new FileStream(filePathDocument, FileMode.Create))
                     {
                         // Use configuration-based AES helper to encrypt file stream
-                        byte[] encryptedData = aesHelper.EncryptStream(FuneralAssistanceDto.DoctorPrescriptionimage.OpenReadStream());
-                        fileStream.Write(encryptedData, 0, encryptedData.Length);
-                    }
-                }
-
-                // Encrypt and Save Death Certificate Image if provided
-                if (FuneralAssistanceDto.DeathCertificateimage != null)
-                {
-                    // Encrypt the original filename
-                    string originalFileName = FuneralAssistanceDto.DeathCertificateimage.FileName;
-                    newFileNameDeathCertificate = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePathDeathCertificate = Path.Combine(uploadsFolder2, newFileNameDeathCertificate);
-                    using (var fileStream = new FileStream(filePathDeathCertificate, FileMode.Create))
-                    {
-                        // Use configuration-based AES helper to encrypt file stream
-                        byte[] encryptedData = aesHelper.EncryptStream(FuneralAssistanceDto.DeathCertificateimage.OpenReadStream());
+                        byte[] encryptedData = aesHelper.EncryptStream(FuneralAssistanceDto.FuneralAssistanceDocument.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
                     }
                 }
@@ -2456,8 +2331,8 @@ namespace LingapDVO.Controllers
                     // MODIFIED: Use existing ID images from user account instead of new uploads
                     Validfrontimage = userFrontID,
                     ValidBackimage = userBackID,
-                    DoctorPrescription = newFileNamePrescription ?? string.Empty,
-                    DeathCertificate = newFileNameDeathCertificate ?? string.Empty,
+                    DoctorPrescription = newFileNameDocument ?? string.Empty,
+                    DeathCertificate = string.Empty,
                     Status = "Pending",
 
                     // Created Timestamp
@@ -2724,7 +2599,7 @@ namespace LingapDVO.Controllers
         }
 
         [HttpPost]
-        public IActionResult FuneralAssistanceEdit(int id, FuneralAssistanceDto FuneralAssistanceDto)
+        public async Task<IActionResult> FuneralAssistanceEdit(int id, FuneralAssistanceDto FuneralAssistanceDto)
         {
             // ? 1. Check user session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -2763,16 +2638,13 @@ namespace LingapDVO.Controllers
             // Remove validation requirements for images if they're not provided
             if (FuneralAssistanceDto.IdFrontimage == null) ModelState.Remove("IdFrontimage");
             if (FuneralAssistanceDto.IdBackimage == null) ModelState.Remove("IdBackimage");
-            if (FuneralAssistanceDto.DoctorPrescriptionimage == null) ModelState.Remove("DoctorPrescriptionimage");
-            if (FuneralAssistanceDto.DeathCertificateimage == null) ModelState.Remove("DeathCertificateimage");
 
-            // ? Require at least one medical document ONLY if both existing docs are empty and no new upload
+            // ? Require document ONLY if both existing docs are empty and no new upload
             if (string.IsNullOrEmpty(existing.DoctorPrescription) &&
                 string.IsNullOrEmpty(existing.DeathCertificate) &&
-                FuneralAssistanceDto.DoctorPrescriptionimage == null &&
-                FuneralAssistanceDto.DeathCertificateimage == null)
+                FuneralAssistanceDto.FuneralAssistanceDocument == null)
             {
-                ModelState.AddModelError("DoctorPrescriptionimage", "At least one medical document (Doctor Prescription or Death Certificate) is required.");
+                ModelState.AddModelError("FuneralAssistanceDocument", "At least one document is required.");
             }
 
             if (!ModelState.IsValid)
@@ -2790,40 +2662,18 @@ namespace LingapDVO.Controllers
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // ? 5. Update Doctor Prescription (optional)
-                if (FuneralAssistanceDto.DoctorPrescriptionimage != null)
+                // ? 5. Update Funeral Assistance Document (replaces both DoctorPrescription and DeathCertificate)
+                if (FuneralAssistanceDto.FuneralAssistanceDocument != null)
                 {
                     string folder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
 
-                    // Delete old file if exists
+                    // Delete old files if they exist
                     if (!string.IsNullOrEmpty(existing.DoctorPrescription))
                     {
                         string oldPath = Path.Combine(folder, existing.DoctorPrescription);
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
-
-                    // Encrypt the original filename
-                    string originalFileName = FuneralAssistanceDto.DoctorPrescriptionimage.FileName;
-                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        byte[] encrypted = aesHelper.EncryptStream(FuneralAssistanceDto.DoctorPrescriptionimage.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
-                    }
-
-                    existing.DoctorPrescription = fileName;
-                }
-
-                // ? 6. Update Death Certificate (optional)
-                if (FuneralAssistanceDto.DeathCertificateimage != null)
-                {
-                    string folder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
-                    Directory.CreateDirectory(folder);
-
-                    // Delete old file if exists
                     if (!string.IsNullOrEmpty(existing.DeathCertificate))
                     {
                         string oldPath = Path.Combine(folder, existing.DeathCertificate);
@@ -2831,20 +2681,22 @@ namespace LingapDVO.Controllers
                     }
 
                     // Encrypt the original filename
-                    string originalFileName = FuneralAssistanceDto.DeathCertificateimage.FileName;
+                    string originalFileName = FuneralAssistanceDto.FuneralAssistanceDocument.FileName;
                     string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
                     {
-                        byte[] encrypted = aesHelper.EncryptStream(FuneralAssistanceDto.DeathCertificateimage.OpenReadStream());
+                        byte[] encrypted = aesHelper.EncryptStream(FuneralAssistanceDto.FuneralAssistanceDocument.OpenReadStream());
                         fs.Write(encrypted, 0, encrypted.Length);
                     }
 
-                    existing.DeathCertificate = fileName;
+                    // Store in DoctorPrescription field (unified field)
+                    existing.DoctorPrescription = fileName;
+                    existing.DeathCertificate = ""; // Clear the other field
                 }
 
-                // ? 7. Update ID images (if new ones provided)
+                // ? 6. Update ID images (if new ones provided)
                 if (FuneralAssistanceDto.IdFrontimage != null)
                 {
                     string folder = Path.Combine(environment.WebRootPath, "Validimg");
@@ -2938,17 +2790,37 @@ namespace LingapDVO.Controllers
                 if (isRetakeMode)
                 {
                     existing.Status = "Pending"; // Move back to Pending for admin review
-                    existing.Status2 = ""; // Clear Status2
+                    existing.Status2 = "Resubmitted"; // Mark as resubmitted
                     existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
                     existing.IsRetakeApplication = false; // Clear retake flag
                     existing.RetakeReason = ""; // Clear retake reason
                     existing.RetakeRequestedAt = null; // Clear retake timestamp
-                    existing.Comments = "Documents resubmitted by applicant"; // Add comment
+                    existing.Comments = ""; // Remove comments as per requirement
                 }
 
                 // ? 10. Save changes
                 context.Entry(existing).State = EntityState.Modified;
                 context.SaveChanges();
+
+                // ? 10.5. Send notification for resubmission if it was retake mode
+                if (isRetakeMode)
+                {
+                    try
+                    {
+                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
+                        await _notificationService.SendNotificationAsync(
+                            userId,
+                            "Application Resubmitted",
+                            "Your resubmission of application has been successful and is now in queue.",
+                            "resubmitted",
+                            "/Dashboard/Applicationtracking"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to send resubmission notification: {ex.Message}");
+                    }
+                }
 
                 // ? 11. Set success flag and RAF number for modal
                 ViewBag.Success = true;
@@ -4173,7 +4045,7 @@ namespace LingapDVO.Controllers
                         m.Status3,
                         m.CreatedAt,
                         m.ProcessAt,
-                        Type = "Medical"
+                        Type = "Other"
                     })
                     .ToList();
 

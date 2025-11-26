@@ -374,13 +374,13 @@
                     <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
                 </div>
 
-                <input asp-for="DeathCertificateimage"
+                <input asp-for="FuneralAssistanceDocument"
                        type="file"
                        id="deathCertificate"
                        class="d-none"
                        accept=".png,.jpg,.jpeg,.pdf"
                        onchange="handleFileSelect(this)">
-                <span asp-validation-for="DeathCertificateimage"></span>
+                <span asp-validation-for="FuneralAssistanceDocument"></span>
 
                 <img id="receiptPreview" class="img-preview mt-2" alt="Death Certificate Preview">
                 <div id="fileStatus" class="file-status"></div>

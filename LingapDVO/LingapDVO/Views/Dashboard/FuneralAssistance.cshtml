@@ -7,7 +7,7 @@
 @section Styles {
     <style>
         .btn-submit {
-            background-color: #28a745; /* Green */
+            background-color: #28a745; 
             color: white;
             font-weight: 600;
             padding: 10px 25px;
@@ -18,7 +18,7 @@
         }
 
             .btn-submit:hover {
-                background-color: #20c997; /* Green-blue hover */
+                background-color: #20c997;
                 transform: scale(1.05);
             }
 
@@ -480,6 +480,7 @@
                     <option value="Biao Guianga">Biao Guianga</option>
                     <option value="Binugao">Binugao</option>
                     <option value="Bucana">Bucana</option>
+                    <option value="Buhangin">Buhangin</option>
                     <option value="Buhangin Proper">Buhangin Proper</option>
                     <option value="Cabantian">Cabantian</option>
                     <option value="Cadalian">Cadalian</option>
@@ -637,19 +638,19 @@
     <h5 class="section-header">Upload Required Documents</h5>
 
     <div class="mb-3">
-        <label class="">Death Certificate</label>
-        <div class="upload-box" onclick="document.getElementById('receipt').click()">
+        <label class="">Funeral Assistance Document</label>
+        <div class="upload-box" onclick="document.getElementById('funeralDocument').click()">
             <div class="upload-icon">
                 <i class="bi bi-card-image"></i>
             </div>
             <p>Click to upload document</p>
             <p>Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
         </div>
-        <input asp-for="DeathCertificateimage" type="file" id="receipt" class="d-none"
-               accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'receiptPreview')">
-        <span asp-validation-for="DeathCertificateimage" class="text-danger"></span>
+        <input asp-for="FuneralAssistanceDocument" type="file" id="funeralDocument" class="d-none"
+               accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'funeralDocumentPreview')">
+        <span asp-validation-for="FuneralAssistanceDocument" class="text-danger"></span>
 
-        <img id="receiptPreview" class="img-preview mt-2" alt="Death Certificate Preview">
+        <img id="funeralDocumentPreview" class="img-preview mt-2" alt="Funeral Assistance Document Preview">
         <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
     </div>
 
@@ -910,8 +911,15 @@
             form.addEventListener('submit', function(e) {
                 let isValid = true;
                 const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+                const patientSection = document.getElementById('patientDetailsSection');
+                const isPatientSectionHidden = patientSection && window.getComputedStyle(patientSection).display === 'none';
 
                 requiredInputs.forEach(input => {
+                    // Skip validation for fields inside hidden patient details section
+                    if (isPatientSectionHidden && patientSection && patientSection.contains(input)) {
+                        return; // Skip this field
+                    }
+
                     if (input.type !== 'checkbox' && input.type !== 'radio') {
                         if (!input.value.trim()) {
                             input.classList.add('is-invalid');
@@ -922,7 +930,10 @@
                     }
                 });
 
-                if (!validateSexRadio()) isValid = false;
+                // Only validate sex radio if patient section is visible
+                if (!isPatientSectionHidden) {
+                    if (!validateSexRadio()) isValid = false;
+                }
 
                 const termsCheck = document.getElementById('termsCheck');
                 if (termsCheck && !termsCheck.checked) {
