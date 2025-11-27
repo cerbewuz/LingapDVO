@@ -49,6 +49,7 @@ namespace LingapDVO.Services
         // 🔔 UNIFIED NOTIFICATIONS SYSTEM
         // Comprehensive notification tracking with built-in read status
         // Synchronized across Homepage and Application Tracking pages
+        // RecipientType: 1 = User notifications, 2 = Admin notifications
         // ═══════════════════════════════════════════════════════════════
         public DbSet<Notification> Notifications { get; set; }
 
@@ -64,6 +65,11 @@ namespace LingapDVO.Services
             modelBuilder.Entity<Notification>()
                 .HasIndex(n => new { n.UserId, n.CreatedAt, n.IsArchived })
                 .HasDatabaseName("IX_Notifications_UserId_CreatedAt_IsArchived");
+
+            // Query admin notifications (RecipientType = 2)
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.RecipientType, n.IsRead, n.CreatedAt, n.IsArchived })
+                .HasDatabaseName("IX_Notifications_RecipientType_IsRead_CreatedAt_IsArchived");
 
             // Query unread notifications
             modelBuilder.Entity<Notification>()

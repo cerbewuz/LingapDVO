@@ -113,6 +113,7 @@ builder.Services.AddHttpClient<ISmsService, SmsService>();
 builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMultiChannelNotificationService, MultiChannelNotificationService>();
+builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>();
 
 // Priority Tracking Service
 builder.Services.AddScoped<PriorityTrackingService>();

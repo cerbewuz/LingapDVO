@@ -17,10 +17,17 @@ namespace LingapDVO.Models
         public int Id { get; set; }
 
         /// <summary>
-        /// User ID who receives this notification
+        /// User ID who receives this notification (for user notifications)
+        /// Null for admin notifications (sent to all admins)
+        /// </summary>
+        public int? UserId { get; set; }
+
+        /// <summary>
+        /// Recipient type: 1 = User notification, 2 = Admin notification
+        /// Allows single table to handle both user and admin notifications
         /// </summary>
         [Required]
-        public int UserId { get; set; }
+        public int RecipientType { get; set; } = 1;
 
         /// <summary>
         /// Type of application (HospitalAssistance, OtherAssistance, FuneralAssistance, System)

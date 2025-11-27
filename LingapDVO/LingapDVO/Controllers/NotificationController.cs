@@ -10,13 +10,20 @@ public class NotificationsController : Controller
     private readonly IWebHostEnvironment environment;
     private readonly IDateTimeService _dateTimeService;
     private readonly ILogger<NotificationsController> _logger;
+    private readonly IAdminNotificationService _adminNotificationService;
 
-    public  NotificationsController(ApplicationDbContext context, IWebHostEnvironment environment, IDateTimeService dateTimeService, ILogger<NotificationsController> logger)
+    public  NotificationsController(
+        ApplicationDbContext context,
+        IWebHostEnvironment environment,
+        IDateTimeService dateTimeService,
+        ILogger<NotificationsController> logger,
+        IAdminNotificationService adminNotificationService)
     {
         this.context = context;
         this.environment = environment;
         _dateTimeService = dateTimeService;
         _logger = logger;
+        _adminNotificationService = adminNotificationService;
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -227,10 +234,10 @@ public class NotificationsController : Controller
 
         try
         {
-            // Get all non-archived notifications for user, ordered by creation date descending
+            // Get all non-archived USER notifications (RecipientType = 1), ordered by creation date descending
             var notifications = await context.Notifications
                 .AsNoTracking()
-                .Where(n => n.UserId == userId && !n.IsArchived)
+                .Where(n => n.RecipientType == 1 && n.UserId == userId && !n.IsArchived)
                 .OrderByDescending(n => n.CreatedAt)
                 .Select(n => new
                 {
@@ -433,6 +440,138 @@ public class NotificationsController : Controller
         {
             _logger.LogError(ex, $"Error getting unread notification count for user {userId}");
             return Json(new { error = "Failed to get unread count" });
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🔔 ADMIN NOTIFICATION ENDPOINTS (RecipientType = 2)
+    // ═══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Get all admin notifications (RecipientType = 2)
+    /// </summary>
+    [HttpGet]
+    public async Task<JsonResult> GetAdminNotifications()
+    {
+        // Check if user is admin
+        var userRole = HttpContext.Session.GetString("UserRole");
+        if (string.IsNullOrEmpty(userRole) || (userRole != "Admin" && userRole != "SuperAdmin"))
+        {
+            return Json(new { error = "Unauthorized" });
+        }
+
+        try
+        {
+            var notifications = await _adminNotificationService.GetRecentNotificationsAsync(50);
+            var unreadCount = await _adminNotificationService.GetUnreadCountAsync();
+
+            return Json(new
+            {
+                success = true,
+                notifications = notifications.Select(n => new
+                {
+                    id = n.Id,
+                    applicationType = n.ApplicationType,
+                    applicationId = n.ApplicationId,
+                    userId = n.UserId,
+                    applicantName = n.ApplicantName,
+                    title = n.Title,
+                    message = n.Message,
+                    type = n.Type,
+                    link = n.Link,
+                    priority = n.Priority,
+                    createdAt = n.CreatedAt,
+                    isRead = n.IsRead,
+                    readAt = n.ReadAt
+                }),
+                unreadCount = unreadCount
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving admin notifications");
+            return Json(new { error = "Failed to load admin notifications" });
+        }
+    }
+
+    /// <summary>
+    /// Get unread admin notification count
+    /// </summary>
+    [HttpGet]
+    public async Task<JsonResult> GetAdminNotificationCount()
+    {
+        // Check if user is admin
+        var userRole = HttpContext.Session.GetString("UserRole");
+        if (string.IsNullOrEmpty(userRole) || (userRole != "Admin" && userRole != "SuperAdmin"))
+        {
+            return Json(new { error = "Unauthorized" });
+        }
+
+        try
+        {
+            var unreadCount = await _adminNotificationService.GetUnreadCountAsync();
+            return Json(new { success = true, count = unreadCount });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting admin notification count");
+            return Json(new { error = "Failed to get unread count" });
+        }
+    }
+
+    /// <summary>
+    /// Mark admin notification as read
+    /// </summary>
+    [HttpPost]
+    public async Task<JsonResult> MarkAdminNotificationAsRead([FromBody] JsonElement body)
+    {
+        // Check if user is admin
+        var userRole = HttpContext.Session.GetString("UserRole");
+        if (string.IsNullOrEmpty(userRole) || (userRole != "Admin" && userRole != "SuperAdmin"))
+        {
+            return Json(new { error = "Unauthorized" });
+        }
+
+        try
+        {
+            if (!body.TryGetProperty("notificationId", out JsonElement notificationIdElement) ||
+                !notificationIdElement.TryGetInt32(out int notificationId))
+            {
+                return Json(new { error = "Invalid notification ID" });
+            }
+
+            await _adminNotificationService.MarkAsReadAsync(notificationId);
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error marking admin notification as read");
+            return Json(new { error = "Failed to mark notification as read" });
+        }
+    }
+
+    /// <summary>
+    /// Mark all admin notifications as read
+    /// </summary>
+    [HttpPost]
+    public async Task<JsonResult> MarkAllAdminNotificationsAsRead()
+    {
+        // Check if user is admin
+        var userRole = HttpContext.Session.GetString("UserRole");
+        if (string.IsNullOrEmpty(userRole) || (userRole != "Admin" && userRole != "SuperAdmin"))
+        {
+            return Json(new { error = "Unauthorized" });
+        }
+
+        try
+        {
+            await _adminNotificationService.MarkAllAsReadAsync();
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error marking all admin notifications as read");
+            return Json(new { error = "Failed to mark all notifications as read" });
         }
     }
 }

@@ -25,8 +25,17 @@ namespace LingapDVO.Controllers
         private readonly ISessionConfigurationService _sessionConfig;
         private readonly IDateTimeService _dateTimeService;
         private readonly IMultiChannelNotificationService _notificationService;
+        private readonly IAdminNotificationService _adminNotificationService;
 
-        public Dashboard(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, FormSubmissionSecurityService securityService, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService, IMultiChannelNotificationService notificationService)
+        public Dashboard(
+            ApplicationDbContext context,
+            IWebHostEnvironment environment,
+            IConfiguration configuration,
+            FormSubmissionSecurityService securityService,
+            ISessionConfigurationService sessionConfig,
+            IDateTimeService dateTimeService,
+            IMultiChannelNotificationService notificationService,
+            IAdminNotificationService adminNotificationService)
         {
             this.context = context;
             this.environment = environment;
@@ -35,6 +44,7 @@ namespace LingapDVO.Controllers
             _sessionConfig = sessionConfig;
             _dateTimeService = dateTimeService;
             _notificationService = notificationService;
+            _adminNotificationService = adminNotificationService;
         }
     
         public IActionResult Index()
@@ -843,7 +853,7 @@ namespace LingapDVO.Controllers
                 context.HospitalAssistance.Add(HospitalAssistance);
                 context.SaveChanges();
 
-                // Send SMS notification for successful submission
+                // Send user notification for successful submission
                 try
                 {
                     var userFullName = $"{HospitalAssistance.Firstname} {HospitalAssistance.Lastname}";
@@ -858,7 +868,28 @@ namespace LingapDVO.Controllers
                 catch (Exception ex)
                 {
                     // Log but don't fail the submission if notification fails
-                    Console.WriteLine($"Failed to send notification: {ex.Message}");
+                    Console.WriteLine($"Failed to send user notification: {ex.Message}");
+                }
+
+                // Send admin notification for new submission
+                try
+                {
+                    var userFullName = $"{HospitalAssistance.Firstname} {HospitalAssistance.Lastname}";
+                    await _adminNotificationService.SendAdminNotificationAsync(
+                        "application_submitted",
+                        "HospitalAssistance",
+                        HospitalAssistance.Id,
+                        userId,
+                        userFullName,
+                        "New Hospital Assistance Application",
+                        $"{userFullName} submitted a new Hospital Assistance application.",
+                        $"/HospitalAssistancePendingStatus/{HospitalAssistance.Id}"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail the submission if admin notification fails
+                    Console.WriteLine($"Failed to send admin notification: {ex.Message}");
                 }
 
                 // ? SUCCESS: Set the success flag to trigger the modal
@@ -1268,12 +1299,16 @@ namespace LingapDVO.Controllers
                     existing.CreatedAt = _dateTimeService.Now;
                 }
 
-                // ? 9.5. If retake mode, reset to Pending status and clear retake flags
+                // ? 9.5. If retake mode, reset to Pending status and clear ALL processing fields
+                // CRITICAL: CreatedAt must be reset so priority timer restarts from resubmission time
                 if (isRetakeMode)
                 {
-                    existing.Status = "Pending"; // Move back to Pending for admin review
+                    existing.Status = "Pending"; // Move back to Pending for admin review (counted in Pending status cards)
                     existing.Status2 = "Resubmitted"; // Mark as resubmitted
-                    existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
+                    existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
+                    existing.ProcessAt = DateTime.MinValue; // Clear process timestamp
+                    existing.Processby = null; // Clear processor name
+                    existing.Result = DateTime.MinValue; // Clear result date
                     existing.IsRetakeApplication = false; // Clear retake flag
                     existing.RetakeReason = ""; // Clear retake reason
                     existing.RetakeRequestedAt = null; // Clear retake timestamp
@@ -1284,23 +1319,45 @@ namespace LingapDVO.Controllers
                 context.Entry(existing).State = EntityState.Modified;
                 context.SaveChanges();
 
-                // ? 10.5. Send notification for resubmission if it was retake mode
+                // ? 10.5. Send notifications for resubmission if it was retake mode
                 if (isRetakeMode)
                 {
+                    var userFullName = $"{existing.Firstname} {existing.Lastname}";
+                    var assistanceType = existing.GetType().Name; // Get the actual type
+
+                    // Send user notification - application is now in queue (Pending status)
                     try
                     {
-                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
-                        await _notificationService.SendNotificationAsync(
+                        await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
-                            "Application Resubmitted",
-                            "Your resubmission of application has been successful and is now in queue.",
-                            "resubmitted",
-                            "/Dashboard/Applicationtracking"
+                            userFullName,
+                            assistanceType == "HospitalAssistance" ? "HospitalBill" : assistanceType == "OtherAssistance" ? "MedicalLab" : "Funeral",
+                            "Pending", // Send as Pending status (In Queue message)
+                            existing.Id
                         );
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to send resubmission notification: {ex.Message}");
+                        Console.WriteLine($"Failed to send user resubmission notification: {ex.Message}");
+                    }
+
+                    // Send admin notification - retake application has been resubmitted
+                    try
+                    {
+                        await _adminNotificationService.SendAdminNotificationAsync(
+                            "retake_submitted",
+                            assistanceType,
+                            existing.Id,
+                            userId,
+                            userFullName,
+                            $"Retake {assistanceType.Replace("Assistance", "")} Application Resubmitted",
+                            $"{userFullName} resubmitted a retake application for {assistanceType.Replace("Assistance", " Assistance")}.",
+                            $"/{assistanceType}PendingStatus/{existing.Id}"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to send admin notification for retake: {ex.Message}");
                     }
                 }
 
@@ -2077,12 +2134,16 @@ namespace LingapDVO.Controllers
                     existing.CreatedAt = _dateTimeService.Now;
                 }
 
-                // ? 10.5. If retake mode, reset to Pending status and clear retake flags
+                // ? 10.5. If retake mode, reset to Pending status and clear ALL processing fields
+                // CRITICAL: CreatedAt must be reset so priority timer restarts from resubmission time
                 if (isRetakeMode)
                 {
-                    existing.Status = "Pending"; // Move back to Pending for admin review
+                    existing.Status = "Pending"; // Move back to Pending for admin review (counted in Pending status cards)
                     existing.Status2 = "Resubmitted"; // Mark as resubmitted
-                    existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
+                    existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
+                    existing.ProcessAt = DateTime.MinValue; // Clear process timestamp
+                    existing.Processby = null; // Clear processor name
+                    existing.Result = DateTime.MinValue; // Clear result date
                     existing.IsRetakeApplication = false; // Clear retake flag
                     existing.RetakeReason = ""; // Clear retake reason
                     existing.RetakeRequestedAt = null; // Clear retake timestamp
@@ -2786,12 +2847,16 @@ namespace LingapDVO.Controllers
                     existing.CreatedAt = _dateTimeService.Now;
                 }
 
-                // ? 9.5. If retake mode, reset to Pending status and clear retake flags
+                // ? 9.5. If retake mode, reset to Pending status and clear ALL processing fields
+                // CRITICAL: CreatedAt must be reset so priority timer restarts from resubmission time
                 if (isRetakeMode)
                 {
-                    existing.Status = "Pending"; // Move back to Pending for admin review
+                    existing.Status = "Pending"; // Move back to Pending for admin review (counted in Pending status cards)
                     existing.Status2 = "Resubmitted"; // Mark as resubmitted
-                    existing.ProcessAt = _dateTimeService.Now; // Update process timestamp
+                    existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
+                    existing.ProcessAt = DateTime.MinValue; // Clear process timestamp
+                    existing.Processby = null; // Clear processor name
+                    existing.Result = DateTime.MinValue; // Clear result date
                     existing.IsRetakeApplication = false; // Clear retake flag
                     existing.RetakeReason = ""; // Clear retake reason
                     existing.RetakeRequestedAt = null; // Clear retake timestamp
@@ -2802,23 +2867,45 @@ namespace LingapDVO.Controllers
                 context.Entry(existing).State = EntityState.Modified;
                 context.SaveChanges();
 
-                // ? 10.5. Send notification for resubmission if it was retake mode
+                // ? 10.5. Send notifications for resubmission if it was retake mode
                 if (isRetakeMode)
                 {
+                    var userFullName = $"{existing.Firstname} {existing.Lastname}";
+                    var assistanceType = existing.GetType().Name; // Get the actual type
+
+                    // Send user notification - application is now in queue (Pending status)
                     try
                     {
-                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
-                        await _notificationService.SendNotificationAsync(
+                        await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
-                            "Application Resubmitted",
-                            "Your resubmission of application has been successful and is now in queue.",
-                            "resubmitted",
-                            "/Dashboard/Applicationtracking"
+                            userFullName,
+                            assistanceType == "HospitalAssistance" ? "HospitalBill" : assistanceType == "OtherAssistance" ? "MedicalLab" : "Funeral",
+                            "Pending", // Send as Pending status (In Queue message)
+                            existing.Id
                         );
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to send resubmission notification: {ex.Message}");
+                        Console.WriteLine($"Failed to send user resubmission notification: {ex.Message}");
+                    }
+
+                    // Send admin notification - retake application has been resubmitted
+                    try
+                    {
+                        await _adminNotificationService.SendAdminNotificationAsync(
+                            "retake_submitted",
+                            assistanceType,
+                            existing.Id,
+                            userId,
+                            userFullName,
+                            $"Retake {assistanceType.Replace("Assistance", "")} Application Resubmitted",
+                            $"{userFullName} resubmitted a retake application for {assistanceType.Replace("Assistance", " Assistance")}.",
+                            $"/{assistanceType}PendingStatus/{existing.Id}"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to send admin notification for retake: {ex.Message}");
                     }
                 }
 
