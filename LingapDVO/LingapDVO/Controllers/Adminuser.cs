@@ -4566,13 +4566,14 @@ namespace LingapDVO.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> FuneralAssistanceProcessingStatus(int id, FuneralAssistanceDto FuneralAssistanceDto)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FuneralAssistanceProcessingStatus(int id, [FromForm] FuneralAssistanceDto FuneralAssistanceDto)
         {
             try
             {
-                var FuneralAssistance = context.FuneralAssistance.Find(id);
+                var funeralAssistance = context.FuneralAssistance.Find(id);
 
-                if (FuneralAssistance == null)
+                if (funeralAssistance == null)
                 {
                     TempData["ErrorMessage"] = "Funeral assistance record not found.";
                     return Redirect("/Admin");
@@ -4582,7 +4583,7 @@ namespace LingapDVO.Controllers
                 if (string.IsNullOrEmpty(FuneralAssistanceDto.Status2))
                 {
                     TempData["ErrorMessage"] = "Status is required.";
-                    return Redirect("/Admin"); // Return to form
+                    return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
                 }
 
                 // Validate CMO Details Section ONLY for Approve status
@@ -4599,15 +4600,14 @@ namespace LingapDVO.Controllers
                     }
 
                     // Extract and validate CmoNotes (Others field) from the CMO reflection
-                    // Format: "GrantedAmount: X , Docs: Y , Others: Z"
-                    if (!cmoReflection.Contains("Others:") || string.IsNullOrWhiteSpace(cmoReflection.Split("Others:").LastOrDefault()))
+                    if (!cmoReflection.Contains("Others:") || string.IsNullOrWhiteSpace(cmoReflection.Split("Others:").LastOrDefault()?.Trim()))
                     {
                         TempData["ErrorMessage"] = "Please enter notes in the Others field in the CMO Details section.";
                         return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
                     }
 
                     // Extract and validate GrantedAmount
-                    if (!cmoReflection.Contains("GrantedAmount:") || string.IsNullOrWhiteSpace(cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()))
+                    if (!cmoReflection.Contains("GrantedAmount:") || string.IsNullOrWhiteSpace(cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim()))
                     {
                         TempData["ErrorMessage"] = "Please enter the Amount Granted in the CMO Details section.";
                         return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
@@ -4615,7 +4615,7 @@ namespace LingapDVO.Controllers
 
                     // Validate that granted amount is greater than 0
                     var grantedAmountStr = cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim();
-                    if (decimal.TryParse(grantedAmountStr, out decimal grantedAmount) && grantedAmount <= 0)
+                    if (!decimal.TryParse(grantedAmountStr, out decimal grantedAmount) || grantedAmount <= 0)
                     {
                         TempData["ErrorMessage"] = "Amount Granted must be greater than 0 in the CMO Details section.";
                         return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
@@ -4623,142 +4623,292 @@ namespace LingapDVO.Controllers
                 }
 
                 // Update record
-                FuneralAssistance.Status2 = FuneralAssistanceDto.Status2;
-                FuneralAssistance.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL;
-                FuneralAssistance.Comments = FuneralAssistanceDto.Comments;
-                FuneralAssistance.Processby = FuneralAssistanceDto.Processby;
-                FuneralAssistance.Result = _dateTimeService.Now;
+                funeralAssistance.Status2 = FuneralAssistanceDto.Status2;
+                funeralAssistance.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL;
+                funeralAssistance.Comments = FuneralAssistanceDto.Comments;
+                funeralAssistance.Processby = FuneralAssistanceDto.Processby;
+                funeralAssistance.Result = _dateTimeService.Now;
 
                 // Handle Retake status - move back to Pending and track retake information
                 if (!string.IsNullOrEmpty(status) && status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
                 {
-                    FuneralAssistance.Status = "Pending"; // Move back to Pending
-                    FuneralAssistance.IsRetakeApplication = true;
-                    FuneralAssistance.RetakeRequestedAt = _dateTimeService.Now;
+                    funeralAssistance.Status = "Pending"; // Move back to Pending
+                    funeralAssistance.IsRetakeApplication = true;
+                    funeralAssistance.RetakeRequestedAt = _dateTimeService.Now;
 
                     // Extract retake reason from Comments (format: "RETAKE REQUEST: reason")
                     if (!string.IsNullOrEmpty(FuneralAssistanceDto.Comments) && FuneralAssistanceDto.Comments.StartsWith("RETAKE REQUEST: "))
                     {
-                        FuneralAssistance.RetakeReason = FuneralAssistanceDto.Comments.Substring("RETAKE REQUEST: ".Length);
+                        funeralAssistance.RetakeReason = FuneralAssistanceDto.Comments.Substring("RETAKE REQUEST: ".Length);
                     }
                     else
                     {
-                        FuneralAssistance.RetakeReason = FuneralAssistanceDto.Comments;
+                        funeralAssistance.RetakeReason = FuneralAssistanceDto.Comments;
                     }
                 }
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 // Send multi-channel notification
-                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) || status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) || status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
+                if (!string.IsNullOrEmpty(status) && (status.Equals("Approve", StringComparison.OrdinalIgnoreCase) ||
+                    status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) ||
+                    status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == FuneralAssistance.UserId);
+                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == funeralAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
-                    _ = _notificationService.SendStatusChangeNotificationAsync(
-                        FuneralAssistance.UserId,
-                        applicantName,
-                        "FuneralAssistance",
-                        status,
-                        FuneralAssistance.Id,
-                        status.Equals("Retake", StringComparison.OrdinalIgnoreCase) ? FuneralAssistance.RetakeReason : FuneralAssistanceDto.Comments,
-                        FuneralAssistanceDto.Processby
-                    );
-
-                    // Email feature
-                    var user = context.RegisterAcc.FirstOrDefault(u => u.Id == FuneralAssistance.UserId);
-
-                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    // Send notification (fire and forget)
+                    _ = Task.Run(async () =>
                     {
-                        var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
-                        var fromEmail = _configuration["EmailSettings:FromEmail"];
-                        var fromName = _configuration["EmailSettings:FromName"];
-                        var fromPassword = _configuration["EmailSettings:FromPassword"];
-
-                        if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName))
-                            throw new ArgumentException("Email settings are missing.");
-
-                        var fromAddress = new MailAddress(fromEmail, fromName);
-                        var toAddress = new MailAddress(user.Email, firstName);
-
-                        string subject = "";
-                        string body = "";
-
-                        if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+                        try
                         {
-                            subject = "Good News! Your Funeral Help is Approved - LingapDVO";
-                            body = $@"
-                            Dear {firstName},
-
-                            We are happy to tell you that your Funeral Help application has been APPROVED.
-
-                            APPLICATION DETAILS:
-                            • Application Type: Funeral Help
-                            • Application ID: {FuneralAssistance.Id}
-                            • Status: Approved
-                            • Date Approved: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
-                            • Processed By: {FuneralAssistanceDto.Processby}
-
-                            REMARKS:
-                            {FuneralAssistanceDto.Comments ?? "No additional remarks provided."}
-
-                            NEXT STEPS:
-                            Please visit our office to complete the necessary documentation and receive your assistance.
-
-                            Thank you for using LingapDVO. We are here to help with your needs during this hard time.
-
-                            Sincerely,
-                            {fromName}
-                            LingapDVO Funeral Help Program
-
-                            Note: This is an automated email. Please do not reply to this message.";
-                                }
-                                else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    subject = "Update on Your Funeral Help Application - LingapDVO";
-                                    body = $@"
-                            Dear {firstName},
-
-                            After careful review, we regret to inform you that your Funeral Help application has been DISAPPROVED.
-
-                            APPLICATION DETAILS:
-                            • Application Type: Funeral Help
-                            • Application ID: {FuneralAssistance.Id}
-                            • Status: Disapproved
-                            • Date Updated: {_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}
-                            • Processed By: {FuneralAssistanceDto.Processby}
-
-                            REMARKS:
-                            {FuneralAssistanceDto.Comments ?? "Please contact our office for more information about this decision."}
-
-                            If you have questions or would like to discuss this decision further, please visit our office during office hours.
-
-                            We appreciate your understanding.
-
-                            Sincerely,
-                            {fromName}
-                            LingapDVO Funeral Help Program
-
-                            Note: This is an automated email. Please do not reply to this message.";
+                            await _notificationService.SendStatusChangeNotificationAsync(
+                                funeralAssistance.UserId,
+                                applicantName,
+                                "FuneralAssistance",
+                                status,
+                                funeralAssistance.Id,
+                                status.Equals("Retake", StringComparison.OrdinalIgnoreCase) ? funeralAssistance.RetakeReason : FuneralAssistanceDto.Comments,
+                                FuneralAssistanceDto.Processby
+                            );
                         }
-                        else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+                        catch (Exception ex)
                         {
-                            subject = "Please Send Papers Again for Your Funeral Help - LingapDVO";
-                            var retakeReason = FuneralAssistance.RetakeReason ?? FuneralAssistanceDto.Comments ?? "Please review and resubmit your documents.";
-                            body = $@"
+                            Console.WriteLine($"Notification error: {ex.Message}");
+                        }
+                    });
+
+                    // Send email
+                    await SendFuneralStatusEmail(funeralAssistance, FuneralAssistanceDto, status, applicantName);
+                }
+
+                TempData["SuccessMessage"] = $"Funeral assistance status updated to '{FuneralAssistanceDto.Status2}' successfully.";
+                return Redirect("/Admin");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in FuneralAssistanceProcessingStatus: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                TempData["ErrorMessage"] = "An error occurred while updating status: " + ex.Message;
+                return Redirect("/Admin");
+            }
+        }
+
+        private async Task SendFuneralStatusEmail(FuneralAssistance assistance, FuneralAssistanceDto dto, string status, string firstName)
+        {
+            try
+            {
+                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == assistance.UserId);
+
+                if (user == null || string.IsNullOrEmpty(user.Email))
+                    return;
+
+                var fromEmail = _configuration["EmailSettings:FromEmail"];
+                var fromName = _configuration["EmailSettings:FromName"];
+                var fromPassword = _configuration["EmailSettings:FromPassword"];
+
+                if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName) || string.IsNullOrEmpty(fromPassword))
+                {
+                    Console.WriteLine("Email configuration is missing.");
+                    return;
+                }
+
+                var fromAddress = new MailAddress(fromEmail, fromName);
+                var toAddress = new MailAddress(user.Email, firstName);
+
+                string subject = "";
+                string body = "";
+
+                if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+                {
+                    subject = "🎉 Good News! Your Funeral Help is Approved - LingapDVO";
+                    body = $@"
 <!DOCTYPE html>
 <html>
 <head>
     <style>
         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
-        .header {{ background-color: #dc3545; color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header {{ background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
         .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
         .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
         .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
         .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
-        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #dc3545; margin: 20px 0; border-radius: 4px; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #28a745; margin: 20px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+        .details-box h3 {{ margin-top: 0; color: #28a745; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .next-steps {{ background-color: #e8f5e8; padding: 20px; border-radius: 4px; margin: 20px 0; }}
+        .next-steps h3 {{ color: #28a745; margin-top: 0; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+        .celebrate {{ text-align: center; font-size: 48px; margin: 20px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🎉 Funeral Help Approved!</h1>
+        </div>
+        <div class='content'>
+            <div class='celebrate'>✅</div>
+            <p class='greeting'>Dear {firstName},</p>
+            <p class='message'>
+                We are pleased to inform you that your Funeral Help application has been <strong>APPROVED</strong>.
+                Our deepest condolences for your loss, and we hope this assistance provides some comfort during this difficult time.
+            </p>
+
+            <div class='details-box'>
+                <h3>📋 APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application Type:</span>
+                    <span class='detail-value'>Funeral Help</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application ID:</span>
+                    <span class='detail-value'>{assistance.Id}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value' style='color: #28a745; font-weight: bold;'>APPROVED</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Approved:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Processed By:</span>
+                    <span class='detail-value'>{dto.Processby}</span>
+                </div>
+            </div>
+
+            <div class='details-box'>
+                <h3>💬 REMARKS</h3>
+                <p>{dto.Comments ?? "Your application has been processed successfully. No additional remarks provided."}</p>
+            </div>
+
+            <div class='next-steps'>
+                <h3>📝 NEXT STEPS</h3>
+                <p>Please visit our office to complete the necessary documentation and receive your assistance. Bring valid ID and any other required documents related to the funeral arrangements.</p>
+            </div>
+
+            <p class='message'>
+                Our thoughts are with you and your family during this time of loss.
+            </p>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO Funeral Help Program</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
+                }
+                else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
+                {
+                    subject = "📋 Update on Your Funeral Help Application - LingapDVO";
+                    body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background: linear-gradient(135deg, #dc3545, #e5533f); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #dc3545; margin: 20px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
         .details-box h3 {{ margin-top: 0; color: #dc3545; font-size: 16px; }}
+        .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
+        .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
+        .detail-value {{ color: #555; }}
+        .contact-info {{ background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0; border: 1px solid #dee2e6; }}
+        .contact-info h3 {{ color: #495057; margin-top: 0; }}
+        .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
+        .footer p {{ margin: 5px 0; }}
+        .status-icon {{ text-align: center; font-size: 48px; margin: 20px 0; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>📋 Application Update</h1>
+        </div>
+        <div class='content'>
+            <div class='status-icon'>❌</div>
+            <p class='greeting'>Dear {firstName},</p>
+            <p class='message'>
+                After careful review, we regret to inform you that your Funeral Help application has been <strong>DISAPPROVED</strong>.
+            </p>
+
+            <div class='details-box'>
+                <h3>📋 APPLICATION DETAILS</h3>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application Type:</span>
+                    <span class='detail-value'>Funeral Help</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Application ID:</span>
+                    <span class='detail-value'>{assistance.Id}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Status:</span>
+                    <span class='detail-value' style='color: #dc3545; font-weight: bold;'>DISAPPROVED</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Date Updated:</span>
+                    <span class='detail-value'>{_dateTimeService.Now:MMMM dd, yyyy 'at' hh:mm tt}</span>
+                </div>
+                <div class='detail-item'>
+                    <span class='detail-label'>Processed By:</span>
+                    <span class='detail-value'>{dto.Processby}</span>
+                </div>
+            </div>
+
+            <div class='details-box'>
+                <h3>💬 REMARKS</h3>
+                <p>{dto.Comments ?? "Please contact our office for more information about this decision."}</p>
+            </div>
+
+            <div class='contact-info'>
+                <h3>🤝 NEED MORE INFORMATION?</h3>
+                <p>If you have questions or would like to discuss this decision further, please visit our office during office hours. Our staff will be happy to assist you.</p>
+            </div>
+
+            <p class='message'>
+                We appreciate your understanding during this difficult time.
+            </p>
+        </div>
+        <div class='footer'>
+            <p><strong>LingapDVO Funeral Help Program</strong></p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>";
+                }
+                else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+                {
+                    subject = "🔄 Action Required - Please Resubmit Your Funeral Help Documents - LingapDVO";
+                    var retakeReason = assistance.RetakeReason ?? dto.Comments ?? "Please review and resubmit your documents.";
+                    body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+        .header {{ background: linear-gradient(135deg, #ff9800, #ff5722); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: bold; }}
+        .content {{ padding: 30px 20px; background-color: #f9f9f9; }}
+        .greeting {{ font-size: 18px; color: #333; margin-bottom: 20px; }}
+        .message {{ font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.8; }}
+        .details-box {{ background-color: #fff; padding: 20px; border-left: 4px solid #ff9800; margin: 20px 0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+        .details-box h3 {{ margin-top: 0; color: #ff9800; font-size: 16px; }}
         .detail-item {{ margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }}
         .detail-label {{ font-weight: 600; color: #333; display: inline-block; width: 140px; }}
         .detail-value {{ color: #555; }}
@@ -4769,37 +4919,39 @@ namespace LingapDVO.Controllers
         .steps-box h3 {{ color: #0066cc; margin-top: 0; font-size: 16px; }}
         .steps-box ol {{ margin: 10px 0; padding-left: 20px; }}
         .steps-box li {{ margin: 8px 0; color: #555; }}
-        .button {{ display: inline-block; padding: 12px 30px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 15px; }}
-        .button:hover {{ background-color: #c82333; }}
+        .button {{ display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #ff9800, #ff5722); color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 15px; text-align: center; }}
+        .button:hover {{ background: linear-gradient(135deg, #e68900, #e64a19); }}
         .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
         .footer p {{ margin: 5px 0; }}
+        .action-icon {{ text-align: center; font-size: 48px; margin: 20px 0; }}
     </style>
 </head>
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>⚠ Action Required - Retake Application</h1>
+            <h1>🔄 Action Required - Resubmit Documents</h1>
         </div>
         <div class='content'>
+            <div class='action-icon'>📝</div>
             <p class='greeting'>Dear {firstName},</p>
             <p class='message'>
-                We have checked your Funeral Help application and need you to send some papers again.
-                Your application details will stay the same - you only need to upload the fixed papers.
+                We have reviewed your Funeral Help application and need you to resubmit some documents.
+                Your application details will remain the same - you only need to upload the corrected documents.
             </p>
 
             <div class='details-box'>
-                <h3>APPLICATION DETAILS</h3>
+                <h3>📋 APPLICATION DETAILS</h3>
                 <div class='detail-item'>
                     <span class='detail-label'>Application Type:</span>
                     <span class='detail-value'>Funeral Help</span>
                 </div>
                 <div class='detail-item'>
                     <span class='detail-label'>Application ID:</span>
-                    <span class='detail-value'>{FuneralAssistance.Id}</span>
+                    <span class='detail-value'>{assistance.Id}</span>
                 </div>
                 <div class='detail-item'>
                     <span class='detail-label'>Status:</span>
-                    <span class='detail-value'><strong>Please Send Papers Again</strong></span>
+                    <span class='detail-value' style='color: #ff9800; font-weight: bold;'>RESUBMIT REQUIRED</span>
                 </div>
                 <div class='detail-item'>
                     <span class='detail-label'>Date Updated:</span>
@@ -4807,29 +4959,29 @@ namespace LingapDVO.Controllers
                 </div>
                 <div class='detail-item'>
                     <span class='detail-label'>Processed By:</span>
-                    <span class='detail-value'>{FuneralAssistanceDto.Processby}</span>
+                    <span class='detail-value'>{dto.Processby}</span>
                 </div>
             </div>
 
             <div class='reason-box'>
-                <h3>📋 WHY YOU NEED TO SEND PAPERS AGAIN</h3>
+                <h3>📋 DOCUMENTS NEEDING CORRECTION</h3>
                 <p>{retakeReason}</p>
             </div>
 
             <div class='steps-box'>
-                <h3>📝 HOW TO SEND YOUR PAPERS AGAIN</h3>
+                <h3>📝 HOW TO RESUBMIT YOUR DOCUMENTS</h3>
                 <ol>
                     <li>Log in to your LingapDVO account</li>
-                    <li>Go to Application Tracking</li>
+                    <li>Go to Application Tracking section</li>
                     <li>Find this application and click on it</li>
-                    <li>Upload the needed papers</li>
+                    <li>Upload the required corrected documents</li>
+                    <li>Submit the updated application</li>
                 </ol>
                 <a href='https://lingap.online/Applicationtracking' class='button'>Go to Application Tracking</a>
             </div>
 
             <p class='message' style='margin-top: 20px;'>
-                If you have any questions, please visit our office during office hours or contact us for assistance.
-                Thank you for your help.
+                If you have any questions or need assistance, please visit our office during office hours or contact our support team.
             </p>
         </div>
         <div class='footer'>
@@ -4839,40 +4991,33 @@ namespace LingapDVO.Controllers
     </div>
 </body>
 </html>";
-                        }
-
-                        // Send the email
-                        using (var smtp = new SmtpClient("smtp.gmail.com", 587)
-                        {
-                            EnableSsl = true,
-                            DeliveryMethod = SmtpDeliveryMethod.Network,
-                            UseDefaultCredentials = false,
-                            Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                        })
-                        using (var message = new MailMessage(fromAddress, toAddress)
-                        {
-                            Subject = subject,
-                            Body = body,
-                            IsBodyHtml = true
-                        })
-                        {
-                            await smtp.SendMailAsync(message);
-                        }
-
-                        Console.WriteLine($"Status update email sent to {user.Email} for application {FuneralAssistance.Id} - Status: {status}");
-                    }
                 }
 
-                TempData["SuccessMessage"] = $"Funeral assistance status updated to '{FuneralAssistanceDto.Status2}' and notifications sent successfully.";
-                return Redirect("/Admin");
+                // Send the email
+                using (var smtp = new SmtpClient("smtp.gmail.com", 587)
+                {
+                    EnableSsl = true,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                    Timeout = 30000 // 30 seconds timeout
+                })
+                using (var message = new MailMessage(fromAddress, toAddress)
+                {
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true // All emails now have HTML design
+                })
+                {
+                    await smtp.SendMailAsync(message);
+                }
+
+                Console.WriteLine($"Status update email sent to {user.Email} for application {assistance.Id} - Status: {status}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in FuneralAssistanceProcessingStatus: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-
-                TempData["ErrorMessage"] = "An error occurred while updating status: " + ex.Message;
-                return Redirect("/Admin");
+                Console.WriteLine($"Email sending failed: {ex.Message}");
+                // Don't rethrow - email failure shouldn't break the main functionality
             }
         }
 
