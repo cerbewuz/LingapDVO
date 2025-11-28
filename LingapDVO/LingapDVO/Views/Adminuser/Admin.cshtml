@@ -178,6 +178,45 @@
             color: var(--info);
         }
 
+        /* Status badges in table */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+        .status-badge i { font-size: 1rem; }
+
+        .status-approved {
+            background: rgba(46, 204, 113, 0.12);
+            color: var(--success);
+        }
+
+        .status-disapproved {
+            background: rgba(231, 76, 60, 0.12);
+            color: var(--danger);
+        }
+
+        .status-pending {
+            background: rgba(243, 156, 18, 0.12);
+            color: var(--warning);
+        }
+
+        .status-processing {
+            background: rgba(155, 89, 182, 0.12);
+            color: var(--processing);
+        }
+
+        .status-claimed {
+            background: rgba(52, 152, 219, 0.12);
+            color: var(--info);
+        }
+
         /* Priority Alert Boxes */
         .priority-alerts {
             display: flex;

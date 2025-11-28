@@ -465,6 +465,22 @@ app.MapControllerRoute(
     pattern: "RemoveAdminacc",
     defaults: new { controller = "Superadmin", action = "RemoveAdminacc" });
 
+// Dummy data API routes (handled by a disabled controller that returns informative 403 responses)
+app.MapControllerRoute(
+    name: "route-api-dummydata-generate",
+    pattern: "api/admin/dummydata/generate",
+    defaults: new { controller = "DummyData", action = "Generate" });
+
+app.MapControllerRoute(
+    name: "route-api-dummydata-statistics",
+    pattern: "api/admin/dummydata/statistics",
+    defaults: new { controller = "DummyData", action = "Statistics" });
+
+app.MapControllerRoute(
+    name: "route-api-dummydata-clear",
+    pattern: "api/admin/dummydata/clear",
+    defaults: new { controller = "DummyData", action = "Clear" });
+
 // Default fallback route (lowest priority)
 app.MapControllerRoute(
     name: "default",

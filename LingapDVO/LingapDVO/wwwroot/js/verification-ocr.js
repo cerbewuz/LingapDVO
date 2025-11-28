@@ -7466,6 +7466,33 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 2000); // 2 second delay to show the completed state
             }
         } catch (e) {
+            // Log error for debugging but don't show error modal if fields were populated
+            console.error('Error in updateFormFieldsAdvanced:', e);
+
+            // Only show error if it's a critical failure (no fields populated)
+            const criticalError = !firstName && !lastName && !idNumber;
+            if (criticalError) {
+                debugLog('CRITICAL-UPDATE-ERROR', {
+                    error: e.message,
+                    stack: e.stack
+                });
+
+                // Show user-friendly error
+                showOCRErrorModal(
+                    'Unable to populate form fields.\n\n' +
+                    'The ID information was extracted but could not be filled into the form.\n\n' +
+                    'Please try:\n' +
+                    '• Refreshing the page\n' +
+                    '• Uploading the ID again\n' +
+                    '• Contacting support if the issue persists'
+                );
+            } else {
+                // Non-critical error - fields were populated despite error
+                debugLog('NON-CRITICAL-UPDATE-ERROR', {
+                    error: e.message,
+                    note: 'Fields populated successfully despite error'
+                });
+            }
         }
     }
 

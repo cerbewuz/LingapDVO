@@ -4,6 +4,7 @@ using System.Text;
 
 namespace LingapDVO.Services
 {
+
     /// <summary>
     /// Data seeder for generating 250 dummy applications with encrypted ID files
     /// </summary>
@@ -68,10 +69,10 @@ namespace LingapDVO.Services
             "Tugbok District", "Baguio District", "Leon Garcia District"
         };
 
-        // ID types
+        // ID types (database naming)
         private readonly string[] _idTypes = new[]
         {
-            "National ID", "Driver's License", "UMID"
+            "phil-id", "driver-license", "umid"
         };
 
         // Assistance types for each form
@@ -103,6 +104,15 @@ namespace LingapDVO.Services
             _environment = environment;
             _dateTimeService = dateTimeService;
             _aesKey = HexStringToByteArray(aesKeyHex);
+        }
+
+        // Weighted status2 generator: 15% Disapprove, 35% Approve, 50% Approve+Claim (ApproveClaim)
+        private string GetWeightedStatus2()
+        {
+            int roll = _random.Next(100);
+            if (roll < 15) return "Disapprove";
+            if (roll < 15 + 35) return "Approve";
+            return "ApproveClaim";
         }
 
         private byte[] HexStringToByteArray(string hex)
@@ -215,9 +225,27 @@ namespace LingapDVO.Services
             DateTime createdAt = _dateTimeService.Now.AddDays(-daysAgo);
             DateTime processAt = createdAt.AddHours(_random.Next(2, 48));
 
-            string status = _statuses[_random.Next(_statuses.Length)];
-            string status2 = status == "Processing" && _random.Next(0, 2) == 0 ? _statuses[_random.Next(2, 5)] : "";
+            // Determine weighted status2 and translate to status/status3
+            string status2 = GetWeightedStatus2();
+            string status3 = "";
+            if (status2 == "ApproveClaim")
+            {
+                status2 = "Approve";
+                status3 = "Claimed";
+            }
+            string status = status2 == "" ? "Waiting" : "Processing";
             string processby = status != "Waiting" ? new[] { "Dr. Santos", "Dr. Reyes", "Dr. Cruz", "Dr. Bautista" }[_random.Next(4)] : "";
+
+            // Resolve requestor fields (use applicant values when requestor is same)
+            string rLastname = hasDifferentRequestor ? _lastNames[_random.Next(_lastNames.Length)] : personData["LastName"];
+            string rFirstname = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["FirstName"];
+            string rMiddlename = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["MiddleName"];
+            string rSuffix = hasDifferentRequestor && _random.Next(0, 10) == 0 ? "Jr." : "";
+            string rBlkLotStreet = personData["BlkLotStreet"];
+            string rSubVill = personData["SubVill"];
+            string rBrgy = personData["Barangay"];
+            string rDistrict = personData["District"];
+            string rRelationship = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : "Self";
 
             return new HospitalAssistance
             {
@@ -235,15 +263,15 @@ namespace LingapDVO.Services
                 PhilHealthNo = personData["PhilHealthNo"],
                 Dateofbirth = personData["DateOfBirth"],
                 Age = personData["Age"],
-                RLastname = hasDifferentRequestor ? _lastNames[_random.Next(_lastNames.Length)] : null,
-                RFirstname = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : null,
-                RMiddlename = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : null,
-                RSuffix = hasDifferentRequestor && _random.Next(0, 10) == 0 ? "Jr." : null,
-                RBlkLotStreet = hasDifferentRequestor ? personData["BlkLotStreet"] : null,
-                RSubVill = hasDifferentRequestor ? personData["SubVill"] : null,
-                RBrgy = hasDifferentRequestor ? personData["Barangay"] : null,
-                RDistrict = hasDifferentRequestor ? personData["District"] : null,
-                RelationshipPatient = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : null,
+                RLastname = rLastname,
+                RFirstname = rFirstname,
+                RMiddlename = rMiddlename,
+                RSuffix = rSuffix,
+                RBlkLotStreet = rBlkLotStreet,
+                RSubVill = rSubVill,
+                RBrgy = rBrgy,
+                RDistrict = rDistrict,
+                RelationshipPatient = rRelationship,
                 ContactNo = personData["ContactNo"],
                 Typeassistance = _hospitalAssistanceTypes[_random.Next(_hospitalAssistanceTypes.Length)],
                 Validfrontimage = frontId,
@@ -256,8 +284,8 @@ namespace LingapDVO.Services
                 Processby = processby,
                 Status2 = status2,
                 Result = status2 == "Approve" ? processAt.AddDays(_random.Next(1, 7)) : default(DateTime),
-                ClaimedAt = status2 == "Approve" && _random.Next(0, 2) == 0 ? processAt.AddDays(_random.Next(7, 14)) : default(DateTime),
-                Status3 = status2 == "Approve" && _random.Next(0, 2) == 0 ? "Claimed" : "",
+                ClaimedAt = status3 == "Claimed" ? processAt.AddDays(_random.Next(7, 14)) : default(DateTime),
+                Status3 = status3,
                 IsArchived = daysAgo > 30
             };
         }
@@ -271,9 +299,26 @@ namespace LingapDVO.Services
             DateTime createdAt = _dateTimeService.Now.AddDays(-daysAgo);
             DateTime processAt = createdAt.AddHours(_random.Next(2, 48));
 
-            string status = _statuses[_random.Next(_statuses.Length)];
-            string status2 = status == "Processing" && _random.Next(0, 2) == 0 ? _statuses[_random.Next(2, 5)] : "";
+            string status2 = GetWeightedStatus2();
+            string status3 = "";
+            if (status2 == "ApproveClaim")
+            {
+                status2 = "Approve";
+                status3 = "Claimed";
+            }
+            string status = status2 == "" ? "Waiting" : "Processing";
             string processby = status != "Waiting" ? new[] { "Ms. Santos", "Ms. Reyes", "Mr. Cruz", "Ms. Bautista" }[_random.Next(4)] : "";
+
+            // Resolve requestor fields (use applicant values when requestor is same)
+            string rLastname = hasDifferentRequestor ? _lastNames[_random.Next(_lastNames.Length)] : personData["LastName"];
+            string rFirstname = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["FirstName"];
+            string rMiddlename = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["MiddleName"];
+            string rSuffix = hasDifferentRequestor && _random.Next(0, 10) == 0 ? "Jr." : "";
+            string rBlkLotStreet = personData["BlkLotStreet"];
+            string rSubVill = personData["SubVill"];
+            string rBrgy = personData["Barangay"];
+            string rDistrict = personData["District"];
+            string rRelationship = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : "Self";
 
             return new FuneralAssistance
             {
@@ -291,15 +336,15 @@ namespace LingapDVO.Services
                 PhilHealthNo = personData["PhilHealthNo"],
                 Dateofbirth = personData["DateOfBirth"],
                 Age = personData["Age"],
-                RLastname = hasDifferentRequestor ? _lastNames[_random.Next(_lastNames.Length)] : null,
-                RFirstname = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : null,
-                RMiddlename = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : null,
-                RSuffix = hasDifferentRequestor && _random.Next(0, 10) == 0 ? "Jr." : null,
-                RBlkLotStreet = hasDifferentRequestor ? personData["BlkLotStreet"] : null,
-                RSubVill = hasDifferentRequestor ? personData["SubVill"] : null,
-                RBrgy = hasDifferentRequestor ? personData["Barangay"] : null,
-                RDistrict = hasDifferentRequestor ? personData["District"] : null,
-                RelationshipPatient = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : null,
+                RLastname = hasDifferentRequestor ? _lastNames[_random.Next(_lastNames.Length)] : personData["LastName"],
+                RFirstname = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["FirstName"],
+                RMiddlename = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["MiddleName"],
+                RSuffix = hasDifferentRequestor && _random.Next(0, 10) == 0 ? "Jr." : "",
+                RBlkLotStreet = personData["BlkLotStreet"],
+                RSubVill = personData["SubVill"],
+                RBrgy = personData["Barangay"],
+                RDistrict = personData["District"],
+                RelationshipPatient = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : "Self",
                 ContactNo = personData["ContactNo"],
                 Typeassistance = _funeralAssistanceTypes[_random.Next(_funeralAssistanceTypes.Length)],
                 Validfrontimage = frontId,
@@ -312,8 +357,8 @@ namespace LingapDVO.Services
                 Processby = processby,
                 Status2 = status2,
                 Result = status2 == "Approve" ? processAt.AddDays(_random.Next(1, 7)) : default(DateTime),
-                ClaimedAt = status2 == "Approve" && _random.Next(0, 2) == 0 ? processAt.AddDays(_random.Next(7, 14)) : default(DateTime),
-                Status3 = status2 == "Approve" && _random.Next(0, 2) == 0 ? "Claimed" : "",
+                ClaimedAt = status3 == "Claimed" ? processAt.AddDays(_random.Next(7, 14)) : default(DateTime),
+                Status3 = status3,
                 IsArchived = daysAgo > 30
             };
         }
@@ -328,9 +373,26 @@ namespace LingapDVO.Services
             DateTime createdAt = _dateTimeService.Now.AddDays(-daysAgo);
             DateTime processAt = createdAt.AddHours(_random.Next(2, 48));
 
-            string status = _statuses[_random.Next(_statuses.Length)];
-            string status2 = status == "Processing" && _random.Next(0, 2) == 0 ? _statuses[_random.Next(2, 5)] : "";
+            string status2 = GetWeightedStatus2();
+            string status3 = "";
+            if (status2 == "ApproveClaim")
+            {
+                status2 = "Approve";
+                status3 = "Claimed";
+            }
+            string status = status2 == "" ? "Waiting" : "Processing";
             string processby = status != "Waiting" ? new[] { "Lab Tech Santos", "Lab Tech Reyes", "Dr. Cruz", "Dr. Mendoza" }[_random.Next(4)] : "";
+
+            // Resolve requestor fields (use applicant values when requestor is same)
+            string rLastname = hasDifferentRequestor ? _lastNames[_random.Next(_lastNames.Length)] : personData["LastName"];
+            string rFirstname = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["FirstName"];
+            string rMiddlename = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["MiddleName"];
+            string rSuffix = hasDifferentRequestor && _random.Next(0, 10) == 0 ? "Jr." : "";
+            string rBlkLotStreet = personData["BlkLotStreet"];
+            string rSubVill = personData["SubVill"];
+            string rBrgy = personData["Barangay"];
+            string rDistrict = personData["District"];
+            string rRelationship = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : "Self";
 
             return new OtherAssistance
             {
@@ -348,15 +410,15 @@ namespace LingapDVO.Services
                 PhilHealthNo = personData["PhilHealthNo"],
                 Dateofbirth = personData["DateOfBirth"],
                 Age = personData["Age"],
-                RLastname = hasDifferentRequestor ? _lastNames[_random.Next(_lastNames.Length)] : null,
-                RFirstname = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : null,
-                RMiddlename = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : null,
-                RSuffix = hasDifferentRequestor && _random.Next(0, 10) == 0 ? "Jr." : null,
-                RBlkLotStreet = hasDifferentRequestor ? personData["BlkLotStreet"] : null,
-                RSubVill = hasDifferentRequestor ? personData["SubVill"] : null,
-                RBrgy = hasDifferentRequestor ? personData["Barangay"] : null,
-                RDistrict = hasDifferentRequestor ? personData["District"] : null,
-                RelationshipPatient = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : null,
+                RLastname = hasDifferentRequestor ? _lastNames[_random.Next(_lastNames.Length)] : personData["LastName"],
+                RFirstname = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["FirstName"],
+                RMiddlename = hasDifferentRequestor ? _firstNames[_random.Next(_firstNames.Length)] : personData["MiddleName"],
+                RSuffix = hasDifferentRequestor && _random.Next(0, 10) == 0 ? "Jr." : "",
+                RBlkLotStreet = personData["BlkLotStreet"],
+                RSubVill = personData["SubVill"],
+                RBrgy = personData["Barangay"],
+                RDistrict = personData["District"],
+                RelationshipPatient = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : "Self",
                 ContactNo = personData["ContactNo"],
                 Typeassistance = _otherAssistanceTypes[_random.Next(_otherAssistanceTypes.Length)],
                 Validfrontimage = frontId,
@@ -370,8 +432,8 @@ namespace LingapDVO.Services
                 Processby = processby,
                 Status2 = status2,
                 Result = status2 == "Approve" ? processAt.AddDays(_random.Next(1, 7)) : default(DateTime),
-                ClaimedAt = status2 == "Approve" && _random.Next(0, 2) == 0 ? processAt.AddDays(_random.Next(7, 14)) : default(DateTime),
-                Status3 = status2 == "Approve" && _random.Next(0, 2) == 0 ? "Claimed" : "",
+                ClaimedAt = status3 == "Claimed" ? processAt.AddDays(_random.Next(7, 14)) : default(DateTime),
+                Status3 = status3,
                 IsArchived = daysAgo > 30
             };
         }

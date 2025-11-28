@@ -1387,6 +1387,14 @@ namespace LingapDVO.Controllers
 
             string normalized = name.ToLower().Trim();
 
+            // ═══════════════════════════════════════════════════════════════
+            // SUPPORT FOR Ñ/ñ CHARACTER (Philippine Spanish Names)
+            // ═══════════════════════════════════════════════════════════════
+            // Preserve Ñ/ñ during normalization - common in names like:
+            // Peña, Niño, Señorita, Muñoz, Nuñez, Peñalosa, etc.
+            // Unicode: Ñ = U+00D1, ñ = U+00F1
+            // ═══════════════════════════════════════════════════════════════
+
             // Remove periods commonly found in Philippine names
             normalized = normalized.Replace(".", "");
 
@@ -1413,6 +1421,69 @@ namespace LingapDVO.Controllers
             normalized = System.Text.RegularExpressions.Regex.Replace(normalized, @"\s+", " ").Trim();
 
             return normalized;
+        }
+
+        /// <summary>
+        /// Detects if a name contains Ñ/ñ character (Philippine Spanish names)
+        /// </summary>
+        private bool ContainsEnye(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            // Check for both uppercase Ñ (U+00D1) and lowercase ñ (U+00F1)
+            return name.Contains('Ñ') || name.Contains('ñ');
+        }
+
+        /// <summary>
+        /// Extracts all Ñ/ñ characters from a name with their positions
+        /// Useful for logging and verification purposes
+        /// </summary>
+        private List<(int position, char character)> ExtractEnyeCharacters(string name)
+        {
+            var enyeList = new List<(int position, char character)>();
+
+            if (string.IsNullOrWhiteSpace(name))
+                return enyeList;
+
+            for (int i = 0; i < name.Length; i++)
+            {
+                if (name[i] == 'Ñ' || name[i] == 'ñ')
+                {
+                    enyeList.Add((i, name[i]));
+                }
+            }
+
+            return enyeList;
+        }
+
+        /// <summary>
+        /// Validates that Ñ/ñ is used in appropriate context (not just random insertion)
+        /// Common Philippine Spanish surnames: Peña, Niño, Muñoz, Nuñez, etc.
+        /// </summary>
+        private bool IsValidEnyeUsage(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return true;
+
+            // If no Ñ/ñ, validation passes
+            if (!ContainsEnye(name))
+                return true;
+
+            // Ñ/ñ should not be at the start of a word or standalone
+            // Common valid patterns: peña, niño, muñoz, nuñez, señorita, etc.
+            string normalized = name.ToLower();
+
+            // Check that Ñ/ñ is not the first character of the name
+            if (normalized.StartsWith("ñ"))
+                return false;
+
+            // Check that Ñ/ñ is not standalone (surrounded by spaces)
+            if (System.Text.RegularExpressions.Regex.IsMatch(normalized, @"\s+ñ\s+"))
+                return false;
+
+            // Validation passes - Ñ/ñ is used within a word
+            return true;
         }
 
         public JsonResult CheckNameExists(string firstName, string middleName, string lastName, string suffix)
@@ -1923,6 +1994,52 @@ namespace LingapDVO.Controllers
             ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
             ViewBag.RegisteredLastName = registeredUser.LastName;
             ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
+
+            // ═══════════════════════════════════════════════════════════════
+            // Ñ/ñ CHARACTER DETECTION & LOGGING
+            // ═══════════════════════════════════════════════════════════════
+            // Detect and log if user has Ñ/ñ in their registered or ID names
+            bool registeredHasEnye = ContainsEnye(registeredUser.FirstName) ||
+                                     ContainsEnye(registeredUser.MiddleName) ||
+                                     ContainsEnye(registeredUser.LastName);
+
+            bool idHasEnye = ContainsEnye(VerifyaccountDto.Firstname) ||
+                            ContainsEnye(VerifyaccountDto.Middlename) ||
+                            ContainsEnye(VerifyaccountDto.Lastname);
+
+            if (registeredHasEnye || idHasEnye)
+            {
+                Console.WriteLine("═══════════════════════════════════════════════════════════════");
+                Console.WriteLine("✓ Ñ/ñ CHARACTER DETECTED IN ACCOUNT VERIFICATION");
+                Console.WriteLine("═══════════════════════════════════════════════════════════════");
+
+                if (registeredHasEnye)
+                {
+                    var regFirstEnyeChars = ExtractEnyeCharacters(registeredUser.FirstName ?? "");
+                    var regMiddleEnyeChars = ExtractEnyeCharacters(registeredUser.MiddleName ?? "");
+                    var regLastEnyeChars = ExtractEnyeCharacters(registeredUser.LastName ?? "");
+
+                    Console.WriteLine($"Registered Name Contains Ñ/ñ:");
+                    Console.WriteLine($"  - First Name: {registeredUser.FirstName} (Ñ/ñ at positions: {string.Join(", ", regFirstEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
+                    Console.WriteLine($"  - Middle Name: {registeredUser.MiddleName} (Ñ/ñ at positions: {string.Join(", ", regMiddleEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
+                    Console.WriteLine($"  - Last Name: {registeredUser.LastName} (Ñ/ñ at positions: {string.Join(", ", regLastEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
+                }
+
+                if (idHasEnye)
+                {
+                    var idFirstEnyeChars = ExtractEnyeCharacters(VerifyaccountDto.Firstname ?? "");
+                    var idMiddleEnyeChars = ExtractEnyeCharacters(VerifyaccountDto.Middlename ?? "");
+                    var idLastEnyeChars = ExtractEnyeCharacters(VerifyaccountDto.Lastname ?? "");
+
+                    Console.WriteLine($"ID Name Contains Ñ/ñ:");
+                    Console.WriteLine($"  - First Name: {VerifyaccountDto.Firstname} (Ñ/ñ at positions: {string.Join(", ", idFirstEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
+                    Console.WriteLine($"  - Middle Name: {VerifyaccountDto.Middlename} (Ñ/ñ at positions: {string.Join(", ", idMiddleEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
+                    Console.WriteLine($"  - Last Name: {VerifyaccountDto.Lastname} (Ñ/ñ at positions: {string.Join(", ", idLastEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
+                }
+
+                Console.WriteLine("✓ Ñ/ñ characters successfully detected and extracted");
+                Console.WriteLine("═══════════════════════════════════════════════════════════════");
+            }
 
             // Normalize names for comparison
             string regFirstName = NormalizePhilippineName(registeredUser.FirstName ?? "");

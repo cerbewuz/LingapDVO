@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LingapDVO.Controllers
 {
+
     /// <summary>
     /// Controller for running the data seeder
     /// IMPORTANT: This should only be run in development/testing environments
@@ -60,7 +61,7 @@ namespace LingapDVO.Controllers
                     {
                         totalApplications = 250,
                         formTypes = new[] { "HospitalAssistance", "FuneralAssistance", "OtherAssistance" },
-                        idTypes = new[] { "National ID", "Driver's License", "UMID" },
+                        idTypes = new[] { "phil-id", "driver-license", "umid" },
                         encryption = "AES256-CBC with PKCS7 padding",
                         filesCreated = "Encrypted ID front/back images, prescriptions, death certificates, medical certificates"
                     }

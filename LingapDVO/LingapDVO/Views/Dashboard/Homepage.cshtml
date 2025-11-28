@@ -2569,7 +2569,16 @@
                         console.log("SignalR: Received notification:", notification);
 
                         // Reload notifications from database to get the saved notification
-                        loadRealNotifications(true);
+                        loadRealNotifications(true).then(() => {
+                            // Flash title for new notification (after badge is updated)
+                            const currentBadge = document.getElementById('notificationBadge');
+                            if (currentBadge && currentBadge.textContent) {
+                                const count = parseInt(currentBadge.textContent.replace('+', ''));
+                                if (!isNaN(count) && count > 0) {
+                                    flashTitleForNewNotification(count);
+                                }
+                            }
+                        });
 
                         // Show browser notification if supported and permitted
                         if ("Notification" in window && Notification.permission === "granted") {
@@ -3015,7 +3024,190 @@
                         mobileNotificationBadge.textContent = '0';
                     }
                 }
+
+                // ═══════════════════════════════════════════════════════════════
+                // REAL-TIME NOTIFICATION COUNTER IN DOCUMENT TITLE (<head>)
+                // ═══════════════════════════════════════════════════════════════
+                // Update page title with unread notification count
+                updateDocumentTitle(count);
+
+                // Update favicon badge with notification count
+                updateFaviconBadge(count);
             }
+
+            // Store original title for restoration
+            const originalTitle = document.title;
+
+            /**
+             * Updates document title with notification count
+             * Shows count in format: "(count) Home" or restores "Home" when count is 0
+             */
+            function updateDocumentTitle(count) {
+                // Stop any existing title flash
+                stopTitleFlash();
+
+                if (count > 0) {
+                    const displayCount = count > 99 ? '99+' : count;
+                    document.title = `(${displayCount}) Home`;
+                } else {
+                    document.title = originalTitle;
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // TITLE FLASH FEATURE - Visual Alert for New Notifications
+            // ═══════════════════════════════════════════════════════════════
+            let titleFlashInterval = null;
+            let titleFlashState = false;
+
+            /**
+             * Flashes the document title to alert user of new notifications
+             * Especially useful when user is on a different tab
+             */
+            function flashTitleForNewNotification(count) {
+                // Don't flash if tab is already visible
+                if (!document.hidden) {
+                    return;
+                }
+
+                // Stop any existing flash
+                stopTitleFlash();
+
+                const displayCount = count > 99 ? '99+' : count;
+                const flashTitle = `🔔 (${displayCount}) New Notification!`;
+                const normalTitle = `(${displayCount}) Home`;
+
+                titleFlashState = false;
+                titleFlashInterval = setInterval(() => {
+                    document.title = titleFlashState ? flashTitle : normalTitle;
+                    titleFlashState = !titleFlashState;
+                }, 1000); // Flash every 1 second
+
+                // Auto-stop flashing after 30 seconds
+                setTimeout(() => {
+                    stopTitleFlash();
+                    updateDocumentTitle(count);
+                }, 30000);
+            }
+
+            /**
+             * Stops the title flashing animation
+             */
+            function stopTitleFlash() {
+                if (titleFlashInterval) {
+                    clearInterval(titleFlashInterval);
+                    titleFlashInterval = null;
+                    titleFlashState = false;
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // PAGE VISIBILITY API - Stop flash when user returns to tab
+            // ═══════════════════════════════════════════════════════════════
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    // User returned to tab - stop flashing
+                    stopTitleFlash();
+
+                    // Update title with current notification count
+                    const currentCount = parseInt(document.getElementById('notificationBadge')?.textContent || '0');
+                    if (!isNaN(currentCount)) {
+                        updateDocumentTitle(currentCount);
+                    }
+                }
+            });
+
+            // ═══════════════════════════════════════════════════════════════
+            // DYNAMIC FAVICON BADGE - Shows notification count on favicon
+            // ═══════════════════════════════════════════════════════════════
+            let originalFavicon = null;
+            let faviconCanvas = null;
+            let faviconContext = null;
+
+            /**
+             * Initialize favicon badge system
+             */
+            function initFaviconBadge() {
+                // Get original favicon
+                const faviconLink = document.querySelector("link[rel*='icon']");
+                if (faviconLink) {
+                    originalFavicon = faviconLink.href;
+                }
+
+                // Create canvas for drawing favicon with badge
+                faviconCanvas = document.createElement('canvas');
+                faviconCanvas.width = 32;
+                faviconCanvas.height = 32;
+                faviconContext = faviconCanvas.getContext('2d');
+
+                console.log('✓ Favicon badge system initialized');
+            }
+
+            /**
+             * Update favicon with notification badge
+             * Draws a red badge circle with count on the favicon
+             */
+            function updateFaviconBadge(count) {
+                if (!faviconCanvas || !faviconContext) {
+                    initFaviconBadge();
+                }
+
+                const faviconLink = document.querySelector("link[rel*='icon']") || createFaviconLink();
+
+                if (count > 0) {
+                    // Load original favicon image
+                    const img = new Image();
+                    img.onload = function() {
+                        // Clear canvas
+                        faviconContext.clearRect(0, 0, 32, 32);
+
+                        // Draw original favicon
+                        faviconContext.drawImage(img, 0, 0, 32, 32);
+
+                        // Draw red badge circle
+                        faviconContext.fillStyle = '#DC143C'; // Crimson red
+                        faviconContext.beginPath();
+                        faviconContext.arc(24, 8, 9, 0, 2 * Math.PI);
+                        faviconContext.fill();
+
+                        // Draw white border
+                        faviconContext.strokeStyle = '#FFFFFF';
+                        faviconContext.lineWidth = 2;
+                        faviconContext.beginPath();
+                        faviconContext.arc(24, 8, 9, 0, 2 * Math.PI);
+                        faviconContext.stroke();
+
+                        // Draw count text
+                        const displayCount = count > 9 ? '9+' : count.toString();
+                        faviconContext.fillStyle = '#FFFFFF';
+                        faviconContext.font = 'bold 14px Arial';
+                        faviconContext.textAlign = 'center';
+                        faviconContext.textBaseline = 'middle';
+                        faviconContext.fillText(displayCount, 24, 8);
+
+                        // Update favicon
+                        faviconLink.href = faviconCanvas.toDataURL('image/png');
+                    };
+                    img.src = originalFavicon || '/Icon/lingaplogo.ico';
+                } else {
+                    // Restore original favicon
+                    faviconLink.href = originalFavicon || '/Icon/lingaplogo.ico';
+                }
+            }
+
+            /**
+             * Create favicon link element if it doesn't exist
+             */
+            function createFaviconLink() {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.type = 'image/x-icon';
+                document.head.appendChild(link);
+                return link;
+            }
+
+            // Initialize favicon badge system on page load
+            initFaviconBadge();
 
             function hideNotificationBadge() {
                 updateNotificationBadge(0);

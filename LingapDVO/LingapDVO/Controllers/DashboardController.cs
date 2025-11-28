@@ -1641,7 +1641,7 @@ namespace LingapDVO.Controllers
                 context.OtherAssistance.Add(OtherAssistance);
                 context.SaveChanges();
 
-                // Send SMS notification for successful submission
+                // Send user notification for successful submission
                 try
                 {
                     var userFullName = $"{OtherAssistance.Firstname} {OtherAssistance.Lastname}";
@@ -1656,7 +1656,27 @@ namespace LingapDVO.Controllers
                 catch (Exception ex)
                 {
                     // Log but don't fail the submission if notification fails
-                    Console.WriteLine($"Failed to send notification: {ex.Message}");
+                    Console.WriteLine($"Failed to send user notification: {ex.Message}");
+                }
+
+                // Send admin notification for new submission
+                try
+                {
+                    var userFullName = $"{OtherAssistance.Firstname} {OtherAssistance.Lastname}";
+                    await _adminNotificationService.SendAdminNotificationAsync(
+                        "application_submitted",
+                        "OtherAssistance",
+                        OtherAssistance.Id,
+                        userId,
+                        userFullName,
+                        "New Other Assistance Application",
+                        $"{userFullName} submitted a new Other Assistance application.",
+                        $"/OtherAssistancePendingStatus/{OtherAssistance.Id}"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to send admin notification: {ex.Message}");
                 }
 
                 // ? SUCCESS: Set the success flag to trigger the modal
@@ -2403,7 +2423,7 @@ namespace LingapDVO.Controllers
                 context.FuneralAssistance.Add(FuneralAssistance);
                 context.SaveChanges();
 
-                // Send SMS notification for successful submission
+                // Send user notification for successful submission
                 try
                 {
                     var userFullName = $"{FuneralAssistance.Firstname} {FuneralAssistance.Lastname}";
@@ -2418,7 +2438,27 @@ namespace LingapDVO.Controllers
                 catch (Exception ex)
                 {
                     // Log but don't fail the submission if notification fails
-                    Console.WriteLine($"Failed to send notification: {ex.Message}");
+                    Console.WriteLine($"Failed to send user notification: {ex.Message}");
+                }
+
+                // Send admin notification for new submission
+                try
+                {
+                    var userFullName = $"{FuneralAssistance.Firstname} {FuneralAssistance.Lastname}";
+                    await _adminNotificationService.SendAdminNotificationAsync(
+                        "application_submitted",
+                        "FuneralAssistance",
+                        FuneralAssistance.Id,
+                        userId,
+                        userFullName,
+                        "New Funeral Assistance Application",
+                        $"{userFullName} submitted a new Funeral Assistance application.",
+                        $"/FuneralAssistancePendingStatus/{FuneralAssistance.Id}"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to send admin notification: {ex.Message}");
                 }
 
                 // ? SUCCESS: Set the success flag to trigger the modal
@@ -4189,6 +4229,35 @@ namespace LingapDVO.Controllers
 
                 context.Feedbacks.Add(feedback);
                 await context.SaveChangesAsync();
+
+                // Send admin notification for feedback
+                try
+                {
+                    string userName = "Anonymous";
+                    if (feedback.UserId.HasValue)
+                    {
+                        var user = await context.RegisterAcc.FindAsync(feedback.UserId.Value);
+                        if (user != null)
+                        {
+                            userName = $"{user.FirstName} {user.LastName}";
+                        }
+                    }
+
+                    await _adminNotificationService.SendAdminNotificationAsync(
+                        "feedback_submitted",
+                        "Feedback",
+                        feedback.Id,
+                        feedback.UserId,
+                        userName,
+                        "New Feedback Submitted",
+                        $"{userName} submitted feedback for {feedback.AssistanceType}.",
+                        "/Feedbacksreport"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to send admin notification for feedback: {ex.Message}");
+                }
 
                 return Json(new { success = true, message = "Thank you for your feedback!" });
             }
