@@ -56,16 +56,19 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard"); // Redirect to your login page
             }
 
-            // Get all data from the database without filtering by userId
+            // Get all data from the database without filtering by userId, but exclude removed applications
             var hospitalBills = context.HospitalAssistance
+                .Where(f => f.Status != "Removed")
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
             var medicalLabForms = context.OtherAssistance
+                .Where(f => f.Status != "Removed")
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
             var FuneralAssistance = context.FuneralAssistance
+                .Where(f => f.Status != "Removed")
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
@@ -811,16 +814,19 @@ namespace LingapDVO.Controllers
 
         public async Task<IActionResult> Analyticsdashboard()
         {
-            // Get all data from the database without filtering by userId
+            // Get all data from the database without filtering by userId, but exclude removed applications
             var hospitalBills = context.HospitalAssistance
+                .Where(f => f.Status != "Removed")
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
             var medicalLabForms = context.OtherAssistance
+                .Where(f => f.Status != "Removed")
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
             var FuneralAssistance = context.FuneralAssistance
+                .Where(f => f.Status != "Removed")
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 

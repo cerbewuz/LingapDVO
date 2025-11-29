@@ -558,28 +558,108 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Login", "Login");
             }
 
-            // SCENARIO 4: No matches - Create new user and redirect to verification
+            // SCENARIO 4: No matches - Show modal to collect credentials
             if (userWithSameEmail == null && !usersWithSameName.Any())
             {
-                // ===========================
-                // 🔑 Create new Google user with AES-256 encryption
-                // ===========================
+                // Store Google data in TempData to show credentials modal
+                TempData["RequireGoogleCredentials"] = true;
+                TempData["GoogleEmail"] = email;
+                TempData["GoogleName"] = googleFullName;
+                TempData.Keep("RequireGoogleCredentials");
+                TempData.Keep("GoogleEmail");
+                TempData.Keep("GoogleName");
 
-                // ✅ Generate random password (internal use only)
-                string generatedPassword = "GOOG-" + Guid.NewGuid().ToString("N").Substring(0, 12);
+                // Redirect to Login page which will show the credentials modal
+                return RedirectToAction("Login", "Login");
+            }
 
-                // Use AES-256 helper from configuration to encrypt password
+            // Fallback (should never reach here)
+            TempData["ErrorMessage"] = "An unexpected error occurred during Google sign-in. Please try again.";
+            return RedirectToAction("Login", "Login");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CompleteGoogleRegistration(string GoogleEmail, string GoogleName, string FirstName, string MiddleName, string LastName, string Suffix, string Password, string ConfirmPassword)
+        {
+            try
+            {
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(GoogleEmail) || string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(MiddleName) || string.IsNullOrWhiteSpace(LastName) || string.IsNullOrWhiteSpace(Password))
+                {
+                    TempData["ErrorMessage"] = "Please fill in all required fields (including Middle Name).";
+                    TempData["RequireGoogleCredentials"] = true;
+                    TempData["GoogleEmail"] = GoogleEmail;
+                    TempData["GoogleName"] = GoogleName;
+                    return RedirectToAction("Login", "Login");
+                }
+
+                // Validate passwords match
+                if (Password != ConfirmPassword)
+                {
+                    TempData["ErrorMessage"] = "Passwords do not match.";
+                    TempData["RequireGoogleCredentials"] = true;
+                    TempData["GoogleEmail"] = GoogleEmail;
+                    TempData["GoogleName"] = GoogleName;
+                    return RedirectToAction("Login", "Login");
+                }
+
+                // Validate password requirements
+                if (Password.Length < 8 ||
+                    !Password.Any(char.IsUpper) ||
+                    !Password.Any(char.IsLower) ||
+                    !Password.Any(char.IsDigit) ||
+                    !Password.Any(ch => !char.IsLetterOrDigit(ch)))
+                {
+                    TempData["ErrorMessage"] = "Password must meet all requirements (8+ characters, uppercase, lowercase, number, special character).";
+                    TempData["RequireGoogleCredentials"] = true;
+                    TempData["GoogleEmail"] = GoogleEmail;
+                    TempData["GoogleName"] = GoogleName;
+                    return RedirectToAction("Login", "Login");
+                }
+
+                // Check if email already exists
+                var existingUser = context.RegisterAcc.FirstOrDefault(u => u.Email.ToLower() == GoogleEmail.ToLower());
+                if (existingUser != null)
+                {
+                    TempData["ErrorMessage"] = "This email is already registered.";
+                    return RedirectToAction("Login", "Login");
+                }
+
+                // Normalize suffix
+                string normalizedSuffix = string.IsNullOrWhiteSpace(Suffix) || Suffix.Equals("None", StringComparison.OrdinalIgnoreCase) ? "" : Suffix.Trim();
+
+                // Check for duplicate name
+                bool duplicateName = context.RegisterAcc.Any(u =>
+                    u.FirstName.ToLower() == FirstName.Trim().ToLower() &&
+                    u.MiddleName.ToLower() == (MiddleName ?? "").Trim().ToLower() &&
+                    u.LastName.ToLower() == LastName.Trim().ToLower() &&
+                    (u.Suffix ?? "").ToLower() == normalizedSuffix.ToLower()
+                );
+
+                if (duplicateName)
+                {
+                    TempData["ErrorMessage"] = "A user with this exact name already exists. Each person is allowed only one account.";
+                    TempData["RequireGoogleCredentials"] = true;
+                    TempData["GoogleEmail"] = GoogleEmail;
+                    TempData["GoogleName"] = GoogleName;
+                    return RedirectToAction("Login", "Login");
+                }
+
+                // Create new user with provided credentials
                 var aesHelper = new AesEncryptionHelper(_configuration);
-                string encryptedPassword = aesHelper.Encrypt(generatedPassword);
+                string encryptedPassword = aesHelper.Encrypt(Password);
+
+                // Create username from full name
+                string username = $"{FirstName} {LastName}".Trim();
 
                 var newUser = new RegisterAcc
                 {
-                    FirstName = googleFirstName,
-                    MiddleName = googleMiddleName,
-                    LastName = googleLastName,
-                    Suffix = "",
-                    Email = email,
-                    Username = googleFullName,
+                    FirstName = FirstName.Trim(),
+                    MiddleName = (MiddleName ?? "").Trim(),
+                    LastName = LastName.Trim(),
+                    Suffix = normalizedSuffix,
+                    Email = GoogleEmail,
+                    Username = username,
                     Password = encryptedPassword,
                     Status = "Active"
                 };
@@ -591,19 +671,55 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("UserId", newUser.Id.ToString());
                 HttpContext.Session.SetString("Username", newUser.Username);
                 HttpContext.Session.SetString("Email", newUser.Email);
-                HttpContext.Session.SetString("GoogleEmail", email);
-                HttpContext.Session.SetString("GoogleName", googleFullName);
+                HttpContext.Session.SetString("GoogleEmail", GoogleEmail);
+                HttpContext.Session.SetString("GoogleName", GoogleName ?? "");
                 HttpContext.Session.SetString("IsRegisteredUser", "true");
                 HttpContext.Session.SetString("IsVerifiedUser", "false");
 
-                // ✅ Redirect new user to Account Verification
-                TempData["WelcomeMessage"] = $"Welcome, {googleFirstName}! Please complete your account verification to access all features.";
+                // Send welcome email
+                try
+                {
+                    string welcomeEmailSubject = "Welcome to LingapDVO!";
+                    string welcomeEmailBody = GenerateWelcomeEmailBody(FirstName, username);
+                    await _emailService.SendEmailAsync(GoogleEmail, welcomeEmailSubject, welcomeEmailBody);
+                }
+                catch (Exception emailEx)
+                {
+                    Console.WriteLine($"⚠️ Failed to send welcome email: {emailEx.Message}");
+                }
+
+                // Create welcome notification
+                try
+                {
+                    string welcomeTitle = "Welcome to LingapDVO!";
+                    string welcomeMessage = $"Hello {FirstName}! Welcome to LingapDVO. To start using our services, please verify your account by submitting your verification documents. Thank you!";
+                    await _notificationService.SendNotificationAsync(
+                        newUser.Id,
+                        welcomeTitle,
+                        welcomeMessage,
+                        "welcome",
+                        "/Accountverification"
+                    );
+                }
+                catch (Exception notifEx)
+                {
+                    Console.WriteLine($"⚠️ Failed to create welcome notification: {notifEx.Message}");
+                }
+
+                // Show success message and redirect to Account Verification
+                TempData["GoogleRegistrationSuccess"] = true;
+                TempData["WelcomeMessage"] = $"Welcome, {FirstName}! Your account has been created successfully. Please complete your account verification to access all features.";
                 return RedirectToAction("Accountverification", "Login");
             }
-
-            // Fallback (should never reach here)
-            TempData["ErrorMessage"] = "An unexpected error occurred during Google sign-in. Please try again.";
-            return RedirectToAction("Login", "Login");
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ CompleteGoogleRegistration Error: {ex.Message}");
+                TempData["ErrorMessage"] = "An error occurred during registration. Please try again.";
+                TempData["RequireGoogleCredentials"] = true;
+                TempData["GoogleEmail"] = GoogleEmail;
+                TempData["GoogleName"] = GoogleName;
+                return RedirectToAction("Login", "Login");
+            }
         }
 
         public IActionResult Login(bool timeout = false)

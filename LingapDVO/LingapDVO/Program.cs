@@ -139,14 +139,22 @@ app.UseResponseCompression();
 // 🔒 SECURITY: Add security headers
 app.Use(async (context, next) =>
 {
-    // Content Security Policy
+    // Content Security Policy - Allow localhost in development for Browser Link and Hot Reload
+    var connectSrc = "connect-src 'self' https://www.facebook.com https://www.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://api.ocr.space";
+    
+    if (app.Environment.IsDevelopment())
+    {
+        // Allow localhost connections for Browser Link and Hot Reload in development
+        connectSrc += " http://localhost:* ws://localhost:* wss://localhost:*";
+    }
+    
     context.Response.Headers.Append("Content-Security-Policy",
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://code.jquery.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://www.google.com https://www.gstatic.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com; " +
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net data:; " +
         "img-src 'self' data: https:; " +
-        "connect-src 'self' https://www.facebook.com https://www.google.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://api.ocr.space; " +
+        connectSrc + "; " +
         "frame-src 'self' https://www.google.com https://www.gstatic.com; " +
         "frame-ancestors 'self'; " +
         "base-uri 'self'; " +

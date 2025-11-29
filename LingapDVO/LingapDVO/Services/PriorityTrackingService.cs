@@ -14,17 +14,20 @@ namespace LingapDVO.Services
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ILogger<PriorityTrackingService> _logger;
         private readonly IDateTimeService _dateTimeService;
+        private readonly IMultiChannelNotificationService _notificationService;
 
         public PriorityTrackingService(
             ApplicationDbContext context,
             IHubContext<NotificationHub> hubContext,
             ILogger<PriorityTrackingService> logger,
-            IDateTimeService dateTimeService)
+            IDateTimeService dateTimeService,
+            IMultiChannelNotificationService notificationService)
         {
             _context = context;
             _hubContext = hubContext;
             _logger = logger;
             _dateTimeService = dateTimeService;
+            _notificationService = notificationService;
         }
 
         /// <summary>
@@ -53,30 +56,33 @@ namespace LingapDVO.Services
         public async Task<(int high, int medium, int total)> GetPriorityCountsAsync()
         {
             // Get ONLY Pending, Processing, or Retake medical/other assistance applications
-            // EXCLUDE applications that have been approved/disapproved or claims
+            // EXCLUDE applications that have been approved/disapproved, claims, or removed
             // For Retake status, use Result time as the start time for priority calculation
             var medicalApps = await _context.OtherAssistance
-                .Where(m => (m.Status == "pending" || m.Status == "processing" || m.Status2 == "Retake")
+                .Where(m => m.Status != "Removed"
+                    && (m.Status == "pending" || m.Status == "processing" || m.Status2 == "Retake")
                     && (m.Status2 == null || m.Status2 == "" || m.Status2 == "Retake" || (m.Status2.ToLower() != "approve" && m.Status2.ToLower() != "disapprove"))
                     && (m.Status3 == null || m.Status3 == "" || (m.Status3.ToLower() != "claims" && m.Status3.ToLower() != "claimed")))
                 .Select(m => new { m.CreatedAt, m.Result, m.Status2 })
                 .ToListAsync();
 
             // Get ONLY Pending, Processing, or Retake funeral assistance applications
-            // EXCLUDE applications that have been approved/disapproved or claims
+            // EXCLUDE applications that have been approved/disapproved, claims, or removed
             // For Retake status, use Result time as the start time for priority calculation
             var funeralApps = await _context.FuneralAssistance
-                .Where(f => (f.Status == "pending" || f.Status == "processing" || f.Status2 == "Retake")
+                .Where(f => f.Status != "Removed"
+                    && (f.Status == "pending" || f.Status == "processing" || f.Status2 == "Retake")
                     && (f.Status2 == null || f.Status2 == "" || f.Status2 == "Retake" || (f.Status2.ToLower() != "approve" && f.Status2.ToLower() != "disapprove"))
                     && (f.Status3 == null || f.Status3 == "" || (f.Status3.ToLower() != "claims" && f.Status3.ToLower() != "claimed")))
                 .Select(f => new { f.CreatedAt, f.Result, f.Status2 })
                 .ToListAsync();
 
             // Get ONLY Pending, Processing, or Retake hospital assistance applications
-            // EXCLUDE applications that have been approved/disapproved or claims
+            // EXCLUDE applications that have been approved/disapproved, claims, or removed
             // For Retake status, use Result time as the start time for priority calculation
             var hospitalApps = await _context.HospitalAssistance
-                .Where(h => (h.Status == "pending" || h.Status == "processing" || h.Status2 == "Retake")
+                .Where(h => h.Status != "Removed"
+                    && (h.Status == "pending" || h.Status == "processing" || h.Status2 == "Retake")
                     && (h.Status2 == null || h.Status2 == "" || h.Status2 == "Retake" || (h.Status2.ToLower() != "approve" && h.Status2.ToLower() != "disapprove"))
                     && (h.Status3 == null || h.Status3 == "" || (h.Status3.ToLower() != "claims" && h.Status3.ToLower() != "claimed")))
                 .Select(h => new { h.CreatedAt, h.Result, h.Status2 })
@@ -155,76 +161,169 @@ namespace LingapDVO.Services
                 var twoHoursAgo = now.AddHours(-2);
                 var oneHourAgo = now.AddHours(-1);
 
-                // Check medical/other assistance applications (ONLY Pending and Processing)
+                // Check medical/other assistance applications (ONLY Pending and Processing, exclude Removed)
                 var delayedMedical = await _context.OtherAssistance
-                    .Where(m => (m.Status2 == "Pending" || m.Status2 == "Processing") && m.CreatedAt <= oneHourAgo)
+                    .Where(m => m.Status != "Removed"
+                        && (m.Status == "pending" || m.Status == "processing") 
+                        && (m.Status2 == null || m.Status2 == "" || (m.Status2.ToLower() != "approve" && m.Status2.ToLower() != "disapprove"))
+                        && (m.Status3 == null || m.Status3 == "" || (m.Status3.ToLower() != "claims" && m.Status3.ToLower() != "claimed"))
+                        && m.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedMedical)
                 {
                     var hoursElapsed = (now - app.CreatedAt).TotalHours;
-                    var priority = hoursElapsed >= 2 ? "high" : "medium";
+                    var priority = hoursElapsed >= 2 ? "Critical Delay" : "Standard Delay";
 
-                    // Notify user about delay
-                    await _hubContext.Clients.Group($"User_{app.UserId}").SendAsync("ReceiveDelayNotification", new
+                    // Get applicant name
+                    var verifyAccount = await _context.Verifyaccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
+                    var applicantName = verifyAccount != null
+                        ? $"{verifyAccount.Firstname} {verifyAccount.Lastname}".Trim()
+                        : "Applicant";
+
+                    // Check if delay notification already sent for this application
+                    var existingDelayNotification = await _context.Notifications
+                        .AnyAsync(n => n.UserId == app.UserId 
+                            && n.ApplicationId == app.Id 
+                            && n.ApplicationType == "OtherAssistance" 
+                            && n.Type == "delay"
+                            && n.Title.Contains(priority));
+
+                    if (!existingDelayNotification)
                     {
-                        priority = priority,
-                        hoursElapsed = hoursElapsed,
-                        applicationType = "Other Assistance",
-                        message = GetDelayMessage(priority, hoursElapsed),
-                        formId = app.Id,
-                        timestamp = _dateTimeService.Now
-                    });
+                        // Send multi-channel delay notification (saves to database)
+                        await _notificationService.SendDelayNotificationAsync(
+                            app.UserId,
+                            applicantName,
+                            "OtherAssistance",
+                            priority,
+                            app.CreatedAt,
+                            app.Id
+                        );
 
-                    _logger.LogInformation($"Delay notification sent to User {app.UserId} for Other Assistance Form {app.Id}");
+                        // Also send SignalR real-time notification
+                        await _hubContext.Clients.Group($"User_{app.UserId}").SendAsync("ReceiveDelayNotification", new
+                        {
+                            priority = priority,
+                            hoursElapsed = hoursElapsed,
+                            applicationType = "Other Assistance",
+                            message = GetDelayMessage(priority, hoursElapsed),
+                            formId = app.Id,
+                            timestamp = _dateTimeService.Now
+                        });
+
+                        _logger.LogInformation($"Delay notification sent to User {app.UserId} for Other Assistance Form {app.Id} - Priority: {priority}");
+                    }
                 }
 
-                // Check funeral assistance applications (ONLY Pending and Processing)
+                // Check funeral assistance applications (ONLY Pending and Processing, exclude Removed)
                 var delayedFuneral = await _context.FuneralAssistance
-                    .Where(f => (f.Status2 == "Pending" || f.Status2 == "Processing") && f.CreatedAt <= oneHourAgo)
+                    .Where(f => f.Status != "Removed"
+                        && (f.Status == "pending" || f.Status == "processing")
+                        && (f.Status2 == null || f.Status2 == "" || (f.Status2.ToLower() != "approve" && f.Status2.ToLower() != "disapprove"))
+                        && (f.Status3 == null || f.Status3 == "" || (f.Status3.ToLower() != "claims" && f.Status3.ToLower() != "claimed"))
+                        && f.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedFuneral)
                 {
                     var hoursElapsed = (now - app.CreatedAt).TotalHours;
-                    var priority = hoursElapsed >= 2 ? "high" : "medium";
+                    var priority = hoursElapsed >= 2 ? "Critical Delay" : "Standard Delay";
 
-                    // Notify user about delay
-                    await _hubContext.Clients.Group($"User_{app.UserId}").SendAsync("ReceiveDelayNotification", new
+                    // Get applicant name
+                    var verifyAccount = await _context.Verifyaccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
+                    var applicantName = verifyAccount != null
+                        ? $"{verifyAccount.Firstname} {verifyAccount.Lastname}".Trim()
+                        : "Applicant";
+
+                    // Check if delay notification already sent for this application
+                    var existingDelayNotification = await _context.Notifications
+                        .AnyAsync(n => n.UserId == app.UserId 
+                            && n.ApplicationId == app.Id 
+                            && n.ApplicationType == "FuneralAssistance" 
+                            && n.Type == "delay"
+                            && n.Title.Contains(priority));
+
+                    if (!existingDelayNotification)
                     {
-                        priority = priority,
-                        hoursElapsed = hoursElapsed,
-                        applicationType = "Funeral Assistance",
-                        message = GetDelayMessage(priority, hoursElapsed),
-                        formId = app.Id,
-                        timestamp = _dateTimeService.Now
-                    });
+                        // Send multi-channel delay notification (saves to database)
+                        await _notificationService.SendDelayNotificationAsync(
+                            app.UserId,
+                            applicantName,
+                            "FuneralAssistance",
+                            priority,
+                            app.CreatedAt,
+                            app.Id
+                        );
 
-                    _logger.LogInformation($"Delay notification sent to User {app.UserId} for Funeral Assistance Form {app.Id}");
+                        // Also send SignalR real-time notification
+                        await _hubContext.Clients.Group($"User_{app.UserId}").SendAsync("ReceiveDelayNotification", new
+                        {
+                            priority = priority,
+                            hoursElapsed = hoursElapsed,
+                            applicationType = "Funeral Assistance",
+                            message = GetDelayMessage(priority, hoursElapsed),
+                            formId = app.Id,
+                            timestamp = _dateTimeService.Now
+                        });
+
+                        _logger.LogInformation($"Delay notification sent to User {app.UserId} for Funeral Assistance Form {app.Id} - Priority: {priority}");
+                    }
                 }
 
-                // Check hospital assistance applications (ONLY Pending and Processing)
+                // Check hospital assistance applications (ONLY Pending and Processing, exclude Removed)
                 var delayedHospital = await _context.HospitalAssistance
-                    .Where(h => (h.Status2 == "Pending" || h.Status2 == "Processing") && h.CreatedAt <= oneHourAgo)
+                    .Where(h => h.Status != "Removed"
+                        && (h.Status == "pending" || h.Status == "processing")
+                        && (h.Status2 == null || h.Status2 == "" || (h.Status2.ToLower() != "approve" && h.Status2.ToLower() != "disapprove"))
+                        && (h.Status3 == null || h.Status3 == "" || (h.Status3.ToLower() != "claims" && h.Status3.ToLower() != "claimed"))
+                        && h.CreatedAt <= oneHourAgo)
                     .ToListAsync();
 
                 foreach (var app in delayedHospital)
                 {
                     var hoursElapsed = (now - app.CreatedAt).TotalHours;
-                    var priority = hoursElapsed >= 2 ? "high" : "medium";
+                    var priority = hoursElapsed >= 2 ? "Critical Delay" : "Standard Delay";
 
-                    // Notify user about delay
-                    await _hubContext.Clients.Group($"User_{app.UserId}").SendAsync("ReceiveDelayNotification", new
+                    // Get applicant name
+                    var verifyAccount = await _context.Verifyaccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
+                    var applicantName = verifyAccount != null
+                        ? $"{verifyAccount.Firstname} {verifyAccount.Lastname}".Trim()
+                        : "Applicant";
+
+                    // Check if delay notification already sent for this application
+                    var existingDelayNotification = await _context.Notifications
+                        .AnyAsync(n => n.UserId == app.UserId 
+                            && n.ApplicationId == app.Id 
+                            && n.ApplicationType == "HospitalAssistance" 
+                            && n.Type == "delay"
+                            && n.Title.Contains(priority));
+
+                    if (!existingDelayNotification)
                     {
-                        priority = priority,
-                        hoursElapsed = hoursElapsed,
-                        applicationType = "Hospital Assistance",
-                        message = GetDelayMessage(priority, hoursElapsed),
-                        formId = app.Id,
-                        timestamp = _dateTimeService.Now
-                    });
+                        // Send multi-channel delay notification (saves to database)
+                        await _notificationService.SendDelayNotificationAsync(
+                            app.UserId,
+                            applicantName,
+                            "HospitalAssistance",
+                            priority,
+                            app.CreatedAt,
+                            app.Id
+                        );
 
-                    _logger.LogInformation($"Delay notification sent to User {app.UserId} for Hospital Assistance Form {app.Id}");
+                        // Also send SignalR real-time notification
+                        await _hubContext.Clients.Group($"User_{app.UserId}").SendAsync("ReceiveDelayNotification", new
+                        {
+                            priority = priority,
+                            hoursElapsed = hoursElapsed,
+                            applicationType = "Hospital Assistance",
+                            message = GetDelayMessage(priority, hoursElapsed),
+                            formId = app.Id,
+                            timestamp = _dateTimeService.Now
+                        });
+
+                        _logger.LogInformation($"Delay notification sent to User {app.UserId} for Hospital Assistance Form {app.Id} - Priority: {priority}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -303,12 +402,12 @@ namespace LingapDVO.Services
         /// </summary>
         private string GetDelayMessage(string priority, double hoursElapsed)
         {
-            if (priority == "high")
+            if (priority == "Critical Delay")
             {
                 return $"Your application has been pending for {Math.Floor(hoursElapsed)} hours. " +
                        "We apologize for the delay. Our team is working on it with high priority and will process it as soon as possible.";
             }
-            else if (priority == "medium")
+            else if (priority == "Standard Delay")
             {
                 return "Your application has been pending for over an hour. " +
                        "Don't worry! It's in our queue and will be reviewed shortly.";

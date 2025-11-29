@@ -1160,7 +1160,7 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
-            // If status is "Retake", change it back to "Processing" after update
+            // If status is "Retake", change it back to "Pending" after update and send notification
             bool isRetakeMode = existing.Status2 == "Retake";
 
             // ? 4. Remove validations for optional fields
@@ -1325,14 +1325,14 @@ namespace LingapDVO.Controllers
                     var userFullName = $"{existing.Firstname} {existing.Lastname}";
                     var assistanceType = existing.GetType().Name; // Get the actual type
 
-                    // Send user notification - application is now in queue (Pending status)
+                    // Send user notification - application is now in queue (Resubmitted status)
                     try
                     {
                         await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
                             userFullName,
                             assistanceType == "HospitalAssistance" ? "HospitalBill" : assistanceType == "OtherAssistance" ? "MedicalLab" : "Funeral",
-                            "Pending", // Send as Pending status (In Queue message)
+                            "Resubmitted", // Send as Resubmitted status for retake applications
                             existing.Id
                         );
                     }
@@ -1452,9 +1452,25 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
+            // Get user ID for notification cleanup
+            var userId = HospitalAssistance.UserId;
+
             // Instead of deleting files and record, just update the status
             HospitalAssistance.Status = "Removed";
             context.HospitalAssistance.Update(HospitalAssistance);
+            
+            // Archive all notifications related to this application
+            var relatedNotifications = context.Notifications
+                .Where(n => n.UserId == userId && 
+                           n.ApplicationType == "HospitalAssistance" && 
+                           n.ApplicationId == id)
+                .ToList();
+            
+            foreach (var notification in relatedNotifications)
+            {
+                notification.IsArchived = true;
+            }
+            
             context.SaveChanges();
 
             return RedirectToAction("Homepage", "Dashboard");
@@ -2230,9 +2246,25 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
+            // Get user ID for notification cleanup
+            var userId = OtherAssistance.UserId;
+
             // Instead of deleting files and record, just update the status
             OtherAssistance.Status = "Removed";
             context.OtherAssistance.Update(OtherAssistance);
+            
+            // Archive all notifications related to this application
+            var relatedNotifications = context.Notifications
+                .Where(n => n.UserId == userId && 
+                           n.ApplicationType == "OtherAssistance" && 
+                           n.ApplicationId == id)
+                .ToList();
+            
+            foreach (var notification in relatedNotifications)
+            {
+                notification.IsArchived = true;
+            }
+            
             context.SaveChanges();
 
             return RedirectToAction("Homepage", "Dashboard");
@@ -2913,14 +2945,14 @@ namespace LingapDVO.Controllers
                     var userFullName = $"{existing.Firstname} {existing.Lastname}";
                     var assistanceType = existing.GetType().Name; // Get the actual type
 
-                    // Send user notification - application is now in queue (Pending status)
+                    // Send user notification - application is now in queue (Resubmitted status)
                     try
                     {
                         await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
                             userFullName,
                             assistanceType == "HospitalAssistance" ? "HospitalBill" : assistanceType == "OtherAssistance" ? "MedicalLab" : "Funeral",
-                            "Pending", // Send as Pending status (In Queue message)
+                            "Resubmitted", // Send as Resubmitted status for retake applications
                             existing.Id
                         );
                     }
@@ -2984,9 +3016,25 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Homepage", "Dashboard");
             }
 
+            // Get user ID for notification cleanup
+            var userId = FuneralAssistance.UserId;
+
             // Instead of deleting files and record, just update the status
             FuneralAssistance.Status = "Removed";
             context.FuneralAssistance.Update(FuneralAssistance);
+            
+            // Archive all notifications related to this application
+            var relatedNotifications = context.Notifications
+                .Where(n => n.UserId == userId && 
+                           n.ApplicationType == "FuneralAssistance" && 
+                           n.ApplicationId == id)
+                .ToList();
+            
+            foreach (var notification in relatedNotifications)
+            {
+                notification.IsArchived = true;
+            }
+            
             context.SaveChanges();
 
             return RedirectToAction("Homepage", "Dashboard");

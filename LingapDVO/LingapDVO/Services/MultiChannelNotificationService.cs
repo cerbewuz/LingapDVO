@@ -588,8 +588,13 @@ namespace LingapDVO.Services
                 };
 
                 var hoursElapsed = (int)(_dateTimeService.Now - submittedDate).TotalHours;
-                var title = "Application Processing Delay";
-                var message = $"Your {formTypeDisplay} application submitted on {submittedDate:MMM dd, yyyy} is experiencing processing delays. We are working to resolve this. Thank you for your patience.";
+                var title = priority == "Critical Delay" 
+                    ? "⚠️ Critical Delay - Application Processing" 
+                    : "⏰ Standard Delay - Application Processing";
+                    
+                var message = priority == "Critical Delay"
+                    ? $"Your {formTypeDisplay} application has been pending for {hoursElapsed}+ hours. We sincerely apologize for the delay. Our team has prioritized your application and is working to process it as soon as possible."
+                    : $"Your {formTypeDisplay} application has been pending for over an hour. Please don't worry - it's in our queue and will be reviewed shortly. Thank you for your patience.";
 
                 // **SAVE NOTIFICATION TO DATABASE FIRST**
                 var notification = new Notification
@@ -600,7 +605,7 @@ namespace LingapDVO.Services
                     ApplicantName = applicantName,
                     Title = title,
                     Message = message,
-                    Type = "delay_alert",
+                    Type = "delay",
                     Link = "/Applicationtracking",
                     ProcessStage = "delayed",
                     Priority = priority,
@@ -609,7 +614,7 @@ namespace LingapDVO.Services
                     SentViaInApp = user.PreferInAppNotification,
                     SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
                     SentViaSms = user.PreferSmsNotification,
-                    NotificationIdentifier = $"{applicationType.ToLower()}_{applicationId}_delay_{priority}_{_dateTimeService.Now.Ticks}",
+                    NotificationIdentifier = $"{applicationType.ToLower()}_{applicationId}_delay_{priority.Replace(" ", "")}_{_dateTimeService.Now.Ticks}",
                     DisplayOrder = 1,
                     IsRead = false
                 };
@@ -625,7 +630,8 @@ namespace LingapDVO.Services
                         id = notification.Id,
                         title = title,
                         message = message,
-                        type = "delay_alert",
+                        type = "delay",
+                        priority = priority,
                         link = "/Applicationtracking",
                         createdAt = _dateTimeService.Now,
                         isRead = false
@@ -647,12 +653,14 @@ namespace LingapDVO.Services
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
-                        var smsMessage = $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} application is experiencing processing delays ({hoursElapsed}+ hours). We apologize for the inconvenience and are working to expedite your request. For urgent concerns, please contact our office.";
+                        var smsMessage = priority == "Critical Delay"
+                            ? $"LingapDVO: URGENT - Dear {applicantName}, your {formTypeDisplay} has been delayed {hoursElapsed}+ hours. We apologize and are prioritizing your request. Contact us if urgent."
+                            : $"LingapDVO: Dear {applicantName}, your {formTypeDisplay} is in queue (1+ hour). It will be reviewed shortly. Thank you for your patience.";
                         await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
 
-                _logger.LogInformation($"Delay notification sent and saved to database for user {userId}, application {applicationId}");
+                _logger.LogInformation($"Delay notification ({priority}) sent and saved to database for user {userId}, application {applicationId}");
             }
             catch (Exception ex)
             {
@@ -711,6 +719,7 @@ namespace LingapDVO.Services
                 "Approve" => "Good News! Your Application is Approved",
                 "Disapprove" => "Application Not Approved",
                 "Retake" => "Please Review Your Application",
+                "Resubmitted" => "✅ Application Resubmitted Successfully",
                 "Claimed" => "Assistance Claimed",
                 _ => "Application Update"
             };
@@ -733,6 +742,7 @@ namespace LingapDVO.Services
                 "Approve" => $"Your {formTypeDisplay} request is approved! Please visit our office to get your help.",
                 "Disapprove" => $"We are sorry, but your {formTypeDisplay} request is not approved. You can contact us for more information.",
                 "Retake" => $"We need you to send some papers again for your {formTypeDisplay} request. Please check your application and upload the needed papers.",
+                "Resubmitted" => $"Thank you for resubmitting your {formTypeDisplay} application with the updated documents. Our team will review it shortly and get back to you soon.",
                 "Claimed" => $"You have received your {formTypeDisplay}. Thank you for using LingapDVO.",
                 _ => $"Your {formTypeDisplay} request status changed to {status}."
             };
@@ -747,6 +757,7 @@ namespace LingapDVO.Services
                 "Approve" => "application_approved",
                 "Disapprove" => "application_disapproved",
                 "Retake" => "application_retake",
+                "Resubmitted" => "application_resubmitted",
                 "Claimed" => "application_claimed",
                 _ => "status_change"
             };
