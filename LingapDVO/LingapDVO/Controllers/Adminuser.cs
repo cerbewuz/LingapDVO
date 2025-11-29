@@ -4088,8 +4088,8 @@ namespace LingapDVO.Controllers
                     EnableSsl = true,
                     DeliveryMethod = SmtpDeliveryMethod.Network,
                     UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
-                    Timeout = 30000 // 30 seconds timeout
+                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                    // Timeout line removed - will use default timeout
                 })
                 using (var message = new MailMessage(fromAddress, toAddress)
                 {
@@ -4543,8 +4543,8 @@ namespace LingapDVO.Controllers
                     EnableSsl = true,
                     DeliveryMethod = SmtpDeliveryMethod.Network,
                     UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
-                    Timeout = 30000 // 30 seconds timeout
+                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                    // Timeout line removed - will use default timeout
                 })
                 using (var message = new MailMessage(fromAddress, toAddress)
                 {
@@ -4999,8 +4999,8 @@ namespace LingapDVO.Controllers
                     EnableSsl = true,
                     DeliveryMethod = SmtpDeliveryMethod.Network,
                     UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
-                    Timeout = 30000 // 30 seconds timeout
+                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                    // Timeout line removed - will use default timeout
                 })
                 using (var message = new MailMessage(fromAddress, toAddress)
                 {
