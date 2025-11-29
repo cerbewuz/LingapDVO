@@ -3774,8 +3774,16 @@ namespace LingapDVO.Controllers
                         }
                     });
 
-                    // Send email
-                    await SendStatusEmail(HospitalAssistance, HospitalAssistanceDto, status, applicantName);
+                    // Send email synchronously (wait for it to complete)
+                    try
+                    {
+                        await SendHospitalStatusEmailWithRetry(HospitalAssistance, HospitalAssistanceDto, status, applicantName);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        Console.WriteLine($"Email sending failed after retries: {emailEx.Message}");
+                        // Log but don't fail the main operation
+                    }
                 }
 
                 TempData["SuccessMessage"] = $"Hospital bill status updated to '{HospitalAssistanceDto.Status2}' successfully.";
@@ -3791,35 +3799,143 @@ namespace LingapDVO.Controllers
             }
         }
 
-        private async Task SendStatusEmail(HospitalAssistance assistance, HospitalAssistanceDto dto, string status, string firstName)
+        // New method with retry logic for Hospital Assistance
+        private async Task SendHospitalStatusEmailWithRetry(HospitalAssistance assistance, HospitalAssistanceDto dto, string status, string firstName, int maxRetries = 3)
+        {
+            int retryCount = 0;
+            Exception lastException = null;
+
+            while (retryCount < maxRetries)
+            {
+                try
+                {
+                    await SendHospitalStatusEmail(assistance, dto, status, firstName);
+                    Console.WriteLine($"Hospital email sent successfully on attempt {retryCount + 1}");
+                    return; // Success - exit method
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    retryCount++;
+                    Console.WriteLine($"Hospital email attempt {retryCount} failed: {ex.Message}");
+
+                    if (retryCount < maxRetries)
+                    {
+                        // Wait before retry (exponential backoff)
+                        await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, retryCount)));
+                    }
+                }
+            }
+
+            // If we get here, all retries failed
+            throw new Exception($"Failed to send hospital email after {maxRetries} attempts", lastException);
+        }
+
+        private async Task SendHospitalStatusEmail(HospitalAssistance assistance, HospitalAssistanceDto dto, string status, string firstName)
         {
             try
             {
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == assistance.UserId);
+                // Get user with explicit null checking
+                var user = await context.RegisterAcc.FindAsync(assistance.UserId);
 
-                if (user == null || string.IsNullOrEmpty(user.Email))
+                if (user == null)
+                {
+                    Console.WriteLine($"User not found for UserId: {assistance.UserId}");
                     return;
+                }
 
+                if (string.IsNullOrWhiteSpace(user.Email))
+                {
+                    Console.WriteLine($"Email not found for UserId: {assistance.UserId}");
+                    return;
+                }
+
+                // Validate email configuration
                 var fromEmail = _configuration["EmailSettings:FromEmail"];
                 var fromName = _configuration["EmailSettings:FromName"];
                 var fromPassword = _configuration["EmailSettings:FromPassword"];
 
-                if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName) || string.IsNullOrEmpty(fromPassword))
+                if (string.IsNullOrWhiteSpace(fromEmail) ||
+                    string.IsNullOrWhiteSpace(fromName) ||
+                    string.IsNullOrWhiteSpace(fromPassword))
                 {
-                    Console.WriteLine("Email configuration is missing.");
-                    return;
+                    throw new Exception("Email configuration is missing or incomplete.");
                 }
 
                 var fromAddress = new MailAddress(fromEmail, fromName);
                 var toAddress = new MailAddress(user.Email, firstName);
 
-                string subject = "";
-                string body = "";
+                string subject = GetHospitalEmailSubject(status);
+                string body = GetHospitalEmailBody(status, firstName, assistance, dto);
 
-                if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+                // Configure SMTP with better settings
+                using (var smtp = new SmtpClient("smtp.gmail.com", 587))
                 {
-                    subject = "🎉 Good News! Your Hospital Bill Assistance is Approved - LingapDVO";
-                    body = $@"
+                    smtp.EnableSsl = true;
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtp.UseDefaultCredentials = false;
+                    smtp.Credentials = new NetworkCredential(fromEmail, fromPassword);
+                    smtp.Timeout = 30000; // 30 seconds timeout
+
+                    using (var message = new MailMessage(fromAddress, toAddress))
+                    {
+                        message.Subject = subject;
+                        message.Body = body;
+                        message.IsBodyHtml = true;
+                        message.Priority = MailPriority.High;
+
+                        await smtp.SendMailAsync(message);
+                    }
+                }
+
+                Console.WriteLine($"Hospital email sent successfully to {user.Email} for application {assistance.Id} - Status: {status}");
+            }
+            catch (SmtpException smtpEx)
+            {
+                Console.WriteLine($"SMTP Error: {smtpEx.Message}");
+                Console.WriteLine($"Status Code: {smtpEx.StatusCode}");
+                throw; // Re-throw to trigger retry
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Hospital email sending error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw; // Re-throw to trigger retry
+            }
+        }
+
+        private string GetHospitalEmailSubject(string status)
+        {
+            return status.ToLower() switch
+            {
+                "approve" => "🎉 Good News! Your Hospital Bill Assistance is Approved - LingapDVO",
+                "disapprove" => "📋 Update on Your Hospital Bill Assistance Application - LingapDVO",
+                "retake" => "🔄 Action Required - Please Resubmit Your Hospital Bill Assistance Documents - LingapDVO",
+                _ => "📋 Hospital Bill Assistance Application Update - LingapDVO"
+            };
+        }
+
+        private string GetHospitalEmailBody(string status, string firstName, HospitalAssistance assistance, HospitalAssistanceDto dto)
+        {
+            if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetHospitalApprovalEmailBody(firstName, assistance, dto);
+            }
+            else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetHospitalDisapprovalEmailBody(firstName, assistance, dto);
+            }
+            else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetHospitalRetakeEmailBody(firstName, assistance, dto);
+            }
+
+            return ""; // Default empty body
+        }
+
+        private string GetHospitalApprovalEmailBody(string firstName, HospitalAssistance assistance, HospitalAssistanceDto dto)
+        {
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -3894,17 +4010,17 @@ namespace LingapDVO.Controllers
             </p>
         </div>
         <div class='footer'>
-            <p><strong>LingapDVO Medical Help Program</strong></p>
+            <p><strong>LingapDVO Hospital Bill Assistance Program</strong></p>
             <p>This is an automated message. Please do not reply to this email.</p>
         </div>
     </div>
 </body>
 </html>";
-                }
-                else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
-                {
-                    subject = "📋 Update on Your Hospital Bill Assistance Application - LingapDVO";
-                    body = $@"
+        }
+
+        private string GetHospitalDisapprovalEmailBody(string firstName, HospitalAssistance assistance, HospitalAssistanceDto dto)
+        {
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -3979,18 +4095,19 @@ namespace LingapDVO.Controllers
             </p>
         </div>
         <div class='footer'>
-            <p><strong>LingapDVO Medical Help Program</strong></p>
+            <p><strong>LingapDVO Hospital Bill Assistance Program</strong></p>
             <p>This is an automated message. Please do not reply to this email.</p>
         </div>
     </div>
 </body>
 </html>";
-                }
-                else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
-                {
-                    subject = "🔄 Action Required - Please Resubmit Your Hospital Bill Assistance Documents - LingapDVO";
-                    var retakeReason = assistance.RetakeReason ?? dto.Comments ?? "Please review and resubmit your documents.";
-                    body = $@"
+        }
+
+        private string GetHospitalRetakeEmailBody(string firstName, HospitalAssistance assistance, HospitalAssistanceDto dto)
+        {
+            var retakeReason = assistance.RetakeReason ?? dto.Comments ?? "Please review and resubmit your documents.";
+
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -4015,7 +4132,6 @@ namespace LingapDVO.Controllers
         .steps-box ol {{ margin: 10px 0; padding-left: 20px; }}
         .steps-box li {{ margin: 8px 0; color: #555; }}
         .button {{ display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #ff9800, #ff5722); color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 15px; text-align: center; }}
-        .button:hover {{ background: linear-gradient(135deg, #e68900, #e64a19); }}
         .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
         .footer p {{ margin: 5px 0; }}
         .action-icon {{ text-align: center; font-size: 48px; margin: 20px 0; }}
@@ -4080,40 +4196,12 @@ namespace LingapDVO.Controllers
             </p>
         </div>
         <div class='footer'>
-            <p><strong>LingapDVO Medical Help Program</strong></p>
+            <p><strong>LingapDVO Hospital Bill Assistance Program</strong></p>
             <p>This is an automated message. Please do not reply to this email.</p>
         </div>
     </div>
 </body>
 </html>";
-                }
-
-                // Send the email
-                using (var smtp = new SmtpClient("smtp.gmail.com", 587)
-                {
-                    EnableSsl = true,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                    // Timeout line removed - will use default timeout
-                })
-                using (var message = new MailMessage(fromAddress, toAddress)
-                {
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true // All emails now have HTML design
-                })
-                {
-                    await smtp.SendMailAsync(message);
-                }
-
-                Console.WriteLine($"Status update email sent to {user.Email} for application {assistance.Id} - Status: {status}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Email sending failed: {ex.Message}");
-                // Don't rethrow - email failure shouldn't break the main functionality
-            }
         }
 
         [HttpPost]
@@ -4229,8 +4317,16 @@ namespace LingapDVO.Controllers
                         }
                     });
 
-                    // Send email
-                    await SendStatusEmail(medicallabform, OtherAssistanceDto, status, applicantName);
+                    // Send email synchronously (wait for it to complete)
+                    try
+                    {
+                        await SendStatusEmailWithRetry(medicallabform, OtherAssistanceDto, status, applicantName);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        Console.WriteLine($"Email sending failed after retries: {emailEx.Message}");
+                        // Log but don't fail the main operation
+                    }
                 }
 
                 TempData["SuccessMessage"] = $"Medical assistance status updated to '{OtherAssistanceDto.Status2}' successfully.";
@@ -4246,35 +4342,146 @@ namespace LingapDVO.Controllers
             }
         }
 
+        // New method with retry logic
+        private async Task SendStatusEmailWithRetry(OtherAssistance assistance, OtherAssistanceDto dto, string status, string firstName, int maxRetries = 3)
+        {
+            int retryCount = 0;
+            Exception lastException = null;
+
+            while (retryCount < maxRetries)
+            {
+                try
+                {
+                    await SendStatusEmail(assistance, dto, status, firstName);
+                    Console.WriteLine($"Email sent successfully on attempt {retryCount + 1}");
+                    return; // Success - exit method
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    retryCount++;
+                    Console.WriteLine($"Email attempt {retryCount} failed: {ex.Message}");
+
+                    if (retryCount < maxRetries)
+                    {
+                        // Wait before retry (exponential backoff)
+                        await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, retryCount)));
+                    }
+                }
+            }
+
+            // If we get here, all retries failed
+            throw new Exception($"Failed to send email after {maxRetries} attempts", lastException);
+        }
+
         private async Task SendStatusEmail(OtherAssistance assistance, OtherAssistanceDto dto, string status, string firstName)
         {
             try
             {
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == assistance.UserId);
+                // Get user with explicit null checking
+                var user = await context.RegisterAcc.FindAsync(assistance.UserId);
 
-                if (user == null || string.IsNullOrEmpty(user.Email))
+                if (user == null)
+                {
+                    Console.WriteLine($"User not found for UserId: {assistance.UserId}");
                     return;
+                }
 
+                if (string.IsNullOrWhiteSpace(user.Email))
+                {
+                    Console.WriteLine($"Email not found for UserId: {assistance.UserId}");
+                    return;
+                }
+
+                // Validate email configuration
                 var fromEmail = _configuration["EmailSettings:FromEmail"];
                 var fromName = _configuration["EmailSettings:FromName"];
                 var fromPassword = _configuration["EmailSettings:FromPassword"];
 
-                if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName) || string.IsNullOrEmpty(fromPassword))
+                if (string.IsNullOrWhiteSpace(fromEmail) ||
+                    string.IsNullOrWhiteSpace(fromName) ||
+                    string.IsNullOrWhiteSpace(fromPassword))
                 {
-                    Console.WriteLine("Email configuration is missing.");
-                    return;
+                    throw new Exception("Email configuration is missing or incomplete.");
                 }
 
                 var fromAddress = new MailAddress(fromEmail, fromName);
                 var toAddress = new MailAddress(user.Email, firstName);
 
-                string subject = "";
-                string body = "";
+                string subject = GetEmailSubject(status);
+                string body = GetEmailBody(status, firstName, assistance, dto);
 
-                if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+                // Configure SMTP with better settings
+                using (var smtp = new SmtpClient("smtp.gmail.com", 587))
                 {
-                    subject = "🎉 Good News! Your Medical Help is Approved - LingapDVO";
-                    body = $@"
+                    smtp.EnableSsl = true;
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtp.UseDefaultCredentials = false;
+                    smtp.Credentials = new NetworkCredential(fromEmail, fromPassword);
+                    smtp.Timeout = 30000; // 30 seconds timeout
+
+                    using (var message = new MailMessage(fromAddress, toAddress))
+                    {
+                        message.Subject = subject;
+                        message.Body = body;
+                        message.IsBodyHtml = true;
+                        message.Priority = MailPriority.High;
+
+                        // Add reply-to if needed
+                        // message.ReplyToList.Add(new MailAddress("noreply@lingapdvo.com"));
+
+                        await smtp.SendMailAsync(message);
+                    }
+                }
+
+                Console.WriteLine($"Email sent successfully to {user.Email} for application {assistance.Id} - Status: {status}");
+            }
+            catch (SmtpException smtpEx)
+            {
+                Console.WriteLine($"SMTP Error: {smtpEx.Message}");
+                Console.WriteLine($"Status Code: {smtpEx.StatusCode}");
+                throw; // Re-throw to trigger retry
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email sending error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw; // Re-throw to trigger retry
+            }
+        }
+
+        private string GetEmailSubject(string status)
+        {
+            return status.ToLower() switch
+            {
+                "approve" => "🎉 Good News! Your Medical Help is Approved - LingapDVO",
+                "disapprove" => "📋 Update on Your Medical Help Application - LingapDVO",
+                "retake" => "🔄 Action Required - Please Resubmit Your Medical Help Documents - LingapDVO",
+                _ => "📋 Medical Help Application Update - LingapDVO"
+            };
+        }
+
+        private string GetEmailBody(string status, string firstName, OtherAssistance assistance, OtherAssistanceDto dto)
+        {
+            if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetApprovalEmailBody(firstName, assistance, dto);
+            }
+            else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetDisapprovalEmailBody(firstName, assistance, dto);
+            }
+            else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetRetakeEmailBody(firstName, assistance, dto);
+            }
+
+            return ""; // Default empty body
+        }
+
+        private string GetApprovalEmailBody(string firstName, OtherAssistance assistance, OtherAssistanceDto dto)
+        {
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -4355,11 +4562,11 @@ namespace LingapDVO.Controllers
     </div>
 </body>
 </html>";
-                }
-                else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
-                {
-                    subject = "📋 Update on Your Medical Help Application - LingapDVO";
-                    body = $@"
+        }
+
+        private string GetDisapprovalEmailBody(string firstName, OtherAssistance assistance, OtherAssistanceDto dto)
+        {
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -4440,12 +4647,13 @@ namespace LingapDVO.Controllers
     </div>
 </body>
 </html>";
-                }
-                else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
-                {
-                    subject = "🔄 Action Required - Please Resubmit Your Medical Help Documents - LingapDVO";
-                    var retakeReason = assistance.RetakeReason ?? dto.Comments ?? "Please review and resubmit your documents.";
-                    body = $@"
+        }
+
+        private string GetRetakeEmailBody(string firstName, OtherAssistance assistance, OtherAssistanceDto dto)
+        {
+            var retakeReason = assistance.RetakeReason ?? dto.Comments ?? "Please review and resubmit your documents.";
+
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -4470,7 +4678,6 @@ namespace LingapDVO.Controllers
         .steps-box ol {{ margin: 10px 0; padding-left: 20px; }}
         .steps-box li {{ margin: 8px 0; color: #555; }}
         .button {{ display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #ff9800, #ff5722); color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 15px; text-align: center; }}
-        .button:hover {{ background: linear-gradient(135deg, #e68900, #e64a19); }}
         .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
         .footer p {{ margin: 5px 0; }}
         .action-icon {{ text-align: center; font-size: 48px; margin: 20px 0; }}
@@ -4541,34 +4748,6 @@ namespace LingapDVO.Controllers
     </div>
 </body>
 </html>";
-                }
-
-                // Send the email
-                using (var smtp = new SmtpClient("smtp.gmail.com", 587)
-                {
-                    EnableSsl = true,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                    // Timeout line removed - will use default timeout
-                })
-                using (var message = new MailMessage(fromAddress, toAddress)
-                {
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true // All emails now have HTML design
-                })
-                {
-                    await smtp.SendMailAsync(message);
-                }
-
-                Console.WriteLine($"Status update email sent to {user.Email} for application {assistance.Id} - Status: {status}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Email sending failed: {ex.Message}");
-                // Don't rethrow - email failure shouldn't break the main functionality
-            }
         }
 
         [HttpPost]
@@ -4684,8 +4863,16 @@ namespace LingapDVO.Controllers
                         }
                     });
 
-                    // Send email
-                    await SendFuneralStatusEmail(funeralAssistance, FuneralAssistanceDto, status, applicantName);
+                    // Send email synchronously (wait for it to complete)
+                    try
+                    {
+                        await SendFuneralStatusEmailWithRetry(funeralAssistance, FuneralAssistanceDto, status, applicantName);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        Console.WriteLine($"Email sending failed after retries: {emailEx.Message}");
+                        // Log but don't fail the main operation
+                    }
                 }
 
                 TempData["SuccessMessage"] = $"Funeral assistance status updated to '{FuneralAssistanceDto.Status2}' successfully.";
@@ -4701,35 +4888,143 @@ namespace LingapDVO.Controllers
             }
         }
 
+        // New method with retry logic for Funeral Assistance
+        private async Task SendFuneralStatusEmailWithRetry(FuneralAssistance assistance, FuneralAssistanceDto dto, string status, string firstName, int maxRetries = 3)
+        {
+            int retryCount = 0;
+            Exception lastException = null;
+
+            while (retryCount < maxRetries)
+            {
+                try
+                {
+                    await SendFuneralStatusEmail(assistance, dto, status, firstName);
+                    Console.WriteLine($"Funeral email sent successfully on attempt {retryCount + 1}");
+                    return; // Success - exit method
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    retryCount++;
+                    Console.WriteLine($"Funeral email attempt {retryCount} failed: {ex.Message}");
+
+                    if (retryCount < maxRetries)
+                    {
+                        // Wait before retry (exponential backoff)
+                        await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, retryCount)));
+                    }
+                }
+            }
+
+            // If we get here, all retries failed
+            throw new Exception($"Failed to send funeral email after {maxRetries} attempts", lastException);
+        }
+
         private async Task SendFuneralStatusEmail(FuneralAssistance assistance, FuneralAssistanceDto dto, string status, string firstName)
         {
             try
             {
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == assistance.UserId);
+                // Get user with explicit null checking
+                var user = await context.RegisterAcc.FindAsync(assistance.UserId);
 
-                if (user == null || string.IsNullOrEmpty(user.Email))
+                if (user == null)
+                {
+                    Console.WriteLine($"User not found for UserId: {assistance.UserId}");
                     return;
+                }
 
+                if (string.IsNullOrWhiteSpace(user.Email))
+                {
+                    Console.WriteLine($"Email not found for UserId: {assistance.UserId}");
+                    return;
+                }
+
+                // Validate email configuration
                 var fromEmail = _configuration["EmailSettings:FromEmail"];
                 var fromName = _configuration["EmailSettings:FromName"];
                 var fromPassword = _configuration["EmailSettings:FromPassword"];
 
-                if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(fromName) || string.IsNullOrEmpty(fromPassword))
+                if (string.IsNullOrWhiteSpace(fromEmail) ||
+                    string.IsNullOrWhiteSpace(fromName) ||
+                    string.IsNullOrWhiteSpace(fromPassword))
                 {
-                    Console.WriteLine("Email configuration is missing.");
-                    return;
+                    throw new Exception("Email configuration is missing or incomplete.");
                 }
 
                 var fromAddress = new MailAddress(fromEmail, fromName);
                 var toAddress = new MailAddress(user.Email, firstName);
 
-                string subject = "";
-                string body = "";
+                string subject = GetFuneralEmailSubject(status);
+                string body = GetFuneralEmailBody(status, firstName, assistance, dto);
 
-                if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+                // Configure SMTP with better settings
+                using (var smtp = new SmtpClient("smtp.gmail.com", 587))
                 {
-                    subject = "🎉 Good News! Your Funeral Help is Approved - LingapDVO";
-                    body = $@"
+                    smtp.EnableSsl = true;
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtp.UseDefaultCredentials = false;
+                    smtp.Credentials = new NetworkCredential(fromEmail, fromPassword);
+                    smtp.Timeout = 30000; // 30 seconds timeout
+
+                    using (var message = new MailMessage(fromAddress, toAddress))
+                    {
+                        message.Subject = subject;
+                        message.Body = body;
+                        message.IsBodyHtml = true;
+                        message.Priority = MailPriority.High;
+
+                        await smtp.SendMailAsync(message);
+                    }
+                }
+
+                Console.WriteLine($"Funeral email sent successfully to {user.Email} for application {assistance.Id} - Status: {status}");
+            }
+            catch (SmtpException smtpEx)
+            {
+                Console.WriteLine($"SMTP Error: {smtpEx.Message}");
+                Console.WriteLine($"Status Code: {smtpEx.StatusCode}");
+                throw; // Re-throw to trigger retry
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Funeral email sending error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw; // Re-throw to trigger retry
+            }
+        }
+
+        private string GetFuneralEmailSubject(string status)
+        {
+            return status.ToLower() switch
+            {
+                "approve" => "🎉 Good News! Your Funeral Help is Approved - LingapDVO",
+                "disapprove" => "📋 Update on Your Funeral Help Application - LingapDVO",
+                "retake" => "🔄 Action Required - Please Resubmit Your Funeral Help Documents - LingapDVO",
+                _ => "📋 Funeral Help Application Update - LingapDVO"
+            };
+        }
+
+        private string GetFuneralEmailBody(string status, string firstName, FuneralAssistance assistance, FuneralAssistanceDto dto)
+        {
+            if (status.Equals("Approve", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetFuneralApprovalEmailBody(firstName, assistance, dto);
+            }
+            else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetFuneralDisapprovalEmailBody(firstName, assistance, dto);
+            }
+            else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
+            {
+                return GetFuneralRetakeEmailBody(firstName, assistance, dto);
+            }
+
+            return ""; // Default empty body
+        }
+
+        private string GetFuneralApprovalEmailBody(string firstName, FuneralAssistance assistance, FuneralAssistanceDto dto)
+        {
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -4811,11 +5106,11 @@ namespace LingapDVO.Controllers
     </div>
 </body>
 </html>";
-                }
-                else if (status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase))
-                {
-                    subject = "📋 Update on Your Funeral Help Application - LingapDVO";
-                    body = $@"
+        }
+
+        private string GetFuneralDisapprovalEmailBody(string firstName, FuneralAssistance assistance, FuneralAssistanceDto dto)
+        {
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -4896,12 +5191,13 @@ namespace LingapDVO.Controllers
     </div>
 </body>
 </html>";
-                }
-                else if (status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
-                {
-                    subject = "🔄 Action Required - Please Resubmit Your Funeral Help Documents - LingapDVO";
-                    var retakeReason = assistance.RetakeReason ?? dto.Comments ?? "Please review and resubmit your documents.";
-                    body = $@"
+        }
+
+        private string GetFuneralRetakeEmailBody(string firstName, FuneralAssistance assistance, FuneralAssistanceDto dto)
+        {
+            var retakeReason = assistance.RetakeReason ?? dto.Comments ?? "Please review and resubmit your documents.";
+
+            return $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -4926,7 +5222,6 @@ namespace LingapDVO.Controllers
         .steps-box ol {{ margin: 10px 0; padding-left: 20px; }}
         .steps-box li {{ margin: 8px 0; color: #555; }}
         .button {{ display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #ff9800, #ff5722); color: white; text-decoration: none; border-radius: 5px; font-weight: 600; margin-top: 15px; text-align: center; }}
-        .button:hover {{ background: linear-gradient(135deg, #e68900, #e64a19); }}
         .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #666; background-color: #f0f0f0; border-radius: 0 0 8px 8px; }}
         .footer p {{ margin: 5px 0; }}
         .action-icon {{ text-align: center; font-size: 48px; margin: 20px 0; }}
@@ -4997,36 +5292,7 @@ namespace LingapDVO.Controllers
     </div>
 </body>
 </html>";
-                }
-
-                // Send the email
-                using (var smtp = new SmtpClient("smtp.gmail.com", 587)
-                {
-                    EnableSsl = true,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                    // Timeout line removed - will use default timeout
-                })
-                using (var message = new MailMessage(fromAddress, toAddress)
-                {
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true // All emails now have HTML design
-                })
-                {
-                    await smtp.SendMailAsync(message);
-                }
-
-                Console.WriteLine($"Status update email sent to {user.Email} for application {assistance.Id} - Status: {status}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Email sending failed: {ex.Message}");
-                // Don't rethrow - email failure shouldn't break the main functionality
-            }
         }
-
 
         // ? For Approved Statuses to Claimed 
         [HttpPost] 
