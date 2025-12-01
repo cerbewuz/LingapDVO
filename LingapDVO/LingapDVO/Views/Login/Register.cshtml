@@ -1185,8 +1185,7 @@
                         return true;
                     }
                 } catch (error) {
-                    console.error('Error checking email:', error);
-                    return true;
+                                        return true;
                 }
             }
 
@@ -1217,8 +1216,7 @@
                         return true;
                     }
                 } catch (error) {
-                    console.error('Error checking username:', error);
-                    return true;
+                                        return true;
                 }
             }
 
@@ -1278,8 +1276,7 @@
                         return true;
                     }
                 } catch (error) {
-                    console.error('Error checking name:', error);
-                    return true;
+                                        return true;
                 }
             }
 
@@ -1357,20 +1354,15 @@
 
                         // Allow Ñ/ñ characters
                         if (containsEnye(value)) {
-                            console.log(`✓ Ñ/ñ character detected in ${this.id}: "${value}"`);
-
-                            // Validate usage
+                                                        // Validate usage
                             if (!isValidEnyeUsage(value)) {
-                                console.warn(`⚠️ Invalid Ñ/ñ usage in ${this.id}`);
-                            }
+                                                            }
                         }
                     });
                 }
             });
 
-            console.log('✓ Ñ/ñ character support enabled for name fields');
-
-            // Form submission
+                        // Form submission
             const registerForm = document.getElementById('registerForm');
             if (registerForm) {
                 registerForm.addEventListener('submit', async function(event) {
@@ -1463,8 +1455,7 @@
                             registerButton.disabled = false;
                         }
                     } catch (error) {
-                        console.error('Registration error:', error);
-                        alert('An error occurred during registration. Please try again.');
+                                                alert('An error occurred during registration. Please try again.');
                         registerButton.innerHTML = originalButtonText;
                         registerButton.disabled = false;
                     }

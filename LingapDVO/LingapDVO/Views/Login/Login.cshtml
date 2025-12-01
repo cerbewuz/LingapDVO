@@ -1,4 +1,4 @@
-﻿@model LoginDto
+@model LoginDto
 @{
     Layout = null;
 }
@@ -332,9 +332,7 @@
                         }
                     }
                 } catch (error) {
-                    console.error('Login error:', error);
-
-                    // Reset button state
+                                        // Reset button state
                     loginButton.innerHTML = originalContent;
                     loginButton.disabled = false;
 
@@ -423,16 +421,13 @@
 
         // Handle reCAPTCHA callback
         function onRecaptchaSuccess(token) {
-            console.log('reCAPTCHA verified successfully');
-        }
+                    }
 
         function onRecaptchaError() {
-            console.error('reCAPTCHA verification failed');
-        }
+                    }
 
         function onRecaptchaExpired() {
-            console.log('reCAPTCHA token expired');
-        }
+                    }
 
         // Suppress Google reCAPTCHA storage warnings (expected behavior with tracking prevention)
         // This is a known issue when browsers block third-party cookies

@@ -12,8 +12,7 @@
         userId = window.currentUserId || document.querySelector('[data-user-id]')?.dataset.userId;
 
         if (!userId) {
-            console.warn('[Upload Tracking] User ID not found, tracking disabled');
-            return;
+                        return;
         }
 
         // Initialize SignalR connection
@@ -31,8 +30,7 @@
     // Initialize SignalR connection
     function initializeSignalRConnection() {
         if (typeof signalR === 'undefined') {
-            console.error('[Upload Tracking] SignalR library not loaded');
-            return;
+                        return;
         }
 
         connection = new signalR.HubConnectionBuilder()
@@ -43,38 +41,32 @@
 
         // Handle delay notifications from server
         connection.on("ReceiveDelayNotification", function (data) {
-            console.log('[Upload Tracking] Delay notification received:', data);
-            showDelayNotification(data);
+                        showDelayNotification(data);
         });
 
         // Handle real-time status updates
         connection.on("ReceiveStatusUpdate", function (data) {
-            console.log('[Upload Tracking] Status update received:', data);
-            updateApplicationStatus(data);
+                        updateApplicationStatus(data);
             showStatusUpdateNotification(data);
         });
 
         // Handle general notifications
         connection.on("ReceiveNotification", function (data) {
-            console.log('[Upload Tracking] Notification received:', data);
-            showGeneralNotification(data);
+                        showGeneralNotification(data);
         });
 
         // Connection lifecycle
         connection.onreconnecting((error) => {
-            console.warn('[Upload Tracking] Reconnecting...', error);
-            updateConnectionIndicator('reconnecting');
+                        updateConnectionIndicator('reconnecting');
         });
 
         connection.onreconnected((connectionId) => {
-            console.log('[Upload Tracking] Reconnected:', connectionId);
-            updateConnectionIndicator('connected');
+                        updateConnectionIndicator('connected');
             loadUserApplications(); // Refresh data
         });
 
         connection.onclose((error) => {
-            console.error('[Upload Tracking] Connection closed:', error);
-            updateConnectionIndicator('disconnected');
+                        updateConnectionIndicator('disconnected');
         });
 
         // Start connection
@@ -85,12 +77,10 @@
     function startConnection() {
         connection.start()
             .then(function () {
-                console.log('[Upload Tracking] Connected to real-time tracking');
-                updateConnectionIndicator('connected');
+                                updateConnectionIndicator('connected');
             })
             .catch(function (error) {
-                console.error('[Upload Tracking] Connection error:', error);
-                updateConnectionIndicator('error');
+                                updateConnectionIndicator('error');
                 setTimeout(startConnection, 5000);
             });
     }
@@ -101,9 +91,7 @@
         // This function can be customized based on how data is passed to the page
         applications = window.userApplications || [];
 
-        console.log('[Upload Tracking] Loaded applications:', applications);
-
-        // Initial delay check
+                // Initial delay check
         checkForDelays();
     }
 
@@ -264,9 +252,7 @@
 
         if (application) {
             application.status = data.status;
-            console.log('[Upload Tracking] Application status updated:', application);
-
-            // Refresh UI if there's a render function
+                        // Refresh UI if there's a render function
             if (typeof window.refreshApplicationList === 'function') {
                 window.refreshApplicationList();
             }
@@ -464,8 +450,7 @@
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.15);
         } catch (error) {
-            console.warn('[Upload Tracking] Could not play notification sound:', error);
-        }
+                    }
     }
 
     // Initialize on DOM ready

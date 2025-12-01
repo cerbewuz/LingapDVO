@@ -564,20 +564,17 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        console.log('? Profile picture uploaded successfully');
-                        // Reload page to update all instances
+                                                // Reload page to update all instances
                         setTimeout(() => {
                             location.reload();
                         }, 500);
                     } else {
                         alert('Failed to upload profile picture: ' + (data.message || 'Unknown error'));
-                        console.error('? Upload failed:', data.message);
-                    }
+                                            }
                 })
                 .catch(error => {
                     alert('Error uploading profile picture. Please try again.');
-                    console.error('? Upload error:', error);
-                })
+                                    })
                 .finally(() => {
                     // Restore button state
                     uploadBtn.innerHTML = '<i class="fas fa-camera"></i>';
@@ -611,20 +608,17 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            console.log('? Profile picture removed successfully');
-                            // Reload page to update all instances
+                                                        // Reload page to update all instances
                             setTimeout(() => {
                                 location.reload();
                             }, 500);
                         } else {
                             alert('Failed to remove profile picture: ' + (data.message || 'Unknown error'));
-                            console.error('? Remove failed:', data.message);
-                        }
+                                                    }
                     })
                     .catch(error => {
                         alert('Error removing profile picture. Please try again.');
-                        console.error('? Remove error:', error);
-                    })
+                                            })
                     .finally(() => {
                         // Restore button state
                         removeBtn.innerHTML = '<i class="fas fa-trash"></i>';

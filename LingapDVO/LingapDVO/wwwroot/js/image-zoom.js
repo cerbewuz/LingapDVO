@@ -22,8 +22,7 @@
         const modalImg = document.getElementById("zoomedImage");
 
         if (!modal || !modalImg) {
-            console.error('Image zoom elements not found');
-            return;
+                        return;
         }
 
         modal.style.display = "block";
@@ -75,6 +74,4 @@
         });
     });
 
-    console.log('Image Zoom initialized');
-
-})();
+    })();

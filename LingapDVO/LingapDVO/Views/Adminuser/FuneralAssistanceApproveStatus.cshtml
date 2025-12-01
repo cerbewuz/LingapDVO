@@ -918,8 +918,7 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                loading.style.display = 'none';
+                                loading.style.display = 'none';
                 errorDiv.style.display = 'block';
                 errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
             }
@@ -949,8 +948,7 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                console.error('Error rendering page:', error);
-            }
+                            }
         }
 
         // Navigation functions
@@ -1005,9 +1003,7 @@
 
         // Status Submission Functions
         function submitApprove() {
-            console.log('Submitting approve...');
-
-            // Set the status and comments
+                        // Set the status and comments
             document.getElementById('statusInput').value = 'Approve';
             document.getElementById('commentsInput').value = ''; // Empty comments for approval
             document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
@@ -1018,10 +1014,9 @@
 
             // Submit the form
             setTimeout(() => {
-                console.log('Final form submission - Approve');
-                console.log('Status:', document.getElementById('statusInput').value);
-                console.log('Comments:', document.getElementById('commentsInput').value);
-                console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+                                .value);
+                .value);
+                .value);
 
                 document.getElementById('statusForm').submit();
             }, 500);
@@ -1048,9 +1043,7 @@
                 return;
             }
 
-            console.log('Submitting disapprove...');
-
-            document.getElementById('statusInput').value = 'Disapprove';
+                        document.getElementById('statusInput').value = 'Disapprove';
             document.getElementById('commentsInput').value = comments;
             document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
             document.getElementById('processByInput').value = document.getElementById('processedBy').value;
@@ -1060,9 +1053,8 @@
 
             // Submit the form
             setTimeout(() => {
-                console.log('Final form submission - Disapprove');
-                console.log('Status:', document.getElementById('statusInput').value);
-                console.log('Comments:', document.getElementById('commentsInput').value);
+                                .value);
+                .value);
 
                 document.getElementById('statusForm').submit();
             }, 500);
@@ -1070,9 +1062,7 @@
 
         // Mark as Claimed Function
         function markAsClaimed() {
-            console.log('Marking as claimed...');
-
-            // Set the status to "Claimed"
+                        // Set the status to "Claimed"
             document.getElementById('statusInput').value = 'Claimed';
             document.getElementById('commentsInput').value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
             document.getElementById('forCMOPersonnelInput').value = document.getElementById('cmoReflectionField').value;
@@ -1083,10 +1073,9 @@
 
             // Submit the form after a short delay to show the modal
             setTimeout(() => {
-                console.log('Final form submission - Claimed');
-                console.log('Status:', document.getElementById('statusInput').value);
-                console.log('Comments:', document.getElementById('commentsInput').value);
-                console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+                                .value);
+                .value);
+                .value);
 
                 document.getElementById('statusForm').submit();
             }, 2000); // Show modal for 2 seconds before redirecting
@@ -1147,15 +1136,11 @@
 
         // Enhanced form submission debugging
         document.getElementById('statusForm').addEventListener('submit', function(e) {
-            console.log('=== FORM SUBMISSION DEBUG INFO ===');
-            console.log('Form action:', this.action);
-            console.log('Form method:', this.method);
-            console.log('Status:', document.getElementById('statusInput').value);
-            console.log('Comments:', document.getElementById('commentsInput').value);
-            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
-            console.log('Processed By:', document.getElementById('processByInput').value);
-            console.log('==============================');
-        });
+                                                .value);
+            .value);
+            .value);
+            .value);
+                    });
 
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {

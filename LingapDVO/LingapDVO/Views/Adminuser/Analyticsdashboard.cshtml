@@ -1,4 +1,4 @@
-﻿@model LingapDVO.Models.CombinedFormsViewModel
+@model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
 
@@ -920,9 +920,7 @@
         };
 
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard initialized');
-
-            const totalPriorityCount = @(ViewBag.TotalPriorityCount ?? 0);
+            const totalPriorityCount = @Html.Raw(ViewBag.TotalPriorityCount ?? 0);
             if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
                 window.AdminSidebar.updatePriorityBadge(totalPriorityCount);
             }
@@ -941,8 +939,8 @@
         });
 
         function redirectToApplicationDashboard(status) {
-            localStorage.setItem('selectedStatus', status);
-            window.location.href = '/Admin';
+            // Redirect to Admin page with status parameter
+            window.location.href = '/Admin?status=' + encodeURIComponent(status);
         }
 
         function formatName(lastname, firstname, middlename, suffix) {
@@ -974,17 +972,17 @@
                     <text>
                     allApplications.push({
                         type: "Hospital Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "@f.Typeassistance",
+                        status: "@(f.Status?.ToLower() ?? "")",
+                        status2: "@(f.Status2?.ToLower() ?? "")",
+                        status3: "@(f.Status3?.ToLower() ?? "")",
+                        brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
+                        typeassistance: "@Html.Raw(f.Typeassistance?.Replace("\"", "\\\"") ?? "")",
                         formId: @f.Id,
                         controller: "Dashboard",
                         isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                        retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
+                        retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
                     });
                     </text>
             }
@@ -994,17 +992,17 @@
                     <text>
                     allApplications.push({
                         type: "Other Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        brgy: "@f.Brgy",
-                        typeassistance: "@f.Typeassistance",
+                        status: "@(f.Status?.ToLower() ?? "")",
+                        status2: "@(f.Status2?.ToLower() ?? "")",
+                        status3: "@(f.Status3?.ToLower() ?? "")",
+                        brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
+                        typeassistance: "@Html.Raw(f.Typeassistance?.Replace("\"", "\\\"") ?? "")",
                         formId: @f.Id,
                         controller: "Dashboard",
                         isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                        retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
+                        retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
                     });
                     </text>
             }
@@ -1014,17 +1012,17 @@
                     <text>
                     allApplications.push({
                         type: "Funeral Assistance",
-                        name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
+                        name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
                         createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@f.Status?.ToLower()",
-                        status2: "@f.Status2?.ToLower()",
-                        status3: "@f.Status3?.ToLower()",
-                        brgy: "@f.Brgy",
+                        status: "@(f.Status?.ToLower() ?? "")",
+                        status2: "@(f.Status2?.ToLower() ?? "")",
+                        status3: "@(f.Status3?.ToLower() ?? "")",
+                        brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
                         typeassistance: "Funeral Assistance",
                         formId: @f.Id,
                         controller: "Dashboard",
                         isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                        retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
+                        retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
                     });
                     </text>
             }
@@ -1060,8 +1058,7 @@
                     updateStatusByTypeChart('stackedBar');
                     updateClaimRateMetrics();
                 } catch (error) {
-                    console.error('Error updating charts:', error);
-                } finally {
+                                    } finally {
                     showLoading(false);
                 }
             }, 500);

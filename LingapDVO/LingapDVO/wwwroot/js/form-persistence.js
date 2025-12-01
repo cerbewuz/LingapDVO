@@ -36,8 +36,7 @@
             formData[fieldName] = value;
             localStorage.setItem(formKey, JSON.stringify(formData));
         } catch (error) {
-            console.error('Error saving field value:', error);
-        }
+                    }
     }
 
     // Debounced version of saveFieldValue (500ms delay to reduce I/O)
@@ -51,8 +50,7 @@
             let formData = JSON.parse(localStorage.getItem(formKey) || '{}');
             return formData[fieldName] || null;
         } catch (error) {
-            console.error('Error retrieving field value:', error);
-            return null;
+                        return null;
         }
     }
 
@@ -62,8 +60,7 @@
             const formKey = getFormKey();
             localStorage.removeItem(formKey);
         } catch (error) {
-            console.error('Error clearing form data:', error);
-        }
+                    }
     }
 
     // Restore form field values from localStorage
@@ -76,8 +73,7 @@
         try {
             formData = JSON.parse(localStorage.getItem(formKey) || '{}');
         } catch (error) {
-            console.error('Error parsing saved form data:', error);
-            return;
+                        return;
         }
 
         // Restore text inputs, textareas, and selects
@@ -192,7 +188,7 @@
             clearOnSubmit(form);
         });
 
-        console.log('Form Persistence: Initialized for', forms.length, 'form(s)');
+        ');
     }
 
     // Auto-initialize on DOM ready

@@ -1,4 +1,4 @@
-﻿@model LingapDVO.Models.CombinedFormsViewModel
+@model LingapDVO.Models.CombinedFormsViewModel
 @{
     Layout = null;
 }
@@ -141,6 +141,10 @@
                 border-left-color: var(--info);
             }
 
+            .stat-card.retakes.active {
+                border-left-color: #ff8c00;
+            }
+
         .stat-icon {
             width: clamp(45px, 60px, 70px);
             height: clamp(45px, 60px, 70px);
@@ -176,6 +180,11 @@
         .stat-card.claims .stat-icon {
             background: rgba(52, 152, 219, 0.15);
             color: var(--info);
+        }
+
+        .stat-card.retakes .stat-icon {
+            background: rgba(255, 140, 0, 0.15);
+            color: #ff8c00;
         }
 
         /* Status badges in table */
@@ -215,6 +224,11 @@
         .status-claimed {
             background: rgba(52, 152, 219, 0.12);
             color: var(--info);
+        }
+
+        .status-retake {
+            background: rgba(255, 140, 0, 0.12);
+            color: #ff8c00;
         }
 
         /* Priority Alert Boxes */
@@ -386,6 +400,9 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: clamp(0.8rem, 0.9rem, 1rem);
+            pointer-events: auto;
+            position: relative;
+            z-index: 1;
         }
 
             .time-filter-btn:hover {
@@ -489,6 +506,11 @@
         .status-claims {
             background: rgba(52, 152, 219, 0.15);
             color: var(--info);
+        }
+
+        .status-retake {
+            background: rgba(255, 140, 0, 0.15);
+            color: #ff8c00;
         }
 
         .action-buttons {
@@ -669,13 +691,13 @@
                     <div class="card-tools">
                         <div class="time-filter">
                             <span class="time-filter-label">Show:</span>
-                            <button class="time-filter-btn" data-period="1year">Last Year</button>
-                            <button class="time-filter-btn" data-period="6months">Last 6 Months</button>
-                            <button class="time-filter-btn" data-period="3months">Last 3 Months</button>
-                            <button class="time-filter-btn" data-period="currentMonth">Current Month</button>
-                            <button class="time-filter-btn" data-period="1week">This Week</button>
-                            <button class="time-filter-btn active" data-period="today">Today</button>
-                            <button class="time-filter-btn" data-period="all">All</button>
+                            <button type="button" class="time-filter-btn" data-period="1year">Last Year</button>
+                            <button type="button" class="time-filter-btn" data-period="6months">Last 6 Months</button>
+                            <button type="button" class="time-filter-btn" data-period="3months">Last 3 Months</button>
+                            <button type="button" class="time-filter-btn" data-period="currentMonth">Current Month</button>
+                            <button type="button" class="time-filter-btn" data-period="1week">This Week</button>
+                            <button type="button" class="time-filter-btn active" data-period="today">Today</button>
+                            <button type="button" class="time-filter-btn" data-period="all">All</button>
                         </div>
                     </div>
                 </div>
@@ -769,7 +791,7 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead>
+                            <thead id="tableHeaders">
                                 <tr>
                                     <th class="sortable" data-sort="name">
                                         Applicant
@@ -819,70 +841,92 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Update sidebar priority badge
-            const totalPriorityCount = @(ViewBag.TotalPriorityCount ?? 0);
+            const totalPriorityCount = @Html.Raw(ViewBag.TotalPriorityCount ?? 0);
             if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
                 window.AdminSidebar.updatePriorityBadge(totalPriorityCount);
-                console.log('[Admin] Sidebar badge updated:', totalPriorityCount);
+            }
+
+            // Check URL parameters for status filter
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusParam = urlParams.get('status');
+            let initialStatusFilter = 'approve'; // Default
+            
+            // Validate and set initial status from URL
+            const validStatuses = ['approve', 'disapprove', 'pending', 'processing', 'claims', 'retakes'];
+            if (statusParam && validStatuses.includes(statusParam.toLowerCase())) {
+                initialStatusFilter = statusParam.toLowerCase();
             }
 
             // Combine all applications from the model
             const allApplications = [];
 
             // Add Hospitals
-            @foreach (var f in Model.HospitalAssistance)
+            @if (Model?.HospitalAssistance != null)
             {
+                @foreach (var f in Model.HospitalAssistance)
+                {
                         <text>
                         allApplications.push({
                             type: "Hospital Assistance",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            name: "@Html.Raw(System.Text.Json.JsonSerializer.Serialize($"{f.Lastname} {f.Firstname} {f.Middlename}").Trim('"'))",
                             createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
+                            status: "@(f.Status?.ToLower() ?? "")",
+                            status2: "@(f.Status2?.ToLower() ?? "")",
+                            status3: "@(f.Status3?.ToLower() ?? "")",
                             formId: @f.Id,
                             controller: "Dashboard",
                             isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                            retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
+                            retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null"),
+                            comments: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(f.Comments ?? ""))
                         });
                         </text>
+                }
             }
 
             // Add Medical Lab Forms
-            @foreach (var f in Model.OtherAssistance)
+            @if (Model?.OtherAssistance != null)
             {
+                @foreach (var f in Model.OtherAssistance)
+                {
                         <text>
                         allApplications.push({
                             type: "Other Assistance",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            name: "@Html.Raw(System.Text.Json.JsonSerializer.Serialize($"{f.Lastname} {f.Firstname} {f.Middlename}").Trim('"'))",
                             createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
+                            status: "@(f.Status?.ToLower() ?? "")",
+                            status2: "@(f.Status2?.ToLower() ?? "")",
+                            status3: "@(f.Status3?.ToLower() ?? "")",
                             formId: @f.Id,
                             controller: "Dashboard",
                             isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                            retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
+                            retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null"),
+                            comments: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(f.Comments ?? ""))
                         });
                         </text>
+                }
             }
 
             // Add Funeral Forms
-            @foreach (var f in Model.FuneralAssistance)
+            @if (Model?.FuneralAssistance != null)
             {
+                @foreach (var f in Model.FuneralAssistance)
+                {
                         <text>
                         allApplications.push({
                             type: "Funeral Assistance",
-                            name: "@($"{f.Lastname} {f.Firstname} {f.Middlename}")",
+                            name: "@Html.Raw(System.Text.Json.JsonSerializer.Serialize($"{f.Lastname} {f.Firstname} {f.Middlename}").Trim('"'))",
                             createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                            status: "@f.Status?.ToLower()",
-                            status2: "@f.Status2?.ToLower()",
-                            status3: "@f.Status3?.ToLower()",
+                            status: "@(f.Status?.ToLower() ?? "")",
+                            status2: "@(f.Status2?.ToLower() ?? "")",
+                            status3: "@(f.Status3?.ToLower() ?? "")",
                             formId: @f.Id,
                             controller: "Dashboard",
                             isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                            retakeRequestedAt: @(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value.ToString("yyyy-MM-ddTHH:mm:ss")}\")" : "null")
+                            retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null"),
+                            comments: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(f.Comments ?? ""))
                         });
                         </text>
+                }
             }
 
             // DOM elements
@@ -894,17 +938,23 @@
             const statCards = document.querySelectorAll('.stat-card');
             const sortableHeaders = document.querySelectorAll('th.sortable');
 
+            // Null check for critical elements
+            if (!applicationsTable) {
+                return;
+            }
+
             // Status count elements
             const approvedCount = document.getElementById('approved-count');
             const disapprovedCount = document.getElementById('disapproved-count');
             const pendingCount = document.getElementById('pending-count');
             const processingCount = document.getElementById('processing-count');
             const claimsCount = document.getElementById('claims-count');
+            const retakesCount = document.getElementById('retakes-count');
             const highPriorityCount = document.getElementById('high-priority-count');
             const mediumPriorityCount = document.getElementById('medium-priority-count');
 
             // Current filter state
-            let currentStatusFilter = 'approve';
+            let currentStatusFilter = initialStatusFilter;  // Use URL parameter or default
             let currentTimeFilter = 'today';
             let currentTypeFilter = 'all';
             let currentSearchTerm = '';
@@ -993,19 +1043,27 @@
 
                 switch (period) {
                     case '1year':
-                        startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                        startDate = new Date(now);
+                        startDate.setFullYear(startDate.getFullYear() - 1);
+                        startDate.setHours(0, 0, 0, 0);
                         break;
                     case '6months':
-                        startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                        startDate = new Date(now);
+                        startDate.setMonth(startDate.getMonth() - 6);
+                        startDate.setHours(0, 0, 0, 0);
                         break;
                     case '3months':
-                        startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                        startDate = new Date(now);
+                        startDate.setMonth(startDate.getMonth() - 3);
+                        startDate.setHours(0, 0, 0, 0);
                         break;
                     case 'currentMonth':
-                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
                         break;
                     case '1week':
-                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                        startDate = new Date(now);
+                        startDate.setDate(startDate.getDate() - 7);
+                        startDate.setHours(0, 0, 0, 0);
                         break;
                     case 'today':
                         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
@@ -1014,7 +1072,10 @@
                         return applications;
                 }
 
-                return applications.filter(app => app.createdAt >= startDate && app.createdAt <= endDate);
+                return applications.filter(function(app) {
+                    const appDate = app.createdAt;
+                    return appDate >= startDate && appDate <= endDate;
+                });
             }
 
             // Function to filter applications by status - UPDATED VERSION WITH RETAKES
@@ -1170,24 +1231,103 @@
                 });
 
                 // Update the count displays
-                approvedCount.textContent = statusCounts.approve;
-                disapprovedCount.textContent = statusCounts.disapprove;
-                pendingCount.textContent = statusCounts.pending;
-                processingCount.textContent = statusCounts.processing;
-                claimsCount.textContent = statusCounts.claims;
-                retakesCount.textContent = statusCounts.retakes;
-                highPriorityCount.textContent = highPriority;
-                mediumPriorityCount.textContent = mediumPriority;
+                if (approvedCount) approvedCount.textContent = statusCounts.approve;
+                if (disapprovedCount) disapprovedCount.textContent = statusCounts.disapprove;
+                if (pendingCount) pendingCount.textContent = statusCounts.pending;
+                if (processingCount) processingCount.textContent = statusCounts.processing;
+                if (claimsCount) claimsCount.textContent = statusCounts.claims;
+                if (retakesCount) retakesCount.textContent = statusCounts.retakes;
+                if (highPriorityCount) highPriorityCount.textContent = highPriority;
+                if (mediumPriorityCount) mediumPriorityCount.textContent = mediumPriority;
+            }
+
+            // Function to update table headers based on status filter
+            function updateTableHeaders(statusFilter) {
+                const tableHeaders = document.getElementById('tableHeaders');
+                const isRetakesView = statusFilter === 'retakes';
+                
+                tableHeaders.innerHTML = `
+                    <tr>
+                        <th class="sortable" data-sort="name">
+                            Applicant
+                            <span class="sort-indicator">
+                                <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                            </span>
+                        </th>
+                        <th class="sortable" data-sort="type">
+                            Type
+                            <span class="sort-indicator">
+                                <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                            </span>
+                        </th>
+                        <th class="sortable" data-sort="status">
+                            Status
+                            <span class="sort-indicator">
+                                <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                            </span>
+                        </th>
+                        ${isRetakesView ? '<th>Retake Reason</th>' : ''}
+                        <th class="sortable" data-sort="date">
+                            ${isRetakesView ? 'Date Retake Requested' : 'Date Submitted'}
+                            <span class="sort-indicator">
+                                <i class="bi bi-caret-up-fill sort-arrow" data-direction="asc"></i>
+                                <i class="bi bi-caret-down-fill sort-arrow" data-direction="desc"></i>
+                            </span>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                `;
+                
+                // Reattach event listeners to the new sortable headers
+                attachSortableHeaderListeners();
+            }
+            
+            // Function to attach event listeners to sortable headers
+            function attachSortableHeaderListeners() {
+                const sortableHeaders = document.querySelectorAll('th.sortable');
+                sortableHeaders.forEach(header => {
+                    // Remove any existing listeners by cloning
+                    const newHeader = header.cloneNode(true);
+                    header.parentNode.replaceChild(newHeader, header);
+                });
+                
+                // Now attach fresh listeners
+                document.querySelectorAll('th.sortable').forEach(header => {
+                    header.addEventListener('click', function() {
+                        const sortField = this.dataset.sort;
+                        let newSort = '';
+
+                        // Determine the new sort direction
+                        if (currentSort.startsWith(sortField)) {
+                            // Toggle direction if clicking the same field
+                            const currentDirection = currentSort.split('-')[1];
+                            newSort = `${sortField}-${currentDirection === 'asc' ? 'desc' : 'asc'}`;
+                        } else {
+                            // Default to descending for new field
+                            newSort = `${sortField}-desc`;
+                        }
+
+                        currentSort = newSort;
+                        if (sortSelect) sortSelect.value = newSort;
+                        updateSortIndicators();
+                        applyFilters();
+                    });
+                });
             }
 
             // Function to render applications table
             function renderApplicationsTable(applications) {
                 applicationsTable.innerHTML = '';
+                const isRetakesView = currentStatusFilter === 'retakes';
+                const colspan = isRetakesView ? 6 : 5;
 
                 if (applications.length === 0) {
                     applicationsTable.innerHTML = `
                         <tr>
-                            <td colspan="5" class="empty-state">
+                            <td colspan="${colspan}" class="empty-state">
                                 <i class="bi bi-inbox"></i>
                                 <h4>No applications found</h4>
                                 <p>There are currently no applications to display.</p>
@@ -1200,6 +1340,8 @@
                 applications.forEach(app => {
                     const statusBadge = getStatusBadge(app);
                     const actionButtons = getActionButtons(app);
+                    const displayDate = (isRetakesView && app.retakeRequestedAt) ? app.retakeRequestedAt : app.createdAt;
+                    const retakeReason = getRetakeReason(app.comments);
 
                     const row = document.createElement('tr');
                     row.setAttribute('data-status', app.status);
@@ -1209,12 +1351,32 @@
                         <td>${app.name}</td>
                         <td>${app.type}</td>
                         <td>${statusBadge}</td>
-                        <td>${formatDate(app.createdAt)}</td>
+                        ${isRetakesView ? `<td style="max-width: 300px; white-space: normal;">${retakeReason}</td>` : ''}
+                        <td>${formatDate(displayDate)}</td>
                         <td>${actionButtons}</td>
                     `;
 
                     applicationsTable.appendChild(row);
                 });
+            }
+
+            // Helper function to extract retake reason from comments
+            function getRetakeReason(comments) {
+                if (!comments) return '<em class="text-muted">No reason provided</em>';
+                
+                try {
+                    const parsedComments = typeof comments === 'string' ? comments : JSON.stringify(comments);
+                    const retakePrefix = 'RETAKE REQUEST: ';
+                    
+                    if (parsedComments.includes(retakePrefix)) {
+                        const reason = parsedComments.split(retakePrefix)[1] || 'No reason provided';
+                        return reason.trim();
+                    }
+                    
+                    return '<em class="text-muted">No reason provided</em>';
+                } catch (e) {
+                    return '<em class="text-muted">Error loading reason</em>';
+                }
             }
 
             // Helper function to get status badge HTML - UPDATED VERSION WITH RETAKES
@@ -1263,14 +1425,19 @@
                 `;
             }
 
-            // Helper function to get action buttons HTML - UPDATED VERSION (show eye for claimed+disapproved)
+            // Helper function to get action buttons HTML - UPDATED VERSION (show eye for claimed+disapproved AND retakes)
             function getActionButtons(app) {
                 let editUrl = '';
                 let iconClass = 'bi-pencil';
                 let title = 'Update Status';
 
+                // Check if this is a retake application - show view only
+                if (app.status2 && app.status2.toLowerCase() === 'retake') {
+                    iconClass = 'bi-eye';
+                    title = 'View Details';
+                }
                 // Check if status3 is claimed AND status2 is disapproved
-                if (app.status3 && app.status3.toLowerCase() === 'claimed' &&
+                else if (app.status3 && app.status3.toLowerCase() === 'claimed' &&
                     app.status2 && app.status2.toLowerCase() === 'disapprove') {
                     iconClass = 'bi-eye';
                     title = 'View Details';
@@ -1366,6 +1533,9 @@
             function applyFilters() {
                 let filteredApplications = [...allApplications];
 
+                // Update table headers based on status filter
+                updateTableHeaders(currentStatusFilter);
+
                 // Apply time filter
                 filteredApplications = filterByTimePeriod(filteredApplications, currentTimeFilter);
 
@@ -1400,7 +1570,10 @@
 
             // Event listeners for time filter buttons
             timeFilterButtons.forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
                     currentTimeFilter = this.dataset.period;
 
                     // Update active button
@@ -1416,44 +1589,39 @@
             });
 
             // Event listeners for search and type filter
-            searchInput.addEventListener('input', function() {
-                currentSearchTerm = this.value;
-                applyFilters();
-            });
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    currentSearchTerm = this.value;
+                    applyFilters();
+                });
+            }
 
-            typeFilter.addEventListener('change', function() {
-                currentTypeFilter = this.value;
-                applyFilters();
-            });
+            if (typeFilter) {
+                typeFilter.addEventListener('change', function() {
+                    currentTypeFilter = this.value;
+                    applyFilters();
+                });
+            }
 
             // Event listener for sort select
-            sortSelect.addEventListener('change', function() {
-                currentSort = this.value;
-                updateSortIndicators();
-                applyFilters();
-            });
-
-            // Event listeners for sortable headers
-            sortableHeaders.forEach(header => {
-                header.addEventListener('click', function() {
-                    const sortField = this.dataset.sort;
-                    let newSort = '';
-
-                    // Determine the new sort direction
-                    if (currentSort.startsWith(sortField)) {
-                        // Toggle direction if clicking the same field
-                        const currentDirection = currentSort.split('-')[1];
-                        newSort = `${sortField}-${currentDirection === 'asc' ? 'desc' : 'asc'}`;
-                    } else {
-                        // Default to descending for new field
-                        newSort = `${sortField}-desc`;
-                    }
-
-                    currentSort = newSort;
-                    sortSelect.value = newSort;
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    currentSort = this.value;
                     updateSortIndicators();
                     applyFilters();
                 });
+            }
+
+            // Initialize sortable header listeners
+            attachSortableHeaderListeners();
+
+            // Set active status card based on URL parameter or default
+            statCards.forEach(card => {
+                if (card.dataset.status === currentStatusFilter) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
             });
 
             // Initialize the dashboard

@@ -805,13 +805,13 @@ body {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(211, 211, 211, 0.8);
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.3);
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    color: var(--white);
+    color: #333;
     font-size: 1.5rem;
     cursor: pointer;
     display: flex;
@@ -819,11 +819,13 @@ body {
     justify-content: center;
     transition: all 0.3s ease;
     z-index: 10001;
+    opacity: 1;
 }
 
 .modal-nav-arrow:hover {
-    background: rgba(220, 20, 60, 0.9);
-    border-color: var(--primary);
+    background: rgba(105, 105, 105, 0.95);
+    border-color: #666;
+    color: #fff;
     transform: translateY(-50%) scale(1.1);
 }
 
@@ -911,8 +913,8 @@ body {
 .section-badge {
     display: inline-block;
     padding: 0.45rem 1.25rem;
-    background: rgba(220, 20, 60, 0.1);
-    color: #D0EEF7;
+    background: #DEFBFF;
+    color: #0080A8;
     font-weight: 700;
     font-size: 0.8rem;
     border-radius: 50px;

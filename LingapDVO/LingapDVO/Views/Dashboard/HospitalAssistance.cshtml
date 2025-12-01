@@ -594,13 +594,15 @@
         <div class="row g-3 mt-2">
             <div class="col-lg-2 col-md-3 col-sm-6">
                 <label class="form-label">Sex</label>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="Sex" id="male" value="Male" required>
-                    <label class="form-check-label" for="male">Male</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="Sex" id="female" value="Female">
-                    <label class="form-check-label" for="female">Female</label>
+                <div class="d-flex gap-5 mt-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Sex" id="male" value="Male" required>
+                        <label class="form-check-label ms-1" for="male">Male</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="Sex" id="female" value="Female">
+                        <label class="form-check-label ms-1" for="female">Female</label>
+                    </div>
                 </div>
                 <span asp-validation-for="Sex" class="text-danger"></span>
             </div>
@@ -644,7 +646,7 @@
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
                        id="governmentAssistance" name="TypeassistanceOptions" value="Government">
-                <label class="form-check-label" for="governmentAssistance">Government</label>
+                <label class="form-check-label ms-1" for="governmentAssistance">Government</label>
                 <input type="text" class="form-control mt-1 assistance-spec"
                        name="GovernmentDetails" placeholder="Specify" style="display: none;">
             </div>
@@ -652,7 +654,7 @@
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
                        id="privateAssistance" name="TypeassistanceOptions" value="Private">
-                <label class="form-check-label" for="privateAssistance">Private</label>
+                <label class="form-check-label ms-1" for="privateAssistance">Private</label>
                 <input type="text" class="form-control mt-1 assistance-spec"
                        name="PrivateDetails" placeholder="Specify" style="display: none;">
             </div>
@@ -660,7 +662,7 @@
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
                        id="caseAssistance" name="TypeassistanceOptions" value="Case">
-                <label class="form-check-label" for="caseAssistance">Case</label>
+                <label class="form-check-label ms-1" for="caseAssistance">Case</label>
                 <input type="text" class="form-control mt-1 assistance-spec"
                        name="CaseDetails" placeholder="Specify" style="display: none;">
             </div>
@@ -694,9 +696,11 @@
     </div>
 
     <!-- Terms and Conditions -->
-    <div class="mb-4 form-check">
-        <input class="form-check-input" type="checkbox" id="termsCheck" required>
-        <label class="form-check-label" for="termsCheck">I certify that all information provided is true and accurate</label>
+    <div class="mb-4">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+            <label class="form-check-label ms-1" for="termsCheck">I certify that all information provided is true and accurate</label>
+        </div>
     </div>
 
     <!-- Submit Button -->
@@ -708,20 +712,56 @@
 </form>
 
 @section Modals {
-    <!-- Compact Success Modal -->
+    <!-- Enhanced Success Modal -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-body text-center p-4">
-                    <div class="success-checkmark mb-3">
-                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <!-- Success Animation Header -->
+                <div class="text-center pt-5 pb-3" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                    <div class="success-checkmark-animated mb-2">
+                        <i class="fas fa-check-circle text-white" style="font-size: 4.5rem; animation: scaleIn 0.5s ease-out;"></i>
                     </div>
-                    <h5 class="fw-bold text-dark mb-2">Success!</h5>
-                    <p class="text-muted mb-0 small">Your application has been submitted successfully.</p>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="modal-body text-center px-4 py-4">
+                    <h4 class="fw-bold text-dark mb-3" style="font-size: 1.5rem;">Application Submitted!</h4>
+                    <p class="text-muted mb-2" style="font-size: 0.95rem; line-height: 1.6;">
+                        Your hospital assistance application has been successfully submitted and is now being processed.
+                    </p>
+                    <div class="alert alert-light border-0 mt-3 mb-0" style="background-color: #f8f9fa; border-radius: 10px;">
+                        <small class="text-secondary">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Track your application status in the <strong>Application Tracking</strong> section.
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="px-4 pb-4">
+                    <div class="progress" style="height: 4px; border-radius: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%; animation: progressFill 2s ease-out;"></div>
+                    </div>
+                    <p class="text-center text-muted mt-2 mb-0" style="font-size: 0.75rem;">
+                        Redirecting to homepage...
+                    </p>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        @@keyframes scaleIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @@keyframes progressFill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+    </style>
 
     <!-- For zooming photo -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="false">

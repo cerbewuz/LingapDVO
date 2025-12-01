@@ -48,8 +48,7 @@
         const zoomLevelSpan = document.getElementById('zoomLevel');
 
         if (!modal || !canvas) {
-            console.error('PDF viewer elements not found');
-            return;
+                        return;
         }
 
         const context = canvas.getContext('2d');
@@ -71,9 +70,7 @@
             const baseUrl = window.location.origin;
             const url = `${baseUrl}/Adminuser/ViewPDF?fileName=${encodedFileName}&fileType=${fileType}&t=${Date.now()}`;
 
-            console.log('Fetching PDF from:', url);
-
-            // Fetch PDF data
+                        // Fetch PDF data
             const response = await fetch(url);
 
             if (!response.ok) {
@@ -86,9 +83,7 @@
                 throw new Error('PDF data is empty');
             }
 
-            console.log('PDF data loaded, size:', pdfData.byteLength);
-
-            // Load PDF using PDF.js
+                        // Load PDF using PDF.js
             const loadingTask = pdfjsLib.getDocument({ data: pdfData });
             currentPDF = await loadingTask.promise;
 
@@ -108,8 +103,7 @@
             if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
         } catch (error) {
-            console.error('Error loading PDF:', error);
-            if (loading) loading.style.display = 'none';
+                        if (loading) loading.style.display = 'none';
             if (errorDiv) {
                 errorDiv.style.display = 'block';
                 const errorMsg = errorDiv.querySelector('p');
@@ -151,8 +145,7 @@
             if (currentPageSpan) currentPageSpan.textContent = pageNum;
 
         } catch (error) {
-            console.error('Error rendering page:', error);
-        }
+                    }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -254,6 +247,4 @@
     // Initialization
     // ═══════════════════════════════════════════════════════════════════════════
 
-    console.log('PDF Viewer initialized');
-
-})();
+    })();

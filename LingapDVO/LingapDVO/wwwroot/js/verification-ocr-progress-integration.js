@@ -154,9 +154,7 @@ if (progressBar) {
 // In the catch block of processImageWithOCR (around line 2277), REPLACE with:
 .catch(error => {
     clearInterval(progressInterval);
-    console.error('OCR Error:', error);
-
-    // Show error in visual progress loader
+        // Show error in visual progress loader
     if (window.visualProgressLoader) {
         window.visualProgressLoader.showError(error.message || 'OCR processing failed. Please try again.');
     }

@@ -1,4 +1,4 @@
-﻿@model RegisterAccDto
+@model RegisterAccDto
 @{
     Layout = null;
 }
@@ -480,8 +480,7 @@
                             updateButton.disabled = false;
                         }
                     } catch (error) {
-                        console.error('Update error:', error);
-                        alert('An error occurred during update. Please try again.');
+                                                alert('An error occurred during update. Please try again.');
                         updateButton.innerHTML = originalButtonText;
                         updateButton.disabled = false;
                     }
@@ -509,8 +508,7 @@
                         keyboard: false
                     });
                 } else {
-                    console.error('Success modal element not found');
-                    return;
+                                        return;
                 }
             }
             successModal.show();

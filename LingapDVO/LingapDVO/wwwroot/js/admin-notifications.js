@@ -18,8 +18,7 @@
         const markAllReadBtn = document.getElementById('markAllAdminRead');
 
         if (!notificationLink || !notificationDropdown) {
-            console.warn('Admin notification elements not found');
-            return;
+                        return;
         }
 
         // Load initial notifications
@@ -67,8 +66,7 @@
                 updateAdminNotificationBadge(data.unreadCount || 0);
             }
         } catch (error) {
-            console.error('Error loading admin notifications:', error);
-        }
+                    }
     }
 
     // Render admin notifications in dropdown
@@ -176,8 +174,7 @@
                 await loadAdminNotifications(); // Reload to get updated count
             }
         } catch (error) {
-            console.error('Error marking notification as read:', error);
-        }
+                    }
     }
 
     // Mark all notifications as read
@@ -193,23 +190,20 @@
                 updateAdminNotificationBadge(0);
             }
         } catch (error) {
-            console.error('Error marking all notifications as read:', error);
-        }
+                    }
     }
 
     // Initialize SignalR for real-time admin notifications
     function initializeAdminSignalR() {
         // Check if SignalR is already initialized by another script
         if (window.notificationConnection) {
-            console.log('Using existing SignalR connection for admin notifications');
-            setupAdminSignalRHandlers(window.notificationConnection);
+                        setupAdminSignalRHandlers(window.notificationConnection);
             return;
         }
 
         // Create new connection if SignalR is available
         if (typeof signalR === 'undefined') {
-            console.warn('SignalR not loaded - admin notifications will not be real-time');
-            return;
+                        return;
         }
 
         adminSignalRConnection = new signalR.HubConnectionBuilder()
@@ -221,17 +215,15 @@
 
         // Start connection
         adminSignalRConnection.start()
-            .then(() => console.log('Admin notification SignalR connected'))
-            .catch(err => console.error('Admin notification SignalR error:', err));
+            .then(() => )
+            .catch(err => );
     }
 
     // Setup SignalR event handlers
     function setupAdminSignalRHandlers(connection) {
         // Receive new admin notification
         connection.on('ReceiveAdminNotification', function (data) {
-            console.log('New admin notification:', data);
-
-            // Add to notifications list at the top
+                        // Add to notifications list at the top
             adminNotifications.unshift(data);
 
             // Update UI

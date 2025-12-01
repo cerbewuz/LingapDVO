@@ -9,8 +9,7 @@
     // Initialize SignalR connection for priority updates
     function initializePriorityConnection() {
         if (typeof signalR === 'undefined') {
-            console.error('[Priority System] SignalR library not loaded');
-            return;
+                        return;
         }
 
         connection = new signalR.HubConnectionBuilder()
@@ -21,9 +20,7 @@
 
         // Handle priority count updates (real-time animated counters)
         connection.on("ReceivePriorityCountUpdate", function (data) {
-            console.log('[Priority System] Count update received:', data);
-
-            // Animate counter increments
+                        // Animate counter increments
             animateCounter('high-priority-count', currentHighCount, data.highPriority);
             animateCounter('medium-priority-count', currentMediumCount, data.mediumPriority);
 
@@ -37,9 +34,7 @@
 
         // Handle new priority application notification
         connection.on("ReceiveNewPriorityApplication", function (data) {
-            console.log('[Priority System] New priority application:', data);
-
-            // Show toast notification
+                        // Show toast notification
             showNewPriorityToast(data);
 
             // Play notification sound
@@ -69,19 +64,16 @@
 
         // Handle admin broadcast messages
         connection.on("ReceiveAdminBroadcast", function (data) {
-            console.log('[Priority System] Admin broadcast:', data);
-            showAdminBroadcast(data.message, data.type);
+                        showAdminBroadcast(data.message, data.type);
         });
 
         // Connection lifecycle events
         connection.onreconnecting((error) => {
-            console.warn('[Priority System] Reconnecting...', error);
-            updateConnectionStatus('reconnecting');
+                        updateConnectionStatus('reconnecting');
         });
 
         connection.onreconnected((connectionId) => {
-            console.log('[Priority System] Reconnected:', connectionId);
-            updateConnectionStatus('connected');
+                        updateConnectionStatus('connected');
 
             // ⚡ PERFORMANCE: Update DOM instead of full page reload after reconnection
             setTimeout(() => {
@@ -93,8 +85,7 @@
         });
 
         connection.onclose((error) => {
-            console.error('[Priority System] Connection closed:', error);
-            updateConnectionStatus('disconnected');
+                        updateConnectionStatus('disconnected');
         });
 
         // Start connection
@@ -105,8 +96,7 @@
     function startConnection() {
         connection.start()
             .then(function () {
-                console.log('[Priority System] Connected successfully');
-                updateConnectionStatus('connected');
+                                updateConnectionStatus('connected');
 
                 // Initialize current counts from DOM
                 const highEl = document.getElementById('high-priority-count');
@@ -116,8 +106,7 @@
                 if (mediumEl) currentMediumCount = parseInt(mediumEl.textContent) || 0;
             })
             .catch(function (error) {
-                console.error('[Priority System] Connection error:', error);
-                updateConnectionStatus('error');
+                                updateConnectionStatus('error');
 
                 // Retry after 5 seconds
                 setTimeout(startConnection, 5000);
@@ -307,8 +296,7 @@
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + 0.1);
         } catch (error) {
-            console.warn('[Priority System] Could not play notification sound:', error);
-        }
+                    }
     }
 
     // Add CSS animations

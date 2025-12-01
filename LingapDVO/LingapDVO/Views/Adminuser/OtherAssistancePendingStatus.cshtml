@@ -7,7 +7,7 @@
 @section Styles {
     <style>
         .btn-submit {
-            background-color: #28a745; /* Green */
+            background-color: #28a745; 
             color: white;
             font-weight: 600;
             padding: 10px 25px;
@@ -18,7 +18,7 @@
         }
 
             .btn-submit:hover {
-                background-color: #20c997; /* Green-blue hover */
+                background-color: #20c997; 
                 transform: scale(1.05);
             }
 
@@ -350,7 +350,7 @@
     <div class="row g-3 mb-3">
         <div class="col-md-12">
             <label class="form-label">Application ID</label>
-            <div class="form-value">@ViewData["Id"]</div>
+            <div>@ViewData["Id"]</div>
         </div>
     </div>
 
@@ -538,15 +538,12 @@
         function processApplication(event) {
             event.preventDefault();
 
-            console.log('Processing application...');
-
-            // Show success modal
+                        // Show success modal
             showSuccessModal();
 
             // Submit the form after a short delay
             setTimeout(() => {
-                console.log('Submitting form...');
-                document.getElementById('statusForm').submit();
+                                document.getElementById('statusForm').submit();
             }, 1500);
         }
 
@@ -573,13 +570,9 @@
 
         // Enhanced form submission debugging
         document.getElementById('statusForm').addEventListener('submit', function(e) {
-            console.log('=== FORM SUBMISSION DEBUG INFO ===');
-            console.log('Form action:', this.action);
-            console.log('Form method:', this.method);
-            console.log('Status:', document.querySelector('input[name="status2"]').value);
-            console.log('Application ID:', document.querySelector('input[name="id"]').value);
-            console.log('==============================');
-        });
+                                                .value);
+            .value);
+                    });
 
         // Zoom Image Function
         function zoomImage(imageSrc) {
@@ -654,8 +647,7 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                loading.style.display = 'none';
+                                loading.style.display = 'none';
                 errorDiv.style.display = 'block';
                 errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
             }
@@ -685,8 +677,7 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                console.error('Error rendering page:', error);
-            }
+                            }
         }
 
         // Navigation functions

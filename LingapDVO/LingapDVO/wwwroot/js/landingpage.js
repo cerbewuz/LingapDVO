@@ -398,25 +398,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const processTimeline = document.querySelector('.process-timeline');
     const processSteps = document.querySelectorAll('.process-step');
 
-    console.log('Process Timeline found:', processTimeline);
-    console.log('Process Steps found:', processSteps.length);
-
-    const processObserver = new IntersectionObserver((entries) => {
+            const processObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                console.log('Element entering viewport:', entry.target.className);
-
-                // Animate timeline line
+                                // Animate timeline line
                 if (entry.target.classList.contains('process-timeline')) {
                     entry.target.classList.add('animate-line');
-                    console.log('Timeline animation triggered');
-                }
+                                    }
 
                 // Animate process steps
                 if (entry.target.classList.contains('process-step')) {
                     entry.target.classList.add('animate-in');
-                    console.log('Step animation triggered');
-                }
+                                    }
             }
         });
     }, {
@@ -427,14 +420,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Observe timeline
     if (processTimeline) {
         processObserver.observe(processTimeline);
-        console.log('Observing timeline');
-    }
+            }
 
     // Observe each step
     processSteps.forEach((step, index) => {
         processObserver.observe(step);
-        console.log('Observing step', index + 1);
-    });
+            });
 
     // Counter animation
     const counters = document.querySelectorAll('.counter');

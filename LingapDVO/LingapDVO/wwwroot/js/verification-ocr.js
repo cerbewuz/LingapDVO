@@ -1,4 +1,4 @@
-﻿// ============================================================================
+// ============================================================================
 // ACCOUNT VERIFICATION - OCR DATA EXTRACTION WITH KEY-VALUE PAIRING
 // ============================================================================
 // This script performs OCR (Optical Character Recognition) on Philippine ID cards
@@ -1297,7 +1297,7 @@ document.addEventListener('DOMContentLoaded', function () {
         "Bato", "Bayabas", "Biao Escuela", "Biao Guianga", "Binugao",
         "Bucana", "Buhangin", "Buhangin (Pob.)", "Buhangin Proper", "Cabantian",
         "Cadalian", "Calinan Proper", "Callawa", "Camansi", "Carmen",
-        "Catalunan Grande", "Catalunan Pequeño", "Catigan", "Cawayan", "Centro (San Juan)",
+        "Catalunan Grande", "Catalunan Pequeno", "Catigan", "Cawayan", "Centro (San Juan)",
         "Colosas", "Communal", "Crossing Bayabas", "Dacudao", "Dalagdag",
         "Daliao", "Dalican", "Datu Salumay", "Dominga", "Eden",
         "Fatima (Benowang)", "Gatungan", "Gov. Paciano Bangoy", "Gov. Vicente Duterte", "Gumalang",

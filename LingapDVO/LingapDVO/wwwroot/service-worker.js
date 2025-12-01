@@ -1,6 +1,6 @@
-// Service Worker for LingapDVO - v1.0.0
-const CACHE_NAME = 'lingapdvo-cache-v1';
-const RUNTIME_CACHE = 'lingapdvo-runtime-v1';
+// Service Worker for LingapDVO - v1.0.1
+const CACHE_NAME = 'lingapdvo-cache-v1.0.1';
+const RUNTIME_CACHE = 'lingapdvo-runtime-v1.0.1';
 
 // Resources to cache on install
 const PRECACHE_URLS = [
@@ -9,9 +9,8 @@ const PRECACHE_URLS = [
     '/js/landingpage.js',
     '/css/bootstrap.min.css',
     '/js/bootstrap.min.js',
-    '/js/jquery-3.3.1.min.js',
     '/Icon/lingaplogo.ico',
-    '/images/helping.jpg'
+    '/images/helping.webp'
 ];
 
 // Install event - cache critical resources
@@ -19,7 +18,6 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('Service Worker: Precaching resources');
                 return cache.addAll(PRECACHE_URLS);
             })
             .then(() => self.skipWaiting())
@@ -36,7 +34,6 @@ self.addEventListener('activate', event => {
                         return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
                     })
                     .map(cacheName => {
-                        console.log('Service Worker: Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     })
             );

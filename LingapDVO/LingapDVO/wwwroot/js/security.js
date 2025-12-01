@@ -142,8 +142,7 @@
     // Detect PrintScreen key (Windows)
     document.addEventListener('keyup', function(e) {
         if (e.key === 'PrintScreen') {
-            console.warn('Screenshot attempt detected');
-            // Note: Cannot actually prevent screenshots, but can log/warn
+                        // Note: Cannot actually prevent screenshots, but can log/warn
         }
     });
 
@@ -151,11 +150,7 @@
     // CONSOLE WARNING MESSAGE
     // ═══════════════════════════════════════════════════════════════════════════
 
-    console.log('%c⚠️ SECURITY WARNING', 'color: red; font-size: 20px; font-weight: bold;');
-    console.log('%cThis is a secure area. Unauthorized access, copying, or distribution of documents is prohibited and may be subject to legal action.', 'color: red; font-size: 14px;');
-    console.log('%cIf you are not an authorized administrator, please close this window immediately.', 'color: red; font-size: 14px;');
-
-    // ═══════════════════════════════════════════════════════════════════════════
+                // ═══════════════════════════════════════════════════════════════════════════
     // BLUR DETECTION (Tab/Window Switch)
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -163,10 +158,7 @@
     window.addEventListener('blur', function() {
         blurCount++;
         if (blurCount > 5) {
-            console.warn('Multiple window switches detected. Monitoring for security.');
-        }
+                    }
     });
 
-    console.log('Security measures initialized');
-
-})();
+    })();

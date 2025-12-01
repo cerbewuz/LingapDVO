@@ -1,0 +1,3895 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@model LingapDVO.Models.CombinedFormsViewModel
+@{
+    Layout = null;
+    bool isVerified = ViewBag.IsVerified ?? false;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="icon" type="image/x-icon" href="~/Icon/lingaplogo.ico">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #DC143C;
+            --primary-light: rgba(220, 20, 60, 0.08);
+            --primary-dark: #b01030;
+            --secondary: #2D3748;
+            --light: #F8F9FA;
+            --dark: #212529;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --gray-100: #F7FAFC;
+            --gray-200: #EDF2F7;
+            --gray-300: #E2E8F0;
+            --gray-500: #718096;
+            --gray-700: #2D3748;
+            --border-radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--gray-100);
+            color: var(--secondary);
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* User Actions - Responsive */
+        .user-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+            .user-actions .btn-icon,
+            .user-actions .btn-link {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--gray-100);
+                color: var(--gray-500);
+                border: none;
+                transition: var(--transition);
+                text-decoration: none;
+                flex-shrink: 0;
+            }
+
+                .user-actions .btn-icon:hover,
+                .user-actions .btn-link:hover {
+                    background: #2f4f4f;
+                    color: white;
+                    transform: translateY(-2px);
+                    text-decoration: none;
+                }
+
+        /* Burger Menu for Mobile */
+        .burger-menu-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            z-index: 1050;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--secondary);
+            transition: var(--transition);
+        }
+
+            .burger-menu-btn:hover {
+                background: var(--primary-light);
+                color: var(--primary);
+            }
+
+            .burger-menu-btn.hidden {
+                opacity: 0;
+                pointer-events: none;
+                visibility: hidden;
+            }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1055;
+            transition: opacity 0.3s ease;
+        }
+
+            .mobile-menu-overlay.active {
+                display: block;
+            }
+
+        .mobile-user-actions {
+            display: block;
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1060;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+            .mobile-user-actions.active {
+                right: 0;
+            }
+
+        .mobile-menu-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--gray-200);
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .mobile-menu-header h5 {
+                margin: 0;
+                font-size: 1.1rem;
+                flex: 1;
+            }
+
+        .mobile-menu-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+            .mobile-menu-close-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.1);
+            }
+
+        .mobile-menu-items {
+            padding: 1rem;
+        }
+
+        .mobile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+            text-decoration: none;
+            color: var(--secondary);
+            border: 1px solid var(--gray-200);
+        }
+
+            .mobile-menu-item:hover {
+                background: var(--gray-100);
+                border-color: var(--primary);
+                text-decoration: none;
+            }
+
+            .mobile-menu-item.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+                .mobile-menu-item.disabled:hover {
+                    background: white;
+                    border-color: var(--gray-200);
+                }
+
+            .mobile-menu-item i {
+                font-size: 1.25rem;
+                width: 30px;
+                text-align: center;
+            }
+
+            .mobile-menu-item span {
+                flex: 1;
+                font-weight: 500;
+            }
+
+            .mobile-menu-item.logout {
+                background: var(--primary-light);
+                border-color: var(--primary);
+                color: var(--primary);
+            }
+
+                .mobile-menu-item.logout:hover {
+                    background: var(--primary);
+                    color: white;
+                }
+
+        /* Mobile Notification Dropdown (inside mobile menu) */
+        .mobile-notification-dropdown {
+            display: none;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin: 0 1rem 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+            .mobile-notification-dropdown.active {
+                display: block;
+                max-height: 400px;
+            }
+
+        .mobile-notification-header {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-300);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+
+            .mobile-notification-header .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+
+        .mobile-notification-body {
+            max-height: 420px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: white;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+        }
+
+            .mobile-notification-body::-webkit-scrollbar {
+                width: 4px; /* Thinner for mobile */
+            }
+
+            .mobile-notification-body::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .mobile-notification-body::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 4px;
+            }
+
+            .mobile-notification-body::-webkit-scrollbar-thumb:active {
+                background: rgba(0, 0, 0, 0.4);
+            }
+
+        /* Responsive mobile notification body height */
+        @@media (max-width: 575.98px) {
+            .mobile-notification-body {
+                max-height: 350px; /* Optimized for mobile screens */
+            }
+        }
+
+        @@media (max-width: 400px) {
+            .mobile-notification-body {
+                max-height: 320px; /* Further reduced for small screens */
+            }
+        }
+
+        .mobile-notification-footer {
+            padding: 0.75rem;
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            text-align: center;
+        }
+
+        #mobileNotificationChevron {
+            transition: transform 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+            #mobileNotificationChevron.rotate {
+                transform: rotate(180deg);
+            }
+
+        /* Mobile Notification Settings Toast */
+        .mobile-notification-toast {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+            .mobile-notification-toast.active {
+                display: flex;
+            }
+
+        .mobile-toast-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .mobile-toast-content {
+            position: relative;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            width: 100%;
+            max-width: 100vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @@keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .mobile-toast-header {
+            padding: 1.25rem 1rem;
+            border-bottom: 2px solid var(--gray-200);
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 16px 16px 0 0;
+            flex-shrink: 0;
+        }
+
+            .mobile-toast-header h6 {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 600;
+            }
+
+            .mobile-toast-header i.fa-cog {
+                margin-right: 0.5rem;
+            }
+
+        .mobile-toast-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+            .mobile-toast-close:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+
+        .mobile-toast-body {
+            padding: 1.25rem 1rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+            .mobile-toast-body::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .mobile-toast-body::-webkit-scrollbar-track {
+                background: var(--gray-100);
+            }
+
+            .mobile-toast-body::-webkit-scrollbar-thumb {
+                background: var(--gray-400);
+                border-radius: 3px;
+            }
+
+            .mobile-toast-body::-webkit-scrollbar-thumb:hover {
+                background: var(--gray-500);
+            }
+
+            .mobile-toast-body .form-check-label {
+                display: block;
+                padding-left: 0.5rem;
+            }
+
+            .mobile-toast-body .form-check-label i {
+                margin-right: 0.5rem;
+            }
+
+            .mobile-toast-body .alert {
+                font-size: 0.875rem;
+                padding: 0.75rem;
+            }
+
+        .mobile-toast-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+
+            .mobile-toast-footer .btn {
+                flex: 1;
+                max-width: 150px;
+            }
+
+        /* Hide toast on desktop */
+        @@media (min-width: 768px) {
+            .mobile-notification-toast {
+                display: none !important;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .user-actions {
+                display: none !important;
+            }
+
+            .burger-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .mobile-user-actions {
+                display: block;
+            }
+        }
+
+        /* Notification Styles - Responsive */
+        .notification-container {
+            position: relative;
+            z-index: 1060;
+        }
+
+            .notification-container .badge {
+                font-size: 0.6rem;
+                padding: 0.25em 0.4em;
+                min-width: 18px;
+                height: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid white;
+            }
+
+        /* Notification Dropdown - Positioned below notification icon, relative to the button */
+        .notification-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            left: auto;
+            transform: none;
+            width: 95vw;
+            max-width: 400px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 1070;
+            display: none !important;
+            border: 1px solid var(--gray-200);
+            max-height: calc(100vh - 100px);
+            overflow: hidden;
+        }
+        
+        .notification-dropdown[style*="display: block"] {
+            display: block !important;
+        }
+
+        /* Small phones: Position below icon, relative to button */
+        @@media (max-width: 575.98px) {
+            .notification-dropdown {
+                position: absolute;
+                top: calc(100% + 10px);
+                right: 0;
+                left: auto;
+                transform: none;
+                width: calc(100vw - 20px);
+                max-width: 400px;
+                max-height: calc(100vh - 100px);
+            }
+        }
+
+        /* Tablets and larger phones: Apply desktop configuration for consistent experience */
+        @@media (min-width: 576px) and (max-width: 991.98px) {
+            .notification-dropdown {
+                position: absolute;
+                top: calc(100% + 15px);
+                right: 0;
+                left: auto;
+                transform: none;
+                width: 420px;
+                max-width: 95vw; /* Prevent overflow on smaller tablets */
+                max-height: calc(100vh - 90px);
+                z-index: 1060;
+                border-radius: 16px !important;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1) !important;
+                border: 1px solid rgba(220, 20, 60, 0.1) !important;
+                overflow: visible !important;
+            }
+
+            /* Bubble pointer/arrow connecting to notification button */
+            .notification-dropdown::before {
+                content: '';
+                position: absolute;
+                top: -12px;
+                right: 10px;
+                width: 0;
+                height: 0;
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-bottom: 12px solid white;
+                filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
+                z-index: 1;
+            }
+
+            /* Bubble pointer border */
+            .notification-dropdown::after {
+                content: '';
+                position: absolute;
+                top: -13px;
+                right: 9px;
+                width: 0;
+                height: 0;
+                border-left: 13px solid transparent;
+                border-right: 13px solid transparent;
+                border-bottom: 13px solid rgba(220, 20, 60, 0.1);
+                z-index: 0;
+            }
+
+            /* Rounded header for bubble design */
+            .notification-dropdown .notification-header {
+                border-radius: 16px 16px 0 0;
+                background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
+            }
+
+            /* Rounded footer for bubble design */
+            .notification-dropdown .notification-footer {
+                border-radius: 0 0 16px 16px;
+            }
+
+            /* Bubble fade-in animation for tablets */
+            .notification-dropdown {
+                animation: bubbleFadeIn 0.25s ease-out;
+            }
+        }
+
+        /* Desktop: Bubble design - Position below notification icon, relative to button */
+        @@media (min-width: 992px) {
+            .notification-dropdown {
+                position: absolute;
+                top: calc(100% + 15px);
+                right: 0;
+                left: auto;
+                transform: none;
+                width: 420px;
+                max-height: calc(100vh - 90px);
+                z-index: 1060;
+                border-radius: 16px !important;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1) !important;
+                border: 1px solid rgba(220, 20, 60, 0.1) !important;
+                overflow: visible !important;
+            }
+
+            /* Bubble pointer/arrow connecting to notification button */
+            .notification-dropdown::before {
+                content: '';
+                position: absolute;
+                top: -12px;
+                right: 10px;
+                width: 0;
+                height: 0;
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-bottom: 12px solid white;
+                filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
+                z-index: 1;
+            }
+
+            /* Bubble pointer border */
+            .notification-dropdown::after {
+                content: '';
+                position: absolute;
+                top: -13px;
+                right: 9px;
+                width: 0;
+                height: 0;
+                border-left: 13px solid transparent;
+                border-right: 13px solid transparent;
+                border-bottom: 13px solid rgba(220, 20, 60, 0.1);
+                z-index: 0;
+            }
+
+            /* Rounded header for bubble design */
+            .notification-dropdown .notification-header {
+                border-radius: 16px 16px 0 0;
+                background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
+            }
+
+            /* Rounded footer for bubble design */
+            .notification-dropdown .notification-footer {
+                border-radius: 0 0 16px 16px;
+            }
+
+            /* Bubble fade-in animation for desktop */
+            .notification-dropdown {
+                animation: bubbleFadeIn 0.25s ease-out;
+            }
+        }
+
+        /* Bubble animation keyframes */
+        @@keyframes bubbleFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .notification-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gray-100);
+            position: relative;
+        }
+
+            .notification-header h6 {
+                margin: 0;
+                font-weight: 600;
+                color: var(--gray-700);
+            }
+
+        .notification-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .notification-close-btn {
+            display: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            border: none;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-600);
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+            .notification-close-btn:hover {
+                background: var(--danger);
+                color: white;
+            }
+
+        /* Mobile layout: Show close button */
+        @@media (max-width: 991.98px) {
+            .notification-close-btn {
+                display: flex;
+            }
+
+            .notification-header {
+                grid-template-columns: 1fr auto;
+            }
+
+            .notification-header-actions {
+                display: none;
+            }
+        }
+
+        /* Notification dropdown overlay for mobile */
+        .notification-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1045;
+        }
+
+            .notification-overlay.active {
+                display: block;
+            }
+
+        .notification-body {
+            height: 420px;
+            max-height: 420px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+
+            /* Ensure scrollbar is always visible for better UX */
+            .notification-body::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .notification-body::-webkit-scrollbar-track {
+                background: var(--gray-100);
+                border-radius: 3px;
+            }
+
+            .notification-body::-webkit-scrollbar-thumb {
+                background: var(--gray-300);
+                border-radius: 3px;
+            }
+
+            .notification-body::-webkit-scrollbar-thumb:hover {
+                background: var(--gray-400);
+            }
+
+        /* Mobile screens: Optimize notification body for touch scrolling */
+        @@media (max-width: 575.98px) {
+            .notification-body {
+                height: auto;
+                max-height: calc(100vh - 250px); /* Responsive height based on viewport */
+                min-height: 300px; /* Minimum height to show at least 3-4 notifications */
+                overflow-y: auto;
+                overflow-x: hidden;
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
+            }
+
+            /* Mobile scrollbar - thinner and more subtle */
+            .notification-body::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .notification-body::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .notification-body::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 4px;
+            }
+
+            .notification-body::-webkit-scrollbar-thumb:active {
+                background: rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        /* Small mobile screens: Further optimize for limited space */
+        @@media (max-width: 400px) {
+            .notification-body {
+                max-height: calc(100vh - 220px);
+                min-height: 280px;
+            }
+        }
+
+        /* Landscape mobile: Reduce height to fit */
+        @@media (max-height: 600px) and (orientation: landscape) {
+            .notification-body {
+                max-height: calc(100vh - 180px);
+                min-height: 200px;
+            }
+        }
+
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            background: #FFFFFF; /* Read notification background */
+        }
+
+            .notification-item:hover {
+                background: #E3E3E3;
+            }
+
+            .notification-item.unread {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            }
+
+            .notification-item.unread:hover {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+            }
+
+            /* Priority notifications - High priority (2+ hours delay) */
+            .notification-item.priority-high {
+                background: #FFFFFF; /* Read notification background */
+            }
+
+            .notification-item.priority-high.unread {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            }
+
+            .notification-item.priority-high.unread:hover {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+            }
+
+            /* Priority notifications - Medium priority (1-2 hours delay) */
+            .notification-item.priority-medium {
+                background: #FFFFFF; /* Read notification background */
+            }
+
+            .notification-item.priority-medium.unread {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            }
+
+            .notification-item.priority-medium.unread:hover {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+            }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 0.375rem;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            flex-wrap: wrap;
+            line-height: 1.4;
+        }
+
+        .notification-title-text {
+            flex: 0 1 auto;
+            min-width: 0;
+        }
+
+        .notification-message {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-bottom: 0.375rem;
+            line-height: 1.45;
+            word-wrap: break-word;
+            word-break: break-word;
+            padding-left: 1.75rem;
+        }
+
+        .notification-time {
+            font-size: 0.6875rem;
+            color: var(--gray-400);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding-left: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .notification-empty {
+            padding: 2rem 1rem;
+            text-align: center;
+            color: var(--gray-500);
+        }
+
+        .notification-footer {
+            padding: 0.75rem;
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            text-align: center;
+        }
+
+        .btn-view-all-notifications {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+            .btn-view-all-notifications:hover {
+                background: var(--primary-dark);
+                color: white;
+                text-decoration: none;
+            }
+
+        .notification-type-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .notification-type-submitted {
+            background: var(--success);
+            color: white;
+        }
+
+        .notification-type-processing {
+            background: var(--warning);
+            color: white;
+        }
+
+        .notification-type-approved {
+            background: var(--success);
+            color: white;
+        }
+
+        .notification-type-unapproved {
+            background: var(--primary);
+            color: white;
+        }
+
+        .notification-type-retake {
+            background: #ff9800;
+            color: white;
+        }
+
+        .notification-type-claimed {
+            background: var(--info);
+            color: white;
+        }
+
+        .notification-type-delayed {
+            background: var(--warning);
+            color: white;
+        }
+
+        .notification-type-delay-alert {
+            background: #FFC107;
+            color: #856404;
+            animation: pulseIcon 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+        }
+
+        /* Delay alert notification item styling */
+        .notification-item[data-type="delay_alert"] {
+            background: #FFFFFF; /* Read notification background */
+        }
+
+        .notification-item[data-type="delay_alert"].unread {
+            background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+        }
+
+        .notification-item[data-type="delay_alert"].unread:hover {
+            background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+        }
+
+        .notification-item[data-type="delay_alert"]:hover {
+            background: #E3E3E3;
+        }
+
+        @@keyframes pulseIcon {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .notification-type-waiting {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .notification-type-welcome {
+            background: linear-gradient(135deg, #5B9BD5 0%, #4A8BC2 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(91, 155, 213, 0.3);
+        }
+
+        /* Permanent notification styling (welcome notifications) */
+        /* Welcome notifications for both verified and non-verified users are fully scrollable */
+        /* Background colors are controlled by read/unread state, not permanent status */
+        .notification-item[data-permanent="true"] {
+            /* Removed hardcoded background - will inherit from .notification-item or .notification-item.unread */
+            /* Removed position: sticky and bottom: 0 to ensure full scrollability */
+        }
+
+            .notification-item[data-permanent="true"]:hover {
+                /* Removed hardcoded hover background - will inherit from .notification-item:hover or .notification-item.unread:hover */
+            }
+
+        /* Priority notification type icons */
+        .notification-type-priority-high {
+            background: #DC2626;
+            color: white;
+            animation: pulseIcon 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+        }
+
+        .notification-type-priority-medium {
+            background: #F59E0B;
+            color: white;
+            animation: pulseIcon 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Compact status and priority badges for notifications */
+        .notification-badges {
+            display: inline-flex;
+            gap: 0.375rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.125rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            line-height: 1.2;
+        }
+
+        .status-badge.submitted {
+            background: #10B981;
+            color: white;
+        }
+
+        .status-badge.processing {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .status-badge.approved {
+            background: #059669;
+            color: white;
+        }
+
+        .status-badge.unapproved {
+            background: #DC2626;
+            color: white;
+        }
+
+        .status-badge.claimed {
+            background: #8B5CF6;
+            color: white;
+        }
+
+        .status-badge.delayed {
+            background: #F59E0B;
+            color: white;
+        }
+
+        .status-badge.waiting {
+            background: #6B7280;
+            color: white;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 0.125rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            line-height: 1.2;
+        }
+
+        .priority-badge.high {
+            background: #DC2626;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .priority-badge.medium {
+            background: #F59E0B;
+            color: white;
+        }
+
+        @@keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Main Content - Responsive */
+        .main-content {
+            padding: 1rem 0;
+        }
+
+        /* Greeting Card - Responsive */
+        .greeting-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .greeting-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 5px;
+                height: 100%;
+                background: var(--primary);
+            }
+
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-light);
+        }
+
+        .greeting-text h2 {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            font-size: 1.25rem;
+        }
+
+        .greeting-text p {
+            color: var(--gray-500);
+            margin-bottom: 0;
+        }
+
+        /* Verification Badges - Responsive */
+        .verification-badge,
+        .verification-required {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .verification-badge {
+            background: var(--success);
+            color: white;
+        }
+
+        .verification-required {
+            background: var(--warning);
+            color: white;
+        }
+
+        .verification-alert {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--warning);
+        }
+
+        /* Services Section */
+        .section-title {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+            .section-title::after {
+                content: '';
+                position: absolute;
+                bottom: -8px;
+                left: 0;
+                width: 40px;
+                height: 4px;
+                background: var(--primary);
+                border-radius: 2px;
+            }
+
+        .service-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem;
+            height: 100%;
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .service-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-lg);
+                border-color: var(--primary-light);
+            }
+
+            .service-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: var(--primary);
+                transform: scaleY(0);
+                transition: var(--transition);
+            }
+
+            .service-card:hover::before {
+                transform: scaleY(1);
+            }
+
+        .service-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-size: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .service-card:hover .service-icon {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .service-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .service-description {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            margin-bottom: 0;
+        }
+
+        .service-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+            .service-card.disabled:hover {
+                transform: none;
+                box-shadow: var(--shadow-sm);
+                border-color: var(--gray-200);
+            }
+
+            .service-card.disabled::before {
+                display: none;
+            }
+
+            .service-card.disabled .service-icon {
+                background: var(--gray-200);
+                color: var(--gray-500);
+            }
+
+            .service-card.disabled:hover .service-icon {
+                background: var(--gray-200);
+                color: var(--gray-500);
+                transform: none;
+            }
+
+        /* Real-time indicator */
+        .real-time-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--success);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+        }
+
+        .pulse {
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+
+        /* Mark all as read animation */
+        #markAllRead {
+            transition: all 0.3s ease;
+        }
+
+            #markAllRead.reading {
+                animation: markAsReadPulse 0.6s ease;
+            }
+
+        @@keyframes markAsReadPulse {
+            0% {
+                transform: scale(1);
+                color: var(--gray-500);
+            }
+
+            50% {
+                transform: scale(1.1);
+                color: var(--success);
+            }
+
+            100% {
+                transform: scale(1);
+                color: var(--success);
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--secondary);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+        }
+
+            .footer p {
+                margin-bottom: 0;
+                text-align: center;
+                color: var(--gray-300);
+            }
+
+        /* ========================================= */
+        /* RESPONSIVE MEDIA QUERIES */
+        /* ========================================= */
+
+        /* Small devices (landscape phones, 576px and up) */
+        @@media (min-width: 576px) {
+            .greeting-card {
+                padding: 1.5rem;
+            }
+
+            .profile-img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .greeting-text h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Medium devices (tablets, 768px and up) */
+        @@media (min-width: 768px) {
+            .main-content {
+                padding: 2rem 0;
+            }
+
+            .greeting-card {
+                margin-bottom: 2rem;
+            }
+
+            .verification-alert {
+                padding: 1rem 1.5rem;
+            }
+
+            /* Tablet notification improvements */
+            .notification-item {
+                padding: 0.9375rem;
+            }
+
+            .notification-title {
+                font-size: 0.9375rem;
+            }
+
+            .notification-message {
+                font-size: 0.8125rem;
+                padding-left: 2.25rem;
+            }
+
+            .notification-time {
+                font-size: 0.75rem;
+                padding-left: 2.25rem;
+            }
+
+            .notification-type-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8125rem;
+            }
+
+            .status-badge {
+                font-size: 0.625rem;
+                padding: 0.125rem 0.4rem;
+            }
+
+            .priority-badge {
+                font-size: 0.625rem;
+                padding: 0.125rem 0.4rem;
+            }
+        }
+
+        /* Medium and large devices (tablets and desktops, 576px and up) */
+        /* Apply to tablets (576px-991.98px) and desktops (992px+) for consistent dropdown positioning */
+        @@media (min-width: 576px) {
+            /* Notification dropdown styles are defined in main dropdown section above */
+
+            /* Allow notification dropdown to be visible outside greeting card */
+            /* This ensures dropdown doesn't get clipped by greeting card at 867x1291 and other tablet sizes */
+            .greeting-card {
+                overflow: visible;
+            }
+
+            /* Ensure notification container can display dropdown outside card */
+            .notification-container {
+                z-index: 10;
+            }
+        }
+
+        /* Extra small devices (phones, less than 576px) */
+        @@media (max-width: 575.98px) {
+            .user-actions {
+                gap: 0.25rem;
+            }
+
+                .user-actions .btn-icon,
+                .user-actions .btn-link {
+                    width: 36px;
+                    height: 36px;
+                    font-size: 0.9rem;
+                }
+
+            .logo {
+                font-size: 1.25rem;
+            }
+
+            .notification-header {
+                padding: 0.75rem;
+            }
+
+                .notification-header h6 {
+                    font-size: 0.9rem;
+                }
+
+                .notification-header .btn-sm {
+                    font-size: 0.75rem;
+                    padding: 0.25rem 0.5rem;
+                }
+
+            .notification-item {
+                padding: 0.875rem;
+                border-radius: 8px;
+                margin-bottom: 0.5rem;
+            }
+
+                .notification-item:last-child {
+                    margin-bottom: 0;
+                }
+
+            /* Mobile notification title improvements */
+            .notification-title {
+                font-size: 0.875rem;
+                line-height: 1.4;
+                gap: 0.375rem;
+            }
+
+            /* Mobile notification type icon */
+            .notification-type-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.75rem;
+                flex-shrink: 0;
+            }
+
+            /* Mobile notification message */
+            .notification-message {
+                font-size: 0.8125rem;
+                line-height: 1.5;
+                margin-bottom: 0.625rem;
+                padding-left: 2rem;
+            }
+
+            /* Mobile notification time */
+            .notification-time {
+                font-size: 0.6875rem;
+                padding-left: 2rem;
+            }
+
+            /* Mobile badges - make them more compact */
+            .notification-badges {
+                gap: 0.25rem;
+            }
+
+            .status-badge {
+                font-size: 0.5625rem;
+                padding: 0.125rem 0.35rem;
+                border-radius: 3px;
+                letter-spacing: 0.2px;
+            }
+
+            .priority-badge {
+                font-size: 0.5625rem;
+                padding: 0.125rem 0.35rem;
+                border-radius: 3px;
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+            }
+
+            /* Mobile-specific notification body */
+            .mobile-notification-body {
+                padding: 0.5rem;
+            }
+
+                .mobile-notification-body .notification-item {
+                    padding: 0.875rem;
+                    margin-bottom: 0.5rem;
+                    border-radius: 8px;
+                    border-bottom: none;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+                }
+
+                    .mobile-notification-body .notification-item:last-child {
+                        margin-bottom: 0;
+                    }
+
+            .verification-badge,
+            .verification-required {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.6rem;
+            }
+
+            .service-card {
+                padding: 1.25rem;
+            }
+
+            .greeting-text h2 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Extra extra small devices (very small phones) */
+        @@media (max-width: 400px) {
+            .user-actions .btn-icon,
+            .user-actions .btn-link {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+
+            .notification-dropdown {
+                width: 92vw;
+                right: 0;
+                left: auto;
+            }
+
+            .greeting-card {
+                padding: 1rem;
+            }
+
+            .profile-img {
+                width: 45px;
+                height: 45px;
+            }
+
+            .verification-badge,
+            .verification-required {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.5rem;
+            }
+
+            /* Extra compact notifications for very small screens */
+            .notification-item {
+                padding: 0.75rem;
+            }
+
+            .notification-title {
+                font-size: 0.8125rem;
+            }
+
+            .notification-message {
+                font-size: 0.75rem;
+                padding-left: 1.75rem;
+            }
+
+            .notification-time {
+                font-size: 0.65rem;
+                padding-left: 1.75rem;
+            }
+
+            .notification-type-icon {
+                width: 26px;
+                height: 26px;
+                font-size: 0.7rem;
+            }
+
+            .notification-badges {
+                gap: 0.2rem;
+            }
+
+            .status-badge {
+                font-size: 0.5rem;
+                padding: 0.1rem 0.3rem;
+                border-radius: 2px;
+            }
+
+            .priority-badge {
+                font-size: 0.5rem;
+                padding: 0.1rem 0.3rem;
+                border-radius: 2px;
+            }
+
+            .mobile-notification-body .notification-item {
+                padding: 0.75rem;
+            }
+        }
+
+        /* Height adjustments for landscape mobile */
+        @@media (max-height: 600px) and (orientation: landscape) {
+            .notification-dropdown {
+                max-height: 50vh;
+            }
+
+            .notification-body {
+                max-height: 40vh;
+            }
+        }
+
+        /* Print styles */
+        @@media print {
+            .notification-dropdown,
+            .real-time-indicator,
+            .user-actions {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <!-- Session Timeout -->
+    @await Html.PartialAsync("_SessionTimeout")
+</head>
+<body>
+    <!-- Real-time Indicator -->
+    <div class="real-time-indicator" id="realTimeIndicator">
+        <i class="fas fa-circle pulse"></i>
+        <span>Live Updates</span>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="logo mb-0">LingapDVO</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Notification Dropdown Overlay (for mobile) -->
+    <div class="notification-overlay" id="notificationOverlay"></div>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Mobile User Actions Menu -->
+    <div class="mobile-user-actions" id="mobileUserActions">
+        <div class="mobile-menu-header">
+            <h5><i class="fas fa-user-circle me-2"></i>Account Menu</h5>
+            <button class="mobile-menu-close-btn" id="mobileMenuCloseBtn" title="Close Menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mobile-menu-items">
+            <!-- Verification Status -->
+            @if (isVerified)
+            {
+                <div class="mobile-menu-item" style="pointer-events: none;">
+                    <i class="fas fa-check-circle text-success"></i>
+                    <span>Account Verified</span>
+                </div>
+            }
+            else
+            {
+                <a href="/Verifyaccount" class="mobile-menu-item">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    <span>Complete Verification</span>
+                </a>
+            }
+
+            <!-- Notifications -->
+            <a href="javascript:void(0)" class="mobile-menu-item" id="mobileNotificationBtn">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="badge bg-danger rounded-pill ms-auto" id="mobileNotificationBadge" style="display: none;">0</span>
+                <i class="fas fa-chevron-down ms-2" id="mobileNotificationChevron"></i>
+            </a>
+
+            <!-- Mobile Notification Dropdown (inside menu) -->
+            <div class="mobile-notification-dropdown" id="mobileNotificationDropdown">
+                <div class="mobile-notification-header">
+                    <button class="btn btn-sm btn-link text-muted" id="mobileNotificationSettings" title="Notification Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="btn btn-sm btn-link text-muted" id="mobileMarkAllRead" title="Mark all as read">
+                        <i class="fas fa-check-double"></i>
+                    </button>
+                    <button class="btn btn-sm btn-link text-muted" id="mobileRefreshNotifications" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="mobile-notification-body" id="mobileNotificationList">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Profile -->
+            @if (isVerified)
+            {
+                <a href="/Userprofile" class="mobile-menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+            }
+            else
+            {
+                <div class="mobile-menu-item disabled">
+                    <i class="fas fa-user text-muted"></i>
+                    <span>My Profile</span>
+                    <small class="text-muted ms-auto">Verify Required</small>
+                </div>
+            }
+
+            <!-- Logout -->
+            <form asp-controller="Login" asp-action="Logout" method="post" class="w-100">
+                <button type="submit" class="mobile-menu-item logout w-100 text-start">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Settings Modal -->
+    <div class="modal fade" id="notificationSettingsModal" tabindex="-1" aria-labelledby="notificationSettingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationSettingsModalLabel">
+                        <i class="fas fa-cog"></i> Notification Preferences
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Choose how you want to receive notifications</p>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="preferInAppNotification" checked>
+                        <label class="form-check-label" for="preferInAppNotification">
+                            <i class="fas fa-bell text-primary"></i> <strong>In-App Notifications</strong>
+                            <small class="d-block text-muted">Receive real-time notifications in the application</small>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="preferEmailNotification" checked>
+                        <label class="form-check-label" for="preferEmailNotification">
+                            <i class="fas fa-envelope text-info"></i> <strong>Email Notifications</strong>
+                            <small class="d-block text-muted">Get notified via email about status updates</small>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="preferSmsNotification">
+                        <label class="form-check-label" for="preferSmsNotification">
+                            <i class="fas fa-sms text-success"></i> <strong>SMS Notifications</strong>
+                            <small class="d-block text-muted">Receive text message alerts on your phone</small>
+                        </label>
+                    </div>
+
+                    <div class="alert alert-info mt-3" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <small>You will receive notifications when your application status changes (Pending, Processing, Approve, Disapprove, Claimed)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveNotificationSettings">
+                        <i class="fas fa-save"></i> Save Preferences
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Notification Settings Toast -->
+    <div class="mobile-notification-toast" id="mobileNotificationSettingsToast">
+        <div class="mobile-toast-overlay" id="mobileToastOverlay"></div>
+        <div class="mobile-toast-content">
+            <div class="mobile-toast-header">
+                <h6 class="mb-0"><i class="fas fa-cog"></i> Notification Preferences</h6>
+                <button class="mobile-toast-close" id="mobileToastClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mobile-toast-body">
+                <p class="text-muted mb-3 small">Choose how you want to receive notifications</p>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="mobilePreferInAppNotification" checked>
+                    <label class="form-check-label" for="mobilePreferInAppNotification">
+                        <i class="fas fa-bell text-primary"></i> <strong>In-App Notifications</strong>
+                        <small class="d-block text-muted">Receive real-time notifications in the application</small>
+                    </label>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="mobilePreferEmailNotification" checked>
+                    <label class="form-check-label" for="mobilePreferEmailNotification">
+                        <i class="fas fa-envelope text-info"></i> <strong>Email Notifications</strong>
+                        <small class="d-block text-muted">Get notified via email about status updates</small>
+                    </label>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="mobilePreferSmsNotification">
+                    <label class="form-check-label" for="mobilePreferSmsNotification">
+                        <i class="fas fa-sms text-success"></i> <strong>SMS Notifications</strong>
+                        <small class="d-block text-muted">Receive text message alerts on your phone</small>
+                    </label>
+                </div>
+
+                <div class="alert alert-info mb-3" role="alert">
+                    <i class="fas fa-info-circle"></i>
+                    <small>You will receive notifications when your application status changes (Pending, Processing, Approve, Disapprove, Claimed)</small>
+                </div>
+            </div>
+            <div class="mobile-toast-footer">
+                <button type="button" class="btn btn-secondary btn-sm" id="mobileCancelNotificationSettings">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="mobileSaveNotificationSettings">
+                    <i class="fas fa-save"></i> Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="row">
+                <!-- Full Width Content -->
+                <div class="col-12">
+                    <!-- Greeting Card -->
+                    <div class="greeting-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="d-flex align-items-center gap-3">
+                                    @if (string.IsNullOrEmpty(ViewBag.Profilepicture))
+                                    {
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-gray-300 text-gray-600" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-user" style="font-size: 1.5rem;"></i>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <img src="@ViewBag.Profilepicture" alt="Profile" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #5B9BD5;">
+                                    }
+                                    <div>
+                                        <h1 class="lead mb-0">
+                                            Hello, @(string.IsNullOrEmpty(ViewBag.Firstname) ? ViewBag.Username : ViewBag.Firstname)!
+                                        </h1>
+                                        <div class="mt-1">
+                                            @if (isVerified)
+                                            {
+                                                <span class="verification-badge">
+                                                    <i class="fas fa-check-circle"></i> Verified Account
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="verification-required">
+                                                    <i class="fas fa-exclamation-triangle"></i> Verification Required
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Desktop User Actions -->
+                            <div class="user-actions">
+                                <!-- Verify Status -->
+                                @if (isVerified)
+                                {
+                                    <span class="btn btn-link text-success" style="pointer-events: none;">
+                                        <i class="fas fa-check-circle" title="Verified"></i>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <a href="/Verifyaccount" class="btn btn-link text-warning">
+                                        <i class="fas fa-exclamation-triangle" title="Incomplete Verification"></i>
+                                    </a>
+                                }
+
+                                <!-- Notifications Button -->
+                                <div class="notification-container">
+                                    <button class="btn btn-icon position-relative" id="notificationButton" title="Notifications">
+                                        <i class="fas fa-bell"></i>
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                              id="notificationBadge" style="display: none;">
+                                            0
+                                        </span>
+                                    </button>
+
+                                    <!-- Notification Dropdown -->
+                                    <div class="notification-dropdown" id="notificationDropdown">
+                                        <div class="notification-header">
+                                            <h6 class="mb-0">Notifications</h6>
+                                            <div class="notification-header-actions">
+                                                <button class="btn btn-sm btn-link text-muted" id="notificationSettings" title="Notification Settings">
+                                                    <i class="fas fa-cog"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-link text-muted" id="markAllRead" title="Mark all as read">
+                                                    <i class="fas fa-check-double"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-link text-muted" id="refreshNotifications" title="Refresh">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </div>
+                                            <button class="notification-close-btn" id="notificationCloseBtn" title="Close">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="notification-body" id="notificationList">
+                                            <!-- Notifications will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Profile Management -->
+                                @if (isVerified)
+                                {
+                                    <a href="/Userprofile" class="btn btn-link text-muted">
+                                        <i class="fas fa-user" title="Profile"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="btn btn-link text-muted" style="cursor: not-allowed; opacity: 0.6;">
+                                        <i class="fas fa-user" title="Profile - Verification Required"></i>
+                                    </span>
+                                }
+
+                                <!-- Logout -->
+                                <form asp-controller="Login" asp-action="Logout" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-link text-danger">
+                                        <i class="fas fa-sign-out-alt" title="Logout"></i>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Mobile Burger Menu Button -->
+                            <button class="burger-menu-btn" id="burgerMenuBtn" aria-label="Menu" title="Menu">
+                                <i class="fas fa-bars"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    @if (!isVerified)
+                    {
+                        <!-- Verification Alert -->
+                        <div class="verification-alert">
+                            <div class="d-flex align-items-center justify-content-between flex-column flex-md-row">
+                                <div class="d-flex align-items-center mb-2 mb-md-0">
+                                    <i class="fas fa-info-circle text-warning me-3" style="font-size: 1.5rem;"></i>
+                                    <div>
+                                        <strong class="d-block">Account Verification Required</strong>
+                                        <small class="text-muted">Complete verification to access Hospital, Other, and Funeral Assistance services.</small>
+                                    </div>
+                                </div>
+                                <a href="/Verifyaccount" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-user-check me-1"></i>Verify Now
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Services Section -->
+                    <div class="mb-5">
+                        <h3 class="section-title">SERVICES OFFERED</h3>
+                        <div class="row g-4">
+                            <!-- Service 1 - Hospital Assistance -->
+                            <div class="col-md-6 col-lg-4">
+                                @if (isVerified)
+                                {
+                                    <a href="/HospitalAssistance" class="text-decoration-none">
+                                        <div class="service-card">
+                                            <div class="service-icon">
+                                                <i class="fas fa-hospital"></i>
+                                            </div>
+                                            <h5 class="service-title">Hospital Assistance</h5>
+                                            <p class="service-description">Private hospital bill support and financial aid</p>
+                                        </div>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                        <div class="service-icon">
+                                            <i class="fas fa-hospital"></i>
+                                        </div>
+                                        <h5 class="service-title">Hospital Assistance</h5>
+                                        <p class="service-description">Private hospital bill support and financial aid</p>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Service 2 - Funeral Assistance -->
+                            <div class="col-md-6 col-lg-4">
+                                @if (isVerified)
+                                {
+                                    <a href="/FuneralAssistance" class="text-decoration-none">
+                                        <div class="service-card">
+                                            <div class="service-icon">
+                                                <i class="fas fa-monument"></i>
+                                            </div>
+                                            <h5 class="service-title">Funeral Assistance</h5>
+                                            <p class="service-description">Burial and funeral support services</p>
+                                        </div>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                        <div class="service-icon">
+                                            <i class="fas fa-monument"></i>
+                                        </div>
+                                        <h5 class="service-title">Funeral Assistance</h5>
+                                        <p class="service-description">Burial and funeral support services</p>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Service 3 - Other Assistance -->
+                            <div class="col-md-6 col-lg-4">
+                                @if (isVerified)
+                                {
+                                    <a href="/OtherAssistance" class="text-decoration-none">
+                                        <div class="service-card">
+                                            <div class="service-icon">
+                                                <i class="fas fa-microscope"></i>
+                                            </div>
+                                            <h5 class="service-title">Other Assistance</h5>
+                                            <p class="service-description">Other assistance</p>
+                                        </div>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                        <div class="service-icon">
+                                            <i class="fas fa-microscope"></i>
+                                        </div>
+                                        <h5 class="service-title">Other Assistance</h5>
+                                        <p class="service-description">Other assistance</p>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Service 4 - Application History -->
+                            <div class="col-md-6 col-lg-4">
+                                @if (isVerified)
+                                {
+                                    <a href="/Applicationtracking" class="text-decoration-none">
+                                        <div class="service-card">
+                                            <div class="service-icon">
+                                                <i class="fas fa-history"></i>
+                                            </div>
+                                            <h5 class="service-title">Application History</h5>
+                                            <p class="service-description">View your previous applications and status</p>
+                                        </div>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="service-card disabled" data-bs-toggle="tooltip" title="Complete account verification to access this service">
+                                        <div class="service-icon">
+                                            <i class="fas fa-history"></i>
+                                        </div>
+                                        <h5 class="service-title">Application History</h5>
+                                        <p class="service-description">View your previous applications and status</p>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Service 5 - Locate Facilities -->
+                            <div class="col-md-6 col-lg-4">
+                                <a href="/Nearbyoffices" class="text-decoration-none">
+                                    <div class="service-card">
+                                        <div class="service-icon">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </div>
+                                        <h5 class="service-title">Branches Nearby</h5>
+                                        <p class="service-description">Find nearby offices near you</p>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <!-- Service 6 - Partner Directory -->
+                            <div class="col-md-6 col-lg-4">
+                                <a href="/Feedback" class="text-decoration-none">
+                                    <div class="service-card">
+                                        <div class="service-icon">
+                                            <i class="fas fa-comment-dots"></i>
+
+                                        </div>
+                                        <h5 class="service-title">Feedback Page</h5>
+                                        <p class="service-description">Share your feedback with us</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SignalR for Real-time Notifications -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Fallback data from server (used when API fails)
+        const fallbackHospitalBills = @Html.Raw(Json.Serialize(Model.HospitalAssistance));
+        const fallbackMedicalForms = @Html.Raw(Json.Serialize(Model.OtherAssistance));
+        const fallbackFuneralForms = @Html.Raw(Json.Serialize(Model.FuneralAssistance));
+
+        // Mobile Burger Menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+            const mobileUserActions = document.getElementById('mobileUserActions');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
+            const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+
+            // Toggle mobile menu
+            if (burgerMenuBtn) {
+                burgerMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    mobileUserActions.classList.toggle('active');
+                    mobileMenuOverlay.classList.toggle('active');
+                    document.body.style.overflow = mobileUserActions.classList.contains('active') ? 'hidden' : '';
+                    // Hide burger button when sidebar is open
+                    if (mobileUserActions.classList.contains('active')) {
+                        burgerMenuBtn.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Close mobile menu with close button
+            const mobileMenuCloseBtn = document.getElementById('mobileMenuCloseBtn');
+            if (mobileMenuCloseBtn) {
+                mobileMenuCloseBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    mobileUserActions.classList.remove('active');
+                    mobileMenuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    // Show burger button again when sidebar closes
+                    if (burgerMenuBtn) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
+                });
+            }
+
+            // Close mobile menu when clicking overlay (tap outside)
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', function() {
+                    mobileUserActions.classList.remove('active');
+                    mobileMenuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    // Show burger button again when sidebar closes
+                    if (burgerMenuBtn) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
+                });
+            }
+
+            // Sync notification badge between desktop and mobile
+            function syncNotificationBadge() {
+                const desktopBadge = document.getElementById('notificationBadge');
+                if (desktopBadge && mobileNotificationBadge) {
+                    if (desktopBadge.style.display !== 'none') {
+                        mobileNotificationBadge.textContent = desktopBadge.textContent;
+                        mobileNotificationBadge.style.display = 'inline-block';
+                    } else {
+                        mobileNotificationBadge.style.display = 'none';
+                    }
+                }
+            }
+
+            // Sync badges periodically
+            setInterval(syncNotificationBadge, 1000);
+        });
+
+        // REAL Notification functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationButton = document.getElementById('notificationButton');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const notificationBadge = document.getElementById('notificationBadge');
+            const notificationList = document.getElementById('notificationList');
+            const markAllRead = document.getElementById('markAllRead');
+            const refreshNotifications = document.getElementById('refreshNotifications');
+            const realTimeIndicator = document.getElementById('realTimeIndicator');
+
+            // Check if required elements exist
+            if (!notificationButton || !notificationDropdown) {
+                return;
+            }
+
+            let currentNotifications = [];
+            let lastApplicationState = null;
+
+            // Pulse animation
+            const pulseElements = document.querySelectorAll('.pulse');
+            pulseElements.forEach(element => {
+                let opacity = 1;
+                let decreasing = true;
+                setInterval(() => {
+                    if (decreasing) {
+                        opacity -= 0.025;
+                        if (opacity <= 0.5) decreasing = false;
+                    } else {
+                        opacity += 0.025;
+                        if (opacity >= 1) decreasing = true;
+                    }
+                    element.style.opacity = opacity;
+                }, 50);
+            });
+
+            // Helper function to check if a date is valid
+            function isValidDate(dateString) {
+                if (!dateString) return false;
+                const date = new Date(dateString);
+                return !isNaN(date.getTime()) && date > new Date(0);
+            }
+
+            // localStorage functions removed - database now handles all read status tracking
+
+            // Initialize real-time connection
+            initRealTimeConnection();
+
+            // Toggle dropdown
+            notificationButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isVisible = notificationDropdown.style.display === 'block';
+                const notificationOverlay = document.getElementById('notificationOverlay');
+                const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+
+                if (isVisible) {
+                    notificationDropdown.style.display = 'none';
+                    if (notificationOverlay) {
+                        notificationOverlay.classList.remove('active');
+                    }
+                    document.body.style.overflow = '';
+                    // Show burger icon again on mobile
+                    if (burgerMenuBtn && window.innerWidth < 992) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
+                } else {
+                    notificationDropdown.style.display = 'block';
+                    // Show overlay on mobile/tablet only
+                    if (window.innerWidth < 992 && notificationOverlay) {
+                        notificationOverlay.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                        // Hide burger icon on mobile when notification dropdown is showing
+                        if (burgerMenuBtn) {
+                            burgerMenuBtn.classList.add('hidden');
+                        }
+                    }
+                    loadRealNotifications();
+                }
+            });
+
+            // Close notification dropdown with close button
+            const notificationCloseBtn = document.getElementById('notificationCloseBtn');
+            if (notificationCloseBtn) {
+                notificationCloseBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notificationDropdown.style.display = 'none';
+                    const notificationOverlay = document.getElementById('notificationOverlay');
+                    notificationOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    // Show burger icon again on mobile
+                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+                    if (burgerMenuBtn && window.innerWidth < 992) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
+                });
+            }
+
+            // Close notification dropdown when clicking overlay
+            const notificationOverlay = document.getElementById('notificationOverlay');
+            if (notificationOverlay) {
+                notificationOverlay.addEventListener('click', function() {
+                    notificationDropdown.style.display = 'none';
+                    notificationOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    // Show burger icon again on mobile
+                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+                    if (burgerMenuBtn && window.innerWidth < 992) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
+                });
+            }
+
+            // Close dropdown when clicking outside (desktop only)
+            document.addEventListener('click', function(e) {
+                if (!notificationDropdown.contains(e.target) && e.target !== notificationButton) {
+                    notificationDropdown.style.display = 'none';
+                    const notificationOverlay = document.getElementById('notificationOverlay');
+                    notificationOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                    // Show burger icon again on mobile
+                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+                    if (burgerMenuBtn && window.innerWidth < 992) {
+                        burgerMenuBtn.classList.remove('hidden');
+                    }
+                }
+            });
+
+            // Mark all as read
+            if (markAllRead) {
+                markAllRead.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    markAllNotificationsAsRead();
+                });
+            }
+
+            // Refresh notifications
+            if (refreshNotifications) {
+                refreshNotifications.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    loadRealNotifications(true);
+                });
+            }
+
+            // Notification Settings functionality
+            const notificationSettings = document.getElementById('notificationSettings');
+            const notificationSettingsModal = new bootstrap.Modal(document.getElementById('notificationSettingsModal'));
+
+            if (notificationSettings) {
+                notificationSettings.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    loadNotificationPreferences();
+                    notificationSettingsModal.show();
+                    notificationDropdown.style.display = 'none';
+                });
+            }
+
+            async function loadNotificationPreferences() {
+                try {
+                    const response = await fetch('/Dashboard/GetNotificationPreferences');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        document.getElementById('preferInAppNotification').checked = data.preferences.preferInApp;
+                        document.getElementById('preferEmailNotification').checked = data.preferences.preferEmail;
+                        document.getElementById('preferSmsNotification').checked = data.preferences.preferSms;
+                    }
+                } catch (error) {
+                    // Error loading preferences
+                }
+            }
+
+            document.getElementById('saveNotificationSettings').addEventListener('click', async function() {
+                const preferInApp = document.getElementById('preferInAppNotification').checked;
+                const preferEmail = document.getElementById('preferEmailNotification').checked;
+                const preferSms = document.getElementById('preferSmsNotification').checked;
+
+                try {
+                    const response = await fetch('/Dashboard/UpdateNotificationPreferences', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            preferEmail: preferEmail,
+                            preferSms: preferSms,
+                            preferInApp: preferInApp
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showToast('Notification preferences saved successfully!', 'success');
+                        notificationSettingsModal.hide();
+                    } else {
+                        showToast('Failed to save preferences. Please try again.', 'error');
+                    }
+                } catch (error) {
+                                        showToast('An error occurred. Please try again.', 'error');
+                }
+            });
+
+            function showToast(message, type = 'info') {
+                const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${bgClass} border-0 position-fixed top-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000" style="z-index: 9999;">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', toastHtml);
+                const toastElement = document.body.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    this.remove();
+                });
+            }
+
+            function initRealTimeConnection() {
+                initSignalRConnection();
+                // Auto-polling disabled - notifications now only load on page refresh or manual refresh button click
+                // setInterval(() => {
+                //     checkForStatusChanges();
+                // }, 10000);
+                loadRealNotifications();
+                // Start real-time update for notification times only (no auto-reload)
+                startRealtimeTimeUpdates();
+            }
+
+            // Update all notification times in real-time without page refresh
+            function updateAllNotificationTimes() {
+                // Update all notification time displays
+                const timeElements = document.querySelectorAll('.notification-time-text[data-timestamp]');
+                timeElements.forEach(element => {
+                    const timestamp = element.getAttribute('data-timestamp');
+                    if (timestamp) {
+                        element.textContent = formatTime(timestamp);
+                    }
+                });
+            }
+
+            // Start periodic updates of notification times only (auto-reload disabled)
+            function startRealtimeTimeUpdates() {
+                // Update immediately
+                updateAllNotificationTimes();
+
+                // Update time display every 10 seconds for responsive and accurate time tracking
+                // This ensures times like "Just now" -> "1m ago" -> "2m ago" transition quickly
+                setInterval(() => {
+                    updateAllNotificationTimes();
+                }, 10000);
+
+                // Auto-reload disabled - notifications now only fetch when user refreshes page or clicks refresh button
+                // The previous auto-reload interval has been removed to give users full control over when notifications are fetched
+                // Users can manually refresh notifications using the refresh button in the notification header
+            }
+
+            function initSignalRConnection() {
+                try {
+                    const connection = new signalR.HubConnectionBuilder()
+                        .withUrl("/notificationHub")
+                        .withAutomaticReconnect()
+                        .configureLogging(signalR.LogLevel.Information)
+                        .build();
+
+                    connection.on("ReceiveStatusUpdate", function (message) {
+                                                // Reload notifications from database to get the saved notification
+                        loadRealNotifications(false);
+                        showToast(message, 'info');
+                    });
+
+                    connection.on("ReceiveNotification", function (notification) {
+                                                // Reload notifications from database to get the saved notification
+                        loadRealNotifications(true).then(() => {
+                            // Flash title for new notification (after badge is updated)
+                            const currentBadge = document.getElementById('notificationBadge');
+                            if (currentBadge && currentBadge.textContent) {
+                                const count = parseInt(currentBadge.textContent.replace('+', ''));
+                                if (!isNaN(count) && count > 0) {
+                                    flashTitleForNewNotification(count);
+                                }
+                            }
+                        });
+
+                        // Show browser notification if supported and permitted
+                        if ("Notification" in window && Notification.permission === "granted") {
+                            new Notification(notification.title, {
+                                body: notification.message,
+                                icon: "/Icon/lingaplogo.ico"
+                            });
+                        }
+                    });
+
+                    connection.start()
+                        .then(function () {
+                                                        if (realTimeIndicator) {
+                                realTimeIndicator.style.backgroundColor = 'var(--success)';
+                            }
+                        })
+                        .catch(function (err) {
+                            );
+                        });
+
+                    connection.onreconnected((connectionId) => {
+                                                loadRealNotifications(false);
+                    });
+
+                    connection.onclose((error) => {
+                                                if (realTimeIndicator) {
+                            realTimeIndicator.style.backgroundColor = 'var(--warning)';
+                        }
+                    });
+
+                } catch (error) {
+                                    }
+            }
+
+            async function checkForStatusChanges() {
+                try {
+                    const applications = await getRealApplicationData();
+                    const currentState = JSON.stringify(applications);
+
+                    if (lastApplicationState !== currentState) {
+                        const newNotifications = detectStatusChanges(applications);
+                        if (newNotifications.length > 0) {
+                            newNotifications.forEach(notification => {
+                                if (!currentNotifications.some(n => n.id === notification.id)) {
+                                    currentNotifications.unshift(notification);
+                                }
+                            });
+                            updateNotificationUI(currentNotifications);
+                        }
+                        lastApplicationState = currentState;
+                    }
+                } catch (error) {
+                                    }
+            }
+
+            function detectStatusChanges(applications) {
+                const newNotifications = [];
+                const now = new Date();
+
+                const allApplications = [
+                    ...(applications.hospitalBills || []).map(app => ({ ...app, type: 'Hospital' })),
+                    ...(applications.medicalForms || []).map(app => ({ ...app, type: 'Medical Procedure' })),
+                    ...(applications.funeralForms || []).map(app => ({ ...app, type: 'Funeral Assistance' }))
+                ];
+
+                allApplications.forEach(app => {
+                    const appId = app.id || app.Id;
+
+                    if (app.processAt && isValidDate(app.processAt) &&
+                        app.processby && app.processby.trim() !== '') {
+                        const processingDate = new Date(app.processAt);
+                        if ((now - processingDate) < 10 * 60 * 1000) {
+                            const notificationId = `change_processing_${appId}`;
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
+                                newNotifications.push({
+                                    id: notificationId,
+                                    title: `${app.type} Application Update`,
+                                    message: `Your application is now being reviewed by ${app.processby}.`,
+                                    isRead: false,
+                                    createdAt: app.processAt,
+                                    type: "processing",
+                                    link: "/Applicationtracking"
+                                });
+                            }
+                        }
+                    }
+
+                    if (app.result && isValidDate(app.result) && app.status2 === 'Approve') {
+                        const resultDate = new Date(app.result);
+                        if ((now - resultDate) < 10 * 60 * 1000) {
+                            const notificationId = `change_approved_${appId}`;
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
+                                newNotifications.push({
+                                    id: notificationId,
+                                    title: `${app.type} Application Approved!`,
+                                    message: `Good news! Your application has been approved. Visit our office to claim.`,
+                                    isRead: false,
+                                    createdAt: app.result,
+                                    type: "approved",
+                                    link: "/Applicationtracking"
+                                });
+                            }
+                        }
+                    }
+
+                    if (app.result && isValidDate(app.result) && app.status2 === 'Unapproved') {
+                        const resultDate = new Date(app.result);
+                        if ((now - resultDate) < 10 * 60 * 1000) {
+                            const notificationId = `change_unapproved_${appId}`;
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
+                                newNotifications.push({
+                                    id: notificationId,
+                                    title: `${app.type} Application Update`,
+                                    message: `Your application was not approved. Check details in Application History.`,
+                                    isRead: false,
+                                    createdAt: app.result,
+                                    type: "unapproved",
+                                    link: "/Applicationtracking"
+                                });
+                            }
+                        }
+                    }
+
+                    if (app.result && isValidDate(app.result) && app.status2 === 'Retake') {
+                        const resultDate = new Date(app.result);
+                        if ((now - resultDate) < 10 * 60 * 1000) {
+                            const notificationId = `change_retake_${appId}`;
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
+                                newNotifications.push({
+                                    id: notificationId,
+                                    title: `Action Required - Retake Application`,
+                                    message: `Your ${app.type} application requires document resubmission. Please update your attachments to continue processing.`,
+                                    isRead: false,
+                                    createdAt: app.result,
+                                    type: "retake",
+                                    link: "/Applicationtracking"
+                                });
+                            }
+                        }
+                    }
+
+                    if (app.status2 === 'Approve' &&
+                        app.claimedAt && isValidDate(app.claimedAt) &&
+                        app.status3 && app.status3.trim() !== '') {
+                        const claimedDate = new Date(app.claimedAt);
+                        if ((now - claimedDate) < 10 * 60 * 1000) {
+                            const notificationId = `change_claimed_${appId}`;
+                            if (!currentNotifications.some(n => n.id === notificationId)) {
+                                newNotifications.push({
+                                    id: notificationId,
+                                    title: `${app.type} Assistance Completed`,
+                                    message: `Your assistance has been released. Thank you for using LingapDVO.`,
+                                    isRead: false,
+                                    createdAt: app.claimedAt,
+                                    type: "claimed",
+                                    link: "/Applicationtracking"
+                                });
+                            }
+                        }
+                    }
+                });
+
+                return newNotifications;
+            }
+
+            async function loadRealNotifications(showLoading = false) {
+                try {
+                                        if (showLoading) {
+                        notificationList.innerHTML = `
+                            <div class="notification-empty">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Loading notifications...</p>
+                            </div>
+                        `;
+                    }
+
+                    // Fetch unified notifications from database
+                    const response = await fetch('/Notifications/GetUnifiedNotifications');
+                    const data = await response.json();
+
+                    if (!response.ok || data.error) {
+                                                throw new Error(data.error || 'Failed to load notifications');
+                    }
+
+                    const notifications = data.notifications || [];
+                    currentNotifications = notifications;
+
+                                        // Update badge count (unread notifications)
+                    const unreadCount = notifications.filter(n => !n.isRead && !n.isPermanent).length;
+                    updateNotificationBadge(unreadCount);
+
+                    // Render notifications
+                    updateNotificationUI(notifications);
+
+                                    } catch (error) {
+                                        notificationList.innerHTML = '<div class="text-center py-3 text-danger"><i class="fas fa-exclamation-triangle"></i> Failed to load notifications</div>';
+                }
+            }
+
+            async function getRealApplicationData() {
+                try {
+                    const response = await fetch('/Dashboard/GetUserApplications');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            return {
+                                hospitalBills: data.hospitalBills,
+                                medicalForms: data.medicalForms,
+                                funeralForms: data.funeralForms
+                            };
+                        } else {
+                                                        return {
+                                hospitalBills: fallbackHospitalBills,
+                                medicalForms: fallbackMedicalForms,
+                                funeralForms: fallbackFuneralForms
+                            };
+                        }
+                    } else {
+                                                return {
+                            hospitalBills: fallbackHospitalBills,
+                            medicalForms: fallbackMedicalForms,
+                            funeralForms: fallbackFuneralForms
+                        };
+                    }
+                } catch (error) {
+                                        return {
+                        hospitalBills: fallbackHospitalBills,
+                        medicalForms: fallbackMedicalForms,
+                        funeralForms: fallbackFuneralForms
+                    };
+                }
+            }
+
+            function generateNotificationsFromRealData(applications) {
+                const notifications = [];
+                const now = new Date();
+                const readIds = getStoredReadNotifications();
+
+                const hasApplications = (applications.hospitalBills && applications.hospitalBills.length > 0) ||
+                                      (applications.medicalForms && applications.medicalForms.length > 0) ||
+                                      (applications.funeralForms && applications.funeralForms.length > 0);
+
+                if (!hasApplications) {
+                    notifications.push({
+                        id: 'no_applications',
+                        title: "Welcome to LingapDVO",
+                        message: "You haven't submitted any applications yet. Get started by applying for assistance.",
+                        isRead: true,
+                        createdAt: new Date().toISOString(),
+                        type: "submitted",
+                        link: "#"
+                    });
+                    return notifications;
+                }
+
+                if (applications.hospitalBills && applications.hospitalBills.length > 0) {
+                    applications.hospitalBills.forEach(app => {
+                        notifications.push(...getApplicationStatusNotifications(app, 'Hospital Assistance'));
+                    });
+                }
+
+                if (applications.medicalForms && applications.medicalForms.length > 0) {
+                    applications.medicalForms.forEach(app => {
+                        notifications.push(...getApplicationStatusNotifications(app, 'Other Assistance'));
+                    });
+                }
+
+                if (applications.funeralForms && applications.funeralForms.length > 0) {
+                    applications.funeralForms.forEach(app => {
+                        notifications.push(...getApplicationStatusNotifications(app, 'Funeral Assistance'));
+                    });
+                }
+
+                return notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            }
+
+            function getApplicationStatusNotifications(application, type) {
+                const notifications = [];
+                const now = new Date();
+                const appId = application.id || application.Id;
+
+                function getHoursElapsed(dateString) {
+                    if (!dateString || !isValidDate(dateString)) return 0;
+                    const date = new Date(dateString);
+                    const diffTime = now - date;
+                    return Math.floor(diffTime / (1000 * 60 * 60));
+                }
+
+                function calculatePriority(status, status2, createdAt) {
+                    // Only calculate priority for pending or processing applications
+                    // If already approved/disapproved/claimed, no priority needed
+                    if (status2 && (status2.toLowerCase() === 'approve' || status2.toLowerCase() === 'unapproved')) {
+                        return 'normal';
+                    }
+
+                    // Check if still in pending or processing state
+                    if (!status || (status.toLowerCase() !== 'pending' && status.toLowerCase() !== 'processing')) {
+                        return 'normal';
+                    }
+
+                    // Calculate hours elapsed since submission
+                    const hoursElapsed = getHoursElapsed(createdAt);
+
+                    if (hoursElapsed >= 2) {
+                        return 'high';
+                    } else if (hoursElapsed >= 1) {
+                        return 'medium';
+                    } else {
+                        return 'normal';
+                    }
+                }
+
+                let notificationId, title, message, notificationType, createdDate;
+
+                if (application.status2 === 'Approve' &&
+                    application.claimedAt && isValidDate(application.claimedAt) &&
+                    application.status3 && application.status3.trim() !== '') {
+
+                    notificationId = `status_${appId}`;
+                    title = `${type} Assistance Completed`;
+                    message = `Your ${type} assistance has been released. Thank you for using LingapDVO.`;
+                    notificationType = "claimed";
+                    createdDate = application.claimedAt;
+                }
+                else if (application.status2 === 'Approve') {
+                    const hoursApproved = getHoursElapsed(application.result);
+                    const daysSinceApproval = Math.floor(hoursApproved / 24);
+
+                    notificationId = `status_${appId}`;
+                    title = `${type} Assistance Approved`;
+
+                    if (daysSinceApproval >= 7) {
+                        message = `Your assistance is ready to claim (approved ${daysSinceApproval} days ago). Please visit our office soon.`;
+                        notificationType = "delayed";
+                    } else {
+                        message = `Your application has been approved. Visit our office to claim your assistance.`;
+                        notificationType = "approved";
+                    }
+                    createdDate = application.result;
+                }
+                else if (application.result && isValidDate(application.result) && application.status2 === 'Unapproved') {
+                    notificationId = `status_${appId}`;
+                    title = `${type} Application Not Approved`;
+                    message = `Your application was not approved. Check Application History for details.`;
+                    notificationType = "unapproved";
+                    createdDate = application.result;
+                }
+                else if (application.result && isValidDate(application.result) && application.status2 === 'Retake') {
+                    notificationId = `status_${appId}`;
+                    title = `Action Required - Retake Application`;
+                    message = `Your ${type} application requires document resubmission. Please update your attachments to continue processing.`;
+                    notificationType = "retake";
+                    createdDate = application.result;
+                }
+                else if (application.processAt && isValidDate(application.processAt) &&
+                         application.processby && application.processby.trim() !== '') {
+
+                    const hoursInReview = getHoursElapsed(application.processAt);
+
+                    notificationId = `status_${appId}`;
+
+                    if (hoursInReview >= 2) {
+                        title = `${type} Application - Review Delayed`;
+                        message = `Your application has been under review for ${hoursInReview} hours. We're working on it.`;
+                        notificationType = "delayed";
+                    } else {
+                        title = `${type} Application Under Review`;
+                        message = `${application.processby} is reviewing your application. Decision expected within 1-2 hours.`;
+                        notificationType = "processing";
+                    }
+                    createdDate = application.processAt;
+                }
+                else if (application.createdAt && isValidDate(application.createdAt)) {
+                    const hoursWaiting = getHoursElapsed(application.createdAt);
+
+                    notificationId = `status_${appId}`;
+
+                    if (hoursWaiting >= 2) {
+                        title = `${type} Application - Pending`;
+                        message = `Your application has been waiting ${hoursWaiting} hours for review. We'll assign a reviewer soon.`;
+                        notificationType = "delayed";
+                    } else {
+                        title = `${type} Application Submitted`;
+                        message = `Your application is in queue. Expected review time: 1-2 hours.`;
+                        notificationType = "submitted";
+                    }
+                    createdDate = application.createdAt;
+                }
+
+                if (notificationId) {
+                    // Calculate priority based on application status and created date
+                    const priority = calculatePriority(application.status, application.status2, application.createdAt);
+
+                    notifications.push({
+                        id: notificationId,
+                        title: title,
+                        message: message,
+                        isRead: false,  // Will be managed by database
+                        createdAt: createdDate,
+                        type: notificationType,
+                        link: "/Applicationtracking",
+                        priority: priority
+                    });
+                }
+
+                return notifications;
+            }
+
+            function updateNotificationBadge(count) {
+                if (notificationBadge) {
+                    if (count > 0) {
+                        notificationBadge.textContent = count > 99 ? '99+' : count;
+                        notificationBadge.style.display = 'block';
+                    } else {
+                        notificationBadge.style.display = 'none';
+                        notificationBadge.textContent = '0';
+                    }
+                }
+                // Update mobile notification badge
+                const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+                if (mobileNotificationBadge) {
+                    if (count > 0) {
+                        mobileNotificationBadge.textContent = count > 99 ? '99+' : count;
+                        mobileNotificationBadge.style.display = 'inline-block';
+                    } else {
+                        mobileNotificationBadge.style.display = 'none';
+                        mobileNotificationBadge.textContent = '0';
+                    }
+                }
+
+                // ═══════════════════════════════════════════════════════════════
+                // REAL-TIME NOTIFICATION COUNTER IN DOCUMENT TITLE (<head>)
+                // ═══════════════════════════════════════════════════════════════
+                // Update page title with unread notification count
+                updateDocumentTitle(count);
+
+                // Update favicon badge with notification count
+                updateFaviconBadge(count);
+            }
+
+            // Store original title for restoration
+            const originalTitle = document.title;
+
+            /**
+             * Updates document title with notification count
+             * Shows count in format: "(count) Home" or restores "Home" when count is 0
+             */
+            function updateDocumentTitle(count) {
+                // Stop any existing title flash
+                stopTitleFlash();
+
+                if (count > 0) {
+                    const displayCount = count > 99 ? '99+' : count;
+                    document.title = `(${displayCount}) Home`;
+                } else {
+                    document.title = originalTitle;
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // TITLE FLASH FEATURE - Visual Alert for New Notifications
+            // ═══════════════════════════════════════════════════════════════
+            let titleFlashInterval = null;
+            let titleFlashState = false;
+
+            /**
+             * Flashes the document title to alert user of new notifications
+             * Especially useful when user is on a different tab
+             */
+            function flashTitleForNewNotification(count) {
+                // Don't flash if tab is already visible
+                if (!document.hidden) {
+                    return;
+                }
+
+                // Stop any existing flash
+                stopTitleFlash();
+
+                const displayCount = count > 99 ? '99+' : count;
+                const flashTitle = `🔔 (${displayCount}) New Notification!`;
+                const normalTitle = `(${displayCount}) Home`;
+
+                titleFlashState = false;
+                titleFlashInterval = setInterval(() => {
+                    document.title = titleFlashState ? flashTitle : normalTitle;
+                    titleFlashState = !titleFlashState;
+                }, 1000); // Flash every 1 second
+
+                // Auto-stop flashing after 30 seconds
+                setTimeout(() => {
+                    stopTitleFlash();
+                    updateDocumentTitle(count);
+                }, 30000);
+            }
+
+            /**
+             * Stops the title flashing animation
+             */
+            function stopTitleFlash() {
+                if (titleFlashInterval) {
+                    clearInterval(titleFlashInterval);
+                    titleFlashInterval = null;
+                    titleFlashState = false;
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // PAGE VISIBILITY API - Stop flash when user returns to tab
+            // ═══════════════════════════════════════════════════════════════
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    // User returned to tab - stop flashing
+                    stopTitleFlash();
+
+                    // Update title with current notification count
+                    const currentCount = parseInt(document.getElementById('notificationBadge')?.textContent || '0');
+                    if (!isNaN(currentCount)) {
+                        updateDocumentTitle(currentCount);
+                    }
+                }
+            });
+
+            // ═══════════════════════════════════════════════════════════════
+            // DYNAMIC FAVICON BADGE - Shows notification count on favicon
+            // ═══════════════════════════════════════════════════════════════
+            let originalFavicon = null;
+            let faviconCanvas = null;
+            let faviconContext = null;
+
+            /**
+             * Initialize favicon badge system
+             */
+            function initFaviconBadge() {
+                // Get original favicon
+                const faviconLink = document.querySelector("link[rel*='icon']");
+                if (faviconLink) {
+                    originalFavicon = faviconLink.href;
+                }
+
+                // Create canvas for drawing favicon with badge
+                faviconCanvas = document.createElement('canvas');
+                faviconCanvas.width = 32;
+                faviconCanvas.height = 32;
+                faviconContext = faviconCanvas.getContext('2d');
+
+                            }
+
+            /**
+             * Update favicon with notification badge
+             * Draws a red badge circle with count on the favicon
+             */
+            function updateFaviconBadge(count) {
+                if (!faviconCanvas || !faviconContext) {
+                    initFaviconBadge();
+                }
+
+                const faviconLink = document.querySelector("link[rel*='icon']") || createFaviconLink();
+
+                if (count > 0) {
+                    // Load original favicon image
+                    const img = new Image();
+                    img.onload = function() {
+                        // Clear canvas
+                        faviconContext.clearRect(0, 0, 32, 32);
+
+                        // Draw original favicon
+                        faviconContext.drawImage(img, 0, 0, 32, 32);
+
+                        // Draw red badge circle
+                        faviconContext.fillStyle = '#DC143C'; // Crimson red
+                        faviconContext.beginPath();
+                        faviconContext.arc(24, 8, 9, 0, 2 * Math.PI);
+                        faviconContext.fill();
+
+                        // Draw white border
+                        faviconContext.strokeStyle = '#FFFFFF';
+                        faviconContext.lineWidth = 2;
+                        faviconContext.beginPath();
+                        faviconContext.arc(24, 8, 9, 0, 2 * Math.PI);
+                        faviconContext.stroke();
+
+                        // Draw count text
+                        const displayCount = count > 9 ? '9+' : count.toString();
+                        faviconContext.fillStyle = '#FFFFFF';
+                        faviconContext.font = 'bold 14px Arial';
+                        faviconContext.textAlign = 'center';
+                        faviconContext.textBaseline = 'middle';
+                        faviconContext.fillText(displayCount, 24, 8);
+
+                        // Update favicon
+                        faviconLink.href = faviconCanvas.toDataURL('image/png');
+                    };
+                    img.src = originalFavicon || '/Icon/lingaplogo.ico';
+                } else {
+                    // Restore original favicon
+                    faviconLink.href = originalFavicon || '/Icon/lingaplogo.ico';
+                }
+            }
+
+            /**
+             * Create favicon link element if it doesn't exist
+             */
+            function createFaviconLink() {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.type = 'image/x-icon';
+                document.head.appendChild(link);
+                return link;
+            }
+
+            // Initialize favicon badge system on page load
+            initFaviconBadge();
+
+            function hideNotificationBadge() {
+                updateNotificationBadge(0);
+            }
+
+            async function markAllNotificationsAsRead() {
+                try {
+                    const markAllBtn = document.getElementById('markAllRead');
+                    markAllBtn.classList.add('reading');
+
+                    const response = await fetch('/Notifications/MarkAllNotificationsAsRead', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Update UI - remove unread class from all notifications
+                        document.querySelectorAll('.notification-item.unread').forEach(item => {
+                            item.classList.remove('unread');
+                        });
+
+                        // Update badge
+                        updateNotificationBadge(0);
+
+                        // Show animation
+                        setTimeout(() => markAllBtn.classList.remove('reading'), 600);
+
+                                            } else {
+                                                setTimeout(() => markAllBtn.classList.remove('reading'), 600);
+                    }
+                } catch (error) {
+                                        const markAllBtn = document.getElementById('markAllRead');
+                    if (markAllBtn) {
+                        markAllBtn.classList.remove('reading');
+                    }
+                }
+            }
+
+            function updateNotificationUI(notifications) {
+                if (!notificationList) return;
+
+                currentNotifications = notifications;
+                notificationList.innerHTML = '';
+
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                            <p>No notifications</p>
+                            <small class="text-muted">Check your application status for updates</small>
+                        </div>
+                    `;
+                    hideNotificationBadge();
+                    return;
+                }
+
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+
+                if (unreadCount > 0) {
+                    notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    notificationBadge.style.display = 'block';
+                    // Update mobile notification badge
+                    const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+                    if (mobileNotificationBadge) {
+                        mobileNotificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                        mobileNotificationBadge.style.display = 'inline-block';
+                    }
+                } else {
+                    hideNotificationBadge();
+                    // Hide mobile notification badge
+                    const mobileNotificationBadge = document.getElementById('mobileNotificationBadge');
+                    if (mobileNotificationBadge) {
+                        mobileNotificationBadge.style.display = 'none';
+                        mobileNotificationBadge.textContent = '0';
+                    }
+                }
+
+                notifications.forEach(notification => {
+                    const notificationItem = document.createElement('div');
+                    const typeIcon = getNotificationTypeIcon(notification);
+
+                    // Build class list with priority
+                    let classNames = 'notification-item';
+                    if (!notification.isRead) {
+                        classNames += ' unread';
+                    }
+                    if (notification.priority === 'high') {
+                        classNames += ' priority-high';
+                    } else if (notification.priority === 'medium') {
+                        classNames += ' priority-medium';
+                    }
+                    notificationItem.className = classNames;
+
+                    // Add data-type attribute for delay alert styling
+                    if (notification.type) {
+                        notificationItem.setAttribute('data-type', notification.type);
+                    }
+
+                    // Add data-permanent attribute for permanent notifications (welcome)
+                    if (notification.isPermanent) {
+                        notificationItem.setAttribute('data-permanent', 'true');
+                    }
+
+                    // Store timestamp for real-time updates
+                    notificationItem.setAttribute('data-created-at', notification.createdAt);
+
+                    // Build badges HTML for bottom row
+                    let badgesHtml = '';
+                    const statusBadge = getStatusBadge(notification.type);
+
+                    if (statusBadge) {
+                        badgesHtml += `<span class="status-badge ${statusBadge.class}">${statusBadge.label}</span>`;
+                    }
+
+                    // Add priority badge
+                    if (notification.priority === 'high') {
+                        badgesHtml += '<span class="priority-badge high">High</span>';
+                    } else if (notification.priority === 'medium') {
+                        badgesHtml += '<span class="priority-badge medium">Medium</span>';
+                    }
+
+                    notificationItem.innerHTML = `
+                        <div class="notification-title">
+                            <div class="notification-type-icon ${typeIcon.class}">
+                                <i class="${typeIcon.icon}"></i>
+                            </div>
+                            <span class="notification-title-text">${escapeHtml(notification.title)}</span>
+                        </div>
+                        <div class="notification-message">${escapeHtml(notification.message)}</div>
+                        <div class="notification-time">
+                            <span class="notification-time-text" data-timestamp="${notification.createdAt}">${formatTime(notification.createdAt)}</span>
+                            ${badgesHtml}
+                        </div>
+                    `;
+
+                    // Don't add click listener for Welcome notifications (permanent/no_applications)
+                    const isWelcomeNotification = notification.isPermanent ||
+                                                 notification.id === 'no_applications' ||
+                                                 notification.type === 'welcome';
+
+                    if (!isWelcomeNotification) {
+                        notificationItem.addEventListener('click', function() {
+                            handleNotificationClick(notification);
+                        });
+                        // Add cursor pointer style for clickable notifications
+                        notificationItem.style.cursor = 'pointer';
+                    } else {
+                        // Make welcome notifications non-clickable
+                        notificationItem.style.cursor = 'default';
+                    }
+
+                    notificationList.appendChild(notificationItem);
+                });
+            }
+
+            // Update mobile notification list UI (re-render mobile notifications without API call)
+            function updateMobileNotificationList(notifications) {
+                const mobileNotificationList = document.getElementById('mobileNotificationList');
+                if (!mobileNotificationList) return;
+
+                // Clear existing mobile notifications
+                mobileNotificationList.innerHTML = '';
+
+                if (notifications.length === 0) {
+                    mobileNotificationList.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                            <p>No notifications</p>
+                            <small class="text-muted">Check your application status for updates</small>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Render all notifications
+                notifications.forEach(notification => {
+                    const notificationItem = document.createElement('div');
+                    const typeIcon = getNotificationTypeIcon(notification);
+
+                    // Build class list with priority (same logic as desktop)
+                    let classNames = 'notification-item';
+                    if (!notification.isRead) {
+                        classNames += ' unread';
+                    }
+                    if (notification.priority === 'high') {
+                        classNames += ' priority-high';
+                    } else if (notification.priority === 'medium') {
+                        classNames += ' priority-medium';
+                    }
+                    notificationItem.className = classNames;
+
+                    // Add data-type attribute for delay alert styling
+                    if (notification.type) {
+                        notificationItem.setAttribute('data-type', notification.type);
+                    }
+
+                    // Add data-permanent attribute for permanent notifications (welcome)
+                    if (notification.isPermanent) {
+                        notificationItem.setAttribute('data-permanent', 'true');
+                    }
+
+                    // Store timestamp for real-time updates
+                    notificationItem.setAttribute('data-created-at', notification.createdAt);
+
+                    // Build badges HTML for bottom row
+                    let badgesHtml = '';
+                    const statusBadge = getStatusBadge(notification.type);
+
+                    if (statusBadge) {
+                        badgesHtml += `<span class="status-badge ${statusBadge.class}">${statusBadge.label}</span>`;
+                    }
+
+                    // Add priority badge
+                    if (notification.priority === 'high') {
+                        badgesHtml += '<span class="priority-badge high">High</span>';
+                    } else if (notification.priority === 'medium') {
+                        badgesHtml += '<span class="priority-badge medium">Medium</span>';
+                    }
+
+                    notificationItem.innerHTML = `
+                        <div class="notification-title">
+                            <div class="notification-type-icon ${typeIcon.class}">
+                                <i class="${typeIcon.icon}"></i>
+                            </div>
+                            <span class="notification-title-text">${escapeHtml(notification.title)}</span>
+                        </div>
+                        <div class="notification-message">${escapeHtml(notification.message)}</div>
+                        <div class="notification-time">
+                            <span class="notification-time-text" data-timestamp="${notification.createdAt}">${formatTime(notification.createdAt)}</span>
+                            ${badgesHtml}
+                        </div>
+                    `;
+
+                    // Don't add click listener for Welcome notifications (permanent/no_applications)
+                    const isWelcomeNotification = notification.isPermanent ||
+                                                 notification.id === 'no_applications' ||
+                                                 notification.type === 'welcome';
+
+                    if (!isWelcomeNotification) {
+                        notificationItem.addEventListener('click', function() {
+                            handleNotificationClick(notification);
+                        });
+                        notificationItem.style.cursor = 'pointer';
+                    } else {
+                        notificationItem.style.cursor = 'default';
+                    }
+
+                    mobileNotificationList.appendChild(notificationItem);
+                });
+            }
+
+            function getNotificationTypeIcon(notification) {
+                // Check if notification has priority and prioritize priority icons
+                const priority = notification.priority ? notification.priority.toLowerCase() : 'normal';
+
+                // If high or medium priority, always show priority icon regardless of status
+                if (priority === 'high') {
+                    return { class: 'notification-type-priority-high', icon: 'fas fa-exclamation-circle' };
+                } else if (priority === 'medium') {
+                    return { class: 'notification-type-priority-medium', icon: 'fas fa-exclamation-triangle' };
+                }
+
+                // Otherwise, show status icon
+                const type = notification.type;
+                const types = {
+                    submitted: { class: 'notification-type-submitted', icon: 'fas fa-file-upload' },
+                    processing: { class: 'notification-type-processing', icon: 'fas fa-cog' },
+                    approved: { class: 'notification-type-approved', icon: 'fas fa-check-circle' },
+                    unapproved: { class: 'notification-type-unapproved', icon: 'fas fa-times-circle' },
+                    retake: { class: 'notification-type-retake', icon: 'fas fa-arrow-rotate-left' },
+                    claimed: { class: 'notification-type-claimed', icon: 'fas fa-hand-holding-usd' },
+                    delayed: { class: 'notification-type-delayed', icon: 'fas fa-clock' },
+                    delay_alert: { class: 'notification-type-delay-alert', icon: 'fas fa-exclamation-triangle' },
+                    waiting: { class: 'notification-type-waiting', icon: 'fas fa-hourglass-half' },
+                    welcome: { class: 'notification-type-welcome', icon: 'fas fa-hand-holding-heart' },
+                    application_submitted: { class: 'notification-type-submitted', icon: 'fas fa-file-upload' },
+                    application_processing: { class: 'notification-type-processing', icon: 'fas fa-cog' },
+                    application_approved: { class: 'notification-type-approved', icon: 'fas fa-check-circle' },
+                    application_disapproved: { class: 'notification-type-unapproved', icon: 'fas fa-times-circle' },
+                    application_claimed: { class: 'notification-type-claimed', icon: 'fas fa-hand-holding-usd' },
+                    status_change: { class: 'notification-type-submitted', icon: 'fas fa-sync-alt' }
+                };
+                return types[type] || { class: 'notification-type-submitted', icon: 'fas fa-bell' };
+            }
+
+            function getStatusBadge(type) {
+                const statusMap = {
+                    submitted: { label: 'Submitted', class: 'submitted' },
+                    processing: { label: 'Processing', class: 'processing' },
+                    approved: { label: 'Approved', class: 'approved' },
+                    unapproved: { label: 'Not Approved', class: 'unapproved' },
+                    claimed: { label: 'Claimed', class: 'claimed' },
+                    delayed: { label: 'Pending', class: 'delayed' },
+                    delay_alert: { label: 'Delayed', class: 'delayed' },
+                    waiting: { label: 'Waiting', class: 'waiting' },
+                    application_submitted: { label: 'Submitted', class: 'submitted' },
+                    application_processing: { label: 'Processing', class: 'processing' },
+                    application_approved: { label: 'Approved', class: 'approved' },
+                    application_disapproved: { label: 'Not Approved', class: 'unapproved' },
+                    application_claimed: { label: 'Claimed', class: 'claimed' }
+                };
+                return statusMap[type] || null;
+            }
+
+            async function handleNotificationClick(notification) {
+                                // Mark as read if not already read
+                if (!notification.isRead) {
+                    await markNotificationAsRead(notification.id);
+                }
+
+                // Navigate to link if provided
+                if (notification.link && notification.link !== '#') {
+                                        window.location.href = notification.link;
+                }
+            }
+
+            async function markNotificationAsRead(notificationId) {
+                try {
+                    const response = await fetch(`/Notifications/MarkNotificationAsRead?notificationId=${notificationId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Update UI to show as read
+                        const notifElement = document.querySelector(`[data-id="${notificationId}"]`);
+                        if (notifElement) {
+                            notifElement.classList.remove('unread');
+                        }
+
+                        // Update badge count
+                        await updateUnreadCount();
+                    }
+                } catch (error) {
+                                    }
+            }
+
+            async function updateUnreadCount() {
+                try {
+                    const response = await fetch('/Notifications/GetUnreadNotificationCount');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        updateNotificationBadge(data.count);
+                    }
+                } catch (error) {
+                                    }
+            }
+
+            function formatTime(dateString) {
+                if (!dateString || !isValidDate(dateString)) {
+                    return 'Just now';
+                }
+
+                const date = new Date(dateString);
+                const now = new Date();
+
+                if (date > now) {
+                    return 'Just now';
+                }
+
+                const twoYearsAgo = new Date();
+                twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+                if (date < twoYearsAgo) {
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                }
+
+                const diffInSeconds = Math.floor((now - date) / 1000);
+                const diffInMinutes = Math.floor(diffInSeconds / 60);
+
+                // Show "Just now" only for the first 30 seconds
+                if (diffInSeconds < 30) return 'Just now';
+
+                // Show "1m ago" starting from 30 seconds to ensure responsive updates
+                if (diffInMinutes < 1) return '1m ago';
+                if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+                if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+
+                const days = Math.floor(diffInMinutes / 1440);
+                if (days < 30) return `${days}d ago`;
+
+                if (days < 365) {
+                    const months = Math.floor(days / 30);
+                    return `${months} month${months > 1 ? 's' : ''} ago`;
+                }
+
+                const years = Math.floor(days / 365);
+                return `${years} year${years > 1 ? 's' : ''} ago`;
+            }
+
+            function escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Load notifications for mobile dropdown (inside mobile menu)
+            async function loadMobileNotifications() {
+                const mobileNotificationList = document.getElementById('mobileNotificationList');
+                if (!mobileNotificationList) return;
+
+                try {
+                    // Show loading state
+                    mobileNotificationList.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading notifications...</p>
+                        </div>
+                    `;
+
+                    // Fetch unified notifications from database (same as desktop)
+                                        const response = await fetch('/Notifications/GetUnifiedNotifications');
+
+                    const data = await response.json();
+
+                    if (!response.ok || data.error) {
+                        throw new Error(data.error || 'Failed to load notifications');
+                    }
+
+                    let notifications = data.notifications || [];
+                                        // Sort notifications: temporary by date DESC, permanent at bottom
+                    notifications.sort((a, b) => {
+                        // Permanent notifications always go to the bottom
+                        if (a.isPermanent && !b.isPermanent) return 1;
+                        if (!a.isPermanent && b.isPermanent) return -1;
+
+                        // Both permanent or both temporary: sort by date descending
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    });
+
+                    // Store current notifications for mark all as read functionality
+                    currentNotifications = notifications;
+
+                    // Clear loading state
+                    mobileNotificationList.innerHTML = '';
+
+                    if (notifications.length === 0) {
+                        mobileNotificationList.innerHTML = `
+                            <div class="notification-empty">
+                                <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                                <p>No notifications</p>
+                                <small class="text-muted">Check your application status for updates</small>
+                            </div>
+                        `;
+                        hideNotificationBadge();
+                        return;
+                    }
+
+                    // Update notification badge with unread count
+                    updateNotificationUI(notifications);
+
+                    // Render notifications
+                    notifications.forEach(notification => {
+                        const notificationItem = document.createElement('div');
+                        const typeIcon = getNotificationTypeIcon(notification);
+
+                        // Build class list with priority
+                        let classNames = 'notification-item';
+                        if (!notification.isRead) {
+                            classNames += ' unread';
+                        }
+                        if (notification.priority === 'high') {
+                            classNames += ' priority-high';
+                        } else if (notification.priority === 'medium') {
+                            classNames += ' priority-medium';
+                        }
+                        notificationItem.className = classNames;
+
+                        // Add data-type attribute for delay alert styling
+                        if (notification.type) {
+                            notificationItem.setAttribute('data-type', notification.type);
+                        }
+
+                        // Add data-permanent attribute for permanent notifications (welcome)
+                        if (notification.isPermanent) {
+                            notificationItem.setAttribute('data-permanent', 'true');
+                        }
+
+                        // Store timestamp for real-time updates
+                        notificationItem.setAttribute('data-created-at', notification.createdAt);
+
+                        // Build badges HTML for bottom row
+                        let badgesHtml = '';
+                        const statusBadge = getStatusBadge(notification.type);
+
+                        if (statusBadge) {
+                            badgesHtml += `<span class="status-badge ${statusBadge.class}">${statusBadge.label}</span>`;
+                        }
+
+                        // Add priority badge
+                        if (notification.priority === 'high') {
+                            badgesHtml += '<span class="priority-badge high">High</span>';
+                        } else if (notification.priority === 'medium') {
+                            badgesHtml += '<span class="priority-badge medium">Medium</span>';
+                        }
+
+                        notificationItem.innerHTML = `
+                            <div class="notification-title">
+                                <div class="notification-type-icon ${typeIcon.class}">
+                                    <i class="${typeIcon.icon}"></i>
+                                </div>
+                                <span class="notification-title-text">${escapeHtml(notification.title)}</span>
+                            </div>
+                            <div class="notification-message">${escapeHtml(notification.message)}</div>
+                            <div class="notification-time">
+                                <span class="notification-time-text" data-timestamp="${notification.createdAt}">${formatTime(notification.createdAt)}</span>
+                                ${badgesHtml}
+                            </div>
+                        `;
+
+                        // Don't add click listener for Welcome notifications (permanent/no_applications)
+                        const isWelcomeNotification = notification.isPermanent ||
+                                                     notification.id === 'no_applications' ||
+                                                     notification.type === 'welcome';
+
+                        if (!isWelcomeNotification) {
+                            notificationItem.addEventListener('click', function() {
+                                handleNotificationClick(notification);
+                            });
+                            // Add cursor pointer style for clickable notifications
+                            notificationItem.style.cursor = 'pointer';
+                        } else {
+                            // Make welcome notifications non-clickable
+                            notificationItem.style.cursor = 'default';
+                        }
+
+                        mobileNotificationList.appendChild(notificationItem);
+                    });
+
+                } catch (error) {
+                                        mobileNotificationList.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2 text-warning"></i>
+                            <p>Unable to load notifications</p>
+                            <small class="text-muted">Please try again later</small>
+                        </div>
+                    `;
+                }
+            }
+
+            // Mobile notification button handlers
+            const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
+            if (mobileNotificationBtn) {
+                const mobileNotificationDropdown = document.getElementById('mobileNotificationDropdown');
+                const mobileNotificationChevron = document.getElementById('mobileNotificationChevron');
+
+                mobileNotificationBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Toggle dropdown visibility
+                    mobileNotificationDropdown.classList.toggle('active');
+                    mobileNotificationChevron.classList.toggle('rotate');
+
+                    // Load notifications if dropdown is opened
+                    if (mobileNotificationDropdown.classList.contains('active')) {
+                        loadMobileNotifications();
+                    }
+                });
+            }
+
+            // Mobile mark all as read button
+            const mobileMarkAllRead = document.getElementById('mobileMarkAllRead');
+            if (mobileMarkAllRead) {
+                mobileMarkAllRead.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    markAllNotificationsAsRead();
+                });
+            }
+
+            // Mobile refresh notifications button
+            const mobileRefreshNotifications = document.getElementById('mobileRefreshNotifications');
+            if (mobileRefreshNotifications) {
+                mobileRefreshNotifications.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    loadMobileNotifications();
+                });
+            }
+
+            // Mobile notification settings button (opens toast)
+            const mobileNotificationSettings = document.getElementById('mobileNotificationSettings');
+            const mobileNotificationSettingsToast = document.getElementById('mobileNotificationSettingsToast');
+            const mobileToastOverlay = document.getElementById('mobileToastOverlay');
+            const mobileToastClose = document.getElementById('mobileToastClose');
+            const mobileCancelNotificationSettings = document.getElementById('mobileCancelNotificationSettings');
+            const mobileSaveNotificationSettings = document.getElementById('mobileSaveNotificationSettings');
+
+            if (mobileNotificationSettings) {
+                mobileNotificationSettings.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Sync settings from desktop to mobile
+                    const desktopInApp = document.getElementById('preferInAppNotification');
+                    const desktopEmail = document.getElementById('preferEmailNotification');
+                    const desktopSms = document.getElementById('preferSmsNotification');
+                    const mobileInApp = document.getElementById('mobilePreferInAppNotification');
+                    const mobileEmail = document.getElementById('mobilePreferEmailNotification');
+                    const mobileSms = document.getElementById('mobilePreferSmsNotification');
+
+                    if (desktopInApp && mobileInApp) mobileInApp.checked = desktopInApp.checked;
+                    if (desktopEmail && mobileEmail) mobileEmail.checked = desktopEmail.checked;
+                    if (desktopSms && mobileSms) mobileSms.checked = desktopSms.checked;
+
+                    // Show toast
+                    mobileNotificationSettingsToast.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            }
+
+            // Close mobile toast with close button
+            if (mobileToastClose) {
+                mobileToastClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mobileNotificationSettingsToast.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Close mobile toast with overlay
+            if (mobileToastOverlay) {
+                mobileToastOverlay.addEventListener('click', function() {
+                    mobileNotificationSettingsToast.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Cancel button in mobile toast
+            if (mobileCancelNotificationSettings) {
+                mobileCancelNotificationSettings.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    mobileNotificationSettingsToast.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Save button in mobile toast
+            if (mobileSaveNotificationSettings) {
+                mobileSaveNotificationSettings.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Sync settings from mobile to desktop
+                    const desktopInApp = document.getElementById('preferInAppNotification');
+                    const desktopEmail = document.getElementById('preferEmailNotification');
+                    const desktopSms = document.getElementById('preferSmsNotification');
+                    const mobileInApp = document.getElementById('mobilePreferInAppNotification');
+                    const mobileEmail = document.getElementById('mobilePreferEmailNotification');
+                    const mobileSms = document.getElementById('mobilePreferSmsNotification');
+
+                    if (desktopInApp && mobileInApp) desktopInApp.checked = mobileInApp.checked;
+                    if (desktopEmail && mobileEmail) desktopEmail.checked = mobileEmail.checked;
+                    if (desktopSms && mobileSms) desktopSms.checked = mobileSms.checked;
+
+                    // Save settings (trigger desktop save logic)
+                    const saveBtn = document.getElementById('saveNotificationSettings');
+                    if (saveBtn) {
+                        saveBtn.click();
+                    }
+
+                    // Close toast
+                    mobileNotificationSettingsToast.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+
+            // Initialize notifications
+            loadRealNotifications();
+        });
+    </script>
+</body>
+</html>

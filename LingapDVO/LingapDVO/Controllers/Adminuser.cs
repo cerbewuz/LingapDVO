@@ -3788,13 +3788,19 @@ namespace LingapDVO.Controllers
                 }
 
                 TempData["SuccessMessage"] = $"Hospital bill status updated to '{HospitalAssistanceDto.Status2}' successfully.";
-                return Redirect("/Admin");
+                
+                // Redirect with appropriate status parameter based on the action
+                string redirectStatus = status?.ToLower() switch
+                {
+                    "approve" => "approve",
+                    "disapprove" => "disapprove",
+                    "retake" => "retakes",
+                    _ => "processing"
+                };
+                return Redirect($"/Admin?status={redirectStatus}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in HospitalAssistanceProcessingStatus: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-
                 TempData["ErrorMessage"] = "An error occurred while updating status: " + ex.Message;
                 return Redirect("/Admin");
             }
@@ -4332,13 +4338,19 @@ namespace LingapDVO.Controllers
                 }
 
                 TempData["SuccessMessage"] = $"Medical assistance status updated to '{OtherAssistanceDto.Status2}' successfully.";
-                return Redirect("/Admin");
+                
+                // Redirect with appropriate status parameter based on the action
+                string redirectStatus = status?.ToLower() switch
+                {
+                    "approve" => "approve",
+                    "disapprove" => "disapprove",
+                    "retake" => "retakes",
+                    _ => "processing"
+                };
+                return Redirect($"/Admin?status={redirectStatus}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in OtherAssistanceProcessingStatus: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-
                 TempData["ErrorMessage"] = "An error occurred while updating status: " + ex.Message;
                 return Redirect("/Admin");
             }
@@ -4878,13 +4890,19 @@ namespace LingapDVO.Controllers
                 }
 
                 TempData["SuccessMessage"] = $"Funeral assistance status updated to '{FuneralAssistanceDto.Status2}' successfully.";
-                return Redirect("/Admin");
+                
+                // Redirect with appropriate status parameter based on the action
+                string redirectStatus = status?.ToLower() switch
+                {
+                    "approve" => "approve",
+                    "disapprove" => "disapprove",
+                    "retake" => "retakes",
+                    _ => "processing"
+                };
+                return Redirect($"/Admin?status={redirectStatus}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in FuneralAssistanceProcessingStatus: {ex.Message}");
-                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-
                 TempData["ErrorMessage"] = "An error occurred while updating status: " + ex.Message;
                 return Redirect("/Admin");
             }

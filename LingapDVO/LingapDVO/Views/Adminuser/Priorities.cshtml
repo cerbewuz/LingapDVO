@@ -435,22 +435,17 @@
         // Initialize sidebar badge with current priority count
         document.addEventListener('DOMContentLoaded', function() {
             const totalCount = @(ViewBag.TotalPriorityCount ?? 0);
-            console.log('[Priorities] Initializing sidebar badge with total count:', totalCount);
-
-            if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
+                        if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
                 window.AdminSidebar.updatePriorityBadge(totalCount);
-                console.log('[Priorities] Sidebar badge updated via AdminSidebar module');
-            } else {
+                            } else {
                 // Fallback: update badge directly
                 const badge = document.getElementById('priorityBadge');
                 if (badge) {
                     if (totalCount > 0) {
                         badge.textContent = totalCount;
                         badge.style.display = 'inline-block';
-                        console.log('[Priorities] Sidebar badge updated directly:', totalCount);
                     } else {
                         badge.style.display = 'none';
-                        console.log('[Priorities] Sidebar badge hidden (no priority items)');
                     }
                 }
             }
@@ -542,7 +537,7 @@
                 </text>
             }
 
-            // Calculate priority applications (ONLY for Pending AND Processing applications that are NOT approved/disapproved/claims)
+            // Calculate priority applications (ONLY for Pending AND Processing applications that are NOT approved/disapproved/claims/retakes)
             const now = new Date();
             const priorityApplications = allApplications
                 .filter(app => {
@@ -554,9 +549,9 @@
                     if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
                         return false;
                     }
-                    // Exclude if status2 is approve or disapprove
+                    // Exclude if status2 is approve, disapprove, or retake
                     if (app.status2 && app.status2.trim() !== '' &&
-                        (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) {
+                        (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove' || app.status2.toLowerCase() === 'retake')) {
                         return false;
                     }
                     return true;
@@ -588,19 +583,13 @@
             const serverHighCount = @(ViewBag.HighPriorityCount ?? 0);
             const serverMediumCount = @(ViewBag.MediumPriorityCount ?? 0);
 
-            console.log('[Priorities] Server counts - High:', serverHighCount, 'Medium:', serverMediumCount);
-            console.log('[Priorities] Calculated counts - High:', highPriorityCount, 'Medium:', mediumPriorityCount);
-
-            // Count pending/processing applications EXCLUDING approved/disapproved/claims
+                                    // Count pending/processing applications EXCLUDING approved/disapproved/claims/retakes
             const eligibleApplications = allApplications.filter(app => {
                 if (app.status !== 'pending' && app.status !== 'processing') return false;
                 if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) return false;
-                if (app.status2 && (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) return false;
+                if (app.status2 && (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove' || app.status2.toLowerCase() === 'retake')) return false;
                 return true;
             });
-
-            console.log('[Priorities] Total pending/processing (EXCLUDING approved/disapproved/claims):', eligibleApplications.length);
-            console.log('[Priorities] Priority applications (1+ hours waiting):', priorityApplications.length);
 
             // Always use server counts as they are the source of truth
             const finalHighCount = serverHighCount;
@@ -622,9 +611,7 @@
                 setTimeout(() => mediumCountElement.classList.remove('pulse'), 500);
             }
 
-            console.log('[Priorities] Final displayed counts - High:', finalHighCount, 'Medium:', finalMediumCount);
-
-            // Current filter
+                        // Current filter
             let currentFilter = initialFilter;
 
             // Set active filter button
@@ -700,7 +687,7 @@
                     return 'Claims';
                 } else if (app.status2 && app.status2.trim() !== '') {
                     const status2 = app.status2.trim().toLowerCase();
-                    if (status2 === 'approve' || status2 === 'disapprove') {
+                    if (status2 === 'approve' || status2 === 'disapprove' || status2 === 'retake') {
                         return status2.charAt(0).toUpperCase() + status2.slice(1);
                     }
                 }
@@ -797,28 +784,25 @@
 
                 // Handle new application submissions
                 connection.on("ReceiveNewApplication", function (applicationType, formId) {
-                    console.log("SignalR: New application received:", applicationType, formId);
-                    // Reload page to show new priority application
+                                        // Reload page to show new priority application
                     window.location.reload();
                 });
 
                 // Handle status updates that might affect priorities
                 connection.on("ReceiveStatusUpdate", function (message) {
-                    console.log("SignalR: Status update received:", message);
-                    // Re-render priorities to reflect status changes
+                                        // Re-render priorities to reflect status changes
                     window.location.reload();
                 });
 
                 // Handle priority-specific notifications
                 connection.on("ReceivePriorityUpdate", function (message) {
-                    console.log("SignalR: Priority update received:", message);
-                    window.location.reload();
+                                        window.location.reload();
                 });
 
                 // Start connection
                 connection.start()
                     .then(function () {
-                        console.log("SignalR: Connected successfully to notification hub (Admin Priorities)");
+                        ");
                         // Add visual indicator that real-time is active
                         const header = document.querySelector('.page-title p');
                         if (header) {
@@ -826,28 +810,25 @@
                         }
                     })
                     .catch(function (err) {
-                        console.error("SignalR: Connection error:", err.toString());
+                        );
                         // Fallback to polling
                     });
 
                 // Handle reconnection
                 connection.onreconnected((connectionId) => {
-                    console.log("SignalR: Reconnected with connection ID:", connectionId);
-                    window.location.reload();
+                                        window.location.reload();
                 });
 
                 // Handle disconnection
                 connection.onclose((error) => {
-                    console.log("SignalR: Connection closed", error);
-                    const header = document.querySelector('.page-title p');
+                                        const header = document.querySelector('.page-title p');
                     if (header) {
                         header.innerHTML = 'Connection lost - using fallback updates <i class="bi bi-exclamation-triangle-fill text-warning"></i>';
                     }
                 });
 
             } catch (error) {
-                console.error("SignalR: Initialization error:", error);
-            }
+                            }
         }
     </script>
 

@@ -1,4 +1,4 @@
-﻿@model OtherAssistanceDto
+@model OtherAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
     ViewData["Title"] = "Hospital Assistance View";
@@ -751,8 +751,7 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                loading.style.display = 'none';
+                                loading.style.display = 'none';
                 errorDiv.style.display = 'block';
                 errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
             }
@@ -782,8 +781,7 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                console.error('Error rendering page:', error);
-            }
+                            }
         }
 
         // Navigation functions

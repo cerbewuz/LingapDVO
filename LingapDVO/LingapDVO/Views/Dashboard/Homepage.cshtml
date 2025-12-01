@@ -1,4 +1,4 @@
-@using Microsoft.Extensions.Configuration
+﻿@using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
 @model LingapDVO.Models.CombinedFormsViewModel
 @{
@@ -308,9 +308,9 @@
                 border-radius: 4px;
             }
 
-            .mobile-notification-body::-webkit-scrollbar-thumb:active {
-                background: rgba(0, 0, 0, 0.4);
-            }
+                .mobile-notification-body::-webkit-scrollbar-thumb:active {
+                    background: rgba(0, 0, 0, 0.4);
+                }
 
         /* Responsive mobile notification body height */
         @@media (max-width: 575.98px) {
@@ -387,6 +387,7 @@
                 transform: translateY(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -453,18 +454,18 @@
                 border-radius: 3px;
             }
 
-            .mobile-toast-body::-webkit-scrollbar-thumb:hover {
-                background: var(--gray-500);
-            }
+                .mobile-toast-body::-webkit-scrollbar-thumb:hover {
+                    background: var(--gray-500);
+                }
 
             .mobile-toast-body .form-check-label {
                 display: block;
                 padding-left: 0.5rem;
             }
 
-            .mobile-toast-body .form-check-label i {
-                margin-right: 0.5rem;
-            }
+                .mobile-toast-body .form-check-label i {
+                    margin-right: 0.5rem;
+                }
 
             .mobile-toast-body .alert {
                 font-size: 0.875rem;
@@ -575,47 +576,42 @@
                 border: 1px solid rgba(220, 20, 60, 0.1) !important;
                 overflow: visible !important;
             }
-
-            /* Bubble pointer/arrow connecting to notification button */
-            .notification-dropdown::before {
-                content: '';
-                position: absolute;
-                top: -12px;
-                right: 10px;
-                width: 0;
-                height: 0;
-                border-left: 12px solid transparent;
-                border-right: 12px solid transparent;
-                border-bottom: 12px solid white;
-                filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
-                z-index: 1;
-            }
-
-            /* Bubble pointer border */
-            .notification-dropdown::after {
-                content: '';
-                position: absolute;
-                top: -13px;
-                right: 9px;
-                width: 0;
-                height: 0;
-                border-left: 13px solid transparent;
-                border-right: 13px solid transparent;
-                border-bottom: 13px solid rgba(220, 20, 60, 0.1);
-                z-index: 0;
-            }
-
-            /* Rounded header for bubble design */
-            .notification-dropdown .notification-header {
-                border-radius: 16px 16px 0 0;
-                background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
-            }
-
-            /* Rounded footer for bubble design */
-            .notification-dropdown .notification-footer {
-                border-radius: 0 0 16px 16px;
-            }
-
+                /* Bubble pointer/arrow connecting to notification button */
+                .notification-dropdown::before {
+                    content: '';
+                    position: absolute;
+                    top: -12px;
+                    right: 10px;
+                    width: 0;
+                    height: 0;
+                    border-left: 12px solid transparent;
+                    border-right: 12px solid transparent;
+                    border-bottom: 12px solid white;
+                    filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
+                    z-index: 1;
+                }
+                /* Bubble pointer border */
+                .notification-dropdown::after {
+                    content: '';
+                    position: absolute;
+                    top: -13px;
+                    right: 9px;
+                    width: 0;
+                    height: 0;
+                    border-left: 13px solid transparent;
+                    border-right: 13px solid transparent;
+                    border-bottom: 13px solid rgba(220, 20, 60, 0.1);
+                    z-index: 0;
+                }
+                /* Rounded header for bubble design */
+                .notification-dropdown .notification-header {
+                    border-radius: 16px 16px 0 0;
+                    background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
+                }
+                /* Rounded footer for bubble design */
+                .notification-dropdown .notification-footer {
+                    border-radius: 0 0 16px 16px;
+                }
             /* Bubble fade-in animation for tablets */
             .notification-dropdown {
                 animation: bubbleFadeIn 0.25s ease-out;
@@ -638,47 +634,42 @@
                 border: 1px solid rgba(220, 20, 60, 0.1) !important;
                 overflow: visible !important;
             }
-
-            /* Bubble pointer/arrow connecting to notification button */
-            .notification-dropdown::before {
-                content: '';
-                position: absolute;
-                top: -12px;
-                right: 10px;
-                width: 0;
-                height: 0;
-                border-left: 12px solid transparent;
-                border-right: 12px solid transparent;
-                border-bottom: 12px solid white;
-                filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
-                z-index: 1;
-            }
-
-            /* Bubble pointer border */
-            .notification-dropdown::after {
-                content: '';
-                position: absolute;
-                top: -13px;
-                right: 9px;
-                width: 0;
-                height: 0;
-                border-left: 13px solid transparent;
-                border-right: 13px solid transparent;
-                border-bottom: 13px solid rgba(220, 20, 60, 0.1);
-                z-index: 0;
-            }
-
-            /* Rounded header for bubble design */
-            .notification-dropdown .notification-header {
-                border-radius: 16px 16px 0 0;
-                background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
-            }
-
-            /* Rounded footer for bubble design */
-            .notification-dropdown .notification-footer {
-                border-radius: 0 0 16px 16px;
-            }
-
+                /* Bubble pointer/arrow connecting to notification button */
+                .notification-dropdown::before {
+                    content: '';
+                    position: absolute;
+                    top: -12px;
+                    right: 10px;
+                    width: 0;
+                    height: 0;
+                    border-left: 12px solid transparent;
+                    border-right: 12px solid transparent;
+                    border-bottom: 12px solid white;
+                    filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
+                    z-index: 1;
+                }
+                /* Bubble pointer border */
+                .notification-dropdown::after {
+                    content: '';
+                    position: absolute;
+                    top: -13px;
+                    right: 9px;
+                    width: 0;
+                    height: 0;
+                    border-left: 13px solid transparent;
+                    border-right: 13px solid transparent;
+                    border-bottom: 13px solid rgba(220, 20, 60, 0.1);
+                    z-index: 0;
+                }
+                /* Rounded header for bubble design */
+                .notification-dropdown .notification-header {
+                    border-radius: 16px 16px 0 0;
+                    background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
+                }
+                /* Rounded footer for bubble design */
+                .notification-dropdown .notification-footer {
+                    border-radius: 0 0 16px 16px;
+                }
             /* Bubble fade-in animation for desktop */
             .notification-dropdown {
                 animation: bubbleFadeIn 0.25s ease-out;
@@ -691,6 +682,7 @@
                 opacity: 0;
                 transform: translateY(-10px) scale(0.95);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -794,9 +786,9 @@
                 border-radius: 3px;
             }
 
-            .notification-body::-webkit-scrollbar-thumb:hover {
-                background: var(--gray-400);
-            }
+                .notification-body::-webkit-scrollbar-thumb:hover {
+                    background: var(--gray-400);
+                }
 
         /* Mobile screens: Optimize notification body for touch scrolling */
         @@media (max-width: 575.98px) {
@@ -809,24 +801,23 @@
                 scroll-behavior: smooth;
                 -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
             }
+                /* Mobile scrollbar - thinner and more subtle */
+                .notification-body::-webkit-scrollbar {
+                    width: 4px;
+                }
 
-            /* Mobile scrollbar - thinner and more subtle */
-            .notification-body::-webkit-scrollbar {
-                width: 4px;
-            }
+                .notification-body::-webkit-scrollbar-track {
+                    background: transparent;
+                }
 
-            .notification-body::-webkit-scrollbar-track {
-                background: transparent;
-            }
+                .notification-body::-webkit-scrollbar-thumb {
+                    background: rgba(0, 0, 0, 0.2);
+                    border-radius: 4px;
+                }
 
-            .notification-body::-webkit-scrollbar-thumb {
-                background: rgba(0, 0, 0, 0.2);
-                border-radius: 4px;
-            }
-
-            .notification-body::-webkit-scrollbar-thumb:active {
-                background: rgba(0, 0, 0, 0.4);
-            }
+                    .notification-body::-webkit-scrollbar-thumb:active {
+                        background: rgba(0, 0, 0, 0.4);
+                    }
         }
 
         /* Small mobile screens: Further optimize for limited space */
@@ -862,35 +853,35 @@
                 background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
             }
 
-            .notification-item.unread:hover {
-                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
-            }
+                .notification-item.unread:hover {
+                    background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+                }
 
             /* Priority notifications - High priority (2+ hours delay) */
             .notification-item.priority-high {
                 background: #FFFFFF; /* Read notification background */
             }
 
-            .notification-item.priority-high.unread {
-                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
-            }
+                .notification-item.priority-high.unread {
+                    background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+                }
 
-            .notification-item.priority-high.unread:hover {
-                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
-            }
+                    .notification-item.priority-high.unread:hover {
+                        background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+                    }
 
             /* Priority notifications - Medium priority (1-2 hours delay) */
             .notification-item.priority-medium {
                 background: #FFFFFF; /* Read notification background */
             }
 
-            .notification-item.priority-medium.unread {
-                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
-            }
+                .notification-item.priority-medium.unread {
+                    background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+                }
 
-            .notification-item.priority-medium.unread:hover {
-                background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
-            }
+                    .notification-item.priority-medium.unread:hover {
+                        background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+                    }
 
         .notification-title {
             font-weight: 600;
@@ -976,45 +967,59 @@
         }
 
         .notification-type-submitted {
-            background: var(--success);
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
             color: white;
         }
 
         .notification-type-processing {
-            background: var(--warning);
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
             color: white;
         }
 
         .notification-type-approved {
-            background: var(--success);
+            background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
             color: white;
         }
 
         .notification-type-unapproved {
-            background: var(--primary);
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
             color: white;
         }
 
         .notification-type-retake {
-            background: #ff9800;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
             color: white;
         }
 
         .notification-type-claimed {
-            background: var(--info);
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
             color: white;
+        }
+
+        /* Standard Delay - Yellow/Orange warning (1-2 hours) */
+        .notification-type-standard-delay {
+            background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+            color: #78350F;
+        }
+
+        /* Critical Delay - Red urgent (2+ hours) */
+        .notification-type-critical-delay {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: white;
+            animation: pulseIcon 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
         }
 
         .notification-type-delayed {
-            background: var(--warning);
-            color: white;
+            background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+            color: #78350F;
         }
 
         .notification-type-delay-alert {
-            background: #FFC107;
-            color: #856404;
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: white;
             animation: pulseIcon 2s ease-in-out infinite;
-            box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
         }
 
         /* Delay alert notification item styling */
@@ -1022,29 +1027,30 @@
             background: #FFFFFF; /* Read notification background */
         }
 
-        .notification-item[data-type="delay_alert"].unread {
-            background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
-        }
+            .notification-item[data-type="delay_alert"].unread {
+                background: linear-gradient(135deg, rgba(91, 155, 213, 0.08) 0%, rgba(91, 155, 213, 0.03) 100%);
+            }
 
-        .notification-item[data-type="delay_alert"].unread:hover {
-            background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
-        }
+                .notification-item[data-type="delay_alert"].unread:hover {
+                    background: linear-gradient(135deg, rgba(91, 155, 213, 0.12) 0%, rgba(91, 155, 213, 0.05) 100%);
+                }
 
-        .notification-item[data-type="delay_alert"]:hover {
-            background: #E3E3E3;
-        }
+            .notification-item[data-type="delay_alert"]:hover {
+                background: #E3E3E3;
+            }
 
         @@keyframes pulseIcon {
             0%, 100% {
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
             }
+
             50% {
                 box-shadow: 0 0 0 4px rgba(239, 68, 68, 0);
             }
         }
 
         .notification-type-waiting {
-            background: var(--secondary);
+            background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
             color: white;
         }
 
@@ -1052,6 +1058,16 @@
             background: linear-gradient(135deg, #5B9BD5 0%, #4A8BC2 100%);
             color: white;
             box-shadow: 0 2px 4px rgba(91, 155, 213, 0.3);
+        }
+
+        .notification-type-system {
+            background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+            color: white;
+        }
+
+        .notification-type-reminder {
+            background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+            color: white;
         }
 
         /* Permanent notification styling (welcome notifications) */
@@ -1100,39 +1116,60 @@
             line-height: 1.2;
         }
 
-        .status-badge.submitted {
-            background: #10B981;
-            color: white;
-        }
+            .status-badge.submitted {
+                background: #10B981;
+                color: white;
+            }
 
-        .status-badge.processing {
-            background: #3B82F6;
-            color: white;
-        }
+            .status-badge.processing {
+                background: #3B82F6;
+                color: white;
+            }
 
-        .status-badge.approved {
-            background: #059669;
-            color: white;
-        }
+            .status-badge.approved {
+                background: #059669;
+                color: white;
+            }
 
-        .status-badge.unapproved {
-            background: #DC2626;
-            color: white;
-        }
+            .status-badge.unapproved {
+                background: #DC2626;
+                color: white;
+            }
 
-        .status-badge.claimed {
-            background: #8B5CF6;
-            color: white;
-        }
+            .status-badge.claimed {
+                background: #8B5CF6;
+                color: white;
+            }
 
-        .status-badge.delayed {
-            background: #F59E0B;
-            color: white;
-        }
+            .status-badge.delayed {
+                background: #F59E0B;
+                color: white;
+            }
 
-        .status-badge.waiting {
-            background: #6B7280;
-            color: white;
+            .status-badge.delay-critical {
+                background: #DC2626;
+                color: white;
+                animation: pulseBadge 2s ease-in-out infinite;
+            }
+
+            .status-badge.retake {
+                background: #D97706;
+                color: white;
+            }
+
+            .status-badge.waiting {
+                background: #6B7280;
+                color: white;
+            }
+
+        @@keyframes pulseBadge {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
         }
 
         .priority-badge {
@@ -1146,21 +1183,22 @@
             line-height: 1.2;
         }
 
-        .priority-badge.high {
-            background: #DC2626;
-            color: white;
-            animation: pulse 2s infinite;
-        }
+            .priority-badge.high {
+                background: #DC2626;
+                color: white;
+                animation: pulse 2s infinite;
+            }
 
-        .priority-badge.medium {
-            background: #F59E0B;
-            color: white;
-        }
+            .priority-badge.medium {
+                background: #F59E0B;
+                color: white;
+            }
 
         @@keyframes pulse {
             0%, 100% {
                 opacity: 1;
             }
+
             50% {
                 opacity: 0.7;
             }
@@ -1451,7 +1489,6 @@
             .verification-alert {
                 padding: 1rem 1.5rem;
             }
-
             /* Tablet notification improvements */
             .notification-item {
                 padding: 0.9375rem;
@@ -1492,13 +1529,11 @@
         /* Apply to tablets (576px-991.98px) and desktops (992px+) for consistent dropdown positioning */
         @@media (min-width: 576px) {
             /* Notification dropdown styles are defined in main dropdown section above */
-
             /* Allow notification dropdown to be visible outside greeting card */
             /* This ensures dropdown doesn't get clipped by greeting card at 867x1291 and other tablet sizes */
             .greeting-card {
                 overflow: visible;
             }
-
             /* Ensure notification container can display dropdown outside card */
             .notification-container {
                 z-index: 10;
@@ -1544,14 +1579,12 @@
                 .notification-item:last-child {
                     margin-bottom: 0;
                 }
-
             /* Mobile notification title improvements */
             .notification-title {
                 font-size: 0.875rem;
                 line-height: 1.4;
                 gap: 0.375rem;
             }
-
             /* Mobile notification type icon */
             .notification-type-icon {
                 width: 28px;
@@ -1559,7 +1592,6 @@
                 font-size: 0.75rem;
                 flex-shrink: 0;
             }
-
             /* Mobile notification message */
             .notification-message {
                 font-size: 0.8125rem;
@@ -1567,13 +1599,11 @@
                 margin-bottom: 0.625rem;
                 padding-left: 2rem;
             }
-
             /* Mobile notification time */
             .notification-time {
                 font-size: 0.6875rem;
                 padding-left: 2rem;
             }
-
             /* Mobile badges - make them more compact */
             .notification-badges {
                 gap: 0.25rem;
@@ -1593,7 +1623,6 @@
                 letter-spacing: 0.2px;
                 white-space: nowrap;
             }
-
             /* Mobile-specific notification body */
             .mobile-notification-body {
                 padding: 0.5rem;
@@ -1655,7 +1684,6 @@
                 font-size: 0.65rem;
                 padding: 0.15rem 0.5rem;
             }
-
             /* Extra compact notifications for very small screens */
             .notification-item {
                 padding: 0.75rem;
@@ -2559,15 +2587,12 @@
                         .build();
 
                     connection.on("ReceiveStatusUpdate", function (message) {
-                        console.log("SignalR: Received status update:", message);
                         // Reload notifications from database to get the saved notification
                         loadRealNotifications(false);
                         showToast(message, 'info');
                     });
 
                     connection.on("ReceiveNotification", function (notification) {
-                        console.log("SignalR: Received notification:", notification);
-
                         // Reload notifications from database to get the saved notification
                         loadRealNotifications(true).then(() => {
                             // Flash title for new notification (after badge is updated)
@@ -2591,29 +2616,24 @@
 
                     connection.start()
                         .then(function () {
-                            console.log("SignalR: Connected successfully to notification hub");
                             if (realTimeIndicator) {
                                 realTimeIndicator.style.backgroundColor = 'var(--success)';
                             }
                         })
                         .catch(function (err) {
-                            console.error("SignalR: Connection error:", err.toString());
                         });
 
                     connection.onreconnected((connectionId) => {
-                        console.log("SignalR: Reconnected with connection ID:", connectionId);
                         loadRealNotifications(false);
                     });
 
                     connection.onclose((error) => {
-                        console.log("SignalR: Connection closed", error);
                         if (realTimeIndicator) {
                             realTimeIndicator.style.backgroundColor = 'var(--warning)';
                         }
                     });
 
                 } catch (error) {
-                    console.error("SignalR: Initialization error:", error);
                 }
             }
 
@@ -2751,8 +2771,6 @@
 
             async function loadRealNotifications(showLoading = false) {
                 try {
-                    console.log('[loadRealNotifications] Starting to load unified notifications from database...');
-
                     if (showLoading) {
                         notificationList.innerHTML = `
                             <div class="notification-empty">
@@ -2767,14 +2785,15 @@
                     const data = await response.json();
 
                     if (!response.ok || data.error) {
-                        console.error('[loadRealNotifications] API returned error:', data.error);
                         throw new Error(data.error || 'Failed to load notifications');
                     }
 
-                    const notifications = data.notifications || [];
+                    let notifications = data.notifications || [];
+                    
+                    // Unify delay notifications: Critical Delay replaces Standard Delay for the same application
+                    notifications = unifyDelayNotifications(notifications);
+                    
                     currentNotifications = notifications;
-
-                    console.log(`[loadRealNotifications] Loaded ${notifications.length} unified notifications from database`);
 
                     // Update badge count (unread notifications)
                     const unreadCount = notifications.filter(n => !n.isRead && !n.isPermanent).length;
@@ -2783,10 +2802,7 @@
                     // Render notifications
                     updateNotificationUI(notifications);
 
-                    console.log('[loadRealNotifications] Notifications loaded and UI updated successfully');
-
                 } catch (error) {
-                    console.error('[loadRealNotifications] Failed to load notifications:', error);
                     notificationList.innerHTML = '<div class="text-center py-3 text-danger"><i class="fas fa-exclamation-triangle"></i> Failed to load notifications</div>';
                 }
             }
@@ -3139,8 +3155,6 @@
                 faviconCanvas.width = 32;
                 faviconCanvas.height = 32;
                 faviconContext = faviconCanvas.getContext('2d');
-
-                console.log('✓ Favicon badge system initialized');
             }
 
             /**
@@ -3238,14 +3252,10 @@
 
                         // Show animation
                         setTimeout(() => markAllBtn.classList.remove('reading'), 600);
-
-                        console.log(`Marked ${data.count} notifications as read`);
                     } else {
-                        console.error('Failed to mark all notifications as read:', data.error);
                         setTimeout(() => markAllBtn.classList.remove('reading'), 600);
                     }
                 } catch (error) {
-                    console.error('Error marking all notifications as read:', error);
                     const markAllBtn = document.getElementById('markAllRead');
                     if (markAllBtn) {
                         markAllBtn.classList.remove('reading');
@@ -3466,36 +3476,94 @@
                 });
             }
 
-            function getNotificationTypeIcon(notification) {
-                // Check if notification has priority and prioritize priority icons
-                const priority = notification.priority ? notification.priority.toLowerCase() : 'normal';
+            // Unify delay notifications: Critical Delay replaces Standard Delay for the same application
+            function unifyDelayNotifications(notifications) {
+                const delayTypes = ['delay', 'delay_alert', 'delayed', 'standard_delay', 'critical_delay'];
+                
+                // Group delay notifications by applicationId and applicationType
+                const delayGroups = {};
+                const nonDelayNotifications = [];
+                
+                notifications.forEach(n => {
+                    const isDelay = delayTypes.includes(n.type) || 
+                                   (n.priority && ['high', 'medium', 'Critical Delay', 'Standard Delay'].includes(n.priority));
+                    
+                    if (isDelay && n.applicationId) {
+                        const key = `${n.applicationType}_${n.applicationId}`;
+                        if (!delayGroups[key]) {
+                            delayGroups[key] = [];
+                        }
+                        delayGroups[key].push(n);
+                    } else {
+                        nonDelayNotifications.push(n);
+                    }
+                });
+                
+                // For each group, keep only the highest priority delay (Critical > Standard)
+                const unifiedDelays = [];
+                Object.values(delayGroups).forEach(group => {
+                    // Sort by priority: high/Critical Delay first, then medium/Standard Delay
+                    group.sort((a, b) => {
+                        const getPriorityValue = (n) => {
+                            const p = (n.priority || '').toLowerCase();
+                            if (p === 'high' || p === 'critical delay') return 2;
+                            if (p === 'medium' || p === 'standard delay') return 1;
+                            return 0;
+                        };
+                        return getPriorityValue(b) - getPriorityValue(a);
+                    });
+                    
+                    // Keep only the highest priority notification (Critical replaces Standard)
+                    if (group.length > 0) {
+                        unifiedDelays.push(group[0]);
+                    }
+                });
+                
+                // Combine non-delay notifications with unified delays
+                return [...nonDelayNotifications, ...unifiedDelays];
+            }
 
-                // If high or medium priority, always show priority icon regardless of status
-                if (priority === 'high') {
-                    return { class: 'notification-type-priority-high', icon: 'fas fa-exclamation-circle' };
-                } else if (priority === 'medium') {
-                    return { class: 'notification-type-priority-medium', icon: 'fas fa-exclamation-triangle' };
+            function getNotificationTypeIcon(notification) {
+                // Check if notification has priority and prioritize priority icons for delay notifications
+                const priority = notification.priority ? notification.priority.toLowerCase() : 'normal';
+                const type = notification.type;
+
+                // Handle delay notifications with unique icons based on priority level
+                // Critical Delay (high priority) replaces Standard Delay (medium priority)
+                if (type === 'delay_alert' || type === 'delayed' || type === 'standard_delay' || type === 'critical_delay') {
+                    if (priority === 'high') {
+                        // Critical Delay - Red urgent icon with exclamation
+                        return { class: 'notification-type-critical-delay', icon: 'fas fa-exclamation-circle' };
+                    } else if (priority === 'medium') {
+                        // Standard Delay - Yellow warning icon with clock
+                        return { class: 'notification-type-standard-delay', icon: 'fas fa-clock' };
+                    }
+                    // Default delay icon
+                    return { class: 'notification-type-delayed', icon: 'fas fa-clock' };
                 }
 
-                // Otherwise, show status icon
-                const type = notification.type;
+                // For non-delay notifications, show status-specific icons
                 const types = {
-                    submitted: { class: 'notification-type-submitted', icon: 'fas fa-file-upload' },
-                    processing: { class: 'notification-type-processing', icon: 'fas fa-cog' },
-                    approved: { class: 'notification-type-approved', icon: 'fas fa-check-circle' },
-                    unapproved: { class: 'notification-type-unapproved', icon: 'fas fa-times-circle' },
-                    retake: { class: 'notification-type-retake', icon: 'fas fa-arrow-rotate-left' },
-                    claimed: { class: 'notification-type-claimed', icon: 'fas fa-hand-holding-usd' },
-                    delayed: { class: 'notification-type-delayed', icon: 'fas fa-clock' },
-                    delay_alert: { class: 'notification-type-delay-alert', icon: 'fas fa-exclamation-triangle' },
+                    // Application status icons
+                    submitted: { class: 'notification-type-submitted', icon: 'fas fa-paper-plane' },
+                    processing: { class: 'notification-type-processing', icon: 'fas fa-spinner fa-pulse' },
+                    approved: { class: 'notification-type-approved', icon: 'fas fa-check-double' },
+                    unapproved: { class: 'notification-type-unapproved', icon: 'fas fa-ban' },
+                    retake: { class: 'notification-type-retake', icon: 'fas fa-redo-alt' },
+                    claimed: { class: 'notification-type-claimed', icon: 'fas fa-gift' },
                     waiting: { class: 'notification-type-waiting', icon: 'fas fa-hourglass-half' },
                     welcome: { class: 'notification-type-welcome', icon: 'fas fa-hand-holding-heart' },
-                    application_submitted: { class: 'notification-type-submitted', icon: 'fas fa-file-upload' },
-                    application_processing: { class: 'notification-type-processing', icon: 'fas fa-cog' },
-                    application_approved: { class: 'notification-type-approved', icon: 'fas fa-check-circle' },
-                    application_disapproved: { class: 'notification-type-unapproved', icon: 'fas fa-times-circle' },
-                    application_claimed: { class: 'notification-type-claimed', icon: 'fas fa-hand-holding-usd' },
-                    status_change: { class: 'notification-type-submitted', icon: 'fas fa-sync-alt' }
+                    // Application-prefixed types
+                    application_submitted: { class: 'notification-type-submitted', icon: 'fas fa-paper-plane' },
+                    application_processing: { class: 'notification-type-processing', icon: 'fas fa-spinner fa-pulse' },
+                    application_approved: { class: 'notification-type-approved', icon: 'fas fa-check-double' },
+                    application_disapproved: { class: 'notification-type-unapproved', icon: 'fas fa-ban' },
+                    application_retake: { class: 'notification-type-retake', icon: 'fas fa-redo-alt' },
+                    application_claimed: { class: 'notification-type-claimed', icon: 'fas fa-gift' },
+                    // System notifications
+                    status_change: { class: 'notification-type-processing', icon: 'fas fa-sync-alt' },
+                    system: { class: 'notification-type-system', icon: 'fas fa-cog' },
+                    reminder: { class: 'notification-type-reminder', icon: 'fas fa-bell' }
                 };
                 return types[type] || { class: 'notification-type-submitted', icon: 'fas fa-bell' };
             }
@@ -3506,22 +3574,24 @@
                     processing: { label: 'Processing', class: 'processing' },
                     approved: { label: 'Approved', class: 'approved' },
                     unapproved: { label: 'Not Approved', class: 'unapproved' },
+                    retake: { label: 'Retake Required', class: 'retake' },
                     claimed: { label: 'Claimed', class: 'claimed' },
-                    delayed: { label: 'Pending', class: 'delayed' },
-                    delay_alert: { label: 'Delayed', class: 'delayed' },
+                    delayed: { label: 'Standard Delay', class: 'delayed' },
+                    delay_alert: { label: 'Critical Delay', class: 'delay-critical' },
+                    standard_delay: { label: 'Standard Delay', class: 'delayed' },
+                    critical_delay: { label: 'Critical Delay', class: 'delay-critical' },
                     waiting: { label: 'Waiting', class: 'waiting' },
                     application_submitted: { label: 'Submitted', class: 'submitted' },
                     application_processing: { label: 'Processing', class: 'processing' },
                     application_approved: { label: 'Approved', class: 'approved' },
                     application_disapproved: { label: 'Not Approved', class: 'unapproved' },
+                    application_retake: { label: 'Retake Required', class: 'retake' },
                     application_claimed: { label: 'Claimed', class: 'claimed' }
                 };
                 return statusMap[type] || null;
             }
 
             async function handleNotificationClick(notification) {
-                console.log('[handleNotificationClick] Notification clicked:', notification.id);
-
                 // Mark as read if not already read
                 if (!notification.isRead) {
                     await markNotificationAsRead(notification.id);
@@ -3529,7 +3599,6 @@
 
                 // Navigate to link if provided
                 if (notification.link && notification.link !== '#') {
-                    console.log('[handleNotificationClick] Redirecting to:', notification.link);
                     window.location.href = notification.link;
                 }
             }
@@ -3642,7 +3711,6 @@
                     `;
 
                     // Fetch unified notifications from database (same as desktop)
-                    console.log('[loadMobileNotifications] Fetching from unified API...');
                     const response = await fetch('/Notifications/GetUnifiedNotifications');
 
                     const data = await response.json();
@@ -3652,7 +3720,9 @@
                     }
 
                     let notifications = data.notifications || [];
-                    console.log('[loadMobileNotifications] API returned', notifications.length, 'notifications');
+                    
+                    // Unify delay notifications: Critical Delay replaces Standard Delay for the same application
+                    notifications = unifyDelayNotifications(notifications);
 
                     // Sort notifications: temporary by date DESC, permanent at bottom
                     notifications.sort((a, b) => {

@@ -1,0 +1,946 @@
+@model HospitalAssistanceDto
+@{
+    Layout = "_ViewFormsLayout";
+    ViewData["Title"] = "Hospital Assistance - Retake Status";
+    var selectedSex = ViewData["Sex"]?.ToString();
+    var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
+    var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
+    
+    // Extract retake reason from Comments
+    var retakeReason = "";
+    if (!string.IsNullOrEmpty(Model.Comments) && Model.Comments.Contains("RETAKE REQUEST:"))
+    {
+        retakeReason = Model.Comments.Replace("RETAKE REQUEST:", "").Trim();
+    }
+}
+
+<style>
+    /* Remove borders since layout already has them */
+    .receipt-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .receipt-header {
+        border: none !important;
+    }
+
+    .receipt-body {
+        padding: 1rem !important;
+    }
+
+    .zoom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 50px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .zoom-modal-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    .close-zoom {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .id-image-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .id-image-container:hover {
+            transform: scale(1.02);
+        }
+
+    .id-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background-color: #f8f9fa;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+    }
+
+    .pdf-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .pdf-preview {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        background-color: var(--light-gray);
+        transition: all 0.3s ease;
+    }
+
+        .pdf-preview:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+    .pdf-icon {
+        font-size: 3rem;
+        color: #dc143c;
+        margin-right: 1rem;
+    }
+
+    .pdf-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-filename {
+        font-weight: 600;
+        color: var(--secondary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .pdf-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .pdf-viewer-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.95);
+    }
+
+    .pdf-viewer-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-viewer-header {
+        background-color: #333;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .pdf-viewer-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .pdf-viewer-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 0 0.5rem;
+        line-height: 1;
+    }
+
+        .pdf-viewer-close:hover {
+            color: var(--primary-color);
+        }
+
+    .pdf-viewer-body {
+        flex: 1;
+        background-color: #525659;
+        position: relative;
+        overflow: auto;
+    }
+
+    .pdf-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        min-height: 100%;
+    }
+
+    #pdfCanvas {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        background-color: white;
+    }
+
+    .pdf-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        flex-wrap: wrap;
+    }
+
+    .page-info {
+        color: white;
+        font-size: 0.9rem;
+        margin: 0 10px;
+    }
+
+    .zoom-level {
+        color: white;
+        font-size: 0.9rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .pdf-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        display: none;
+    }
+
+        .pdf-error i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+    /* Status badge styles */
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approve {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-disapprove {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-processing {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .status-claimed {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    /* Disapproval-specific styles */
+    .disapproval-reason {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #fff5f5;
+        border-left: 4px solid #dc3545;
+        border-radius: 4px;
+    }
+
+    .disapproval-label {
+        font-weight: 600;
+        color: #721c24;
+        margin-bottom: 0.5rem;
+    }
+
+    .disapproval-comments {
+        color: #555;
+        line-height: 1.5;
+    }
+
+    /* Comments Modal Styles */
+    .comments-modal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .comments-modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .comments-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .comments-modal-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .comments-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+    }
+
+        .comments-modal-close:hover {
+            color: var(--primary-color);
+        }
+
+    .comments-required {
+        border: 2px solid #dc3545 !important;
+        background-color: #fff5f5;
+    }
+
+    /* Button Styles */
+    .btn-approved {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+    }
+
+        .btn-approved:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+        }
+
+    .btn-disapproved {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+    }
+
+        .btn-disapproved:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+
+    .status-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+</style>
+
+<!-- Image Zoom Modal -->
+<div id="zoomModal" class="zoom-modal">
+    <span class="close-zoom">&times;</span>
+    <img class="zoom-modal-content" id="zoomedImage">
+</div>
+
+<!-- PDF Viewer Modal -->
+<div id="pdfViewerModal" class="pdf-viewer-modal">
+    <div class="pdf-viewer-content">
+        <div class="pdf-viewer-header">
+            <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
+            <div class="pdf-controls">
+                <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="btn btn-sm btn-light" onclick="zoomOut()">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+                <span class="zoom-level" id="zoomLevel">100%</span>
+                <button class="btn btn-sm btn-light" onclick="zoomIn()">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
+            </div>
+            <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
+        </div>
+        <div class="pdf-viewer-body">
+            <div id="pdfLoading" class="pdf-loading">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Loading PDF document...</p>
+            </div>
+            <div id="pdfError" class="pdf-error">
+                <i class="bi bi-exclamation-triangle"></i>
+                <p>Error loading PDF. Please try again.</p>
+            </div>
+            <div class="pdf-container">
+                <canvas id="pdfCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comments Modal -->
+<div id="commentsModal" class="comments-modal">
+    <div class="comments-modal-content">
+        <div class="comments-modal-header">
+            <h5 class="comments-modal-title">Comments Required</h5>
+            <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
+        </div>
+        <div class="mb-3">
+            <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
+            <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
+            <div class="invalid-feedback">Comments are required when disapproving an application.</div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
+            <button type="button" class="btn btn-disapproved" onclick="submitDisapprove()">Submit Disapproval</button>
+        </div>
+    </div>
+</div>
+
+<div class="receipt-container">
+    <form asp-action="HospitalAssistanceView" enctype="multipart/form-data" method="post" id="statusForm">
+        <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
+        <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
+
+        <div class="receipt-body">
+            <!-- Retake Reason Alert -->
+            @if (!string.IsNullOrEmpty(retakeReason))
+            {
+                <div class="alert alert-warning mb-4" style="border-left: 4px solid #ff9800;">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-arrow-clockwise me-3" style="font-size: 1.5rem; color: #ff9800;"></i>
+                        <div>
+                            <h6 class="alert-heading mb-2"><strong>Retake Request Reason:</strong></h6>
+                            <p class="mb-0">@retakeReason</p>
+                            @if (Model.RetakeRequestedAt.HasValue)
+                            {
+                                <small class="text-muted d-block mt-2">
+                                    <i class="bi bi-clock me-1"></i>Requested on: @Model.RetakeRequestedAt.Value.ToString("MMMM dd, yyyy 'at' hh:mm tt")
+                                </small>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <!-- Patient Information -->
+            <div class="receipt-section">
+                <h5 class="section-header">Patient Information</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Name:</div>
+                            <div class="info-value">
+                                @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
+                                @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Address:</div>
+                            <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Sex:</div>
+                            <div class="info-value">@ViewData["Sex"]</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Date of Birth:</div>
+                            <div class="info-value">@ViewData["Dateofbirth"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Age:</div>
+                            <div class="info-value">@ViewData["Age"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">PhilHealth:</div>
+                            <div class="info-value">@ViewData["PhilHealth"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">PhilHealth No:</div>
+                            <div class="info-value">@ViewData["PhilHealthNo"]</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requestor Details -->
+            <div class="receipt-section">
+                <h5 class="section-header">Requestor's Details</h5>
+                <div class="info-row">
+                    <div class="info-label">Full Name:</div>
+                    <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Address:</div>
+                    <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Relationship to Patient:</div>
+                    <div class="info-value">@ViewData["RelationshipPatient"]</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Contact No:</div>
+                    <div class="info-value">@ViewData["ContactNo"]</div>
+                </div>
+            </div>
+
+            <!-- Assistance Requested -->
+            <div class="receipt-section">
+                <h5 class="section-header">Assistance Requested</h5>
+                <div class="info-value">@ViewData["Typeassistance"]</div>
+            </div>
+
+            <!-- Valid ID and Submitted Documents Section -->
+            <div class="receipt-section">
+                <!-- Valid ID Section -->
+                <div class="receipt-section">
+                    <h5 class="section-header">Valid ID</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6>Front ID</h6>
+                            @if (ViewData["ValidfrontimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No front ID image available</p>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6>Back ID</h6>
+                            @if (ViewData["ValidBackimageBase64"] != null)
+                            {
+                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No back ID image available</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Prescription -->
+                @if (ViewData["DoctorPrescriptionBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-header">Doctor Prescription</h5>
+                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Medical Certificate -->
+                @if (ViewData["MedicalCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-header">Medical Certificate</h5>
+                        @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Death Certificate -->
+                @if (ViewData["DeathCertificateBase64"] != null)
+                {
+                    <div class="receipt-section">
+                        <h5 class="section-header">Death Certificate</h5>
+                        @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                        {
+                            <div class="pdf-container">
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Status Section -->
+            <div class="receipt-section">
+                <h5 class="section-header">Request Status</h5>
+                <div class="info-row">
+                    <div class="info-label">Current Status:</div>
+                    <div class="info-value">
+                        <span class="status-badge status-@(ViewData["Status2"]?.ToString()?.ToLower())">
+                            @ViewData["Status2"]
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Show disapproval reason if application is disapproved -->
+                @if (ViewData["Status2"]?.ToString() == "Disapprove" && !string.IsNullOrEmpty(ViewData["Comments"]?.ToString()))
+                {
+                    <div class="disapproval-reason">
+                        <div class="disapproval-label">Reason for Disapproval:</div>
+                        <div class="disapproval-comments">@ViewData["Comments"]</div>
+                    </div>
+                }
+            </div>
+
+            <!-- Action Buttons (only show if not already processed) -->
+            @if (ViewData["Status2"]?.ToString() != "Approve" && ViewData["Status2"]?.ToString() != "Disapprove")
+            {
+                <div class="status-buttons">
+                    <button type="button" class="btn btn-approved" onclick="submitApprove()">
+                        <i class="bi bi-check-circle"></i> Approve
+                    </button>
+                    <button type="button" class="btn btn-disapproved" onclick="showCommentsModal()">
+                        <i class="bi bi-x-circle"></i> Disapprove
+                    </button>
+                </div>
+            }
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // PDF Viewer Variables
+        let currentPDF = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScale = 1.2;
+
+        // Image Zoom Functionality
+        function zoomImage(src) {
+            const modal = document.getElementById("zoomModal");
+            const modalImg = document.getElementById("zoomedImage");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        // Close zoom modal
+        document.querySelector(".close-zoom").onclick = function() {
+            document.getElementById("zoomModal").style.display = "none";
+        }
+
+        // PDF Viewer Function
+        async function viewPDFInModal(fileName, fileType, displayName) {
+            const modal = document.getElementById('pdfViewerModal');
+            const title = document.getElementById('pdfViewerTitle');
+            const loading = document.getElementById('pdfLoading');
+            const errorDiv = document.getElementById('pdfError');
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            title.textContent = displayName || 'PDF Document';
+            modal.style.display = 'block';
+            loading.style.display = 'flex';
+            errorDiv.style.display = 'none';
+            canvas.style.display = 'none';
+
+            currentPDF = null;
+            currentPage = 1;
+            currentScale = 1.2;
+
+            try {
+                const encodedFileName = encodeURIComponent(fileName);
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const pdfData = await response.arrayBuffer();
+                if (!pdfData || pdfData.byteLength === 0) {
+                    throw new Error('PDF data is empty');
+                }
+
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                totalPagesSpan.textContent = totalPages;
+                currentPageSpan.textContent = currentPage;
+
+                updateNavigationButtons();
+                await renderPage(currentPage);
+
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+
+            } catch (error) {
+                                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+            }
+        }
+
+        // Render specific page
+        async function renderPage(pageNum) {
+            if (!currentPDF) return;
+
+            const canvas = document.getElementById('pdfCanvas');
+            const context = canvas.getContext('2d');
+            const currentPageSpan = document.getElementById('currentPage');
+
+            try {
+                const page = await currentPDF.getPage(pageNum);
+                const viewport = page.getViewport({ scale: currentScale });
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                await page.render(renderContext).promise;
+                currentPageSpan.textContent = pageNum;
+
+            } catch (error) {
+                            }
+        }
+
+        // Navigation functions
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                updateNavigationButtons();
+            }
+        }
+
+        function zoomIn() {
+            currentScale += 0.2;
+            renderPage(currentPage);
+            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        function zoomOut() {
+            if (currentScale > 0.5) {
+                currentScale -= 0.2;
+                renderPage(currentPage);
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        // Close PDF Viewer
+        function closePDFViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            modal.style.display = 'none';
+
+            if (currentPDF) {
+                currentPDF.destroy();
+                currentPDF = null;
+            }
+        }
+
+        // Status Submission Functions
+        function submitApprove() {
+            document.getElementById('statusInput').value = 'Approve';
+            document.getElementById('commentsInput').value = '';
+            document.getElementById('statusForm').submit();
+        }
+
+        function showCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'block';
+            document.getElementById('commentsTextarea').focus();
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').style.display = 'none';
+            document.getElementById('commentsTextarea').value = '';
+            document.getElementById('commentsTextarea').classList.remove('is-invalid');
+        }
+
+        function submitDisapprove() {
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            const comments = commentsTextarea.value.trim();
+
+            if (comments === '') {
+                commentsTextarea.classList.add('is-invalid');
+                commentsTextarea.focus();
+                return;
+            }
+
+            document.getElementById('statusInput').value = 'Disapprove';
+            document.getElementById('commentsInput').value = comments;
+            document.getElementById('statusForm').submit();
+        }
+
+        // Keyboard shortcuts and navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById("zoomModal").style.display = "none";
+                closePDFViewer();
+                closeCommentsModal();
+            }
+
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+            const commentsModal = document.getElementById("commentsModal");
+
+            if (event.target == zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal) {
+                closePDFViewer();
+            }
+            if (event.target == commentsModal) {
+                closeCommentsModal();
+            }
+        }
+    </script>
+}

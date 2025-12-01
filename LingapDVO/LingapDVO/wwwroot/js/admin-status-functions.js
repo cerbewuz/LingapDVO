@@ -25,8 +25,7 @@
                 statusInput.value = 'Approve';
                 statusForm.submit();
             } else {
-                console.error('Status form elements not found');
-            }
+                            }
         }
     };
 
@@ -52,8 +51,7 @@
                 commentsInput.value = comments;
                 statusForm.submit();
             } else {
-                console.error('Status form elements not found');
-            }
+                            }
         } else if (comments !== null) {
             alert('Comments are required when disapproving an application.');
         }
@@ -71,8 +69,7 @@
                 statusInput.value = 'Processing';
                 statusForm.submit();
             } else {
-                console.error('Status form elements not found');
-            }
+                            }
         }
     };
 
@@ -90,8 +87,7 @@
                 if (status3Input) status3Input.value = 'Claimed';
                 statusForm.submit();
             } else {
-                console.error('Status form not found');
-            }
+                            }
         }
     };
 
@@ -160,8 +156,7 @@
             commentsInput.value = comments;
             statusForm.submit();
         } else {
-            console.error('Status form elements not found');
-            alert('Error: Could not submit form. Please try again.');
+                        alert('Error: Could not submit form. Please try again.');
         }
     };
 
@@ -229,7 +224,6 @@
             }
         });
 
-        console.log('Admin Status Functions initialized');
-    });
+            });
 
 })();

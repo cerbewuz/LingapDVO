@@ -1,4 +1,4 @@
-﻿@model FuneralAssistanceDto
+@model FuneralAssistanceDto
 @{
     Layout = "_EditFormsLayout";
     ViewData["Title"] = "Edit Funeral Assistance";
@@ -697,8 +697,7 @@
     <script>
         // Success Modal Functions
         function showSuccessModal() {
-            console.log('Showing success modal');
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
             successModal.show();
 
             let countdown = 2;
@@ -715,15 +714,12 @@
         }
 
         function redirectToList() {
-            console.log('Redirecting to list');
-            window.location.href = '/Home';
+                        window.location.href = '/Home';
         }
 
         // Check for successful form submission on page load
         function checkFormSubmission() {
-            console.log('Checking form submission status');
-
-            // Method 1: Check URL parameter
+                        // Method 1: Check URL parameter
             const urlParams = new URLSearchParams(window.location.search);
             const success = urlParams.get('success');
 
@@ -733,32 +729,23 @@
             // Method 3: Check TempData (common in ASP.NET)
             const tempDataSuccess = @Json.Serialize(TempData["Success"] ?? false);
 
-            console.log('URL success param:', success);
-            console.log('ViewBag.Success:', serverSuccess);
-            console.log('TempData Success:', tempDataSuccess);
-
-            if (success === 'true' || serverSuccess === true || tempDataSuccess === true) {
-                console.log('Success detected, showing modal');
-                setTimeout(() => {
+                                                if (success === 'true' || serverSuccess === true || tempDataSuccess === true) {
+                                setTimeout(() => {
                     showSuccessModal();
                 }, 500);
             } else {
-                console.log('No success detected');
-            }
+                            }
         }
 
         // Enhanced form submission handler
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing form handlers');
-
-            const form = document.getElementById('editForm');
+                        const form = document.getElementById('editForm');
             const submitButton = document.getElementById('submitButton');
             const formSubmittedField = document.getElementById('formSubmitted');
 
             if (form) {
                 form.addEventListener('submit', function(e) {
-                    console.log('Form submitted');
-                    // Set the hidden field to indicate form was submitted
+                                        // Set the hidden field to indicate form was submitted
                     if (formSubmittedField) {
                         formSubmittedField.value = 'true';
                     }
@@ -780,8 +767,7 @@
             // Also check if we're coming back from a post with validation errors
             const hasValidationErrors = document.querySelector('.alert-danger, .field-validation-error');
             if (hasValidationErrors) {
-                console.log('Validation errors detected, not showing success modal');
-                // Re-enable submit button if it was disabled
+                                // Re-enable submit button if it was disabled
                 if (submitButton) {
                     submitButton.innerHTML = '<i class="bi bi-save"></i> Save Changes';
                     submitButton.disabled = false;
@@ -875,8 +861,7 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                const loading = document.getElementById('pdfLoading');
+                                const loading = document.getElementById('pdfLoading');
                 const errorDiv = document.getElementById('pdfError');
                 loading.style.display = 'none';
                 errorDiv.style.display = 'block';
@@ -907,8 +892,7 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                console.error('Error rendering page:', error);
-            }
+                            }
         }
 
         function nextPage() {

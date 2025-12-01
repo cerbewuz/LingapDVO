@@ -53,10 +53,10 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
     <!-- Preload Critical Resources with fetchpriority -->
-    <link rel="preload" href="/css/landingpage.css" as="style" fetchpriority="high">
+    <link rel="preload" href="/css/landingpage.css?v=20251201" as="style" fetchpriority="high">
     <link rel="preload" href="/images/helping.webp" as="image" type="image/webp" fetchpriority="high">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" as="style">
-    <link rel="preload" href="/js/landingpage.js" as="script">
+    <link rel="preload" href="/js/landingpage.js?v=20251201" as="script">
 
     <!-- Critical CSS - Inline for fastest initial render -->
     <style>
@@ -64,8 +64,8 @@
     </style>
 
     <!-- Async load non-critical CSS -->
-    <link rel="stylesheet" href="/css/landingpage.css" media="print" onload="this.media='all'; this.onload=null;">
-    <noscript><link rel="stylesheet" href="/css/landingpage.css"></noscript>
+    <link rel="stylesheet" href="/css/landingpage.css?v=20251201" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="/css/landingpage.css?v=20251201"></noscript>
 
     <!-- Fonts with font-display: swap - only weights we use -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -447,16 +447,16 @@
     </footer>
 
     <!-- Scripts - Async loading for non-critical scripts -->
-    <script src="js/landingpage.js" defer></script>
-    <script src="js/bootstrap.min.js" defer async></script>
+    <script src="js/landingpage.js?v=20251201" defer></script>
+    <script src="js/bootstrap.min.js?v=20251201" defer async></script>
 
     <!-- Service Worker Registration - Inline for immediate execution -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/service-worker.js')
-                    .then(function(reg) { console.log('SW registered:', reg.scope); })
-                    .catch(function(err) { console.log('SW failed:', err); });
+                    .then(function(reg) {  })
+                    .catch(function(err) {  });
             });
         }
     </script>

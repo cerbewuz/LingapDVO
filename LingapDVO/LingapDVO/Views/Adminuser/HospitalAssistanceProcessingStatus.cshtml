@@ -1,4 +1,4 @@
-﻿@model HospitalAssistanceDto
+@model HospitalAssistanceDto
 @{
     Layout = "_AdminProcessingLayout";
     ViewData["Title"] = "Process Hospital Assistance";
@@ -495,24 +495,99 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.7);
+        background-color: rgba(0,0,0,0.8);
+        backdrop-filter: blur(5px);
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0.7);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
 
     .success-modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 2rem;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        margin: 10% auto;
+        padding: 3rem 2rem;
+        border-radius: 20px;
         width: 90%;
-        max-width: 400px;
+        max-width: 450px;
         text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        animation: scaleIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        position: relative;
+    }
+
+    .success-modal-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #4361ee, #3b82f6, #06b6d4);
+        border-radius: 20px 20px 0 0;
     }
 
     .success-icon {
-        font-size: 3rem;
-        color: #28a745;
+        margin-bottom: 1.5rem;
+        animation: pulse 0.6s ease-in-out;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .success-icon i {
+        font-size: 5rem;
+        transition: all 0.3s ease;
+    }
+
+    .success-modal-content h4 {
+        color: #2d3748;
+        font-weight: 700;
         margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .success-modal-content p {
+        color: #718096;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .spinner-border {
+        width: 2rem;
+        height: 2rem;
+        border-width: 0.25em;
+    }
+
+    @@media (max-width: 576px) {
+        .success-modal-content {
+            margin: 20% auto;
+            padding: 2rem 1.5rem;
+            max-width: 90%;
+        }
+
+        .success-icon i {
+            font-size: 4rem;
+        }
+
+        .success-modal-content h4 {
+            font-size: 1.25rem;
+        }
     }
 
     /* Responsive adjustments */
@@ -636,12 +711,12 @@
 <div id="successModal" class="success-modal">
     <div class="success-modal-content">
         <div class="success-icon">
-            <i class="bi bi-check-circle-fill"></i>
+            <i class="bi bi-check-circle-fill" style="color: #28a745;"></i>
         </div>
         <h4>Status Updated Successfully!</h4>
         <p>Redirecting to Admin page...</p>
         <div class="mt-3">
-            <div class="spinner-border text-primary" role="status">
+            <div class="spinner-border" role="status" style="color: #4361ee;">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
@@ -1022,8 +1097,7 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                loading.style.display = 'none';
+                                loading.style.display = 'none';
                 errorDiv.style.display = 'block';
                 errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
             }
@@ -1053,8 +1127,7 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                console.error('Error rendering page:', error);
-            }
+                            }
         }
 
         // Navigation functions
@@ -1155,8 +1228,6 @@
 
         // Status Submission Functions - FIXED VERSION
         function submitApprove() {
-            console.log('Submitting approve...');
-
             // Validate the form first
             if (!validateForm()) {
                 return; // Stop if validation fails
@@ -1169,16 +1240,11 @@
             document.getElementById('statusInput').value = 'Approve';
             document.getElementById('commentsInput').value = ''; // Empty comments for approval
 
-            // Show loading modal
-            showSuccessModal();
+            // Show success modal
+            showSuccessModal('approve');
 
             // Submit the form after a short delay to show the modal
             setTimeout(() => {
-                console.log('Final form submission - Approve');
-                console.log('Status:', document.getElementById('statusInput').value);
-                console.log('Comments:', document.getElementById('commentsInput').value);
-                console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
-
                 document.getElementById('statusForm').submit();
             }, 1500);
         }
@@ -1205,8 +1271,6 @@
                 return;
             }
 
-            console.log('Submitting disapprove...');
-
             // Update CMO reflection before submission
             updateReflection();
 
@@ -1215,14 +1279,10 @@
 
             // Close comments modal and show success modal
             closeCommentsModal();
-            showSuccessModal();
+            showSuccessModal('disapprove');
 
             // Submit the form after a short delay
             setTimeout(() => {
-                console.log('Final form submission - Disapprove');
-                console.log('Status:', document.getElementById('statusInput').value);
-                console.log('Comments:', document.getElementById('commentsInput').value);
-
                 document.getElementById('statusForm').submit();
             }, 1500);
         }
@@ -1253,8 +1313,6 @@
                 return;
             }
 
-            console.log('Submitting retake with reason...');
-
             // Update CMO reflection before submission
             updateReflection();
 
@@ -1264,24 +1322,49 @@
 
             // Close retake modal and show success modal
             closeRetakeModal();
-            showSuccessModal();
+            showSuccessModal('retake');
 
             // Submit the form after a short delay
             setTimeout(() => {
-                console.log('Final form submission - Retake');
-                console.log('Status:', document.getElementById('statusInput').value);
-                console.log('Comments:', document.getElementById('commentsInput').value);
                 document.getElementById('statusForm').submit();
             }, 1500);
         }
 
-        function showSuccessModal() {
-            document.getElementById('successModal').style.display = 'block';
-
-            // Auto-redirect after 3 seconds in case form submission fails
-            setTimeout(() => {
-                window.location.href = '/Admin';
-            }, 3000);
+        function showSuccessModal(statusType) {
+            const modal = document.getElementById('successModal');
+            const icon = modal.querySelector('.success-icon i');
+            const title = modal.querySelector('h4');
+            const message = modal.querySelector('p');
+            
+            // Customize modal based on status type
+            switch(statusType) {
+                case 'approve':
+                    icon.className = 'bi bi-check-circle-fill';
+                    icon.style.color = '#28a745';
+                    title.textContent = 'Application Approved!';
+                    message.textContent = 'The application has been successfully approved. Redirecting...';
+                    break;
+                case 'disapprove':
+                    icon.className = 'bi bi-x-circle-fill';
+                    icon.style.color = '#dc3545';
+                    title.textContent = 'Application Disapproved';
+                    message.textContent = 'The application has been disapproved. Redirecting...';
+                    break;
+                case 'retake':
+                    icon.className = 'bi bi-arrow-clockwise';
+                    icon.style.color = '#ff9800';
+                    title.textContent = 'Retake Request Sent';
+                    message.textContent = 'The applicant has been notified to resubmit. Redirecting...';
+                    break;
+                default:
+                    icon.className = 'bi bi-check-circle-fill';
+                    icon.style.color = '#4361ee';
+                    title.textContent = 'Status Updated Successfully!';
+                    message.textContent = 'Redirecting to Admin page...';
+            }
+            
+            modal.style.display = 'block';
+            // Note: No JavaScript redirect needed - the form submission will handle the redirect from server
         }
 
         // CMO Reflection Auto-generation - FIXED VERSION
@@ -1315,8 +1398,7 @@
             // Update the hidden field as well
             document.getElementById('forCMOPersonnelInput').value = reflectionValue;
 
-            console.log('CMO Reflection updated:', reflectionValue);
-        }
+                    }
 
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize checkbox behavior
@@ -1349,17 +1431,9 @@
 
         // Enhanced form submission debugging
         document.getElementById('statusForm').addEventListener('submit', function(e) {
-            console.log('=== FORM SUBMISSION DEBUG INFO ===');
-            console.log('Form action:', this.action);
-            console.log('Form method:', this.method);
-            console.log('Status:', document.getElementById('statusInput').value);
-            console.log('Comments:', document.getElementById('commentsInput').value);
-            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
-            console.log('Processed By:', document.getElementById('processByInput').value);
-            console.log('Granted Amount:', document.getElementById('grantedAmountInput').value);
-            console.log('Form data:', new FormData(this));
-            console.log('==============================');
-        });
+                                                .value);
+            );
+                    });
 
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {

@@ -247,8 +247,7 @@
         // Setup event listeners
         setupEventListeners();
 
-        console.log('Sidebar: Initialized successfully');
-    }
+            }
 
     // Create burger menu button
     function createBurgerMenu() {
@@ -297,8 +296,7 @@
                 updateNotificationBadge(data.count || 0);
             })
             .catch(error => {
-                console.error('Sidebar: Error loading notification count:', error);
-            });
+                            });
     }
 
     // Update notification badge
@@ -394,5 +392,4 @@
     // This eliminates 300+ unnecessary requests per hour with 10 active admins
     // setInterval(loadNotificationCount, 120000); // REMOVED - Use SignalR instead
 
-    console.log('Sidebar: Module loaded successfully');
-})();
+    })();

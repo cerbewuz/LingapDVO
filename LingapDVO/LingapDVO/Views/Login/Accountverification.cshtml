@@ -1,4 +1,4 @@
-﻿@model VerifyaccountDto
+@model VerifyaccountDto
 @{
     Layout = null;
 }
@@ -619,7 +619,6 @@
             lastName: '@ViewBag.RegisteredLastName',
             suffix: '@ViewBag.RegisteredSuffix'
         };
-        console.log('Registered User Name from Database:', window.registeredUserName);
 
         // ═══════════════════════════════════════════════════════════════
         // Ñ/ñ CHARACTER SUPPORT - ACCOUNT VERIFICATION
@@ -642,16 +641,10 @@
                 if (input) {
                     input.addEventListener('input', function() {
                         const value = this.value;
-
-                        // Allow and log Ñ/ñ characters
-                        if (containsEnye(value)) {
-                            console.log(`✓ Ñ/ñ character detected in ${this.id}: "${value}"`);
-                        }
+                        // Ñ/ñ characters are supported
                     });
                 }
             });
-
-            console.log('✓ Ñ/ñ character support enabled for account verification name fields');
         });
     </script>
 

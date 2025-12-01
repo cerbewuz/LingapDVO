@@ -60,8 +60,7 @@
             }
         });
 
-        console.log('Phone number formatting initialized');
-    }
+            }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // PHILHEALTH NUMBER FORMATTING
@@ -91,8 +90,7 @@
             this.value = value;
         });
 
-        console.log('PhilHealth formatting initialized');
-    }
+            }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // FILE UPLOAD PREVIEW
@@ -230,8 +228,7 @@
         });
 
         updateAssistanceReflection();
-        console.log('Assistance checkboxes initialized');
-    }
+            }
 
     /**
      * Updates the hidden reflection field with selected assistance types
@@ -278,8 +275,7 @@
             }
         });
 
-        console.log('Requestor toggle initialized');
-    }
+            }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // FORM SUBMISSION HANDLING
@@ -322,8 +318,7 @@
             }
         });
 
-        console.log('Form submission handling initialized');
-    }
+            }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // INITIALIZATION
@@ -336,7 +331,6 @@
         initRequestorToggle();
         initFormSubmission();
 
-        console.log('Form Utilities initialized');
-    });
+            });
 
 })();

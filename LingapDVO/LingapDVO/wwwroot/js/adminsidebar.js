@@ -39,8 +39,7 @@
         const mainContent = document.querySelector('.main-content-with-sidebar');
 
         if (!sidebar) {
-            console.warn('Admin Sidebar: Sidebar elements not found');
-            return;
+                        return;
         }
 
         // Set initial state
@@ -85,8 +84,7 @@
                     // Add active to clicked link
                     link.classList.add('active');
 
-                    console.log('Admin Sidebar: Navigation link clicked, sidebar remains open');
-                }
+                                    }
 
                 // IMPORTANT: Don't auto-close sidebar - user controls it manually
                 // Sidebar will only close when user clicks the pull arrow (desktop) or burger button (mobile)
@@ -94,8 +92,7 @@
             });
         });
 
-        console.log('Admin Sidebar: Pull arrow toggle functionality initialized');
-    }
+            }
 
     /**
      * Toggle sidebar open/close
@@ -269,8 +266,7 @@
             }
         });
 
-        console.log('Admin Sidebar: Active navigation item set for path:', currentPath);
-    }
+            }
 
     /**
      * Update priority badge count
@@ -422,8 +418,7 @@
     function initializeBadgeSignalR() {
         // Only initialize if SignalR is available and user is on admin pages
         if (typeof signalR === 'undefined') {
-            console.log('Admin Sidebar: SignalR not loaded, skipping real-time badge updates');
-            return;
+                        return;
         }
 
         const connection = new signalR.HubConnectionBuilder()
@@ -434,18 +429,15 @@
 
         // Listen for sidebar badge updates
         connection.on("UpdateSidebarBadge", function (data) {
-            console.log('Admin Sidebar: Badge update received:', data.count);
-            updatePriorityBadge(data.count);
+                        updatePriorityBadge(data.count);
         });
 
         // Start connection
         connection.start()
             .then(function () {
-                console.log('Admin Sidebar: Real-time badge updates connected');
-            })
+                            })
             .catch(function (error) {
-                console.warn('Admin Sidebar: Could not connect for badge updates:', error);
-            });
+                            });
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -458,13 +450,11 @@
             initSidebarToggle();
             setActiveNavItem();
             initializeBadgeSignalR();
-            console.log('Admin Sidebar Module: Loaded and initialized successfully');
-        });
+                    });
     } else {
         initSidebarToggle();
         setActiveNavItem();
         initializeBadgeSignalR();
-        console.log('Admin Sidebar Module: Loaded and initialized successfully');
-    }
+            }
 
 })();

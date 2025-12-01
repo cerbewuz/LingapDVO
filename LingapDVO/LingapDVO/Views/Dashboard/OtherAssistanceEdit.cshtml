@@ -1,4 +1,4 @@
-﻿@model OtherAssistanceDto
+@model OtherAssistanceDto
 @{
     Layout = "_EditFormsLayout";
     ViewData["Title"] = "Edit Other Assistance";
@@ -847,8 +847,7 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                const loading = document.getElementById('pdfLoading');
+                                const loading = document.getElementById('pdfLoading');
                 const errorDiv = document.getElementById('pdfError');
                 loading.style.display = 'none';
                 errorDiv.style.display = 'block';
@@ -879,8 +878,7 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                console.error('Error rendering page:', error);
-            }
+                            }
         }
 
         function nextPage() {
@@ -1035,7 +1033,6 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             checkFormSubmission();
-            console.log('Edit form with success modal initialized');
-        });
+                    });
     </script>
 }
