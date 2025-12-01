@@ -1007,28 +1007,12 @@
                         <small class="text-muted d-block mb-2">Select only one supporting document</small>
                         <div class="cmo-checkbox-group">
                             <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="barangayClearance" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
-                                <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="hospitalBill" value="Hospital Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
-                                <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
                                 <input class="form-check-input supporting-doc single-doc" type="checkbox" id="medicalCertificate" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
                                 <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
                             </div>
                             <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="funeralBill" value="Funeral Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "")>
-                                <label class="form-check-label" for="funeralBill">Funeral Bill</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="deathCertificate" value="Death Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "")>
-                                <label class="form-check-label" for="deathCertificate">Death Certificate</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="laboratoryRequest" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
-                                <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="laboratoryRequest" value="Laboratory/X-ray Results" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
+                                <label class="form-check-label" for="laboratoryRequest">Laboratory/X-ray Results</label>
                             </div>
                             <div class="cmo-checkbox-item">
                                 <input class="form-check-input supporting-doc single-doc" type="checkbox" id="othersCheckbox" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
