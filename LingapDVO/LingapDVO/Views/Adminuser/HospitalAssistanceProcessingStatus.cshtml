@@ -495,105 +495,63 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.8);
-        backdrop-filter: blur(5px);
-        animation: fadeIn 0.3s ease;
-    }
-
-    @@keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @@keyframes scaleIn {
-        from {
-            transform: scale(0.7);
-            opacity: 0;
-        }
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
+        background-color: rgba(0,0,0,0.7);
     }
 
     .success-modal-content {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        margin: 10% auto;
-        padding: 3rem 2rem;
-        border-radius: 20px;
+        background-color: white;
+        margin: 15% auto;
+        padding: 2rem;
+        border-radius: 10px;
         width: 90%;
-        max-width: 450px;
+        max-width: 400px;
         text-align: center;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        animation: scaleIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        position: relative;
-    }
-
-    .success-modal-content::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: linear-gradient(90deg, #4361ee, #3b82f6, #06b6d4);
-        border-radius: 20px 20px 0 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
 
     .success-icon {
-        margin-bottom: 1.5rem;
-        animation: pulse 0.6s ease-in-out;
-    }
-
-    @@keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
-
-    .success-icon i {
-        font-size: 5rem;
-        transition: all 0.3s ease;
-    }
-
-    .success-modal-content h4 {
-        color: #2d3748;
-        font-weight: 700;
+        font-size: 3rem;
+        color: #28a745;
         margin-bottom: 1rem;
-        font-size: 1.5rem;
     }
 
-    .success-modal-content p {
-        color: #718096;
-        font-size: 1rem;
+    /* CMO Others Field Styling */
+    .cmo-others-row {
+        display: flex;
+        gap: 12px;
         margin-bottom: 1.5rem;
+        align-items: flex-end;
     }
 
-    .spinner-border {
-        width: 2rem;
-        height: 2rem;
-        border-width: 0.25em;
+    .cmo-others-checkbox {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        height: fit-content;
+        min-height: 46px;
     }
 
-    @@media (max-width: 576px) {
-        .success-modal-content {
-            margin: 20% auto;
-            padding: 2rem 1.5rem;
-            max-width: 90%;
-        }
-
-        .success-icon i {
-            font-size: 4rem;
-        }
-
-        .success-modal-content h4 {
-            font-size: 1.25rem;
-        }
+    .cmo-others-input {
+        flex: 1;
     }
 
     /* Responsive adjustments */
     @@media (max-width: 768px) {
         .cmo-checkbox-group {
             grid-template-columns: 1fr;
+        }
+
+        .cmo-others-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .cmo-others-checkbox {
+            min-height: 40px;
         }
 
         .info-row {
@@ -675,9 +633,9 @@
 <!-- Retake Modal -->
 <div id="retakeModal" class="comments-modal">
     <div class="comments-modal-content">
-        <div class="comments-modal-header" style="background: linear-gradient(135deg, #ff9800, #ff5722); padding: 1rem; margin: -2rem -2rem 1rem -2rem; border-radius: 8px 8px 0 0;">
-            <h5 class="comments-modal-title" style="color: white;"><i class="bi bi-arrow-clockwise me-2"></i>Retake Application Request</h5>
-            <button class="comments-modal-close" onclick="closeRetakeModal()" style="color: white;">&times;</button>
+        <div class="comments-modal-header" style="background: linear-gradient(135deg, #ff9800, #ff5722);">
+            <h5 class="comments-modal-title"><i class="bi bi-arrow-clockwise me-2"></i>Retake Application Request</h5>
+            <button class="comments-modal-close" onclick="closeRetakeModal()">&times;</button>
         </div>
         <div class="alert alert-warning mb-3" style="font-size: 0.9rem;">
             <i class="bi bi-info-circle me-2"></i>
@@ -686,8 +644,8 @@
         <div class="mb-3">
             <label for="retakeReasonTextarea" class="form-label"><strong>Reason for Retake (Required):</strong></label>
             <textarea class="form-control" id="retakeReasonTextarea" rows="4"
-                placeholder="Example: The uploaded medical certificate is unclear/incomplete. Please upload a clearer copy with all pages visible..."
-                required></textarea>
+                      placeholder="Example: The uploaded medical certificate is unclear/incomplete. Please upload a clearer copy with all pages visible..."
+                      required></textarea>
             <div class="invalid-feedback" style="display: block; color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem;">
                 <span id="retakeReasonError" style="display: none;"><i class="bi bi-exclamation-triangle me-1"></i>A detailed reason is required for retake requests.</span>
             </div>
@@ -711,12 +669,12 @@
 <div id="successModal" class="success-modal">
     <div class="success-modal-content">
         <div class="success-icon">
-            <i class="bi bi-check-circle-fill" style="color: #28a745;"></i>
+            <i class="bi bi-check-circle-fill"></i>
         </div>
         <h4>Status Updated Successfully!</h4>
         <p>Redirecting to Admin page...</p>
         <div class="mt-3">
-            <div class="spinner-border" role="status" style="color: #4361ee;">
+            <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
@@ -804,7 +762,7 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- CMO Section - UPDATED DESIGN -->
+            <!-- CMO Section - FIXED DESIGN -->
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
                 <div class="cmo-details">
@@ -836,7 +794,24 @@
                                 <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
                                 <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
                             </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input" type="checkbox" id="othersCheckbox" name="SupportingDocs" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
+                                <label class="form-check-label" for="othersCheckbox">Others</label>
+                            </div>
                         </div>
+
+                        <!-- Others Field - Now properly placed after the checkbox grid -->
+                        <div class="cmo-others-row" id="cmoOthersRow" style="display: none;">
+                            <div class="cmo-others-input">
+                                <label class="form-label">Specify Other Documents: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter other supporting documents..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                <div class="invalid-feedback" id="cmoNotesError">
+                                    Please specify the other documents.
+                                </div>
+                                <small class="text-muted">Enter the specific document(s) not listed above</small>
+                            </div>
+                        </div>
+
                         <div class="invalid-feedback" id="supportingDocsError" style="display: none;">
                             Please select at least one supporting document.
                         </div>
@@ -844,25 +819,13 @@
 
                     <div class="row g-3 mt-3">
                         <div class="col-md-6">
-                            <div class="cmo-notes-section">
-                                <label class="form-label cmo-section-title">Others: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter notes..." required value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
-                                <div class="invalid-feedback" id="cmoNotesError">
-                                    Please enter notes in the Others field.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
                             <label class="form-label cmo-section-title">Amount Granted: <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" class="form-control" id="grantedAmountInput" name="GrantedAmount" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
                             <div class="invalid-feedback" id="grantedAmountError">
                                 Please enter the amount granted.
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row g-3 mt-2">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <div class="cmo-processed-by">
                                 <div>Processed by:</div>
                                 <div>@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")</div>
@@ -1097,7 +1060,8 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                                loading.style.display = 'none';
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
                 errorDiv.style.display = 'block';
                 errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
             }
@@ -1127,7 +1091,8 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                            }
+                console.error('Error rendering page:', error);
+            }
         }
 
         // Navigation functions
@@ -1191,19 +1156,22 @@
             document.getElementById('grantedAmountInput').classList.remove('is-invalid');
 
             // Validate supporting documents
-            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            const supportingDocs = document.querySelectorAll('input[name="SupportingDocs"]:checked');
             if (supportingDocs.length === 0) {
                 isValid = false;
                 document.getElementById('supportingDocsError').style.display = 'block';
                 errorMessages.push('Please select at least one supporting document.');
             }
 
-            // Validate CMO Notes
+            // Validate CMO Notes if Others checkbox is checked
+            const othersCheckbox = document.getElementById('othersCheckbox');
             const cmoNotesInput = document.getElementById('cmoNotesInput');
-            if (!cmoNotesInput.value.trim()) {
-                isValid = false;
-                cmoNotesInput.classList.add('is-invalid');
-                errorMessages.push('Please enter notes in the Others field.');
+            if (othersCheckbox && othersCheckbox.checked) {
+                if (!cmoNotesInput.value.trim()) {
+                    isValid = false;
+                    cmoNotesInput.classList.add('is-invalid');
+                    errorMessages.push('Please specify the other documents when "Others" is selected.');
+                }
             }
 
             // Validate Amount Granted
@@ -1226,8 +1194,10 @@
             return isValid;
         }
 
-        // Status Submission Functions - FIXED VERSION
+        // Status Submission Functions
         function submitApprove() {
+            console.log('Submitting approve...');
+
             // Validate the form first
             if (!validateForm()) {
                 return; // Stop if validation fails
@@ -1240,11 +1210,16 @@
             document.getElementById('statusInput').value = 'Approve';
             document.getElementById('commentsInput').value = ''; // Empty comments for approval
 
-            // Show success modal
-            showSuccessModal('approve');
+            // Show loading modal
+            showSuccessModal();
 
             // Submit the form after a short delay to show the modal
             setTimeout(() => {
+                console.log('Final form submission - Approve');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
+                console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+
                 document.getElementById('statusForm').submit();
             }, 1500);
         }
@@ -1271,6 +1246,8 @@
                 return;
             }
 
+            console.log('Submitting disapprove...');
+
             // Update CMO reflection before submission
             updateReflection();
 
@@ -1279,10 +1256,14 @@
 
             // Close comments modal and show success modal
             closeCommentsModal();
-            showSuccessModal('disapprove');
+            showSuccessModal();
 
             // Submit the form after a short delay
             setTimeout(() => {
+                console.log('Final form submission - Disapprove');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
+
                 document.getElementById('statusForm').submit();
             }, 1500);
         }
@@ -1313,6 +1294,8 @@
                 return;
             }
 
+            console.log('Submitting retake with reason...');
+
             // Update CMO reflection before submission
             updateReflection();
 
@@ -1322,57 +1305,33 @@
 
             // Close retake modal and show success modal
             closeRetakeModal();
-            showSuccessModal('retake');
+            showSuccessModal();
 
             // Submit the form after a short delay
             setTimeout(() => {
+                console.log('Final form submission - Retake');
+                console.log('Status:', document.getElementById('statusInput').value);
+                console.log('Comments:', document.getElementById('commentsInput').value);
+
                 document.getElementById('statusForm').submit();
             }, 1500);
         }
 
-        function showSuccessModal(statusType) {
-            const modal = document.getElementById('successModal');
-            const icon = modal.querySelector('.success-icon i');
-            const title = modal.querySelector('h4');
-            const message = modal.querySelector('p');
-            
-            // Customize modal based on status type
-            switch(statusType) {
-                case 'approve':
-                    icon.className = 'bi bi-check-circle-fill';
-                    icon.style.color = '#28a745';
-                    title.textContent = 'Application Approved!';
-                    message.textContent = 'The application has been successfully approved. Redirecting...';
-                    break;
-                case 'disapprove':
-                    icon.className = 'bi bi-x-circle-fill';
-                    icon.style.color = '#dc3545';
-                    title.textContent = 'Application Disapproved';
-                    message.textContent = 'The application has been disapproved. Redirecting...';
-                    break;
-                case 'retake':
-                    icon.className = 'bi bi-arrow-clockwise';
-                    icon.style.color = '#ff9800';
-                    title.textContent = 'Retake Request Sent';
-                    message.textContent = 'The applicant has been notified to resubmit. Redirecting...';
-                    break;
-                default:
-                    icon.className = 'bi bi-check-circle-fill';
-                    icon.style.color = '#4361ee';
-                    title.textContent = 'Status Updated Successfully!';
-                    message.textContent = 'Redirecting to Admin page...';
-            }
-            
-            modal.style.display = 'block';
-            // Note: No JavaScript redirect needed - the form submission will handle the redirect from server
+        function showSuccessModal() {
+            document.getElementById('successModal').style.display = 'block';
+
+            // Auto-redirect after 3 seconds in case form submission fails
+            setTimeout(() => {
+                window.location.href = '/Admin';
+            }, 3000);
         }
 
-        // CMO Reflection Auto-generation - FIXED VERSION
+        // CMO Reflection Auto-generation
         function updateReflection() {
             const grantedAmountInput = document.getElementById('grantedAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
             const reflectionField = document.getElementById('cmoReflectionField');
-            const docCheckboxes = document.querySelectorAll('.supporting-doc:checked');
+            const docCheckboxes = document.querySelectorAll('input[name="SupportingDocs"]:checked');
 
             let parts = [];
 
@@ -1387,8 +1346,9 @@
                 parts.push(`Docs: ${checkedDocs.join(', ')}`);
             }
 
-            // Add other notes if exists
-            if (cmoNotes && cmoNotes.value.trim()) {
+            // Add other notes if Others is checked and has notes
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            if (othersCheckbox && othersCheckbox.checked && cmoNotes && cmoNotes.value.trim()) {
                 parts.push(`Others: ${cmoNotes.value.trim()}`);
             }
 
@@ -1398,22 +1358,37 @@
             // Update the hidden field as well
             document.getElementById('forCMOPersonnelInput').value = reflectionValue;
 
-                    }
+            console.log('CMO Reflection updated:', reflectionValue);
+        }
+
+        // Toggle Others input field visibility
+        function toggleOthersInput() {
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const othersRow = document.getElementById('cmoOthersRow');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+
+            if (othersCheckbox.checked) {
+                othersRow.style.display = 'flex';
+                cmoNotesInput.required = true;
+            } else {
+                othersRow.style.display = 'none';
+                cmoNotesInput.required = false;
+                cmoNotesInput.classList.remove('is-invalid');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize checkbox behavior
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-            cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        // Uncheck all other checkboxes (single selection)
-                        cmoCheckboxes.forEach(cb => {
-                            if (cb !== this) cb.checked = false;
-                        });
-                    }
+            // Initialize Others checkbox visibility
+            toggleOthersInput();
+
+            // Add change event listener to Others checkbox
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            if (othersCheckbox) {
+                othersCheckbox.addEventListener('change', function() {
+                    toggleOthersInput();
                     updateReflection();
                 });
-            });
+            }
 
             // Add event listeners for inputs
             const grantedAmountInput = document.getElementById('grantedAmountInput');
@@ -1422,18 +1397,35 @@
             if (grantedAmountInput) grantedAmountInput.addEventListener('input', updateReflection);
             if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
 
+            // Add event listeners to all supporting document checkboxes
+            const supportingDocCheckboxes = document.querySelectorAll('input[name="SupportingDocs"]');
+            supportingDocCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateReflection);
+            });
+
             // Initialize reflection field on page load
             updateReflection();
-
-            // Remove the form submit event listener that was blocking submission
-            // We're handling validation in the individual submit functions instead
         });
 
         // Enhanced form submission debugging
         document.getElementById('statusForm').addEventListener('submit', function(e) {
-                                                .value);
-            );
-                    });
+            console.log('=== FORM SUBMISSION DEBUG INFO ===');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+            console.log('Status:', document.getElementById('statusInput').value);
+            console.log('Comments:', document.getElementById('commentsInput').value);
+            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
+            console.log('Processed By:', document.getElementById('processByInput').value);
+            console.log('Granted Amount:', document.getElementById('grantedAmountInput').value);
+
+            // Log all checked supporting documents
+            const checkedDocs = document.querySelectorAll('input[name="SupportingDocs"]:checked');
+            const docValues = Array.from(checkedDocs).map(doc => doc.value);
+            console.log('Supporting Docs:', docValues);
+
+            console.log('Form data:', new FormData(this));
+            console.log('==============================');
+        });
 
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
@@ -1441,6 +1433,7 @@
                 document.getElementById("zoomModal").style.display = "none";
                 closePDFViewer();
                 closeCommentsModal();
+                closeRetakeModal();
             }
 
             const pdfModal = document.getElementById('pdfViewerModal');

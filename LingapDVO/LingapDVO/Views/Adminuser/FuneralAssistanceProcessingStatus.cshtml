@@ -794,19 +794,21 @@
                                 <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" name="SupportingDocs" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
                                 <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
                             </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input" type="checkbox" id="othersCheckbox" name="SupportingDocs" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
+                                <label class="form-check-label" for="othersCheckbox">Others</label>
+                            </div>
                         </div>
 
                         <!-- Others Field - Now properly placed after the checkbox grid -->
-                        <div class="cmo-others-row">
-                            <div class="cmo-others-checkbox">
-                                <input class="form-check-input" type="checkbox" id="othersCheckbox" name="SupportingDocs" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
-                                <label class="form-check-label" for="othersCheckbox">Others:</label>
-                            </div>
+                        <div class="cmo-others-row" id="cmoOthersRow" style="display: none;">
                             <div class="cmo-others-input">
-                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter other supporting documents..." required value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                <label class="form-label">Specify Other Documents: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cmoNotesInput" name="CmoNotes" placeholder="Enter other supporting documents..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
                                 <div class="invalid-feedback" id="cmoNotesError">
-                                    Please enter notes in the Others field.
+                                    Please specify the other documents.
                                 </div>
+                                <small class="text-muted">Enter the specific document(s) not listed above</small>
                             </div>
                         </div>
 
@@ -1154,7 +1156,7 @@
             document.getElementById('grantedAmountInput').classList.remove('is-invalid');
 
             // Validate supporting documents
-            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            const supportingDocs = document.querySelectorAll('input[name="SupportingDocs"]:checked');
             if (supportingDocs.length === 0) {
                 isValid = false;
                 document.getElementById('supportingDocsError').style.display = 'block';
@@ -1164,10 +1166,12 @@
             // Validate CMO Notes if Others checkbox is checked
             const othersCheckbox = document.getElementById('othersCheckbox');
             const cmoNotesInput = document.getElementById('cmoNotesInput');
-            if (othersCheckbox && othersCheckbox.checked && !cmoNotesInput.value.trim()) {
-                isValid = false;
-                cmoNotesInput.classList.add('is-invalid');
-                errorMessages.push('Please enter notes in the Others field when Others is selected.');
+            if (othersCheckbox && othersCheckbox.checked) {
+                if (!cmoNotesInput.value.trim()) {
+                    isValid = false;
+                    cmoNotesInput.classList.add('is-invalid');
+                    errorMessages.push('Please specify the other documents when "Others" is selected.');
+                }
             }
 
             // Validate Amount Granted
@@ -1327,7 +1331,7 @@
             const grantedAmountInput = document.getElementById('grantedAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
             const reflectionField = document.getElementById('cmoReflectionField');
-            const docCheckboxes = document.querySelectorAll('.supporting-doc:checked');
+            const docCheckboxes = document.querySelectorAll('input[name="SupportingDocs"]:checked');
 
             let parts = [];
 
@@ -1342,7 +1346,7 @@
                 parts.push(`Docs: ${checkedDocs.join(', ')}`);
             }
 
-            // Add other notes if exists
+            // Add other notes if Others is checked and has notes
             const othersCheckbox = document.getElementById('othersCheckbox');
             if (othersCheckbox && othersCheckbox.checked && cmoNotes && cmoNotes.value.trim()) {
                 parts.push(`Others: ${cmoNotes.value.trim()}`);
@@ -1357,37 +1361,31 @@
             console.log('CMO Reflection updated:', reflectionValue);
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize checkbox behavior for single selection
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+        // Toggle Others input field visibility
+        function toggleOthersInput() {
             const othersCheckbox = document.getElementById('othersCheckbox');
+            const othersRow = document.getElementById('cmoOthersRow');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
 
-            // Initialize checkbox behavior for main documents
-            cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked && this !== othersCheckbox) {
-                        // If a regular document is checked, uncheck Others
-                        if (othersCheckbox) {
-                            othersCheckbox.checked = false;
-                        }
-                        // Uncheck all other regular checkboxes
-                        cmoCheckboxes.forEach(cb => {
-                            if (cb !== this && cb !== othersCheckbox) cb.checked = false;
-                        });
-                    }
-                    updateReflection();
-                });
-            });
+            if (othersCheckbox.checked) {
+                othersRow.style.display = 'flex';
+                cmoNotesInput.required = true;
+            } else {
+                othersRow.style.display = 'none';
+                cmoNotesInput.required = false;
+                cmoNotesInput.classList.remove('is-invalid');
+            }
+        }
 
-            // Initialize Others checkbox behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Others checkbox visibility
+            toggleOthersInput();
+
+            // Add change event listener to Others checkbox
+            const othersCheckbox = document.getElementById('othersCheckbox');
             if (othersCheckbox) {
                 othersCheckbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        // If Others is checked, uncheck all regular documents
-                        cmoCheckboxes.forEach(cb => {
-                            if (cb !== this) cb.checked = false;
-                        });
-                    }
+                    toggleOthersInput();
                     updateReflection();
                 });
             }
@@ -1398,6 +1396,12 @@
 
             if (grantedAmountInput) grantedAmountInput.addEventListener('input', updateReflection);
             if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+
+            // Add event listeners to all supporting document checkboxes
+            const supportingDocCheckboxes = document.querySelectorAll('input[name="SupportingDocs"]');
+            supportingDocCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateReflection);
+            });
 
             // Initialize reflection field on page load
             updateReflection();
@@ -1413,6 +1417,12 @@
             console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput').value);
             console.log('Processed By:', document.getElementById('processByInput').value);
             console.log('Granted Amount:', document.getElementById('grantedAmountInput').value);
+
+            // Log all checked supporting documents
+            const checkedDocs = document.querySelectorAll('input[name="SupportingDocs"]:checked');
+            const docValues = Array.from(checkedDocs).map(doc => doc.value);
+            console.log('Supporting Docs:', docValues);
+
             console.log('Form data:', new FormData(this));
             console.log('==============================');
         });
@@ -1423,6 +1433,7 @@
                 document.getElementById("zoomModal").style.display = "none";
                 closePDFViewer();
                 closeCommentsModal();
+                closeRetakeModal();
             }
 
             const pdfModal = document.getElementById('pdfViewerModal');

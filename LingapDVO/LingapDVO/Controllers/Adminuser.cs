@@ -3695,12 +3695,6 @@ namespace LingapDVO.Controllers
                         return RedirectToAction("HospitalAssistanceProcessingStatus", new { id = id });
                     }
 
-                    // Extract and validate CmoNotes (Others field) from the CMO reflection
-                    if (!cmoReflection.Contains("Others:") || string.IsNullOrWhiteSpace(cmoReflection.Split("Others:").LastOrDefault()?.Trim()))
-                    {
-                        TempData["ErrorMessage"] = "Please enter notes in the Others field in the CMO Details section.";
-                        return RedirectToAction("HospitalAssistanceProcessingStatus", new { id = id });
-                    }
 
                     // Extract and validate GrantedAmount
                     if (!cmoReflection.Contains("GrantedAmount:") || string.IsNullOrWhiteSpace(cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim()))
@@ -4242,13 +4236,6 @@ namespace LingapDVO.Controllers
                     if (string.IsNullOrWhiteSpace(cmoReflection) || !cmoReflection.Contains("Docs:"))
                     {
                         TempData["ErrorMessage"] = "Please select at least one supporting document in the CMO Details section.";
-                        return RedirectToAction("OtherAssistanceProcessingStatus", new { id = id });
-                    }
-
-                    // Extract and validate CmoNotes (Others field) from the CMO reflection
-                    if (!cmoReflection.Contains("Others:") || string.IsNullOrWhiteSpace(cmoReflection.Split("Others:").LastOrDefault()?.Trim()))
-                    {
-                        TempData["ErrorMessage"] = "Please enter notes in the Others field in the CMO Details section.";
                         return RedirectToAction("OtherAssistanceProcessingStatus", new { id = id });
                     }
 
@@ -4798,12 +4785,6 @@ namespace LingapDVO.Controllers
                         return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
                     }
 
-                    // Extract and validate CmoNotes (Others field) from the CMO reflection
-                    if (!cmoReflection.Contains("Others:") || string.IsNullOrWhiteSpace(cmoReflection.Split("Others:").LastOrDefault()?.Trim()))
-                    {
-                        TempData["ErrorMessage"] = "Please enter notes in the Others field in the CMO Details section.";
-                        return RedirectToAction("FuneralAssistanceProcessingStatus", new { id = id });
-                    }
 
                     // Extract and validate GrantedAmount
                     if (!cmoReflection.Contains("GrantedAmount:") || string.IsNullOrWhiteSpace(cmoReflection.Split("GrantedAmount:").Skip(1).FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim()))
