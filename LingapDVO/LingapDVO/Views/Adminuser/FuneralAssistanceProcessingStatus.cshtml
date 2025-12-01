@@ -1109,7 +1109,7 @@
                 @if (ViewData["DoctorPrescriptionBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Doctor Prescription</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
                             <div class="pdf-preview-container" onclick="viewPDF('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
@@ -1139,7 +1139,7 @@
                 @if (ViewData["MedicalCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Medical Certificate</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                         {
                             <div class="pdf-preview-container" onclick="viewPDF('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
@@ -1169,7 +1169,7 @@
                 @if (ViewData["DeathCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Death Certificate</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
                             <div class="pdf-preview-container" onclick="viewPDF('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">

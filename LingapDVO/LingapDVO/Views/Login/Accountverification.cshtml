@@ -25,6 +25,24 @@
     <!-- Go Back Button Styles -->
     <link rel="stylesheet" href="~/css/go-back-button.css">
 
+    <!-- Disabled Upload Area Style for UMID/Driver's License -->
+    <style>
+        .upload-area.disabled-upload {
+            background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%) !important;
+            border: 2px dashed #22c55e !important;
+            cursor: not-allowed !important;
+        }
+        .upload-area.disabled-upload .id-upload-content {
+            opacity: 0.8;
+        }
+        .upload-area.disabled-upload .w-16.h-16 {
+            background: #dcfce7 !important;
+        }
+        .upload-area.disabled-upload i.fa-id-card {
+            color: #22c55e !important;
+        }
+    </style>
+
     <!-- Session Timeout -->
     @await Html.PartialAsync("_SessionTimeout")
 </head>

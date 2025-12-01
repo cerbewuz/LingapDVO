@@ -915,6 +915,7 @@
     <form asp-action="HospitalAssistanceProcessingStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
         @Html.AntiForgeryToken()
 
+        
         <!-- Hidden fields for form submission -->
         <input type="hidden" name="id" value="@ViewData["Id"]" />
         <input type="hidden" id="statusInput" name="Status2" value="" />
@@ -924,6 +925,7 @@
         <input type="hidden" id="grantedAmountField" name="GrantedAmount" value="" />
         <input type="hidden" id="supportingDocsField" name="SupportingDocs" value="" />
         <input type="hidden" id="cmoNotesField" name="CmoNotes" value="" />
+
 
         <div class="receipt-body">
             <!-- Patient Information -->

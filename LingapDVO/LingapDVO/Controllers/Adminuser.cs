@@ -2867,6 +2867,469 @@ namespace LingapDVO.Controllers
 
 
 
+        // ====================================
+        // RETAKE STATUSES - View-only pages for applications awaiting user resubmission
+        // ====================================
+
+        public IActionResult HospitalAssistanceRetakeStatus(int id)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            var HospitalAssistance = context.HospitalAssistance.Find(id);
+            if (HospitalAssistance == null)
+            {
+                return NotFound();
+            }
+
+            // Basic ViewData setup
+            ViewData["Status2"] = HospitalAssistance.Status2;
+            ViewData["Id"] = HospitalAssistance.Id;
+            ViewData["Lastname"] = HospitalAssistance.Lastname;
+            ViewData["Firstname"] = HospitalAssistance.Firstname;
+            ViewData["Middlename"] = HospitalAssistance.Middlename;
+            ViewData["Suffix"] = HospitalAssistance.Suffix;
+            ViewData["BlkLotStreet"] = HospitalAssistance.BlkLotStreet;
+            ViewData["SubVill"] = HospitalAssistance.SubVill;
+            ViewData["Brgy"] = HospitalAssistance.Brgy;
+            ViewData["District"] = HospitalAssistance.District;
+            ViewData["Sex"] = HospitalAssistance.Sex;
+            ViewData["PhilHealth"] = HospitalAssistance.PhilHealth;
+            ViewData["PhilHealthNo"] = HospitalAssistance.PhilHealthNo;
+            ViewData["Dateofbirth"] = HospitalAssistance.Dateofbirth;
+            ViewData["Age"] = HospitalAssistance.Age;
+
+            // Requestor details
+            ViewData["RLastname"] = HospitalAssistance.RLastname;
+            ViewData["RFirstname"] = HospitalAssistance.RFirstname;
+            ViewData["RMiddlename"] = HospitalAssistance.RMiddlename;
+            ViewData["RSuffix"] = HospitalAssistance.RSuffix;
+            ViewData["RBlkLotStreet"] = HospitalAssistance.RBlkLotStreet;
+            ViewData["RSubVill"] = HospitalAssistance.RSubVill;
+            ViewData["RBrgy"] = HospitalAssistance.RBrgy;
+            ViewData["RDistrict"] = HospitalAssistance.RDistrict;
+            ViewData["RelationshipPatient"] = HospitalAssistance.RelationshipPatient;
+            ViewData["ContactNo"] = HospitalAssistance.ContactNo;
+
+            // Type of assistance
+            var typeAssistanceRaw = HospitalAssistance.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
+
+            // CMO Personnel
+            var cmoPersonnelRaw = HospitalAssistance.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            // Retake reason
+            ViewData["RetakeReason"] = HospitalAssistance.RetakeReason;
+            ViewData["Comments"] = HospitalAssistance.Comments;
+
+            // Decryption for images
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string doctorPrescriptionFolder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(HospitalAssistance.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, HospitalAssistance.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(HospitalAssistance.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, HospitalAssistance.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                    }
+                }
+
+                // Doctor Prescription / Supporting Document
+                if (!string.IsNullOrEmpty(HospitalAssistance.DoctorPrescription))
+                {
+                    string docPath = Path.Combine(doctorPrescriptionFolder, HospitalAssistance.DoctorPrescription);
+                    if (System.IO.File.Exists(docPath))
+                    {
+                        byte[] decryptedDoc = DecryptFile(docPath);
+                        ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedDoc);
+                        ViewData["DoctorPrescription"] = HospitalAssistance.DoctorPrescription;
+                        ViewData["IsDoctorPrescriptionPdf"] = IsPdfFile(decryptedDoc);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"? GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = HospitalAssistance.Validfrontimage;
+            ViewData["ValidBackimage"] = HospitalAssistance.ValidBackimage;
+
+            // Create DTO for the view
+            var dto = new HospitalAssistanceDto
+            {
+                Lastname = HospitalAssistance.Lastname,
+                Firstname = HospitalAssistance.Firstname,
+                Middlename = HospitalAssistance.Middlename,
+                Suffix = HospitalAssistance.Suffix,
+                BlkLotStreet = HospitalAssistance.BlkLotStreet,
+                SubVill = HospitalAssistance.SubVill,
+                Brgy = HospitalAssistance.Brgy,
+                District = HospitalAssistance.District,
+                Sex = HospitalAssistance.Sex,
+                PhilHealth = HospitalAssistance.PhilHealth,
+                PhilHealthNo = HospitalAssistance.PhilHealthNo,
+                Dateofbirth = HospitalAssistance.Dateofbirth,
+                Age = HospitalAssistance.Age,
+                RLastname = HospitalAssistance.RLastname,
+                RFirstname = HospitalAssistance.RFirstname,
+                RMiddlename = HospitalAssistance.RMiddlename,
+                RSuffix = HospitalAssistance.RSuffix,
+                RBlkLotStreet = HospitalAssistance.RBlkLotStreet,
+                RSubVill = HospitalAssistance.RSubVill,
+                RBrgy = HospitalAssistance.RBrgy,
+                RDistrict = HospitalAssistance.RDistrict,
+                RelationshipPatient = HospitalAssistance.RelationshipPatient,
+                ContactNo = HospitalAssistance.ContactNo,
+                Typeassistance = HospitalAssistance.Typeassistance,
+                ForCMOPERSONNEL = HospitalAssistance.ForCMOPERSONNEL,
+                Comments = HospitalAssistance.RetakeReason ?? HospitalAssistance.Comments,
+                Status2 = HospitalAssistance.Status2
+            };
+
+            return View(dto);
+        }
+
+        public IActionResult OtherAssistanceRetakeStatus(int id)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            var OtherAssistance = context.OtherAssistance.Find(id);
+            if (OtherAssistance == null)
+            {
+                return NotFound();
+            }
+
+            // Basic ViewData setup
+            ViewData["Status2"] = OtherAssistance.Status2;
+            ViewData["Id"] = OtherAssistance.Id;
+            ViewData["Lastname"] = OtherAssistance.Lastname;
+            ViewData["Firstname"] = OtherAssistance.Firstname;
+            ViewData["Middlename"] = OtherAssistance.Middlename;
+            ViewData["Suffix"] = OtherAssistance.Suffix;
+            ViewData["BlkLotStreet"] = OtherAssistance.BlkLotStreet;
+            ViewData["SubVill"] = OtherAssistance.SubVill;
+            ViewData["Brgy"] = OtherAssistance.Brgy;
+            ViewData["District"] = OtherAssistance.District;
+            ViewData["Sex"] = OtherAssistance.Sex;
+            ViewData["PhilHealth"] = OtherAssistance.PhilHealth;
+            ViewData["PhilHealthNo"] = OtherAssistance.PhilHealthNo;
+            ViewData["Dateofbirth"] = OtherAssistance.Dateofbirth;
+            ViewData["Age"] = OtherAssistance.Age;
+
+            // Requestor details
+            ViewData["RLastname"] = OtherAssistance.RLastname;
+            ViewData["RFirstname"] = OtherAssistance.RFirstname;
+            ViewData["RMiddlename"] = OtherAssistance.RMiddlename;
+            ViewData["RSuffix"] = OtherAssistance.RSuffix;
+            ViewData["RBlkLotStreet"] = OtherAssistance.RBlkLotStreet;
+            ViewData["RSubVill"] = OtherAssistance.RSubVill;
+            ViewData["RBrgy"] = OtherAssistance.RBrgy;
+            ViewData["RDistrict"] = OtherAssistance.RDistrict;
+            ViewData["RelationshipPatient"] = OtherAssistance.RelationshipPatient;
+            ViewData["ContactNo"] = OtherAssistance.ContactNo;
+
+            // Type of assistance
+            var typeAssistanceRaw = OtherAssistance.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
+
+            // CMO Personnel
+            var cmoPersonnelRaw = OtherAssistance.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            // Retake reason
+            ViewData["RetakeReason"] = OtherAssistance.RetakeReason;
+            ViewData["Comments"] = OtherAssistance.Comments;
+
+            // Decryption for images
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string otherAssistanceFolder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(OtherAssistance.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, OtherAssistance.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(OtherAssistance.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, OtherAssistance.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                    }
+                }
+
+                // Supporting Document
+                if (!string.IsNullOrEmpty(OtherAssistance.DoctorPrescription))
+                {
+                    string docPath = Path.Combine(otherAssistanceFolder, OtherAssistance.DoctorPrescription);
+                    if (System.IO.File.Exists(docPath))
+                    {
+                        byte[] decryptedDoc = DecryptFile(docPath);
+                        ViewData["DoctorPrescriptionBase64"] = Convert.ToBase64String(decryptedDoc);
+                        ViewData["DoctorPrescription"] = OtherAssistance.DoctorPrescription;
+                        ViewData["IsDoctorPrescriptionPdf"] = IsPdfFile(decryptedDoc);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"? GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = OtherAssistance.Validfrontimage;
+            ViewData["ValidBackimage"] = OtherAssistance.ValidBackimage;
+
+            // Create DTO for the view
+            var dto = new OtherAssistanceDto
+            {
+                Lastname = OtherAssistance.Lastname,
+                Firstname = OtherAssistance.Firstname,
+                Middlename = OtherAssistance.Middlename,
+                Suffix = OtherAssistance.Suffix,
+                BlkLotStreet = OtherAssistance.BlkLotStreet,
+                SubVill = OtherAssistance.SubVill,
+                Brgy = OtherAssistance.Brgy,
+                District = OtherAssistance.District,
+                Sex = OtherAssistance.Sex,
+                PhilHealth = OtherAssistance.PhilHealth,
+                PhilHealthNo = OtherAssistance.PhilHealthNo,
+                Dateofbirth = OtherAssistance.Dateofbirth,
+                Age = OtherAssistance.Age,
+                RLastname = OtherAssistance.RLastname,
+                RFirstname = OtherAssistance.RFirstname,
+                RMiddlename = OtherAssistance.RMiddlename,
+                RSuffix = OtherAssistance.RSuffix,
+                RBlkLotStreet = OtherAssistance.RBlkLotStreet,
+                RSubVill = OtherAssistance.RSubVill,
+                RBrgy = OtherAssistance.RBrgy,
+                RDistrict = OtherAssistance.RDistrict,
+                RelationshipPatient = OtherAssistance.RelationshipPatient,
+                ContactNo = OtherAssistance.ContactNo,
+                Typeassistance = OtherAssistance.Typeassistance,
+                ForCMOPERSONNEL = OtherAssistance.ForCMOPERSONNEL,
+                Comments = OtherAssistance.RetakeReason ?? OtherAssistance.Comments,
+                Status2 = OtherAssistance.Status2
+            };
+
+            return View(dto);
+        }
+
+        public IActionResult FuneralAssistanceRetakeStatus(int id)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
+            {
+                return RedirectToAction("Landingpage", "Dashboard");
+            }
+
+            var FuneralAssistance = context.FuneralAssistance.Find(id);
+            if (FuneralAssistance == null)
+            {
+                return NotFound();
+            }
+
+            // Basic ViewData setup
+            ViewData["Status2"] = FuneralAssistance.Status2;
+            ViewData["Id"] = FuneralAssistance.Id;
+            ViewData["Lastname"] = FuneralAssistance.Lastname;
+            ViewData["Firstname"] = FuneralAssistance.Firstname;
+            ViewData["Middlename"] = FuneralAssistance.Middlename;
+            ViewData["Suffix"] = FuneralAssistance.Suffix;
+            ViewData["BlkLotStreet"] = FuneralAssistance.BlkLotStreet;
+            ViewData["SubVill"] = FuneralAssistance.SubVill;
+            ViewData["Brgy"] = FuneralAssistance.Brgy;
+            ViewData["District"] = FuneralAssistance.District;
+            ViewData["Sex"] = FuneralAssistance.Sex;
+            ViewData["PhilHealth"] = FuneralAssistance.PhilHealth;
+            ViewData["PhilHealthNo"] = FuneralAssistance.PhilHealthNo;
+            ViewData["Dateofbirth"] = FuneralAssistance.Dateofbirth;
+            ViewData["Age"] = FuneralAssistance.Age;
+
+            // Requestor details
+            ViewData["RLastname"] = FuneralAssistance.RLastname;
+            ViewData["RFirstname"] = FuneralAssistance.RFirstname;
+            ViewData["RMiddlename"] = FuneralAssistance.RMiddlename;
+            ViewData["RSuffix"] = FuneralAssistance.RSuffix;
+            ViewData["RBlkLotStreet"] = FuneralAssistance.RBlkLotStreet;
+            ViewData["RSubVill"] = FuneralAssistance.RSubVill;
+            ViewData["RBrgy"] = FuneralAssistance.RBrgy;
+            ViewData["RDistrict"] = FuneralAssistance.RDistrict;
+            ViewData["RelationshipPatient"] = FuneralAssistance.RelationshipPatient;
+            ViewData["ContactNo"] = FuneralAssistance.ContactNo;
+
+            // Type of assistance
+            var typeAssistanceRaw = FuneralAssistance.Typeassistance ?? "";
+            ViewData["Typeassistance"] = typeAssistanceRaw;
+            var parsed = typeAssistanceRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedAssistance"] = parsed;
+
+            // CMO Personnel
+            var cmoPersonnelRaw = FuneralAssistance.ForCMOPERSONNEL ?? "";
+            ViewData["ForCMOPERSONNEL"] = cmoPersonnelRaw;
+            var parsedCMO = cmoPersonnelRaw
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Split(':', 2))
+                .ToDictionary(x => x[0].Trim(), x => x.Length > 1 ? x[1].Trim() : "");
+            ViewData["CheckedCMOPERSONNEL"] = parsedCMO;
+
+            // Retake reason
+            ViewData["RetakeReason"] = FuneralAssistance.RetakeReason;
+            ViewData["Comments"] = FuneralAssistance.Comments;
+
+            // Decryption for images
+            string validFolder = Path.Combine(environment.WebRootPath, "Validimg");
+            string funeralAssistanceFolder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
+
+            var debugMessages = new List<string>();
+
+            try
+            {
+                // Front ID
+                if (!string.IsNullOrEmpty(FuneralAssistance.Validfrontimage))
+                {
+                    string frontPath = Path.Combine(validFolder, FuneralAssistance.Validfrontimage);
+                    if (System.IO.File.Exists(frontPath))
+                    {
+                        byte[] decryptedFront = DecryptFile(frontPath);
+                        ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
+                    }
+                }
+
+                // Back ID
+                if (!string.IsNullOrEmpty(FuneralAssistance.ValidBackimage))
+                {
+                    string backPath = Path.Combine(validFolder, FuneralAssistance.ValidBackimage);
+                    if (System.IO.File.Exists(backPath))
+                    {
+                        byte[] decryptedBack = DecryptFile(backPath);
+                        ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
+                    }
+                }
+
+                // Death Certificate / Supporting Document
+                if (!string.IsNullOrEmpty(FuneralAssistance.DeathCertificate))
+                {
+                    string docPath = Path.Combine(funeralAssistanceFolder, FuneralAssistance.DeathCertificate);
+                    if (System.IO.File.Exists(docPath))
+                    {
+                        byte[] decryptedDoc = DecryptFile(docPath);
+                        ViewData["DeathCertificateBase64"] = Convert.ToBase64String(decryptedDoc);
+                        ViewData["DeathCertificate"] = FuneralAssistance.DeathCertificate;
+                        ViewData["IsDeathCertificatePdf"] = IsPdfFile(decryptedDoc);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                debugMessages.Add($"? GENERAL ERROR: {ex.Message}");
+                ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
+            }
+
+            ViewData["DebugMessages"] = debugMessages;
+            ViewData["Validfrontimage"] = FuneralAssistance.Validfrontimage;
+            ViewData["ValidBackimage"] = FuneralAssistance.ValidBackimage;
+
+            // Create DTO for the view
+            var dto = new FuneralAssistanceDto
+            {
+                Lastname = FuneralAssistance.Lastname,
+                Firstname = FuneralAssistance.Firstname,
+                Middlename = FuneralAssistance.Middlename,
+                Suffix = FuneralAssistance.Suffix,
+                BlkLotStreet = FuneralAssistance.BlkLotStreet,
+                SubVill = FuneralAssistance.SubVill,
+                Brgy = FuneralAssistance.Brgy,
+                District = FuneralAssistance.District,
+                Sex = FuneralAssistance.Sex,
+                PhilHealth = FuneralAssistance.PhilHealth,
+                PhilHealthNo = FuneralAssistance.PhilHealthNo,
+                Dateofbirth = FuneralAssistance.Dateofbirth,
+                Age = FuneralAssistance.Age,
+                RLastname = FuneralAssistance.RLastname,
+                RFirstname = FuneralAssistance.RFirstname,
+                RMiddlename = FuneralAssistance.RMiddlename,
+                RSuffix = FuneralAssistance.RSuffix,
+                RBlkLotStreet = FuneralAssistance.RBlkLotStreet,
+                RSubVill = FuneralAssistance.RSubVill,
+                RBrgy = FuneralAssistance.RBrgy,
+                RDistrict = FuneralAssistance.RDistrict,
+                RelationshipPatient = FuneralAssistance.RelationshipPatient,
+                ContactNo = FuneralAssistance.ContactNo,
+                Typeassistance = FuneralAssistance.Typeassistance,
+                ForCMOPERSONNEL = FuneralAssistance.ForCMOPERSONNEL,
+                Comments = FuneralAssistance.RetakeReason ?? FuneralAssistance.Comments,
+                Status2 = FuneralAssistance.Status2
+            };
+
+            return View(dto);
+        }
+
+
+
+
         //Claimed statuses
         public IActionResult HospitalAssistanceClaimStatus(int id)
         {

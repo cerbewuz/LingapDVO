@@ -1308,7 +1308,7 @@ namespace LingapDVO.Controllers
                     existing.Status3 = ""; // Clear any Status3 as well
                     existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
                     existing.ProcessAt = new DateTime(1900, 1, 1); // Clear process timestamp (SQL Server compatible)
-                    existing.Processby = null; // Clear processor name
+                    existing.Processby = ""; // Clear processor name (use empty string, not null)
                     existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
                     existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
                     existing.IsRetakeApplication = false; // Clear retake flag (no longer in retake state)
@@ -2175,7 +2175,7 @@ namespace LingapDVO.Controllers
                     existing.Status3 = ""; // Clear any Status3 as well
                     existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
                     existing.ProcessAt = new DateTime(1900, 1, 1); // Clear process timestamp (SQL Server compatible)
-                    existing.Processby = null; // Clear processor name
+                    existing.Processby = ""; // Clear processor name (use empty string, not null)
                     existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
                     existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
                     existing.IsRetakeApplication = false; // Clear retake flag (no longer in retake state)
@@ -2923,7 +2923,7 @@ namespace LingapDVO.Controllers
                     existing.Status3 = ""; // Clear any Status3 as well
                     existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
                     existing.ProcessAt = new DateTime(1900, 1, 1); // Clear process timestamp (SQL Server compatible)
-                    existing.Processby = null; // Clear processor name
+                    existing.Processby = ""; // Clear processor name (use empty string, not null)
                     existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
                     existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
                     existing.IsRetakeApplication = false; // Clear retake flag (no longer in retake state)

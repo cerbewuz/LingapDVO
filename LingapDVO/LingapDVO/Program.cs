@@ -385,6 +385,11 @@ app.MapControllerRoute(
     pattern: "HospitalAssistanceClaimStatus/{id?}",
     defaults: new { controller = "Adminuser", action = "HospitalAssistanceClaimStatus" });
 
+app.MapControllerRoute(
+    name: "route-admin-hospitalbill-retake",
+    pattern: "HospitalAssistanceRetakeStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "HospitalAssistanceRetakeStatus" });
+
 // Admin Medical Lab Status Routes
 app.MapControllerRoute(
     name: "route-admin-medicallab-pending",
@@ -411,6 +416,11 @@ app.MapControllerRoute(
     pattern: "OtherAssistanceClaimStatus/{id?}",
     defaults: new { controller = "Adminuser", action = "OtherAssistanceClaimStatus" });
 
+app.MapControllerRoute(
+    name: "route-admin-medicallab-retake",
+    pattern: "OtherAssistanceRetakeStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "OtherAssistanceRetakeStatus" });
+
 // Admin Funeral Burial Status Routes
 app.MapControllerRoute(
     name: "route-admin-FuneralAssistance-pending",
@@ -436,6 +446,11 @@ app.MapControllerRoute(
     name: "route-admin-FuneralAssistance-claimed",
     pattern: "FuneralAssistanceClaimStatus/{id?}",
     defaults: new { controller = "Adminuser", action = "FuneralAssistanceClaimStatus" });
+
+app.MapControllerRoute(
+    name: "route-admin-FuneralAssistance-retake",
+    pattern: "FuneralAssistanceRetakeStatus/{id?}",
+    defaults: new { controller = "Adminuser", action = "FuneralAssistanceRetakeStatus" });
 
 // Superadmin Controller Routes
 app.MapControllerRoute(

@@ -100,6 +100,53 @@ document.addEventListener('DOMContentLoaded', function () {
     let registeredSuffix = window.registeredUserName?.suffix || "";
 
     // ═══════════════════════════════════════════════════════════════
+    // BACK ID TOGGLE - Disable/Enable based on ID type
+    // ═══════════════════════════════════════════════════════════════
+    // UMID and Driver's License don't require back ID upload
+    // Only National ID (PhilSys) requires back ID
+    function toggleBackIdUpload(idType) {
+        const backIdRequired = idType === 'phil-id'; // Only National ID requires back
+        
+        if (uploadBack) {
+            if (backIdRequired) {
+                // Enable back ID upload
+                uploadBack.style.display = 'block';
+                uploadBack.style.opacity = '1';
+                uploadBack.style.pointerEvents = 'auto';
+                uploadBack.classList.remove('disabled-upload');
+            } else {
+                // Disable back ID upload for UMID and Driver's License
+                uploadBack.style.display = 'block'; // Keep visible but disabled
+                uploadBack.style.opacity = '0.5';
+                uploadBack.style.pointerEvents = 'none';
+                uploadBack.classList.add('disabled-upload');
+                
+                // Clear any uploaded back image
+                if (fileBack) {
+                    fileBack.value = '';
+                }
+                if (imagePreviewBack) {
+                    imagePreviewBack.classList.add('hidden');
+                    imagePreviewBack.src = '';
+                }
+                
+                // Update the back upload area content to show it's not required
+                const backContent = uploadBack.querySelector('.id-upload-content');
+                if (backContent) {
+                    const backTitle = backContent.querySelector('.font-semibold');
+                    if (backTitle) {
+                        const idTypeName = idType === 'driver-license' ? "Driver's License" : 
+                                          idType === 'umid' ? 'UMID' : 'this ID type';
+                        backTitle.innerHTML = `Back of ID <span class="text-green-600 text-sm">(Not Required for ${idTypeName})</span>`;
+                    }
+                }
+            }
+        }
+        
+        console.log(`📋 Back ID Upload: ${backIdRequired ? 'REQUIRED' : 'NOT REQUIRED'} for ${idType}`);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // ✅ FIX: Ensure submit button is enabled by default on page load
     // ═══════════════════════════════════════════════════════════════
     // The submit button should be enabled by default, allowing users
@@ -2079,11 +2126,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         // Normalize function - strict: only uppercase letters, remove all special chars and spaces
-        // ENHANCED: Convert ñ/Ñ to N before normalization for Filipino name compatibility
         const strictNormalize = (name) => {
             if (!name) return "";
-            // Convert ñ/Ñ to N for comparison (Filipino names like "NIÑO" become "NINO")
-            return name.trim().toUpperCase().replace(/[ÑñÑ]/g, 'N').replace(/[^A-Z]/g, '');
+            return name.trim().toUpperCase().replace(/[^A-Z]/g, '');
         };
 
         // Normalize all name components
@@ -2220,11 +2265,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Validate Name Match - TWO-STEP VALIDATION
     function validateNameMatch(extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix = "", idType = "") {
         // Normalize names for comparison
-        // ENHANCED: Convert ñ/Ñ to N for Filipino name compatibility
         const normalizeForComparison = (name) => {
             if (!name) return "";
-            // Convert ñ/Ñ to N for comparison (Filipino names like "NIÑO" become "NINO")
-            return name.trim().toUpperCase().replace(/[ÑñÑ]/g, 'N').replace(/[^A-Z\s]/g, '');
+            return name.trim().toUpperCase().replace(/[^A-Z\s]/g, '');
         };
 
         const extractedFirst = normalizeForComparison(extractedFirstName);
@@ -2456,7 +2499,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Extract barangay from position before "Davao City" in address
-    // Enhanced to work with multi-line concatenated addresses
     function extractBarangayFromAddressPosition(address) {
         if (!address) {
             return null;
@@ -2465,18 +2507,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const cleanAddress = address.trim();
         const upperAddress = cleanAddress.toUpperCase();
 
-        console.log(`🏘️ Extracting barangay from address: "${cleanAddress.substring(0, 100)}${cleanAddress.length > 100 ? '...' : ''}"`);
 
-        // Expanded list of Davao City variations to look for (prioritized by specificity)
+        // List of Davao City variations to look for
         const davaoCityVariations = [
+            'DAVAO CITY',
+            'DAVAO',
             'DAVAO CITY, PHILIPPINES',
             'DAVAO CITY PHILIPPINES',
-            'DAVAO, PHILIPPINES',
-            'CITY OF DAVAO',
-            'DAVAO CITY',
-            'DVO CITY',
-            'DAVAO CTY',
-            'DAVAO'
+            'DAVAO, PHILIPPINES'
         ];
 
         // Find which variation exists in the address
@@ -2488,43 +2526,30 @@ document.addEventListener('DOMContentLoaded', function () {
             if (index !== -1) {
                 davaoCityPattern = variation;
                 davaoCityIndex = index;
-                console.log(`   Found Davao variant "${variation}" at position ${index}`);
                 break;
             }
         }
 
         if (davaoCityIndex === -1) {
-            console.log(`   ⚠️ No Davao City variant found in address`);
             return null;
         }
 
         // Extract text before "Davao City"
         const textBeforeDavao = cleanAddress.substring(0, davaoCityIndex).trim();
-        console.log(`   Text before Davao: "${textBeforeDavao}"`);
 
         if (!textBeforeDavao) {
             return null;
         }
 
-        // Split by common separators (comma, dash, space, pipe, slash)
-        // This handles multi-line addresses that were concatenated with spaces
+        // Split by common separators (comma, dash, etc.)
         const parts = textBeforeDavao.split(/[,\-|\/]/);
 
-        // Get the last non-empty part (closest to Davao City = most likely the barangay)
-        let lastPart = '';
-        for (let i = parts.length - 1; i >= 0; i--) {
-            const part = parts[i].trim();
-            if (part.length > 0) {
-                lastPart = part;
-                break;
-            }
-        }
+        // Get the last part (closest to Davao City = most likely the barangay)
+        const lastPart = parts[parts.length - 1].trim();
 
         if (!lastPart) {
             return null;
         }
-
-        console.log(`   Last part before Davao: "${lastPart}"`);
 
         // Match this against our barangay list
         const upperLastPart = lastPart.toUpperCase();
@@ -2543,44 +2568,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Exact match
             if (cleanedLastPart === upperBarangay) {
-                console.log(`   ✅ Exact match found: "${barangay}"`);
                 return barangay;
             }
 
             // Contains match (the candidate contains the barangay name)
             if (cleanedLastPart.includes(upperBarangay)) {
-                console.log(`   ✅ Contains match found: "${barangay}"`);
                 return barangay;
             }
 
             // Reverse: barangay contains the candidate (for abbreviated names)
             if (upperBarangay.includes(cleanedLastPart) && cleanedLastPart.length >= 4) {
-                console.log(`   ✅ Partial match found: "${barangay}"`);
                 return barangay;
             }
         }
 
-        // FALLBACK: Search ALL parts (not just the last one) for barangay matches
-        // This helps when address format is: "123 Street, Brgy Matina Crossing, Davao City"
-        console.log(`   Searching all address parts for barangay...`);
-        for (const part of parts) {
-            const cleanPart = part.trim().toUpperCase()
-                .replace(/^BRGY\.?\s*/i, '')
-                .replace(/^BARANGAY\s*/i, '')
-                .trim();
-            
-            if (cleanPart.length < 3) continue;
-            
-            for (const barangay of sortedBarangays) {
-                const upperBarangay = barangay.toUpperCase();
-                if (cleanPart === upperBarangay || cleanPart.includes(upperBarangay)) {
-                    console.log(`   ✅ Found barangay in address parts: "${barangay}"`);
-                    return barangay;
-                }
-            }
-        }
 
-        console.log(`   ❌ No barangay match found`);
         return null;
     }
 
@@ -2759,61 +2761,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     status.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-600"></i>ID Type: ${getIdTypeName(detectedIdType)}`;
                 }
                 if (progress) progress.style.width = '75%';
-
-                // === DISABLE BACK UPLOAD FOR DRIVER'S LICENSE AND UMID ===
-                // Only National ID requires back ID data extraction
-                // Driver's License and UMID don't have useful data on the back
-                if (detectedIdType === 'driver-license' || detectedIdType === 'umid') {
-                    // Disable back upload area
-                    if (uploadBack) {
-                        uploadBack.style.pointerEvents = 'none';
-                        uploadBack.style.opacity = '0.5';
-                        uploadBack.style.cursor = 'not-allowed';
-
-                        // Update the back upload area content to show it's not needed
-                        const backContent = uploadBack.querySelector('.id-upload-content');
-                        if (backContent) {
-                            backContent.innerHTML = `
-                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <i class="fas fa-ban text-2xl text-gray-400"></i>
-                                </div>
-                                <div class="font-semibold text-gray-500 mb-2">Back ID Not Required</div>
-                                <div class="text-gray-400 text-sm mb-4">No data to extract from back of ${getIdTypeName(detectedIdType)}</div>
-                                <div class="text-xs text-gray-400">Only front ID is needed</div>
-                            `;
-                        }
-                    }
-
-                    // Also disable the file input
-                    if (fileBack) {
-                        fileBack.disabled = true;
-                    }
-                } else if (detectedIdType === 'phil-id') {
-                    // Enable back upload area for National ID
-                    if (uploadBack) {
-                        uploadBack.style.pointerEvents = 'auto';
-                        uploadBack.style.opacity = '1';
-                        uploadBack.style.cursor = 'pointer';
-
-                        // Restore original content if it was changed
-                        const backContent = uploadBack.querySelector('.id-upload-content');
-                        if (backContent && backContent.innerHTML.includes('Not Required')) {
-                            backContent.innerHTML = `
-                                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <i class="fas fa-id-card text-2xl crimson-500"></i>
-                                </div>
-                                <div class="font-semibold text-gray-800 mb-2">Back of ID</div>
-                                <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
-                                <div class="text-xs text-gray-400 mb-2">Accepted formats: JPG, JPEG, PNG only</div>
-                            `;
-                        }
-                    }
-
-                    // Enable the file input
-                    if (fileBack) {
-                        fileBack.disabled = false;
-                    }
-                }
+                
+                // Toggle back ID upload based on detected ID type
+                // UMID and Driver's License don't require back ID
+                toggleBackIdUpload(detectedIdType);
             }
 
             // Use detected type (auto-detection mode)
@@ -3808,10 +3759,9 @@ document.addEventListener('DOMContentLoaded', function () {
         fullName = fullName.trim();
 
         // Check for suffix at the end
-        // Extended suffix pattern to detect all common suffixes (Jr., Sr., II, III, IV, V, VI, VII, VIII, IX, X)
         const words = fullName.split(/\s+/);
         const lastWord = words[words.length - 1].toUpperCase().replace(/\./g, '');
-        const suffixPattern = /^(JR|SR|II|III|IV|V|VI|VII|VIII|IX|X|JUNIOR|SENIOR)$/i;
+        const suffixPattern = /^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i;
 
         let nameWithoutSuffix = fullName;
         if (suffixPattern.test(lastWord)) {
@@ -4065,10 +4015,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     //   1 line: "DAVAO CITY"
                     //   2 lines: "Street/Barangay" + "City/Province"
                     //   3 lines: "Street" + "Barangay" + "City/Province"
-                    //   4-5 lines: "House/Block/Lot" + "Street" + "Barangay" + "City/Province"
-                    // DRIVER'S LICENSE: May have address spanning up to 5 lines with Davao City on separate line
+                    //   4 lines: "House/Block/Lot" + "Street" + "Barangay" + "City/Province"
                     const addressLines = [];
-                    const maxAddressLines = 5; // Support up to 5 address lines for Driver's License multi-line addresses
+                    const maxAddressLines = 4; // Support up to 4 address lines for UMID
 
                     // ═══════════════════════════════════════════════════════════════
                     // CRITICAL FIX: Check if address is on SAME LINE as label
@@ -4142,31 +4091,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             // FIRST: Check if line contains address keywords
                             // If it has address keywords, it's NOT a name (even if it has comma)
-                            // ENHANCED: Added more barangay names and city variations to prevent false name detection
                             const addressKeywords = ['STREET', 'ST', 'BLVD', 'BOULEVARD', 'AVENUE', 'AVE', 'ROAD', 'RD',
                                 'BLOCK', 'LOT', 'BLK', 'BARANGAY', 'BRGY', 'CITY', 'DAVAO',
                                 'SUBDIVISION', 'VILLAGE', 'VILL', 'PUROK', 'SITIO', 'ZONE', 'DISTRICT',
-                                'PROVINCE', 'DEL SUR', 'DEL NORTE', 'ORIENTAL', 'OCCIDENTAL',
-                                // Common Davao City barangays that might be mistaken for names
-                                'MATINA', 'MANDUG', 'BUHANGIN', 'AGDAO', 'TALOMO', 'BANGKAL', 'BUCANA',
-                                'CATALUNAN', 'MINTAL', 'TUGBOK', 'TORIL', 'CALINAN', 'MARILOG',
-                                'PANACAN', 'SASA', 'BUNAWAN', 'LASANG', 'TIBUNGCO', 'ILANG',
-                                'POBLACION', 'CENTRO', 'DOWNTOWN'];
+                                'PROVINCE', 'DEL SUR', 'DEL NORTE', 'ORIENTAL', 'OCCIDENTAL'];
                             const upperText = cleanText.toUpperCase();
                             const hasAddressKeyword = addressKeywords.some(kw => upperText.includes(kw));
 
                             if (hasAddressKeyword) {
                                 // Contains address keywords - definitely NOT a name
                                 return false;
-                            }
-
-                            // ENHANCED: Check if the line matches any known barangay name
-                            // This prevents barangay names from being skipped as person names
-                            const cleanedForBarangay = upperText.replace(/^BRGY\.?\s*/i, '').replace(/^BARANGAY\s*/i, '').trim();
-                            for (const brgy of DAVAO_CITY_BARANGAYS) {
-                                if (cleanedForBarangay === brgy.toUpperCase() || upperText.includes(brgy.toUpperCase())) {
-                                    return false; // This is a barangay, not a name
-                                }
                             }
 
                             // Name patterns: all caps, 1-4 words, no numbers
@@ -4258,38 +4192,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         console.log(`📍 ✅ Complete concatenated address (${addressLines.length} line${addressLines.length > 1 ? 's' : ''}): "${completeAddress}"`);
                         console.log(`📍 Address will be checked for Davao City variants (DAVAO CITY, CITY OF DAVAO, DVO CITY, etc.)`);
 
-                        // ENHANCED: Check if Davao City is present in the concatenated address
-                        // If not, continue scanning more lines after the current batch
-                        const upperComplete = completeAddress.toUpperCase();
-                        const hasDavaoCity = upperComplete.includes('DAVAO CITY') || 
-                                            upperComplete.includes('CITY OF DAVAO') ||
-                                            upperComplete.includes('DVO CITY') ||
-                                            upperComplete.includes('DAVAO');
-                        
-                        if (!hasDavaoCity) {
-                            console.log(`📍 ⚠️ Davao City not found in extracted address, scanning additional lines...`);
-                            // Continue scanning up to 3 more lines for Davao City
-                            const lastLineIndex = i + addressLines.length;
-                            for (let k = lastLineIndex + 1; k < Math.min(lastLineIndex + 4, lines.length); k++) {
-                                const extraLine = lines[k].trim();
-                                const upperExtraLine = extraLine.toUpperCase();
-                                
-                                // Check if this line contains Davao City
-                                if (upperExtraLine.includes('DAVAO') || upperExtraLine.includes('CITY')) {
-                                    console.log(`📍 ✅ Found additional address line with city: "${extraLine}"`);
-                                    completeAddress += ' ' + extraLine;
-                                    break;
-                                }
-                                
-                                // Stop if we hit a field label
-                                if (upperExtraLine.includes('BIRTHDATE') || upperExtraLine.includes('SEX') ||
-                                    upperExtraLine.includes('GENDER') || upperExtraLine.includes('NAME')) {
-                                    break;
-                                }
-                            }
-                            completeAddress = completeAddress.replace(/\s+/g, ' ').trim();
-                        }
-
                         return completeAddress;
                     } else {
                         console.log(`⚠️ No address lines found after ADDRESS label`);
@@ -4297,31 +4199,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             }
-        }
-
-        // FALLBACK: If no ADDRESS label found, scan all lines for address patterns
-        // This is especially useful for Driver's License where address may not have a label
-        console.log(`📍 No ADDRESS label found, scanning all lines for Davao City address patterns...`);
-        const addressPatternLines = [];
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            const upperLine = line.toUpperCase();
-            
-            // Look for lines containing Davao City or common address keywords
-            if (upperLine.includes('DAVAO') || upperLine.includes('CITY OF') ||
-                upperLine.includes('BRGY') || upperLine.includes('BARANGAY') ||
-                upperLine.includes('STREET') || upperLine.includes('ST.') ||
-                /\d+\s+[A-Z]/.test(upperLine)) { // Address number pattern
-                
-                addressPatternLines.push(line);
-                console.log(`📍 Pattern-based address line found: "${line}"`);
-            }
-        }
-        
-        if (addressPatternLines.length > 0) {
-            const patternAddress = addressPatternLines.join(' ').replace(/\s+/g, ' ').trim();
-            console.log(`📍 ✅ Pattern-based address extracted: "${patternAddress}"`);
-            return patternAddress;
         }
 
         return "";
@@ -4734,8 +4611,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const suffixResult = extractFieldValue(lines, 'suffix');
         if (suffixResult && suffixResult.value) {
             const rawSuffix = cleanName(suffixResult.value);
-            // Validate suffix pattern - ENHANCED: Added VI, VII, VIII, IX, X
-            if (/^(JR|SR|II|III|IV|V|VI|VII|VIII|IX|X|JUNIOR|SENIOR)$/i.test(rawSuffix.trim())) {
+            // Validate suffix pattern
+            if (/^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i.test(rawSuffix.trim())) {
                 suffix = rawSuffix.toUpperCase();
                 if (suffix === 'JUNIOR') suffix = 'JR';
                 if (suffix === 'SENIOR') suffix = 'SR';
@@ -6898,10 +6775,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Keep only: letters (including Ñ for Filipino names), spaces, and periods (for initials)
         // Remove: numbers, most punctuation, symbols
         text = text.replace(/[^a-zA-ZÑñ\s\.]/g, " ");
-        
-        // ENHANCED: Convert ñ/Ñ to N/n for compatibility with form validation
-        // Filipino names like "NIÑO" become "NINO" for database matching
-        text = text.replace(/[Ññ]/g, 'N');
 
         // Handle periods: Keep them only if they appear to be initials (single letter followed by period)
         // Example: "JUAN M. DELA CRUZ" -> keep the period, "JUAN.DELA.CRUZ" -> remove periods
@@ -7057,23 +6930,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // NEW: Enhanced Suffix Detection and Extraction
     // ═══════════════════════════════════════════════════════════════════════════════
     // Detects and extracts suffix from name text, handling various formats
-    // ENHANCED: Added support for VI, VII, VIII, IX, X suffixes
     function extractSuffixFromName(nameText) {
         if (!nameText || typeof nameText !== 'string') {
             return { suffix: '', remainingText: nameText };
         }
 
         // Define valid suffixes (expanded list with variations)
-        // ENHANCED: Added VI, VII, VIII, IX, X for complete Roman numeral support
         const suffixPatterns = [
             // Roman numerals (higher numbers first to avoid mismatches)
-            { pattern: /\b(VIII)\b$/i, normalized: () => 'VIII' },
-            { pattern: /\b(VII)\b$/i, normalized: () => 'VII' },
-            { pattern: /\b(VI)\b$/i, normalized: () => 'VI' },
-            { pattern: /\b(IV)\b$/i, normalized: () => 'IV' },
-            { pattern: /\b(IX)\b$/i, normalized: () => 'IX' },
-            { pattern: /\b(X)\b$/i, normalized: () => 'X' },
-            { pattern: /\b(V)\b$/i, normalized: () => 'V' },
+            { pattern: /\b(IV|V|VI|VII|VIII|IX|X)\b$/i, normalized: (m) => m.toUpperCase() },
             { pattern: /\b(III)\b$/i, normalized: () => 'III' },
             { pattern: /\b(II)\b$/i, normalized: () => 'II' },
 
@@ -7083,7 +6948,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Handle suffix with comma: "DELA CRUZ, JUAN JR."
             {
-                pattern: /,\s*(JR\.?|SR\.?|II|III|IV|V|VI|VII|VIII|IX|X|JUNIOR|SENIOR)\s*$/i, normalized: (m) => {
+                pattern: /,\s*(JR\.?|SR\.?|II|III|IV|V|JUNIOR|SENIOR)\s*$/i, normalized: (m) => {
                     const clean = m.replace(/[,\s\.]/g, '').toUpperCase();
                     if (clean === 'JUNIOR') return 'JR';
                     if (clean === 'SENIOR') return 'SR';
@@ -7326,9 +7191,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Layer 6: For suffix field, validate against allowed suffix values
-        // ENHANCED: Added VI, VII, VIII, IX, X for complete suffix support
         if (fieldName.toLowerCase().includes('suffix')) {
-            const validSuffixes = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'JUNIOR', 'SENIOR'];
+            const validSuffixes = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'JUNIOR', 'SENIOR'];
             const upperValue = trimmedValue.toUpperCase();
             if (!validSuffixes.includes(upperValue)) {
                 return "";

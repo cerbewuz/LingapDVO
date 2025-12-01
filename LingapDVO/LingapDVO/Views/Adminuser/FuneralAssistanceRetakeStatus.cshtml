@@ -1,7 +1,7 @@
 @model FuneralAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Funeral Assistance - Retake Status";
+    ViewData["Title"] = "Funeral Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
@@ -434,25 +434,6 @@
     </div>
 </div>
 
-<!-- Comments Modal -->
-<div id="commentsModal" class="comments-modal">
-    <div class="comments-modal-content">
-        <div class="comments-modal-header">
-            <h5 class="comments-modal-title">Comments Required</h5>
-            <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
-        </div>
-        <div class="mb-3">
-            <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
-            <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
-            <div class="invalid-feedback">Comments are required when disapproving an application.</div>
-        </div>
-        <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
-            <button type="button" class="btn btn-disapproved" onclick="submitDisapprove()">Submit Disapproval</button>
-        </div>
-    </div>
-</div>
-
 <div class="receipt-container">
     <form asp-action="HospitalAssistanceView" enctype="multipart/form-data" method="post" id="statusForm">
         <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
@@ -587,7 +568,7 @@
                 @if (ViewData["DoctorPrescriptionBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Doctor Prescription</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
                             <div class="pdf-container">
@@ -613,7 +594,7 @@
                 @if (ViewData["MedicalCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Medical Certificate</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                         {
                             <div class="pdf-container">
@@ -639,7 +620,7 @@
                 @if (ViewData["DeathCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Death Certificate</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
                             <div class="pdf-container">
@@ -683,19 +664,6 @@
                     </div>
                 }
             </div>
-
-            <!-- Action Buttons (only show if not already processed) -->
-            @if (ViewData["Status2"]?.ToString() != "Approve" && ViewData["Status2"]?.ToString() != "Disapprove")
-            {
-                <div class="status-buttons">
-                    <button type="button" class="btn btn-approved" onclick="submitApprove()">
-                        <i class="bi bi-check-circle"></i> Approve
-                    </button>
-                    <button type="button" class="btn btn-disapproved" onclick="showCommentsModal()">
-                        <i class="bi bi-x-circle"></i> Disapprove
-                    </button>
-                </div>
-            }
         </div>
     </form>
 </div>
@@ -861,45 +829,11 @@
             }
         }
 
-        // Status Submission Functions
-        function submitApprove() {
-            document.getElementById('statusInput').value = 'Approve';
-            document.getElementById('commentsInput').value = '';
-            document.getElementById('statusForm').submit();
-        }
-
-        function showCommentsModal() {
-            document.getElementById('commentsModal').style.display = 'block';
-            document.getElementById('commentsTextarea').focus();
-        }
-
-        function closeCommentsModal() {
-            document.getElementById('commentsModal').style.display = 'none';
-            document.getElementById('commentsTextarea').value = '';
-            document.getElementById('commentsTextarea').classList.remove('is-invalid');
-        }
-
-        function submitDisapprove() {
-            const commentsTextarea = document.getElementById('commentsTextarea');
-            const comments = commentsTextarea.value.trim();
-
-            if (comments === '') {
-                commentsTextarea.classList.add('is-invalid');
-                commentsTextarea.focus();
-                return;
-            }
-
-            document.getElementById('statusInput').value = 'Disapprove';
-            document.getElementById('commentsInput').value = comments;
-            document.getElementById('statusForm').submit();
-        }
-
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.getElementById("zoomModal").style.display = "none";
                 closePDFViewer();
-                closeCommentsModal();
             }
 
             const pdfModal = document.getElementById('pdfViewerModal');
@@ -930,16 +864,12 @@
         window.onclick = function(event) {
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
-            const commentsModal = document.getElementById("commentsModal");
 
             if (event.target == zoomModal) {
                 zoomModal.style.display = "none";
             }
             if (event.target == pdfModal) {
                 closePDFViewer();
-            }
-            if (event.target == commentsModal) {
-                closeCommentsModal();
             }
         }
     </script>

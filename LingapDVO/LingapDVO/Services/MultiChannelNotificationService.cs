@@ -245,7 +245,10 @@ namespace LingapDVO.Services
                 }
 
                 // Send email notification if preferred
-                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
+                // NOTE: Skip email for statuses that are handled by Adminuser.cs with detailed templates
+                // This prevents duplicate emails from being sent
+                var statusesHandledByAdmin = new[] { "Approve", "Disapprove", "Retake", "Processing" };
+                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email) && !statusesHandledByAdmin.Contains(status))
                 {
                     var emailBody = GenerateEmailBody(title, message, link);
                     await _emailService.SendEmailAsync(user.Email, title, emailBody);
@@ -343,12 +346,8 @@ namespace LingapDVO.Services
                     });
                 }
 
-                // Send email notification with nearby offices link if preferred
-                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
-                {
-                    var emailBody = GenerateApprovedEmailBody(title, message, link, nearbyOfficesUrl);
-                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
-                }
+                // NOTE: Email notification is handled by Adminuser.cs with detailed templates
+                // Skipping generic email here to avoid duplicate emails being sent
 
                 // Send SMS notification with nearby offices link if preferred (formal and concise)
                 if (user.PreferSmsNotification)
@@ -543,12 +542,8 @@ namespace LingapDVO.Services
                     });
                 }
 
-                // Send email notification with application tracking link if preferred
-                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
-                {
-                    var emailBody = GenerateRetakeEmailBody(title, message, link);
-                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
-                }
+                // NOTE: Email notification is handled by Adminuser.cs with detailed templates
+                // Skipping generic email here to avoid duplicate emails being sent
 
                 // Send SMS notification with application tracking link if preferred
                 if (user.PreferSmsNotification)
