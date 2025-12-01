@@ -1693,48 +1693,57 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function showImageQualityErrorModal(issues) {
         let title = 'Image Quality Issue';
-        let message = 'The ID image you uploaded has quality issues that prevent accurate reading.\n\n';
-        let tips = [];
+        let message = '❌ Image Quality Issues Detected\n\n';
+        let issuesList = [];
+        let tipsList = [];
+
+        message += 'PROBLEMS FOUND:\n';
 
         if (issues.isTooDark) {
-            message += '❌ Image is too dark\n';
-            tips.push('Take the photo in a well-lit area');
-            tips.push('Avoid shadows on the ID');
-            tips.push('Use natural light or good indoor lighting');
+            issuesList.push('• Image is too dark');
+            tipsList.push('Take the photo in a well-lit area');
+            tipsList.push('Avoid shadows on the ID');
+            tipsList.push('Use natural light or good indoor lighting');
         }
 
         if (issues.isTooBright) {
-            message += '❌ Image is too bright/overexposed\n';
-            tips.push('Avoid direct flash on the ID');
-            tips.push('Reduce lighting or move away from direct light');
-            tips.push('Avoid glare and reflections');
+            issuesList.push('• Image is too bright/overexposed');
+            tipsList.push('Avoid direct flash on the ID');
+            tipsList.push('Reduce lighting or move away from direct light');
+            tipsList.push('Avoid glare and reflections');
         }
 
         if (issues.isBlurry) {
-            message += '❌ Image is too blurry\n';
-            tips.push('Hold your phone steady when taking the photo');
-            tips.push('Make sure the ID is in focus');
-            tips.push('Clean your camera lens');
-            tips.push('Get closer to the ID for a clearer shot');
+            issuesList.push('• Image is too blurry');
+            tipsList.push('Hold your phone steady when taking the photo');
+            tipsList.push('Make sure the ID is in focus');
+            tipsList.push('Clean your camera lens');
+            tipsList.push('Get closer to the ID for a clearer shot');
         }
 
         if (issues.isCriticalLowContrast) {
-            message += '❌ Image has very low contrast (text is hard to read)\n';
-            tips.push('Ensure good lighting conditions');
-            tips.push('Avoid photographing the ID on similar colored backgrounds');
-            tips.push('Make sure the ID surface is clean');
+            issuesList.push('• Image has very low contrast (text is hard to read)');
+            tipsList.push('Ensure good lighting conditions');
+            tipsList.push('Avoid photographing the ID on similar colored backgrounds');
+            tipsList.push('Make sure the ID surface is clean');
         }
 
-        message += '\n📸 Tips for better ID photos:\n';
-        tips.forEach(tip => {
-            message += `  • ${tip}\n`;
+        issuesList.forEach(issue => {
+            message += `${issue}\n`;
         });
 
-        message += '\n💡 For best results:\n';
-        message += '  • Place ID on a dark, flat surface\n';
-        message += '  • Use good lighting (natural light works best)\n';
-        message += '  • Hold camera parallel to the ID\n';
-        message += '  • Ensure all text is clearly visible\n';
+        message += '\nWHAT TO DO:\n';
+        // Remove duplicates from tips
+        const uniqueTips = [...new Set(tipsList)];
+        uniqueTips.forEach(tip => {
+            message += `• ${tip}\n`;
+        });
+
+        message += '\n💡 BEST PRACTICES:\n';
+        message += '• Place ID on a dark, flat surface\n';
+        message += '• Use good lighting (natural light works best)\n';
+        message += '• Hold camera parallel to the ID\n';
+        message += '• Ensure all text is clearly visible';
 
         showOCRErrorModal(message);
     }
@@ -1748,7 +1757,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Optional: Light compression if image is too large (>1MB for free tier)
             const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
             // Keep original dimensions or scale down if too large
             let width = img.width;
@@ -1845,11 +1854,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Show user-friendly error modal
             showOCRErrorModal(
-                'We could not process your image.\n\n' +
-                'Please try:\n\n' +
-                '• Taking a new photo of your ID\n' +
-                '• Making sure the photo is clear and well-lit\n' +
-                '• Using a different device or camera\n\n' +
+                '❌ Cannot process your image\n\n' +
+                'POSSIBLE ISSUES:\n' +
+                '• The image file may be corrupted\n' +
+                '• The file format is not supported\n' +
+                '• The image is too large or too small\n' +
+                '• There was a network connection issue\n\n' +
+                'WHAT TO DO:\n' +
+                '• Take a new photo of your ID\n' +
+                '• Make sure the photo is clear and well-lit\n' +
+                '• Try using a different device or camera\n' +
+                '• Check your internet connection\n\n' +
                 'If the problem continues, please contact support.'
             );
 
@@ -2079,11 +2094,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         // Normalize function - strict: only uppercase letters, remove all special chars and spaces
-        // ENHANCED: Convert ñ/Ñ to N before normalization for Filipino name compatibility
         const strictNormalize = (name) => {
             if (!name) return "";
-            // Convert ñ/Ñ to N for comparison (Filipino names like "NIÑO" become "NINO")
-            return name.trim().toUpperCase().replace(/[ÑñÑ]/g, 'N').replace(/[^A-Z]/g, '');
+            return name.trim().toUpperCase().replace(/[^A-Z]/g, '');
         };
 
         // Normalize all name components
@@ -2220,11 +2233,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Validate Name Match - TWO-STEP VALIDATION
     function validateNameMatch(extractedFirstName, extractedMiddleName, extractedLastName, extractedSuffix = "", idType = "") {
         // Normalize names for comparison
-        // ENHANCED: Convert ñ/Ñ to N for Filipino name compatibility
         const normalizeForComparison = (name) => {
             if (!name) return "";
-            // Convert ñ/Ñ to N for comparison (Filipino names like "NIÑO" become "NINO")
-            return name.trim().toUpperCase().replace(/[ÑñÑ]/g, 'N').replace(/[^A-Z\s]/g, '');
+            return name.trim().toUpperCase().replace(/[^A-Z\s]/g, '');
         };
 
         const extractedFirst = normalizeForComparison(extractedFirstName);
@@ -2456,7 +2467,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Extract barangay from position before "Davao City" in address
-    // Enhanced to work with multi-line concatenated addresses
     function extractBarangayFromAddressPosition(address) {
         if (!address) {
             return null;
@@ -2465,18 +2475,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const cleanAddress = address.trim();
         const upperAddress = cleanAddress.toUpperCase();
 
-        console.log(`🏘️ Extracting barangay from address: "${cleanAddress.substring(0, 100)}${cleanAddress.length > 100 ? '...' : ''}"`);
 
-        // Expanded list of Davao City variations to look for (prioritized by specificity)
+        // List of Davao City variations to look for
         const davaoCityVariations = [
+            'DAVAO CITY',
+            'DAVAO',
             'DAVAO CITY, PHILIPPINES',
             'DAVAO CITY PHILIPPINES',
-            'DAVAO, PHILIPPINES',
-            'CITY OF DAVAO',
-            'DAVAO CITY',
-            'DVO CITY',
-            'DAVAO CTY',
-            'DAVAO'
+            'DAVAO, PHILIPPINES'
         ];
 
         // Find which variation exists in the address
@@ -2488,43 +2494,30 @@ document.addEventListener('DOMContentLoaded', function () {
             if (index !== -1) {
                 davaoCityPattern = variation;
                 davaoCityIndex = index;
-                console.log(`   Found Davao variant "${variation}" at position ${index}`);
                 break;
             }
         }
 
         if (davaoCityIndex === -1) {
-            console.log(`   ⚠️ No Davao City variant found in address`);
             return null;
         }
 
         // Extract text before "Davao City"
         const textBeforeDavao = cleanAddress.substring(0, davaoCityIndex).trim();
-        console.log(`   Text before Davao: "${textBeforeDavao}"`);
 
         if (!textBeforeDavao) {
             return null;
         }
 
-        // Split by common separators (comma, dash, space, pipe, slash)
-        // This handles multi-line addresses that were concatenated with spaces
+        // Split by common separators (comma, dash, etc.)
         const parts = textBeforeDavao.split(/[,\-|\/]/);
 
-        // Get the last non-empty part (closest to Davao City = most likely the barangay)
-        let lastPart = '';
-        for (let i = parts.length - 1; i >= 0; i--) {
-            const part = parts[i].trim();
-            if (part.length > 0) {
-                lastPart = part;
-                break;
-            }
-        }
+        // Get the last part (closest to Davao City = most likely the barangay)
+        const lastPart = parts[parts.length - 1].trim();
 
         if (!lastPart) {
             return null;
         }
-
-        console.log(`   Last part before Davao: "${lastPart}"`);
 
         // Match this against our barangay list
         const upperLastPart = lastPart.toUpperCase();
@@ -2543,44 +2536,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Exact match
             if (cleanedLastPart === upperBarangay) {
-                console.log(`   ✅ Exact match found: "${barangay}"`);
                 return barangay;
             }
 
             // Contains match (the candidate contains the barangay name)
             if (cleanedLastPart.includes(upperBarangay)) {
-                console.log(`   ✅ Contains match found: "${barangay}"`);
                 return barangay;
             }
 
             // Reverse: barangay contains the candidate (for abbreviated names)
             if (upperBarangay.includes(cleanedLastPart) && cleanedLastPart.length >= 4) {
-                console.log(`   ✅ Partial match found: "${barangay}"`);
                 return barangay;
             }
         }
 
-        // FALLBACK: Search ALL parts (not just the last one) for barangay matches
-        // This helps when address format is: "123 Street, Brgy Matina Crossing, Davao City"
-        console.log(`   Searching all address parts for barangay...`);
-        for (const part of parts) {
-            const cleanPart = part.trim().toUpperCase()
-                .replace(/^BRGY\.?\s*/i, '')
-                .replace(/^BARANGAY\s*/i, '')
-                .trim();
-            
-            if (cleanPart.length < 3) continue;
-            
-            for (const barangay of sortedBarangays) {
-                const upperBarangay = barangay.toUpperCase();
-                if (cleanPart === upperBarangay || cleanPart.includes(upperBarangay)) {
-                    console.log(`   ✅ Found barangay in address parts: "${barangay}"`);
-                    return barangay;
-                }
-            }
-        }
 
-        console.log(`   ❌ No barangay match found`);
         return null;
     }
 
@@ -2732,6 +2702,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Log all extracted OCR text to console for debugging
 
+            // Check if OCR extracted minimal or no text (image quality issue)
+            if (!cleanedText || cleanedText.trim().length < 10) {
+                let errorMessage = '❌ Unable to read text from your ID image\n\n';
+                errorMessage += 'POSSIBLE ISSUES:\n';
+                errorMessage += '• The image is too blurry or out of focus\n';
+                errorMessage += '• Poor lighting (too dark or too bright)\n';
+                errorMessage += '• Glare or shadows covering the text\n';
+                errorMessage += '• Image quality is too low\n\n';
+                errorMessage += 'WHAT TO DO:\n';
+                errorMessage += '• Take a new photo with better lighting\n';
+                errorMessage += '• Hold your phone steady to avoid blur\n';
+                errorMessage += '• Make sure all text on the ID is clearly visible\n';
+                errorMessage += '• Avoid shadows and reflections\n';
+                errorMessage += '• Use natural daylight if possible';
+
+                showOCRErrorModal(errorMessage);
+                return;
+            }
+
             // === STEP 1: ID TYPE DETECTION ===
             if (status) {
                 status.innerHTML = '<i class="fas fa-id-card fa-pulse mr-2"></i>Detecting ID type...';
@@ -2778,7 +2767,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <i class="fas fa-ban text-2xl text-gray-400"></i>
                                 </div>
                                 <div class="font-semibold text-gray-500 mb-2">Back ID Not Required</div>
-                                <div class="text-gray-400 text-sm mb-4">No data to extract from back of ${getIdTypeName(detectedIdType)}</div>
+                                <div class="text-gray-400 text-sm mb-4">This is not needed for ${getIdTypeName(detectedIdType)}</div>
                                 <div class="text-xs text-gray-400">Only front ID is needed</div>
                             `;
                         }
@@ -2822,20 +2811,31 @@ document.addEventListener('DOMContentLoaded', function () {
             // Final check: If still no valid ID type, show error with detailed guidance
             if (!idTypeToProcess || !ALLOWED_ID_TYPES.includes(idTypeToProcess)) {
 
-                let errorMessage = 'Unable to detect ID type from the uploaded image.\n\n';
-                errorMessage += 'Please ensure:\n';
-                errorMessage += '1. The image is clear and well-lit\n';
-                errorMessage += '2. All text on the ID is readable\n';
-                errorMessage += '3. The entire ID is visible in the image\n';
-                errorMessage += '4. You are using one of these ACCEPTED IDs ONLY:\n';
-                errorMessage += '   • Philippine National ID (PhilSys)\n';
-                errorMessage += '   • Driver\'s License (LTO)\n';
-                errorMessage += '   • UMID (Unified Multi-Purpose ID)\n';
-                errorMessage += '   ❌ NOT ACCEPTED: PhilHealth, Senior Citizen, PWD, Postal ID, etc.\n\n';
-                errorMessage += 'Tips:\n';
-                errorMessage += '• Make sure the ID text is not blurry\n';
-                errorMessage += '• Avoid shadows and glare\n';
-                errorMessage += '• Try taking a new photo with better lighting';
+                let errorMessage = '❌ Cannot identify your ID type\n\n';
+                errorMessage += 'POSSIBLE REASONS:\n';
+                errorMessage += '• You may be using an ID that is NOT accepted\n';
+                errorMessage += '• The ID text is not clear enough to identify\n';
+                errorMessage += '• Important ID information is covered or cut off\n\n';
+                errorMessage += '✅ ACCEPTED IDs ONLY:\n';
+                errorMessage += '• Philippine National ID (PhilSys)\n';
+                errorMessage += '• Driver\'s License (LTO)\n';
+                errorMessage += '• UMID (Unified Multi-Purpose ID)\n\n';
+                errorMessage += '❌ NOT ACCEPTED:\n';
+                errorMessage += '• PhilHealth ID\n';
+                errorMessage += '• Senior Citizen ID\n';
+                errorMessage += '• PWD ID\n';
+                errorMessage += '• Postal ID\n';
+                errorMessage += '• SSS ID\n';
+                errorMessage += '• Voter\'s ID\n';
+                errorMessage += '• Barangay ID\n';
+                errorMessage += '• TIN ID\n';
+                errorMessage += '• PRC ID\n\n';
+                errorMessage += 'WHAT TO DO:\n';
+                errorMessage += '• Make sure you\'re using one of the 3 accepted IDs above\n';
+                errorMessage += '• Ensure the entire ID is visible in the photo\n';
+                errorMessage += '• Check that all text is clear and readable\n';
+                errorMessage += '• Retake the photo with better lighting\n';
+                errorMessage += '• Avoid shadows, glare, and blur';
 
                 showOCRErrorModal(errorMessage);
                 return;
@@ -2884,7 +2884,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     parseUMIDBack(cleanedText);
                 }
             } else {
-                showOCRErrorModal('Unable to detect ID type. Please ensure the image is clear and contains a valid Philippine ID.');
+                showOCRErrorModal(
+                    '❌ Unable to detect ID type\n\n' +
+                    'POSSIBLE ISSUES:\n' +
+                    '• The image may not be clear enough\n' +
+                    '• The ID type cannot be identified\n' +
+                    '• The ID might not be a valid Philippine ID\n\n' +
+                    'WHAT TO DO:\n' +
+                    '• Make sure you\'re using an accepted ID (National ID, Driver\'s License, or UMID)\n' +
+                    '• Retake the photo with better lighting\n' +
+                    '• Ensure all text on the ID is clear and readable\n' +
+                    '• Make sure the entire ID is visible'
+                );
             }
 
             // Note: Final progress update to 100% is handled by updateFormFieldsAdvanced()
@@ -2916,13 +2927,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 status.innerHTML = '<i class="fas fa-image mr-2"></i>Wrong format';
             } else {
                 status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Cannot read ID';
-                errorMessage = 'We could not read your ID information.\n\n' +
-                    'Please make sure:\n\n' +
-                    '✓ The image is clear and well-lit\n' +
-                    '✓ All text on the ID is readable\n' +
-                    '✓ The entire ID is visible in the photo\n' +
-                    '✓ The photo is not blurry\n\n' +
-                    'Try taking a new photo with better lighting.';
+                errorMessage = '❌ Cannot read your ID information\n\n' +
+                    'POSSIBLE ISSUES:\n' +
+                    '• The image is too blurry or out of focus\n' +
+                    '• Text on the ID is not readable\n' +
+                    '• Part of the ID is cut off or hidden\n' +
+                    '• Poor lighting or glare on the ID\n\n' +
+                    'WHAT TO DO:\n' +
+                    '• Retake the photo with better lighting\n' +
+                    '• Make sure all text on the ID is clear\n' +
+                    '• Ensure the entire ID is visible\n' +
+                    '• Hold your phone steady to avoid blur\n' +
+                    '• Avoid shadows and reflections';
             }
 
             showOCRErrorModal(errorMessage);
@@ -3808,10 +3824,9 @@ document.addEventListener('DOMContentLoaded', function () {
         fullName = fullName.trim();
 
         // Check for suffix at the end
-        // Extended suffix pattern to detect all common suffixes (Jr., Sr., II, III, IV, V, VI, VII, VIII, IX, X)
         const words = fullName.split(/\s+/);
         const lastWord = words[words.length - 1].toUpperCase().replace(/\./g, '');
-        const suffixPattern = /^(JR|SR|II|III|IV|V|VI|VII|VIII|IX|X|JUNIOR|SENIOR)$/i;
+        const suffixPattern = /^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i;
 
         let nameWithoutSuffix = fullName;
         if (suffixPattern.test(lastWord)) {
@@ -4065,10 +4080,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     //   1 line: "DAVAO CITY"
                     //   2 lines: "Street/Barangay" + "City/Province"
                     //   3 lines: "Street" + "Barangay" + "City/Province"
-                    //   4-5 lines: "House/Block/Lot" + "Street" + "Barangay" + "City/Province"
-                    // DRIVER'S LICENSE: May have address spanning up to 5 lines with Davao City on separate line
+                    //   4 lines: "House/Block/Lot" + "Street" + "Barangay" + "City/Province"
                     const addressLines = [];
-                    const maxAddressLines = 5; // Support up to 5 address lines for Driver's License multi-line addresses
+                    const maxAddressLines = 4; // Support up to 4 address lines for UMID
 
                     // ═══════════════════════════════════════════════════════════════
                     // CRITICAL FIX: Check if address is on SAME LINE as label
@@ -4142,31 +4156,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             // FIRST: Check if line contains address keywords
                             // If it has address keywords, it's NOT a name (even if it has comma)
-                            // ENHANCED: Added more barangay names and city variations to prevent false name detection
                             const addressKeywords = ['STREET', 'ST', 'BLVD', 'BOULEVARD', 'AVENUE', 'AVE', 'ROAD', 'RD',
                                 'BLOCK', 'LOT', 'BLK', 'BARANGAY', 'BRGY', 'CITY', 'DAVAO',
                                 'SUBDIVISION', 'VILLAGE', 'VILL', 'PUROK', 'SITIO', 'ZONE', 'DISTRICT',
-                                'PROVINCE', 'DEL SUR', 'DEL NORTE', 'ORIENTAL', 'OCCIDENTAL',
-                                // Common Davao City barangays that might be mistaken for names
-                                'MATINA', 'MANDUG', 'BUHANGIN', 'AGDAO', 'TALOMO', 'BANGKAL', 'BUCANA',
-                                'CATALUNAN', 'MINTAL', 'TUGBOK', 'TORIL', 'CALINAN', 'MARILOG',
-                                'PANACAN', 'SASA', 'BUNAWAN', 'LASANG', 'TIBUNGCO', 'ILANG',
-                                'POBLACION', 'CENTRO', 'DOWNTOWN'];
+                                'PROVINCE', 'DEL SUR', 'DEL NORTE', 'ORIENTAL', 'OCCIDENTAL'];
                             const upperText = cleanText.toUpperCase();
                             const hasAddressKeyword = addressKeywords.some(kw => upperText.includes(kw));
 
                             if (hasAddressKeyword) {
                                 // Contains address keywords - definitely NOT a name
                                 return false;
-                            }
-
-                            // ENHANCED: Check if the line matches any known barangay name
-                            // This prevents barangay names from being skipped as person names
-                            const cleanedForBarangay = upperText.replace(/^BRGY\.?\s*/i, '').replace(/^BARANGAY\s*/i, '').trim();
-                            for (const brgy of DAVAO_CITY_BARANGAYS) {
-                                if (cleanedForBarangay === brgy.toUpperCase() || upperText.includes(brgy.toUpperCase())) {
-                                    return false; // This is a barangay, not a name
-                                }
                             }
 
                             // Name patterns: all caps, 1-4 words, no numbers
@@ -4258,38 +4257,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         console.log(`📍 ✅ Complete concatenated address (${addressLines.length} line${addressLines.length > 1 ? 's' : ''}): "${completeAddress}"`);
                         console.log(`📍 Address will be checked for Davao City variants (DAVAO CITY, CITY OF DAVAO, DVO CITY, etc.)`);
 
-                        // ENHANCED: Check if Davao City is present in the concatenated address
-                        // If not, continue scanning more lines after the current batch
-                        const upperComplete = completeAddress.toUpperCase();
-                        const hasDavaoCity = upperComplete.includes('DAVAO CITY') || 
-                                            upperComplete.includes('CITY OF DAVAO') ||
-                                            upperComplete.includes('DVO CITY') ||
-                                            upperComplete.includes('DAVAO');
-                        
-                        if (!hasDavaoCity) {
-                            console.log(`📍 ⚠️ Davao City not found in extracted address, scanning additional lines...`);
-                            // Continue scanning up to 3 more lines for Davao City
-                            const lastLineIndex = i + addressLines.length;
-                            for (let k = lastLineIndex + 1; k < Math.min(lastLineIndex + 4, lines.length); k++) {
-                                const extraLine = lines[k].trim();
-                                const upperExtraLine = extraLine.toUpperCase();
-                                
-                                // Check if this line contains Davao City
-                                if (upperExtraLine.includes('DAVAO') || upperExtraLine.includes('CITY')) {
-                                    console.log(`📍 ✅ Found additional address line with city: "${extraLine}"`);
-                                    completeAddress += ' ' + extraLine;
-                                    break;
-                                }
-                                
-                                // Stop if we hit a field label
-                                if (upperExtraLine.includes('BIRTHDATE') || upperExtraLine.includes('SEX') ||
-                                    upperExtraLine.includes('GENDER') || upperExtraLine.includes('NAME')) {
-                                    break;
-                                }
-                            }
-                            completeAddress = completeAddress.replace(/\s+/g, ' ').trim();
-                        }
-
                         return completeAddress;
                     } else {
                         console.log(`⚠️ No address lines found after ADDRESS label`);
@@ -4297,31 +4264,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             }
-        }
-
-        // FALLBACK: If no ADDRESS label found, scan all lines for address patterns
-        // This is especially useful for Driver's License where address may not have a label
-        console.log(`📍 No ADDRESS label found, scanning all lines for Davao City address patterns...`);
-        const addressPatternLines = [];
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            const upperLine = line.toUpperCase();
-            
-            // Look for lines containing Davao City or common address keywords
-            if (upperLine.includes('DAVAO') || upperLine.includes('CITY OF') ||
-                upperLine.includes('BRGY') || upperLine.includes('BARANGAY') ||
-                upperLine.includes('STREET') || upperLine.includes('ST.') ||
-                /\d+\s+[A-Z]/.test(upperLine)) { // Address number pattern
-                
-                addressPatternLines.push(line);
-                console.log(`📍 Pattern-based address line found: "${line}"`);
-            }
-        }
-        
-        if (addressPatternLines.length > 0) {
-            const patternAddress = addressPatternLines.join(' ').replace(/\s+/g, ' ').trim();
-            console.log(`📍 ✅ Pattern-based address extracted: "${patternAddress}"`);
-            return patternAddress;
         }
 
         return "";
@@ -4734,8 +4676,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const suffixResult = extractFieldValue(lines, 'suffix');
         if (suffixResult && suffixResult.value) {
             const rawSuffix = cleanName(suffixResult.value);
-            // Validate suffix pattern - ENHANCED: Added VI, VII, VIII, IX, X
-            if (/^(JR|SR|II|III|IV|V|VI|VII|VIII|IX|X|JUNIOR|SENIOR)$/i.test(rawSuffix.trim())) {
+            // Validate suffix pattern
+            if (/^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i.test(rawSuffix.trim())) {
                 suffix = rawSuffix.toUpperCase();
                 if (suffix === 'JUNIOR') suffix = 'JR';
                 if (suffix === 'SENIOR') suffix = 'SR';
@@ -4955,17 +4897,18 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Show user-friendly error modal for age validation failures
                             if (validation.reason && validation.reason.includes('years old')) {
                                 const errorMessage =
-                                    `Age Requirement Not Met\n\n` +
-                                    `The birthdate extracted from your ID shows you are ${validation.age || 'under 18'} years old.\n\n` +
-                                    `To use this service, you must be at least 18 years of age.\n\n` +
-                                    `Requirements:\n` +
-                                    `• Minimum age: 18 years\n` +
-                                    `• Current year: ${new Date().getFullYear()}\n` +
-                                    `• Your birth year must be ${new Date().getFullYear() - 18} or earlier\n\n` +
-                                    `If you believe this is an error, please ensure:\n` +
-                                    `1. Your ID is clear and readable\n` +
-                                    `2. The birthdate on your ID is clearly visible\n` +
-                                    `3. You are using a valid government-issued ID`;
+                                    `❌ Age Requirement Not Met\n\n` +
+                                    `WHAT WE FOUND:\n` +
+                                    `• Your birthdate shows you are ${validation.age || 'under 18'} years old\n` +
+                                    `• Minimum required age: 18 years\n\n` +
+                                    `REQUIREMENT:\n` +
+                                    `• You must be born in ${new Date().getFullYear() - 18} or earlier\n` +
+                                    `• Current year: ${new Date().getFullYear()}\n\n` +
+                                    `IF THIS IS AN ERROR:\n` +
+                                    `• Make sure your ID is clear and readable\n` +
+                                    `• Ensure the birthdate on your ID is clearly visible\n` +
+                                    `• Retake the photo with better lighting\n` +
+                                    `• Verify you are using a valid government-issued ID`;
                                 showOCRErrorModal(errorMessage);
                             }
 
@@ -5448,15 +5391,20 @@ document.addEventListener('DOMContentLoaded', function () {
         // If we reach here, label was found but no valid date
 
         const errorMessage =
-            `Birthdate field detected on Driver's License but value could not be read.\n\n` +
-            `The OCR system found a "${detectedLabel}" label on your ID, ` +
-            `but could not find a valid date value nearby.\n\n` +
-            `Please ensure:\n` +
-            `1. The birthdate on the ID is clear and readable\n` +
-            `2. The ID image is well-lit with no glare or shadows\n` +
-            `3. The entire ID is visible in the photo\n` +
-            `4. The image is not blurry or distorted\n\n` +
-            `Try taking a new photo with better clarity.`;
+            `❌ Cannot read birthdate from your Driver's License\n\n` +
+            `WHAT WE FOUND:\n` +
+            `• We detected a "${detectedLabel}" label on your ID\n` +
+            `• But we could not read the birthdate value clearly\n\n` +
+            `POSSIBLE ISSUES:\n` +
+            `• The birthdate text is too blurry or faded\n` +
+            `• Poor lighting or glare covering the birthdate\n` +
+            `• The birthdate area is partially hidden\n\n` +
+            `WHAT TO DO:\n` +
+            `• Take a new photo with better lighting\n` +
+            `• Make sure the birthdate is clearly visible\n` +
+            `• Ensure no shadows or glare on that area\n` +
+            `• Hold the camera steady to avoid blur\n` +
+            `• Make sure the entire ID is in the photo`;
 
         showOCRErrorModal(errorMessage);
         return "";
@@ -6898,10 +6846,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Keep only: letters (including Ñ for Filipino names), spaces, and periods (for initials)
         // Remove: numbers, most punctuation, symbols
         text = text.replace(/[^a-zA-ZÑñ\s\.]/g, " ");
-        
-        // ENHANCED: Convert ñ/Ñ to N/n for compatibility with form validation
-        // Filipino names like "NIÑO" become "NINO" for database matching
-        text = text.replace(/[Ññ]/g, 'N');
 
         // Handle periods: Keep them only if they appear to be initials (single letter followed by period)
         // Example: "JUAN M. DELA CRUZ" -> keep the period, "JUAN.DELA.CRUZ" -> remove periods
@@ -7057,23 +7001,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // NEW: Enhanced Suffix Detection and Extraction
     // ═══════════════════════════════════════════════════════════════════════════════
     // Detects and extracts suffix from name text, handling various formats
-    // ENHANCED: Added support for VI, VII, VIII, IX, X suffixes
     function extractSuffixFromName(nameText) {
         if (!nameText || typeof nameText !== 'string') {
             return { suffix: '', remainingText: nameText };
         }
 
         // Define valid suffixes (expanded list with variations)
-        // ENHANCED: Added VI, VII, VIII, IX, X for complete Roman numeral support
         const suffixPatterns = [
             // Roman numerals (higher numbers first to avoid mismatches)
-            { pattern: /\b(VIII)\b$/i, normalized: () => 'VIII' },
-            { pattern: /\b(VII)\b$/i, normalized: () => 'VII' },
-            { pattern: /\b(VI)\b$/i, normalized: () => 'VI' },
-            { pattern: /\b(IV)\b$/i, normalized: () => 'IV' },
-            { pattern: /\b(IX)\b$/i, normalized: () => 'IX' },
-            { pattern: /\b(X)\b$/i, normalized: () => 'X' },
-            { pattern: /\b(V)\b$/i, normalized: () => 'V' },
+            { pattern: /\b(IV|V|VI|VII|VIII|IX|X)\b$/i, normalized: (m) => m.toUpperCase() },
             { pattern: /\b(III)\b$/i, normalized: () => 'III' },
             { pattern: /\b(II)\b$/i, normalized: () => 'II' },
 
@@ -7083,7 +7019,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Handle suffix with comma: "DELA CRUZ, JUAN JR."
             {
-                pattern: /,\s*(JR\.?|SR\.?|II|III|IV|V|VI|VII|VIII|IX|X|JUNIOR|SENIOR)\s*$/i, normalized: (m) => {
+                pattern: /,\s*(JR\.?|SR\.?|II|III|IV|V|JUNIOR|SENIOR)\s*$/i, normalized: (m) => {
                     const clean = m.replace(/[,\s\.]/g, '').toUpperCase();
                     if (clean === 'JUNIOR') return 'JR';
                     if (clean === 'SENIOR') return 'SR';
@@ -7326,9 +7262,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Layer 6: For suffix field, validate against allowed suffix values
-        // ENHANCED: Added VI, VII, VIII, IX, X for complete suffix support
         if (fieldName.toLowerCase().includes('suffix')) {
-            const validSuffixes = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'JUNIOR', 'SENIOR'];
+            const validSuffixes = ['JR', 'SR', 'II', 'III', 'IV', 'V', 'JUNIOR', 'SENIOR'];
             const upperValue = trimmedValue.toUpperCase();
             if (!validSuffixes.includes(upperValue)) {
                 return "";
@@ -7531,6 +7466,33 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 2000); // 2 second delay to show the completed state
             }
         } catch (e) {
+            // Log error for debugging but don't show error modal if fields were populated
+            console.error('Error in updateFormFieldsAdvanced:', e);
+
+            // Only show error if it's a critical failure (no fields populated)
+            const criticalError = !firstName && !lastName && !idNumber;
+            if (criticalError) {
+                debugLog('CRITICAL-UPDATE-ERROR', {
+                    error: e.message,
+                    stack: e.stack
+                });
+
+                // Show user-friendly error
+                showOCRErrorModal(
+                    'Unable to populate form fields.\n\n' +
+                    'The ID information was extracted but could not be filled into the form.\n\n' +
+                    'Please try:\n' +
+                    '• Refreshing the page\n' +
+                    '• Uploading the ID again\n' +
+                    '• Contacting support if the issue persists'
+                );
+            } else {
+                // Non-critical error - fields were populated despite error
+                debugLog('NON-CRITICAL-UPDATE-ERROR', {
+                    error: e.message,
+                    note: 'Fields populated successfully despite error'
+                });
+            }
         }
     }
 

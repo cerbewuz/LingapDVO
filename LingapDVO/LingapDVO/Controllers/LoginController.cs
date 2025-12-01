@@ -2083,6 +2083,11 @@ namespace LingapDVO.Controllers
             ViewBag.RegisteredLastName = registeredUser.LastName;
             ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
 
+            // Pass OCR settings from appsettings.json
+            ViewBag.OcrApiKey = _configuration["OCRSettings:ApiKey"];
+            ViewBag.OcrApiUrl = _configuration["OCRSettings:ApiUrl"];
+            ViewBag.OcrEngine = _configuration["OCRSettings:Engine"];
+
             return View();
         }
 
