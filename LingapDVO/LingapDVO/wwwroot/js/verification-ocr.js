@@ -3668,8 +3668,19 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         // Check if it's Davao City using CONCATENATED ADDRESS (supports multi-line)
-        const isDavaoCityResult = isDavaoCity(extractedData.address);
-        showDavaoVerificationResult(isDavaoCityResult, extractedData.address, 'driver-license');
+        // FALLBACK: Also check full OCR text if address extraction failed
+        let isDavaoCityResult = isDavaoCity(extractedData.address);
+        
+        // Fallback: If address-based check failed, check the FULL OCR text
+        if (!isDavaoCityResult) {
+            console.log(`⚠️ Address-based Davao City check failed. Checking full OCR text as fallback...`);
+            isDavaoCityResult = isDavaoCity(text);
+            if (isDavaoCityResult) {
+                console.log(`✅ Davao City found in full OCR text (fallback)`);
+            }
+        }
+        
+        showDavaoVerificationResult(isDavaoCityResult, extractedData.address || text, 'driver-license');
     }
 
     // Extract Driver's License Number
@@ -4280,88 +4291,109 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
-        const upperAddress = address.toUpperCase().trim();
+        // Normalize address: remove extra spaces, convert to uppercase
+        const upperAddress = address.toUpperCase().replace(/\s+/g, ' ').trim();
+        
+        console.log(`🔍 Checking for Davao City in: "${upperAddress.substring(0, 150)}${upperAddress.length > 150 ? '...' : ''}"`);
 
-        // Comprehensive list of Davao City variants (case-insensitive)
-        const DAVAO_CITY_VARIANTS = [
-            // Standard formats
+        // ═══════════════════════════════════════════════════════════════════════
+        // PRIORITY 1: Direct matches (MOST RELIABLE - case insensitive)
+        // If ANY of these exact phrases appear, ACCEPT immediately
+        // ═══════════════════════════════════════════════════════════════════════
+        const DIRECT_MATCH_VARIANTS = [
             'DAVAO CITY',
-            'DAVAO CITY,',
-            'DAVAO CITY PHILIPPINES',
-            'DAVAO CITY, PHILIPPINES',
-
-            // City of format
             'CITY OF DAVAO',
-            'CITY OF DAVAO,',
-
-            // Abbreviated formats
             'DVO CITY',
-            'DVO. CITY',
-            'DVAO CITY',
-            'DABAW CITY',  // Bisaya spelling
-
-            // Simple "Davao" (when not followed by other city names)
-            'DAVAO,',
-            'DAVAO PHILIPPINES',
-            'DAVAO, PHILIPPINES',
-
-            // Common typos/variations
-            'DAVAO CITY PH',
-            'DAVAO CITY PHIL',
-            'DAVAO CITY PHILS',
-            'DAVAO CTY',
-
-            // With Davao del Sur (old format before cityhood)
-            'DAVAO CITY DAVAO DEL SUR',
-            'DAVAO CITY, DAVAO DEL SUR',
-
-            // Region indicator
-            'DAVAO CITY REGION XI',
-            'DAVAO CITY R-XI',
-            'DAVAO CITY XI'
+            'DAVAOCITY',      // Without space (OCR sometimes removes spaces)
+            'CITYOFDAVAO',    // Without spaces
+            'DVOCITY'         // Without space
         ];
 
-        // Check if concatenated address contains any Davao City variant
-        console.log(`🔍 Checking concatenated address for Davao City variants...`);
-        console.log(`   Address to check: "${address.substring(0, 100)}${address.length > 100 ? '...' : ''}"`);
-
-        for (const variant of DAVAO_CITY_VARIANTS) {
+        for (const variant of DIRECT_MATCH_VARIANTS) {
             if (upperAddress.includes(variant)) {
-                console.log(`✅ DAVAO CITY DETECTED: Found "${variant}" in concatenated address`);
-                console.log(`   ✓ Address is from Davao City - ACCEPTED`);
+                console.log(`✅ DAVAO CITY DETECTED (Direct Match): Found "${variant}"`);
                 return true;
             }
         }
 
-        // Special check for standalone "DAVAO" (only if not followed by other cities)
-        const OTHER_DAVAO_CITIES = [
-            'DAVAO DEL NORTE',
-            'DAVAO DEL SUR',
-            'DAVAO DE ORO',
-            'DAVAO OCCIDENTAL',
-            'DAVAO ORIENTAL'
+        // ═══════════════════════════════════════════════════════════════════════
+        // PRIORITY 2: Pattern-based detection (handles OCR variations)
+        // ═══════════════════════════════════════════════════════════════════════
+        
+        // Pattern: "DAVAO" followed by "CITY" with possible characters between
+        if (/DAVAO\s*,?\s*CITY/i.test(upperAddress)) {
+            console.log(`✅ DAVAO CITY DETECTED (Pattern): Found DAVAO...CITY pattern`);
+            return true;
+        }
+        
+        // Pattern: "CITY" followed by "OF" followed by "DAVAO"
+        if (/CITY\s+OF\s+DAVAO/i.test(upperAddress)) {
+            console.log(`✅ DAVAO CITY DETECTED (Pattern): Found CITY OF DAVAO pattern`);
+            return true;
+        }
+        
+        // Pattern: "DVO" followed by "CITY"
+        if (/DVO\.?\s*CITY/i.test(upperAddress)) {
+            console.log(`✅ DAVAO CITY DETECTED (Pattern): Found DVO CITY pattern`);
+            return true;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // PRIORITY 3: Additional variations (typos, abbreviations)
+        // ═══════════════════════════════════════════════════════════════════════
+        const ADDITIONAL_VARIANTS = [
+            'DVAO CITY',      // Common typo
+            'DABAW CITY',     // Bisaya spelling
+            'DAVAO CTY',      // Abbreviation
+            'DAVAO, PHILIPPINES',
+            'DAVAO PHILIPPINES'
         ];
 
-        // Check if "DAVAO" appears without other city names
-        if (upperAddress.includes('DAVAO')) {
-            // Make sure it's not referring to other Davao provinces/cities
-            const hasOtherDavaoCity = OTHER_DAVAO_CITIES.some(city => upperAddress.includes(city));
-
-            if (!hasOtherDavaoCity) {
-                // Check if it's not referring to other specific cities in Davao region
-                const otherCities = ['DIGOS', 'TAGUM', 'PANABO', 'SAMAL', 'MATI', 'MACO'];
-                const hasOtherCity = otherCities.some(city => upperAddress.includes(city));
-
-                if (!hasOtherCity) {
-                    console.log(`✅ DAVAO CITY DETECTED: Found standalone "DAVAO" without other city indicators`);
-                    console.log(`   ✓ Address is from Davao City - ACCEPTED`);
-                    return true;
-                }
+        for (const variant of ADDITIONAL_VARIANTS) {
+            if (upperAddress.includes(variant)) {
+                console.log(`✅ DAVAO CITY DETECTED (Additional): Found "${variant}"`);
+                return true;
             }
         }
 
-        console.log(`❌ NOT DAVAO CITY: Address does not contain valid Davao City variant`);
-        console.log(`   ✗ Address rejected - not from Davao City`);
+        // ═══════════════════════════════════════════════════════════════════════
+        // PRIORITY 4: Standalone "DAVAO" check (with rejection list)
+        // Accept "DAVAO" alone ONLY if no other Davao province cities are present
+        // ═══════════════════════════════════════════════════════════════════════
+        if (upperAddress.includes('DAVAO')) {
+            // Rejection list: Other cities in Davao region that are NOT Davao City
+            const REJECTION_CITIES = [
+                'DIGOS', 'TAGUM', 'PANABO', 'SAMAL', 'MATI', 'MACO', 'MALITA',
+                'BANSALAN', 'SANTA CRUZ', 'KAPALONG', 'CARMEN', 'LUPON', 'CATEEL'
+            ];
+            
+            const REJECTION_PROVINCES = [
+                'DAVAO DEL NORTE', 'DAVAO DEL SUR', 'DAVAO DE ORO', 
+                'DAVAO OCCIDENTAL', 'DAVAO ORIENTAL'
+            ];
+
+            // Check if any rejection city is mentioned (these are NOT Davao City)
+            const hasRejectionCity = REJECTION_CITIES.some(city => upperAddress.includes(city));
+            
+            // Check if province name appears WITHOUT "DAVAO CITY"
+            const hasProvinceOnly = REJECTION_PROVINCES.some(prov => {
+                if (upperAddress.includes(prov)) {
+                    // Province is mentioned, but check if "DAVAO CITY" is also there
+                    // If "DAVAO CITY" or "CITY OF DAVAO" exists, still accept
+                    const hasDavaoCity = upperAddress.includes('DAVAO CITY') || 
+                                        upperAddress.includes('CITY OF DAVAO');
+                    return !hasDavaoCity;
+                }
+                return false;
+            });
+
+            if (!hasRejectionCity && !hasProvinceOnly) {
+                console.log(`✅ DAVAO CITY DETECTED (Standalone): Found "DAVAO" without rejection indicators`);
+                return true;
+            }
+        }
+
+        console.log(`❌ NOT DAVAO CITY: No valid Davao City indicator found`);
         return false;
     }
 
@@ -5572,8 +5604,19 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         // Check if it's Davao City using CONCATENATED ADDRESS (supports 1-3 line addresses)
-        const isDavaoCityResult = isDavaoCity(extractedData.address);
-        showDavaoVerificationResult(isDavaoCityResult, extractedData.address, 'national-id');
+        // FALLBACK: Also check full OCR text if address extraction failed
+        let isDavaoCityResult = isDavaoCity(extractedData.address);
+        
+        // Fallback: If address-based check failed, check the FULL OCR text
+        if (!isDavaoCityResult) {
+            console.log(`⚠️ Address-based Davao City check failed. Checking full OCR text as fallback...`);
+            isDavaoCityResult = isDavaoCity(text);
+            if (isDavaoCityResult) {
+                console.log(`✅ Davao City found in full OCR text (fallback)`);
+            }
+        }
+        
+        showDavaoVerificationResult(isDavaoCityResult, extractedData.address || text, 'national-id');
     }
 
     // Extract PhilSys Number
@@ -6296,8 +6339,19 @@ document.addEventListener('DOMContentLoaded', function () {
         // 1. Concatenates 1-4 lines of address from UMID
         // 2. Searches for barangay in the complete address text
         // 3. Detects all Davao City variants (DAVAO CITY, CITY OF DAVAO, DVO CITY, etc.)
-        const isDavaoCityResult = isDavaoCity(extractedData.address);
-        showDavaoVerificationResult(isDavaoCityResult, extractedData.address, 'umid');
+        // FALLBACK: Also check full OCR text if address extraction failed
+        let isDavaoCityResult = isDavaoCity(extractedData.address);
+        
+        // Fallback: If address-based check failed, check the FULL OCR text
+        if (!isDavaoCityResult) {
+            console.log(`⚠️ Address-based Davao City check failed. Checking full OCR text as fallback...`);
+            isDavaoCityResult = isDavaoCity(text);
+            if (isDavaoCityResult) {
+                console.log(`✅ Davao City found in full OCR text (fallback)`);
+            }
+        }
+        
+        showDavaoVerificationResult(isDavaoCityResult, extractedData.address || text, 'umid');
     }
 
     // Extract UMID Number (CRN - Common Reference Number)
