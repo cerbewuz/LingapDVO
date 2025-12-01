@@ -928,6 +928,13 @@
 
 
         <div class="receipt-body">
+         
+            <div class="info-row">
+                <div class="info-label">
+                    Application ID: <strong>@ViewData["Id"]</strong>
+                </div>
+            </div>
+
             <!-- Patient Information -->
             <div class="receipt-section">
                 <h5 class="section-header">Patient Information</h5>
@@ -1003,36 +1010,30 @@
                 <div class="cmo-details">
                     <div class="mt-4">
                         <label class="form-label cmo-section-title">Supporting Documents Attached: <span class="text-danger">*</span></label>
-                        <small class="text-muted d-block mb-2">At least one document must be selected</small>
+                        <small class="text-muted d-block mb-2">Select only one supporting document</small>
                         <div class="cmo-checkbox-group">
                             <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="barangayClearance" value="Barangay Clearance" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
-                                <label class="form-check-label" for="barangayClearance">Barangay Clearance</label>
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="barangayClearance" value="Barangay Clearance/Indigency Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Barangay Clearance") ? "checked" : "")>
+                                <label class="form-check-label" for="barangayClearance">Barangay Clearance/Indigency Certificate</label>
                             </div>
                             <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="hospitalBill" value="Hospital Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
-                                <label class="form-check-label" for="hospitalBill">Hospital Bill</label>
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="hospitalBill" value="Hospital Bill/Statement of Account" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Hospital Bill") ? "checked" : "")>
+                                <label class="form-check-label" for="hospitalBill">Hospital Bill/Statement of Account</label>
                             </div>
                             <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="medicalCertificate" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
-                                <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="doctorPrescription" value="Doctor's Prescription" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Doctor Prescription") ? "checked" : "")>
+                                <label class="form-check-label" for="doctorPrescription">Doctor's Prescription</label>
                             </div>
                             <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="funeralBill" value="Funeral Bill" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Funeral Bill") ? "checked" : "")>
-                                <label class="form-check-label" for="funeralBill">Funeral Bill</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="deathCertificate" value="Death Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Death Certificate") ? "checked" : "")>
-                                <label class="form-check-label" for="deathCertificate">Death Certificate</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="laboratoryRequest" value="Laboratory Request" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
-                                <label class="form-check-label" for="laboratoryRequest">Laboratory Request</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc" type="checkbox" id="othersCheckbox" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="othersCheckbox" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
                                 <label class="form-check-label" for="othersCheckbox">Others</label>
                             </div>
+                        </div>
+
+                        <!-- Single Document Error Message -->
+                        <div class="alert alert-warning mt-2" id="singleDocError" style="display: none;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Only one document can be selected at a time. Please choose only one supporting document.
                         </div>
 
                         <!-- Others Field -->
@@ -1074,6 +1075,181 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Add this JavaScript code in your Scripts section -->
+            <script>
+                // Function to handle single checkbox selection
+                function handleSingleCheckboxSelection(event) {
+                    const clickedCheckbox = event.target;
+
+                    // If the clicked checkbox is being checked
+                    if (clickedCheckbox.checked) {
+                        // Uncheck all other single-doc checkboxes
+                        const allCheckboxes = document.querySelectorAll('.single-doc');
+                        allCheckboxes.forEach(checkbox => {
+                            if (checkbox !== clickedCheckbox) {
+                                checkbox.checked = false;
+                            }
+                        });
+
+                        // Hide any error message
+                        hideSingleDocError();
+
+                        // If "Others" is checked, show the input field
+                        if (clickedCheckbox.id === 'othersCheckbox') {
+                            document.getElementById('cmoOthersRow').style.display = 'flex';
+                            document.getElementById('cmoNotesInput').required = true;
+                        } else {
+                            // If another checkbox is checked, hide the Others input field
+                            document.getElementById('cmoOthersRow').style.display = 'none';
+                            document.getElementById('cmoNotesInput').required = false;
+                            document.getElementById('cmoNotesInput').classList.remove('is-invalid');
+                        }
+                    }
+                    // If the clicked checkbox is being unchecked, don't allow it if it's the only one checked
+                    else {
+                        const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+                        if (checkedCheckboxes.length === 0) {
+                            // Don't allow unchecking if it would leave none checked
+                            clickedCheckbox.checked = true;
+                            showSingleDocError("You must select at least one document.");
+                        }
+                    }
+
+                    // Update CMO reflection
+                    updateReflection();
+                }
+
+                // Function to show single document error
+                function showSingleDocError(message = "Only one document can be selected at a time. Please choose only one supporting document.") {
+                    const errorDiv = document.getElementById('singleDocError');
+                    if (errorDiv) {
+                        errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
+                        errorDiv.style.display = 'block';
+                    }
+                }
+
+                // Function to hide single document error
+                function hideSingleDocError() {
+                    const errorDiv = document.getElementById('singleDocError');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'none';
+                    }
+                }
+
+                // Function to validate single document selection
+                function validateSingleDocument() {
+                    const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+
+                    if (checkedCheckboxes.length === 0) {
+                        showSingleDocError("Please select at least one supporting document.");
+                        return false;
+                    }
+
+                    if (checkedCheckboxes.length > 1) {
+                        showSingleDocError();
+                        return false;
+                    }
+
+                    // Validate "Others" field if "Others" is selected
+                    const othersCheckbox = document.getElementById('othersCheckbox');
+                    const cmoNotesInput = document.getElementById('cmoNotesInput');
+                    if (othersCheckbox && othersCheckbox.checked) {
+                        if (!cmoNotesInput.value.trim()) {
+                            cmoNotesInput.classList.add('is-invalid');
+                            showSingleDocError("Please specify the other documents when 'Others' is selected.");
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                // Initialize single checkbox selection
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Add event listeners to all single-doc checkboxes
+                    const singleDocCheckboxes = document.querySelectorAll('.single-doc');
+                    singleDocCheckboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', handleSingleCheckboxSelection);
+                    });
+
+                    // Initialize Others field visibility
+                    const othersCheckbox = document.getElementById('othersCheckbox');
+                    if (othersCheckbox && othersCheckbox.checked) {
+                        document.getElementById('cmoOthersRow').style.display = 'flex';
+                    }
+
+                    // Update form validation to use single document validation
+                    const originalValidateCMOForm = validateCMOForm;
+                    window.validateCMOForm = function() {
+                        // Reset errors
+                        document.getElementById('supportingDocsError').style.display = 'none';
+                        document.getElementById('grantedAmountInput').classList.remove('is-invalid');
+                        document.getElementById('grantedAmountError').style.display = 'none';
+
+                        // Validate single document
+                        if (!validateSingleDocument()) {
+                            const cmoSection = document.querySelector('.cmo-details');
+                            if (cmoSection) {
+                                cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                            return false;
+                        }
+
+                        // Validate amount granted
+                        const grantedAmountInput = document.getElementById('grantedAmountInput');
+                        if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                            grantedAmountInput.classList.add('is-invalid');
+                            document.getElementById('grantedAmountError').style.display = 'block';
+                            const cmoSection = document.querySelector('.cmo-details');
+                            if (cmoSection) {
+                                cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                            alert('Please enter a valid amount granted (must be greater than 0).');
+                            return false;
+                        }
+
+                        return true;
+                    };
+                });
+
+                // Also update the updateReflection function if needed
+                function updateReflection() {
+                    const grantedAmountInput = document.getElementById('grantedAmountInput');
+                    const cmoNotes = document.getElementById('cmoNotesInput');
+                    const reflectionField = document.getElementById('cmoReflectionField');
+                    const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
+                    const docCheckboxes = document.querySelectorAll('.single-doc:checked');
+
+                    let parts = [];
+
+                    // Add granted amount if exists
+                    if (grantedAmountInput && grantedAmountInput.value.trim()) {
+                        parts.push(`GrantedAmount: ${grantedAmountInput.value.trim()}`);
+                    }
+
+                    // Add checked document (only one should be checked)
+                    const checkedDocs = Array.from(docCheckboxes).map(cb => {
+                        if (cb.value === 'Others' && cmoNotes && cmoNotes.value.trim()) {
+                            return `Others: ${cmoNotes.value.trim()}`;
+                        }
+                        return cb.value;
+                    });
+
+                    if (checkedDocs.length > 0) {
+                        parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                    }
+
+                    const reflectionValue = parts.join(' , ');
+                    if (reflectionField) reflectionField.value = reflectionValue;
+
+                    // Update the hidden field as well
+                    if (forCMOPersonnelInput) forCMOPersonnelInput.value = reflectionValue;
+
+                    console.log('CMO Reflection updated:', reflectionValue);
+                    return reflectionValue;
+                }
+            </script>
 
             <!-- Valid ID and Submitted Documents Section -->
             <div class="receipt-section">
