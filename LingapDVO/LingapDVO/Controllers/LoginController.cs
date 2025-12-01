@@ -776,12 +776,11 @@ namespace LingapDVO.Controllers
             Response.Headers["Expires"] = "0";
 
             // Check for existing cooldown cookie
-            if (Request.Cookies.TryGetValue("LoginCooldown", out var cooldownValue) &&
-                DateTime.TryParse(cooldownValue, out var cooldownUntil))
+            if (Request.Cookies.TryGetValue("LoginCooldown", out var cooldownValue))
             {
-                if (cooldownUntil > _dateTimeService.Now)
+                if (DateTime.TryParse(cooldownValue, out var cooldownUntil) && cooldownUntil > _dateTimeService.Now)
                 {
-                    var remainingSeconds = (cooldownUntil - _dateTimeService.Now).Seconds;
+                    var remainingSeconds = Math.Max(1, (int)(cooldownUntil - _dateTimeService.Now).TotalSeconds);
                     if (IsAjaxRequest())
                     {
                         return Json(new
@@ -794,6 +793,12 @@ namespace LingapDVO.Controllers
                     }
                     ModelState.AddModelError("", $"Too many failed attempts. Please try again after {remainingSeconds} seconds.");
                     return View(loginModel);
+                }
+                else
+                {
+                    // Cooldown expired or invalid - clear the cookies
+                    Response.Cookies.Delete("LoginCooldown");
+                    Response.Cookies.Delete("FailedAttempts");
                 }
             }
 
@@ -1037,8 +1042,12 @@ namespace LingapDVO.Controllers
                 }
 
                 // If none of the above worked, increment failed attempts
-                int failedAttempts = Request.Cookies.TryGetValue("FailedAttempts", out var attempts) ?
-                    int.Parse(attempts) + 1 : 1;
+                int failedAttempts = 1;
+                if (Request.Cookies.TryGetValue("FailedAttempts", out var attempts) && 
+                    int.TryParse(attempts, out var parsedAttempts))
+                {
+                    failedAttempts = parsedAttempts + 1;
+                }
 
                 Response.Cookies.Append("FailedAttempts", failedAttempts.ToString(), new CookieOptions
                 {
@@ -1048,10 +1057,11 @@ namespace LingapDVO.Controllers
                 });
 
                 string errorMessage;
+                string errorType = "credentials";
                 if (failedAttempts >= 3)
                 {
                     // Set cooldown cookie for 30 seconds
-                    Response.Cookies.Append("LoginCooldown", _dateTimeService.Now.AddSeconds(30).ToString(), new CookieOptions
+                    Response.Cookies.Append("LoginCooldown", _dateTimeService.Now.AddSeconds(30).ToString("o"), new CookieOptions
                     {
                         Expires = _dateTimeService.Now.AddSeconds(30),
                         HttpOnly = true,
@@ -1059,6 +1069,7 @@ namespace LingapDVO.Controllers
                     });
 
                     errorMessage = "Too many failed attempts. Please try again after 30 seconds.";
+                    errorType = "cooldown";
                 }
                 else
                 {
@@ -1071,8 +1082,8 @@ namespace LingapDVO.Controllers
                     return Json(new
                     {
                         success = false,
-                        errorType = "credentials",
-                        title = "Login Failed",
+                        errorType = errorType,
+                        title = errorType == "cooldown" ? "Login Temporarily Disabled" : "Login Failed",
                         message = errorMessage
                     });
                 }

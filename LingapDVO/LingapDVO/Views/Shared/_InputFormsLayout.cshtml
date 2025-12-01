@@ -91,45 +91,13 @@
     <!-- Form Utilities (Phone/PhilHealth formatting, assistance checkboxes, file preview) -->
     <script src="~/js/form-utilities.js"></script>
 
-    <!-- Required Field Validation Warnings -->
+    <!-- Real-time validation feedback for required fields (styling only, no alerts) -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add required field validation on form submit
             const forms = document.querySelectorAll('form');
 
             forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    const requiredFields = form.querySelectorAll('[required]');
-                    let hasError = false;
-
-                    requiredFields.forEach(field => {
-                        if (!field.value || field.value.trim() === '') {
-                            hasError = true;
-                            const label = field.closest('.col-md-3, .col-md-4, .col-md-6, .col-md-12, .form-group')?.querySelector('.form-label');
-                            const fieldName = label ? label.textContent.replace('*', '').trim() : 'This field';
-
-                            // Highlight the field
-                            field.classList.add('is-invalid');
-
-                            // Show alert for first empty required field
-                            if (hasError) {
-                                alert(`Warning: ${fieldName} is required. Please fill in all required fields marked with (*)`);
-                                field.focus();
-                                e.preventDefault();
-                                return false;
-                            }
-                        } else {
-                            field.classList.remove('is-invalid');
-                        }
-                    });
-
-                    if (hasError) {
-                        e.preventDefault();
-                        return false;
-                    }
-                });
-
-                // Real-time validation feedback
+                // Real-time validation feedback (visual only - no blocking alerts)
                 const requiredFields = form.querySelectorAll('[required]');
                 requiredFields.forEach(field => {
                     field.addEventListener('blur', function() {

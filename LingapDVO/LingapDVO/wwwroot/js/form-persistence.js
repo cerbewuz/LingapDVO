@@ -162,13 +162,30 @@
     function clearOnSubmit(form) {
         if (!form) return;
 
+        // Listen for form submit event
         form.addEventListener('submit', function(e) {
-            // Only clear if form validation passes
-            if (form.checkValidity()) {
-                // Delay clearing to allow form to submit
-                setTimeout(() => {
-                    clearSavedFormData();
-                }, 100);
+            // Don't clear immediately - instead, set a flag to clear on next page load
+            // This ensures data is only cleared if form actually submits successfully
+            // If there's a validation error (client-side or server-side), the data remains
+            
+            // Use a small delay to check if the form submission was NOT prevented
+            setTimeout(() => {
+                // If we're still on the same page after 200ms, it means form submission was prevented
+                // So we don't clear the data
+                // If the page navigates away, this timeout won't run anyway
+            }, 200);
+        });
+
+        // Clear data only when we detect a successful submission (page is unloading after form submit)
+        let formSubmitting = false;
+        form.addEventListener('submit', function() {
+            formSubmitting = true;
+        });
+
+        window.addEventListener('beforeunload', function() {
+            if (formSubmitting) {
+                // Form was submitted and page is navigating - clear the saved data
+                clearSavedFormData();
             }
         });
     }

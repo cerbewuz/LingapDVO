@@ -487,54 +487,75 @@
             const allApplications = [];
 
             // Add Hospital Assistance
-            @foreach (var f in Model.HospitalAssistance)
+            @if (Model.HospitalAssistance != null)
             {
-                <text>
-                allApplications.push({
-                    type: "Hospital Assistance",
-                    name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                    status: "@f.Status?.ToLower()",
-                    status2: "@f.Status2?.ToLower()",
-                    status3: "@f.Status3?.ToLower()",
-                    formId: @f.Id,
-                    formType: "hospital"
-                });
-                </text>
+                foreach (var f in Model.HospitalAssistance)
+                {
+                    var lastname = (f.Lastname ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var firstname = (f.Firstname ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var middlename = (f.Middlename ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var suffix = (f.Suffix ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    <text>
+            allApplications.push({
+                type: "Hospital Assistance",
+                name: formatName("@Html.Raw(lastname)", "@Html.Raw(firstname)", "@Html.Raw(middlename)", "@Html.Raw(suffix)"),
+                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                status: "@(f.Status?.ToLower() ?? "")",
+                status2: "@(f.Status2?.ToLower() ?? "")",
+                status3: "@(f.Status3?.ToLower() ?? "")",
+                formId: @f.Id,
+                formType: "hospital"
+            });
+                    </text>
+                }
             }
 
             // Add Other Assistance
-            @foreach (var f in Model.OtherAssistance)
+            @if (Model.OtherAssistance != null)
             {
-                <text>
-                allApplications.push({
-                    type: "Other Assistance",
-                    name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                    status: "@f.Status?.ToLower()",
-                    status2: "@f.Status2?.ToLower()",
-                    status3: "@f.Status3?.ToLower()",
-                    formId: @f.Id,
-                    formType: "medical"
-                });
-                </text>
+                foreach (var f in Model.OtherAssistance)
+                {
+                    var lastname = (f.Lastname ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var firstname = (f.Firstname ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var middlename = (f.Middlename ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var suffix = (f.Suffix ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    <text>
+            allApplications.push({
+                type: "Other Assistance",
+                name: formatName("@Html.Raw(lastname)", "@Html.Raw(firstname)", "@Html.Raw(middlename)", "@Html.Raw(suffix)"),
+                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                status: "@(f.Status?.ToLower() ?? "")",
+                status2: "@(f.Status2?.ToLower() ?? "")",
+                status3: "@(f.Status3?.ToLower() ?? "")",
+                formId: @f.Id,
+                formType: "medical"
+            });
+                    </text>
+                }
             }
 
             // Add Funeral Forms
-            @foreach (var f in Model.FuneralAssistance)
+            @if (Model.FuneralAssistance != null)
             {
-                <text>
-                allApplications.push({
-                    type: "Funeral Assistance",
-                    name: formatName("@f.Lastname", "@f.Firstname", "@f.Middlename", "@f.Suffix"),
-                    createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                    status: "@f.Status?.ToLower()",
-                    status2: "@f.Status2?.ToLower()",
-                    status3: "@f.Status3?.ToLower()",
-                    formId: @f.Id,
-                    formType: "funeral"
-                });
-                </text>
+                foreach (var f in Model.FuneralAssistance)
+                {
+                    var lastname = (f.Lastname ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var firstname = (f.Firstname ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var middlename = (f.Middlename ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    var suffix = (f.Suffix ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("'", "\\'");
+                    <text>
+            allApplications.push({
+                type: "Funeral Assistance",
+                name: formatName("@Html.Raw(lastname)", "@Html.Raw(firstname)", "@Html.Raw(middlename)", "@Html.Raw(suffix)"),
+                createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                status: "@(f.Status?.ToLower() ?? "")",
+                status2: "@(f.Status2?.ToLower() ?? "")",
+                status3: "@(f.Status3?.ToLower() ?? "")",
+                formId: @f.Id,
+                formType: "funeral"
+            });
+                    </text>
+                }
             }
 
             // Calculate priority applications (ONLY for Pending AND Processing applications that are NOT approved/disapproved/claims/retakes)
@@ -802,7 +823,7 @@
                 // Start connection
                 connection.start()
                     .then(function () {
-                        ");
+                        console.log("SignalR Connected - Real-time monitoring active");
                         // Add visual indicator that real-time is active
                         const header = document.querySelector('.page-title p');
                         if (header) {
@@ -810,7 +831,7 @@
                         }
                     })
                     .catch(function (err) {
-                        );
+                        console.error("SignalR Connection Error:", err);
                         // Fallback to polling
                     });
 
@@ -828,7 +849,8 @@
                 });
 
             } catch (error) {
-                            }
+                console.error("SignalR setup error:", error);
+            }
         }
     </script>
 

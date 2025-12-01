@@ -238,8 +238,14 @@
                 // Show modal with enhanced animation
                 errorModal.classList.add('show');
 
-                // Reset reCAPTCHA when error modal is shown
-                grecaptcha.reset();
+                // Reset reCAPTCHA when error modal is shown (safely)
+                try {
+                    if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+                        grecaptcha.reset();
+                    }
+                } catch (e) {
+                    // reCAPTCHA not available, ignore
+                }
             }
 
             // Close error modal when button is clicked
@@ -265,7 +271,16 @@
             document.getElementById('loginForm').addEventListener('submit', async function(event) {
                 event.preventDefault();
 
-                const recaptchaResponse = grecaptcha.getResponse();
+                // Safely check reCAPTCHA
+                let recaptchaResponse = '';
+                try {
+                    if (typeof grecaptcha !== 'undefined' && grecaptcha.getResponse) {
+                        recaptchaResponse = grecaptcha.getResponse();
+                    }
+                } catch (e) {
+                    // reCAPTCHA not available
+                }
+
                 if (!recaptchaResponse) {
                     showErrorModal('reCAPTCHA Required', 'Please complete the reCAPTCHA verification to continue.');
                     return false;
@@ -306,7 +321,17 @@
                         }
                     });
 
-                    const result = await response.json();
+                    // Handle non-JSON responses gracefully
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (parseError) {
+                        // Response wasn't JSON - treat as error
+                        loginButton.innerHTML = originalContent;
+                        loginButton.disabled = false;
+                        showErrorModal('Server Error', 'The server returned an unexpected response. Please try again.');
+                        return;
+                    }
 
                     if (result.success) {
                         // SUCCESS: Show success modal and redirect
@@ -332,7 +357,7 @@
                         }
                     }
                 } catch (error) {
-                                        // Reset button state
+                    // Reset button state
                     loginButton.innerHTML = originalContent;
                     loginButton.disabled = false;
 

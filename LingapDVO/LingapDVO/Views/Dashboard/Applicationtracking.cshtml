@@ -1973,6 +1973,31 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script>
+            // Handle tab activation from URL parameter
+            (function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const tabParam = urlParams.get('tab');
+                
+                if (tabParam) {
+                    const tabMap = {
+                        'hospital': 'hospital-tab',
+                        'medical': 'medical-tab',
+                        'funeral': 'funeral-tab'
+                    };
+                    
+                    const tabId = tabMap[tabParam.toLowerCase()];
+                    if (tabId) {
+                        const tabButton = document.getElementById(tabId);
+                        if (tabButton) {
+                            // Use Bootstrap's tab API to activate the tab
+                            const tab = new bootstrap.Tab(tabButton);
+                            tab.show();
+                        }
+                    }
+                }
+            })();
+        </script>
+        <script>
             // Past Data Feature - Initialize after DOM is ready
             (function() {
                 const pastDataToggle = document.getElementById('pastDataToggle');

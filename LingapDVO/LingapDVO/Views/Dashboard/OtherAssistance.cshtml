@@ -1070,9 +1070,23 @@
 
             form.addEventListener('submit', function(e) {
                 let isValid = true;
+                const missingFields = [];
                 const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
                 const patientSection = document.getElementById('patientDetailsSection');
                 const isPatientSectionHidden = patientSection && window.getComputedStyle(patientSection).display === 'none';
+
+                // Clear previous validation states
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                form.querySelectorAll('.checkbox-group-error, .radio-group-error').forEach(el => {
+                    el.classList.remove('checkbox-group-error', 'radio-group-error');
+                });
+
+                // Helper function to get field label
+                function getFieldLabel(input) {
+                    const container = input.closest('.col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-12, .col-sm-6, .col-sm-12, .mb-3, .mb-4');
+                    const label = container?.querySelector('label:not(.form-check-label)');
+                    return label?.textContent?.replace('*', '').trim() || input.name || 'Unknown field';
+                }
 
                 requiredInputs.forEach(input => {
                     // Skip validation for fields inside hidden patient details section
@@ -1083,28 +1097,69 @@
                     if (input.type !== 'checkbox' && input.type !== 'radio') {
                         if (!input.value.trim()) {
                             input.classList.add('is-invalid');
+                            missingFields.push(getFieldLabel(input));
                             isValid = false;
-                        } else {
-                            input.classList.remove('is-invalid');
                         }
                     }
                 });
 
-                if (!validateAssistanceCheckboxes()) isValid = false;
+                // Validate assistance checkboxes
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                const isAnyAssistanceChecked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
+                if (!isAnyAssistanceChecked) {
+                    const assistanceSection = document.querySelector('.assistance-type')?.closest('.row');
+                    if (assistanceSection) {
+                        assistanceSection.classList.add('checkbox-group-error');
+                    }
+                    missingFields.push('Type of Assistance Requested');
+                    isValid = false;
+                }
 
                 // Only validate sex radio if patient section is visible
                 if (!isPatientSectionHidden) {
-                    if (!validateSexRadio()) isValid = false;
+                    const sexRadios = document.querySelectorAll('input[name="Sex"]');
+                    const isSexSelected = Array.from(sexRadios).some(radio => radio.checked);
+                    if (!isSexSelected) {
+                        const sexSection = document.querySelector('input[name="Sex"]')?.closest('.col-lg-2, .col-md-2, .col-md-3');
+                        if (sexSection) {
+                            sexSection.classList.add('radio-group-error');
+                        }
+                        missingFields.push('Sex');
+                        isValid = false;
+                    }
                 }
 
+                // Validate file upload (Upload Required Documents)
+                const fileInput = document.getElementById('otherDocument');
+                if (fileInput && fileInput.files.length === 0) {
+                    missingFields.push('Upload Required Documents');
+                    isValid = false;
+                    // Highlight the upload box
+                    const uploadBox = fileInput.closest('.mb-3')?.querySelector('.upload-box');
+                    if (uploadBox) {
+                        uploadBox.style.borderColor = '#dc3545';
+                        uploadBox.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+                    }
+                }
+
+                // Validate terms checkbox
                 const termsCheck = document.getElementById('termsCheck');
                 if (termsCheck && !termsCheck.checked) {
+                    missingFields.push('Terms and Conditions acceptance');
                     isValid = false;
-                    alert('Please accept the terms and conditions');
                 }
 
                 if (!isValid) {
                     e.preventDefault();
+                    
+                    // Show unified warning message with bullet points
+                    let message = 'Please complete the following required fields:\n\n';
+                    missingFields.forEach(field => {
+                        message += '• ' + field + '\n';
+                    });
+                    alert(message);
+
+                    // Scroll to first error
                     const firstError = form.querySelector('.is-invalid, .checkbox-group-error, .radio-group-error');
                     if (firstError) {
                         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
