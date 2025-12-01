@@ -728,6 +728,15 @@
                         <p>Claims</p>
                     </div>
                 </div>
+                <div class="stat-card retakes" data-status="retakes">
+                    <div class="stat-icon">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="retakes-count">0</h3>
+                        <p>Retakes</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Main Table Card -->
@@ -1008,36 +1017,52 @@
                 return applications.filter(app => app.createdAt >= startDate && app.createdAt <= endDate);
             }
 
-            // Function to filter applications by status - UPDATED VERSION
+            // Function to filter applications by status - UPDATED VERSION WITH RETAKES
             function filterByStatus(applications, status) {
                 if (status === 'all') return applications;
 
-                return applications.filter(app => {
+                return applications.filter(function(app) {
                     // For claims status, check ONLY status3 field
                     if (status === 'claims') {
-                        return app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed');
+                        const hasStatus3 = app.status3 && app.status3.trim() !== '';
+                        return hasStatus3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed');
                     }
 
-                    // For other statuses, EXCLUDE applications that have status3 = claims
+                    // For retakes status, check ONLY status2 = 'Retake'
+                    if (status === 'retakes') {
+                        const hasStatus2 = app.status2 && app.status2.trim() !== '';
+                        return hasStatus2 && app.status2.toLowerCase() === 'retake';
+                    }
+
+                    // For other statuses, EXCLUDE applications that have status3 = claims OR status2 = retake
+                    const hasStatus3 = app.status3 && app.status3.trim() !== '';
+                    const isClaimed = hasStatus3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed');
+                    const hasStatus2 = app.status2 && app.status2.trim() !== '';
+                    const isRetake = hasStatus2 && app.status2.toLowerCase() === 'retake';
+                    
+                    // Exclude if claimed or retake
+                    if (isClaimed || isRetake) {
+                        return false;
+                    }
+
                     // Then check status2 for approved/disapproved
                     if (status === 'approve' || status === 'disapprove') {
-                        return app.status2 && app.status2.trim() !== '' &&
-                               app.status2 === status &&
-                               (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed'));
+                        return hasStatus2 && app.status2 === status;
                     }
 
                     // For processing status, include both regular processing and resubmitted applications
                     if (status === 'processing') {
-                        return (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed')) &&
-                               ((app.status === 'processing' && (!app.status2 || app.status2.trim() === '' || (app.status2 !== 'approve' && app.status2 !== 'disapprove'))) ||
-                                (app.status2 && app.status2.toLowerCase() === 'resubmitted'));
+                        const isProcessingStatus = app.status === 'processing' && (!hasStatus2 || (app.status2 !== 'approve' && app.status2 !== 'disapprove'));
+                        const isResubmitted = hasStatus2 && app.status2.toLowerCase() === 'resubmitted';
+                        return isProcessingStatus || isResubmitted;
                     }
 
-                    // For pending, use original status but exclude claims status3 and resubmitted
-                    return app.status === status &&
-                           (!app.status3 || app.status3.trim() === '' || (app.status3.toLowerCase() !== 'claims' && app.status3.toLowerCase() !== 'claimed')) &&
-                           (!app.status2 || app.status2.trim() === '' ||
-                            (app.status2 !== 'approve' && app.status2 !== 'disapprove' && app.status2 !== 'resubmitted'));
+                    // For pending, use original status but exclude if status2 is set
+                    if (status === 'pending') {
+                        return app.status === status && (!hasStatus2 || (app.status2 !== 'approve' && app.status2 !== 'disapprove' && app.status2.toLowerCase() !== 'resubmitted'));
+                    }
+
+                    return false;
                 });
             }
 
@@ -1068,50 +1093,73 @@
                     disapprove: 0,
                     pending: 0,
                     processing: 0,
-                    claims: 0
+                    claims: 0,
+                    retakes: 0
                 };
 
                 let highPriority = 0;
                 let mediumPriority = 0;
                 const now = new Date();
 
-                timeFilteredApplications.forEach(app => {
+                timeFilteredApplications.forEach(function(app) {
                     // Check status3 FIRST for "claims" status - if claims, count ONLY in claims
-                    if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
+                    const hasStatus3 = app.status3 && app.status3.trim() !== '';
+                    const status3Lower = hasStatus3 ? app.status3.toLowerCase() : '';
+                    const isClaimed = hasStatus3 && (status3Lower === 'claims' || status3Lower === 'claimed');
+                    
+                    if (isClaimed) {
                         statusCounts.claims++;
                     }
-                    // If NOT claimed, then check status2 for approve/disapprove/resubmitted
-                    else if (app.status2 && app.status2.trim() !== '') {
-                        if (app.status2 === 'approve') {
-                            statusCounts.approve++;
-                        } else if (app.status2 === 'disapprove') {
-                            statusCounts.disapprove++;
-                        } else if (app.status2 === 'resubmitted') {
-                            // Resubmitted applications count as Processing
-                            statusCounts.processing++;
+                    // Check status2 for "Retake" - if retake, count ONLY in retakes
+                    else {
+                        const hasStatus2 = app.status2 && app.status2.trim() !== '';
+                        const status2Lower = hasStatus2 ? app.status2.toLowerCase() : '';
+                        
+                        if (hasStatus2 && status2Lower === 'retake') {
+                            statusCounts.retakes++;
                         }
-                        // DO NOT count in processing/pending if Status2 is approve/disapprove
-                    } else {
-                        // No Status2 or Status2 is empty, and no claimed status3, use original status
-                        if (statusCounts.hasOwnProperty(app.status)) {
-                            statusCounts[app.status]++;
+                        // If NOT claimed and NOT retake, then check status2 for approve/disapprove/resubmitted
+                        else if (hasStatus2) {
+                            if (app.status2 === 'approve') {
+                                statusCounts.approve++;
+                            } else if (app.status2 === 'disapprove') {
+                                statusCounts.disapprove++;
+                            } else if (status2Lower === 'resubmitted') {
+                                // Resubmitted applications count as Processing
+                                statusCounts.processing++;
+                            }
+                        } else {
+                            // No Status2 or Status2 is empty, and no claimed status3, use original status
+                            if (statusCounts.hasOwnProperty(app.status)) {
+                                statusCounts[app.status]++;
+                            }
                         }
                     }
 
-                    // Calculate priority counts (ONLY for Pending and Processing that are NOT approved/disapproved/claims)
-                    // Exclude if status3 is claims
-                    if (app.status3 && app.status3.trim() !== '' && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
-                        return; // Skip claims applications
+                    // Calculate priority counts (ONLY for Pending and Processing that are NOT approved/disapproved/claims/retakes)
+                    // Skip if already counted in claims
+                    if (isClaimed) {
+                        return;
                     }
-                    // Exclude if status2 is approve or disapprove
-                    if (app.status2 && app.status2.trim() !== '' &&
-                        (app.status2.toLowerCase() === 'approve' || app.status2.toLowerCase() === 'disapprove')) {
-                        return; // Skip approved/disapproved applications
+                    
+                    // Skip if status2 is set to approve, disapprove, or retake
+                    const hasStatus2 = app.status2 && app.status2.trim() !== '';
+                    if (hasStatus2) {
+                        const status2Lower = app.status2.toLowerCase();
+                        const isExcluded = status2Lower === 'approve' || status2Lower === 'disapprove' || status2Lower === 'retake';
+                        if (isExcluded) {
+                            return;
+                        }
                     }
+                    
                     // Only count if original status is pending or processing, OR if status2 is resubmitted
-                    if (app.status === 'pending' || app.status === 'processing' || (app.status2 && app.status2.toLowerCase() === 'resubmitted')) {
+                    const isPendingOrProcessing = app.status === 'pending' || app.status === 'processing';
+                    const isResubmitted = hasStatus2 && app.status2.toLowerCase() === 'resubmitted';
+                    
+                    if (isPendingOrProcessing || isResubmitted) {
                         // Use retakeRequestedAt for retake applications, otherwise use createdAt
-                        const referenceDate = (app.isRetakeApplication && app.retakeRequestedAt) ? app.retakeRequestedAt : app.createdAt;
+                        const useRetakeTime = app.isRetakeApplication && app.retakeRequestedAt;
+                        const referenceDate = useRetakeTime ? app.retakeRequestedAt : app.createdAt;
                         const hoursSinceSubmission = (now - referenceDate) / (1000 * 60 * 60);
                         if (hoursSinceSubmission >= 2) {
                             highPriority++;
@@ -1127,6 +1175,7 @@
                 pendingCount.textContent = statusCounts.pending;
                 processingCount.textContent = statusCounts.processing;
                 claimsCount.textContent = statusCounts.claims;
+                retakesCount.textContent = statusCounts.retakes;
                 highPriorityCount.textContent = highPriority;
                 mediumPriorityCount.textContent = mediumPriority;
             }
@@ -1168,7 +1217,7 @@
                 });
             }
 
-            // Helper function to get status badge HTML - UPDATED VERSION
+            // Helper function to get status badge HTML - UPDATED VERSION WITH RETAKES
             function getStatusBadge(app) {
                 let displayStatus = app.status;
                 let displayText = app.status.charAt(0).toUpperCase() + app.status.slice(1);
@@ -1178,7 +1227,12 @@
                     displayStatus = 'claimed';
                     displayText = 'Claimed';
                 }
-                // Priority 2: Check status2 for approved/disapproved/resubmitted (only if NOT claimed)
+                // Priority 2: Check status2 for retake (second highest priority)
+                else if (app.status2 && app.status2.trim() !== '' && app.status2.toLowerCase() === 'retake') {
+                    displayStatus = 'retake';
+                    displayText = 'Retake';
+                }
+                // Priority 3: Check status2 for approved/disapproved/resubmitted (only if NOT claimed or retake)
                 else if (app.status2 && app.status2.trim() !== '') {
                     const status2 = app.status2.trim().toLowerCase();
                     if (status2 === 'approve' || status2 === 'disapprove') {
@@ -1196,21 +1250,16 @@
                     'disapprove': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapprove' },
                     'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
                     'processing': { class: 'status-processing', icon: 'bi-gear', text: displayStatus === 'processing' && displayText === 'Processing (Resubmitted)' ? displayText : 'Processing' },
-                    'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' }
+                    'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' },
+                    'retake': { class: 'status-retake', icon: 'bi-arrow-clockwise', text: 'Retake' }
                 };
 
                 const statusInfo = statusMap[displayStatus] || { class: '', icon: 'bi-question-circle', text: displayText };
 
-                // Add retake badge if this is a retake application
-                let retakeBadge = '';
-                if (app.isRetakeApplication && displayStatus === 'pending') {
-                    retakeBadge = '<span class="status-badge" style="background: rgba(255, 152, 0, 0.15); color: #ff9800; margin-left: 0.5rem; font-size: 0.75rem;"><i class="bi bi-arrow-clockwise"></i> Retake</span>';
-                }
-
                 return `
                     <span class="status-badge ${statusInfo.class}">
                         <i class="bi ${statusInfo.icon}"></i> ${statusInfo.text}
-                    </span>${retakeBadge}
+                    </span>
                 `;
             }
 
@@ -1232,6 +1281,10 @@
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/HospitalAssistanceClaimStatus/${app.formId}`;
                     }
+                    // Check status2 for retake (second priority)
+                    else if (app.status2 && app.status2.toLowerCase() === 'retake') {
+                        editUrl = `/HospitalAssistanceRetakeStatus/${app.formId}`;
+                    }
                     // Then check status2 for approved/disapproved/resubmitted
                     else if (app.status2 === "approve") {
                         editUrl = `/HospitalAssistanceApproveStatus/${app.formId}`;
@@ -1252,6 +1305,9 @@
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/OtherAssistanceClaimStatus/${app.formId}`;
                     }
+                    else if (app.status2 && app.status2.toLowerCase() === 'retake') {
+                        editUrl = `/OtherAssistanceRetakeStatus/${app.formId}`;
+                    }
                     else if (app.status2 === "approve") {
                         editUrl = `/OtherAssistanceApproveStatus/${app.formId}`;
                     } else if (app.status2 === "disapprove") {
@@ -1268,6 +1324,9 @@
                     // Apply the same logic for Funeral forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/FuneralAssistanceClaimStatus/${app.formId}`;
+                    }
+                    else if (app.status2 && app.status2.toLowerCase() === 'retake') {
+                        editUrl = `/FuneralAssistanceRetakeStatus/${app.formId}`;
                     }
                     else if (app.status2 === "approve") {
                         editUrl = `/FuneralAssistanceApproveStatus/${app.formId}`;

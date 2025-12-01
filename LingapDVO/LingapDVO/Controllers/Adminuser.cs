@@ -3725,10 +3725,11 @@ namespace LingapDVO.Controllers
                 HospitalAssistance.Processby = HospitalAssistanceDto.Processby;
                 HospitalAssistance.Result = _dateTimeService.Now;
 
-                // Handle Retake status - move back to Pending and track retake information
+                // Handle Retake status - keep Status as is, mark as retake, DON'T move to Pending
                 if (!string.IsNullOrEmpty(status) && status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
                 {
-                    HospitalAssistance.Status = "Pending"; // Move back to Pending
+                    // DON'T change Status - keep it as "Processing" so it stays visible in admin processing
+                    // Status2 = "Retake" is what identifies it as a retake application
                     HospitalAssistance.IsRetakeApplication = true;
                     HospitalAssistance.RetakeRequestedAt = _dateTimeService.Now;
 
@@ -4268,10 +4269,11 @@ namespace LingapDVO.Controllers
                 medicallabform.Processby = OtherAssistanceDto.Processby;
                 medicallabform.Result = _dateTimeService.Now;
 
-                // Handle Retake status - move back to Pending and track retake information
+                // Handle Retake status - keep Status as is, mark as retake, DON'T move to Pending
                 if (!string.IsNullOrEmpty(status) && status.Equals("Retake", StringComparison.OrdinalIgnoreCase))
                 {
-                    medicallabform.Status = "Pending"; // Move back to Pending
+                    // DON'T change Status - keep it as "Processing" so it stays visible in admin processing
+                    // Status2 = "Retake" is what identifies it as a retake application
                     medicallabform.IsRetakeApplication = true;
                     medicallabform.RetakeRequestedAt = _dateTimeService.Now;
 
