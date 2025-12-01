@@ -810,7 +810,7 @@
             </div>
 
             <div class="row g-3 mt-3">
-                <div class="col-md-6">
+                <div class="col-12">
                     <div class="card-analytics">
                         <div class="card-header-custom">
                             <div>
@@ -822,26 +822,8 @@
                                 </p>
                             </div>
                         </div>
-                        <div class="chart-container">
+                        <div class="chart-container" style="height: 350px;">
                             <canvas id="approvalRateChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card-analytics">
-                        <div class="card-header-custom">
-                            <div>
-                                <h5 class="card-title-custom">Average Processing Time</h5>
-                                <p class="stats-text mb-0" id="processingTimeStats">
-                                    Fastest type: <span class="stats-highlight" id="fastestType">-</span> •
-                                    Slowest type: <span class="stats-highlight" id="slowestType">-</span> •
-                                    Average across all: <span class="stats-highlight" id="overallAverageTime">0 days</span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="processingTimeChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -905,7 +887,7 @@
         let originalData = null;
         let filteredData = null;
         let currentStatusFilter = 'all';
-        let trendsChart, approvalRateChart, processingTimeChart, statusByTypeChart;
+        let trendsChart, approvalRateChart, statusByTypeChart;
 
         const colors = {
             primary: '#1e88e5',
@@ -1054,7 +1036,6 @@
                     updateBarangayChart();
                     updateTrendsChart();
                     updateApprovalRateChart();
-                    updateProcessingTimeChart();
                     updateStatusByTypeChart('stackedBar');
                     updateClaimRateMetrics();
                 } catch (error) {
@@ -2020,103 +2001,6 @@
                 disapproved: [types.hospital.disapproved, types.medical.disapproved, types.funeral.disapproved],
                 pending: [types.hospital.pending, types.medical.pending, types.funeral.pending],
                 totals: [types.hospital.total, types.medical.total, types.funeral.total]
-            };
-        }
-
-        function updateProcessingTimeChart() {
-            const ctx = document.getElementById('processingTimeChart');
-            if (!ctx || !filteredData) return;
-
-            const context = ctx.getContext('2d');
-            if (processingTimeChart) processingTimeChart.destroy();
-
-            const processingData = calculateProcessingTimes(filteredData.allApplications);
-
-            const fastestIndex = processingData.averageDays.reduce((minIndex, current, index, arr) =>
-                current < arr[minIndex] ? index : minIndex, 0);
-            const slowestIndex = processingData.averageDays.reduce((maxIndex, current, index, arr) =>
-                current > arr[maxIndex] ? index : maxIndex, 0);
-            const overallAverage = processingData.averageDays.reduce((sum, days) => sum + days, 0) / processingData.averageDays.length;
-
-            const typeNames = ['Hospital', 'Other', 'Funeral'];
-            document.getElementById('fastestType').textContent = typeNames[fastestIndex];
-            document.getElementById('slowestType').textContent = typeNames[slowestIndex];
-            document.getElementById('overallAverageTime').textContent = overallAverage.toFixed(1) + ' days';
-
-            processingTimeChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Hospital', 'Other', 'Funeral'],
-                    datasets: [{
-                        label: 'Average Days',
-                        data: processingData.averageDays,
-                        backgroundColor: [colors.hospital + 'cc', colors.medical + 'cc', colors.funeral + 'cc']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        title: {
-                            display: true,
-                            text: 'Average Processing Time',
-                            font: { size: 18, weight: 'bold' }
-                        },
-                        datalabels: {
-                            color: '#fff',
-                            font: {
-                                weight: 'bold',
-                                size: 14
-                            },
-                            formatter: (value) => {
-                                return value.toFixed(1) + ' days';
-                            },
-                            anchor: 'center',
-                            align: 'center'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Days',
-                                font: { size: 14, weight: 'bold' }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function calculateProcessingTimes(applications) {
-            const types = {
-                hospital: { total: 0, count: 0 },
-                medical: { total: 0, count: 0 },
-                funeral: { total: 0, count: 0 }
-            };
-
-            const now = new Date();
-
-            applications.forEach(app => {
-                let typeKey;
-                if (app.type === 'Hospital Assistance') typeKey = 'hospital';
-                else if (app.type === 'Other Assistance') typeKey = 'medical';
-                else if (app.type === 'Funeral Assistance') typeKey = 'funeral';
-                else return;
-
-                const daysSinceSubmission = (now - new Date(app.createdAt)) / (1000 * 60 * 60 * 24);
-                types[typeKey].total += daysSinceSubmission;
-                types[typeKey].count++;
-            });
-
-            return {
-                averageDays: [
-                    types.hospital.count > 0 ? types.hospital.total / types.hospital.count : 0,
-                    types.medical.count > 0 ? types.medical.total / types.medical.count : 0,
-                    types.funeral.count > 0 ? types.funeral.total / types.funeral.count : 0
-                ]
             };
         }
 

@@ -123,7 +123,7 @@ namespace LingapDVO.Services
 
         public async Task SendStatusChangeNotificationAsync(int userId, string applicantName, string formType, string status, int formId, string? comments = null, string? processedBy = null)
         {
-            var title = GetStatusTitle(status);
+            var title = GetStatusTitle(status, formType);
             var message = GetStatusMessage(applicantName, formType, status);
             var type = GetNotificationType(status);
 
@@ -142,8 +142,15 @@ namespace LingapDVO.Services
             }
             else
             {
-                // For other statuses, link to application tracking
-                link = "/Applicationtracking";
+                // For other statuses, link to application tracking with the appropriate tab
+                var tabParam = formType switch
+                {
+                    "HospitalAssistance" => "hospital",
+                    "OtherAssistance" => "medical",
+                    "FuneralAssistance" => "funeral",
+                    _ => ""
+                };
+                link = string.IsNullOrEmpty(tabParam) ? "/Applicationtracking" : $"/Applicationtracking?tab={tabParam}";
             }
 
             // Special handling for "Approved" status to include nearby offices link
@@ -587,6 +594,16 @@ namespace LingapDVO.Services
                     _ => "Financial Assistance"
                 };
 
+                // Generate link with tab parameter based on form type
+                var tabParam = formType switch
+                {
+                    "HospitalAssistance" => "hospital",
+                    "OtherAssistance" => "medical",
+                    "FuneralAssistance" => "funeral",
+                    _ => ""
+                };
+                var trackingLink = string.IsNullOrEmpty(tabParam) ? "/Applicationtracking" : $"/Applicationtracking?tab={tabParam}";
+
                 var hoursElapsed = (int)(_dateTimeService.Now - submittedDate).TotalHours;
                 var title = priority == "Critical Delay" 
                     ? "⚠️ Critical Delay - Application Processing" 
@@ -606,7 +623,7 @@ namespace LingapDVO.Services
                     Title = title,
                     Message = message,
                     Type = "delay",
-                    Link = "/Applicationtracking",
+                    Link = trackingLink,
                     ProcessStage = "delayed",
                     Priority = priority,
                     CreatedAt = _dateTimeService.Now,
@@ -632,7 +649,7 @@ namespace LingapDVO.Services
                         message = message,
                         type = "delay",
                         priority = priority,
-                        link = "/Applicationtracking",
+                        link = trackingLink,
                         createdAt = _dateTimeService.Now,
                         isRead = false
                     });
@@ -641,7 +658,7 @@ namespace LingapDVO.Services
                 // Send email notification with HTML design if preferred
                 if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
                 {
-                    var emailBody = GenerateDelayEmailBody(title, message, applicantName, formTypeDisplay, submittedDate, hoursElapsed, "/Applicationtracking");
+                    var emailBody = GenerateDelayEmailBody(title, message, applicantName, formTypeDisplay, submittedDate, hoursElapsed, trackingLink);
                     await _emailService.SendEmailAsync(user.Email, title, emailBody);
                 }
 
@@ -710,11 +727,19 @@ namespace LingapDVO.Services
             };
         }
 
-        private string GetStatusTitle(string status)
+        private string GetStatusTitle(string status, string formType)
         {
+            var formTypeDisplay = formType switch
+            {
+                "HospitalAssistance" => "Hospital Assistance",
+                "OtherAssistance" => "Other Assistance",
+                "FuneralAssistance" => "Funeral Assistance",
+                _ => "Assistance"
+            };
+
             return status switch
             {
-                "Pending" => "Application Sent",
+                "Pending" => $"Application Sent - {formTypeDisplay}",
                 "Processing" => "We Are Checking Your Application",
                 "Approve" => "Good News! Your Application is Approved",
                 "Disapprove" => "Application Not Approved",

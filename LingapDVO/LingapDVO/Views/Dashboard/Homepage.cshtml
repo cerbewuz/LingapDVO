@@ -2793,6 +2793,11 @@
                     // Unify delay notifications: Critical Delay replaces Standard Delay for the same application
                     notifications = unifyDelayNotifications(notifications);
                     
+                    // Sort notifications: strictly chronological - most recent first
+                    notifications.sort((a, b) => {
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    });
+                    
                     currentNotifications = notifications;
 
                     // Update badge count (unread notifications)
@@ -3724,13 +3729,8 @@
                     // Unify delay notifications: Critical Delay replaces Standard Delay for the same application
                     notifications = unifyDelayNotifications(notifications);
 
-                    // Sort notifications: temporary by date DESC, permanent at bottom
+                    // Sort notifications: strictly chronological - most recent first
                     notifications.sort((a, b) => {
-                        // Permanent notifications always go to the bottom
-                        if (a.isPermanent && !b.isPermanent) return 1;
-                        if (!a.isPermanent && b.isPermanent) return -1;
-
-                        // Both permanent or both temporary: sort by date descending
                         return new Date(b.createdAt) - new Date(a.createdAt);
                     });
 
