@@ -3734,16 +3734,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // ═══════════════════════════════════════════════════════════════════════════════
     // Parse Driver's License Full Name into Components
     // ═══════════════════════════════════════════════════════════════════════════════
-    // DRIVER'S LICENSE NAME FORMAT: "Last name, First name, Middle name, Suffix"
+    // DRIVER'S LICENSE NAME FORMAT: "LASTNAME, FIRSTNAME SUFFIX MIDDLENAME"
+    //
+    // Example: "ESPANOLA, ANTHONY JR AVENA"
+    //   - ESPANOLA = Last Name
+    //   - ANTHONY = First Name
+    //   - JR = Suffix
+    //   - AVENA = Middle Name
     //
     // Common formats found in Philippine Driver's License:
-    // 1. "DELA CRUZ, JUAN MIGUEL JR" (comma-separated - MOST COMMON)
-    // 2. "DELA CRUZ JUAN MIGUEL JR" (space-separated)
-    // 3. "SANTOS, MARIA CLARA" (no middle name)
+    // 1. "DELA CRUZ, JUAN JR MIGUEL" (with suffix between first and middle)
+    // 2. "SANTOS, MARIA CLARA" (no suffix, just first and middle)
+    // 3. "REYES, JOSE SR ANTONIO" (with SR suffix)
     //
     // Parsing strategy:
-    // - If comma present: Before comma = Last, After comma = First Middle Suffix
-    // - If no comma: Detect compound surnames (DELA CRUZ, SAN JOSE, etc.)
+    // - Split by comma: Before comma = Last Name
+    // - After comma: First word = First Name, check for suffix, rest = Middle Name
     //
     // Returns: { lastName, firstName, middleName, suffix }
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -3752,45 +3758,61 @@ document.addEventListener('DOMContentLoaded', function () {
             return null;
         }
 
-
         let lastName = "", firstName = "", middleName = "", suffix = "";
 
         // Clean the full name
         fullName = fullName.trim();
 
-        // Check for suffix at the end
-        const words = fullName.split(/\s+/);
-        const lastWord = words[words.length - 1].toUpperCase().replace(/\./g, '');
+        // Valid suffixes pattern
         const suffixPattern = /^(JR|SR|II|III|IV|V|JUNIOR|SENIOR)$/i;
 
-        let nameWithoutSuffix = fullName;
-        if (suffixPattern.test(lastWord)) {
-            suffix = lastWord;
-            if (suffix === 'JUNIOR') suffix = 'JR';
-            if (suffix === 'SENIOR') suffix = 'SR';
-            // Remove suffix from name
-            nameWithoutSuffix = words.slice(0, -1).join(' ');
-        }
-
         // ═══════════════════════════════════════════════════════════════════════
-        // FORMAT 1: Comma-separated (LASTNAME, FIRSTNAME MIDDLENAME)
+        // FORMAT 1: Comma-separated (LASTNAME, FIRSTNAME SUFFIX MIDDLENAME)
+        // This is the standard Philippine Driver's License format
         // ═══════════════════════════════════════════════════════════════════════
-        if (nameWithoutSuffix.includes(',')) {
-
-            const parts = nameWithoutSuffix.split(',').map(p => p.trim());
-            if (parts.length === 2) {
+        if (fullName.includes(',')) {
+            const parts = fullName.split(',').map(p => p.trim());
+            if (parts.length >= 2) {
                 lastName = parts[0].trim();
 
-                // Parse first and middle from second part
-                const firstMiddle = parts[1].trim().split(/\s+/);
-                if (firstMiddle.length >= 2) {
-                    firstName = firstMiddle[0];
-                    middleName = firstMiddle.slice(1).join(' ');
-                } else if (firstMiddle.length === 1) {
-                    firstName = firstMiddle[0];
-                    middleName = "";
+                // Parse first name, suffix, and middle from second part
+                // Format: "FIRSTNAME SUFFIX MIDDLENAME" or "FIRSTNAME MIDDLENAME"
+                const remainingWords = parts[1].trim().split(/\s+/).filter(w => w.length > 0);
+                
+                if (remainingWords.length >= 1) {
+                    firstName = remainingWords[0];
+                    
+                    if (remainingWords.length >= 2) {
+                        // Check if second word is a suffix
+                        const secondWord = remainingWords[1].toUpperCase().replace(/\./g, '');
+                        
+                        if (suffixPattern.test(secondWord)) {
+                            // Second word is a suffix: FIRSTNAME SUFFIX MIDDLENAME
+                            suffix = secondWord;
+                            if (suffix === 'JUNIOR') suffix = 'JR';
+                            if (suffix === 'SENIOR') suffix = 'SR';
+                            // Middle name is everything after the suffix
+                            middleName = remainingWords.slice(2).join(' ');
+                        } else {
+                            // No suffix in second position, check if last word is suffix
+                            const lastWord = remainingWords[remainingWords.length - 1].toUpperCase().replace(/\./g, '');
+                            
+                            if (suffixPattern.test(lastWord) && remainingWords.length >= 3) {
+                                // Suffix at end (fallback): FIRSTNAME MIDDLENAME SUFFIX
+                                suffix = lastWord;
+                                if (suffix === 'JUNIOR') suffix = 'JR';
+                                if (suffix === 'SENIOR') suffix = 'SR';
+                                middleName = remainingWords.slice(1, -1).join(' ');
+                            } else {
+                                // No suffix: FIRSTNAME MIDDLENAME
+                                middleName = remainingWords.slice(1).join(' ');
+                            }
+                        }
+                    }
                 }
 
+                console.log(`📋 Driver's License Name Parsed:`);
+                console.log(`   Last: "${lastName}", First: "${firstName}", Suffix: "${suffix}", Middle: "${middleName}"`);
 
                 return {
                     lastName: cleanName(lastName),
@@ -3802,37 +3824,72 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // ═══════════════════════════════════════════════════════════════════════
-        // FORMAT 2 & 3: Space-separated (need to determine order)
+        // FORMAT 2: Space-separated (no comma - less common)
+        // Try to detect: LASTNAME FIRSTNAME SUFFIX MIDDLENAME
         // ═══════════════════════════════════════════════════════════════════════
-
-        const nameWords = nameWithoutSuffix.split(/\s+/).filter(w => w.length > 1);
+        const nameWords = fullName.split(/\s+/).filter(w => w.length > 0);
 
         if (nameWords.length >= 3) {
-            // Check if first words form a compound surname (e.g., "DELA CRUZ")
+            // Check if any word in positions 2+ is a suffix
+            let suffixIndex = -1;
+            for (let i = 2; i < nameWords.length; i++) {
+                const word = nameWords[i].toUpperCase().replace(/\./g, '');
+                if (suffixPattern.test(word)) {
+                    suffixIndex = i;
+                    suffix = word;
+                    if (suffix === 'JUNIOR') suffix = 'JR';
+                    if (suffix === 'SENIOR') suffix = 'SR';
+                    break;
+                }
+            }
+
+            // Check for compound last names
             const first2Words = nameWords.slice(0, 2);
             const first3Words = nameWords.slice(0, 3);
 
             if (isCompoundName(first3Words) && nameWords.length >= 5) {
-                // 3-word compound last name at start
+                // 3-word compound last name
                 lastName = first3Words.join(' ');
                 firstName = nameWords[3];
-                middleName = nameWords.slice(4).join(' ');
+                if (suffixIndex > 3) {
+                    middleName = nameWords.slice(4, suffixIndex).join(' ') + ' ' + nameWords.slice(suffixIndex + 1).join(' ');
+                } else if (suffixIndex === 4) {
+                    middleName = nameWords.slice(5).join(' ');
+                } else {
+                    middleName = nameWords.slice(4).join(' ');
+                }
             } else if (isCompoundName(first2Words) && nameWords.length >= 4) {
-                // 2-word compound last name at start (most common for Driver's License)
-                // Format: "DELA CRUZ JUAN MIGUEL"
+                // 2-word compound last name
                 lastName = first2Words.join(' ');
                 firstName = nameWords[2];
-                middleName = nameWords.slice(3).join(' ');
+                if (suffixIndex > 2) {
+                    // Suffix found after first name
+                    if (suffixIndex === 3) {
+                        middleName = nameWords.slice(4).join(' ');
+                    } else {
+                        middleName = nameWords.slice(3, suffixIndex).join(' ') + ' ' + nameWords.slice(suffixIndex + 1).join(' ');
+                    }
+                } else {
+                    middleName = nameWords.slice(3).join(' ');
+                }
             } else {
-                // Simple format: LAST FIRST MIDDLE
-                // or: FIRST MIDDLE LAST (detect based on context)
-
-                // Default: assume LAST FIRST MIDDLE (Driver's License standard)
+                // Simple format: LASTNAME FIRSTNAME SUFFIX MIDDLENAME
                 lastName = nameWords[0];
                 firstName = nameWords[1];
-                middleName = nameWords.slice(2).join(' ');
+                if (suffixIndex === 2) {
+                    middleName = nameWords.slice(3).join(' ');
+                } else if (suffixIndex > 2) {
+                    middleName = nameWords.slice(2, suffixIndex).join(' ') + ' ' + nameWords.slice(suffixIndex + 1).join(' ');
+                } else {
+                    middleName = nameWords.slice(2).join(' ');
+                }
             }
 
+            // Clean up middle name (remove extra spaces)
+            middleName = middleName.trim().replace(/\s+/g, ' ');
+
+            console.log(`📋 Driver's License Name Parsed (space-separated):`);
+            console.log(`   Last: "${lastName}", First: "${firstName}", Suffix: "${suffix}", Middle: "${middleName}"`);
 
             return {
                 lastName: cleanName(lastName),
@@ -3841,7 +3898,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 suffix
             };
         } else if (nameWords.length === 2) {
-            // Only 2 words: LAST FIRST (no middle)
+            // Only 2 words: LAST FIRST (no middle, no suffix)
             lastName = nameWords[0];
             firstName = nameWords[1];
             middleName = "";
@@ -6527,7 +6584,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ═══════════════════════════════════════════════════════════════════════════════
     // Check if city is Davao City
     // ═══════════════════════════════════════════════════════════════════════════════
-    // ACCEPTS: "Davao", "Davao City", "City of Davao" (any case)
+    // ACCEPTS: "Davao", "Davao City", "City of Davao", "Dvo City" (any case)
     // REJECTS: Other cities/municipalities from Davao provinces (Digos, Tagum, Panabo, Mati, etc.)
     function checkIfDavaoCity(city) {
         if (!city) return false;
@@ -6535,11 +6592,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const upperCity = city.toUpperCase().trim();
 
 
-        // Accept variations of "Davao City"
+        // Accept variations of "Davao City" (case-insensitive)
         const davaoCityVariations = [
             'DAVAO',
             'DAVAO CITY',
             'CITY OF DAVAO',
+            'DVO CITY',
+            'DVO. CITY',
+            'DVAO CITY',
+            'DABAW CITY',
+            'DAVAO CTY',
             'DAVAO CITY, PHILIPPINES',
             'DAVAO CITY PHILIPPINES'
         ];
@@ -6547,6 +6609,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Check if it matches any Davao City variation
         for (const variation of davaoCityVariations) {
             if (upperCity === variation || upperCity.includes(variation)) {
+                console.log(`✅ Davao City verified: Found "${variation}" in "${city}"`);
                 return true;
             }
         }
