@@ -5,7 +5,8 @@
       "Bash(test:*)",
       "Bash(dir:*)",
       "Bash(findstr:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "WebFetch(domain:developer.idanalyzer.com)"
     ],
     "deny": [],
     "ask": []

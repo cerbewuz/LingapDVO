@@ -41,10 +41,10 @@ namespace LingapDVO.Controllers
             _notificationService = notificationService;
         }
 
-        // ╔═══════════════════════════════════════════════════════════════════════════╗
-        // ║                    AES-256 ENCRYPTION HELPER CLASS                        ║
-        // ║         Secure AES-256 Implementation using Configuration                 ║
-        // ╚═══════════════════════════════════════════════════════════════════════════╝
+        
+        //                AES-256 ENCRYPTION HELPER CLASS                        
+        //      Secure AES-256 Implementation using Configuration                 
+         
         private class AesEncryptionHelper
         {
             private readonly byte[] _aesKey;
@@ -102,7 +102,7 @@ namespace LingapDVO.Controllers
 
             // ┌─────────────────────────────────────────────────────────────────────┐
             // │ STEP 2: Encrypt string data using AES-256-CBC                       │
-            // │ Process:                                                             │
+            // │ Process:                                                            |
             // │   1. Generate random 16-byte IV (Initialization Vector)             │
             // │   2. Create AES cipher with 256-bit key                             │
             // │   3. Configure CBC mode with PKCS7 padding                          │
@@ -155,7 +155,7 @@ namespace LingapDVO.Controllers
 
             // ┌─────────────────────────────────────────────────────────────────────┐
             // │ STEP 3: Decrypt string data using AES-256-CBC                       │
-            // │ Process:                                                             │
+            // │ Process:                                                            │
             // │   1. Decode Base64 string to bytes                                  │
             // │   2. Extract IV from first 16 bytes                                 │
             // │   3. Extract encrypted data from remaining bytes                    │
@@ -198,7 +198,7 @@ namespace LingapDVO.Controllers
 
             // ┌─────────────────────────────────────────────────────────────────────┐
             // │ STEP 4: Encrypt file/stream data using AES-256-CBC                  │
-            // │ Process:                                                             │
+            // │ Process:                                                            │
             // │   1. Generate random 16-byte IV                                     │
             // │   2. Create AES cipher with 256-bit key                             │
             // │   3. Configure CBC mode with PKCS7 padding                          │
@@ -2083,10 +2083,8 @@ namespace LingapDVO.Controllers
             ViewBag.RegisteredLastName = registeredUser.LastName;
             ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
 
-            // Pass OCR settings from appsettings.json
-            ViewBag.OcrApiKey = _configuration["OCRSettings:ApiKey"];
-            ViewBag.OcrApiUrl = _configuration["OCRSettings:ApiUrl"];
-            ViewBag.OcrEngine = _configuration["OCRSettings:Engine"];
+            // ID Analyzer API v2 settings are handled server-side via IdAnalyzerController
+            // No need to pass API keys to client-side JavaScript
 
             return View();
         }

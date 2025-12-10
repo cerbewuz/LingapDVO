@@ -25,6 +25,11 @@
     <!-- Go Back Button Styles -->
     <link rel="stylesheet" href="~/css/go-back-button.css">
 
+    <!-- Facial Recognition Styles -->
+    <link rel="stylesheet" href="~/css/facial-recognition.css">
+
+    <!-- NOTE: Face-API.js library removed - using ID Analyzer server-side API instead -->
+
     <!-- Disabled Upload Area Style for UMID/Driver's License -->
     <style>
         .upload-area.disabled-upload {
@@ -310,21 +315,14 @@
                                 <h2 class="text-2xl font-bold text-gray-800">Address Information</h2>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Blk / Lot / Street</label>
-                                    <input asp-for="BlkLotStreet" type="text"
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                                    <input asp-for="BlkLotStreet" type="text" id="address"
                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
-                                           placeholder="Enter block, lot, or street" required>
+                                           placeholder="Enter complete address (Block/Lot/Street, Subdivision/Village)" required>
                                     <span asp-validation-for="BlkLotStreet" class="text-red-500 text-sm mt-1"></span>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Sub / Vill.</label>
-                                    <input asp-for="SubVill" type="text"
-                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
-                                           placeholder="Enter subdivision or village">
-                                    <span asp-validation-for="SubVill" class="text-red-500 text-sm mt-1"></span>
+                                    <p class="text-xs text-gray-500 mt-1">This field will be auto-populated from your ID (Address 1 + Address 2)</p>
                                 </div>
                             </div>
 
@@ -638,12 +636,8 @@
             suffix: '@ViewBag.RegisteredSuffix'
         };
 
-        // Pass OCR settings from server configuration
-        window.ocrSettings = {
-            apiKey: '@ViewBag.OcrApiKey',
-            apiUrl: '@ViewBag.OcrApiUrl',
-            engine: '@ViewBag.OcrEngine'
-        };
+        // ID Analyzer API v2 is handled server-side via /api/IdAnalyzer endpoints
+        // No client-side API keys needed - all requests go through the backend
 
         // ═══════════════════════════════════════════════════════════════
         // Ñ/ñ CHARACTER SUPPORT - ACCOUNT VERIFICATION
@@ -681,6 +675,109 @@
 
     <!-- OCR Processing and ID Verification -->
     <script src="~/js/verification-ocr.js?v=@DateTime.Now.Ticks"></script>
+
+    <!-- Facial Recognition Module -->
+    <script src="~/js/facial-recognition.js?v=@DateTime.Now.Ticks"></script>
+
+    <!-- Facial Recognition Modal -->
+    <div id="facialRecognitionModal" class="face-modal-overlay hidden">
+        <div class="face-modal-container">
+            <!-- Header -->
+            <div class="face-modal-header">
+                <h3><i class="fas fa-user-shield"></i> Face Verification</h3>
+                <button type="button" id="closeFaceModal" class="face-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div class="face-modal-body">
+                <!-- Instructions -->
+                <div id="faceInstructions" class="face-instructions">
+                    <h4><i class="fas fa-info-circle"></i> Take a Selfie</h4>
+                    <ul>
+                        <li>Ensure good lighting on your face</li>
+                        <li>Remove glasses, hats, or face coverings</li>
+                        <li>Position your face within the oval frame</li>
+                        <li>Look directly at the camera</li>
+                        <li>Your selfie will be compared with your ID photo</li>
+                    </ul>
+                </div>
+                
+                <!-- Status Bar -->
+                <div class="face-status-bar">
+                    <i id="faceStatusIcon" class="fas fa-spinner fa-spin text-blue-500"></i>
+                    <span id="faceStatus">Initializing camera...</span>
+                </div>
+                
+                <!-- Camera Container -->
+                <div class="face-camera-container">
+                    <video id="faceVideo" class="face-video" autoplay playsinline muted></video>
+                    <canvas id="faceCanvas" class="face-canvas"></canvas>
+                    
+                    <!-- Face Frame Overlay -->
+                    <div class="face-frame-overlay">
+                        <div class="face-frame"></div>
+                    </div>
+                    
+                    <!-- Countdown Overlay -->
+                    <div id="faceCountdown" class="face-countdown-overlay hidden">
+                        <span id="countdownNumber" class="face-countdown-number">3</span>
+                    </div>
+                    
+                    <!-- Verifying Overlay -->
+                    <div id="verifyingOverlay" class="face-verifying-overlay hidden">
+                        <div class="face-verifying-spinner"></div>
+                        <span>Verifying face...</span>
+                    </div>
+                </div>
+                
+                <!-- Preview Section -->
+                <div id="selfiePreviewContainer" class="face-preview-section hidden">
+                    <div class="face-preview-box">
+                        <h5>ID Photo</h5>
+                        <img id="idFacePreview" src="" alt="ID Photo">
+                    </div>
+                    <div class="face-preview-box">
+                        <h5>Your Selfie</h5>
+                        <img id="selfiePreview" src="" alt="Selfie">
+                    </div>
+                </div>
+                
+                <!-- Match Result -->
+                <div id="faceMatchResult" class="face-match-result hidden">
+                    <div class="face-match-header" id="matchResultHeader">
+                        <i class="fas fa-check-circle"></i>
+                        <h4 id="matchResultTitle">Verification Result</h4>
+                    </div>
+                    <div class="face-match-percentage">
+                        <div class="face-match-percentage-label">
+                            <span>Similarity Score</span>
+                            <span id="matchPercentage">0%</span>
+                        </div>
+                        <div class="face-match-percentage-bar">
+                            <div id="faceProgressBar" class="face-match-percentage-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="face-modal-actions">
+                    <button type="button" id="captureFaceBtn" class="face-btn face-btn-capture hidden">
+                        <i class="fas fa-camera"></i> Capture Photo
+                    </button>
+                    <button type="button" id="retryFaceBtn" class="face-btn face-btn-retry hidden">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="face-modal-footer">
+                <p><i class="fas fa-shield-alt"></i> Your photo is processed locally and is not stored on any server.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Wrong ID Type Warning Modal -->
     <div class="modal fade" id="wrongIdModal" tabindex="-1" aria-labelledby="wrongIdModalLabel" aria-hidden="true">

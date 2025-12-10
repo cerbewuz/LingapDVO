@@ -124,7 +124,7 @@ namespace LingapDVO.Services
         public async Task SendStatusChangeNotificationAsync(int userId, string applicantName, string formType, string status, int formId, string? comments = null, string? processedBy = null)
         {
             var title = GetStatusTitle(status, formType);
-            var message = GetStatusMessage(applicantName, formType, status);
+            var message = GetStatusMessage(applicantName, formType, status, processedBy);
             var type = GetNotificationType(status);
 
             // Generate appropriate link based on status and form type
@@ -440,12 +440,8 @@ namespace LingapDVO.Services
                     });
                 }
 
-                // Send email notification with feedback link if preferred
-                if (user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email))
-                {
-                    var emailBody = GenerateClaimedEmailBody(title, message, link, feedbackUrl);
-                    await _emailService.SendEmailAsync(user.Email, title, emailBody);
-                }
+                // NOTE: Email notification for Claimed status is handled by Adminuser.cs with detailed templates
+                // Skipping generic email here to avoid duplicate emails being sent
 
                 // Send SMS notification with feedback link if preferred (formal and concise)
                 if (user.PreferSmsNotification)
@@ -727,44 +723,80 @@ namespace LingapDVO.Services
             var formTypeDisplay = formType switch
             {
                 "HospitalAssistance" => "Hospital Assistance",
-                "OtherAssistance" => "Other Assistance",
+                "HospitalBill" => "Hospital Assistance",
+                "OtherAssistance" => "Medical and Laboratory Assistance",
+                "MedicalLab" => "Medical and Laboratory Assistance",
+                "Other" => "Medical and Laboratory Assistance",
                 "FuneralAssistance" => "Funeral Assistance",
+                "Funeral" => "Funeral Assistance",
                 _ => "Assistance"
             };
 
-            return status switch
+            // Normalize status to handle case variations
+            var normalizedStatus = status?.ToLower() switch
+            {
+                "pending" => "Pending",
+                "processing" => "Processing",
+                "approve" => "Approve",
+                "disapprove" => "Disapprove",
+                "retake" => "Retake",
+                "resubmitted" => "Resubmitted",
+                "claimed" => "Claimed",
+                _ => status
+            };
+
+            return normalizedStatus switch
             {
                 "Pending" => $"Application Sent - {formTypeDisplay}",
-                "Processing" => "We Are Checking Your Application",
+                "Processing" => "Your Application is being Reviewed",
                 "Approve" => "Good News! Your Application is Approved",
                 "Disapprove" => "Application Not Approved",
                 "Retake" => "Please Review Your Application",
                 "Resubmitted" => "✅ Application Resubmitted Successfully",
                 "Claimed" => "Assistance Claimed",
-                _ => "Application Update"
+                _ => "Application Status Update"
             };
         }
 
-        private string GetStatusMessage(string applicantName, string formType, string status)
+        private string GetStatusMessage(string applicantName, string formType, string status, string? processedBy = null)
         {
             var formTypeDisplay = formType switch
             {
                 "HospitalAssistance" => "Hospital Assistance",
-                "OtherAssistance" => "Other Assistance",
+                "HospitalBill" => "Hospital Assistance",
+                "OtherAssistance" => "Medical and Laboratory Assistance",
+                "MedicalLab" => "Medical and Laboratory Assistance",
+                "Other" => "Medical and Laboratory Assistance",
                 "FuneralAssistance" => "Funeral Assistance",
+                "Funeral" => "Funeral Assistance",
                 _ => "Assistance"
             };
 
-            return status switch
+            // Normalize status to handle case variations
+            var normalizedStatus = status?.ToLower() switch
             {
-                "Pending" => $"We received your {formTypeDisplay} request. We will start checking it soon.",
-                "Processing" => $"We are now checking your {formTypeDisplay} request. We will send you another message soon.",
+                "pending" => "Pending",
+                "processing" => "Processing",
+                "approve" => "Approve",
+                "disapprove" => "Disapprove",
+                "retake" => "Retake",
+                "resubmitted" => "Resubmitted",
+                "claimed" => "Claimed",
+                _ => status
+            };
+
+            return normalizedStatus switch
+            {
+                "Pending" => $"Your application has been submitted and is now in queue. You will receive an update within an hour.",
+                "Processing" => !string.IsNullOrWhiteSpace(processedBy) 
+                    ? $"Your {formTypeDisplay} application is being reviewed by {processedBy}."
+                    : $"Your {formTypeDisplay} application is now being reviewed.",
                 "Approve" => $"Your {formTypeDisplay} request is approved! Please visit our office to get your help.",
                 "Disapprove" => $"We are sorry, but your {formTypeDisplay} request is not approved. You can contact us for more information.",
                 "Retake" => $"We need you to send some papers again for your {formTypeDisplay} request. Please check your application and upload the needed papers.",
                 "Resubmitted" => $"Thank you for resubmitting your {formTypeDisplay} application with the updated documents. Our team will review it shortly and get back to you soon.",
                 "Claimed" => $"You have received your {formTypeDisplay}. Thank you for using LingapDVO.",
-                _ => $"Your {formTypeDisplay} request status changed to {status}."
+                _ => $"Your {formTypeDisplay} application status has been updated."
             };
         }
 

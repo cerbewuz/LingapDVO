@@ -1162,6 +1162,40 @@
                 color: white;
             }
 
+        /* Assistance Type Badges - distinguishes notification type */
+        .assistance-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.125rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+            .assistance-type-badge i {
+                font-size: 0.55rem;
+            }
+
+            .assistance-type-badge.hospital {
+                background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+                color: white;
+            }
+
+            .assistance-type-badge.medical {
+                background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+                color: white;
+            }
+
+            .assistance-type-badge.funeral {
+                background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+                color: white;
+            }
+
         @@keyframes pulseBadge {
             0%, 100% {
                 opacity: 1;
@@ -3338,6 +3372,13 @@
 
                     // Build badges HTML for bottom row
                     let badgesHtml = '';
+                    
+                    // Add assistance type badge first (to distinguish notification type)
+                    const assistanceTypeBadge = getAssistanceTypeBadge(notification.applicationType);
+                    if (assistanceTypeBadge) {
+                        badgesHtml += `<span class="assistance-type-badge ${assistanceTypeBadge.class}"><i class="${assistanceTypeBadge.icon}"></i> ${assistanceTypeBadge.label}</span>`;
+                    }
+                    
                     const statusBadge = getStatusBadge(notification.type);
 
                     if (statusBadge) {
@@ -3436,6 +3477,13 @@
 
                     // Build badges HTML for bottom row
                     let badgesHtml = '';
+                    
+                    // Add assistance type badge first (to distinguish notification type)
+                    const assistanceTypeBadge = getAssistanceTypeBadge(notification.applicationType);
+                    if (assistanceTypeBadge) {
+                        badgesHtml += `<span class="assistance-type-badge ${assistanceTypeBadge.class}"><i class="${assistanceTypeBadge.icon}"></i> ${assistanceTypeBadge.label}</span>`;
+                    }
+                    
                     const statusBadge = getStatusBadge(notification.type);
 
                     if (statusBadge) {
@@ -3594,6 +3642,26 @@
                     application_claimed: { label: 'Claimed', class: 'claimed' }
                 };
                 return statusMap[type] || null;
+            }
+
+            // Get assistance type badge based on applicationType
+            function getAssistanceTypeBadge(applicationType) {
+                if (!applicationType) return null;
+                
+                // Don't show badge for System notifications
+                if (applicationType === 'System') return null;
+                
+                const typeMap = {
+                    'HospitalAssistance': { label: 'Hospital', class: 'hospital', icon: 'fas fa-hospital' },
+                    'HospitalBill': { label: 'Hospital', class: 'hospital', icon: 'fas fa-hospital' },
+                    'OtherAssistance': { label: 'Medical', class: 'medical', icon: 'fas fa-stethoscope' },
+                    'MedicalLab': { label: 'Medical', class: 'medical', icon: 'fas fa-stethoscope' },
+                    'Other': { label: 'Medical', class: 'medical', icon: 'fas fa-stethoscope' },
+                    'FuneralAssistance': { label: 'Funeral', class: 'funeral', icon: 'fas fa-cross' },
+                    'Funeral': { label: 'Funeral', class: 'funeral', icon: 'fas fa-cross' }
+                };
+                
+                return typeMap[applicationType] || null;
             }
 
             async function handleNotificationClick(notification) {
@@ -3787,6 +3855,13 @@
 
                         // Build badges HTML for bottom row
                         let badgesHtml = '';
+                        
+                        // Add assistance type badge first (to distinguish notification type)
+                        const assistanceTypeBadge = getAssistanceTypeBadge(notification.applicationType);
+                        if (assistanceTypeBadge) {
+                            badgesHtml += `<span class="assistance-type-badge ${assistanceTypeBadge.class}"><i class="${assistanceTypeBadge.icon}"></i> ${assistanceTypeBadge.label}</span>`;
+                        }
+                        
                         const statusBadge = getStatusBadge(notification.type);
 
                         if (statusBadge) {

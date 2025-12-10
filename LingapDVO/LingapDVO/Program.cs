@@ -115,6 +115,10 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMultiChannelNotificationService, MultiChannelNotificationService>();
 builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>();
 
+// ID Analyzer Service for ID verification and face comparison
+builder.Services.AddHttpClient<IIdAnalyzerService, IdAnalyzerService>();
+builder.Services.AddScoped<IIdAnalyzerService, IdAnalyzerService>();
+
 // Priority Tracking Service
 builder.Services.AddScoped<PriorityTrackingService>();
 
@@ -172,9 +176,9 @@ app.Use(async (context, next) =>
     // Referrer policy
     context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
 
-    // Permissions policy
+    // Permissions policy - camera enabled for facial recognition feature
     context.Response.Headers.Append("Permissions-Policy",
-        "geolocation=(), microphone=(), camera=(), payment=()");
+        "geolocation=(), microphone=(), camera=(self), payment=()");
 
     await next();
 });

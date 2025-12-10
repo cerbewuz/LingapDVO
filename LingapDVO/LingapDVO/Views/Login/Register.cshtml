@@ -217,7 +217,7 @@
                     <div class="space-y-1.5 sm:space-y-2">
                         <div class="relative">
                             <select asp-for="Suffix"
-                                    class="floating-input w-20 sm:w-24 md:w-28 px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white appearance-none cursor-pointer"
+                                    class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white appearance-none cursor-pointer"
                                     autocomplete="honorific-suffix"
                                     id="suffix">
                                 <option value="">None</option>
@@ -380,8 +380,8 @@
                 </div>
 
                 <!-- Terms Agreement -->
-                <div class="flex items-start space-x-2 sm:space-x-3 p-2.5 sm:p-3 bg-gray-50 rounded-lg sm:rounded-xl  border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200">
-                    <input type="checkbox" id="terms" name="terms" class="mt-0.5 accent-green-600" required>
+                <div class="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 bg-gray-50 rounded-lg sm:rounded-xl  border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200">
+                    <input type="checkbox" id="terms" name="terms" class="mt-0.5 ml-1 accent-green-600 flex-shrink-0" required>
                     <label for="terms" class="text-xs sm:text-xs text-gray-700 flex-1 leading-relaxed cursor-pointer">
                         I agree to the
                         <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>

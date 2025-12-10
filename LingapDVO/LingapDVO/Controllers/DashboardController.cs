@@ -1307,7 +1307,7 @@ namespace LingapDVO.Controllers
                     existing.Status2 = "Resubmitted"; // Mark as resubmitted so admin knows this is a retake
                     existing.Status3 = ""; // Clear any Status3 as well
                     existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
-                    existing.ProcessAt = new DateTime(1900, 1, 1); // Clear process timestamp (SQL Server compatible)
+                    existing.ProcessAt = _dateTimeService.Now; // Set to current date for resubmission timestamp display
                     existing.Processby = ""; // Clear processor name (use empty string, not null)
                     existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
                     existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
@@ -2174,7 +2174,7 @@ namespace LingapDVO.Controllers
                     existing.Status2 = "Resubmitted"; // Mark as resubmitted so admin knows this is a retake
                     existing.Status3 = ""; // Clear any Status3 as well
                     existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
-                    existing.ProcessAt = new DateTime(1900, 1, 1); // Clear process timestamp (SQL Server compatible)
+                    existing.ProcessAt = _dateTimeService.Now; // Set to current date for resubmission timestamp display
                     existing.Processby = ""; // Clear processor name (use empty string, not null)
                     existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
                     existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
@@ -2191,15 +2191,33 @@ namespace LingapDVO.Controllers
                 // ? 11.5. Send notification for resubmission if it was retake mode
                 if (isRetakeMode)
                 {
+                    var userFullName = $"{existing.Firstname} {existing.Lastname}";
+
+                    // Send user notification - application is now in Processing queue (priority)
                     try
                     {
-                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
-                        await _notificationService.SendNotificationAsync(
+                        await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
-                            "Application Resubmitted - Priority Processing",
-                            "Your resubmission has been successful and is now in PRIORITY queue for immediate review.",
-                            "resubmitted",
-                            "/Dashboard/Applicationtracking"
+                            userFullName,
+                            "MedicalLab", // OtherAssistance maps to MedicalLab
+                            "processing", // Send as Processing status (priority queue for retake)
+                            existing.Id
+                        );
+                    }
+                    catch { /* Notification failure should not block form submission */ }
+
+                    // Send admin notification - retake application has been resubmitted (priority)
+                    try
+                    {
+                        await _adminNotificationService.SendAdminNotificationAsync(
+                            "application_submitted",
+                            "OtherAssistance",
+                            existing.Id,
+                            userId,
+                            userFullName,
+                            "[PRIORITY] Retake Resubmitted - Medical and Laboratory Assistance",
+                            $"{userFullName} resubmitted their retake application for Medical and Laboratory Assistance. PRIORITY: Ready for immediate review.",
+                            $"/OtherAssistanceProcessingStatus/{existing.Id}"
                         );
                     }
                     catch { /* Notification failure should not block form submission */ }
@@ -2922,7 +2940,7 @@ namespace LingapDVO.Controllers
                     existing.Status2 = "Resubmitted"; // Mark as resubmitted so admin knows this is a retake
                     existing.Status3 = ""; // Clear any Status3 as well
                     existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
-                    existing.ProcessAt = new DateTime(1900, 1, 1); // Clear process timestamp (SQL Server compatible)
+                    existing.ProcessAt = _dateTimeService.Now; // Set to current date for resubmission timestamp display
                     existing.Processby = ""; // Clear processor name (use empty string, not null)
                     existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
                     existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
