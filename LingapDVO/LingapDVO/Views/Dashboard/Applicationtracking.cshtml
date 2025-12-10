@@ -1331,21 +1331,6 @@
                                             </div>
                                         </div>
                                     }
-
-                                    <!-- Step 2: Processing -->
-                                    @if (doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Processby))
-                                    {
-                                        <div class="timeline-item">
-                                            <div class="timeline-marker processing">
-                                                <i class="fas fa-user-check"></i>
-                                            </div>
-                                            <div class="timeline-content">
-                                                <h6>Being Reviewed</h6>
-                                                <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
-                                            </div>
-                                        </div>
-                                    }
                                     else if (doc.Result <= DateTime.MinValue || doc.Result.Year <= 1)
                                     {
                                         <div class="timeline-item">
