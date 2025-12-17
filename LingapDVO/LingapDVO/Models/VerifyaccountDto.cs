@@ -64,5 +64,7 @@ namespace LingapDVO.Models
 
         [Required, MaxLength(100)]
         public string CivilStatus { get; set; } = "";
+
+        public string? userfacepictureBase64 { get; set; }
     }
 }

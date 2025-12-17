@@ -28,8 +28,9 @@ namespace LingapDVO.Controllers
         private readonly ISessionConfigurationService _sessionConfig;
         private readonly IDateTimeService _dateTimeService;
         private readonly IMultiChannelNotificationService _notificationService;
+        private readonly IVerificationService _verificationService;
 
-        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IEmailService emailService, IConfiguration configuration, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService, IMultiChannelNotificationService notificationService)
+        public LoginController(ApplicationDbContext context, IWebHostEnvironment environment, ISmsService smsService, IEmailService emailService, IConfiguration configuration, ISessionConfigurationService sessionConfig, IDateTimeService dateTimeService, IMultiChannelNotificationService notificationService, IVerificationService verificationService)
         {
             this.context = context;
             this.environment = environment;
@@ -39,6 +40,7 @@ namespace LingapDVO.Controllers
             _sessionConfig = sessionConfig;
             _dateTimeService = dateTimeService;
             _notificationService = notificationService;
+            _verificationService = verificationService;
         }
 
         
@@ -2288,6 +2290,92 @@ namespace LingapDVO.Controllers
                 return View(VerifyaccountDto);
             }
 
+            // ==========================
+            // 🔍 ID ANALYZER VERIFICATION
+            // ==========================
+            try
+            {
+                Console.WriteLine("🚀 Starting ID Analyzer Verification...");
+
+                string? frontBase64 = await ConvertToBase64(VerifyaccountDto.ValidFrontID);
+                string? backBase64 = await ConvertToBase64(VerifyaccountDto.ValidBackID);
+                string? faceBase64 = VerifyaccountDto.userfacepictureBase64; // Already Base64
+
+                // Validate that front ID is provided (required)
+                if (string.IsNullOrEmpty(frontBase64))
+                {
+                    ModelState.AddModelError("", "Front ID image is required.");
+                    ViewBag.RegisteredFirstName = registeredUser.FirstName;
+                    ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+                    ViewBag.RegisteredLastName = registeredUser.LastName;
+                    ViewBag.RegisteredSuffix = registeredUser.Suffix;
+                    return View(VerifyaccountDto);
+                }
+
+                var verificationResult = await _verificationService.ScanIdAsync(frontBase64, faceBase64, backBase64);
+
+                if (!verificationResult.Success)
+                {
+                    Console.WriteLine($"❌ Verification Service Failed: {verificationResult.ErrorMessage}");
+                    ModelState.AddModelError("", $"Verification failed: {verificationResult.ErrorMessage}");
+                    
+                    // Pass registered user info back to view
+                    ViewBag.RegisteredFirstName = registeredUser.FirstName;
+                    ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+                    ViewBag.RegisteredLastName = registeredUser.LastName;
+                    ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
+                    
+                    return View(VerifyaccountDto);
+                }
+
+                // Check if verification passed (OCR + Face)
+                if (!verificationResult.VerificationPassed)
+                {
+                    Console.WriteLine("❌ ID Verification Failed (VerificationPassed=false)");
+                    string failureReason = "ID Verification failed. Please ensure your ID is clear and matches your face.";
+                    
+                    if (!verificationResult.FaceMatch)
+                    {
+                        failureReason += " Face verification failed.";
+                    }
+                    
+                    ModelState.AddModelError("", failureReason);
+                    
+                    // Pass registered user info back to view
+                    ViewBag.RegisteredFirstName = registeredUser.FirstName;
+                    ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+                    ViewBag.RegisteredLastName = registeredUser.LastName;
+                    ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
+                    
+                    return View(VerifyaccountDto);
+                }
+
+                // Optional: Check AML status if available
+                if (verificationResult.AmlPassed == false)
+                {
+                    Console.WriteLine("⚠️ AML Check Failed");
+                    // You might want to block or just flag. For now, we'll log it.
+                    // ModelState.AddModelError("", "Verification failed due to security checks.");
+                    // return View(VerifyaccountDto);
+                }
+
+                Console.WriteLine("✅ ID Verification Passed!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Verification Exception: {ex.Message}");
+                // Decide whether to block or allow on exception. 
+                // For security, usually block, but for UX during dev, maybe log.
+                ModelState.AddModelError("", "An error occurred during ID verification. Please try again.");
+                
+                ViewBag.RegisteredFirstName = registeredUser.FirstName;
+                ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
+                ViewBag.RegisteredLastName = registeredUser.LastName;
+                ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
+                
+                return View(VerifyaccountDto);
+            }
+
             try
             {
                 // ==========================
@@ -2332,6 +2420,39 @@ namespace LingapDVO.Controllers
                 }
 
                 // ==========================
+                // 📸 Encrypt User Face Picture
+                // ==========================
+                string userFaceFileName = "";
+                if (!string.IsNullOrEmpty(VerifyaccountDto.userfacepictureBase64))
+                {
+                    try 
+                    {
+                        // Remove data URI prefix if present
+                        string base64Data = VerifyaccountDto.userfacepictureBase64;
+                        if (base64Data.Contains(","))
+                        {
+                            base64Data = base64Data.Split(',')[1];
+                        }
+                        
+                        byte[] faceBytes = Convert.FromBase64String(base64Data);
+                        string originalFaceFileName = $"face_{userId}_{DateTime.Now.Ticks}.jpg";
+                        userFaceFileName = aesHelper.EncryptFilename(originalFaceFileName) + ".enc";
+                        string facePath = Path.Combine(validFolder, userFaceFileName);
+                        
+                        using (var fileStream = new FileStream(facePath, FileMode.Create))
+                        using (var memoryStream = new MemoryStream(faceBytes))
+                        {
+                            byte[] encryptedData = aesHelper.EncryptStream(memoryStream);
+                            fileStream.Write(encryptedData, 0, encryptedData.Length);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"⚠️ Failed to save face picture: {ex.Message}");
+                    }
+                }
+
+                // ==========================
                 // 🗃 Save to Database
                 // ==========================
                 // Normalize suffix: treat "None", "none", empty, or whitespace as empty string (database doesn't allow NULL)
@@ -2345,6 +2466,7 @@ namespace LingapDVO.Controllers
                     UserId = userId,
                     FrontID = frontFileName,
                     BackID = backFileName,
+                    userfacepicture = userFaceFileName,
                     IDtype = VerifyaccountDto.IDtype ?? "",
                     IDnumber = VerifyaccountDto.IDnumber ?? "",
                     Lastname = VerifyaccountDto.Lastname ?? "",
@@ -2739,6 +2861,14 @@ namespace LingapDVO.Controllers
         {
             public bool IsValid { get; set; }
             public List<string> Errors { get; set; } = new List<string>();
+        }
+
+        private async Task<string?> ConvertToBase64(IFormFile? file)
+        {
+            if (file == null) return null;
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            return Convert.ToBase64String(ms.ToArray());
         }
     }
 }

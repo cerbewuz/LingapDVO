@@ -115,9 +115,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMultiChannelNotificationService, MultiChannelNotificationService>();
 builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>();
 
-// ID Analyzer Service for ID verification and face comparison
-builder.Services.AddHttpClient<IIdAnalyzerService, IdAnalyzerService>();
-builder.Services.AddScoped<IIdAnalyzerService, IdAnalyzerService>();
+// ID Verification Service (ID Analyzer)
+builder.Services.AddHttpClient<IVerificationService, IdAnalyzerService>();
+builder.Services.AddScoped<IVerificationService, IdAnalyzerService>();
 
 // Priority Tracking Service
 builder.Services.AddScoped<PriorityTrackingService>();

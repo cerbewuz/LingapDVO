@@ -7,33 +7,95 @@ namespace LingapDVO.Controllers
     /// <summary>
     /// API Controller for ID Analyzer v2 operations
     /// Base URL: https://api2.idanalyzer.com
-    /// 
+    ///
     /// Endpoints:
+    /// - POST /api/IdAnalyzer/saveSelfie - Save selfie image to disk
     /// - POST /api/IdAnalyzer/scan - Standard ID Scan
     /// - POST /api/IdAnalyzer/face - Face Verification
-    /// - GET /api/IdAnalyzer/account - Get Account Info
-    /// - GET /api/IdAnalyzer/transaction/{id} - Get Transaction Data
     /// - GET /api/IdAnalyzer/health - Health Check
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class IdAnalyzerController : ControllerBase
     {
-        private readonly IIdAnalyzerService _idAnalyzerService;
+        private readonly IVerificationService _verificationService;
         private readonly ILogger<IdAnalyzerController> _logger;
+        private readonly IWebHostEnvironment _environment;
 
-        public IdAnalyzerController(IIdAnalyzerService idAnalyzerService, ILogger<IdAnalyzerController> logger)
+        public IdAnalyzerController(
+            IVerificationService verificationService,
+            ILogger<IdAnalyzerController> logger,
+            IWebHostEnvironment environment)
         {
-            _idAnalyzerService = idAnalyzerService;
+            _verificationService = verificationService;
             _logger = logger;
+            _environment = environment;
+        }
+
+        /// <summary>
+        /// Save selfie image to /wwwroot/UsersImg directory
+        /// This endpoint stores the selfie before sending to ID Analyzer API
+        /// </summary>
+        [HttpPost("saveSelfie")]
+        public async Task<IActionResult> SaveSelfie([FromBody] SaveSelfieRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.ImageData))
+                {
+                    return BadRequest(new { success = false, error = "Image data is required" });
+                }
+
+                // Remove data URL prefix if present
+                var base64Data = RemoveDataUrlPrefix(request.ImageData);
+
+                // Generate unique filename
+                var fileName = $"selfie_{Guid.NewGuid():N}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
+                var usersImgPath = Path.Combine(_environment.WebRootPath, "UsersImg");
+
+                // Ensure directory exists
+                if (!Directory.Exists(usersImgPath))
+                {
+                    Directory.CreateDirectory(usersImgPath);
+                    _logger.LogInformation("Created UsersImg directory: {Path}", usersImgPath);
+                }
+
+                var filePath = Path.Combine(usersImgPath, fileName);
+
+                // Convert base64 to bytes and save
+                var imageBytes = Convert.FromBase64String(base64Data);
+                await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
+
+                _logger.LogInformation("✅ Selfie saved successfully: {FileName} ({Size} bytes)", fileName, imageBytes.Length);
+
+                return Ok(new
+                {
+                    success = true,
+                    fileName = fileName,
+                    filePath = $"/UsersImg/{fileName}",
+                    fileSize = imageBytes.Length,
+                    message = "Selfie saved successfully"
+                });
+            }
+            catch (FormatException ex)
+            {
+                _logger.LogError(ex, "Invalid base64 format");
+                return BadRequest(new { success = false, error = "Invalid image format" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving selfie");
+                return StatusCode(500, new { success = false, error = "Failed to save selfie" });
+            }
         }
 
         /// <summary>
         /// Standard ID Scan - Scans ID document, extracts data, and optionally matches face
+        /// Now reads selfie from /wwwroot/UsersImg and converts to base64 before sending to API
         /// API Reference: https://developer.idanalyzer.com/reference/post-scan
         /// </summary>
         [HttpPost("scan")]
-        public async Task<IActionResult> ScanId([FromBody] ScanIdRequest request)
+        public async Task<IActionResult> ScanId([FromBody] IdAnalyzerScanRequest request)
         {
             try
             {
@@ -43,22 +105,75 @@ namespace LingapDVO.Controllers
                 }
 
                 var documentBase64 = RemoveDataUrlPrefix(request.DocumentImage);
-                var faceBase64 = !string.IsNullOrEmpty(request.FaceImage) ? RemoveDataUrlPrefix(request.FaceImage) : null;
                 var backBase64 = !string.IsNullOrEmpty(request.BackImage) ? RemoveDataUrlPrefix(request.BackImage) : null;
 
-                _logger.LogInformation("Processing ID scan. Face: {HasFace}, Back: {HasBack}",
-                    !string.IsNullOrEmpty(faceBase64), !string.IsNullOrEmpty(backBase64));
+                // CHANGED: Read selfie from stored file instead of receiving base64 directly
+                string? faceBase64 = null;
+                string? selfieFilePath = null;
 
-                var result = await _idAnalyzerService.ScanIdAsync(documentBase64, faceBase64, backBase64);
+                if (!string.IsNullOrEmpty(request.SelfieFileName))
+                {
+                    _logger.LogInformation("📸 Reading selfie from file: {FileName}", request.SelfieFileName);
+
+                    var usersImgPath = Path.Combine(_environment.WebRootPath, "UsersImg");
+                    selfieFilePath = Path.Combine(usersImgPath, request.SelfieFileName);
+
+                    if (System.IO.File.Exists(selfieFilePath))
+                    {
+                        // Read file and convert to base64
+                        var imageBytes = await System.IO.File.ReadAllBytesAsync(selfieFilePath);
+                        faceBase64 = Convert.ToBase64String(imageBytes);
+
+                        _logger.LogInformation("✅ Selfie loaded from disk and converted to BASE64:");
+                        _logger.LogInformation("   - File: {FileName}", request.SelfieFileName);
+                        _logger.LogInformation("   - Original Size: {Size} bytes", imageBytes.Length);
+                        _logger.LogInformation("   - Base64 Length: {Base64Length} chars", faceBase64.Length);
+                        _logger.LogInformation("   - Base64 Preview: {Preview}...", faceBase64.Substring(0, Math.Min(50, faceBase64.Length)));
+                    }
+                    else
+                    {
+                        _logger.LogWarning("⚠️ Selfie file not found: {FilePath}", selfieFilePath);
+                        return BadRequest(new { success = false, error = $"Selfie file not found: {request.SelfieFileName}" });
+                    }
+                }
+                else if (!string.IsNullOrEmpty(request.FaceImage))
+                {
+                    // Fallback: Accept base64 directly (for backward compatibility)
+                    faceBase64 = RemoveDataUrlPrefix(request.FaceImage);
+                    _logger.LogInformation("📸 Using selfie from request body (base64 fallback)");
+                    _logger.LogInformation("   - Base64 Length: {Base64Length} chars", faceBase64.Length);
+                }
+
+                _logger.LogInformation("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                _logger.LogInformation("📤 Sending to ID Analyzer API:");
+                _logger.LogInformation("   - Document: {HasDoc} ({DocLen} chars)", !string.IsNullOrEmpty(documentBase64), documentBase64?.Length ?? 0);
+                _logger.LogInformation("   - Face (BASE64): {HasFace} ({FaceLen} chars)", !string.IsNullOrEmpty(faceBase64), faceBase64?.Length ?? 0);
+                _logger.LogInformation("   - Back: {HasBack} ({BackLen} chars)", !string.IsNullOrEmpty(backBase64), backBase64?.Length ?? 0);
+                _logger.LogInformation("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+                var result = await _verificationService.ScanIdAsync(documentBase64, faceBase64, backBase64);
+
+                // Clean up selfie file after processing (optional)
+                if (!string.IsNullOrEmpty(selfieFilePath) && System.IO.File.Exists(selfieFilePath))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(selfieFilePath);
+                        _logger.LogInformation("🗑️ Deleted selfie file after processing: {FileName}", request.SelfieFileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to delete selfie file: {FileName}", request.SelfieFileName);
+                    }
+                }
 
                 if (!result.Success)
                 {
-                    _logger.LogWarning("ID scan failed: {Error} ({Code})", result.ErrorMessage, result.ErrorCodeString);
+                    _logger.LogWarning("ID scan failed: {Error}", result.ErrorMessage);
                     return Ok(new
                     {
                         success = false,
-                        error = result.ErrorMessage,
-                        errorCode = result.ErrorCodeString
+                        error = result.ErrorMessage
                     });
                 }
 
@@ -71,41 +186,79 @@ namespace LingapDVO.Controllers
                     success = true,
                     decision = result.Decision,
                     transactionId = result.TransactionId,
+                    profileId = result.ProfileId,
+                    reviewScore = result.ReviewScore,
+                    rejectScore = result.RejectScore,
                     warnings = result.Warnings,
+                    missingFields = result.MissingFields,
                     data = new
                     {
-                        // Personal Info - matching ID Analyzer field names
-                        firstName = result.FirstName,           // "First Name"
-                        middleName = result.MiddleName,         // "Middle Name"
-                        lastName = result.LastName,             // "Last Name"
-                        suffix = result.Suffix,                 // "Suffix" (optional)
+                        // Personal Info (CRITICAL for name validation)
+                        firstName = result.FirstName,
+                        middleName = result.MiddleName,
+                        lastName = result.LastName,
+                        suffix = result.Suffix,
                         fullName = result.FullName,
                         sex = result.Sex,
-                        dateOfBirth = result.DateOfBirth,       // "Date of Birth"
+                        dateOfBirth = result.DateOfBirth,
+                        age = result.Age,
+                        dobDay = result.DobDay,
+                        dobMonth = result.DobMonth,
+                        dobYear = result.DobYear,
+
+                        // Nationality
                         nationality = result.Nationality,
-                        
+                        nationalityIso2 = result.NationalityIso2,
+                        nationalityIso3 = result.NationalityIso3,
+
                         // Document Info
-                        documentNumber = result.DocumentNumber, // "Document Number" -> ID Number
+                        documentNumber = result.DocumentNumber,
                         documentType = result.DocumentType,
-                        documentName = result.DocumentName,     // "Document Name" -> ID Type
+                        documentName = result.DocumentName,
+                        documentSide = result.DocumentSide,
                         issueDate = result.IssueDate,
                         expiryDate = result.ExpiryDate,
-                        
-                        // Address - concatenated from Address 1 + Address 2
-                        address1 = result.Address,              // "Address 1"
-                        address2 = result.Address2,             // "Address 2"
-                        address = fullAddress,                  // Concatenated full address
+                        internalId = result.InternalId,
+                        backSideId = result.BackSideId,
+                        reverseId = result.ReverseId,
+
+                        // Address (CRITICAL for Davao City validation)
+                        address1 = result.Address,
+                        address2 = result.Address2,
+                        address = fullAddress,
                         city = result.City,
                         state = result.State,
                         postalCode = result.PostalCode,
                         country = result.Country,
-                        
+                        countryIso2 = result.CountryIso2,
+                        countryIso3 = result.CountryIso3,
+
                         // Verification
                         verificationPassed = result.VerificationPassed,
                         faceMatch = result.FaceMatch,
                         faceSimilarity = result.FaceSimilarity,
                         faceConfidence = result.FaceConfidence,
-                        faceSimilarityPercentage = (int)Math.Round(result.FaceSimilarity * 100)
+                        faceSimilarityPercentage = result.SimilarityPercentage
+                    },
+                    validation = new
+                    {
+                        // Davao City Residence Validation
+                        isDavaoCityResident = result.IsDavaoCityResident,
+                        residenceValidationMessage = result.ResidenceValidationMessage,
+
+                        // Name Validation
+                        nameMatchesRegistration = result.NameMatchesRegistration,
+                        nameValidationMessage = result.NameValidationMessage
+                    },
+                    outputImage = new
+                    {
+                        front = result.FrontImageHash,
+                        face = result.FaceImageHash
+                    },
+                    metadata = new
+                    {
+                        createdAt = result.CreatedAt,
+                        updatedAt = result.UpdatedAt
                     }
                 });
             }
@@ -121,7 +274,7 @@ namespace LingapDVO.Controllers
         /// API Reference: https://developer.idanalyzer.com/reference/post-face-2
         /// </summary>
         [HttpPost("face")]
-        public async Task<IActionResult> VerifyFace([FromBody] FaceVerifyRequest request)
+        public async Task<IActionResult> VerifyFace([FromBody] IdAnalyzerFaceRequest request)
         {
             try
             {
@@ -135,7 +288,7 @@ namespace LingapDVO.Controllers
 
                 _logger.LogInformation("Processing face verification request");
 
-                var result = await _idAnalyzerService.VerifyFaceAsync(faceBase64, referenceBase64);
+                var result = await _verificationService.VerifyFaceAsync(faceBase64, referenceBase64);
 
                 if (!result.Success)
                 {
@@ -150,157 +303,16 @@ namespace LingapDVO.Controllers
                 return Ok(new
                 {
                     success = true,
-                    isMatch = result.IsMatch,
-                    similarity = result.Similarity,
+                    isMatch = result.FaceMatch,
+                    similarity = result.FaceSimilarity,
                     similarityPercentage = result.SimilarityPercentage,
-                    confidence = result.Confidence,
+                    confidence = result.FaceConfidence,
                     decision = result.Decision
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing face verification request");
-                return StatusCode(500, new { success = false, error = "Internal server error" });
-            }
-        }
-
-        /// <summary>
-        /// Legacy endpoint - redirects to /face
-        /// </summary>
-        [HttpPost("compare-faces")]
-        public async Task<IActionResult> CompareFaces([FromBody] CompareFacesRequest request)
-        {
-            var faceRequest = new FaceVerifyRequest
-            {
-                Face = request.FacePhoto,
-                Reference = request.ReferenceFace
-            };
-            return await VerifyFace(faceRequest);
-        }
-
-        /// <summary>
-        /// Get Account Info - Validates API key and returns account details
-        /// API Reference: https://developer.idanalyzer.com/reference/get-myaccount-2
-        /// </summary>
-        [HttpGet("account")]
-        public async Task<IActionResult> GetAccountInfo()
-        {
-            try
-            {
-                var result = await _idAnalyzerService.GetAccountInfoAsync();
-
-                if (!result.Success)
-                {
-                    return Ok(new
-                    {
-                        success = false,
-                        error = result.ErrorMessage
-                    });
-                }
-
-                return Ok(new
-                {
-                    success = true,
-                    accountId = result.AccountId,
-                    email = result.Email,
-                    credits = result.Credits,
-                    plan = result.Plan
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting account info");
-                return StatusCode(500, new { success = false, error = "Internal server error" });
-            }
-        }
-
-        /// <summary>
-        /// Get Transaction Data - Retrieves processed ID data from a previous scan
-        /// API Reference: https://developer.idanalyzer.com/reference/get-transaction-transactionid
-        /// Endpoint: GET https://api2.idanalyzer.com/transaction/{transactionId}
-        /// 
-        /// Returns all extracted data fields from a previously scanned ID including:
-        /// - Personal info (firstName, middleName, lastName, dob, sex)
-        /// - Document info (documentNumber, documentType, documentName)
-        /// - Address info (address1, address2, city, state, postcode, country)
-        /// </summary>
-        [HttpGet("transaction/{transactionId}")]
-        public async Task<IActionResult> GetTransaction(string transactionId)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(transactionId))
-                {
-                    return BadRequest(new { success = false, error = "Transaction ID is required" });
-                }
-
-                _logger.LogInformation("Getting transaction data: {TransactionId}", transactionId);
-
-                var result = await _idAnalyzerService.GetTransactionAsync(transactionId);
-
-                if (!result.Success)
-                {
-                    _logger.LogWarning("Failed to get transaction: {Error} ({Code})", result.ErrorMessage, result.ErrorCodeString);
-                    return Ok(new
-                    {
-                        success = false,
-                        error = result.ErrorMessage,
-                        errorCode = result.ErrorCodeString
-                    });
-                }
-
-                // Return all extracted data fields for account verification
-                return Ok(new
-                {
-                    success = true,
-                    transactionId = result.TransactionId,
-                    decision = result.Decision,
-                    
-                    // Personal Information
-                    data = new
-                    {
-                        firstName = result.FirstName,
-                        middleName = result.MiddleName,
-                        lastName = result.LastName,
-                        suffix = result.Suffix,
-                        fullName = result.FullName,
-                        dateOfBirth = result.DateOfBirth,
-                        sex = result.Sex,
-                        nationality = result.Nationality,
-                        
-                        // Document Information
-                        documentNumber = result.DocumentNumber,
-                        documentType = result.DocumentType,
-                        documentName = result.DocumentName,
-                        issueDate = result.IssueDate,
-                        expiryDate = result.ExpiryDate,
-                        
-                        // Address Information (concatenate address1 + address2)
-                        address = CombineAddress(result.Address, result.Address2),
-                        address1 = result.Address,
-                        address2 = result.Address2,
-                        city = result.City,
-                        state = result.State,
-                        postalCode = result.PostalCode,
-                        country = result.Country
-                    },
-                    
-                    // Face matching results (if available)
-                    face = new
-                    {
-                        isMatch = result.FaceMatch,
-                        similarity = result.FaceSimilarity,
-                        confidence = result.FaceConfidence
-                    },
-                    
-                    // Verification status
-                    verificationPassed = result.VerificationPassed,
-                    warnings = result.Warnings
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting transaction: {TransactionId}", transactionId);
                 return StatusCode(500, new { success = false, error = "Internal server error" });
             }
         }
@@ -319,44 +331,6 @@ namespace LingapDVO.Controllers
             });
         }
 
-        /// <summary>
-        /// Debug endpoint - Test API connectivity and get account info
-        /// </summary>
-        [HttpGet("debug/test-connection")]
-        public async Task<IActionResult> TestConnection()
-        {
-            try
-            {
-                _logger.LogInformation("Testing ID Analyzer API connection...");
-
-                var accountInfo = await _idAnalyzerService.GetAccountInfoAsync();
-
-                return Ok(new
-                {
-                    success = accountInfo.Success,
-                    message = accountInfo.Success
-                        ? "API connection successful"
-                        : $"API connection failed: {accountInfo.ErrorMessage}",
-                    accountInfo = accountInfo.Success ? new
-                    {
-                        email = accountInfo.Email,
-                        credits = accountInfo.Credits,
-                        plan = accountInfo.Plan
-                    } : null
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error testing API connection");
-                return Ok(new
-                {
-                    success = false,
-                    message = $"Exception: {ex.Message}",
-                    stackTrace = ex.StackTrace
-                });
-            }
-        }
-
         private string RemoveDataUrlPrefix(string dataUrl)
         {
             if (string.IsNullOrEmpty(dataUrl))
@@ -371,50 +345,34 @@ namespace LingapDVO.Controllers
 
             return dataUrl;
         }
-
-        /// <summary>
-        /// Combines address1 and address2 into a single address string
-        /// </summary>
-        private string? CombineAddress(string? address1, string? address2)
-        {
-            if (string.IsNullOrWhiteSpace(address1) && string.IsNullOrWhiteSpace(address2))
-                return null;
-            
-            if (string.IsNullOrWhiteSpace(address2))
-                return address1?.Trim();
-            
-            if (string.IsNullOrWhiteSpace(address1))
-                return address2?.Trim();
-            
-            return $"{address1.Trim()}, {address2.Trim()}";
-        }
     }
 
     /// <summary>
-    /// Request model for ID scan
+    /// Request model for saving selfie
     /// </summary>
-    public class ScanIdRequest
+    public class SaveSelfieRequest
+    {
+        public string ImageData { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Request model for ID scan (IdAnalyzer)
+    /// Updated to support stored selfie files
+    /// </summary>
+    public class IdAnalyzerScanRequest
     {
         public string DocumentImage { get; set; } = string.Empty;
-        public string? FaceImage { get; set; }
+        public string? FaceImage { get; set; }          // Deprecated: Use SelfieFileName instead
+        public string? SelfieFileName { get; set; }     // NEW: Filename of stored selfie in /wwwroot/UsersImg
         public string? BackImage { get; set; }
     }
 
     /// <summary>
-    /// Request model for face verification (new)
+    /// Request model for face verification (IdAnalyzer)
     /// </summary>
-    public class FaceVerifyRequest
+    public class IdAnalyzerFaceRequest
     {
         public string Face { get; set; } = string.Empty;
         public string Reference { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// Request model for face comparison (legacy)
-    /// </summary>
-    public class CompareFacesRequest
-    {
-        public string ReferenceFace { get; set; } = string.Empty;
-        public string FacePhoto { get; set; } = string.Empty;
     }
 }

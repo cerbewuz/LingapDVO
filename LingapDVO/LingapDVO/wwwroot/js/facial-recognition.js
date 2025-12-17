@@ -1,54 +1,63 @@
 // ============================================================================
 // FACIAL RECOGNITION MODULE - ID ANALYZER API v2 INTEGRATION
 // ============================================================================
-// Uses ID Analyzer API v2 Standard ID Scan for server-side face verification
+// Uses ID Analyzer API v2 Face Verification for server-side face comparison
 // Base URL: https://api2.idanalyzer.com
 //
-// CORRECT FLOW (API v2 Best Practice):
-// 1. Capture selfie FIRST
-// 2. Upload ID with selfie in Standard ID Scan request (POST /scan)
-// 3. API performs OCR + face matching in single request
-// 4. Returns both document data AND face verification results
+// NEW VERIFICATION FLOW (COLLECT ALL IMAGES FIRST, THEN SUBMIT):
+// ════════════════════════════════════════════════════════════════════════════
+// STEP 1: COLLECT ALL REQUIRED IMAGES (NO API CALLS YET)
+//    - User uploads Front ID → Stored in VerificationState.frontIdImage
+//    - User uploads Back ID → Stored in VerificationState.backIdImage
+//    - User captures Selfie → Stored in VerificationState.selfieImage
+//    - "Verify & Submit" button becomes enabled
 //
-// Reference: https://developer.idanalyzer.com/reference/post-scan
-// The 'face' parameter in scan request enables biometric verification
+// STEP 2: USER CLICKS "VERIFY & SUBMIT" BUTTON
+//    - All images sent to API in single request
+//    - API performs OCR + face matching
+//    - Results populate form fields
+//
+// This module handles SELFIE CAPTURE only.
+// The actual API submission is handled by verification-idanalyzer.js
+//
+// Reference: https://developer.idanalyzer.com/reference/post-face-2
 // ============================================================================
 
 // Face Recognition Configuration
 const FaceRecognitionConfig = {
-    // Minimum similarity score to consider faces as matching (0-100)
-    MATCH_THRESHOLD: 50,
-    
     // API endpoints for ID Analyzer v2
     API_URL: '/api/IdAnalyzer',
+    SAVE_SELFIE_ENDPOINT: '/api/IdAnalyzer/saveSelfie',  // NEW: Save selfie to disk
     FACE_ENDPOINT: '/api/IdAnalyzer/face',
     SCAN_ENDPOINT: '/api/IdAnalyzer/scan',
     
-    // Camera settings - adaptive based on device capability
+    // Camera settings - OPTIMIZED for ID Analyzer v2 API face detection
     CAMERA_CONSTRAINTS: {
-        // Primary constraints (ideal for good cameras)
+        // Primary constraints - HD quality for best face detection
         primary: {
             video: {
-                width: { ideal: 640, max: 1280 },
-                height: { ideal: 480, max: 720 },
+                width: { ideal: 1280, min: 640, max: 1920 },
+                height: { ideal: 720, min: 480, max: 1080 },
                 facingMode: 'user',
-                frameRate: { ideal: 30, max: 60 }
+                frameRate: { ideal: 30 }
             },
             audio: false
         },
-        // Fallback constraints (for older/basic cameras)
+        // Fallback constraints - Standard quality
         fallback: {
             video: {
-                width: { ideal: 320, max: 640 },
-                height: { ideal: 240, max: 480 },
+                width: { ideal: 640, min: 320 },
+                height: { ideal: 480, min: 240 },
                 facingMode: 'user',
-                frameRate: { ideal: 15, max: 30 }
+                frameRate: { ideal: 24 }
             },
             audio: false
         },
         // Minimal constraints (last resort)
         minimal: {
             video: {
+                width: { min: 320 },
+                height: { min: 240 },
                 facingMode: 'user'
             },
             audio: false
@@ -74,7 +83,9 @@ const FaceRecognition = {
     // State
     isInitialized: false,
     isProcessing: false,
+    captureInProgress: false,    // NEW: Flag to prevent multiple captures
     selfieImageData: null,
+    selfieFileName: null,          // NEW: Store filename of saved selfie
     idImageData: null,
     videoStream: null,
     retryCount: 0,
@@ -84,10 +95,8 @@ const FaceRecognition = {
     
     // Initialize the module (no model loading needed - server-side processing)
     async init() {
-        console.log('🔄 Initializing Face Recognition Module (ID Analyzer)...');
         
         if (this.isInitialized) {
-            console.log('✅ Face Recognition already initialized');
             return true;
         }
         
@@ -96,11 +105,9 @@ const FaceRecognition = {
             const response = await fetch(`${FaceRecognitionConfig.API_URL}/health`);
             if (response.ok) {
                 this.isInitialized = true;
-                console.log('✅ Face Recognition Module (ID Analyzer) initialized successfully');
                 return true;
             }
         } catch (error) {
-            console.warn('⚠️ Could not verify API health, but continuing anyway');
         }
         
         // Initialize anyway - API might be available
@@ -112,7 +119,6 @@ const FaceRecognition = {
     // Endpoint: POST /api/IdAnalyzer/face
     // Reference: https://developer.idanalyzer.com/reference/post-face-2
     async compareFacesViaApi(referenceBase64, faceBase64) {
-        console.log('🔐 Comparing faces via ID Analyzer Face Verification API...');
         
         try {
             const response = await fetch(FaceRecognitionConfig.FACE_ENDPOINT, {
@@ -129,7 +135,6 @@ const FaceRecognition = {
             const result = await response.json();
             
             if (!result.success) {
-                console.error('❌ Face verification failed:', result.error);
                 return {
                     match: false,
                     similarity: 0,
@@ -138,7 +143,6 @@ const FaceRecognition = {
                 };
             }
             
-            console.log(`📊 Face verification result: Similarity=${result.similarityPercentage}%, Match=${result.isMatch}, Decision=${result.decision}`);
             
             return {
                 match: result.isMatch,
@@ -148,7 +152,6 @@ const FaceRecognition = {
                 decision: result.decision
             };
         } catch (error) {
-            console.error('❌ Error calling face verification API:', error);
             return {
                 match: false,
                 similarity: 0,
@@ -162,7 +165,6 @@ const FaceRecognition = {
     // Endpoint: POST /api/IdAnalyzer/scan
     // Reference: https://developer.idanalyzer.com/reference/post-scan
     async scanIdViaApi(documentBase64, selfieBase64 = null, backBase64 = null) {
-        console.log('📄 Scanning ID via ID Analyzer Standard ID Scan API...');
         
         try {
             const requestBody = {
@@ -189,22 +191,18 @@ const FaceRecognition = {
             const result = await response.json();
             
             if (!result.success) {
-                console.error('❌ ID scan failed:', result.error);
                 return {
                     success: false,
                     error: result.error
                 };
             }
             
-            console.log('✅ ID scan successful');
-            console.log('📋 Document type:', result.data.documentType);
             
             return {
                 success: true,
                 data: result.data
             };
         } catch (error) {
-            console.error('❌ Error calling ID scan API:', error);
             return {
                 success: false,
                 error: error.message
@@ -215,18 +213,15 @@ const FaceRecognition = {
     // Store selfie image data
     storeSelfieImageData(imageData) {
         this.selfieImageData = imageData;
-        console.log('💾 Selfie image data stored');
     },
     
     // Store ID image data
     storeIdImageData(imageData) {
         this.idImageData = imageData;
-        console.log('💾 ID image data stored');
     },
     
     // Start webcam for selfie capture - OPTIMIZED with adaptive constraints
     async startCamera(videoElement) {
-        console.log('📷 Starting camera with adaptive constraints...');
         
         // Stop any existing stream first
         this.stopCamera();
@@ -236,9 +231,7 @@ const FaceRecognition = {
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
             cameras = devices.filter(device => device.kind === 'videoinput');
-            console.log(`📷 Found ${cameras.length} camera(s)`);
         } catch (e) {
-            console.log('⚠️ Could not enumerate devices:', e);
         }
         
         // Try different constraint levels
@@ -247,7 +240,6 @@ const FaceRecognition = {
         
         for (const level of constraintLevels) {
             try {
-                console.log(`📷 Trying ${level} constraints...`);
                 const constraints = FaceRecognitionConfig.CAMERA_CONSTRAINTS[level];
                 
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -256,14 +248,10 @@ const FaceRecognition = {
                 const videoTrack = stream.getVideoTracks()[0];
                 if (videoTrack) {
                     const settings = videoTrack.getSettings();
-                    console.log(`✅ Camera started with ${level} constraints`);
-                    console.log(`📐 Actual resolution: ${settings.width}x${settings.height}`);
-                    console.log(`🎬 Frame rate: ${settings.frameRate}`);
                     
                     // Apply optimal settings if available
                     if (videoTrack.getCapabilities) {
                         const capabilities = videoTrack.getCapabilities();
-                        console.log('📷 Camera capabilities:', capabilities);
                     }
                 }
                 
@@ -271,7 +259,6 @@ const FaceRecognition = {
                 return await this.setupVideoStream(videoElement, stream);
                 
             } catch (error) {
-                console.warn(`⚠️ ${level} constraints failed:`, error.name, error.message);
                 lastError = error;
                 
                 // If it's a permission error, don't try other constraints
@@ -287,7 +274,6 @@ const FaceRecognition = {
     
     // Setup video stream on video element
     async setupVideoStream(videoElement, stream) {
-        console.log('📷 Setting up video stream...');
         
         // Set the stream to video element
         videoElement.srcObject = stream;
@@ -319,25 +305,20 @@ const FaceRecognition = {
                 resolved = true;
                 cleanup();
                 
-                console.log('✅ Video element ready, starting playback...');
                 
                 try {
                     // Try to play the video
                     await videoElement.play();
                     
-                    console.log('✅ Camera playing successfully');
-                    console.log(`📐 Video dimensions: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
                     
                     // Additional check - ensure we have valid dimensions
                     if (videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
                         // Wait a bit more for dimensions
                         await new Promise(r => setTimeout(r, 500));
-                        console.log(`📐 Video dimensions (after wait): ${videoElement.videoWidth}x${videoElement.videoHeight}`);
                     }
                     
                     resolve(true);
                 } catch (err) {
-                    console.error('❌ Video play error:', err);
                     reject(err);
                 }
             };
@@ -345,10 +326,8 @@ const FaceRecognition = {
             // Multiple event listeners for compatibility
             videoElement.oncanplay = onReady;
             videoElement.onloadedmetadata = () => {
-                console.log('📷 Video metadata loaded');
             };
             videoElement.onloadeddata = () => {
-                console.log('📷 Video data loaded');
                 onReady();
             };
             
@@ -356,7 +335,6 @@ const FaceRecognition = {
                 if (resolved) return;
                 resolved = true;
                 cleanup();
-                console.error('❌ Video element error:', err);
                 reject(new Error('Failed to load video stream'));
             };
             
@@ -365,7 +343,6 @@ const FaceRecognition = {
                 if (resolved) return;
                 
                 if (videoElement.readyState >= 2 && videoElement.videoWidth > 0) {
-                    console.log('📷 Video ready via interval check');
                     onReady();
                 }
             }, FaceRecognitionConfig.VIDEO_READY_CHECK_INTERVAL);
@@ -378,7 +355,6 @@ const FaceRecognition = {
                     
                     // Check if video is actually working despite timeout
                     if (videoElement.videoWidth > 0 && videoElement.readyState >= 2) {
-                        console.log('⚠️ Timeout but video seems to be working');
                         videoElement.play().then(() => resolve(true)).catch(reject);
                     } else {
                         reject(new Error('Camera timeout - video not loading'));
@@ -393,69 +369,153 @@ const FaceRecognition = {
         if (this.videoStream) {
             this.videoStream.getTracks().forEach(track => {
                 track.stop();
-                console.log(`📷 Stopped track: ${track.kind}`);
             });
             this.videoStream = null;
-            console.log('📷 Camera stopped');
         }
     },
     
-    // Capture selfie from video stream - OPTIMIZED for various resolutions
+    // Capture selfie from video stream - OPTIMIZED for ID Analyzer v2 API face detection
+    // FIXED: Added captureInProgress flag to prevent multiple captures
     async captureSelfie(videoElement, canvasElement) {
-        console.log('📸 Capturing selfie...');
+        // Prevent multiple simultaneous captures
+        if (this.captureInProgress) {
+            return {
+                success: false,
+                error: 'Capture already in progress'
+            };
+        }
         
+        this.captureInProgress = true;
+
         // Get actual video dimensions
         const videoWidth = videoElement.videoWidth || 640;
         const videoHeight = videoElement.videoHeight || 480;
-        
-        console.log(`📐 Capturing from video: ${videoWidth}x${videoHeight}`);
-        
-        // Calculate optimal canvas size (balance quality vs performance)
+
+
+        // ID Analyzer v2 API Requirements for Face Detection:
+        // - Minimum resolution: 640x480 (recommended: 1280x720 or higher)
+        // - Face must be clearly visible and well-lit
+        // - High quality JPEG (0.92+ quality)
+        // - DO NOT mirror the image (causes face detection issues)
+
+        // Calculate optimal capture size - favor higher resolution for face detection
         let captureWidth = videoWidth;
         let captureHeight = videoHeight;
-        const maxDimension = 800;
-        
-        if (videoWidth > maxDimension || videoHeight > maxDimension) {
-            const scale = maxDimension / Math.max(videoWidth, videoHeight);
+        const minDimension = 640;
+        const maxDimension = 1920; // Allow up to Full HD for best face detection
+
+        // Ensure minimum resolution
+        if (videoWidth < minDimension || videoHeight < minDimension) {
+            const scale = minDimension / Math.min(videoWidth, videoHeight);
             captureWidth = Math.round(videoWidth * scale);
             captureHeight = Math.round(videoHeight * scale);
-            console.log(`📐 Scaling down to: ${captureWidth}x${captureHeight}`);
         }
-        
+
+        // Cap at maximum to avoid huge files
+        if (captureWidth > maxDimension || captureHeight > maxDimension) {
+            const scale = maxDimension / Math.max(captureWidth, captureHeight);
+            captureWidth = Math.round(captureWidth * scale);
+            captureHeight = Math.round(captureHeight * scale);
+        }
+
+
         // Set canvas size
         canvasElement.width = captureWidth;
         canvasElement.height = captureHeight;
-        
+
         const context = canvasElement.getContext('2d');
-        
-        // Enable image smoothing for better quality
+
+        // Enable high-quality image smoothing
         context.imageSmoothingEnabled = true;
         context.imageSmoothingQuality = 'high';
-        
-        // Draw video frame to canvas (mirror for selfie)
-        context.save();
-        context.translate(captureWidth, 0);
-        context.scale(-1, 1);
+
+        // CRITICAL FIX: Draw video frame WITHOUT mirroring
+        // ID Analyzer API face detection works better with non-mirrored images
+        // The mirror effect is only for user preview, not for the captured image
         context.drawImage(videoElement, 0, 0, captureWidth, captureHeight);
-        context.restore();
-        
-        // Get image data as base64
-        const imageData = canvasElement.toDataURL('image/jpeg', 0.85);
-        
-        // Store selfie image data for later comparison
+
+        // CRITICAL FIX: Use higher JPEG quality (0.95) for better face detection
+        // ID Analyzer needs clear facial features - don't over-compress
+        const imageData = canvasElement.toDataURL('image/jpeg', 0.95);
+
+
+        // Validate image was captured
+        if (!imageData || imageData.length < 1000) {
+            this.captureInProgress = false;  // Reset flag on failure
+            return {
+                success: false,
+                error: 'Failed to capture valid selfie image'
+            };
+        }
+
+        // Store selfie image data in memory
         this.storeSelfieImageData(imageData);
+
+        // CRITICAL: Save selfie to server disk FIRST before sending to ID Analyzer
+        const saveResult = await this.saveSelfieToServer(imageData);
+
+        if (!saveResult.success) {
+            this.captureInProgress = false;  // Reset flag on failure
+            return {
+                success: false,
+                error: 'Failed to save selfie to server: ' + saveResult.error
+            };
+        }
+
+        // Store filename for later use
+        this.selfieFileName = saveResult.fileName;
+
         
-        console.log('✅ Selfie captured successfully');
-        
+        // Reset flag on success (allow retry later if needed)
+        this.captureInProgress = false;
+
         return {
             success: true,
-            imageData: imageData
+            imageData: imageData,
+            fileName: saveResult.fileName
         };
+    },
+
+    // NEW: Save selfie to server (/wwwroot/UsersImg)
+    async saveSelfieToServer(imageData) {
+
+        try {
+            const response = await fetch(FaceRecognitionConfig.SAVE_SELFIE_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    imageData: imageData
+                })
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                return {
+                    success: false,
+                    error: result.error
+                };
+            }
+
+
+            return {
+                success: true,
+                fileName: result.fileName,
+                filePath: result.filePath,
+                fileSize: result.fileSize
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
     },
     
     // Perform face verification using ID Analyzer API
     async verifyFace() {
-        console.log('🔐 Performing face verification via ID Analyzer...');
         
         if (!this.selfieImageData) {
             return {
@@ -473,31 +533,23 @@ const FaceRecognition = {
         
         // Compare faces via API
         const comparison = await this.compareFacesViaApi(this.idImageData, this.selfieImageData);
-        
+
         if (comparison.error) {
             return {
                 success: false,
                 error: comparison.error
             };
         }
-        
-        if (comparison.match) {
-            console.log('✅ Face verification PASSED');
-            return {
-                success: true,
-                match: true,
-                similarity: comparison.percentage,
-                message: `Face verified successfully! (${comparison.percentage}% match)`
-            };
-        } else {
-            console.log('❌ Face verification FAILED');
-            return {
-                success: true,
-                match: false,
-                similarity: comparison.percentage,
-                message: `Face verification failed. Similarity: ${comparison.percentage}%`
-            };
-        }
+
+        // Return raw API response without custom decision logic
+        // The API's decision field is the single source of truth
+        return {
+            success: true,
+            similarity: comparison.percentage,
+            confidence: comparison.confidence,
+            decision: comparison.decision,
+            message: 'Face verification completed. Decision: ' + (comparison.decision || 'pending')
+        };
     },
     
     // Reset state
@@ -506,18 +558,15 @@ const FaceRecognition = {
         this.idImageData = null;
         this.retryCount = 0;
         this.stopCamera();
-        console.log('🔄 Face Recognition state reset');
     },
     
     // Store selfie data (for backward compatibility)
     storeSelfieDescriptor(descriptor, imageData) {
         this.selfieImageData = imageData;
-        console.log('💾 Selfie image data stored');
     },
     
     // Compare selfie with ID face (called after ID is uploaded)
     async compareWithId(idImageSource) {
-        console.log('🔐 Comparing selfie with ID face via ID Analyzer...');
         
         if (!this.selfieImageData) {
             return {
@@ -546,12 +595,12 @@ const FaceRecognitionUI = {
     onSelfieCompleteCallback: null,
     onCloseCallback: null,
     pendingIdImage: null,
+    isCapturing: false,  // NEW: Flag to prevent multiple captures
     
     // Initialize UI
     init() {
         this.cacheElements();
         this.bindEvents();
-        console.log('✅ Face Recognition UI initialized');
     },
     
     // Cache DOM elements
@@ -581,7 +630,13 @@ const FaceRecognitionUI = {
     // Bind event handlers
     bindEvents() {
         if (this.elements.captureBtn) {
-            this.elements.captureBtn.addEventListener('click', () => this.startCountdown());
+            this.elements.captureBtn.addEventListener('click', () => {
+                // Prevent multiple clicks during countdown or capture
+                if (this.isCapturing || this.countdownInterval) {
+                    return;
+                }
+                this.startCountdown();
+            });
         }
         
         if (this.elements.retryBtn) {
@@ -622,7 +677,6 @@ const FaceRecognitionUI = {
     
     // Open modal for SELFIE CAPTURE (called AFTER ID Upload)
     async openForSelfie(onSelfieComplete, onClose) {
-        console.log('🔓 Opening Face Recognition Modal for Selfie Capture...');
         
         this.onSelfieCompleteCallback = onSelfieComplete;
         this.onCloseCallback = onClose;
@@ -745,20 +799,15 @@ const FaceRecognitionUI = {
                 throw { name: 'NotSupportedError', message: 'Camera not supported in this browser' };
             }
             
-            console.log('📷 Attempting to start camera...');
             await FaceRecognition.startCamera(this.elements.video);
-            console.log('✅ Camera started successfully in UI');
             
             // Restore normal instructions after camera starts
             this.restoreNormalInstructions();
-            
-            this.updateStatus('Position your face in the frame and click "Capture"', 'ready');
+
+            this.updateStatus('Face the camera directly - Make sure your face is well-lit and clearly visible', 'ready');
             this.showCaptureButton();
             
         } catch (error) {
-            console.error('❌ Camera error in UI:', error);
-            console.error('Error name:', error.name);
-            console.error('Error message:', error.message);
             
             // Check error type - handle various browser error formats
             const errorName = error.name || '';
@@ -863,15 +912,35 @@ const FaceRecognitionUI = {
         if (instructionsEl) {
             instructionsEl.innerHTML = `
                 <h4 class="text-blue-800 font-semibold flex items-center gap-2">
-                    <i class="fas fa-info-circle text-blue-600"></i> Take a Selfie
+                    <i class="fas fa-camera text-blue-600"></i> Take a Clear Selfie for Face Verification
                 </h4>
-                <ul class="mt-2 text-blue-700 text-sm list-disc list-inside space-y-1">
-                    <li>Ensure good lighting on your face</li>
-                    <li>Remove glasses, hats, or face coverings</li>
-                    <li>Position your face within the oval frame</li>
-                    <li>Look directly at the camera</li>
-                    <li>Your selfie will be compared with your ID photo</li>
-                </ul>
+                <div class="mt-3 space-y-2">
+                    <p class="text-blue-700 text-sm font-medium">
+                        <i class="fas fa-exclamation-circle text-blue-600 mr-1"></i>
+                        Important: Your face must be clearly visible for verification
+                    </p>
+                    <div class="bg-white/60 rounded-lg p-3 mt-2">
+                        <p class="text-blue-800 text-xs font-semibold mb-2">✓ DO:</p>
+                        <ul class="text-blue-700 text-xs list-disc list-inside space-y-1 ml-2">
+                            <li><strong>Face the camera directly</strong> - look straight ahead</li>
+                            <li><strong>Good lighting</strong> - make sure your face is well-lit (avoid shadows)</li>
+                            <li><strong>Entire face visible</strong> - forehead to chin must be in frame</li>
+                            <li><strong>Neutral expression</strong> - don't smile too much, keep eyes open</li>
+                            <li><strong>Remove accessories</strong> - take off glasses, hats, masks</li>
+                        </ul>
+                        <p class="text-red-700 text-xs font-semibold mb-1 mt-2">✗ DON'T:</p>
+                        <ul class="text-red-700 text-xs list-disc list-inside space-y-1 ml-2">
+                            <li>Look away or tilt your head</li>
+                            <li>Cover any part of your face</li>
+                            <li>Take photos in dim lighting or with backlighting</li>
+                            <li>Move during capture</li>
+                        </ul>
+                    </div>
+                    <p class="text-blue-600 text-xs mt-2">
+                        <i class="fas fa-shield-check mr-1"></i>
+                        This selfie will be matched with the photo on your ID
+                    </p>
+                </div>
             `;
             instructionsEl.className = 'face-instructions bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200';
         }
@@ -879,7 +948,6 @@ const FaceRecognitionUI = {
     
     // Close modal
     closeModal() {
-        console.log('🔒 Closing Face Recognition Modal...');
         
         FaceRecognition.stopCamera();
         this.clearCountdown();
@@ -893,7 +961,13 @@ const FaceRecognitionUI = {
     },
     
     // Start countdown before capture
+    // FIXED: Added safeguard to prevent multiple countdowns
     startCountdown() {
+        // Prevent multiple countdowns or captures
+        if (this.countdownInterval || this.isCapturing) {
+            return;
+        }
+        
         let count = FaceRecognitionConfig.COUNTDOWN_SECONDS;
         
         this.hideButtons();
@@ -918,7 +992,10 @@ const FaceRecognitionUI = {
                 if (this.elements.countdown) {
                     this.elements.countdown.classList.add('hidden');
                 }
-                this.captureSelfie();
+                // Only capture if not already capturing
+                if (!this.isCapturing) {
+                    this.captureSelfie();
+                }
             }
         }, 1000);
     },
@@ -932,8 +1009,14 @@ const FaceRecognitionUI = {
     },
     
     // Capture selfie only (Selfie-First Flow) - ID Analyzer version
+    // FIXED: Added isCapturing flag to prevent multiple captures
     async captureSelfie() {
-        console.log('📸 Capturing selfie...');
+        // Prevent multiple simultaneous captures
+        if (this.isCapturing) {
+            return;
+        }
+        
+        this.isCapturing = true;
         
         FaceRecognition.isProcessing = true;
         this.updateStatus('Capturing photo...', 'loading');
@@ -949,6 +1032,7 @@ const FaceRecognitionUI = {
         this.hideVerifyingOverlay();
         
         if (!captureResult.success) {
+            this.isCapturing = false;  // Reset flag on failure
             this.updateStatus(captureResult.error || 'Failed to capture selfie', 'error');
             this.showRetryButton();
             FaceRecognition.retryCount++;
@@ -977,16 +1061,19 @@ const FaceRecognitionUI = {
         FaceRecognition.stopCamera();
         
         // Show success message
-        this.updateStatus('Selfie captured successfully! You can now upload your ID.', 'success');
+        this.updateStatus('Selfie captured successfully!', 'success');
         this.hideButtons();
         
         // Auto-close after delay and callback
+        // IMPORTANT: Include fileName for file-based submission
         setTimeout(() => {
+            this.isCapturing = false;  // Reset flag after success
             this.closeModal();
             if (this.onSelfieCompleteCallback) {
                 this.onSelfieCompleteCallback({
                     success: true,
-                    imageData: captureResult.imageData
+                    imageData: captureResult.imageData,
+                    fileName: captureResult.fileName  // Include filename for API submission
                 });
             }
         }, 1500);
@@ -994,7 +1081,10 @@ const FaceRecognitionUI = {
     
     // Retry camera/capture
     async retry() {
-        console.log('🔄 Retrying...');
+        
+        // Reset capture flags to allow new capture
+        this.isCapturing = false;
+        this.clearCountdown();
         
         this.hideMatchResult();
          if (this.elements.previewContainer) {
@@ -1065,42 +1155,8 @@ const FaceRecognitionUI = {
         }
     },
     
-    showMatchResult(isMatch, percentage) {
-        if (this.elements.matchResult) {
-            this.elements.matchResult.classList.remove('hidden');
-            this.elements.matchResult.className = isMatch 
-                ? 'face-match-result success'
-                : 'face-match-result failure';
-        }
-        
-        // Update header
-        const headerEl = document.getElementById('matchResultHeader');
-        const titleEl = document.getElementById('matchResultTitle');
-        
-        if (headerEl) {
-            headerEl.className = isMatch ? 'face-match-header success' : 'face-match-header failure';
-            const icon = headerEl.querySelector('i');
-            if (icon) {
-                icon.className = isMatch ? 'fas fa-check-circle' : 'fas fa-times-circle';
-            }
-        }
-        
-        if (titleEl) {
-            titleEl.textContent = isMatch ? 'Face Verified Successfully!' : 'Face Verification Failed';
-        }
-        
-        if (this.elements.matchPercentage) {
-            this.elements.matchPercentage.textContent = `${percentage}%`;
-            this.elements.matchPercentage.className = isMatch ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold';
-        }
-        
-        if (this.elements.progressBar) {
-            this.elements.progressBar.style.width = `${percentage}%`;
-            this.elements.progressBar.className = isMatch 
-                ? 'face-match-percentage-fill success'
-                : 'face-match-percentage-fill failure';
-        }
-    },
+    // REMOVED: showMatchResult() - This function made custom decisions about face verification
+    // The system now follows ONLY the API's decision field (accept/review/reject)
     
     hideMatchResult() {
         if (this.elements.matchResult) {
@@ -1121,6 +1177,9 @@ const FaceRecognitionUI = {
     },
     
     resetUI() {
+        // Reset capture flags
+        this.isCapturing = false;
+        
         this.hideButtons();
         this.hideSelfiePreview();
         this.hideMatchResult();
@@ -1137,7 +1196,21 @@ const FaceRecognitionUI = {
 
 // ============================================================================
 // INTEGRATION WITH ACCOUNT VERIFICATION FLOW
-// Flow: ID Upload First → Then Facial Recognition (Selfie) → Compare
+// ════════════════════════════════════════════════════════════════════════════
+// NEW FLOW: COLLECT ALL IMAGES FIRST, THEN SUBMIT
+// ════════════════════════════════════════════════════════════════════════════
+// 
+// This module handles SELFIE CAPTURE for account verification.
+// The actual API submission is handled by verification-idanalyzer.js
+//
+// Flow:
+// 1. User uploads Front ID → Stored in VerificationState.frontIdImage
+// 2. User uploads Back ID → Stored in VerificationState.backIdImage
+// 3. User captures Selfie (this module) → Stored in VerificationState.selfieImage
+// 4. User clicks "Verify & Submit" → submitVerification() sends all to API
+// 5. API returns OCR data + face match result
+// 6. Form fields populated, face result displayed
+//
 // ============================================================================
 
 const FaceVerificationFlow = {
@@ -1151,7 +1224,6 @@ const FaceVerificationFlow = {
     
     // Step 1: Store ID image (called AFTER ID upload)
     storeIdImage(idImageSource) {
-        console.log('💾 Storing ID image for face verification...');
         this.idImageData = idImageSource;
         this.idUploaded = true;
         FaceRecognition.storeIdImageData(idImageSource);
@@ -1161,7 +1233,6 @@ const FaceVerificationFlow = {
     
     // Step 2: Start selfie capture (called AFTER ID upload)
     startSelfieCapture() {
-        console.log('🚀 Starting Selfie Capture Flow...');
         
         this.selfieCaptured = false;
         this.verificationPassed = false;
@@ -1177,28 +1248,39 @@ const FaceVerificationFlow = {
     },
     
     // Called when selfie is captured successfully
+    // NEW FLOW: Store in VerificationState instead of immediately comparing
     onSelfieComplete(result) {
-        console.log('✅ Selfie captured successfully', result);
         
         this.selfieCaptured = true;
         this.selfieImageData = result.imageData;
+        this.selfieFileName = result.fileName;  // Store filename for API submission
         
         // Store in session for persistence
         sessionStorage.setItem('selfieCaptured', 'true');
         sessionStorage.setItem('selfieImageData', result.imageData);
+        if (result.fileName) {
+            sessionStorage.setItem('selfieFileName', result.fileName);
+        }
         
-        // Show selfie success message
+        // ═══════════════════════════════════════════════════════════════════════════
+        // NEW FLOW: Store selfie in VerificationState (NO API CALL YET)
+        // Store both imageData and fileName for file-based API submission
+        // ═══════════════════════════════════════════════════════════════════════════
+        if (typeof VerificationState !== 'undefined') {
+            VerificationState.setSelfie(result.imageData);
+            VerificationState.selfieFileName = result.fileName;  // Store filename
+        }
+        
+        // Show selfie success message (no auto-compare)
         this.showSelfieSuccessMessage();
         
-        // Automatically compare with ID if ID was uploaded
-        if (this.idUploaded && this.idImageData) {
-            this.compareWithId(this.idImageData);
-        }
+        // NOTE: NO automatic comparison - user must click "Verify & Submit" button
+        // The old flow was: if (this.idUploaded && this.idImageData) { this.compareWithId(...) }
+        // New flow: Wait for user to click verify button which calls submitVerification()
     },
     
     // Called when user cancels selfie capture
     onSelfieCancelled(result) {
-        console.log('❌ Selfie cancelled', result);
         
         this.selfieCaptured = false;
         
@@ -1206,81 +1288,44 @@ const FaceVerificationFlow = {
         this.showSelfieRequiredMessage();
     },
     
-    // Step 3: Compare selfie with ID (called after selfie capture)
-    async compareWithId(idImageSource) {
-        console.log('🔐 Comparing selfie with ID...');
-        
-        if (!this.selfieCaptured && !FaceRecognition.selfieImageData) {
-            console.warn('⚠️ No selfie captured yet');
-            return {
-                success: false,
-                error: 'Please take a selfie first.'
-            };
-        }
-        
-        // Store ID image if not already stored
-        if (idImageSource && !this.idImageData) {
-            this.storeIdImage(idImageSource);
-        }
-        
-        // Show comparing status
-        this.showComparingStatus();
-        
-        // Compare with ID
-        const result = await FaceRecognition.compareWithId(idImageSource || this.idImageData);
-        
-        if (!result.success) {
-            this.onVerificationFailure({ reason: 'comparison_failed', message: result.error });
-            return result;
-        }
-        
-        if (result.match) {
-            this.onVerificationSuccess(result);
-        } else {
-            this.onVerificationFailure({ reason: 'no_match', similarity: result.similarity });
-        }
-        
-        return result;
-    },
-    
-    // Called when verification succeeds
-    onVerificationSuccess(result) {
-        console.log('✅ Face Verification Flow: SUCCESS', result);
-        
-        this.verificationPassed = true;
-        this.verificationResult = result;
-        
-        // Enable form submission
-        this.enableAccountVerificationForm();
-        
-        // Show success message
-        this.showSuccessMessage(result.similarity);
-        
-        // Store verification status
-        sessionStorage.setItem('faceVerificationPassed', 'true');
-        sessionStorage.setItem('faceVerificationSimilarity', result.similarity);
-    },
-    
-    // Called when verification fails
-    onVerificationFailure(result) {
-        console.log('❌ Face Verification Flow: FAILURE', result);
-        
-        this.verificationPassed = false;
-        this.verificationResult = result;
-        
-        // Disable form submission
-        this.disableAccountVerificationForm();
-        
-        // Show failure message
-        this.showFailureMessage(result.reason, result.similarity);
-        
-        // Clear verification status
-        sessionStorage.removeItem('faceVerificationPassed');
-        sessionStorage.removeItem('faceVerificationSimilarity');
-    },
+    // REMOVED: compareWithId() - This function made custom verification decisions
+    // The system now follows ONLY the API's decision field (accept/review/reject)
+    // Face verification is handled as part of the combined ID scan API call
+
+    // REMOVED: onVerificationSuccess() - This function made custom "success" decisions
+    // The system now follows ONLY the API's decision field (accept/review/reject)
+
+    // REMOVED: onVerificationFailure() - This function made custom "failure" decisions
+    // The system now follows ONLY the API's decision field (accept/review/reject)
     
     // Show selfie success message
+    // NEW FLOW: Also update the selfie preview in the upload area
     showSelfieSuccessMessage() {
+        // Update selfie preview in upload area
+        const selfiePreview = document.getElementById('selfie-preview');
+        const selfieCaptureArea = document.getElementById('selfie-capture-area');
+        
+        if (selfiePreview && this.selfieImageData) {
+            selfiePreview.src = this.selfieImageData;
+            selfiePreview.classList.remove('hidden');
+        }
+        
+        if (selfieCaptureArea) {
+            selfieCaptureArea.classList.add('has-image', 'active');
+            const content = selfieCaptureArea.querySelector('.selfie-capture-content');
+            if (content) {
+                // Update text to show selfie captured
+                const titleEl = content.querySelector('.font-semibold');
+                if (titleEl) {
+                    titleEl.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-2"></i>Selfie Captured';
+                }
+                const descEl = content.querySelector('.text-gray-500');
+                if (descEl) {
+                    descEl.textContent = 'Click to retake selfie';
+                }
+            }
+        }
+        
         const container = document.getElementById('face-verification-status') || this.createStatusContainer();
         
         if (container) {
@@ -1293,7 +1338,7 @@ const FaceVerificationFlow = {
                         <div>
                             <h4 class="font-semibold text-green-800">Selfie Captured</h4>
                             <p class="text-green-700 text-sm mt-1">
-                                Your face has been captured. Verifying with your ID...
+                                Your selfie has been captured. Click "Verify & Extract ID Data" to proceed.
                             </p>
                         </div>
                     </div>
@@ -1404,68 +1449,11 @@ const FaceVerificationFlow = {
         });
     },
     
-    // Show success message
-    showSuccessMessage(similarity) {
-        const container = document.getElementById('face-verification-status') || this.createStatusContainer();
-        
-        if (container) {
-            container.innerHTML = `
-                <div class="p-4 bg-green-50 border border-green-300 rounded-xl">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-user-check text-green-600 text-lg"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-green-800">Face Verification Passed</h4>
-                            <p class="text-green-700 text-sm mt-1">
-                                Your identity has been verified successfully. (${similarity}% match)
-                            </p>
-                            <p class="text-green-600 text-xs mt-2">
-                                <i class="fas fa-check mr-1"></i>You may now complete and submit the verification form.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.classList.remove('hidden');
-        }
-    },
-    
-    // Show failure message
-    showFailureMessage(reason, similarity) {
-        const container = document.getElementById('face-verification-status') || this.createStatusContainer();
-        
-        if (container) {
-            let message = 'Your face could not be matched with the ID photo.';
-            if (reason === 'comparison_failed') {
-                message = 'Could not detect a face in the ID photo. Please upload a clearer image.';
-            } else if (similarity !== undefined) {
-                message = `Face match similarity too low (${similarity}%). Please try again with better lighting or a clearer ID.`;
-            }
-            
-            container.innerHTML = `
-                <div class="p-4 bg-red-50 border border-red-300 rounded-xl">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-user-times text-red-600 text-lg"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-red-800">Face Verification Failed</h4>
-                            <p class="text-red-700 text-sm mt-1">${message}</p>
-                            <p class="text-red-600 text-xs mt-2">
-                                <i class="fas fa-info-circle mr-1"></i>Form submission is disabled until face verification passes.
-                            </p>
-                            <button type="button" onclick="FaceVerificationFlow.startSelfieCapture()" 
-                                class="mt-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">
-                                <i class="fas fa-redo mr-2"></i>Retake Selfie
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.classList.remove('hidden');
-        }
-    },
+    // REMOVED: showSuccessMessage() - This function made custom "Face Verification Passed" decisions
+    // The system now follows ONLY the API's decision field (accept/review/reject)
+
+    // REMOVED: showFailureMessage() - This function made custom "Face Verification Failed" decisions
+    // The system now follows ONLY the API's decision field (accept/review/reject)
     
     // Create status container if it doesn't exist
     createStatusContainer() {
@@ -1487,40 +1475,9 @@ const FaceVerificationFlow = {
         return container;
     },
     
-    // Check if selfie was already captured (page reload)
-    checkPreviousState() {
-        const selfieCaptured = sessionStorage.getItem('selfieCaptured');
-        const verificationPassed = sessionStorage.getItem('faceVerificationPassed');
-        const idUploaded = sessionStorage.getItem('idUploaded');
-        
-        if (verificationPassed === 'true') {
-            this.verificationPassed = true;
-            this.selfieCaptured = true;
-            this.idUploaded = true;
-            const similarity = sessionStorage.getItem('faceVerificationSimilarity') || '0';
-            this.showSuccessMessage(similarity);
-            this.enableAccountVerificationForm();
-            return true;
-        }
-        
-        if (idUploaded === 'true') {
-            this.idUploaded = true;
-            this.idImageData = sessionStorage.getItem('idImageData');
-            
-            if (selfieCaptured === 'true') {
-                this.selfieCaptured = true;
-                this.selfieImageData = sessionStorage.getItem('selfieImageData');
-                // Both captured, but verification not passed - show comparing status
-                this.showComparingStatus();
-            } else {
-                // ID uploaded but no selfie yet - prompt for selfie
-                this.showSelfieRequiredMessage();
-            }
-            return true;
-        }
-        
-        return false;
-    },
+    // REMOVED: checkPreviousState() - This function made custom verification state decisions
+    // The system now follows ONLY the API's decision field (accept/review/reject)
+    // Face verification state is managed by the API response, not client-side session storage
     
     // Reset the flow
     reset() {
@@ -1569,4 +1526,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-console.log('✅ Facial Recognition Module loaded (ID Analyzer API)');

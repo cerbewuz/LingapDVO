@@ -5,18 +5,40 @@
 //
 // Main Endpoint:
 // - POST /api/IdAnalyzer/scan - Standard ID Scan
-//   * Performs OCR (document data extraction)
+//   * Performs document data extraction using AI-powered recognition
 //   * Performs face matching (if 'face' parameter included)
 //   * Returns document data + face verification results in single response
 //
-// Flow:
-// 1. User captures selfie (stored in FaceRecognition.selfieImageData)
-// 2. User uploads ID document
-// 3. System calls /scan with BOTH document + selfie (face parameter)
-// 4. API returns OCR data + face matching results together
-// 5. System processes both results simultaneously
+// NEW VERIFICATION FLOW (COLLECT ALL IMAGES FIRST, THEN SUBMIT):
+// ════════════════════════════════════════════════════════════════════════════
+// STEP 1: COLLECT ALL REQUIRED IMAGES (NO API CALLS YET)
+//    - User uploads Front ID image → Stored locally (base64)
+//    - User uploads Back ID image → Stored locally (base64)
+//    - User captures Selfie/Face image → Stored locally (base64)
+//    - "Verify & Submit" button becomes enabled when all images are ready
 //
+// STEP 2: SUBMIT ALL IMAGES TO API (SINGLE API CALL)
+//    - User clicks "Verify & Submit" button
+//    - System calls POST /api/IdAnalyzer/scan with ALL images:
+//        * document: Front ID (base64)
+//        * documentBack: Back ID (base64)
+//        * face: Selfie image (base64)
+//        * profile: KYC Profile ID
+//    - API performs:
+//        1. Document data extraction (OCR)
+//        2. Face matching (selfie vs ID photo)
+//    - Returns combined results:
+//        * Extracted document data (name, DOB, ID number, etc.)
+//        * Face verification result (match/no match, similarity score)
+//
+// STEP 3: PROCESS RESULTS
+//    - Populate form fields with extracted data
+//    - Show face verification result
+//    - Enable/disable form submission based on verification status
+//
+// ════════════════════════════════════════════════════════════════════════════
 // Reference: https://developer.idanalyzer.com/reference/post-scan
+// Reference: https://developer.idanalyzer.com/reference/post-face-2
 // ============================================================================
 
 // ID Analyzer API Configuration
@@ -28,31 +50,142 @@ const ID_ANALYZER_CONFIG = {
     TRANSACTION_ENDPOINT: '/api/IdAnalyzer/transaction'  // GET /api/IdAnalyzer/transaction/{transactionId}
 };
 
-// ⚠️ SECURITY WARNING - DO NOT REMOVE ⚠️
-console.warn(
-    '%c⚠️ SECURITY NOTICE - ACCOUNT VERIFICATION ⚠️',
-    'color: #ff6b6b; font-size: 20px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);'
-);
-console.warn(
-    '%c🔒 This page handles sensitive personal information and identity verification.',
-    'color: #ffa500; font-size: 14px; font-weight: bold;'
-);
-console.warn(
-    '%c⛔ WARNING: Unauthorized access, tampering, or data extraction is strictly prohibited and may result in legal action.',
-    'color: #ff0000; font-size: 13px; font-weight: bold;'
-);
-console.warn(
-    '%c🛡️ All verification activities are monitored and logged for security purposes.',
-    'color: #4ecdc4; font-size: 13px; font-weight: bold;'
-);
-console.warn(
-    '%c📋 If you are experiencing issues with verification, please contact system support.',
-    'color: #95e1d3; font-size: 12px;'
-);
-console.warn(
-    '%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    'color: #888;'
-);
+// ════════════════════════════════════════════════════════════════════════════
+// VERIFICATION STATE MANAGEMENT
+// ════════════════════════════════════════════════════════════════════════════
+// Stores all collected images before sending to API
+// ════════════════════════════════════════════════════════════════════════════
+const VerificationState = {
+    // Collected images (base64)
+    frontIdImage: null,
+    backIdImage: null,
+    selfieImage: null,
+    selfieFileName: null,  // Filename of saved selfie (for file-based API submission)
+    
+    // Status flags
+    frontIdUploaded: false,
+    backIdUploaded: false,
+    selfieUploaded: false,
+    verificationInProgress: false,
+    verificationComplete: false,
+    
+    // Results
+    scanResult: null,
+    faceMatchResult: null,
+    extractedData: null,
+    
+    // Store front ID image
+    setFrontId(base64Image) {
+        this.frontIdImage = base64Image;
+        this.frontIdUploaded = !!base64Image;
+        this.updateVerifyButtonState();
+    },
+    
+    // Store back ID image
+    setBackId(base64Image) {
+        this.backIdImage = base64Image;
+        this.backIdUploaded = !!base64Image;
+        this.updateVerifyButtonState();
+    },
+    
+    // Store selfie image and filename
+    setSelfie(base64Image, fileName = null) {
+        this.selfieImage = base64Image;
+        this.selfieFileName = fileName;
+        this.selfieUploaded = !!base64Image;
+        this.updateVerifyButtonState();
+        if (fileName) {
+        }
+    },
+    
+    // Check if all required images are uploaded
+    isReadyForVerification() {
+        // Front ID and Selfie are required, Back ID is optional for some ID types
+        return this.frontIdUploaded && this.selfieUploaded;
+    },
+    
+    // Check if all images including back are uploaded
+    hasAllImages() {
+        return this.frontIdUploaded && this.backIdUploaded && this.selfieUploaded;
+    },
+    
+    // Update the verify button state based on collected images
+    updateVerifyButtonState() {
+        const verifyButton = document.getElementById('verify-submit-btn');
+        const statusContainer = document.getElementById('upload-status-container');
+        
+        if (verifyButton) {
+            if (this.isReadyForVerification()) {
+                verifyButton.disabled = false;
+                verifyButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
+                verifyButton.classList.add('bg-red-600', 'hover:bg-red-700', 'cursor-pointer');
+            } else {
+                verifyButton.disabled = true;
+                verifyButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
+                verifyButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'cursor-pointer');
+            }
+        }
+        
+        // Update status display
+        this.updateStatusDisplay();
+    },
+    
+    // Update the status display showing which images are uploaded
+    updateStatusDisplay() {
+        const statusContainer = document.getElementById('upload-status-container');
+        if (!statusContainer) return;
+        
+        const frontStatus = this.frontIdUploaded ? '✅' : '⏳';
+        const backStatus = this.backIdUploaded ? '✅' : '⏳';
+        const selfieStatus = this.selfieUploaded ? '✅' : '⏳';
+        
+        statusContainer.innerHTML = `
+            <div class="flex flex-wrap gap-4 justify-center text-sm">
+                <span class="px-3 py-1 rounded-full ${this.frontIdUploaded ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">
+                    ${frontStatus} Front ID
+                </span>
+                <span class="px-3 py-1 rounded-full ${this.backIdUploaded ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">
+                    ${backStatus} Back ID
+                </span>
+                <span class="px-3 py-1 rounded-full ${this.selfieUploaded ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">
+                    ${selfieStatus} Selfie
+                </span>
+            </div>
+        `;
+    },
+    
+    // Reset all state
+    reset() {
+        this.frontIdImage = null;
+        this.backIdImage = null;
+        this.selfieImage = null;
+        this.selfieFileName = null;  // Reset filename too
+        this.frontIdUploaded = false;
+        this.backIdUploaded = false;
+        this.selfieUploaded = false;
+        this.verificationInProgress = false;
+        this.verificationComplete = false;
+        this.scanResult = null;
+        this.faceMatchResult = null;
+        this.extractedData = null;
+        this.updateVerifyButtonState();
+    },
+    
+    // Get summary for logging
+    getSummary() {
+        return {
+            frontId: this.frontIdUploaded,
+            backId: this.backIdUploaded,
+            selfie: this.selfieUploaded,
+            selfieFileName: this.selfieFileName,
+            ready: this.isReadyForVerification(),
+            complete: this.hasAllImages()
+        };
+    }
+};
+
+// Make VerificationState globally accessible
+window.VerificationState = VerificationState;
 
 document.addEventListener('DOMContentLoaded', function () {
     // Initialize animations
@@ -77,8 +210,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileBack = document.getElementById('file-input-back');
     const imagePreview = document.getElementById('image-preview');
     const imagePreviewBack = document.getElementById('image-preview-back');
-    const status = document.getElementById('ocr-status');
-    const resultBox = document.getElementById('ocr-result');
+    const status = document.getElementById('ocr-status'); // ID Analyzer status display
+    const resultBox = document.getElementById('ocr-result'); // ID Analyzer result display
     const progressBar = document.getElementById('progress-bar');
     const progress = document.getElementById('progress');
     const terms = document.getElementById('terms');
@@ -102,14 +235,14 @@ document.addEventListener('DOMContentLoaded', function () {
         'SecurityQuestions', 'Securityanswer'
     ];
 
-    // Track if OCR is enabled - start with true to allow auto-detection
-    let ocrEnabled = true;
+    // Track if ID Analyzer scanning is enabled
+    let scanningEnabled = true;
 
     // Debug mode for testing and calibration
     const DEBUG_MODE = false;
 
-    // Store last OCR result for debugging
-    let lastOCRText = "";
+    // Store last scan result for debugging
+    let lastScanText = "";
     let lastExtractedData = {};
 
     // Rate limiting for API calls
@@ -166,7 +299,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         
-        console.log(`📋 Back ID Upload: ${backIdRequired ? 'REQUIRED' : 'NOT REQUIRED'} for ${idType}`);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1187,13 +1319,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Independent extraction function for Gender/Sex
     function extractGender(lines) {
-        console.log('🚻 Starting gender extraction...');
 
         // Try using extractFieldValue first for labeled fields
         const result = extractFieldValue(lines, 'gender');
         if (result && result.value) {
             let value = result.value.toUpperCase().trim();
-            console.log(`   Found gender label with value: "${result.value}"`);
 
             // Remove any remaining Filipino/English label fragments
             value = value
@@ -1203,23 +1333,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 .replace(/[\/:]/g, '')
                 .trim();
 
-            console.log(`   Cleaned value: "${value}"`);
 
             // Normalize the value to Male/Female
             // Check for Male indicators (M, MALE, LALAKI)
             if (/\bM\b/.test(value) || value.includes('MALE') || value.includes('LALAKI')) {
-                console.log(`   ✅ Gender detected: MALE`);
                 return 'Male';
             }
             // Check for Female indicators (F, FEMALE, BABAE)
             if (/\bF\b/.test(value) || value.includes('FEMALE') || value.includes('BABAE')) {
-                console.log(`   ✅ Gender detected: FEMALE`);
                 return 'Female';
             }
 
         }
 
-        console.log('   Label-based extraction failed, trying line-by-line scan...');
 
         // Fallback: Search all lines for gender patterns
         for (const line of lines) {
@@ -1235,7 +1361,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 upper === 'M' ||
                 upper === 'MALE' ||
                 upper === 'LALAKI') {
-                console.log(`   ✅ Gender detected (fallback): MALE from line: "${line}"`);
                 return 'Male';
             }
 
@@ -1248,12 +1373,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 upper === 'F' ||
                 upper === 'FEMALE' ||
                 upper === 'BABAE') {
-                console.log(`   ✅ Gender detected (fallback): FEMALE from line: "${line}"`);
                 return 'Female';
             }
         }
 
-        console.log('   ⚠️ Gender not detected');
         return "";
     }
 
@@ -1501,9 +1624,9 @@ document.addEventListener('DOMContentLoaded', function () {
     documentType.addEventListener('change', function () {
         const selectedValue = this.value;
 
-        // Enable OCR for all supported ID types OR when empty (for auto-detection)
+        // Enable ID scanning for all supported ID types OR when empty (for auto-detection)
         if (!selectedValue || selectedValue === 'phil-id' || selectedValue === 'driver-license' || selectedValue === 'umid') {
-            ocrEnabled = true;
+            scanningEnabled = true;
             if (uploadFront) uploadFront.classList.remove('disabled');
             if (uploadBack) uploadBack.classList.remove('disabled');
             if (documentWarning) documentWarning.classList.add('hidden');
@@ -1518,7 +1641,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (davaoVerification) davaoVerification.classList.add('hidden');
             enableFormFields();
         } else {
-            ocrEnabled = false;
+            scanningEnabled = false;
             if (uploadFront) uploadFront.classList.add('disabled');
             if (uploadBack) uploadBack.classList.add('disabled');
             if (documentWarning) documentWarning.classList.remove('hidden');
@@ -1541,13 +1664,13 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             // Click handler
             uploadArea.addEventListener('click', () => {
-                if (!ocrEnabled) return;
+                if (!scanningEnabled) return;
                 fileInput.click();
             });
 
             // File input change handler
             fileInput.addEventListener('change', (event) => {
-                if (!ocrEnabled) return;
+                if (!scanningEnabled) return;
                 if (event.target.files.length) {
                     handleFileUpload(event.target.files[0], preview, uploadArea, isBack);
                 }
@@ -1555,18 +1678,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Drag and drop handlers
             uploadArea.addEventListener('dragover', (e) => {
-                if (!ocrEnabled) return;
+                if (!scanningEnabled) return;
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
             });
 
             uploadArea.addEventListener('dragleave', () => {
-                if (!ocrEnabled) return;
+                if (!scanningEnabled) return;
                 uploadArea.classList.remove('dragover');
             });
 
             uploadArea.addEventListener('drop', (e) => {
-                if (!ocrEnabled) return;
+                if (!scanningEnabled) return;
                 e.preventDefault();
                 uploadArea.classList.remove('dragover');
 
@@ -1581,6 +1704,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Handle file upload and processing
+    // NEW FLOW: Store images locally first, don't call API immediately
     function handleFileUpload(file, preview, section, isBack) {
         if (!validateFile(file)) return;
 
@@ -1601,9 +1725,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 section.classList.add('active', 'has-image');
             }
 
-            // Process with OCR if enabled
-            if (ocrEnabled) {
-                preprocessAndOCR(e.target.result, preview, isBack);
+            // ═══════════════════════════════════════════════════════════════════════════
+            // NEW FLOW: Store image in VerificationState instead of immediately calling API
+            // ═══════════════════════════════════════════════════════════════════════════
+            if (scanningEnabled) {
+                // Preprocess the image (quality check, enhancement) then store
+                preprocessAndStoreImage(e.target.result, preview, isBack);
             }
         };
         reader.readAsDataURL(file);
@@ -1806,11 +1933,336 @@ document.addEventListener('DOMContentLoaded', function () {
         message += '  • Hold camera parallel to the ID\n';
         message += '  • Ensure all text is clearly visible\n';
 
-        showOCRErrorModal(message);
+        showVerificationErrorModal(message);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // NEW: PREPROCESS AND STORE IMAGE (NO API CALL)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // This function preprocesses the image (quality check, enhancement) and stores
+    // it in VerificationState for later submission. NO API call is made here.
+    // ═══════════════════════════════════════════════════════════════════════════
+    async function preprocessAndStoreImage(imageSrc, preview, isBack) {
+        try {
+
+            // Load image asynchronously
+            const img = await loadImage(imageSrc);
+
+            // Optional: Light compression if image is too large
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Keep original dimensions or scale down if too large
+            let width = img.width;
+            let height = img.height;
+            const maxDimension = 2048;
+
+            if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                    height = (height / width) * maxDimension;
+                    width = maxDimension;
+                } else {
+                    width = (width / height) * maxDimension;
+                    height = maxDimension;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Check image quality
+            const blurCheck = checkImageBlur(canvas, ctx);
+            const brightnessCheck = checkImageBrightnessContrast(canvas, ctx);
+
+            // Check for critical issues
+            const criticalIssues = {
+                isBlurry: blurCheck.isBlurry,
+                isTooDark: brightnessCheck.isTooDark,
+                isTooBright: brightnessCheck.isTooBright,
+                isCriticalLowContrast: brightnessCheck.isCriticalLowContrast
+            };
+
+            const hasCriticalIssue = Object.values(criticalIssues).some(issue => issue);
+
+            if (hasCriticalIssue) {
+                showImageQualityErrorModal(criticalIssues);
+                if (status) {
+                    status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Image quality too poor. Please retake.';
+                }
+                return;
+            }
+
+            // Enhance if needed
+            const needsEnhancement = brightnessCheck.isDark || brightnessCheck.isLowContrast;
+            if (needsEnhancement) {
+                enhanceImageQuality(canvas, ctx, {
+                    isDark: brightnessCheck.isDark,
+                    isLowContrast: brightnessCheck.isLowContrast
+                });
+            }
+
+            // Get processed image as data URL
+            const processedImage = canvas.toDataURL('image/jpeg', 0.92);
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STORE IN VerificationState (NO API CALL YET)
+            // ═══════════════════════════════════════════════════════════════════════════
+            if (isBack) {
+                VerificationState.setBackId(processedImage);
+                if (status) {
+                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Back ID uploaded. Ready for verification.';
+                }
+            } else {
+                VerificationState.setFrontId(processedImage);
+                if (status) {
+                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Front ID uploaded. Please upload back ID and selfie.';
+                }
+            }
+
+            // Log current state
+
+        } catch (error) {
+            if (status) {
+                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Error processing image. Please try again.';
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SUBMIT ALL IMAGES TO API (Called when user clicks Verify button)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // This function sends all collected images (front ID, back ID, selfie) to the
+    // ID Analyzer API in a single request for both OCR and face verification.
+    // ═══════════════════════════════════════════════════════════════════════════
+    async function submitVerification() {
+
+        // Check if all required images are ready
+        if (!VerificationState.isReadyForVerification()) {
+            showVerificationErrorModal('Please upload all required images:\n\n• Front ID\n• Selfie/Face image\n\nBack ID is optional but recommended.');
+            return;
+        }
+
+        // Update UI to show processing state
+        VerificationState.verificationInProgress = true;
+        const verifyButton = document.getElementById('verify-submit-btn');
+        if (verifyButton) {
+            verifyButton.disabled = true;
+            verifyButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verifying...';
+        }
+
+        if (status) {
+            status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending images to ID Analyzer API...';
+        }
+
+        if (progressBar) {
+            progressBar.classList.remove('hidden');
+        }
+        if (progress) {
+            progress.style.width = '10%';
+        }
+
+        try {
+            // Build request payload with all images
+            // IMPORTANT: Use selfieFileName (file path) instead of base64 for face image
+            // The server will read the file from /wwwroot/UsersImg and convert to base64
+            const requestPayload = {
+                documentImage: VerificationState.frontIdImage,
+                backImage: VerificationState.backIdImage,
+                selfieFileName: VerificationState.selfieFileName,  // Use filename, not base64
+                faceImage: VerificationState.selfieFileName ? null : VerificationState.selfieImage  // Fallback to base64 if no filename
+            };
+
+            // Log request details
+
+            if (progress) progress.style.width = '30%';
+
+            // Send to API
+            const response = await fetch(ID_ANALYZER_CONFIG.SCAN_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestPayload)
+            });
+
+            if (progress) progress.style.width = '60%';
+
+            const result = await response.json();
+
+            // Log response
+
+            if (progress) progress.style.width = '80%';
+
+            if (!result.success) {
+                throw new Error(result.error || 'Verification failed');
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // CRITICAL: CHECK API DECISION BEFORE PROCEEDING
+            // ═══════════════════════════════════════════════════════════════════════════
+            // ID Analyzer v2 API returns one of three decision values:
+            // - "accept": Verification passed - proceed to form population
+            // - "review": Manual review required - BLOCK and show warning
+            // - "reject": Verification failed - BLOCK and show error
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            const apiDecision = (result.decision || '').toLowerCase();
+
+            // REJECT Decision - BLOCK verification
+            if (apiDecision === 'reject') {
+                const title = 'Verification Rejected';
+                const message = 'The ID verification failed quality checks and cannot be accepted.';
+
+                const suggestions = [
+                    'Use a clear, well-lit photo of your ID',
+                    'Ensure all text is readable and not blurry',
+                    'Make sure the entire ID is visible',
+                    'Avoid glare, shadows, or damage on the ID'
+                ];
+
+                // Add API warnings if available
+                if (result.warnings && result.warnings.length > 0) {
+                    suggestions.unshift(`Issues detected: ${result.warnings.join(', ')}`);
+                }
+
+                showErrorModal(title, message, suggestions);
+
+                // Reset verification state
+                VerificationState.verificationInProgress = false;
+                if (verifyButton) {
+                    verifyButton.disabled = false;
+                    verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
+                }
+                return; // STOP execution - user cannot proceed
+            }
+
+            // REVIEW Decision - BLOCK verification
+            if (apiDecision === 'review') {
+                const title = 'Manual Review Required';
+                const message = 'The ID image quality needs improvement before automatic verification can proceed.';
+
+                const suggestions = [
+                    'Upload a clearer, higher quality image',
+                    'Ensure proper lighting without glare or shadows',
+                    'Make sure all text is sharp and readable',
+                    'Verify the entire ID is visible in the frame'
+                ];
+
+                // Add API warnings if available
+                if (result.warnings && result.warnings.length > 0) {
+                    suggestions.unshift(`Issues found: ${result.warnings.join(', ')}`);
+                }
+
+                showWarningModal(title, message, suggestions);
+
+                // Reset verification state
+                VerificationState.verificationInProgress = false;
+                if (verifyButton) {
+                    verifyButton.disabled = false;
+                    verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
+                }
+                return; // STOP execution - user cannot proceed
+            }
+
+            // UNKNOWN Decision - BLOCK verification
+            if (apiDecision !== 'accept') {
+                const title = 'Verification Error';
+                const message = `Unexpected verification response received. Decision: ${result.decision || 'Unknown'}`;
+                const suggestions = [
+                    'Try uploading your ID again',
+                    'Contact support if this issue persists'
+                ];
+
+                showErrorModal(title, message, suggestions);
+
+                // Reset verification state
+                VerificationState.verificationInProgress = false;
+                if (verifyButton) {
+                    verifyButton.disabled = false;
+                    verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
+                }
+                return; // STOP execution - user cannot proceed
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // DECISION = "ACCEPT" - Proceed with verification
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            // Store results
+            VerificationState.scanResult = result;
+            VerificationState.extractedData = result.data;
+            VerificationState.faceMatchResult = {
+                isMatch: result.data?.faceMatch,
+                similarity: result.data?.faceSimilarity,
+                confidence: result.data?.faceConfidence
+            };
+
+            // Process results - populate form fields
+            if (result.data) {
+                await processVerificationResults(result.data);
+            }
+
+            if (progress) progress.style.width = '100%';
+
+            // Update UI for success
+            VerificationState.verificationInProgress = false;
+            VerificationState.verificationComplete = true;
+
+            if (verifyButton) {
+                verifyButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Verification Complete';
+                verifyButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                verifyButton.classList.add('bg-green-600');
+            }
+
+            if (status) {
+                status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Verification successful! Form fields populated.';
+            }
+
+            // Face verification results are no longer displayed separately
+            // The system follows the API's decision field only
+
+        } catch (error) {
+
+            VerificationState.verificationInProgress = false;
+
+            if (verifyButton) {
+                verifyButton.disabled = false;
+                verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
+            }
+
+            if (status) {
+                status.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Verification failed: ${error.message}`;
+            }
+
+            showVerificationErrorModal(`Verification failed:\n\n${error.message}\n\nPlease check your images and try again.`);
+        }
+    }
+
+    // Make submitVerification globally accessible
+    window.submitVerification = submitVerification;
+
+    // Process verification results and populate form fields
+    async function processVerificationResults(data) {
+        if (data.faceMatch !== undefined) {
+        }
+
+        // Populate form fields using existing function
+        populateFormFromApiData(data, null, false);
+    }
+
+    // REMOVED: showFaceVerificationResult() function
+    // The system now only follows the API's "decision" field (accept/review/reject)
+    // Face verification results are handled internally by the ID Analyzer API
+    // and reflected in the decision field, not displayed separately
+
     // Enhanced preprocessing with quality validation and enhancement (Async)
-    async function preprocessAndOCR(imageSrc, preview, isBack) {
+    // LEGACY: This function is kept for backward compatibility
+    // Preprocess and send image to ID Analyzer API for scanning
+    async function preprocessAndScan(imageSrc, preview, isBack) {
         try {
 
             // Load image asynchronously
@@ -1914,7 +2366,7 @@ document.addEventListener('DOMContentLoaded', function () {
             status.className = 'text-sm text-red-600 mt-2';
 
             // Show user-friendly error modal
-            showOCRErrorModal(
+            showVerificationErrorModal(
                 'We could not process your image.\n\n' +
                 'Please try:\n\n' +
                 '• Taking a new photo of your ID\n' +
@@ -1939,10 +2391,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Advanced text cleaning to remove noise and garbage
-    function cleanOCRText(text) {
+    // Clean extracted text from ID Analyzer API
+    function cleanExtractedText(text) {
         if (!text) return "";
 
-        debugLog('RAW-OCR', text);
+        debugLog('RAW-EXTRACTED-TEXT', text);
 
         // Step 1: Fix common OCR character misreads
         text = text.replace(/[|]/g, 'I'); // Replace pipe with I
@@ -2681,7 +3134,6 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     async function getTransactionData(transactionId) {
         if (!transactionId) {
-            console.error('Transaction ID is required');
             return null;
         }
 
@@ -2699,7 +3151,6 @@ document.addEventListener('DOMContentLoaded', function () {
             debugLog('TRANSACTION-RESULT', result);
 
             if (!result.success) {
-                console.error('Failed to get transaction:', result.error);
                 return null;
             }
 
@@ -2747,7 +3198,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             };
         } catch (error) {
-            console.error('Error getting transaction data:', error);
             return null;
         }
     }
@@ -2793,16 +3243,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 800);
 
         try {
-            // Get selfie image if available (for face matching in same request)
-            // ID Analyzer API v2: Include 'face' parameter in scan request for biometric verification
-            // Reference: https://developer.idanalyzer.com/reference/post-scan
-            const selfieImage = FaceRecognition && FaceRecognition.selfieImageData ? FaceRecognition.selfieImageData : null;
+            // ═══════════════════════════════════════════════════════════════════════════
+            // UPDATED FLOW: ID SCAN FIRST, THEN FACE VERIFICATION
+            // ═══════════════════════════════════════════════════════════════════════════
+            // Step 1: Scan ID document ONLY (no face parameter)
+            // Step 2: After ID scan succeeds, perform face verification separately
+            // This ensures ID scanning completes before face matching begins
+            // ═══════════════════════════════════════════════════════════════════════════
 
-            if (selfieImage) {
-                console.log('📸 Including selfie in scan request for face verification');
-            } else {
-                console.log('⚠️ No selfie captured - scanning without face verification');
-            }
+
+            // Build request payload for ID Analyzer Standard ID Scan API
+            // NO SELFIE - ID scan only
+            const requestPayload = {
+                documentImage: imageSrc,
+                selfieFileName: null,    // NULL: Face verification will be done separately after ID scan
+                backImage: isBack ? imageSrc : null
+            };
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // CONSOLE LOG: JSON DATA BEING SENT TO ID ANALYZER API
+            // ═══════════════════════════════════════════════════════════════════════════
 
             // Call ID Analyzer Standard ID Scan API
             // Endpoint: POST /api/IdAnalyzer/scan
@@ -2812,15 +3272,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    documentImage: imageSrc,
-                    faceImage: selfieImage,        // Selfie for face matching (compares with ID photo)
-                    backImage: isBack ? imageSrc : null
-                })
+                body: JSON.stringify(requestPayload)
             });
 
             const result = await response.json();
             clearInterval(progressInterval);
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // CONSOLE LOG: JSON RESPONSE FROM ID ANALYZER API
+            // ═══════════════════════════════════════════════════════════════════════════
+            if (result.data) {
+                if (result.data.faceMatch !== undefined) {
+                }
+            }
 
             // Update progress
             if (progress) progress.style.width = '60%';
@@ -2833,22 +3297,175 @@ document.addEventListener('DOMContentLoaded', function () {
                     errorMessage: result.error,
                     errorCode: result.errorCode
                 });
-                
+
                 // Show specific error message from API
                 let errorMsg = result.error || 'Unknown API error';
                 if (result.errorCode) {
                     errorMsg += ` (Code: ${result.errorCode})`;
                 }
-                
-                showOCRErrorModal(`ID Analyzer API Error:\n\n${errorMsg}\n\nPlease try again with a clearer image.`);
+
+                showVerificationErrorModal(`ID Analyzer API Error:\n\n${errorMsg}\n\nPlease try again with a clearer image.`);
                 return;
             }
 
             // Check if data was returned
             const data = result.data;
             if (!data) {
-                debugLog('ID-ANALYZER-NO-DATA', { result });
-                showOCRErrorModal('No data extracted from ID. Please ensure the image is clear and contains a valid Philippine ID.');
+                const title = 'No Data Extracted';
+                const message = 'Unable to extract any information from the uploaded image.';
+                const suggestions = [
+                    'Verify the image contains a valid Philippine ID',
+                    'Ensure the image is clear and properly oriented',
+                    'Try uploading a better quality photo'
+                ];
+                showErrorModal(title, message, suggestions);
+                return;
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 1: CHECK API DECISION
+            // ═══════════════════════════════════════════════════════════════════════════
+            // ID Analyzer v2 API returns one of three decision values:
+            // - "accept": No thresholds met, verification passed
+            // - "review": Review threshold met, requires manual review
+            // - "reject": Reject threshold met, verification failed
+            // Reference: https://developer.idanalyzer.com/docs/decision-flow
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            const apiDecision = (result.decision || '').toLowerCase();
+
+            // Only "accept" decision is allowed to proceed
+            // "review" and "reject" decisions must be handled
+            if (apiDecision === 'reject') {
+                const title = 'Verification Rejected';
+                const message = 'The ID verification failed quality checks and cannot be accepted.';
+                const suggestions = [
+                    'Use a clear, well-lit photo of your ID',
+                    'Ensure all text is readable and not blurry',
+                    'Make sure the entire ID is visible',
+                    'Avoid glare, shadows, or damage on the ID'
+                ];
+                if (result.warnings && result.warnings.length > 0) {
+                    suggestions.unshift(`Issues detected: ${result.warnings.join(', ')}`);
+                }
+                showErrorModal(title, message, suggestions);
+                return;
+            }
+
+            if (apiDecision === 'review') {
+                const title = 'Manual Review Required';
+                const message = 'The ID image quality needs improvement before automatic verification can proceed.';
+                const suggestions = [
+                    'Upload a clearer, higher quality image',
+                    'Ensure proper lighting without glare or shadows',
+                    'Make sure all text is sharp and readable',
+                    'Verify the entire ID is visible in the frame'
+                ];
+                if (result.warnings && result.warnings.length > 0) {
+                    suggestions.unshift(`Issues found: ${result.warnings.join(', ')}`);
+                }
+                showWarningModal(title, message, suggestions);
+                return;
+            }
+
+            if (apiDecision !== 'accept') {
+                const title = 'Verification Error';
+                const message = `Unexpected verification response received. Decision: ${result.decision || 'Unknown'}`;
+                const suggestions = [
+                    'Try uploading your ID again',
+                    'Contact support if this issue persists'
+                ];
+                showErrorModal(title, message, suggestions);
+                return;
+            }
+
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 2: DAVAO CITY RESIDENCE VALIDATION
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            const address1 = data.address1 || data.address || '';
+            const address2 = data.address2 || '';
+            const city = data.city || '';
+            // Use only address1 for the Address field
+            const fullAddress = address1;
+
+
+            // Validate Davao City residence
+            const isDavaoCityResident = validateDavaoCityAddress(fullAddress, city, address1, address2);
+
+
+            if (!isDavaoCityResident) {
+                const title = 'Not a Davao City Resident';
+                const message = `This system is only available for Davao City residents. Your ID address does not indicate Davao City residence.\n\nDetected Address: ${fullAddress || 'Not detected'}`;
+                const suggestions = [
+                    'Verify your ID shows a Davao City address',
+                    'If you are a Davao City resident, contact the administrator for assistance'
+                ];
+
+                showErrorModal(title, message, suggestions);
+                return;
+            }
+
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 3: NAME MATCHING VALIDATION
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            // Get registered user name from ViewBag (passed from server)
+            const registeredName = window.registeredUserName || {};
+
+
+            // Perform name matching validation
+            const nameMatchResult = validateNameMatch(
+                data.firstName || '',
+                data.middleName || '',
+                data.lastName || '',
+                data.suffix || '',
+                registeredName.firstName || '',
+                registeredName.middleName || '',
+                registeredName.lastName || '',
+                registeredName.suffix || '',
+                null // idType - will be detected later
+            );
+
+
+            if (!nameMatchResult.matches) {
+                const idName = `${data.lastName || ''}, ${data.firstName || ''} ${data.middleName || ''} ${data.suffix || ''}`.replace(/\s+/g, ' ').trim();
+                const regName = `${registeredName.lastName || ''}, ${registeredName.firstName || ''} ${registeredName.middleName || ''} ${registeredName.suffix || ''}`.replace(/\s+/g, ' ').trim();
+
+                const title = 'Name Mismatch';
+                const message = `The name on your ID does not match your registered account name.\n\nRegistered: ${regName}\nID Name: ${idName}`;
+                const suggestions = [
+                    'Verify you are using the correct account',
+                    'Ensure the ID belongs to you',
+                    'Check that the ID image is clear and readable'
+                ];
+
+                showErrorModal(title, message, suggestions);
+                return;
+            }
+
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // ALL VALIDATIONS PASSED - PROCEED TO FORM POPULATION
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            // If API explicitly says verification failed, show error with details
+            if (data.verificationPassed === false) {
+                const missing = [];
+                if (!data.firstName && !data.lastName && !data.fullName) missing.push('Name');
+                if (!data.documentNumber) missing.push('Document number');
+
+                const title = 'Incomplete Data Extraction';
+                const message = `Unable to extract complete information from your ID. Missing: ${missing.join(', ')}`;
+                const suggestions = [
+                    'Use a clear, well-lit photo',
+                    'Ensure all text is readable and sharp',
+                    'Make sure the entire ID is visible'
+                ];
+
+                showErrorModal(title, message, suggestions);
                 return;
             }
 
@@ -2856,24 +3473,10 @@ document.addEventListener('DOMContentLoaded', function () {
             let extractedText = buildTextFromApiResponse(data);
             
             // Debug: Log raw API data
-            console.log('=== ID ANALYZER API RESPONSE DATA ===');
-            console.log('Document Type (code):', data.documentType);
-            console.log('Document Name:', data.documentName);
-            console.log('First Name:', data.firstName);
-            console.log('Last Name:', data.lastName);
-            console.log('Document Number:', data.documentNumber);
-            console.log('Full data object:', data);
-            console.log('=====================================');
 
             // Check face verification results from Standard ID Scan
             // If selfie was included, API returns face matching results
             if (selfieImage && data.faceMatch !== undefined) {
-                console.log('=== FACE VERIFICATION RESULTS ===');
-                console.log('Face Match:', data.faceMatch);
-                console.log('Face Similarity:', data.faceSimilarity);
-                console.log('Face Confidence:', data.faceConfidence);
-                console.log('Similarity Percentage:', data.faceSimilarityPercentage + '%');
-                console.log('=================================');
 
                 // Store face verification results for later use
                 if (typeof FaceVerificationFlow !== 'undefined') {
@@ -2899,8 +3502,8 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             
             // Clean text for parsing
-            const cleanedText = cleanOCRText(extractedText);
-            lastOCRText = cleanedText;
+            const cleanedText = cleanExtractedText(extractedText);
+            lastScanText = cleanedText;
 
             // === STEP 1: ID TYPE DETECTION ===
             if (status) {
@@ -2909,20 +3512,13 @@ document.addEventListener('DOMContentLoaded', function () {
             if (progress) progress.style.width = '70%';
 
             // Detect ID type from document type returned by API or text analysis
-            console.log('=== ID TYPE DETECTION START ===');
-            console.log('Step 1: Try mapping from API response...');
             let detectedIdType = mapApiDocumentType(data.documentType, data.documentName);
 
             if (!detectedIdType) {
-                console.log('Step 2: API mapping failed, falling back to text detection...');
                 detectedIdType = detectIdType(cleanedText);
-                console.log('Text detection result:', detectedIdType);
             }
 
             const selectedIdType = documentType.value;
-            console.log('Final detected ID type:', detectedIdType);
-            console.log('Previously selected ID type:', selectedIdType);
-            console.log('==============================');
 
             debugLog('ID-DETECTION', {
                 apiDocType: data.documentType,
@@ -2966,7 +3562,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 errorMessage += '   • UMID (Unified Multi-Purpose ID)\n';
                 errorMessage += '   ❌ NOT ACCEPTED: PhilHealth, Senior Citizen, PWD, Postal ID, etc.\n\n';
 
-                showOCRErrorModal(errorMessage);
+                showVerificationErrorModal(errorMessage);
                 return;
             }
 
@@ -2991,35 +3587,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (progress) progress.style.width = '85%';
 
-            // If API returned structured data, use it directly
-            if (data.firstName || data.lastName || data.fullName) {
-                populateFormFromApiData(data, idTypeToProcess, isBack);
-            } else {
-                // Fallback to text-based parsing
-                if (idTypeToProcess === "driver-license") {
-                    if (!isBack) {
-                        parseDriverLicenseFront(cleanedText);
-                    }
-                } else if (idTypeToProcess === "phil-id") {
-                    if (isBack) {
-                        parsePhilSysBack(cleanedText);
-                    } else {
-                        parsePhilSysFront(cleanedText);
-                    }
-                } else if (idTypeToProcess === "umid") {
-                    if (!isBack) {
-                        parseUMIDFront(cleanedText);
-                    } else {
-                        parseUMIDBack(cleanedText);
-                    }
-                } else {
-                    showOCRErrorModal('Unable to detect ID type. Please ensure the image is clear and contains a valid Philippine ID.');
-                }
-            }
+            // ===== ALWAYS USE API DATA WHEN AVAILABLE =====
+            // The API has already extracted the data successfully (verificationPassed check passed above)
+            // We should ALWAYS use the API data, even if some fields are missing
+            // Individual field validation will happen later in the form submission
+
+
+            // ALWAYS populate from API data - even if some fields are empty
+            // The form validation will handle missing required fields
+            populateFormFromApiData(data, idTypeToProcess, isBack);
 
         } catch (err) {
             clearInterval(progressInterval);
             progressBar.classList.add('hidden');
+
 
             let errorMessage = 'Unable to process the ID image. ';
 
@@ -3032,17 +3613,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Please wait a moment before trying again.';
                 status.innerHTML = '<i class="fas fa-stopwatch mr-2"></i>Please wait';
             } else {
-                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Cannot read ID';
-                errorMessage = 'We could not read your ID information.\n\n' +
-                    'Please make sure:\n\n' +
-                    '✓ The image is clear and well-lit\n' +
-                    '✓ All text on the ID is readable\n' +
-                    '✓ The entire ID is visible in the photo\n' +
-                    '✓ The photo is not blurry\n\n' +
-                    'Try taking a new photo with better lighting.';
+                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Processing error';
+                errorMessage = 'An error occurred while processing your ID.\n\n' +
+                    'Technical details: ' + err.message + '\n\n' +
+                    'Please try again or contact support if the issue persists.';
             }
 
-            showOCRErrorModal(errorMessage);
+            showVerificationErrorModal(errorMessage);
 
             debugLog('ID-ANALYZER-ERROR', {
                 message: err.message,
@@ -3088,16 +3665,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const docType = (apiDocType || '').toUpperCase().trim();
         const docName = (apiDocName || '').toUpperCase();
 
-        console.log('=== MAPPING DOCUMENT TYPE ===');
-        console.log('Input docType:', apiDocType, '→ Normalized:', docType);
-        console.log('Input docName:', apiDocName, '→ Normalized:', docName);
 
         debugLog('MAP-DOC-TYPE', { docType, docName });
 
         // Check by documentType code first (most reliable)
         if (docType === 'D') {
             // Driver's License
-            console.log('✓ Detected: Driver\'s License (code: D)');
             return 'driver-license';
         }
 
@@ -3107,30 +3680,25 @@ document.addEventListener('DOMContentLoaded', function () {
             if (docName.includes('UMID') || docName.includes('UNIFIED') ||
                 docName.includes('MULTI-PURPOSE') || docName.includes('MULTIPURPOSE') ||
                 docName.includes('SSS')) {
-                console.log('✓ Detected: UMID (code: I, name contains UMID/SSS keywords)');
                 return 'umid';
             }
             // Default to National ID for identity cards
-            console.log('✓ Detected: National ID (code: I, defaulting to phil-id)');
             return 'phil-id';
         }
 
         // Fallback to documentName parsing
-        console.log('⚠ No document type code matched, falling back to name parsing...');
 
         // National ID (PhilSys/Philippine Identification)
         if (docName.includes('PHILSYS') || docName.includes('PHILIPPINE IDENTIFICATION') ||
             docName.includes('NATIONAL ID') || docName.includes('NATIONAL IDENTIFICATION') ||
             docName.includes('PSN') || docName.includes('PCN') ||
             docName.includes('PAMBANSANG')) {
-            console.log('✓ Detected: National ID (from document name keywords)');
             return 'phil-id';
         }
 
         // Driver's License
         if (docName.includes('DRIVER') || docName.includes('LICENSE') ||
             docName.includes('LTO') || docName.includes('LISENSYA')) {
-            console.log('✓ Detected: Driver\'s License (from document name keywords)');
             return 'driver-license';
         }
 
@@ -3138,18 +3706,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (docName.includes('UMID') || docName.includes('UNIFIED') ||
             docName.includes('MULTI-PURPOSE') || docName.includes('MULTIPURPOSE') ||
             docName.includes('SSS')) {
-            console.log('✓ Detected: UMID (from document name keywords)');
             return 'umid';
         }
 
         // If documentType is set but not matched, log for debugging
         if (docType) {
-            console.warn(`❌ Unknown document type code: ${docType}, name: ${docName}`);
         } else {
-            console.warn(`❌ No document type detected. docType is empty/null, docName: ${docName}`);
         }
 
-        console.log('============================');
         return null;
     }
 
@@ -3164,8 +3728,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // - documentName -> "Document Name" (ID Type)
     // - address -> Concatenated "Address 1" + "Address 2"
     function populateFormFromApiData(data, idType, isBack) {
+
         debugLog('POPULATE-FROM-API', { data, idType, isBack });
-        
+
         // Only populate from front side data (not back)
         if (isBack) {
             // For back side, just validate and show success
@@ -3176,11 +3741,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Extract names from API response
+        // Extract names from API response (with fallbacks)
         let firstName = data.firstName || '';
         let lastName = data.lastName || '';
         let middleName = data.middleName || '';
         let suffix = data.suffix || '';
+
 
         // If individual names not available, parse from fullName
         if (!firstName && !lastName && data.fullName) {
@@ -3190,9 +3756,38 @@ document.addEventListener('DOMContentLoaded', function () {
             middleName = nameParts.middleName;
         }
 
-        // Get address - API returns concatenated address field
-        const address = data.address || '';
-        
+        // ===== EXTRACT ADDRESS COMPONENTS =====
+        // Use only address1 for the Address field
+        const address1 = data.address1 || '';
+        const address2 = data.address2 || '';
+        const city = data.city || '';
+        const fullAddress = address1; // Only use address1
+        const address = data.address || fullAddress;
+
+
+        // Extract Barangay from address
+        // Barangay is usually in address1 or address2
+        let barangay = '';
+        const combinedAddress = `${address1} ${address2}`.toLowerCase();
+
+        // Common barangay patterns in Philippine IDs
+        const barangayPatterns = [
+            /b(?:a)?r(?:a)?ng(?:a)?y\.?\s+([^,\n]+)/i,  // Matches "Brgy", "Barangay", "Bgy"
+            /brgy\.?\s+([^,\n]+)/i,
+            /barangay\s+([^,\n]+)/i
+        ];
+
+        for (const pattern of barangayPatterns) {
+            const match = combinedAddress.match(pattern);
+            if (match && match[1]) {
+                barangay = match[1].trim();
+                // Clean up common suffixes
+                barangay = barangay.replace(/,.*$/, '').trim();
+                break;
+            }
+        }
+
+
         // Get other fields
         const dateOfBirth = data.dateOfBirth || '';
         const sex = data.sex || '';
@@ -3220,56 +3815,78 @@ document.addEventListener('DOMContentLoaded', function () {
             sex,                // Sex/Gender
             '',                 // Civil Status (not from ID)
             suffix,             // Suffix
-            '',                 // Barangay (extracted separately)
-            address,            // Full address for barangay extraction
+            barangay,           // Barangay (extracted from address)
+            fullAddress,        // Full address
             idType,             // ID Type
             95                  // Confidence
         );
 
         // Populate address field if it exists
         const addressField = document.getElementById('address') || document.getElementById('Address');
-        if (addressField && address) {
-            addressField.value = address;
+        if (addressField && fullAddress) {
+            addressField.value = fullAddress;
         }
 
-        // === DAVAO CITY VALIDATION ===
-        // Validate address for Davao City residency
-        const isDavaoCityResult = validateDavaoCityAddress(address, data.city);
-        showDavaoVerificationResult(isDavaoCityResult, address || data.city || 'Not detected', idType);
+        // ===== DAVAO CITY VALIDATION (IMPROVED) =====
+        // Validate address for Davao City residency with multiple patterns
+        const isDavaoCityResult = validateDavaoCityAddress(fullAddress, city, address1, address2);
+        showDavaoVerificationResult(isDavaoCityResult, fullAddress || city || 'Not detected', idType);
 
-        // Complete progress
+        // Complete ID scan progress
         if (progress) progress.style.width = '100%';
         if (status) {
-            status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600"></i>ID verification complete';
+            status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-600"></i>✅ Step 1 Complete: ID Scanned Successfully';
         }
+
+
+        // NOTE: Face verification is now done together with ID scan in the same API call
+        // The selfie is sent along with the ID document, so no separate face verification step needed
+
     }
 
     /**
      * Validate if address is from Davao City
      * Uses address and city fields from ID Analyzer API
      */
-    function validateDavaoCityAddress(address, city) {
-        const addressUpper = (address || '').toUpperCase();
-        const cityUpper = (city || '').toUpperCase();
-        
-        // Check for Davao City in address or city field
-        const davaoIndicators = ['DAVAO CITY', 'DAVAO', 'DVO'];
-        
-        for (const indicator of davaoIndicators) {
-            if (addressUpper.includes(indicator) || cityUpper.includes(indicator)) {
+    function validateDavaoCityAddress(address, city, address1, address2) {
+        // Combine all address fields for comprehensive checking
+        const fullAddressText = `${address || ''} ${city || ''} ${address1 || ''} ${address2 || ''}`.toUpperCase();
+
+
+        // Comprehensive Davao City patterns
+        const davaoPatterns = [
+            'DAVAO CITY',
+            'CITY OF DAVAO',
+            'DAVAO, CITY',
+            'DAVAO CITY,',
+            'DIGOS CITY',         // Digos City (also part of Davao region)
+            'CITY OF DIGOS',
+            'TAGUM CITY',         // Tagum City (also part of Davao region)
+            'CITY OF TAGUM',
+            'DAVAO DEL SUR',      // Province indicator
+            'DAVAO REGION',
+            'REGION XI',          // Davao Region
+            ', DAVAO',            // ", Davao" at end of address
+            'DAVAO$',             // "Davao" at end
+            'DVO'                 // Abbreviation
+        ];
+
+        // Check each pattern
+        for (const pattern of davaoPatterns) {
+            if (fullAddressText.includes(pattern)) {
                 return true;
             }
         }
-        
-        // Also check if any known Davao City barangay is in the address
+
+        // Check for known Davao City barangays
         if (DAVAO_CITY_BARANGAYS && DAVAO_CITY_BARANGAYS.length > 0) {
             for (const barangay of DAVAO_CITY_BARANGAYS) {
-                if (addressUpper.includes(barangay.toUpperCase())) {
+                if (fullAddressText.includes(barangay.toUpperCase())) {
                     return true;
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -3928,9 +4545,7 @@ document.addEventListener('DOMContentLoaded', function () {
         extractedData.sex = extractGender(lines);
         extractedData.confidence.sex = extractedData.sex ? 90 : 0;
         if (extractedData.sex) {
-            console.log(`📋 Driver's License Gender Extracted: "${extractedData.sex}"`);
         } else {
-            console.log(`⚠️ Driver's License Gender: Not found`);
         }
 
         // Extract address - MULTI-LINE SUPPORT
@@ -4099,10 +4714,8 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Fallback: If address-based check failed, check the FULL OCR text
         if (!isDavaoCityResult) {
-            console.log(`⚠️ Address-based Davao City check failed. Checking full OCR text as fallback...`);
             isDavaoCityResult = isDavaoCity(text);
             if (isDavaoCityResult) {
-                console.log(`✅ Davao City found in full OCR text (fallback)`);
             }
         }
         
@@ -4248,8 +4861,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-                console.log(`📋 Driver's License Name Parsed:`);
-                console.log(`   Last: "${lastName}", First: "${firstName}", Suffix: "${suffix}", Middle: "${middleName}"`);
 
                 return {
                     lastName: cleanName(lastName),
@@ -4325,8 +4936,6 @@ document.addEventListener('DOMContentLoaded', function () {
             // Clean up middle name (remove extra spaces)
             middleName = middleName.trim().replace(/\s+/g, ' ');
 
-            console.log(`📋 Driver's License Name Parsed (space-separated):`);
-            console.log(`   Last: "${lastName}", First: "${firstName}", Suffix: "${suffix}", Middle: "${middleName}"`);
 
             return {
                 lastName: cleanName(lastName),
@@ -4358,7 +4967,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // and finds address patterns based on keywords and concatenates them
     // ═══════════════════════════════════════════════════════════════════════════
     function extractAddressFromLines(lines) {
-        console.log(`🔍 Pattern-based address extraction: Scanning ${lines.length} lines...`);
 
         // Address keywords that indicate a line is part of an address
         const addressKeywords = [
@@ -4384,7 +4992,6 @@ document.addEventListener('DOMContentLoaded', function () {
             // Skip if line is clearly a label (contains only label text)
             const isLabel = /^(ADDRESS|TIRAHAN|NAME|PANGALAN|BIRTHDATE|KAPANGANAKAN|SEX|KASARIAN|GENDER)[\s:]*$/i.test(line);
             if (isLabel) {
-                console.log(`   Line ${i + 1}: SKIPPED (label) - "${line}"`);
                 continue;
             }
 
@@ -4396,11 +5003,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 !hasAddressKeyword;
 
             if (looksLikeName) {
-                console.log(`   Line ${i + 1}: SKIPPED (looks like name) - "${line}"`);
                 consecutiveNonAddressLines++;
                 if (consecutiveNonAddressLines >= 2 && addressLines.length > 0) {
                     // If we found some address lines and then hit 2+ non-address lines, stop
-                    console.log(`   Stopping: Found ${consecutiveNonAddressLines} consecutive non-address lines`);
                     break;
                 }
                 continue;
@@ -4408,7 +5013,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Check if this line contains address keywords
             if (hasAddressKeyword) {
-                console.log(`   Line ${i + 1}: ✅ ADDRESS LINE - "${line}"`);
                 addressLines.push(line);
                 consecutiveNonAddressLines = 0;
             } else if (addressLines.length > 0 && consecutiveNonAddressLines < 1) {
@@ -4417,7 +5021,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const hasNumbers = /\d/.test(line);
                 const hasComma = line.includes(',');
                 if (hasNumbers || hasComma || line.length > 10) {
-                    console.log(`   Line ${i + 1}: ✅ ADDRESS LINE (continuation) - "${line}"`);
                     addressLines.push(line);
                     consecutiveNonAddressLines = 0;
                 } else {
@@ -4429,18 +5032,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Stop after collecting up to 4 address lines
             if (addressLines.length >= 4) {
-                console.log(`   Stopping: Collected 4 address lines`);
                 break;
             }
         }
 
         if (addressLines.length > 0) {
             const concatenated = addressLines.join(' ').replace(/\s+/g, ' ').trim();
-            console.log(`✅ Pattern-based extraction found ${addressLines.length} line(s): "${concatenated}"`);
             return concatenated;
         }
 
-        console.log(`❌ Pattern-based extraction: No address lines found`);
         return "";
     }
 
@@ -4489,7 +5089,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const addressLabels = FIELD_LABELS.address || [];
         if (addressLabels.length === 0) {
-            console.log(`⚠️ No address labels configured`);
             return "";
         }
 
@@ -4501,7 +5100,6 @@ document.addEventListener('DOMContentLoaded', function () {
             // Check if this line contains an address label
             for (const label of addressLabels) {
                 if (upperLine.includes(label)) {
-                    console.log(`📍 Found ADDRESS label at line ${i + 1}: "${line}"`);
 
                     // Collect the next 1-4 lines as potential address lines
                     // NATIONAL ID / UMID: Address can span:
@@ -4527,21 +5125,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (cleanAfterLabel.length > 0) {
                         // Address value is on the SAME line as the label
-                        console.log(`📍 ✅ SAME-LINE ADDRESS DETECTED: "${cleanAfterLabel}"`);
                         addressLines.push(cleanAfterLabel);
                     } else {
-                        console.log(`📍 Label only on this line, checking next lines...`);
                     }
 
-                    console.log(`🔍 Checking up to ${maxAddressLines} lines after ADDRESS label...`);
 
                     for (let j = i + 1; j < Math.min(i + 1 + maxAddressLines, lines.length); j++) {
                         const nextLine = lines[j].trim();
-                        console.log(`\n🔎 Checking line ${j + 1}: "${nextLine}"`);
 
                         // Skip completely empty lines
                         if (!nextLine || nextLine.length === 0) {
-                            console.log(`   ⏭️ SKIPPED: Empty line`);
                             continue;
                         }
 
@@ -4568,7 +5161,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             upperNextLine.includes('NAME OF');
 
                         if (isNameLabel) {
-                            console.log(`   ❌ STOPPED: Name label detected`);
                             break;
                         }
 
@@ -4619,7 +5211,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         };
 
                         if (isLikelyName(nextLine)) {
-                            console.log(`   ⏭️ SKIPPED: Line rejected by isLikelyName() - looks like a person name`);
                             continue; // Skip this line but continue looking for address lines
                         }
 
@@ -4638,18 +5229,15 @@ document.addEventListener('DOMContentLoaded', function () {
                             upperNextLine.includes('NATIONALITY');
 
                         if (isAnotherFieldLabel) {
-                            console.log(`   ❌ STOPPED: Another field label detected (BIRTHDATE/SEX/CIVIL STATUS/etc.)`);
                             break;
                         }
 
                         // Check if line is a label itself (not a value)
                         if (isExtractedTextALabel(nextLine)) {
-                            console.log(`   ❌ STOPPED: Line is a label (detected by isExtractedTextALabel)`);
                             break;
                         }
 
                         // This line appears to be part of the address
-                        console.log(`   ✅ ACCEPTED: Line added as address line ${addressLines.length + 1}`);
                         addressLines.push(nextLine);
                     }
 
@@ -4672,9 +5260,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // ═══════════════════════════════════════════════════════════════
                     if (addressLines.length > 0) {
                         // Log each extracted line
-                        console.log(`📍 Extracting ${addressLines.length}-line address (supports same-line + multi-line):`);
                         addressLines.forEach((line, idx) => {
-                            console.log(`   Address Line ${idx + 1}/${addressLines.length}: "${line}"`);
                         });
 
                         // Concatenate all lines with single space separator
@@ -4683,12 +5269,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Clean up any extra spaces from concatenation
                         completeAddress = completeAddress.replace(/\s+/g, ' ').trim();
 
-                        console.log(`📍 ✅ Complete concatenated address (${addressLines.length} line${addressLines.length > 1 ? 's' : ''}): "${completeAddress}"`);
-                        console.log(`📍 Address will be checked for Davao City variants (DAVAO CITY, CITY OF DAVAO, DVO CITY, etc.)`);
 
                         return completeAddress;
                     } else {
-                        console.log(`⚠️ No address lines found after ADDRESS label`);
                         return "";
                     }
                 }
@@ -4720,7 +5303,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Normalize address: remove extra spaces, convert to uppercase
         const upperAddress = address.toUpperCase().replace(/\s+/g, ' ').trim();
         
-        console.log(`🔍 Checking for Davao City in: "${upperAddress.substring(0, 150)}${upperAddress.length > 150 ? '...' : ''}"`);
 
         // ═══════════════════════════════════════════════════════════════════════
         // PRIORITY 1: Direct matches (MOST RELIABLE - case insensitive)
@@ -4737,7 +5319,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         for (const variant of DIRECT_MATCH_VARIANTS) {
             if (upperAddress.includes(variant)) {
-                console.log(`✅ DAVAO CITY DETECTED (Direct Match): Found "${variant}"`);
                 return true;
             }
         }
@@ -4748,19 +5329,16 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Pattern: "DAVAO" followed by "CITY" with possible characters between
         if (/DAVAO\s*,?\s*CITY/i.test(upperAddress)) {
-            console.log(`✅ DAVAO CITY DETECTED (Pattern): Found DAVAO...CITY pattern`);
             return true;
         }
         
         // Pattern: "CITY" followed by "OF" followed by "DAVAO"
         if (/CITY\s+OF\s+DAVAO/i.test(upperAddress)) {
-            console.log(`✅ DAVAO CITY DETECTED (Pattern): Found CITY OF DAVAO pattern`);
             return true;
         }
         
         // Pattern: "DVO" followed by "CITY"
         if (/DVO\.?\s*CITY/i.test(upperAddress)) {
-            console.log(`✅ DAVAO CITY DETECTED (Pattern): Found DVO CITY pattern`);
             return true;
         }
 
@@ -4777,7 +5355,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         for (const variant of ADDITIONAL_VARIANTS) {
             if (upperAddress.includes(variant)) {
-                console.log(`✅ DAVAO CITY DETECTED (Additional): Found "${variant}"`);
                 return true;
             }
         }
@@ -4814,12 +5391,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (!hasRejectionCity && !hasProvinceOnly) {
-                console.log(`✅ DAVAO CITY DETECTED (Standalone): Found "DAVAO" without rejection indicators`);
                 return true;
             }
         }
 
-        console.log(`❌ NOT DAVAO CITY: No valid Davao City indicator found`);
         return false;
     }
 
@@ -5358,7 +5933,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     `1. Your ID is clear and readable\n` +
                                     `2. The birthdate on your ID is clearly visible\n` +
                                     `3. You are using a valid government-issued ID`;
-                                showOCRErrorModal(errorMessage);
+                                showVerificationErrorModal(errorMessage);
                             }
 
                             return "";
@@ -5850,7 +6425,7 @@ document.addEventListener('DOMContentLoaded', function () {
             `4. The image is not blurry or distorted\n\n` +
             `Try taking a new photo with better clarity.`;
 
-        showOCRErrorModal(errorMessage);
+        showVerificationErrorModal(errorMessage);
         return "";
     }
 
@@ -5927,9 +6502,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Extract address - MULTI-LINE SUPPORT (1-3 lines concatenated)
         extractedData.address = extractMultiLineAddress(lines);
         if (extractedData.address) {
-            console.log(`📍 National ID Address Extracted: "${extractedData.address}"`);
         } else {
-            console.log(`⚠️ National ID Address: Not found`);
         }
 
         // Extract city for Davao verification (legacy - address is now preferred)
@@ -6035,10 +6608,8 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Fallback: If address-based check failed, check the FULL OCR text
         if (!isDavaoCityResult) {
-            console.log(`⚠️ Address-based Davao City check failed. Checking full OCR text as fallback...`);
             isDavaoCityResult = isDavaoCity(text);
             if (isDavaoCityResult) {
-                console.log(`✅ Davao City found in full OCR text (fallback)`);
             }
         }
         
@@ -6578,9 +7149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         extractedData.sex = extractGender(lines);
         extractedData.confidence.sex = extractedData.sex ? 90 : 0;
         if (extractedData.sex) {
-            console.log(`📋 UMID Gender Extracted: "${extractedData.sex}"`);
         } else {
-            console.log(`⚠️ UMID Gender: Not found`);
         }
 
         // Extract address - MULTI-LINE SUPPORT (1-4 lines concatenated for UMID)
@@ -6589,14 +7158,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // If labeled extraction failed, do smart pattern-based scan of ALL lines
         if (!extractedData.address || extractedData.address.trim().length === 0) {
-            console.log(`⚠️ No labeled ADDRESS found, scanning all lines for address patterns...`);
             extractedData.address = extractAddressFromLines(lines);
         }
 
         if (extractedData.address) {
-            console.log(`📍 UMID Address Extracted: "${extractedData.address}"`);
         } else {
-            console.log(`⚠️ UMID Address: Not found`);
         }
 
         // Extract barangay (PRIORITY for address components)
@@ -6608,9 +7174,7 @@ document.addEventListener('DOMContentLoaded', function () {
             detectedBarangay = extractBarangayFromAddressPosition(extractedData.address);
 
             if (detectedBarangay) {
-                console.log(`🏘️ UMID Barangay Extracted (Position-based): "${detectedBarangay}"`);
             } else {
-                console.log(`⚠️ UMID Barangay (Position-based): Not found`);
             }
         }
 
@@ -6619,9 +7183,7 @@ document.addEventListener('DOMContentLoaded', function () {
             detectedBarangay = extractBarangayFromAddress(extractedData.address);
 
             if (detectedBarangay) {
-                console.log(`🏘️ UMID Barangay Extracted (Text search): "${detectedBarangay}"`);
             } else {
-                console.log(`⚠️ UMID Barangay (Text search): Not found`);
             }
         }
 
@@ -6630,9 +7192,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const barangayResult = extractFieldValue(lines, 'barangay');
             if (barangayResult && barangayResult.value) {
                 detectedBarangay = barangayResult.value.trim();
-                console.log(`🏘️ UMID Barangay Extracted (Label-based): "${detectedBarangay}"`);
             } else {
-                console.log(`⚠️ UMID Barangay (Label-based): Not found`);
             }
         }
 
@@ -6649,18 +7209,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (detectedBarangay) {
-                console.log(`🏘️ UMID Barangay Extracted (Full text search): "${detectedBarangay}"`);
             } else {
-                console.log(`⚠️ UMID Barangay (Full text search): Not found`);
             }
         }
 
         // Store the detected barangay
         if (detectedBarangay) {
             extractedData.barangay = detectedBarangay;
-            console.log(`✅ UMID Barangay FINAL: "${extractedData.barangay}"`);
         } else {
-            console.log(`❌ UMID Barangay NOT DETECTED`);
         }
 
         // Extract city (legacy - address is now preferred for Davao verification)
@@ -6770,10 +7326,8 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Fallback: If address-based check failed, check the FULL OCR text
         if (!isDavaoCityResult) {
-            console.log(`⚠️ Address-based Davao City check failed. Checking full OCR text as fallback...`);
             isDavaoCityResult = isDavaoCity(text);
             if (isDavaoCityResult) {
-                console.log(`✅ Davao City found in full OCR text (fallback)`);
             }
         }
         
@@ -7089,7 +7643,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Check if it matches any Davao City variation
         for (const variation of davaoCityVariations) {
             if (upperCity === variation || upperCity.includes(variation)) {
-                console.log(`✅ Davao City verified: Found "${variation}" in "${city}"`);
                 return true;
             }
         }
@@ -7812,12 +8365,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (sex && genderField) {
                 genderField.value = sex;
-                console.log(`✅ Gender field populated with: "${sex}"`);
             } else {
                 if (!sex) {
-                    console.log(`⚠️ Gender field NOT populated - no gender value provided`);
                 } else if (!genderField) {
-                    console.log(`⚠️ Gender field NOT populated - gender field element not found`);
                 }
             }
 
@@ -7938,73 +8488,45 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 2000); // 2 second delay to show the completed state
             }
 
-            // ===================================================================
-            // FACIAL RECOGNITION - Compare selfie with ID after OCR
-            // ===================================================================
-            // After OCR extracts data from ID, compare with previously captured selfie
-            triggerFaceComparison();
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 2: FACE VERIFICATION (AFTER ID SCAN COMPLETES)
+            // ═══════════════════════════════════════════════════════════════════════════
+            // ID scan is now COMPLETE. Form fields have been populated with extracted data.
+            // Now trigger face verification as the SECOND step of account verification.
+            // This ensures ID data extraction happens BEFORE face matching.
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            // REMOVED: triggerFaceComparison() call - Face verification is now handled by the API
+            // The API's decision field (accept/review/reject) is the single source of truth
             
         } catch (e) {
         }
     }
 
-    /**
-     * Trigger Face Comparison with ID
-     * Called after successful OCR extraction to compare selfie with ID photo
-     * NEW FLOW: Selfie is already captured before ID upload
-     */
-    async function triggerFaceComparison() {
-        console.log('🔐 Triggering Face Verification after ID Upload...');
-        
-        // Get the uploaded ID image for face comparison
-        const idPreviewImage = document.getElementById('image-preview');
-        
-        if (!idPreviewImage || !idPreviewImage.src) {
-            console.warn('⚠️ No ID image found for facial recognition');
-            return;
-        }
-        
-        // Check if FaceVerificationFlow is available
-        if (typeof FaceVerificationFlow === 'undefined') {
-            console.warn('⚠️ FaceVerificationFlow not loaded');
-            return;
-        }
-        
-        // Store ID image for face verification
-        FaceVerificationFlow.storeIdImage(idPreviewImage.src);
-        
-        // Disable form until face verification passes
-        disableFormForFaceVerification();
-        
-        // Check if selfie was already captured (from previous session)
-        if (FaceVerificationFlow.selfieCaptured && FaceRecognition.selfieImageData) {
-            console.log('✅ Selfie already captured - comparing with ID...');
-            // Delay slightly to let user see the OCR results first
-            setTimeout(async () => {
-                const result = await FaceVerificationFlow.compareWithId(idPreviewImage.src);
-                console.log('📊 Face comparison result:', result);
-            }, 1000);
-        } else {
-            // No selfie yet - directly open the face verification modal
-            console.log('📷 No selfie captured yet - opening face verification modal...');
-            // Delay to let user see the OCR results before showing the modal
-            setTimeout(() => {
-                FaceVerificationFlow.startSelfieCapture();
-            }, 1500);
-        }
-    }
+    // ════════════════════════════════════════════════════════════════════════════
+    // REMOVED: triggerFaceComparison() function
+    // ════════════════════════════════════════════════════════════════════════════
+    // This function was making custom face verification decisions independent of the API.
+    //
+    // NEW FLOW:
+    // - Face verification is handled by ID Analyzer API when selfie is included in /scan request
+    // - The API returns a single "decision" field: "accept", "review", or "reject"
+    // - This decision is checked at lines 3371-3442 BEFORE form population
+    // - If decision = "reject" → User sees error and cannot proceed
+    // - If decision = "review" → User sees warning and cannot proceed
+    // - If decision = "accept" → Proceed to Davao City validation → Name validation → Form population
+    //
+    // The system now has a SINGLE SOURCE OF TRUTH: the API's decision field
+    // ════════════════════════════════════════════════════════════════════════════
 
-    /**
-     * Disable form fields pending face verification
-     */
-    function disableFormForFaceVerification() {
-        const submitButton = document.querySelector('button[type="submit"]');
-        if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-            submitButton.title = 'Complete face verification to enable submission';
-        }
-    }
+    // ════════════════════════════════════════════════════════════════════════════
+    // REMOVED: disableFormForFaceVerification() function
+    // ════════════════════════════════════════════════════════════════════════════
+    // This function was disabling the form based on custom face verification logic.
+    // The form is now controlled by the API's decision field:
+    // - If API decision = "reject" or "review" → Error shown, form not populated
+    // - If API decision = "accept" → Form populated and enabled for submission
+    // ════════════════════════════════════════════════════════════════════════════
 
     /**
      * STRICT FILE VALIDATION - Only JPG/JPEG/PNG allowed
@@ -8148,22 +8670,117 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Show OCR Error Modal
-    function showOCRErrorModal(message) {
+    // Show verification error modal
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MODAL SYSTEM - Color-Coded Error and Warning Modals
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RED (Error): Verification failed, user cannot proceed
+    // YELLOW (Warning): Issue detected, user should review and retry
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Show ERROR modal (RED) - Compact 3-part design
+     * Header (title) → Body (message + suggestions) → Footer (button)
+     */
+    function showErrorModal(title, message, suggestions = []) {
         const modal = document.getElementById('ocrErrorModal');
-        if (!modal) {
-            alert(`Verification Issue\n\n${message}`);
+        const modalLabel = document.getElementById('ocrErrorModalLabel');
+        const messageElement = document.getElementById('ocr-error-message');
+        const modalHeader = modal?.querySelector('.modal-header');
+        const modalFooter = modal?.querySelector('.modal-footer button');
+
+        if (!modal || !messageElement) {
+            alert(`${title}\n\n${message}${suggestions.length ? '\n\n' + suggestions.join('\n') : ''}`);
             return;
         }
 
-        const messageElement = document.getElementById('ocr-error-message');
-        if (messageElement) messageElement.textContent = message;
+        // Header: Red gradient with title
+        if (modalHeader) {
+            modalHeader.className = 'modal-header bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-5 border-b-0';
+            modalHeader.innerHTML = `
+                <h5 class="modal-title font-semibold text-base flex items-center gap-2" id="ocrErrorModalLabel">
+                    <i class="fas fa-times-circle"></i> ${title}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            `;
+        }
+
+        // Body: Message + suggestions
+        let content = `<p class="text-gray-700 text-sm mb-3">${message}</p>`;
+        if (suggestions.length > 0) {
+            content += `<ul class="text-sm text-gray-600 space-y-1 pl-4">`;
+            suggestions.forEach(s => content += `<li class="list-disc">${s}</li>`);
+            content += `</ul>`;
+        }
+        messageElement.innerHTML = content;
+
+        // Footer: Red button
+        if (modalFooter) {
+            modalFooter.className = 'w-full bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors text-sm';
+            modalFooter.textContent = 'OK';
+        }
 
         try {
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
         } catch (e) {
-            alert(`Verification Issue\n\n${message}`);
+            alert(`${title}\n\n${message}`);
         }
+    }
+
+    /**
+     * Show WARNING modal (AMBER) - Compact 3-part design
+     * Header (title) → Body (message + suggestions) → Footer (button)
+     */
+    function showWarningModal(title, message, suggestions = []) {
+        const modal = document.getElementById('ocrErrorModal');
+        const modalLabel = document.getElementById('ocrErrorModalLabel');
+        const messageElement = document.getElementById('ocr-error-message');
+        const modalHeader = modal?.querySelector('.modal-header');
+        const modalFooter = modal?.querySelector('.modal-footer button');
+
+        if (!modal || !messageElement) {
+            alert(`${title}\n\n${message}${suggestions.length ? '\n\n' + suggestions.join('\n') : ''}`);
+            return;
+        }
+
+        // Header: Amber gradient with title
+        if (modalHeader) {
+            modalHeader.className = 'modal-header bg-gradient-to-r from-amber-500 to-amber-600 text-white py-3 px-5 border-b-0';
+            modalHeader.innerHTML = `
+                <h5 class="modal-title font-semibold text-base flex items-center gap-2" id="ocrErrorModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> ${title}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            `;
+        }
+
+        // Body: Message + suggestions
+        let content = `<p class="text-gray-700 text-sm mb-3">${message}</p>`;
+        if (suggestions.length > 0) {
+            content += `<ul class="text-sm text-gray-600 space-y-1 pl-4">`;
+            suggestions.forEach(s => content += `<li class="list-disc">${s}</li>`);
+            content += `</ul>`;
+        }
+        messageElement.innerHTML = content;
+
+        // Footer: Amber button
+        if (modalFooter) {
+            modalFooter.className = 'w-full bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors text-sm';
+            modalFooter.textContent = 'OK';
+        }
+
+        try {
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+        } catch (e) {
+            alert(`${title}\n\n${message}`);
+        }
+    }
+
+    // Legacy function - redirects to new modal system
+    function showVerificationErrorModal(message) {
+        showErrorModal('Verification Error', message);
     }
 
     // Show Name Mismatch Blocking Modal (CRITICAL - Blocks verification)

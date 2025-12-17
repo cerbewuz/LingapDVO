@@ -67,6 +67,9 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string CivilStatus { get; set; } = "";
 
+        [MaxLength(100)]
+        public string userfacepicture { get; set; } = "";
+
 
     }
 }

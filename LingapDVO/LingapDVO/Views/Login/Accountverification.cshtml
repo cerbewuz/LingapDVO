@@ -82,6 +82,9 @@
 
                             <!-- Auto-Detected ID Type (Hidden) -->
                             <input type="hidden" asp-for="IDtype" id="document-type" />
+                            
+                            <!-- User Face Picture (Hidden - populated by JS) -->
+                            <input type="hidden" asp-for="userfacepictureBase64" id="userfacepictureBase64" />
 
                             <!-- ID Type Display (Hidden - shown in console only) -->
                             <div id="id-type-display" class="hidden"></div>
@@ -141,6 +144,66 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                            <!-- SELFIE CAPTURE SECTION -->
+                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                            <div class="mt-6">
+                                <h4 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-camera text-red-500"></i>
+                                    Step 2: Take a Selfie
+                                </h4>
+                                <div class="upload-area rounded-xl p-6 text-center cursor-pointer" id="selfie-capture-area" onclick="FaceVerificationFlow.startSelfieCapture()">
+                                    <div class="selfie-capture-content">
+                                        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-user-circle text-2xl text-red-500"></i>
+                                        </div>
+                                        <div class="font-semibold text-gray-800 mb-2">Capture Selfie</div>
+                                        <div class="text-gray-500 text-sm mb-4">Click to open camera and take a selfie</div>
+                                        <div class="text-xs text-gray-400 mb-2">Your face will be compared with your ID photo</div>
+                                        <img id="selfie-preview" class="w-32 h-32 rounded-full mx-auto object-cover hidden border-4 border-green-500" alt="Selfie Preview">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                            <!-- UPLOAD STATUS DISPLAY -->
+                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                            <div id="upload-status-container" class="mt-6 p-4 bg-gray-50 rounded-xl">
+                                <div class="flex flex-wrap gap-4 justify-center text-sm">
+                                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500">
+                                        ⏳ Front ID
+                                    </span>
+                                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500">
+                                        ⏳ Back ID
+                                    </span>
+                                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500">
+                                        ⏳ Selfie
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                            <!-- VERIFY & SUBMIT BUTTON -->
+                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                            <div class="mt-6">
+                                <button type="button" 
+                                        id="verify-submit-btn" 
+                                        onclick="submitVerification()"
+                                        disabled
+                                        class="w-full py-4 px-6 bg-gray-400 text-white rounded-xl font-semibold text-lg opacity-50 cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-3">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Verify & Extract ID Data</span>
+                                </button>
+                                <p class="text-center text-gray-500 text-sm mt-2">
+                                    Upload Front ID, Back ID (optional), and Selfie to enable verification
+                                </p>
+                            </div>
+
+                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                            <!-- FACE VERIFICATION RESULT -->
+                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                            <div id="face-verification-result" class="mt-6 hidden"></div>
 
                             <!-- OCR Status -->
                             <div class="space-y-4">
@@ -670,13 +733,13 @@
     <!-- Go Back Button Behavior -->
     <script src="~/js/go-back-button.js"></script>
 
-    <!-- Visual Progress Loader for OCR Processing -->
+    <!-- Visual Progress Loader for ID Scanning -->
     <script src="~/js/visual-progress-loader.js"></script>
 
-    <!-- OCR Processing and ID Verification -->
-    <script src="~/js/verification-ocr.js?v=@DateTime.Now.Ticks"></script>
+    <!-- ID Analyzer v2 API - ID Scanning and Verification -->
+    <script src="~/js/verification-idanalyzer.js?v=@DateTime.Now.Ticks"></script>
 
-    <!-- Facial Recognition Module -->
+    <!-- Facial Recognition Module (Face Capture for ID Analyzer) -->
     <script src="~/js/facial-recognition.js?v=@DateTime.Now.Ticks"></script>
 
     <!-- Facial Recognition Modal -->
@@ -824,52 +887,28 @@
         </div>
     </div>
 
-    <!-- OCR Error Modal -->
+    <!-- OCR Error Modal - Compact 3-part design -->
     <div class="modal fade" id="ocrErrorModal" tabindex="-1" aria-labelledby="ocrErrorModalLabel" aria-hidden="false">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-3xl shadow-2xl overflow-hidden">
-                <div class="modal-header bg-gradient-to-r from-amber-500 to-amber-600 text-white py-4 px-6 border-b-0">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                            <i class="fas fa-search text-white text-lg"></i>
-                        </div>
-                        <div>
-                            <h5 class="modal-title font-bold text-lg" id="ocrErrorModalLabel">OCR Processing Issue</h5>
-                        </div>
-                    </div>
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 rounded-xl shadow-lg overflow-hidden">
+                <!-- Header: Title with icon -->
+                <div class="modal-header bg-gradient-to-r from-amber-500 to-amber-600 text-white py-3 px-5 border-b-0">
+                    <h5 class="modal-title font-semibold text-base flex items-center gap-2" id="ocrErrorModalLabel">
+                        <i class="fas fa-exclamation-circle"></i> Processing Issue
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-6 text-center">
-                    <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-exclamation-circle text-amber-500 text-2xl"></i>
-                    </div>
-                    <h4 class="font-bold text-gray-800 text-lg mb-2">Couldn't Process Document</h4>
-                    <p id="ocr-error-message" class="text-gray-600 mb-4">
+                <!-- Body: Message and suggestions -->
+                <div class="modal-body p-5">
+                    <p id="ocr-error-message" class="text-gray-700 text-sm">
                         We encountered an issue while processing your document.
                     </p>
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left">
-                        <ul class="text-sm text-amber-700 space-y-2">
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-lightbulb mt-1 text-amber-500"></i>
-                                <span>Ensure the image is clear and well-lit</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-lightbulb mt-1 text-amber-500"></i>
-                                <span>Make sure the entire document is visible</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i class="fas fa-lightbulb mt-1 text-amber-500"></i>
-                                <span>Avoid glare and shadows</span>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
-                <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0">
-                    <div class="w-full flex flex-col sm:flex-row gap-3">
-                        <button type="button" class="w-full bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors" data-bs-dismiss="modal">
-                            Try Again
-                        </button>
-                    </div>
+                <!-- Footer: Action button -->
+                <div class="modal-footer bg-gray-50 py-3 px-5 border-t border-gray-100">
+                    <button type="button" class="w-full bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors text-sm" data-bs-dismiss="modal">
+                        OK
+                    </button>
                 </div>
             </div>
         </div>
