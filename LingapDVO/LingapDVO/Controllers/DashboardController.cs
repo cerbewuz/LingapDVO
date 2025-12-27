@@ -4477,7 +4477,7 @@ namespace LingapDVO.Controllers
             {
                 // Get current user info
                 var userIdString = HttpContext.Session.GetString("UserId");
-                var isAdmin = HttpContext.Session.GetString("IsAdmin");
+                var isAdmin = HttpContext.Session.GetString("AdminFullname");
                 var isSuperadmin = HttpContext.Session.GetString("IsSuperadmin");
 
                 // Authorization check
@@ -4628,14 +4628,45 @@ namespace LingapDVO.Controllers
         {
             try
             {
-                // Get current user info
+                // Get current user info - CHECK BOTH REGULAR USER AND ADMIN
                 var userIdString = HttpContext.Session.GetString("UserId");
-                var sessionPassword = HttpContext.Session.GetString("UserPassword");
+                var adminFullname = HttpContext.Session.GetString("AdminFullname");
+                var adminUserId = HttpContext.Session.GetString("AdminUserId");
+                var sessionPassword = HttpContext.Session.GetString("UserPassword") ??
+                                     HttpContext.Session.GetString("AdminPassword");
                 var isGoogleUser = HttpContext.Session.GetString("IsGoogleUser");
+                var isAdmin = HttpContext.Session.GetString("IsAdmin");
 
-                if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+                // DEBUG LOGGING
+                Console.WriteLine("=== PASSWORD VERIFICATION DEBUG ===");
+                Console.WriteLine($"UserId: '{userIdString}'");
+                Console.WriteLine($"AdminFullname: '{adminFullname}'");
+                Console.WriteLine($"AdminUserId: '{adminUserId}'");
+                Console.WriteLine($"SessionPassword exists: {!string.IsNullOrEmpty(sessionPassword)}");
+                Console.WriteLine($"IsGoogleUser: '{isGoogleUser}'");
+                Console.WriteLine($"IsAdmin: '{isAdmin}'");
+                Console.WriteLine($"All session keys: {string.Join(", ", HttpContext.Session.Keys)}");
+
+                // CHECK 1: If we have either UserId OR AdminFullname, we consider the user authenticated
+                bool isAuthenticated =
+                    (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int userId)) ||
+                    !string.IsNullOrEmpty(adminFullname) ||
+                    !string.IsNullOrEmpty(adminUserId);
+
+                if (!isAuthenticated)
                 {
-                    return Json(new { success = false, message = "User not authenticated" });
+                    Console.WriteLine("ERROR: No authentication found - no UserId, AdminFullname, or AdminUserId");
+                    return Json(new
+                    {
+                        success = false,
+                        message = "User not authenticated. Please log in again.",
+                        debugInfo = new
+                        {
+                            hasUserId = !string.IsNullOrEmpty(userIdString),
+                            hasAdminFullname = !string.IsNullOrEmpty(adminFullname),
+                            hasAdminUserId = !string.IsNullOrEmpty(adminUserId)
+                        }
+                    });
                 }
 
                 if (string.IsNullOrEmpty(password))
@@ -4651,17 +4682,31 @@ namespace LingapDVO.Controllers
 
                 if (string.IsNullOrEmpty(sessionPassword))
                 {
-                    return Json(new { success = false, message = "Session expired. Please log in again." });
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Session expired. Please log in again.",
+                        debugInfo = new
+                        {
+                            sessionKeys = HttpContext.Session.Keys.ToList(),
+                            sessionId = HttpContext.Session.Id
+                        }
+                    });
                 }
 
                 // Verify the typed password matches the session password
-                // This confirms user intent without hitting the database
                 if (password == sessionPassword)
                 {
-                    return Json(new { success = true, message = "Password verified successfully" });
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Password verified successfully",
+                        userType = !string.IsNullOrEmpty(adminFullname) ? "Admin" : "User"
+                    });
                 }
                 else
                 {
+                    Console.WriteLine($"Password mismatch. Input: '{password}', Session: '{sessionPassword}'");
                     return Json(new { success = false, message = "Invalid password" });
                 }
             }
@@ -4672,6 +4717,5 @@ namespace LingapDVO.Controllers
                 return Json(new { success = false, message = "Verification failed: " + ex.Message });
             }
         }
-
     }
 }

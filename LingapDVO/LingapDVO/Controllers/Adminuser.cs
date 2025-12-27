@@ -7531,7 +7531,7 @@ namespace LingapDVO.Controllers
             {
                 // Get current user info
                 var userIdString = HttpContext.Session.GetString("UserId");
-                var isAdmin = HttpContext.Session.GetString("IsAdmin");
+                var isAdmin = HttpContext.Session.GetString("AdminFullname");
                 var isSuperadmin = HttpContext.Session.GetString("IsSuperadmin");
 
                 // Authorization check

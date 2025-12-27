@@ -233,16 +233,13 @@
         }
 
     @@keyframes spin {
-        0%
+        0% {
+            transform: rotate(0deg);
+        }
 
-    {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* PDF Preview Styles */
@@ -461,78 +458,6 @@
         margin-bottom: 1rem;
     }
 
-    /* Status Buttons Styling */
-    .status-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .btn-approved {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-approved:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-disapproved {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-disapproved:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-warning {
-        background-color: #ff9800;
-        border-color: #ff9800;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-warning:hover {
-            background-color: #e68900;
-            border-color: #d17d00;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
     /* CMO Details Styles */
     .cmo-details {
         background-color: #f8f9fa;
@@ -688,6 +613,31 @@
     .status-retake {
         background-color: #fff3e0;
         color: #ff6f00;
+    }
+
+    /* Hospital Info Container */
+    .hospital-info-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .hospital-info-visible {
+        display: block;
+    }
+
+    /* Hospital Loading Container */
+    .hospital-loading-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
     }
 
     /* Responsive adjustments */
@@ -915,7 +865,7 @@
     <form asp-action="HospitalAssistanceProcessingStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
         @Html.AntiForgeryToken()
 
-        
+
         <!-- Hidden fields for form submission -->
         <input type="hidden" name="id" value="@ViewData["Id"]" />
         <input type="hidden" id="statusInput" name="Status2" value="" />
@@ -928,7 +878,7 @@
 
 
         <div class="receipt-body">
-         
+
             <div class="info-row">
                 <div class="info-label">
                     Application ID: <strong>@ViewData["Id"]</strong>
@@ -1004,14 +954,18 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- Additional Information Section (Password-Protected) -->
+            <!-- Hospital Information Section (Password-Protected) -->
             <div class="receipt-section">
                 <h5 class="section-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            onclick="viewHospitalAdditionalInfo()"
-                            title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Hospital Information (Encrypted)</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="viewHospitalInfoBtn"
+                            onclick="openViewAdditionalInfoModal('Hospital', '@ViewData["Id"]', {
+                                labels: ['Hospital/Facility Name', 'Hospital Address', 'Diagnosis/Medical Condition', 'Ward/Room Type', 'Hospital Bill/Cost', 'Admission Date', 'Discharge Date'],
+                                values: ['@ViewData["HospitalFacilityName"]', '@ViewData["HospitalFacilityAddress"]', '@ViewData["DiagnosisMedicalCondition"]', '@ViewData["WardRoomType"]', '@ViewData["HospitalBillCost"]', '@ViewData["AdmissionDate"]', '@ViewData["DischargeDate"]'],
+                                names: ['HospitalFacilityName', 'HospitalFacilityAddress', 'DiagnosisMedicalCondition', 'WardRoomType', 'HospitalBillCost', 'AdmissionDate', 'DischargeDate']
+                            })"
+                            title="Click to view encrypted hospital information">
+                        <i class="bi bi-eye-fill me-2"></i>View Hospital Information
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -1019,10 +973,68 @@
                         <div class="alert alert-info d-flex align-items-center" role="alert">
                             <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
                             <div>
-                                <strong>This information is encrypted for security.</strong><br>
-                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                                <strong>This hospital information is encrypted for security.</strong><br>
+                                Click the "View Hospital Information" button above and enter your password to view the details.
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Hospital Loading Container (shown while decrypting) -->
+                <div class="hospital-loading-container" id="hospitalLoadingContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Decrypting hospital information... Please wait 5 seconds</p>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" id="hospitalLoadingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
+                <div class="hospital-info-container" id="hospitalInfoContainer">
+                    <h6 class="section-header mb-3"><i class="bi bi-hospital me-2"></i>Hospital Details</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Hospital/Facility Name:</div>
+                                <div class="info-value" id="hospitalName">@ViewData["HospitalFacilityName"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Hospital Address:</div>
+                                <div class="info-value" id="hospitalAddress">@ViewData["HospitalFacilityAddress"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Diagnosis/Medical Condition:</div>
+                                <div class="info-value" id="diagnosis">@ViewData["DiagnosisMedicalCondition"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Ward/Room Type:</div>
+                                <div class="info-value" id="wardRoomType">@ViewData["WardRoomType"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Hospital Bill/Cost:</div>
+                                <div class="info-value" id="hospitalBill">@ViewData["HospitalBillCost"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Admission Date:</div>
+                                <div class="info-value" id="admissionDate">@ViewData["AdmissionDate"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Discharge Date:</div>
+                                <div class="info-value" id="dischargeDate">@ViewData["DischargeDate"]</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-end">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="hideHospitalInfo()">
+                            <i class="bi bi-eye-slash me-1"></i>Hide Information
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1098,181 +1110,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Add this JavaScript code in your Scripts section -->
-            <script>
-                // Function to handle single checkbox selection
-                function handleSingleCheckboxSelection(event) {
-                    const clickedCheckbox = event.target;
-
-                    // If the clicked checkbox is being checked
-                    if (clickedCheckbox.checked) {
-                        // Uncheck all other single-doc checkboxes
-                        const allCheckboxes = document.querySelectorAll('.single-doc');
-                        allCheckboxes.forEach(checkbox => {
-                            if (checkbox !== clickedCheckbox) {
-                                checkbox.checked = false;
-                            }
-                        });
-
-                        // Hide any error message
-                        hideSingleDocError();
-
-                        // If "Others" is checked, show the input field
-                        if (clickedCheckbox.id === 'othersCheckbox') {
-                            document.getElementById('cmoOthersRow').style.display = 'flex';
-                            document.getElementById('cmoNotesInput').required = true;
-                        } else {
-                            // If another checkbox is checked, hide the Others input field
-                            document.getElementById('cmoOthersRow').style.display = 'none';
-                            document.getElementById('cmoNotesInput').required = false;
-                            document.getElementById('cmoNotesInput').classList.remove('is-invalid');
-                        }
-                    }
-                    // If the clicked checkbox is being unchecked, don't allow it if it's the only one checked
-                    else {
-                        const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
-                        if (checkedCheckboxes.length === 0) {
-                            // Don't allow unchecking if it would leave none checked
-                            clickedCheckbox.checked = true;
-                            showSingleDocError("You must select at least one document.");
-                        }
-                    }
-
-                    // Update CMO reflection
-                    updateReflection();
-                }
-
-                // Function to show single document error
-                function showSingleDocError(message = "Only one document can be selected at a time. Please choose only one supporting document.") {
-                    const errorDiv = document.getElementById('singleDocError');
-                    if (errorDiv) {
-                        errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
-                        errorDiv.style.display = 'block';
-                    }
-                }
-
-                // Function to hide single document error
-                function hideSingleDocError() {
-                    const errorDiv = document.getElementById('singleDocError');
-                    if (errorDiv) {
-                        errorDiv.style.display = 'none';
-                    }
-                }
-
-                // Function to validate single document selection
-                function validateSingleDocument() {
-                    const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
-
-                    if (checkedCheckboxes.length === 0) {
-                        showSingleDocError("Please select at least one supporting document.");
-                        return false;
-                    }
-
-                    if (checkedCheckboxes.length > 1) {
-                        showSingleDocError();
-                        return false;
-                    }
-
-                    // Validate "Others" field if "Others" is selected
-                    const othersCheckbox = document.getElementById('othersCheckbox');
-                    const cmoNotesInput = document.getElementById('cmoNotesInput');
-                    if (othersCheckbox && othersCheckbox.checked) {
-                        if (!cmoNotesInput.value.trim()) {
-                            cmoNotesInput.classList.add('is-invalid');
-                            showSingleDocError("Please specify the other documents when 'Others' is selected.");
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-
-                // Initialize single checkbox selection
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Add event listeners to all single-doc checkboxes
-                    const singleDocCheckboxes = document.querySelectorAll('.single-doc');
-                    singleDocCheckboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', handleSingleCheckboxSelection);
-                    });
-
-                    // Initialize Others field visibility
-                    const othersCheckbox = document.getElementById('othersCheckbox');
-                    if (othersCheckbox && othersCheckbox.checked) {
-                        document.getElementById('cmoOthersRow').style.display = 'flex';
-                    }
-
-                    // Update form validation to use single document validation
-                    const originalValidateCMOForm = validateCMOForm;
-                    window.validateCMOForm = function() {
-                        // Reset errors
-                        document.getElementById('supportingDocsError').style.display = 'none';
-                        document.getElementById('grantedAmountInput').classList.remove('is-invalid');
-                        document.getElementById('grantedAmountError').style.display = 'none';
-
-                        // Validate single document
-                        if (!validateSingleDocument()) {
-                            const cmoSection = document.querySelector('.cmo-details');
-                            if (cmoSection) {
-                                cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                            return false;
-                        }
-
-                        // Validate amount granted
-                        const grantedAmountInput = document.getElementById('grantedAmountInput');
-                        if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
-                            grantedAmountInput.classList.add('is-invalid');
-                            document.getElementById('grantedAmountError').style.display = 'block';
-                            const cmoSection = document.querySelector('.cmo-details');
-                            if (cmoSection) {
-                                cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                            alert('Please enter a valid amount granted (must be greater than 0).');
-                            return false;
-                        }
-
-                        return true;
-                    };
-                });
-
-                // Also update the updateReflection function if needed
-                function updateReflection() {
-                    const grantedAmountInput = document.getElementById('grantedAmountInput');
-                    const cmoNotes = document.getElementById('cmoNotesInput');
-                    const reflectionField = document.getElementById('cmoReflectionField');
-                    const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-                    const docCheckboxes = document.querySelectorAll('.single-doc:checked');
-
-                    let parts = [];
-
-                    // Add granted amount if exists
-                    if (grantedAmountInput && grantedAmountInput.value.trim()) {
-                        parts.push(`GrantedAmount: ${grantedAmountInput.value.trim()}`);
-                    }
-
-                    // Add checked document (only one should be checked)
-                    const checkedDocs = Array.from(docCheckboxes).map(cb => {
-                        if (cb.value === 'Others' && cmoNotes && cmoNotes.value.trim()) {
-                            return `Others: ${cmoNotes.value.trim()}`;
-                        }
-                        return cb.value;
-                    });
-
-                    if (checkedDocs.length > 0) {
-                        parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                    }
-
-                    const reflectionValue = parts.join(' , ');
-                    if (reflectionField) reflectionField.value = reflectionValue;
-
-                    // Update the hidden field as well
-                    if (forCMOPersonnelInput) forCMOPersonnelInput.value = reflectionValue;
-
-                    console.log('CMO Reflection updated:', reflectionValue);
-                    return reflectionValue;
-                }
-            </script>
 
             <!-- Valid ID and Submitted Documents Section -->
             <div class="receipt-section">
@@ -1705,6 +1542,109 @@
                 pdfDocument = null;
             }
         }
+
+        // Hospital Information Functions
+        function hideHospitalInfo() {
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.classList.remove('hospital-info-visible');
+                hospitalInfoContainer.style.display = 'none';
+            }
+        }
+
+        // Function to show hospital information after successful decryption
+        function showHospitalInfoAfterDecryption() {
+            console.log('Showing hospital information after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('hospitalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Show the hospital information container
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.style.display = 'block';
+                hospitalInfoContainer.classList.add('hospital-info-visible');
+
+                // Scroll to the hospital information section
+                setTimeout(() => {
+                    hospitalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        // Function to start the 5-second loading animation
+        function startHospitalInfoLoading() {
+            console.log('Starting hospital information loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('hospitalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide any existing hospital info container
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.style.display = 'none';
+                hospitalInfoContainer.classList.remove('hospital-info-visible');
+            }
+
+            // Start 5-second progress bar
+            const progressBar = document.getElementById('hospitalLoadingProgress');
+            if (progressBar) {
+                let progress = 0;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
+                const increment = (interval / totalTime) * 100;
+
+                const progressInterval = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+
+                        // After 5 seconds, show the hospital information
+                        setTimeout(() => {
+                            showHospitalInfoAfterDecryption();
+                        }, 300);
+                    } else {
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
+            }
+        }
+
+        // Override the modal's decryption function to start loading animation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for the modal to be loaded
+            setTimeout(function() {
+                // Override the modal's showDecryptedData function
+                if (typeof showDecryptedData === 'function') {
+                    // Store original function
+                    const originalShowDecryptedData = showDecryptedData;
+
+                    // Override with our custom function
+                    window.showDecryptedData = function(formType, formId, encryptedFields) {
+                        console.log('Custom showDecryptedData called - Password verified, starting loading animation');
+
+                        // Close the modal first
+                        const modalElement = document.getElementById('viewAdditionalInfoModal');
+                        if (modalElement) {
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) {
+                                modal.hide();
+                            }
+                        }
+
+                        // Start the 5-second loading animation
+                        startHospitalInfoLoading();
+                    };
+                }
+            }, 1000);
+        });
 
         // Form Validation Function
         function validateCMOForm() {
@@ -2207,41 +2147,139 @@
             }
         });
 
-        // Function to view encrypted Additional Information
-        function viewHospitalAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = {
-                names: [
-                    'HospitalFacilityName',
-                    'HospitalFacilityAddress',
-                    'DiagnosisMedicalCondition',
-                    'HospitalBillCost',
-                    'AdmissionDate',
-                    'DischargeDate',
-                    'WardRoomType'
-                ],
-                labels: [
-                    'Hospital/Medical Facility Name',
-                    'Hospital/Medical Facility Address',
-                    'Diagnosis/Medical Condition',
-                    'Hospital Bill/Cost',
-                    'Admission Date',
-                    'Discharge Date',
-                    'Ward/Room Type'
-                ],
-                values: [
-                    '@ViewData["HospitalFacilityName"]',
-                    '@ViewData["HospitalFacilityAddress"]',
-                    '@ViewData["DiagnosisMedicalCondition"]',
-                    '@ViewData["HospitalBillCost"]',
-                    '@ViewData["AdmissionDate"]',
-                    '@ViewData["DischargeDate"]',
-                    '@ViewData["WardRoomType"]'
-                ]
-            };
+        // Function to handle single checkbox selection
+        function handleSingleCheckboxSelection(event) {
+            const clickedCheckbox = event.target;
 
-            openViewAdditionalInfoModal('Hospital', formId, encryptedFields);
+            // If the clicked checkbox is being checked
+            if (clickedCheckbox.checked) {
+                // Uncheck all other single-doc checkboxes
+                const allCheckboxes = document.querySelectorAll('.single-doc');
+                allCheckboxes.forEach(checkbox => {
+                    if (checkbox !== clickedCheckbox) {
+                        checkbox.checked = false;
+                    }
+                });
+
+                // Hide any error message
+                hideSingleDocError();
+
+                // If "Others" is checked, show the input field
+                if (clickedCheckbox.id === 'othersCheckbox') {
+                    document.getElementById('cmoOthersRow').style.display = 'flex';
+                    document.getElementById('cmoNotesInput').required = true;
+                } else {
+                    // If another checkbox is checked, hide the Others input field
+                    document.getElementById('cmoOthersRow').style.display = 'none';
+                    document.getElementById('cmoNotesInput').required = false;
+                    document.getElementById('cmoNotesInput').classList.remove('is-invalid');
+                }
+            }
+            // If the clicked checkbox is being unchecked, don't allow it if it's the only one checked
+            else {
+                const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+                if (checkedCheckboxes.length === 0) {
+                    // Don't allow unchecking if it would leave none checked
+                    clickedCheckbox.checked = true;
+                    showSingleDocError("You must select at least one document.");
+                }
+            }
+
+            // Update CMO reflection
+            updateReflection();
         }
+
+        // Function to show single document error
+        function showSingleDocError(message = "Only one document can be selected at a time. Please choose only one supporting document.") {
+            const errorDiv = document.getElementById('singleDocError');
+            if (errorDiv) {
+                errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        // Function to hide single document error
+        function hideSingleDocError() {
+            const errorDiv = document.getElementById('singleDocError');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Function to validate single document selection
+        function validateSingleDocument() {
+            const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+
+            if (checkedCheckboxes.length === 0) {
+                showSingleDocError("Please select at least one supporting document.");
+                return false;
+            }
+
+            if (checkedCheckboxes.length > 1) {
+                showSingleDocError();
+                return false;
+            }
+
+            // Validate "Others" field if "Others" is selected
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            if (othersCheckbox && othersCheckbox.checked) {
+                if (!cmoNotesInput.value.trim()) {
+                    cmoNotesInput.classList.add('is-invalid');
+                    showSingleDocError("Please specify the other documents when 'Others' is selected.");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Update the validation function to use single document validation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all single-doc checkboxes
+            const singleDocCheckboxes = document.querySelectorAll('.single-doc');
+            singleDocCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', handleSingleCheckboxSelection);
+            });
+
+            // Initialize Others field visibility
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            if (othersCheckbox && othersCheckbox.checked) {
+                document.getElementById('cmoOthersRow').style.display = 'flex';
+            }
+
+            // Update form validation to use single document validation
+            window.validateCMOForm = function() {
+                // Reset errors
+                document.getElementById('supportingDocsError').style.display = 'none';
+                document.getElementById('grantedAmountInput').classList.remove('is-invalid');
+                document.getElementById('grantedAmountError').style.display = 'none';
+
+                // Validate single document
+                if (!validateSingleDocument()) {
+                    const cmoSection = document.querySelector('.cmo-details');
+                    if (cmoSection) {
+                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return false;
+                }
+
+                // Validate amount granted
+                const grantedAmountInput = document.getElementById('grantedAmountInput');
+                if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                    grantedAmountInput.classList.add('is-invalid');
+                    document.getElementById('grantedAmountError').style.display = 'block';
+                    const cmoSection = document.querySelector('.cmo-details');
+                    if (cmoSection) {
+                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    alert('Please enter a valid amount granted (must be greater than 0).');
+                    return false;
+                }
+
+                return true;
+            };
+        });
     </script>
 
     @Html.Partial("_ViewEncryptedDataModal")
