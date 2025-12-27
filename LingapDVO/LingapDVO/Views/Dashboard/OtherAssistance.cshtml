@@ -383,7 +383,7 @@
                        focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
                        active:scale-95"
                     id="sameAsPatientBtn">
-                <i class="bi bi-person-check"></i> APPLY FOR MYSELF
+                <i class="bi bi-clipboard-check"></i> Copy Information from Above
             </button>
 
             <button type="button"
@@ -397,7 +397,7 @@
             </button>
 
             <small class="text-muted ms-2">
-                Click "APPLY FOR MYSELF" if you are applying for yourself.
+                Click "Copy Information from Above" to auto-fill patient details with your information.
                 Click "Clear auto-fill" if you clicked the button by accident.
             </small>
         </div>
@@ -643,14 +643,14 @@
         <div class="col-12 col-sm-6 col-md-6 col-lg-6">
             <!-- Column 1 -->
             <div class="form-check mt-2">
-                <input class="form-check-input assistance-type" type="checkbox"
-                       id="medicineAssistance" name="TypeassistanceOptions" value="Medicine Assistance">
+                <input class="form-check-input assistance-type" type="radio"
+                       id="medicineAssistance" name="AssistanceType" value="Medicine Assistance" required>
                 <label class="form-check-label ms-1" for="medicineAssistance">Medicine Assistance</label>
             </div>
 
             <div class="form-check mt-2">
-                <input class="form-check-input assistance-type" type="checkbox"
-                       id="laboratoryAssistance" name="TypeassistanceOptions" value="Laboratory">
+                <input class="form-check-input assistance-type" type="radio"
+                       id="laboratoryAssistance" name="AssistanceType" value="Laboratory" required>
                 <label class="form-check-label ms-1" for="laboratoryAssistance">Laboratory</label>
             </div>
 
@@ -658,18 +658,16 @@
 
         <div class="col-12 col-sm-6 col-md-6 col-lg-6">
             <!-- Column 2 -->
+            <div class="form-check mt-2">
+                <input class="form-check-input assistance-type" type="radio"
+                       id="therapyAssistance" name="AssistanceType" value="Therapy" required>
+                <label class="form-check-label ms-1" for="therapyAssistance">Therapy</label>
+            </div>
 
             <div class="form-check mt-2">
-                <input class="form-check-input assistance-type" type="checkbox"
-                       id="apparatusAssistance" name="TypeassistanceOptions" value="Apparatus">
-                <label class="form-check-label ms-1" for="apparatusAssistance">Apparatus</label>
-            </div>
-            <div class="form-check mt-2">
-                <input class="form-check-input assistance-type" type="checkbox"
-                       id="others" name="TypeassistanceOptions" value="Others">
-                <label class="form-check-label ms-1" for="others">Others</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="OthersDetails" placeholder="Specify" style="display: none;">
+                <input class="form-check-input assistance-type" type="radio"
+                       id="apparatusAssistance" name="AssistanceType" value="Medical Equipment/ Apparatus" required>
+                <label class="form-check-label ms-1" for="apparatusAssistance">Medical Equipment/ Apparatus</label>
             </div>
         </div>
     </div>
@@ -678,6 +676,152 @@
         <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
                name="Typeassistance" placeholder="Auto-generated info..." readonly>
         <span asp-validation-for="Typeassistance" class="text-danger"></span>
+    </div>
+
+    <!-- Medicines Section (Conditional) -->
+    <div id="medicinesSection" style="display: none;">
+        <h5 class="section-header">Medicine Details</h5>
+        <div class="row g-3">
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label">Name of the Medicine</label>
+                <input asp-for="MedicineName" type="text" class="form-control" placeholder="Enter medicine name">
+                <span asp-validation-for="MedicineName" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label">Quantity</label>
+                <input asp-for="MedicineQuantity" type="text" class="form-control" placeholder="Enter quantity">
+                <span asp-validation-for="MedicineQuantity" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+                <label class="form-label">Cost</label>
+                <input asp-for="MedicineCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱500.00)">
+                <span asp-validation-for="MedicineCost" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Prescribing Doctor/ Medical Practitioner</label>
+                <input asp-for="PrescribingDoctor" type="text" class="form-control" placeholder="Enter doctor's name">
+                <span asp-validation-for="PrescribingDoctor" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Contact Detail of the Prescribing Doctor/ Medical Practitioner</label>
+                <input asp-for="DoctorContactDetail" type="text" class="form-control" placeholder="Enter contact number">
+                <span asp-validation-for="DoctorContactDetail" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Laboratory Tests Section (Conditional) -->
+    <div id="laboratorySection" style="display: none;">
+        <h5 class="section-header">Laboratory Test Details</h5>
+        <div class="row g-3">
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Laboratory or Diagnostic Center Name</label>
+                <input asp-for="LaboratoryCenterName" type="text" class="form-control" placeholder="Enter laboratory or diagnostic center name">
+                <span asp-validation-for="LaboratoryCenterName" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Laboratory or Diagnostic Center Address</label>
+                <input asp-for="LaboratoryCenterAddress" type="text" class="form-control" placeholder="Enter laboratory or diagnostic center address">
+                <span asp-validation-for="LaboratoryCenterAddress" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label">Name of the Test</label>
+                <input asp-for="TestName" type="text" class="form-control" placeholder="Enter test name">
+                <span asp-validation-for="TestName" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label">Cost</label>
+                <input asp-for="TestCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱1,500.00)">
+                <span asp-validation-for="TestCost" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+                <label class="form-label">Other Information</label>
+                <input asp-for="TestOtherInfo" type="text" class="form-control" placeholder="Enter other information">
+                <span asp-validation-for="TestOtherInfo" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Therapy Section (Conditional) -->
+    <div id="therapySection" style="display: none;">
+        <h5 class="section-header">Therapy/Rehabilitation Details</h5>
+        <div class="row g-3">
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Therapy or Rehabilitation Facility Name</label>
+                <input asp-for="TherapyFacilityName" type="text" class="form-control" placeholder="Enter facility name">
+                <span asp-validation-for="TherapyFacilityName" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Facility Address</label>
+                <input asp-for="TherapyFacilityAddress" type="text" class="form-control" placeholder="Enter facility address">
+                <span asp-validation-for="TherapyFacilityAddress" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label">Facility Contact Detail</label>
+                <input asp-for="TherapyFacilityContact" type="text" class="form-control" placeholder="Enter contact number">
+                <span asp-validation-for="TherapyFacilityContact" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-8 col-md-12">
+                <label class="form-label">Type or Name of Therapy or Rehabilitation Done</label>
+                <input asp-for="TherapyType" type="text" class="form-control" placeholder="Enter therapy or rehabilitation type">
+                <span asp-validation-for="TherapyType" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Equipment/Apparatus Section (Conditional) -->
+    <div id="apparatusSection" style="display: none;">
+        <h5 class="section-header">Medical Equipment/Apparatus Details</h5>
+        <div class="row g-3">
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Equipment Name</label>
+                <input asp-for="EquipmentName" type="text" class="form-control" placeholder="Enter equipment name">
+                <span asp-validation-for="EquipmentName" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Brand (if applicable)</label>
+                <input asp-for="EquipmentBrand" type="text" class="form-control" placeholder="Enter brand name">
+                <span asp-validation-for="EquipmentBrand" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label">Category/ Type</label>
+                <input asp-for="EquipmentCategory" type="text" class="form-control" placeholder="Enter category or type">
+                <span asp-validation-for="EquipmentCategory" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <label class="form-label">Quantity Needed</label>
+                <input asp-for="EquipmentQuantity" type="number" class="form-control" placeholder="Enter quantity" min="1">
+                <span asp-validation-for="EquipmentQuantity" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+                <label class="form-label">Cost</label>
+                <input asp-for="EquipmentCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱5,000.00)">
+                <span asp-validation-for="EquipmentCost" class="text-danger"></span>
+            </div>
+        </div>
     </div>
 
     <!-- Upload Section -->
@@ -811,6 +955,7 @@
             initializeAutoFill();
             initializePatientToggle();
             initializeFileValidation();
+            initializeMedicalNeedsCheckboxes();
 
             // Check for successful form submission
             checkFormSubmission();
@@ -923,40 +1068,31 @@
             });
         }
 
-        // Assistance Checkboxes - SINGLE SELECTION
+        // Assistance Radio Buttons - SINGLE SELECTION
         function initializeAssistanceCheckboxes() {
-            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+            const assistanceRadios = document.querySelectorAll('.assistance-type');
             const assistanceReflection = document.getElementById('assistanceReflection');
 
-            // Initialize - ensure no checkboxes are checked by default
-            assistanceCheckboxes.forEach(checkbox => checkbox.checked = false);
+            // Initialize - ensure no radio buttons are checked by default
+            assistanceRadios.forEach(radio => radio.checked = false);
 
-            // Single selection function
-            assistanceCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        // Uncheck all other checkboxes
-                        assistanceCheckboxes.forEach(cb => {
-                            if (cb !== this) {
-                                cb.checked = false;
-                            }
-                        });
-                    }
+            // Single selection function (radio buttons enforce this automatically)
+            assistanceRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
                     updateAssistanceReflection();
                 });
             });
 
             // Update reflection function
             function updateAssistanceReflection() {
-                let selectedOptions = [];
-                assistanceCheckboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const label = checkbox.nextElementSibling.textContent.trim();
-                        selectedOptions.push(label);
+                let selectedOption = "";
+                assistanceRadios.forEach(radio => {
+                    if (radio.checked) {
+                        selectedOption = radio.value;
                     }
                 });
                 if (assistanceReflection) {
-                    assistanceReflection.value = selectedOptions.join(', ');
+                    assistanceReflection.value = selectedOption;
                 }
             }
 
@@ -1387,7 +1523,7 @@
                 }
 
                 setTimeout(() => {
-                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> APPLY FOR MYSELF';
+                    sameAsPatientBtn.innerHTML = '<i class="bi bi-clipboard-check"></i> Copy Information from Above';
                     sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
                     sameAsPatientBtn.classList.add('btn-outline-success');
                 }, 2000);
@@ -1563,6 +1699,43 @@
                         window.location.href = '/Home';
                     }, 2000);
                     </text>
+            }
+        }
+
+        // Medical Needs Checkboxes - Show/Hide conditional sections
+        function initializeMedicalNeedsCheckboxes() {
+            const medicineCheckbox = document.getElementById('medicineAssistance');
+            const laboratoryCheckbox = document.getElementById('laboratoryAssistance');
+            const therapyCheckbox = document.getElementById('therapyAssistance');
+            const apparatusCheckbox = document.getElementById('apparatusAssistance');
+
+            const medicinesSection = document.getElementById('medicinesSection');
+            const laboratorySection = document.getElementById('laboratorySection');
+            const therapySection = document.getElementById('therapySection');
+            const apparatusSection = document.getElementById('apparatusSection');
+
+            if (medicineCheckbox) {
+                medicineCheckbox.addEventListener('change', function() {
+                    medicinesSection.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+
+            if (laboratoryCheckbox) {
+                laboratoryCheckbox.addEventListener('change', function() {
+                    laboratorySection.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+
+            if (therapyCheckbox) {
+                therapyCheckbox.addEventListener('change', function() {
+                    therapySection.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+
+            if (apparatusCheckbox) {
+                apparatusCheckbox.addEventListener('change', function() {
+                    apparatusSection.style.display = this.checked ? 'block' : 'none';
+                });
             }
         }
 

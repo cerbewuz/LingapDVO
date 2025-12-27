@@ -103,6 +103,28 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string? ForCMOPERSONNEL { get; set; } = "";
 
+        // Additional Information - Encrypted Fields
+        [MaxLength(500)]
+        public string? HospitalFacilityName { get; set; } = "";
+
+        [MaxLength(500)]
+        public string? HospitalFacilityAddress { get; set; } = "";
+
+        [MaxLength(1000)]
+        public string? DiagnosisMedicalCondition { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? HospitalBillCost { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? AdmissionDate { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? DischargeDate { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? WardRoomType { get; set; } = "";
+
 
         [MaxLength(100)]
         public string Validfrontimage { get; set; } = "";

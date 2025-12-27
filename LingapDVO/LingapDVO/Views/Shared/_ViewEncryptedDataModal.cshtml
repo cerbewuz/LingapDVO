@@ -1,0 +1,380 @@
+@*
+    Reusable Modal Component for Viewing Encrypted Additional Information
+    Requires password verification before displaying decrypted data
+*@
+
+<!-- Additional Information View Modal -->
+<div class="modal fade" id="viewAdditionalInfoModal" tabindex="-1" aria-labelledby="viewAdditionalInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="viewAdditionalInfoModalLabel">
+                    <i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Password Verification Step -->
+                <div id="passwordVerificationStep">
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                        <div>
+                            <strong>Security Verification Required</strong><br>
+                            Please enter your password to view the encrypted Additional Information.
+                        </div>
+                    </div>
+
+                    <form id="passwordVerificationForm">
+                        <div class="mb-3">
+                            <label for="verificationPassword" class="form-label fw-bold">
+                                <i class="bi bi-key-fill me-2"></i>Your Password
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="verificationPassword"
+                                       placeholder="Enter your password" required autocomplete="current-password">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordVisibility">
+                                    <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Enter the password you use to log into your account.</div>
+                            <div id="passwordError" class="text-danger mt-2" style="display: none;"></div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="verifyPasswordBtn">
+                                <i class="bi bi-unlock-fill me-2"></i>Verify & View Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Decrypted Data Display Step (Hidden Initially) -->
+                <div id="decryptedDataStep" style="display: none;">
+                    <div class="alert alert-success d-flex align-items-center mb-3" role="alert">
+                        <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+                        <div>
+                            <strong>Verification Successful!</strong><br>
+                            The encrypted data has been decrypted and is displayed below.
+                        </div>
+                    </div>
+
+                    <div id="decryptedDataContainer" class="border rounded p-3 bg-light">
+                        <!-- Decrypted fields will be dynamically inserted here -->
+                    </div>
+
+                    <div class="mt-3 d-grid">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-2"></i>Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" style="display: none;" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Processing your request...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Fix z-index to ensure modal appears above backdrop */
+    #viewAdditionalInfoModal {
+        z-index: 1060 !important;
+    }
+
+    #viewAdditionalInfoModal ~ .modal-backdrop {
+        z-index: 1055 !important;
+    }
+
+    .modal-backdrop.show {
+        z-index: 1055 !important;
+    }
+
+    #viewAdditionalInfoModal .modal-content {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1060 !important;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #viewAdditionalInfoModal .modal-dialog {
+        z-index: 1060 !important;
+    }
+
+    #viewAdditionalInfoModal .modal-header {
+        border-bottom: 3px solid #0056b3;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+
+    #decryptedDataContainer .field-group {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    #decryptedDataContainer .field-group:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    #decryptedDataContainer .field-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    #decryptedDataContainer .field-value {
+        color: #212529;
+        font-size: 1rem;
+        word-wrap: break-word;
+    }
+
+    .encrypted-field-badge {
+        background-color: #ffc107;
+        color: #000;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+</style>
+
+<script>
+// Detect which controller we're using based on current URL
+function getControllerRoute() {
+    const currentPath = window.location.pathname.toLowerCase();
+    if (currentPath.includes('/adminuser/')) {
+        return '/Adminuser';
+    }
+    return '/Dashboard';  // Default to Dashboard for user side
+}
+
+// Global function to open the modal with specific form data
+function openViewAdditionalInfoModal(formType, formId, encryptedFields) {
+    console.log('Opening modal for form type:', formType, 'ID:', formId);
+    console.log('Encrypted fields:', encryptedFields);
+
+    // Wait for jQuery to be loaded
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery is not loaded yet!');
+        setTimeout(function() {
+            openViewAdditionalInfoModal(formType, formId, encryptedFields);
+        }, 100);
+        return;
+    }
+
+    // Reset modal state - show password verification step
+    $('#passwordVerificationStep').show();
+    $('#decryptedDataStep').hide();
+    $('#loadingSpinner').hide();
+    $('#verificationPassword').val('');
+    $('#passwordError').hide().text('');
+
+    // Store data in modal for later use
+    $('#viewAdditionalInfoModal').data('formType', formType);
+    $('#viewAdditionalInfoModal').data('formId', formId);
+    $('#viewAdditionalInfoModal').data('encryptedFields', encryptedFields);
+
+    // Show modal using Bootstrap 5 syntax WITHOUT backdrop
+    var modalElement = document.getElementById('viewAdditionalInfoModal');
+    if (modalElement) {
+        var modal = new bootstrap.Modal(modalElement, {
+            backdrop: false,  // REMOVED backdrop to prevent covering password modal
+            keyboard: true,
+            focus: true
+        });
+        modal.show();
+        console.log('Modal opened successfully');
+    } else {
+        console.error('Modal element not found!');
+    }
+}
+
+// Wrap all jQuery code in document ready to ensure jQuery is loaded
+if (typeof jQuery !== 'undefined') {
+    $(document).ready(function() {
+        initializeModal();
+    });
+} else {
+    // If jQuery isn't loaded yet, wait for it
+    document.addEventListener('DOMContentLoaded', function() {
+        var checkJQuery = setInterval(function() {
+            if (typeof jQuery !== 'undefined') {
+                clearInterval(checkJQuery);
+                $(document).ready(function() {
+                    initializeModal();
+                });
+            }
+        }, 100);
+    });
+}
+
+function initializeModal() {
+    // Toggle password visibility
+    $('#togglePasswordVisibility').on('click', function() {
+        const passwordInput = $('#verificationPassword');
+        const icon = $('#togglePasswordIcon');
+
+        if (passwordInput.attr('type') === 'password') {
+            passwordInput.attr('type', 'text');
+            icon.removeClass('bi-eye').addClass('bi-eye-slash');
+        } else {
+            passwordInput.attr('type', 'password');
+            icon.removeClass('bi-eye-slash').addClass('bi-eye');
+        }
+    });
+
+    // Handle password verification form submission
+    $('#passwordVerificationForm').on('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const password = $('#verificationPassword').val();
+        const formType = $('#viewAdditionalInfoModal').data('formType');
+        const formId = $('#viewAdditionalInfoModal').data('formId');
+        const encryptedFields = $('#viewAdditionalInfoModal').data('encryptedFields');
+
+        console.log('Password verification started');
+        console.log('Form Type:', formType);
+        console.log('Form ID:', formId);
+
+        if (!password) {
+            $('#passwordError').text('Please enter your password').show();
+            return;
+        }
+
+        // Show loading, hide form
+        $('#passwordVerificationStep').hide();
+        $('#loadingSpinner').show();
+        $('#passwordError').hide();
+
+        // Get the appropriate controller route
+        const controllerRoute = getControllerRoute();
+        console.log('Using controller route:', controllerRoute);
+
+        // Verify password
+        $.ajax({
+            url: controllerRoute + '/VerifyPasswordForDecryption',
+            type: 'POST',
+            data: { password: password },
+            dataType: 'json',
+            success: function(response) {
+                console.log('Password verification response:', response);
+                if (response.success) {
+                    // Password verified, now decrypt all fields
+                    console.log('Password verified successfully, decrypting fields...');
+                    decryptAllFields(formType, formId, encryptedFields);
+                } else {
+                    // Password incorrect
+                    console.log('Password verification failed:', response.message);
+                    $('#loadingSpinner').hide();
+                    $('#passwordVerificationStep').show();
+                    $('#passwordError').text(response.message || 'Invalid password. Please try again.').show();
+                    $('#verificationPassword').val('').focus();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Password verification error:', error);
+                console.error('XHR:', xhr);
+                console.error('Status:', status);
+                $('#loadingSpinner').hide();
+                $('#passwordVerificationStep').show();
+                $('#passwordError').text('An error occurred: ' + error + '. Please try again.').show();
+            }
+        });
+    });
+
+    // Function to decrypt all fields and display them
+    function decryptAllFields(formType, formId, encryptedFields) {
+        const controllerRoute = getControllerRoute();
+        const decryptPromises = [];
+        const fieldLabels = encryptedFields.labels;
+        const fieldValues = encryptedFields.values;
+        const fieldNames = encryptedFields.names;
+
+        console.log('Starting decryption for', fieldNames.length, 'fields');
+        console.log('Using controller route:', controllerRoute);
+
+        // Create decrypt requests for all fields
+        for (let i = 0; i < fieldNames.length; i++) {
+            if (fieldValues[i] && fieldValues[i].trim() !== '') {
+                console.log('Decrypting field:', fieldNames[i], 'with value length:', fieldValues[i].length);
+                decryptPromises.push(
+                    $.ajax({
+                        url: controllerRoute + '/DecryptField',
+                        type: 'POST',
+                        data: {
+                            fieldValue: fieldValues[i],
+                            formType: formType,
+                            formId: formId
+                        },
+                        dataType: 'json'
+                    }).then(function(response) {
+                        console.log('Decryption response for field ' + fieldNames[i] + ':', response);
+                        return {
+                            name: fieldNames[i],
+                            label: fieldLabels[i],
+                            value: response.success ? response.data : 'Error decrypting'
+                        };
+                    }).fail(function(xhr, status, error) {
+                        console.error('Decryption failed for field ' + fieldNames[i] + ':', error);
+                        return {
+                            name: fieldNames[i],
+                            label: fieldLabels[i],
+                            value: 'Error: ' + error
+                        };
+                    })
+                );
+            }
+        }
+
+        // Wait for all decryptions to complete
+        Promise.all(decryptPromises).then(function(decryptedData) {
+            console.log('All fields decrypted:', decryptedData);
+            // Build the display HTML
+            let html = '';
+            decryptedData.forEach(function(field) {
+                html += '<div class="field-group">';
+                html += '  <div class="field-label">' + field.label + '</div>';
+                html += '  <div class="field-value">' + (field.value || '<em class="text-muted">Not provided</em>') + '</div>';
+                html += '</div>';
+            });
+
+            $('#decryptedDataContainer').html(html);
+
+            // Show decrypted data, hide loading
+            $('#loadingSpinner').hide();
+            $('#decryptedDataStep').show();
+        }).catch(function(error) {
+            console.error('Promise.all failed:', error);
+            $('#loadingSpinner').hide();
+            $('#passwordVerificationStep').show();
+            $('#passwordError').text('Failed to decrypt data: ' + error + '. Please try again.').show();
+        });
+    }
+
+    // Reset modal when closed
+    $('#viewAdditionalInfoModal').on('hidden.bs.modal', function() {
+        $('#passwordVerificationStep').show();
+        $('#decryptedDataStep').hide();
+        $('#loadingSpinner').hide();
+        $('#verificationPassword').val('');
+        $('#passwordError').hide().text('');
+        $('#decryptedDataContainer').html('');
+    });
+}
+</script>

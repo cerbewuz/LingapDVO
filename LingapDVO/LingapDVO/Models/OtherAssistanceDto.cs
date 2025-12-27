@@ -90,6 +90,36 @@ namespace LingapDVO.Models
 
         public string? ForCMOPERSONNEL { get; set; } = "";
 
+        // Additional Information Fields - Conditional based on assistance type
+        // Only fields for selected assistance type need to be filled
+
+        // Medicines Fields
+        public string? MedicineName { get; set; } = "";
+        public string? MedicineQuantity { get; set; } = "";
+        public string? MedicineCost { get; set; } = "";
+        public string? PrescribingDoctor { get; set; } = "";
+        public string? DoctorContactDetail { get; set; } = "";
+
+        // Laboratory Fields
+        public string? LaboratoryCenterName { get; set; } = "";
+        public string? LaboratoryCenterAddress { get; set; } = "";
+        public string? TestName { get; set; } = "";
+        public string? TestCost { get; set; } = "";
+        public string? TestOtherInfo { get; set; } = "";
+
+        // Therapy Fields
+        public string? TherapyFacilityName { get; set; } = "";
+        public string? TherapyFacilityAddress { get; set; } = "";
+        public string? TherapyFacilityContact { get; set; } = "";
+        public string? TherapyType { get; set; } = "";
+
+        // Medical Equipment/Apparatus Fields
+        public string? EquipmentName { get; set; } = "";
+        public string? EquipmentBrand { get; set; } = "";
+        public string? EquipmentCategory { get; set; } = "";
+        public string? EquipmentQuantity { get; set; } = "";
+        public string? EquipmentCost { get; set; } = "";
+
 
         [Required]
         public IFormFile? IdFrontimage { get; set; }

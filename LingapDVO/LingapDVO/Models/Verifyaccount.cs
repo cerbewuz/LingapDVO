@@ -70,6 +70,13 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string userfacepicture { get; set; } = "";
 
+        // ID Analyzer verification decision: "accept", "review", "reject"
+        [MaxLength(20)]
+        public string? decision { get; set; }
+
+        // ID Analyzer transaction ID for polling status updates
+        [MaxLength(200)]
+        public string? TransactionId { get; set; }
 
     }
 }

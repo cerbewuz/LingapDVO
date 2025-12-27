@@ -48,14 +48,14 @@
                     <div class="relative">
                         <input asp-for="Username"
                                type="text"
-                               class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white"
+                               class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border border-gray-300 rounded-lg bg-white"
                                placeholder=" "
                                required
                                autocomplete="username"
                                id="usernameOrEmail">
                         <label for="usernameOrEmail" class="floating-label">
                             <i class="fas fa-user"></i>
-                            <span>Enter your username or email</span>
+                            <span>Username or Email</span>
                         </label>
                     </div>
                     <span asp-validation-for="Username" class="text-red-500 text-xs"></span>
@@ -66,14 +66,14 @@
                     <div class="relative">
                         <input asp-for="Password"
                                type="password"
-                               class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl bg-white pr-10 sm:pr-12"
+                               class="floating-input w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3 lg:py-3.5 text-sm sm:text-base border border-gray-300 rounded-lg bg-white pr-10 sm:pr-12"
                                placeholder=" "
                                required
                                autocomplete="current-password"
                                id="password">
                         <label for="password" class="floating-label">
                             <i class="fas fa-lock"></i>
-                            <span>Enter your password</span>
+                            <span>Password</span>
                         </label>
                         <button type="button" class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" id="togglePassword">
                             <i class="fas fa-eye text-xs sm:text-sm"></i>
@@ -102,11 +102,10 @@
                 </div>
 
                 <!-- Compact reCAPTCHA -->
-                <div class="bg-gray-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-gray-200 flex justify-center">
-                    <div id="recaptcha-container" class="mx-auto scale-75 sm:scale-90 md:scale-95 lg:scale-100">
+                    <div id="recaptcha-container" class="mx-auto scale-75 sm:scale-90 md:scale-95 lg:scale-100 flex justify-center">
                         <div class="g-recaptcha" id="login-recaptcha" data-sitekey="@ViewBag.ReCaptchaSiteKey" data-callback="onRecaptchaSuccess" data-expired-callback="onRecaptchaExpired" data-error-callback="onRecaptchaError"></div>
                     </div>
-                </div>
+                
 
                 <!-- Compact Submit Button -->
                 <div class="flex justify-center">

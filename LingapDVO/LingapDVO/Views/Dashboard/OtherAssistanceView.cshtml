@@ -357,6 +357,29 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
+            <!-- Additional Information Section (Password-Protected) -->
+            <div class="receipt-section">
+                <h5 class="section-header d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
+                    <button type="button" class="btn btn-sm btn-primary"
+                            onclick="viewOtherAdditionalInfo()"
+                            title="Click to view encrypted information">
+                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                    </button>
+                </h5>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                            <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                            <div>
+                                <strong>This information is encrypted for security.</strong><br>
+                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Valid ID Section -->
             <div class="receipt-section">
                 <h5 class="section-header">Valid ID</h5>
@@ -666,48 +689,51 @@
             document.getElementById('statusForm').submit();
         }
 
-        // CMO Reflection Auto-generation
+        // CMO Reflection Auto-generation (only for admin views with these fields)
         document.addEventListener('DOMContentLoaded', function() {
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-            cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        cmoCheckboxes.forEach(cb => {
-                            if (cb !== this) cb.checked = false;
-                        });
-                    }
-                    updateReflection();
-                });
-            });
-
-            function updateReflection() {
-                const billInput = document.getElementById('billAmountInput');
-                const cmoNotes = document.getElementById('cmoNotesInput');
-                const reflectionField = document.getElementById('cmoReflectionField');
-                const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-                let parts = [];
-                if (billInput.value.trim()) {
-                    parts.push(`Bill: ${billInput.value.trim()}`);
-                }
-                const checkedDocs = [];
-                docCheckboxes.forEach(cb => {
-                    if (cb.checked) checkedDocs.push(cb.value);
-                });
-                if (checkedDocs.length) {
-                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                }
-                if (cmoNotes.value.trim()) {
-                    parts.push(`Others: ${cmoNotes.value.trim()}`);
-                }
-                reflectionField.value = parts.join(' , ');
-            }
-
+            // Check if this is an admin view with CMO fields
             const billInput = document.getElementById('billAmountInput');
             const cmoNotes = document.getElementById('cmoNotesInput');
-            if (billInput) billInput.addEventListener('input', updateReflection);
-            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
-            updateReflection();
+            const reflectionField = document.getElementById('cmoReflectionField');
+            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
+
+            // Only initialize if the CMO fields exist (admin view)
+            if (billInput && cmoNotes && reflectionField && cmoCheckboxes.length > 0) {
+                cmoCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            cmoCheckboxes.forEach(cb => {
+                                if (cb !== this) cb.checked = false;
+                            });
+                        }
+                        updateReflection();
+                    });
+                });
+
+                function updateReflection() {
+                    let parts = [];
+                    if (billInput && billInput.value && billInput.value.trim()) {
+                        parts.push(`Bill: ${billInput.value.trim()}`);
+                    }
+                    const checkedDocs = [];
+                    cmoCheckboxes.forEach(cb => {
+                        if (cb.checked) checkedDocs.push(cb.value);
+                    });
+                    if (checkedDocs.length) {
+                        parts.push(`Docs: ${checkedDocs.join(', ')}`);
+                    }
+                    if (cmoNotes && cmoNotes.value && cmoNotes.value.trim()) {
+                        parts.push(`Others: ${cmoNotes.value.trim()}`);
+                    }
+                    if (reflectionField) {
+                        reflectionField.value = parts.join(' , ');
+                    }
+                }
+
+                billInput.addEventListener('input', updateReflection);
+                cmoNotes.addEventListener('input', updateReflection);
+                updateReflection();
+            }
         });
 
         // Keyboard shortcuts and navigation
@@ -758,5 +784,67 @@
                 closeCommentsModal();
             }
         }
+
+        // View Additional Information (Password-Protected)
+        function viewOtherAdditionalInfo() {
+            const formId = parseInt('@ViewData["Id"]');
+            const assistanceType = '@ViewData["Typeassistance"]';
+
+            let fieldNames = [];
+            let fieldLabels = [];
+            let fieldValues = [];
+
+            // Conditional fields based on assistance type
+            if (assistanceType === 'Medicine Assistance') {
+                fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
+                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
+                fieldValues = [
+                    '@ViewData["MedicineName"]',
+                    '@ViewData["MedicineQuantity"]',
+                    '@ViewData["MedicineCost"]',
+                    '@ViewData["PrescribingDoctor"]',
+                    '@ViewData["DoctorContactDetail"]'
+                ];
+            } else if (assistanceType === 'Laboratory') {
+                fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
+                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
+                fieldValues = [
+                    '@ViewData["LaboratoryCenterName"]',
+                    '@ViewData["LaboratoryCenterAddress"]',
+                    '@ViewData["TestName"]',
+                    '@ViewData["TestCost"]',
+                    '@ViewData["TestOtherInfo"]'
+                ];
+            } else if (assistanceType === 'Therapy') {
+                fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
+                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
+                fieldValues = [
+                    '@ViewData["TherapyFacilityName"]',
+                    '@ViewData["TherapyFacilityAddress"]',
+                    '@ViewData["TherapyFacilityContact"]',
+                    '@ViewData["TherapyType"]'
+                ];
+            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+                fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
+                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
+                fieldValues = [
+                    '@ViewData["EquipmentName"]',
+                    '@ViewData["EquipmentBrand"]',
+                    '@ViewData["EquipmentCategory"]',
+                    '@ViewData["EquipmentQuantity"]',
+                    '@ViewData["EquipmentCost"]'
+                ];
+            }
+
+            const encryptedFields = {
+                names: fieldNames,
+                labels: fieldLabels,
+                values: fieldValues
+            };
+
+            openViewAdditionalInfoModal('Other', formId, encryptedFields);
+        }
     </script>
 }
+
+@Html.Partial("_ViewEncryptedDataModal")

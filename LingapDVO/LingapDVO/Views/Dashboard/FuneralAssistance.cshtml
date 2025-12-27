@@ -382,7 +382,7 @@
                        focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
                        active:scale-95"
                     id="sameAsPatientBtn">
-                <i class="bi bi-person-check"></i> APPLY FOR MYSELF
+                <i class="bi bi-clipboard-check"></i> Copy Information from Above
             </button>
 
             <button type="button"
@@ -396,7 +396,7 @@
             </button>
 
             <small class="text-muted ms-2">
-                Click "APPLY FOR MYSELF" if you are applying for yourself.
+                Click "Copy Information from Above" to auto-fill patient details with your information.
                 Click "Clear auto-fill" if you clicked the button by accident.
             </small>
         </div>
@@ -634,6 +634,85 @@
             </div>
         </div>
         <!-- End Patient Details Section wrapper -->
+    </div>
+
+    <!-- Additional Information Section -->
+    <h5 class="section-header">Additional Information</h5>
+    <div class="row g-3">
+        <div class="col-lg-6 col-md-12">
+            <label class="form-label">Name of the Deceased Person</label>
+            <input asp-for="DeceasedPersonName" type="text" class="form-control"
+                   placeholder="Enter full name of the deceased" required>
+            <span asp-validation-for="DeceasedPersonName" class="text-danger"></span>
+        </div>
+
+        <div class="col-lg-6 col-md-12">
+            <label class="form-label">Relationship of Claimant to the Deceased</label>
+            <input asp-for="RelationshipToDeceased" type="text" class="form-control"
+                   placeholder="Enter relationship (e.g., Spouse, Child, Sibling)" required>
+            <span asp-validation-for="RelationshipToDeceased" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-lg-4 col-md-6">
+            <label class="form-label">Date of Death</label>
+            <input asp-for="DateOfDeath" type="date" class="form-control" required>
+            <span asp-validation-for="DateOfDeath" class="text-danger"></span>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <label class="form-label">Time of Death</label>
+            <input asp-for="TimeOfDeath" type="time" class="form-control" required>
+            <span asp-validation-for="TimeOfDeath" class="text-danger"></span>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+            <label class="form-label">Cause of Death</label>
+            <input asp-for="CauseOfDeath" type="text" class="form-control"
+                   placeholder="Enter cause of death" required>
+            <span asp-validation-for="CauseOfDeath" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-lg-6 col-md-12">
+            <label class="form-label">Funeral Home/ Parlor Name</label>
+            <input asp-for="FuneralHomeName" type="text" class="form-control"
+                   placeholder="Enter funeral home or parlor name" required>
+            <span asp-validation-for="FuneralHomeName" class="text-danger"></span>
+        </div>
+
+        <div class="col-lg-6 col-md-12">
+            <label class="form-label">Funeral Home/ Parlor Address</label>
+            <input asp-for="FuneralHomeAddress" type="text" class="form-control"
+                   placeholder="Enter funeral home or parlor address" required>
+            <span asp-validation-for="FuneralHomeAddress" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-lg-4 col-md-6">
+            <label class="form-label">Date of Burial or Cremation</label>
+            <input asp-for="BurialCremationDate" type="date" class="form-control" required>
+            <span asp-validation-for="BurialCremationDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <label class="form-label">Time of Burial or Cremation</label>
+            <input asp-for="BurialCremationTime" type="time" class="form-control" required>
+            <span asp-validation-for="BurialCremationTime" class="text-danger"></span>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+            <label class="form-label">Type</label>
+            <select asp-for="BurialCremationType" class="form-select" required>
+                <option value="">Select Type</option>
+                <option value="Burial">Burial</option>
+                <option value="Cremation">Cremation</option>
+            </select>
+            <span asp-validation-for="BurialCremationType" class="text-danger"></span>
+        </div>
     </div>
 
     <!-- Upload Section -->
@@ -1254,7 +1333,7 @@
                 }
 
                 setTimeout(() => {
-                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> APPLY FOR MYSELF';
+                    sameAsPatientBtn.innerHTML = '<i class="bi bi-clipboard-check"></i> Copy Information from Above';
                     sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
                     sameAsPatientBtn.classList.add('btn-outline-success');
                 }, 2000);

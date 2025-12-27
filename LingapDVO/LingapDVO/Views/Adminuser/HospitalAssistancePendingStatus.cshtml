@@ -494,6 +494,27 @@
         </div>
     </div>
 
+    <!-- Additional Information Section (Password-Protected) -->
+    <h5 class="section-header mt-4 d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
+        <button type="button" class="btn btn-sm btn-primary"
+                onclick="viewHospitalAdditionalInfo()"
+                title="Click to view encrypted information">
+            <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+        </button>
+    </h5>
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                <div>
+                    <strong>This information is encrypted for security.</strong><br>
+                    Click the "View Encrypted Data" button above and enter your password to view the details.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Status Section -->
     <h5 class="section-header mt-4">Request Status</h5>
     <div class="row g-3">
@@ -767,5 +788,43 @@
                 }
             }
         });
+
+        // View Additional Information (Password-Protected)
+        function viewHospitalAdditionalInfo() {
+            const formId = parseInt('@ViewData["Id"]');
+            const encryptedFields = {
+                names: [
+                    'HospitalFacilityName',
+                    'HospitalFacilityAddress',
+                    'DiagnosisMedicalCondition',
+                    'HospitalBillCost',
+                    'AdmissionDate',
+                    'DischargeDate',
+                    'WardRoomType'
+                ],
+                labels: [
+                    'Hospital/Medical Facility Name',
+                    'Hospital/Medical Facility Address',
+                    'Diagnosis/Medical Condition',
+                    'Hospital Bill/Cost',
+                    'Admission Date',
+                    'Discharge Date',
+                    'Ward/Room Type'
+                ],
+                values: [
+                    '@ViewData["HospitalFacilityName"]',
+                    '@ViewData["HospitalFacilityAddress"]',
+                    '@ViewData["DiagnosisMedicalCondition"]',
+                    '@ViewData["HospitalBillCost"]',
+                    '@ViewData["AdmissionDate"]',
+                    '@ViewData["DischargeDate"]',
+                    '@ViewData["WardRoomType"]'
+                ]
+            };
+
+            openViewAdditionalInfoModal('Hospital', formId, encryptedFields);
+        }
     </script>
 }
+
+@Html.Partial("_ViewEncryptedDataModal")

@@ -374,7 +374,8 @@ const FaceRecognition = {
         }
     },
     
-    // Capture selfie from video stream - OPTIMIZED for ID Analyzer v2 API face detection
+    // Capture selfie from video stream - ORIGINAL QUALITY PRESERVED for ID Analyzer v2 API
+    // CRITICAL: No resizing, rescaling, or repositioning - send original image to API
     // FIXED: Added captureInProgress flag to prevent multiple captures
     async captureSelfie(videoElement, canvasElement) {
         // Prevent multiple simultaneous captures
@@ -387,7 +388,7 @@ const FaceRecognition = {
         
         this.captureInProgress = true;
 
-        // Get actual video dimensions
+        // Get actual video dimensions - USE ORIGINAL SIZE WITHOUT MODIFICATION
         const videoWidth = videoElement.videoWidth || 640;
         const videoHeight = videoElement.videoHeight || 480;
 
@@ -397,46 +398,30 @@ const FaceRecognition = {
         // - Face must be clearly visible and well-lit
         // - High quality JPEG (0.92+ quality)
         // - DO NOT mirror the image (causes face detection issues)
+        // - CRITICAL: Send ORIGINAL image without any modifications
 
-        // Calculate optimal capture size - favor higher resolution for face detection
-        let captureWidth = videoWidth;
-        let captureHeight = videoHeight;
-        const minDimension = 640;
-        const maxDimension = 1920; // Allow up to Full HD for best face detection
-
-        // Ensure minimum resolution
-        if (videoWidth < minDimension || videoHeight < minDimension) {
-            const scale = minDimension / Math.min(videoWidth, videoHeight);
-            captureWidth = Math.round(videoWidth * scale);
-            captureHeight = Math.round(videoHeight * scale);
-        }
-
-        // Cap at maximum to avoid huge files
-        if (captureWidth > maxDimension || captureHeight > maxDimension) {
-            const scale = maxDimension / Math.max(captureWidth, captureHeight);
-            captureWidth = Math.round(captureWidth * scale);
-            captureHeight = Math.round(captureHeight * scale);
-        }
+        // ORIGINAL QUALITY: Use video's native resolution without any scaling
+        // The ID Analyzer API should receive the image in its original form
+        const captureWidth = videoWidth;
+        const captureHeight = videoHeight;
 
 
-        // Set canvas size
+        // Set canvas size to EXACT video dimensions (no scaling)
         canvasElement.width = captureWidth;
         canvasElement.height = captureHeight;
 
         const context = canvasElement.getContext('2d');
 
-        // Enable high-quality image smoothing
-        context.imageSmoothingEnabled = true;
-        context.imageSmoothingQuality = 'high';
+        // Disable image smoothing to preserve original pixel data
+        context.imageSmoothingEnabled = false;
 
-        // CRITICAL FIX: Draw video frame WITHOUT mirroring
-        // ID Analyzer API face detection works better with non-mirrored images
-        // The mirror effect is only for user preview, not for the captured image
+        // CRITICAL: Draw video frame at ORIGINAL size WITHOUT any transformation
+        // No mirroring, no scaling, no repositioning - exact 1:1 copy
         context.drawImage(videoElement, 0, 0, captureWidth, captureHeight);
 
-        // CRITICAL FIX: Use higher JPEG quality (0.95) for better face detection
-        // ID Analyzer needs clear facial features - don't over-compress
-        const imageData = canvasElement.toDataURL('image/jpeg', 0.95);
+        // CRITICAL: Use maximum JPEG quality (1.0) to preserve original image data
+        // No compression artifacts - send to API exactly as captured
+        const imageData = canvasElement.toDataURL('image/jpeg', 1.0);
 
 
         // Validate image was captured

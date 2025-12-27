@@ -488,6 +488,7 @@ namespace LingapDVO.Controllers
 
                 // Store session data
                 HttpContext.Session.SetString("UserId", user.Id.ToString());
+                HttpContext.Session.SetString("IsGoogleUser", "true");
 
                 // ===========================
                 // 🔍 Check if verified
@@ -677,6 +678,7 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("GoogleName", GoogleName ?? "");
                 HttpContext.Session.SetString("IsRegisteredUser", "true");
                 HttpContext.Session.SetString("IsVerifiedUser", "false");
+                HttpContext.Session.SetString("IsGoogleUser", "true");
 
                 // Send welcome email
                 try
@@ -915,6 +917,7 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("Username", superadmin.Username);
                     HttpContext.Session.SetString("Email", superadmin.Email);
                     HttpContext.Session.SetString("IsSuperadmin", "true");
+                    HttpContext.Session.SetString("UserPassword", loginModel.Password);
 
                     // Return JSON for AJAX requests with userType
                     if (IsAjaxRequest())
@@ -959,6 +962,7 @@ namespace LingapDVO.Controllers
                     // Set session for admin
                     HttpContext.Session.SetString("IsAdmin", "true");
                     HttpContext.Session.SetString("AdminFullname", admin.Fullname);
+                    HttpContext.Session.SetString("UserPassword", loginModel.Password);
 
                     // Return JSON for AJAX requests with userType
                     if (IsAjaxRequest())
@@ -989,6 +993,9 @@ namespace LingapDVO.Controllers
                         // Reset failed attempts on successful login
                         Response.Cookies.Delete("FailedAttempts");
                         Response.Cookies.Delete("LoginCooldown");
+
+                        // Store password in session for decryption verification
+                        HttpContext.Session.SetString("UserPassword", loginModel.Password);
 
                         // Check if user has verified account data using RegisterAcc ID
                         var verifiedUser = context.Verifyaccount
@@ -2063,6 +2070,7 @@ namespace LingapDVO.Controllers
             }
         }
 
+        [HttpGet]
         public IActionResult Accountverification()
         {
             // Get the current user's ID from the session
@@ -2085,6 +2093,9 @@ namespace LingapDVO.Controllers
             ViewBag.RegisteredLastName = registeredUser.LastName;
             ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
 
+            // Pass user ID for verification status polling
+            ViewBag.UserId = userId;
+
             // ID Analyzer API v2 settings are handled server-side via IdAnalyzerController
             // No need to pass API keys to client-side JavaScript
 
@@ -2093,7 +2104,7 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Accountverification(VerifyaccountDto VerifyaccountDto)
+        public async Task<IActionResult> Accountverification(VerifyaccountDto VerifyaccountDto, string? VerificationDecision, string? TransactionId)
         {
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -2102,6 +2113,33 @@ namespace LingapDVO.Controllers
                 // If user is not logged in, redirect to login page
                 return RedirectToAction("Login", "Login");
             }
+
+            // ═══════════════════════════════════════════════════════════════
+            // CRITICAL: Check ID Analyzer verification decision FIRST
+            // ═══════════════════════════════════════════════════════════════
+            // The user must have completed ID verification with decision="accept"
+            // before they can submit the account verification form
+            // ═══════════════════════════════════════════════════════════════
+            if (string.IsNullOrEmpty(VerificationDecision))
+            {
+                ModelState.AddModelError("", "ID verification is required. Please complete the ID and selfie upload process first.");
+                TempData["ErrorMessage"] = "Please complete ID verification before submitting.";
+                return View(VerifyaccountDto);
+            }
+
+            if (!VerificationDecision.Equals("accept", StringComparison.OrdinalIgnoreCase))
+            {
+                string errorMessage = VerificationDecision.Equals("review", StringComparison.OrdinalIgnoreCase)
+                    ? "Your ID verification is pending manual review. You cannot complete account verification at this time."
+                    : "Your ID verification was rejected. Please re-upload clear photos of your ID and selfie.";
+
+                Console.WriteLine($"❌ VERIFICATION BLOCKED - Decision: {VerificationDecision}");
+                ModelState.AddModelError("", errorMessage);
+                TempData["ErrorMessage"] = errorMessage;
+                return View(VerifyaccountDto);
+            }
+
+            Console.WriteLine($"✅ Verification Decision: {VerificationDecision} (Transaction: {TransactionId})");
 
             // Check for duplicate verification
             var existingVerification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
@@ -2291,90 +2329,12 @@ namespace LingapDVO.Controllers
             }
 
             // ==========================
-            // 🔍 ID ANALYZER VERIFICATION
+            // REMOVED: Redundant ID Analyzer Verification
             // ==========================
-            try
-            {
-                Console.WriteLine("🚀 Starting ID Analyzer Verification...");
-
-                string? frontBase64 = await ConvertToBase64(VerifyaccountDto.ValidFrontID);
-                string? backBase64 = await ConvertToBase64(VerifyaccountDto.ValidBackID);
-                string? faceBase64 = VerifyaccountDto.userfacepictureBase64; // Already Base64
-
-                // Validate that front ID is provided (required)
-                if (string.IsNullOrEmpty(frontBase64))
-                {
-                    ModelState.AddModelError("", "Front ID image is required.");
-                    ViewBag.RegisteredFirstName = registeredUser.FirstName;
-                    ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-                    ViewBag.RegisteredLastName = registeredUser.LastName;
-                    ViewBag.RegisteredSuffix = registeredUser.Suffix;
-                    return View(VerifyaccountDto);
-                }
-
-                var verificationResult = await _verificationService.ScanIdAsync(frontBase64, faceBase64, backBase64);
-
-                if (!verificationResult.Success)
-                {
-                    Console.WriteLine($"❌ Verification Service Failed: {verificationResult.ErrorMessage}");
-                    ModelState.AddModelError("", $"Verification failed: {verificationResult.ErrorMessage}");
-                    
-                    // Pass registered user info back to view
-                    ViewBag.RegisteredFirstName = registeredUser.FirstName;
-                    ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-                    ViewBag.RegisteredLastName = registeredUser.LastName;
-                    ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
-                    
-                    return View(VerifyaccountDto);
-                }
-
-                // Check if verification passed (OCR + Face)
-                if (!verificationResult.VerificationPassed)
-                {
-                    Console.WriteLine("❌ ID Verification Failed (VerificationPassed=false)");
-                    string failureReason = "ID Verification failed. Please ensure your ID is clear and matches your face.";
-                    
-                    if (!verificationResult.FaceMatch)
-                    {
-                        failureReason += " Face verification failed.";
-                    }
-                    
-                    ModelState.AddModelError("", failureReason);
-                    
-                    // Pass registered user info back to view
-                    ViewBag.RegisteredFirstName = registeredUser.FirstName;
-                    ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-                    ViewBag.RegisteredLastName = registeredUser.LastName;
-                    ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
-                    
-                    return View(VerifyaccountDto);
-                }
-
-                // Optional: Check AML status if available
-                if (verificationResult.AmlPassed == false)
-                {
-                    Console.WriteLine("⚠️ AML Check Failed");
-                    // You might want to block or just flag. For now, we'll log it.
-                    // ModelState.AddModelError("", "Verification failed due to security checks.");
-                    // return View(VerifyaccountDto);
-                }
-
-                Console.WriteLine("✅ ID Verification Passed!");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"⚠️ Verification Exception: {ex.Message}");
-                // Decide whether to block or allow on exception. 
-                // For security, usually block, but for UX during dev, maybe log.
-                ModelState.AddModelError("", "An error occurred during ID verification. Please try again.");
-                
-                ViewBag.RegisteredFirstName = registeredUser.FirstName;
-                ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-                ViewBag.RegisteredLastName = registeredUser.LastName;
-                ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
-                
-                return View(VerifyaccountDto);
-            }
+            // Verification was already completed on the frontend via JavaScript
+            // The decision and transactionId are passed as form parameters
+            // We only save to database if decision = "accept" (checked above)
+            Console.WriteLine("✅ ID Verification already completed - proceeding with database save");
 
             try
             {
@@ -2480,7 +2440,9 @@ namespace LingapDVO.Controllers
                     Barangay = VerifyaccountDto.Barangay,
                     District = VerifyaccountDto.District,
                     Phonenumber = VerifyaccountDto.Phonenumber,
-                    CivilStatus = VerifyaccountDto.CivilStatus
+                    CivilStatus = VerifyaccountDto.CivilStatus,
+                    decision = VerificationDecision,
+                    TransactionId = TransactionId
                 };
 
                 context.Verifyaccount.Add(verifyaccount);

@@ -362,6 +362,74 @@
             </div>
         </div>
     </div>
+
+    <!-- Additional Information Section (Password-Protected) -->
+    <div class="card mt-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
+            <button type="button" class="btn btn-sm btn-primary"
+                    onclick="viewHospitalAdditionalInfo()"
+                    title="Click to view encrypted information">
+                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                <div>
+                    <strong>This information is encrypted for security.</strong><br>
+                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Hospital/ Medical Facility Name</label>
+                    <input asp-for="HospitalFacilityName" type="text" class="form-control"
+                           placeholder="Enter hospital or medical facility name">
+                    <span asp-validation-for="HospitalFacilityName" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Hospital/ Medical Facility Address</label>
+                    <input asp-for="HospitalFacilityAddress" type="text" class="form-control"
+                           placeholder="Enter hospital or medical facility address">
+                    <span asp-validation-for="HospitalFacilityAddress" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Diagnosis/ Medical Condition</label>
+                    <textarea asp-for="DiagnosisMedicalCondition" class="form-control" rows="3"
+                              placeholder="Enter diagnosis or medical condition"></textarea>
+                    <span asp-validation-for="DiagnosisMedicalCondition" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Hospital Bill or Cost</label>
+                    <input asp-for="HospitalBillCost" type="text" class="form-control"
+                           placeholder="Enter hospital bill or cost (e.g., ₱10,000.00)">
+                    <span asp-validation-for="HospitalBillCost" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Admission Date</label>
+                    <input asp-for="AdmissionDate" type="date" class="form-control">
+                    <span asp-validation-for="AdmissionDate" class="text-danger"></span>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Discharge Date</label>
+                    <input asp-for="DischargeDate" type="date" class="form-control">
+                    <span asp-validation-for="DischargeDate" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Ward/Room Type</label>
+                    <input asp-for="WardRoomType" type="text" class="form-control"
+                           placeholder="Enter ward or room type (e.g., Private, Semi-Private, Ward)">
+                    <span asp-validation-for="WardRoomType" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Upload Section -->
     <div class="card mt-4">
         <div class="card-header">Upload Required Documents</div>
@@ -1077,5 +1145,43 @@
                 closePDFViewer();
             }
         }
+
+        // View Additional Information (Password-Protected)
+        function viewHospitalAdditionalInfo() {
+            const formId = parseInt('@ViewData["Id"]');
+            const encryptedFields = {
+                names: [
+                    'HospitalFacilityName',
+                    'HospitalFacilityAddress',
+                    'DiagnosisMedicalCondition',
+                    'HospitalBillCost',
+                    'AdmissionDate',
+                    'DischargeDate',
+                    'WardRoomType'
+                ],
+                labels: [
+                    'Hospital/Medical Facility Name',
+                    'Hospital/Medical Facility Address',
+                    'Diagnosis/Medical Condition',
+                    'Hospital Bill/Cost',
+                    'Admission Date',
+                    'Discharge Date',
+                    'Ward/Room Type'
+                ],
+                values: [
+                    '@ViewData["HospitalFacilityName"]',
+                    '@ViewData["HospitalFacilityAddress"]',
+                    '@ViewData["DiagnosisMedicalCondition"]',
+                    '@ViewData["HospitalBillCost"]',
+                    '@ViewData["AdmissionDate"]',
+                    '@ViewData["DischargeDate"]',
+                    '@ViewData["WardRoomType"]'
+                ]
+            };
+
+            openViewAdditionalInfoModal('Hospital', formId, encryptedFields);
+        }
     </script>
 }
+
+@Html.Partial("_ViewEncryptedDataModal")

@@ -193,9 +193,37 @@ textarea {
     box-shadow: 0 2px 4px rgba(74, 144, 226, 0.1) !important;
 }
 
-/* Progress Bar - GREEN */
+/* Progress Bar - GREEN with Loading Animation */
 .bg-crimson-500 {
     background: linear-gradient(90deg, #48bb78 0%, #38a169 100%) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated shimmer effect for progress bar */
+.bg-crimson-500::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    animation: progressShimmer 1.5s infinite;
+}
+
+@keyframes progressShimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
 }
 
 /* Verification Result Box */
@@ -442,6 +470,437 @@ label {
 
     .glass-effect {
         border-radius: 0.75rem !important;
+    }
+    
+    /* Form container responsive padding */
+    .glass-effect .p-6,
+    .glass-effect .p-8 {
+        padding: 1rem !important;
+    }
+    
+    /* Section spacing */
+    .space-y-6 > * + * {
+        margin-top: 1rem !important;
+    }
+    
+    .space-y-8 > * + * {
+        margin-top: 1.5rem !important;
+    }
+    
+    /* Grid adjustments for single column on mobile */
+    .grid.grid-cols-1.md\\:grid-cols-2 {
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 640px) {
+    /* Smaller padding on very small screens */
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    /* Button responsive sizing */
+    button[type="submit"],
+    .submit-btn,
+    .submitbtn-color {
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.9375rem !important;
+    }
+    
+    /* Section headers */
+    .flex.items-center.gap-3 {
+        gap: 0.5rem !important;
+    }
+    
+    .w-10.h-10 {
+        width: 2rem !important;
+        height: 2rem !important;
+    }
+    
+    /* Input fields */
+    input[type="text"],
+    input[type="email"],
+    input[type="date"],
+    select,
+    textarea {
+        padding: 0.625rem 0.875rem !important;
+        font-size: 0.875rem !important;
+    }
+    
+    /* Tips box */
+    .bg-blue-50.border.border-blue-200 {
+        padding: 0.75rem !important;
+    }
+    
+    .bg-blue-50.border.border-blue-200 .text-sm {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UPLOADED DOCUMENTS PREVIEW SECTION
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#uploaded-docs-preview {
+    animation: fadeIn 0.4s ease-out;
+}
+
+#uploaded-docs-preview .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 640px) {
+    #uploaded-docs-preview .grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+}
+
+#uploaded-docs-preview .bg-gray-50 {
+    transition: all 0.3s ease;
+}
+
+#uploaded-docs-preview .bg-gray-50:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   START VERIFICATION BUTTON
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#start-verification-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+#start-verification-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+#start-verification-btn:hover::before {
+    left: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODAL UPLOAD AREAS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.upload-area-modal {
+    transition: all 0.3s ease;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.upload-area-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.upload-area-modal.dragover {
+    border-color: #7EEEE7 !important;
+    background-color: #A3FFF9 !important;
+}
+
+@media (max-width: 640px) {
+    .upload-area-modal {
+        min-height: 240px;
+        padding: 1.5rem !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MINT/CYAN THEME (#A3FFF9) MODAL STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#frontIdModal .modal-header,
+#backIdModal .modal-header,
+#selfieModal .modal-header {
+    background-color: #A3FFF9 !important;
+}
+
+#frontIdModal .modal-header *,
+#backIdModal .modal-header *,
+#selfieModal .modal-header * {
+    color: #000000 !important;
+}
+
+/* Button hover states for mint theme */
+#front-next-btn:not(:disabled):hover,
+#back-next-btn:hover,
+#capture-selfie-btn:hover,
+#start-selfie-camera-btn:hover {
+    background-color: #7EEEE7 !important;
+    box-shadow: 0 4px 12px rgba(163, 255, 249, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELFIE CAMERA VIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.selfie-capture-modal-area {
+    position: relative;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .selfie-capture-modal-area {
+        min-height: 420px;
+    }
+}
+
+/* Mirror effect for selfie video */
+.mirror-video {
+    transform: scaleX(-1);
+}
+
+/* Countdown overlay animation */
+#selfie-countdown-overlay {
+    animation: fadeIn 0.2s ease-out;
+}
+
+#selfie-countdown-number {
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODAL RESPONSIVE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.modal-dialog {
+    margin: 0.5rem !important;
+}
+
+@media (min-width: 576px) {
+    .modal-dialog {
+        margin: 1.75rem auto !important;
+        max-width: 650px !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .modal-dialog.modal-lg {
+        max-width: 800px !important;
+    }
+}
+
+/* Modal content styling */
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@media (max-width: 576px) {
+    .modal-content {
+        border-radius: 1rem !important;
+    }
+    
+    .modal-header {
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .modal-body {
+        padding: 1rem !important;
+    }
+    
+    .modal-footer {
+        padding: 0.75rem 1rem !important;
+    }
+    
+    /* Adjust progress indicator on mobile */
+    .modal-body .flex.items-center.gap-4 {
+        gap: 0.5rem !important;
+    }
+    
+    .modal-body .w-10.h-10 {
+        width: 2rem !important;
+        height: 2rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .modal-body .w-12 {
+        width: 1.5rem !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PROGRESS INDICATOR STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.modal-body .flex.items-center.justify-center .flex-col {
+    text-align: center;
+}
+
+.modal-body .flex.items-center.justify-center .w-8,
+.modal-body .flex.items-center.justify-center .w-10 {
+    flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VERIFICATION STATUS CONTAINER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#upload-status-container {
+    transition: all 0.3s ease;
+}
+
+#upload-status-container .flex-wrap {
+    justify-content: center;
+}
+
+@media (max-width: 480px) {
+    #upload-status-container .px-3 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    #upload-status-container .text-sm {
+        font-size: 0.75rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VERIFY & SUBMIT BUTTON STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#verify-submit-btn {
+    transition: all 0.3s ease;
+}
+
+#verify-submit-btn:not(:disabled) {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%) !important;
+    cursor: pointer;
+}
+
+#verify-submit-btn:not(:disabled):hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+}
+
+@media (max-width: 640px) {
+    #verify-submit-btn {
+        padding: 0.875rem 1.5rem !important;
+        font-size: 0.9375rem !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RETRY VERIFICATION MODAL STYLES (Yellow Theme)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#retryVerificationModal .modal-header {
+    background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
+}
+
+#retryVerificationModal .retry-upload-card {
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+#retryVerificationModal .retry-upload-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+}
+
+#retryVerificationModal .retry-upload-card.uploaded {
+    border-color: #22c55e !important;
+    background-color: #f0fdf4 !important;
+}
+
+@media (max-width: 640px) {
+    #retryVerificationModal .retry-upload-card {
+        min-height: 120px;
+    }
+    
+    #retryVerificationModal .grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Retry selfie modal */
+#retrySelfieModal .modal-header {
+    background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
+}
+
+#retrySelfieModal .selfie-capture-area {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Cooldown modal */
+#cooldownModal .modal-header {
+    background: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
+}
+
+#cooldown-timer {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
+/* Retry button pulse animation when enabled */
+#retry-submit-btn:not(:disabled) {
+    animation: retryPulse 2s ease-in-out infinite;
+}
+
+@keyframes retryPulse {
+    0%, 100% {
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.6);
+    }
+}
+
+/* Attempts warning animation */
+#retry-attempts-warning {
+    animation: warningFadeIn 0.3s ease-out;
+}
+
+@keyframes warningFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 

@@ -25,6 +25,7 @@ namespace LingapDVO.Services
         public string? Suffix { get; set; }
         public string? FullName { get; set; }
         public string? Sex { get; set; }
+        public string? CivilStatus { get; set; }  // From back ID (National ID)
         public string? DateOfBirth { get; set; }
         public int? Age { get; set; }
         public string? DobDay { get; set; }

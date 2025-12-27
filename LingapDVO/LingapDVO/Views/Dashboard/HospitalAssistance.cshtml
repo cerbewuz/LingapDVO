@@ -383,7 +383,7 @@
                        focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
                        active:scale-95"
                     id="sameAsPatientBtn">
-                <i class="bi bi-person-check"></i> APPLY FOR MYSELF
+                <i class="bi bi-clipboard-check"></i> Copy Information from Above
             </button>
 
             <button type="button"
@@ -397,7 +397,7 @@
             </button>
 
             <small class="text-muted ms-2">
-                Click "APPLY FOR MYSELF" if you are applying for yourself.
+                Click "Copy Information from Above" to auto-fill patient details with your information.
                 Click "Clear auto-fill" if you clicked the button by accident.
             </small>
         </div>
@@ -647,24 +647,16 @@
                 <input class="form-check-input assistance-type" type="checkbox"
                        id="governmentAssistance" name="TypeassistanceOptions" value="Government">
                 <label class="form-check-label ms-1" for="governmentAssistance">Government</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="GovernmentDetails" placeholder="Specify" style="display: none;">
+                @* <input type="text" class="form-control mt-1 assistance-spec"
+                       name="GovernmentDetails" placeholder="Specify" style="display: none;"> *@
             </div>
 
             <div class="form-check mt-2">
                 <input class="form-check-input assistance-type" type="checkbox"
                        id="privateAssistance" name="TypeassistanceOptions" value="Private">
                 <label class="form-check-label ms-1" for="privateAssistance">Private</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="PrivateDetails" placeholder="Specify" style="display: none;">
-            </div>
-
-            <div class="form-check mt-2">
-                <input class="form-check-input assistance-type" type="checkbox"
-                       id="caseAssistance" name="TypeassistanceOptions" value="Case">
-                <label class="form-check-label ms-1" for="caseAssistance">Case</label>
-                <input type="text" class="form-control mt-1 assistance-spec"
-                       name="CaseDetails" placeholder="Specify" style="display: none;">
+                @* <input type="text" class="form-control mt-1 assistance-spec"
+                       name="PrivateDetails" placeholder="Specify" style="display: none;"> *@
             </div>
         </div>
     </div>
@@ -673,6 +665,63 @@
         <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
                name="Typeassistance" placeholder="Auto-generated info..." readonly>
         <span asp-validation-for="Typeassistance" class="text-danger"></span>
+    </div>
+
+    <!-- Additional Information Section -->
+    <div id="additionalInfoSection" style="display: none;">
+        <h5 class="section-header">Additional Information</h5>
+        <div class="row g-3">
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Hospital/ Medical Facility Name</label>
+                <input asp-for="HospitalFacilityName" type="text" class="form-control"
+                       placeholder="Enter hospital or medical facility name" required>
+                <span asp-validation-for="HospitalFacilityName" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Hospital/ Medical Facility Address</label>
+                <input asp-for="HospitalFacilityAddress" type="text" class="form-control"
+                       placeholder="Enter hospital or medical facility address" required>
+                <span asp-validation-for="HospitalFacilityAddress" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Diagnosis/ Medical Condition</label>
+                <textarea asp-for="DiagnosisMedicalCondition" class="form-control" rows="3"
+                          placeholder="Enter diagnosis or medical condition" required></textarea>
+                <span asp-validation-for="DiagnosisMedicalCondition" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Hospital Bill or Cost</label>
+                <input asp-for="HospitalBillCost" type="text" class="form-control"
+                       placeholder="Enter hospital bill or cost (e.g., ₱10,000.00)" required>
+                <span asp-validation-for="HospitalBillCost" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Admission Date</label>
+                <input asp-for="AdmissionDate" type="date" class="form-control" required>
+                <span asp-validation-for="AdmissionDate" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Discharge Date</label>
+                <input asp-for="DischargeDate" type="date" class="form-control" required>
+                <span asp-validation-for="DischargeDate" class="text-danger"></span>
+            </div>
+
+            <div class="col-lg-6 col-md-12">
+                <label class="form-label">Ward/Room Type</label>
+                <input asp-for="WardRoomType" type="text" class="form-control"
+                       placeholder="Enter ward or room type (e.g., Private, Semi-Private, Ward)" required>
+                <span asp-validation-for="WardRoomType" class="text-danger"></span>
+            </div>
+        </div>
     </div>
 
     <!-- Upload Section -->
@@ -922,10 +971,24 @@
             const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
             const assistanceSpecs = document.querySelectorAll('.assistance-spec');
             const assistanceReflection = document.getElementById('assistanceReflection');
+            const additionalInfoSection = document.getElementById('additionalInfoSection');
 
             // Initialize - hide all specification fields and ensure no checkboxes are checked
             assistanceSpecs.forEach(field => field.style.display = 'none');
             assistanceCheckboxes.forEach(checkbox => checkbox.checked = false);
+            
+            // Hide Additional Information section initially
+            if (additionalInfoSection) {
+                additionalInfoSection.style.display = 'none';
+            }
+
+            // Function to toggle Additional Information section visibility
+            function toggleAdditionalInfoSection() {
+                const anyChecked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
+                if (additionalInfoSection) {
+                    additionalInfoSection.style.display = anyChecked ? 'block' : 'none';
+                }
+            }
 
             // Single selection function
             assistanceCheckboxes.forEach(checkbox => {
@@ -953,6 +1016,7 @@
                         }
                     }
                     updateAssistanceReflection();
+                    toggleAdditionalInfoSection();
                 });
             });
 
@@ -1397,7 +1461,7 @@
                 }
 
                 setTimeout(() => {
-                    sameAsPatientBtn.innerHTML = '<i class="bi bi-person-check"></i> APPLY FOR MYSELF';
+                    sameAsPatientBtn.innerHTML = '<i class="bi bi-clipboard-check"></i> Copy Information from Above';
                     sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
                     sameAsPatientBtn.classList.add('btn-outline-success');
                 }, 2000);

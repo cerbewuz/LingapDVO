@@ -529,6 +529,30 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
+            <!-- Additional Information Section (Password-Protected) -->
+            <div class="receipt-section">
+                <h5 class="section-header d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
+                    <button type="button" class="btn btn-sm btn-primary"
+                            onclick="viewOtherAdditionalInfo()"
+                            title="Click to view encrypted information">
+                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                    </button>
+                </h5>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                            <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                            <div>
+                                <strong>This information is encrypted for security.</strong><br>
+                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                                The fields shown will depend on the type of assistance requested.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Valid ID and Submitted Documents Section -->
             <div class="receipt-section">
                 <!-- Valid ID Section -->
@@ -876,5 +900,67 @@
                 closeCommentsModal();
             }
         }
+
+        // Function to view encrypted Additional Information
+        function viewOtherAdditionalInfo() {
+            const formId = parseInt('@ViewData["Id"]');
+            const assistanceType = '@ViewData["Typeassistance"]';
+
+            let fieldNames = [];
+            let fieldLabels = [];
+            let fieldValues = [];
+
+            // Conditional fields based on assistance type
+            if (assistanceType === 'Medicine Assistance') {
+                fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
+                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
+                fieldValues = [
+                    '@ViewData["MedicineName"]',
+                    '@ViewData["MedicineQuantity"]',
+                    '@ViewData["MedicineCost"]',
+                    '@ViewData["PrescribingDoctor"]',
+                    '@ViewData["DoctorContactDetail"]'
+                ];
+            } else if (assistanceType === 'Laboratory') {
+                fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
+                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
+                fieldValues = [
+                    '@ViewData["LaboratoryCenterName"]',
+                    '@ViewData["LaboratoryCenterAddress"]',
+                    '@ViewData["TestName"]',
+                    '@ViewData["TestCost"]',
+                    '@ViewData["TestOtherInfo"]'
+                ];
+            } else if (assistanceType === 'Therapy') {
+                fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
+                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
+                fieldValues = [
+                    '@ViewData["TherapyFacilityName"]',
+                    '@ViewData["TherapyFacilityAddress"]',
+                    '@ViewData["TherapyFacilityContact"]',
+                    '@ViewData["TherapyType"]'
+                ];
+            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+                fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
+                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
+                fieldValues = [
+                    '@ViewData["EquipmentName"]',
+                    '@ViewData["EquipmentBrand"]',
+                    '@ViewData["EquipmentCategory"]',
+                    '@ViewData["EquipmentQuantity"]',
+                    '@ViewData["EquipmentCost"]'
+                ];
+            }
+
+            const encryptedFields = {
+                names: fieldNames,
+                labels: fieldLabels,
+                values: fieldValues
+            };
+
+            openViewAdditionalInfoModal('Other', formId, encryptedFields);
+        }
     </script>
+
+    @Html.Partial("_ViewEncryptedDataModal")
 }

@@ -99,6 +99,67 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string? ForCMOPERSONNEL { get; set; } = "";
 
+        // Additional Information - Encrypted Fields (Medicines)
+        [MaxLength(300)]
+        public string? MedicineName { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? MedicineQuantity { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? MedicineCost { get; set; } = "";
+
+        [MaxLength(300)]
+        public string? PrescribingDoctor { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? DoctorContactDetail { get; set; } = "";
+
+        // Additional Information - Encrypted Fields (Laboratory)
+        [MaxLength(500)]
+        public string? LaboratoryCenterName { get; set; } = "";
+
+        [MaxLength(500)]
+        public string? LaboratoryCenterAddress { get; set; } = "";
+
+        [MaxLength(300)]
+        public string? TestName { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? TestCost { get; set; } = "";
+
+        [MaxLength(500)]
+        public string? TestOtherInfo { get; set; } = "";
+
+        // Additional Information - Encrypted Fields (Therapy)
+        [MaxLength(500)]
+        public string? TherapyFacilityName { get; set; } = "";
+
+        [MaxLength(500)]
+        public string? TherapyFacilityAddress { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? TherapyFacilityContact { get; set; } = "";
+
+        [MaxLength(300)]
+        public string? TherapyType { get; set; } = "";
+
+        // Additional Information - Encrypted Fields (Medical Equipment/Apparatus)
+        [MaxLength(300)]
+        public string? EquipmentName { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? EquipmentBrand { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? EquipmentCategory { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? EquipmentQuantity { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? EquipmentCost { get; set; } = "";
+
 
         [MaxLength(100)]
         public string Validfrontimage { get; set; } = "";

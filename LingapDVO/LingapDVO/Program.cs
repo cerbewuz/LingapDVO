@@ -119,6 +119,9 @@ builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>(
 builder.Services.AddHttpClient<IVerificationService, IdAnalyzerService>();
 builder.Services.AddScoped<IVerificationService, IdAnalyzerService>();
 
+// AES Encryption Service (Centralized encryption/decryption)
+builder.Services.AddScoped<IAesEncryptionService, AesEncryptionService>();
+
 // Priority Tracking Service
 builder.Services.AddScoped<PriorityTrackingService>();
 

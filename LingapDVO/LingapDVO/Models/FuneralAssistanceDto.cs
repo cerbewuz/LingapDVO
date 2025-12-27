@@ -90,6 +90,37 @@ namespace LingapDVO.Models
 
         public string? ForCMOPERSONNEL { get; set; } = "";
 
+        // Additional Information Fields - Will be encrypted before saving
+        [Required(ErrorMessage = "Name of Deceased Person is required")]
+        public string DeceasedPersonName { get; set; } = "";
+
+        [Required(ErrorMessage = "Relationship to Deceased is required")]
+        public string RelationshipToDeceased { get; set; } = "";
+
+        [Required(ErrorMessage = "Date of Death is required")]
+        public string DateOfDeath { get; set; } = "";
+
+        [Required(ErrorMessage = "Time of Death is required")]
+        public string TimeOfDeath { get; set; } = "";
+
+        [Required(ErrorMessage = "Cause of Death is required")]
+        public string CauseOfDeath { get; set; } = "";
+
+        [Required(ErrorMessage = "Funeral Home/Parlor Name is required")]
+        public string FuneralHomeName { get; set; } = "";
+
+        [Required(ErrorMessage = "Funeral Home/Parlor Address is required")]
+        public string FuneralHomeAddress { get; set; } = "";
+
+        [Required(ErrorMessage = "Date of Burial/Cremation is required")]
+        public string BurialCremationDate { get; set; } = "";
+
+        [Required(ErrorMessage = "Time of Burial/Cremation is required")]
+        public string BurialCremationTime { get; set; } = "";
+
+        [Required(ErrorMessage = "Type (Burial/Cremation) is required")]
+        public string BurialCremationType { get; set; } = "";
+
 
         [Required]
         public IFormFile? IdFrontimage { get; set; }

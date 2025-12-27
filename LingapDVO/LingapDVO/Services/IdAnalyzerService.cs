@@ -266,6 +266,9 @@ namespace LingapDVO.Services
                     // Gender/Sex
                     result.Sex = ExtractFieldValue(dataObj, "sex", "gender");
 
+                    // Civil Status (from back ID - National ID only)
+                    result.CivilStatus = ExtractFieldValue(dataObj, "civilStatus", "maritalStatus", "marital");
+
                     // Nationality - ID Analyzer provides nationalityFull, nationalityIso2, nationalityIso3
                     result.Nationality = ExtractFieldValue(dataObj, "nationalityFull", "nationality");
                     result.NationalityIso2 = ExtractFieldValue(dataObj, "nationalityIso2");

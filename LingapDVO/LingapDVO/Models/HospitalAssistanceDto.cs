@@ -88,8 +88,30 @@ namespace LingapDVO.Models
         [Required]
         public string Typeassistance { get; set; } = "";
 
- 
+
         public string? ForCMOPERSONNEL { get; set; } = "";
+
+        // Additional Information Fields - Will be encrypted before saving
+        [Required(ErrorMessage = "Hospital/Medical Facility Name is required")]
+        public string HospitalFacilityName { get; set; } = "";
+
+        [Required(ErrorMessage = "Hospital/Medical Facility Address is required")]
+        public string HospitalFacilityAddress { get; set; } = "";
+
+        [Required(ErrorMessage = "Diagnosis/Medical Condition is required")]
+        public string DiagnosisMedicalCondition { get; set; } = "";
+
+        [Required(ErrorMessage = "Hospital Bill or Cost is required")]
+        public string HospitalBillCost { get; set; } = "";
+
+        [Required(ErrorMessage = "Admission Date is required")]
+        public string AdmissionDate { get; set; } = "";
+
+        [Required(ErrorMessage = "Discharge Date is required")]
+        public string DischargeDate { get; set; } = "";
+
+        [Required(ErrorMessage = "Ward/Room Type is required")]
+        public string WardRoomType { get; set; } = "";
 
 
         [Required]

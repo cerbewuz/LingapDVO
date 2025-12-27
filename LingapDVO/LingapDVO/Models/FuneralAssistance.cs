@@ -99,6 +99,37 @@ namespace LingapDVO.Models
         [MaxLength(100)]
         public string? ForCMOPERSONNEL { get; set; } = "";
 
+        // Additional Information - Encrypted Fields
+        [MaxLength(300)]
+        public string? DeceasedPersonName { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? RelationshipToDeceased { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? DateOfDeath { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? TimeOfDeath { get; set; } = "";
+
+        [MaxLength(500)]
+        public string? CauseOfDeath { get; set; } = "";
+
+        [MaxLength(500)]
+        public string? FuneralHomeName { get; set; } = "";
+
+        [MaxLength(500)]
+        public string? FuneralHomeAddress { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? BurialCremationDate { get; set; } = "";
+
+        [MaxLength(200)]
+        public string? BurialCremationTime { get; set; } = "";
+
+        [MaxLength(100)]
+        public string? BurialCremationType { get; set; } = "";
+
 
         [MaxLength(100)]
         public string Validfrontimage { get; set; } = "";

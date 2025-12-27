@@ -51,43 +51,131 @@ const ID_ANALYZER_CONFIG = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
+// INTERACTIVE PROGRESS TRACKING SYSTEM
+// ════════════════════════════════════════════════════════════════════════════
+const ProgressTracker = {
+    currentStep: 0,
+    steps: [
+        { name: 'Preparing your files', percent: 5, duration: 300 },
+        { name: 'Uploading front of ID', percent: 15, duration: 800 },
+        { name: 'Uploading back of ID', percent: 30, duration: 800 },
+        { name: 'Uploading your photo', percent: 45, duration: 600 },
+        { name: 'Checking your ID', percent: 60, duration: 1200 },
+        { name: 'Reading your information', percent: 75, duration: 1000 },
+        { name: 'Matching your photo', percent: 85, duration: 800 },
+        { name: 'Almost done', percent: 95, duration: 500 },
+        { name: 'Complete', percent: 100, duration: 200 }
+    ],
+
+    reset() {
+        this.currentStep = 0;
+    },
+
+    updateProgress(stepIndex, customMessage = null) {
+        const progressBar = document.getElementById('upload-progress');
+        const statusDiv = document.getElementById('upload-status');
+
+        if (stepIndex >= this.steps.length) stepIndex = this.steps.length - 1;
+
+        const step = this.steps[stepIndex];
+        this.currentStep = stepIndex;
+
+        if (progressBar) {
+            // Smooth transition
+            progressBar.style.transition = `width ${step.duration}ms ease-out`;
+            progressBar.style.width = step.percent + '%';
+        }
+
+        if (statusDiv) {
+            const message = customMessage || step.name;
+            statusDiv.innerHTML = `<i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>${message}`;
+        }
+
+        console.log(`📊 Progress: ${step.percent}% - ${step.name}`);
+    },
+
+    async advanceStep(customMessage = null) {
+        return new Promise((resolve) => {
+            const step = this.steps[this.currentStep];
+            this.updateProgress(this.currentStep, customMessage);
+
+            setTimeout(() => {
+                this.currentStep++;
+                resolve();
+            }, step.duration);
+        });
+    },
+
+    async jumpToStep(stepIndex, customMessage = null) {
+        if (stepIndex >= this.steps.length) stepIndex = this.steps.length - 1;
+        this.updateProgress(stepIndex, customMessage);
+        const step = this.steps[stepIndex];
+
+        return new Promise((resolve) => {
+            setTimeout(resolve, step.duration);
+        });
+    },
+
+    setComplete(message = 'All done!') {
+        this.updateProgress(this.steps.length - 1, `<i class="fas fa-check-circle mr-2 text-green-600"></i>${message}`);
+    },
+
+    setError(message = 'Something went wrong') {
+        const statusDiv = document.getElementById('upload-status');
+        if (statusDiv) {
+            statusDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2 text-red-600"></i>${message}`;
+        }
+    }
+};
+
+// Make ProgressTracker globally accessible
+window.ProgressTracker = ProgressTracker;
+
+// ════════════════════════════════════════════════════════════════════════════
 // VERIFICATION STATE MANAGEMENT
 // ════════════════════════════════════════════════════════════════════════════
 // Stores all collected images before sending to API
 // ════════════════════════════════════════════════════════════════════════════
 const VerificationState = {
-    // Collected images (base64)
+    // CRITICAL CHANGE: Store actual File objects instead of base64
+    // This preserves 100% of original file data including EXIF metadata
+    frontIdFile: null,        // Raw File object (front ID)
+    backIdFile: null,         // Raw File object (back ID)
+    selfieImage: null,        // Selfie still uses base64 (captured from camera)
+    selfieFileName: null,     // Filename of saved selfie (for file-based API submission)
+
+    // Legacy base64 storage (for preview only)
     frontIdImage: null,
     backIdImage: null,
-    selfieImage: null,
-    selfieFileName: null,  // Filename of saved selfie (for file-based API submission)
-    
+
     // Status flags
     frontIdUploaded: false,
     backIdUploaded: false,
     selfieUploaded: false,
     verificationInProgress: false,
     verificationComplete: false,
-    
+
     // Results
     scanResult: null,
     faceMatchResult: null,
     extractedData: null,
-    
-    // Store front ID image
-    setFrontId(base64Image) {
-        this.frontIdImage = base64Image;
-        this.frontIdUploaded = !!base64Image;
+
+    // Store front ID image - NOW STORES RAW FILE OBJECT
+    setFrontId(base64Image, fileObject = null) {
+        this.frontIdImage = base64Image;  // For preview only
+        this.frontIdFile = fileObject;     // RAW FILE - sent to API
+        this.frontIdUploaded = !!(fileObject || base64Image);
         this.updateVerifyButtonState();
     },
-    
-    // Store back ID image
-    setBackId(base64Image) {
-        this.backIdImage = base64Image;
-        this.backIdUploaded = !!base64Image;
+
+    // Store back ID image - NOW STORES RAW FILE OBJECT
+    setBackId(base64Image, fileObject = null) {
+        this.backIdImage = base64Image;   // For preview only
+        this.backIdFile = fileObject;      // RAW FILE - sent to API
+        this.backIdUploaded = !!(fileObject || base64Image);
         this.updateVerifyButtonState();
     },
-    
+
     // Store selfie image and filename
     setSelfie(base64Image, fileName = null) {
         this.selfieImage = base64Image;
@@ -100,8 +188,8 @@ const VerificationState = {
     
     // Check if all required images are uploaded
     isReadyForVerification() {
-        // Front ID and Selfie are required, Back ID is optional for some ID types
-        return this.frontIdUploaded && this.selfieUploaded;
+        // Front ID, Back ID, and Selfie are ALL REQUIRED
+        return this.frontIdUploaded && this.backIdUploaded && this.selfieUploaded;
     },
     
     // Check if all images including back are uploaded
@@ -156,10 +244,12 @@ const VerificationState = {
     
     // Reset all state
     reset() {
+        this.frontIdFile = null;      // Clear File object
+        this.backIdFile = null;       // Clear File object
         this.frontIdImage = null;
         this.backIdImage = null;
         this.selfieImage = null;
-        this.selfieFileName = null;  // Reset filename too
+        this.selfieFileName = null;
         this.frontIdUploaded = false;
         this.backIdUploaded = false;
         this.selfieUploaded = false;
@@ -170,12 +260,14 @@ const VerificationState = {
         this.extractedData = null;
         this.updateVerifyButtonState();
     },
-    
+
     // Get summary for logging
     getSummary() {
         return {
             frontId: this.frontIdUploaded,
+            frontIdFile: this.frontIdFile?.name || 'none',
             backId: this.backIdUploaded,
+            backIdFile: this.backIdFile?.name || 'none',
             selfie: this.selfieUploaded,
             selfieFileName: this.selfieFileName,
             ready: this.isReadyForVerification(),
@@ -237,6 +329,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Track if ID Analyzer scanning is enabled
     let scanningEnabled = true;
+
+    // Real-time verification status polling
+    let verificationPollingInterval = null;
+    const POLLING_INTERVAL_MS = 5000; // Poll every 5 seconds
+    let currentVerificationDecision = null;
 
     // Debug mode for testing and calibration
     const DEBUG_MODE = false;
@@ -1524,9 +1621,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Initialize status message
-    status.innerHTML = '<i class="fas fa-upload mr-2"></i>Upload your ID - AI will auto-detect the type';
-
     // Debug logger
     function debugLog(category, data) {
         if (DEBUG_MODE) {
@@ -1704,12 +1798,27 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Handle file upload and processing
-    // NEW FLOW: Store images locally first, don't call API immediately
+    // CRITICAL FIX: Store the actual File object (ZERO conversion)
+    // This is the ONLY way to preserve 100% of original file data including EXIF
     function handleFileUpload(file, preview, section, isBack) {
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log(`🔄 handleFileUpload CALLED`);
+        console.log(`   file: ${file ? `File(${file.name}, ${file.size} bytes)` : 'NULL'}`);
+        console.log(`   isBack: ${isBack}`);
+        console.log(`   scanningEnabled: ${scanningEnabled}`);
+        console.log('═══════════════════════════════════════════════════════════════');
+
         if (!validateFile(file)) return;
 
-        const reader = new FileReader();
-        reader.onload = function (e) {
+        // ═══════════════════════════════════════════════════════════════════════════
+        // NEW APPROACH: Store RAW FILE OBJECT + Preview separately
+        // 1. Store actual File object for API submission (ZERO conversion, ZERO modification)
+        // 2. Read as DataURL ONLY for preview display (not for API)
+        // ═══════════════════════════════════════════════════════════════════════════
+
+        // Reader: For preview display ONLY (not used for API)
+        const previewReader = new FileReader();
+        previewReader.onload = function (e) {
             // Show image preview immediately and replace upload box content
             if (preview) {
                 preview.src = e.target.result;
@@ -1724,16 +1833,71 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 section.classList.add('active', 'has-image');
             }
-
-            // ═══════════════════════════════════════════════════════════════════════════
-            // NEW FLOW: Store image in VerificationState instead of immediately calling API
-            // ═══════════════════════════════════════════════════════════════════════════
-            if (scanningEnabled) {
-                // Preprocess the image (quality check, enhancement) then store
-                preprocessAndStoreImage(e.target.result, preview, isBack);
-            }
         };
-        reader.readAsDataURL(file);
+        previewReader.readAsDataURL(file);
+
+        // CRITICAL: Store the RAW FILE OBJECT without any conversion
+        // This File object will be sent to backend using FormData (multipart/form-data)
+        // The backend will read the raw bytes and handle conversion if needed
+        if (scanningEnabled) {
+            console.log(`🔄 Calling storeOriginalFile with file: ${file ? file.name : 'NULL'}`);
+            storeOriginalFile(file, preview, isBack);
+        } else {
+            console.warn('⚠️ scanningEnabled is FALSE - not storing file!');
+        }
+    }
+
+    /**
+     * Store the RAW FILE OBJECT without ANY conversion
+     * This is the ONLY way to preserve 100% of original file data
+     * - ZERO JavaScript conversion
+     * - ZERO base64 encoding in browser
+     * - Preserves ALL EXIF metadata
+     * - File will be sent to backend as multipart/form-data
+     * @param {File} file - The raw File object from input
+     * @param {HTMLElement} preview - Preview image element
+     * @param {boolean} isBack - Whether this is back ID or front ID
+     */
+    function storeOriginalFile(file, preview, isBack) {
+        try {
+            if (!file || !(file instanceof File)) {
+                throw new Error('Invalid file object');
+            }
+
+            // Log detailed information for verification
+            console.log('═══════════════════════════════════════════════════════════════');
+            console.log(`📁 STORING ${isBack ? 'BACK' : 'FRONT'} ID FILE (RAW FILE OBJECT)`);
+            console.log('═══════════════════════════════════════════════════════════════');
+            console.log(`📄 Filename: ${file.name}`);
+            console.log(`🖼️  MIME Type: ${file.type}`);
+            console.log(`💾 File Size: ${Math.round(file.size / 1024)} KB`);
+            console.log(`📅 Last Modified: ${new Date(file.lastModified).toLocaleString()}`);
+            console.log(`🔐 Conversion: ❌ NONE - Raw File Object stored`);
+            console.log(`📝 EXIF Preserved: ✅ YES - 100% original file`);
+            console.log(`🎨 Paint Detection: ✅ SAFE - untouched file data`);
+            console.log(`📤 Will be sent as: multipart/form-data (FormData)`);
+            console.log('═══════════════════════════════════════════════════════════════');
+
+            // Store RAW FILE OBJECT - NO CONVERSION AT ALL
+            // setFrontId/setBackId now accept a File object as second parameter
+            if (isBack) {
+                VerificationState.setBackId(null, file);  // null for base64 (not used), file object
+                if (status) {
+                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Back ID uploaded (RAW FILE, EXIF intact). Ready for verification.';
+                }
+            } else {
+                VerificationState.setFrontId(null, file);  // null for base64 (not used), file object
+                if (status) {
+                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Front ID uploaded (RAW FILE, EXIF intact). Please upload back ID and selfie.';
+                }
+            }
+
+        } catch (error) {
+            console.error('❌ Error storing file:', error);
+            if (status) {
+                status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Error processing file. Please try again.';
+            }
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -1741,8 +1905,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // ═══════════════════════════════════════════════════════════════
 
     /**
-     * Check if image is too blurry using Laplacian variance method
-     * Returns: { isBlurry: boolean, variance: number, quality: string }
+     * DEPRECATED: Canvas-based blur detection
+     * REPLACED BY: ID Analyzer API's built-in quality checks
+     * DATE DEPRECATED: 2025-12-18
      */
     function checkImageBlur(canvas, ctx) {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1798,8 +1963,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Check image brightness and contrast
-     * Returns: { brightness: number, contrast: number, isDark: boolean, isLowContrast: boolean }
+     * DEPRECATED: Canvas-based brightness/contrast detection
+     * REPLACED BY: ID Analyzer API's built-in quality checks
+     * DATE DEPRECATED: 2025-12-18
      */
     function checkImageBrightnessContrast(canvas, ctx) {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1845,8 +2011,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Enhance image quality for slightly problematic images
-     * Applies brightness, contrast, and sharpening adjustments
+     * DEPRECATED: Image enhancement via pixel manipulation
+     * ISSUE: Creates patterns identical to image editing software
+     * DATE DEPRECATED: 2025-12-18
      */
     function enhanceImageQuality(canvas, ctx, qualityIssues) {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1936,12 +2103,13 @@ document.addEventListener('DOMContentLoaded', function () {
         showVerificationErrorModal(message);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // NEW: PREPROCESS AND STORE IMAGE (NO API CALL)
-    // ═══════════════════════════════════════════════════════════════════════════
-    // This function preprocesses the image (quality check, enhancement) and stores
-    // it in VerificationState for later submission. NO API call is made here.
-    // ═══════════════════════════════════════════════════════════════════════════
+    /**
+     * DEPRECATED: This function was used to preprocess images with canvas manipulation
+     * ISSUE: Canvas processing strips EXIF metadata and creates compression artifacts
+     *        that trigger ID Analyzer's tamper detection as "edited in Microsoft Paint"
+     * REPLACED BY: storeOriginalImage() - preserves original image integrity
+     * DATE DEPRECATED: 2025-12-18
+     */
     async function preprocessAndStoreImage(imageSrc, preview, isBack) {
         try {
 
@@ -2042,7 +2210,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Check if all required images are ready
         if (!VerificationState.isReadyForVerification()) {
-            showVerificationErrorModal('Please upload all required images:\n\n• Front ID\n• Selfie/Face image\n\nBack ID is optional but recommended.');
+            showVerificationErrorModal('Please upload all required photos:\n\n• Front of ID\n• Back of ID\n• Your photo (selfie)\n\nAll photos are needed to continue.');
             return;
         }
 
@@ -2054,48 +2222,131 @@ document.addEventListener('DOMContentLoaded', function () {
             verifyButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verifying...';
         }
 
-        if (status) {
-            status.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending images to ID Analyzer API...';
-        }
-
         if (progressBar) {
             progressBar.classList.remove('hidden');
         }
-        if (progress) {
-            progress.style.width = '10%';
-        }
+
+        // Reset and start progress tracking
+        ProgressTracker.reset();
+        await ProgressTracker.advanceStep(); // Step 0: Preparing your files (5%)
 
         try {
-            // Build request payload with all images
-            // IMPORTANT: Use selfieFileName (file path) instead of base64 for face image
-            // The server will read the file from /wwwroot/UsersImg and convert to base64
-            const requestPayload = {
-                documentImage: VerificationState.frontIdImage,
-                backImage: VerificationState.backIdImage,
-                selfieFileName: VerificationState.selfieFileName,  // Use filename, not base64
-                faceImage: VerificationState.selfieFileName ? null : VerificationState.selfieImage  // Fallback to base64 if no filename
-            };
+            // ═══════════════════════════════════════════════════════════════════════════
+            // NEW FLOW: Send files DIRECTLY to API, then save only if decision = "accept"
+            // 1. Send Front ID, Back ID, Selfie to API (with AES256 encryption)
+            // 2. API returns decision
+            // 3. ONLY if decision = "accept" → Backend saves files to storage
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            console.log('═══════════════════════════════════════════════════════════════');
+            console.log('🔍 VERIFICATION STATE CHECK:');
+            console.log('═══════════════════════════════════════════════════════════════');
+            console.log(`   frontIdFile: ${VerificationState.frontIdFile ? 'EXISTS' : 'NULL'}`);
+            console.log(`   backIdFile: ${VerificationState.backIdFile ? 'EXISTS' : 'NULL'}`);
+            console.log(`   selfieFileName: ${VerificationState.selfieFileName || 'NULL'}`);
+
+            if (VerificationState.frontIdFile) {
+                console.log(`   frontIdFile is File: ${VerificationState.frontIdFile instanceof File}`);
+                console.log(`   frontIdFile name: ${VerificationState.frontIdFile.name}`);
+                console.log(`   frontIdFile size: ${VerificationState.frontIdFile.size} bytes`);
+            }
+            if (VerificationState.backIdFile) {
+                console.log(`   backIdFile is File: ${VerificationState.backIdFile instanceof File}`);
+                console.log(`   backIdFile name: ${VerificationState.backIdFile.name}`);
+                console.log(`   backIdFile size: ${VerificationState.backIdFile.size} bytes`);
+            }
+            console.log('═══════════════════════════════════════════════════════════════');
+
+            // Verify we have required files
+            if (!VerificationState.frontIdFile || !(VerificationState.frontIdFile instanceof File)) {
+                console.error('❌ ERROR: Front ID file is missing!');
+                throw new Error('Front ID file is missing. Please upload your ID again.');
+            }
+
+            if (!VerificationState.backIdFile || !(VerificationState.backIdFile instanceof File)) {
+                console.error('❌ ERROR: Back ID file is missing!');
+                throw new Error('Back ID file is missing. Please upload your ID again.');
+            }
+
+            // Build FormData to send files directly to API
+            const formData = new FormData();
+
+            // Add Front ID (RAW FILE OBJECT - preserves 100% of data)
+            formData.append('documentFile', VerificationState.frontIdFile);
+            console.log('✅ Added documentFile to FormData (RAW FILE)');
+
+            // Add Back ID (REQUIRED, RAW FILE OBJECT)
+            formData.append('backFile', VerificationState.backIdFile);
+            console.log('✅ Added backFile to FormData (RAW FILE)');
+
+            // Add Selfie filename (selfie already saved in UsersImg via saveSelfie endpoint)
+            if (VerificationState.selfieFileName) {
+                formData.append('selfieFileName', VerificationState.selfieFileName);
+                console.log(`✅ Added selfieFileName: ${VerificationState.selfieFileName}`);
+            }
+
+            // Add User ID for database storage
+            if (window.currentUserId) {
+                formData.append('userId', window.currentUserId);
+                console.log(`✅ Added userId: ${window.currentUserId}`);
+            } else {
+                console.warn('⚠️ User ID not found - verification data will not be saved to database');
+            }
 
             // Log request details
+            console.log('═══════════════════════════════════════════════════════════════');
+            console.log('🚀 SENDING FILES DIRECTLY TO SCAN ENDPOINT');
+            console.log('═══════════════════════════════════════════════════════════════');
+            console.log('📤 PAYLOAD TYPE: multipart/form-data (RAW FILES)');
+            console.log(`   Front ID: ${VerificationState.frontIdFile ? '✅ RAW FILE' : '❌ Missing'}`);
+            if (VerificationState.frontIdFile) {
+                console.log(`      Filename: ${VerificationState.frontIdFile.name}`);
+                console.log(`      Size: ${Math.round(VerificationState.frontIdFile.size / 1024)} KB`);
+                console.log(`      Type: ${VerificationState.frontIdFile.type}`);
+            }
+            console.log(`   Back ID: ${VerificationState.backIdFile ? '✅ RAW FILE' : '❌ Missing (REQUIRED)'}`);
+            if (VerificationState.backIdFile) {
+                console.log(`      Filename: ${VerificationState.backIdFile.name}`);
+                console.log(`      Size: ${Math.round(VerificationState.backIdFile.size / 1024)} KB`);
+                console.log(`      Type: ${VerificationState.backIdFile.type}`);
+            }
+            console.log(`   Selfie: ${VerificationState.selfieFileName ? '✅ Filename' : '❌ Missing'}`);
+            if (VerificationState.selfieFileName) {
+                console.log(`      Filename: ${VerificationState.selfieFileName}`);
+            }
+            console.log('');
+            console.log('🔐 BACKEND PROCESS:');
+            console.log('   1️⃣ Receive RAW files (100% original data preserved)');
+            console.log('   2️⃣ Convert to base64 for API transmission');
+            console.log('   3️⃣ Send UNENCRYPTED data to ID Analyzer API');
+            console.log('   4️⃣ ONLY if decision = "accept" → Save files to storage');
+            console.log('');
+            console.log('✅ EXIF METADATA: 100% PRESERVED (RAW FILES)');
+            console.log('✅ PAINT DETECTION: SAFE - Untouched file data');
+            console.log('⚠️ ENCRYPTION: NOT applied (API needs actual images)');
+            console.log('📡 Content-Type: multipart/form-data');
+            console.log('═══════════════════════════════════════════════════════════════');
 
-            if (progress) progress.style.width = '30%';
+            await ProgressTracker.jumpToStep(1); // Step 1: Uploading front of ID (15%)
+            await ProgressTracker.advanceStep(); // Step 2: Uploading back of ID (30%)
+            await ProgressTracker.advanceStep(); // Step 3: Uploading your photo (45%)
 
-            // Send to API
+            // Send to scan endpoint with raw files
+            console.log(`📡 Sending POST request to: ${ID_ANALYZER_CONFIG.SCAN_ENDPOINT}`);
             const response = await fetch(ID_ANALYZER_CONFIG.SCAN_ENDPOINT, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestPayload)
+                body: formData  // FormData automatically sets Content-Type: multipart/form-data
             });
 
-            if (progress) progress.style.width = '60%';
+            console.log(`📥 Response status: ${response.status} ${response.statusText}`);
+
+            await ProgressTracker.advanceStep(); // Step 4: Checking your ID (60%)
 
             const result = await response.json();
 
             // Log response
 
-            if (progress) progress.style.width = '80%';
+            await ProgressTracker.advanceStep(); // Step 5: Reading your information (75%)
 
             if (!result.success) {
                 throw new Error(result.error || 'Verification failed');
@@ -2114,14 +2365,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // REJECT Decision - BLOCK verification
             if (apiDecision === 'reject') {
-                const title = 'Verification Rejected';
-                const message = 'The ID verification failed quality checks and cannot be accepted.';
+                ProgressTracker.setError('Photo not clear enough');
+
+                const title = 'Photo Not Clear Enough';
+                const message = 'We could not read your ID clearly. Please take a new photo.';
 
                 const suggestions = [
-                    'Use a clear, well-lit photo of your ID',
-                    'Ensure all text is readable and not blurry',
-                    'Make sure the entire ID is visible',
-                    'Avoid glare, shadows, or damage on the ID'
+                    'Make sure your ID photo is clear and well-lit',
+                    'All text should be easy to read (not blurry)',
+                    'Show the entire ID in the photo',
+                    'Avoid reflections or shadows on your ID'
                 ];
 
                 // Add API warnings if available
@@ -2136,20 +2389,44 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (verifyButton) {
                     verifyButton.disabled = false;
                     verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
+                    // Enable retry flow on button click
+                    verifyButton.onclick = function() {
+                        if (typeof showRetryVerification === 'function') {
+                            showRetryVerification('Your ID verification was rejected. Please re-upload clear photos of your ID and take a new selfie.');
+                        }
+                    };
                 }
+                
+                // Update start-verification-btn to show FAILED state (RED)
+                const startVerificationBtn = document.getElementById('start-verification-btn');
+                if (startVerificationBtn) {
+                    startVerificationBtn.innerHTML = '<i class="fas fa-times-circle"></i><span>Verification Failed</span>';
+                    startVerificationBtn.classList.remove('from-blue-500', 'to-blue-600', 'hover:from-blue-600', 'hover:to-blue-700');
+                    startVerificationBtn.classList.remove('from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
+                    startVerificationBtn.classList.add('from-red-500', 'to-red-600', 'hover:from-red-600', 'hover:to-red-700');
+                    // Re-enable click to retry
+                    startVerificationBtn.onclick = function() {
+                        if (typeof showRetryVerification === 'function') {
+                            showRetryVerification('Your ID verification was rejected. Please re-upload clear photos of your ID and take a new selfie.');
+                        } else {
+                            IDUploadModal.startFlow();
+                        }
+                    };
+                }
+                
                 return; // STOP execution - user cannot proceed
             }
 
             // REVIEW Decision - BLOCK verification
             if (apiDecision === 'review') {
-                const title = 'Manual Review Required';
-                const message = 'The ID image quality needs improvement before automatic verification can proceed.';
+                const title = 'We Need to Check Your ID';
+                const message = 'Someone from our team will review your ID. We will let you know once we are done checking. Please wait for our message.';
 
                 const suggestions = [
-                    'Upload a clearer, higher quality image',
-                    'Ensure proper lighting without glare or shadows',
-                    'Make sure all text is sharp and readable',
-                    'Verify the entire ID is visible in the frame'
+                    'Our team is checking your ID',
+                    'We will send you a message when we are done',
+                    'This page will update automatically when ready',
+                    'You can also upload clearer photos if you want'
                 ];
 
                 // Add API warnings if available
@@ -2163,18 +2440,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 VerificationState.verificationInProgress = false;
                 if (verifyButton) {
                     verifyButton.disabled = false;
-                    verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
+                    verifyButton.innerHTML = '<i class="fas fa-clock mr-2"></i>Waiting for Review...';
+                    verifyButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
                 }
-                return; // STOP execution - user cannot proceed
+
+                // HIDE start-verification-btn during processing/review
+                const startVerificationBtn = document.getElementById('start-verification-btn');
+                if (startVerificationBtn) {
+                    startVerificationBtn.style.display = 'none';
+                    // Also hide the helper text below the button
+                    const helperText = startVerificationBtn.parentElement?.querySelector('p');
+                    if (helperText) {
+                        helperText.style.display = 'none';
+                    }
+                }
+
+                // Start polling for decision updates
+                // Get user ID from window.currentUserId (must be set by server-side code)
+                const userId = window.currentUserId || null;
+                if (userId) {
+                    console.log('📊 Verification is under review - starting real-time status polling');
+                    startVerificationPolling(userId, 'review');
+                } else {
+                    console.warn('⚠️ User ID not found - cannot start verification polling');
+                }
+
+                return; // STOP execution - user cannot proceed until review is complete
             }
 
             // UNKNOWN Decision - BLOCK verification
             if (apiDecision !== 'accept') {
-                const title = 'Verification Error';
-                const message = `Unexpected verification response received. Decision: ${result.decision || 'Unknown'}`;
+                const title = 'Something Went Wrong';
+                const message = `We encountered a problem checking your ID. Please try again.`;
                 const suggestions = [
-                    'Try uploading your ID again',
-                    'Contact support if this issue persists'
+                    'Try uploading your ID photos again',
+                    'Contact us if this keeps happening'
                 ];
 
                 showErrorModal(title, message, suggestions);
@@ -2184,7 +2484,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (verifyButton) {
                     verifyButton.disabled = false;
                     verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
+                    // Enable retry flow on button click
+                    verifyButton.onclick = function() {
+                        if (typeof showRetryVerification === 'function') {
+                            showRetryVerification('An unexpected error occurred during verification. Please try again with new images.');
+                        }
+                    };
                 }
+                
+                // Update start-verification-btn to show FAILED state (RED)
+                const startVerificationBtn = document.getElementById('start-verification-btn');
+                if (startVerificationBtn) {
+                    startVerificationBtn.innerHTML = '<i class="fas fa-times-circle"></i><span>Verification Failed</span>';
+                    startVerificationBtn.classList.remove('from-blue-500', 'to-blue-600', 'hover:from-blue-600', 'hover:to-blue-700');
+                    startVerificationBtn.classList.remove('from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
+                    startVerificationBtn.classList.add('from-red-500', 'to-red-600', 'hover:from-red-600', 'hover:to-red-700');
+                    // Re-enable click to retry
+                    startVerificationBtn.onclick = function() {
+                        if (typeof showRetryVerification === 'function') {
+                            showRetryVerification('An unexpected error occurred during verification. Please try again with new images.');
+                        } else {
+                            IDUploadModal.startFlow();
+                        }
+                    };
+                }
+                
                 return; // STOP execution - user cannot proceed
             }
 
@@ -2201,10 +2525,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 confidence: result.data?.faceConfidence
             };
 
+            await ProgressTracker.advanceStep(); // Step 6: Matching your photo (85%)
+
             // Process results - populate form fields
             if (result.data) {
                 await processVerificationResults(result.data);
             }
+
+            await ProgressTracker.advanceStep(); // Step 7: Almost done (95%)
 
             if (progress) progress.style.width = '100%';
 
@@ -2218,6 +2546,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 verifyButton.classList.add('bg-green-600');
             }
 
+            // HIDE start-verification-btn when verification is successful (accept decision)
+            const startVerificationBtn = document.getElementById('start-verification-btn');
+            if (startVerificationBtn) {
+                startVerificationBtn.style.display = 'none';
+                // Also hide the helper text below the button
+                const helperText = startVerificationBtn.parentElement?.querySelector('p');
+                if (helperText) {
+                    helperText.style.display = 'none';
+                }
+            }
+
+            // Step 8: Complete (100%) - Show success message
+            ProgressTracker.setComplete('Your information is ready!');
+
             if (status) {
                 status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Verification successful! Form fields populated.';
             }
@@ -2229,6 +2571,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             VerificationState.verificationInProgress = false;
 
+            // Update progress bar to show error
+            ProgressTracker.setError('Something went wrong');
+
             if (verifyButton) {
                 verifyButton.disabled = false;
                 verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
@@ -2236,6 +2581,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (status) {
                 status.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Verification failed: ${error.message}`;
+            }
+            
+            // Update start-verification-btn to show FAILED state (RED)
+            const startVerificationBtn = document.getElementById('start-verification-btn');
+            if (startVerificationBtn) {
+                startVerificationBtn.innerHTML = '<i class="fas fa-times-circle"></i><span>Verification Failed</span>';
+                startVerificationBtn.classList.remove('from-blue-500', 'to-blue-600', 'hover:from-blue-600', 'hover:to-blue-700');
+                startVerificationBtn.classList.remove('from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
+                startVerificationBtn.classList.remove('from-yellow-500', 'to-yellow-600', 'hover:from-yellow-600', 'hover:to-yellow-700');
+                startVerificationBtn.classList.add('from-red-500', 'to-red-600', 'hover:from-red-600', 'hover:to-red-700');
+                startVerificationBtn.disabled = false;
+                startVerificationBtn.style.cursor = 'pointer';
+                // Re-enable click to retry
+                startVerificationBtn.onclick = function() {
+                    if (typeof showRetryVerification === 'function') {
+                        showRetryVerification(`Verification failed: ${error.message}. Please try again with new images.`);
+                    } else {
+                        IDUploadModal.startFlow();
+                    }
+                };
             }
 
             showVerificationErrorModal(`Verification failed:\n\n${error.message}\n\nPlease check your images and try again.`);
@@ -2252,6 +2617,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Populate form fields using existing function
         populateFormFromApiData(data, null, false);
+
+        // CRITICAL: Store verification decision and transaction ID for form submission
+        // These will be checked server-side before marking account as verified
+        const decisionField = document.getElementById('verification-decision');
+        const transactionField = document.getElementById('transaction-id');
+
+        if (decisionField && VerificationState.scanResult) {
+            decisionField.value = VerificationState.scanResult.decision || '';
+            console.log('📝 Stored verification decision:', decisionField.value);
+        }
+
+        if (transactionField && VerificationState.scanResult) {
+            transactionField.value = VerificationState.scanResult.transactionId || '';
+            console.log('📝 Stored transaction ID:', transactionField.value);
+        }
     }
 
     // REMOVED: showFaceVerificationResult() function
@@ -2389,6 +2769,212 @@ document.addEventListener('DOMContentLoaded', function () {
             img.src = src;
         });
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // REAL-TIME VERIFICATION STATUS POLLING
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Start polling for verification decision updates
+     * Used when decision is "review" to check if admin has updated it to "accept"/"reject"
+     */
+    function startVerificationPolling(userId, initialDecision) {
+        // Stop any existing polling
+        stopVerificationPolling();
+
+        currentVerificationDecision = initialDecision;
+
+        console.log(`🔄 Starting verification status polling for user ${userId} (current decision: ${initialDecision})`);
+
+        // Poll immediately, then every POLLING_INTERVAL_MS
+        checkVerificationStatus(userId);
+
+        verificationPollingInterval = setInterval(() => {
+            checkVerificationStatus(userId);
+        }, POLLING_INTERVAL_MS);
+    }
+
+    /**
+     * Stop polling for verification decision updates
+     */
+    function stopVerificationPolling() {
+        if (verificationPollingInterval) {
+            clearInterval(verificationPollingInterval);
+            verificationPollingInterval = null;
+            console.log('🛑 Stopped verification status polling');
+        }
+    }
+
+    /**
+     * Check verification status from the server
+     */
+    async function checkVerificationStatus(userId) {
+        try {
+            const response = await fetch(`/api/IdAnalyzer/verificationStatus?userId=${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                console.error('Failed to check verification status:', response.statusText);
+                return;
+            }
+
+            const result = await response.json();
+
+            if (result.success && result.decision) {
+                const newDecision = result.decision;
+
+                // Check if decision has changed
+                if (newDecision !== currentVerificationDecision && currentVerificationDecision === 'review') {
+                    console.log(`✅ Verification decision updated: ${currentVerificationDecision} → ${newDecision}`);
+                    currentVerificationDecision = newDecision;
+
+                    // Stop polling
+                    stopVerificationPolling();
+
+                    // Show notification to user
+                    handleDecisionUpdate(newDecision);
+                }
+            }
+        } catch (error) {
+            console.error('Error checking verification status:', error);
+        }
+    }
+
+    /**
+     * Handle verification decision update from "review" to "accept"/"reject"
+     */
+    function handleDecisionUpdate(newDecision) {
+        const startVerificationBtn = document.getElementById('start-verification-btn');
+        
+        if (newDecision === 'accept') {
+            // Decision changed from review to accept - user can proceed
+            const title = 'Verification Approved! ✅';
+            const message = 'Your identity verification has been approved by an administrator. You can now proceed with your application.';
+
+            showSuccessModal(title, message);
+
+            // Update button to allow submission
+            const verifyButton = document.getElementById('verify-and-submit-btn');
+            if (verifyButton) {
+                verifyButton.disabled = false;
+                verifyButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Submit Application';
+                verifyButton.classList.remove('bg-gray-400');
+                verifyButton.classList.add('bg-green-600', 'hover:bg-green-700');
+            }
+            
+            // HIDE start-verification-btn when verification is successful (accept decision)
+            if (startVerificationBtn) {
+                startVerificationBtn.style.display = 'none';
+                // Also hide the helper text below the button
+                const helperText = startVerificationBtn.parentElement?.querySelector('p');
+                if (helperText) {
+                    helperText.style.display = 'none';
+                }
+            }
+
+            // Allow user to proceed
+            setTimeout(() => {
+                // Trigger form submission or next step
+                proceedWithVerification();
+            }, 2000);
+
+        } else if (newDecision === 'reject') {
+            // Decision changed from review to reject
+            const title = 'ID Not Accepted ❌';
+            const message = 'We could not verify your ID. Please upload clearer photos and try again.';
+
+            showErrorModal(title, message);
+
+            // Update button to show retry
+            const verifyButton = document.getElementById('verify-and-submit-btn');
+            if (verifyButton) {
+                verifyButton.disabled = false;
+                verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry Verification';
+                verifyButton.onclick = function() {
+                    if (typeof showRetryVerification === 'function') {
+                        showRetryVerification('Your verification was rejected. Please re-upload clearer photos and take a new selfie.');
+                    }
+                };
+            }
+            
+            // Update start-verification-btn to show FAILED state (RED)
+            if (startVerificationBtn) {
+                startVerificationBtn.innerHTML = '<i class="fas fa-times-circle"></i><span>Verification Failed</span>';
+                startVerificationBtn.classList.remove('from-blue-500', 'to-blue-600', 'hover:from-blue-600', 'hover:to-blue-700');
+                startVerificationBtn.classList.remove('from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
+                startVerificationBtn.classList.remove('from-yellow-500', 'to-yellow-600', 'hover:from-yellow-600', 'hover:to-yellow-700');
+                startVerificationBtn.classList.add('from-red-500', 'to-red-600', 'hover:from-red-600', 'hover:to-red-700');
+                startVerificationBtn.disabled = false;
+                startVerificationBtn.style.cursor = 'pointer';
+                startVerificationBtn.onclick = function() {
+                    if (typeof showRetryVerification === 'function') {
+                        showRetryVerification('Your verification was rejected. Please re-upload clearer photos and take a new selfie.');
+                    } else {
+                        IDUploadModal.startFlow();
+                    }
+                };
+            }
+        }
+    }
+
+    /**
+     * Show success modal for verification approval
+     */
+    function showSuccessModal(title, message) {
+        // Use existing modal or create alert
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: title,
+                text: message,
+                confirmButtonText: 'Continue',
+                timer: 5000
+            });
+        } else {
+            alert(`${title}\n\n${message}`);
+        }
+    }
+
+    /**
+     * Show error modal for verification rejection
+     */
+    function showErrorModal(title, message) {
+        // Use existing modal or create alert
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: title,
+                text: message,
+                confirmButtonText: 'Retry',
+                allowOutsideClick: false
+            });
+        } else {
+            alert(`${title}\n\n${message}`);
+        }
+    }
+
+    /**
+     * Proceed with verification after approval
+     */
+    function proceedWithVerification() {
+        // This will be called after admin approves the verification
+        // The form submission logic will be triggered
+        console.log('✅ Verification approved - proceeding with application');
+
+        // Enable form submission
+        VerificationState.verificationPassed = true;
+
+        // You may want to trigger automatic form submission here
+        // or just enable the submit button and let user click it
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // END POLLING FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
 
     // Advanced text cleaning to remove noise and garbage
     // Clean extracted text from ID Analyzer API
@@ -3223,9 +3809,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Progress messages for ID Analyzer
         const ocrProgressMessages = [
-            { percent: 10, message: '<i class="fas fa-upload fa-spin mr-2"></i>Uploading ID image for verification...' },
-            { percent: 25, message: '<i class="fas fa-shield-alt fa-spin mr-2"></i>Authenticating document...' },
-            { percent: 45, message: '<i class="fas fa-search fa-spin mr-2"></i>Extracting information...' }
+            { percent: 10, message: '<i class="fas fa-upload fa-spin mr-2"></i>Uploading your ID photo...' },
+            { percent: 25, message: '<i class="fas fa-shield-alt fa-spin mr-2"></i>Checking your ID...' },
+            { percent: 45, message: '<i class="fas fa-search fa-spin mr-2"></i>Reading your information...' }
         ];
 
         let currentMessageIndex = 0;
@@ -3791,6 +4377,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Get other fields
         const dateOfBirth = data.dateOfBirth || '';
         const sex = data.sex || '';
+        const civilStatus = data.civilStatus || '';  // From back ID (National ID only)
         const documentNumber = data.documentNumber || '';
         const documentName = data.documentName || '';
 
@@ -3812,8 +4399,8 @@ document.addEventListener('DOMContentLoaded', function () {
             middleName,         // Middle Name
             lastName,           // Last Name
             dateOfBirth,        // Birthdate (from "Date of Birth")
-            sex,                // Sex/Gender
-            '',                 // Civil Status (not from ID)
+            sex,                // Sex/Gender (from ID)
+            civilStatus,        // Civil Status (from back ID - National ID only)
             suffix,             // Suffix
             barangay,           // Barangay (extracted from address)
             fullAddress,        // Full address
@@ -8363,11 +8950,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 birthField.value = birthdate;
             } else {
             }
+            // Convert gender from ID Analyzer format (M/F) to form format (Male/Female)
             if (sex && genderField) {
-                genderField.value = sex;
+                let genderValue = sex.toUpperCase().trim();
+                if (genderValue === 'M' || genderValue === 'MALE') {
+                    genderField.value = 'Male';
+                } else if (genderValue === 'F' || genderValue === 'FEMALE') {
+                    genderField.value = 'Female';
+                } else {
+                    genderField.value = sex; // Fallback to original value
+                }
+                console.log(`✅ Gender populated: ${sex} → ${genderField.value}`);
             } else {
                 if (!sex) {
+                    console.log('⚠️ Gender not extracted from ID');
                 } else if (!genderField) {
+                    console.log('⚠️ Gender field not found in form');
                 }
             }
 
@@ -8377,9 +8975,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 barangayField.value = detectedBarangay;
             }
 
-            // Update civil status if field exists
+            // Update civil status - ensure value matches form options
+            // Form options: "Single", "Married", "Widowed", "Separated", "Divorced"
             if (civilStatus && civilStatusField) {
-                civilStatusField.value = civilStatus;
+                // Capitalize first letter to match form options
+                let civilStatusValue = civilStatus.charAt(0).toUpperCase() + civilStatus.slice(1).toLowerCase();
+
+                // Validate against available options
+                const validOptions = ['Single', 'Married', 'Widowed', 'Separated', 'Divorced'];
+                if (validOptions.includes(civilStatusValue)) {
+                    civilStatusField.value = civilStatusValue;
+                    console.log(`✅ Civil Status populated: ${civilStatus} → ${civilStatusValue}`);
+                } else {
+                    console.log(`⚠️ Civil Status value "${civilStatus}" not recognized. Valid options: ${validOptions.join(', ')}`);
+                }
+            } else {
+                if (!civilStatus) {
+                    console.log('⚠️ Civil Status not extracted from ID');
+                } else if (!civilStatusField) {
+                    console.log('⚠️ Civil Status field not found in form');
+                }
             }
 
             // Update suffix - set to detected suffix or "None" if empty

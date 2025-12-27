@@ -309,45 +309,33 @@
             <div class="row g-3">
                 <div class="col-12 col-sm-12 col-md-6 col-lg-6">
                     <div class="form-check">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="medicineAssistance" name="TypeassistanceOptions" value="Medicine Assistance"
+                        <input class="form-check-input assistance-type" type="radio"
+                               id="medicineAssistance" name="AssistanceType" value="Medicine Assistance"
                                @(checkedAssistance.ContainsKey("Medicine Assistance") ? "checked" : "")>
                         <label class="form-check-label" for="medicineAssistance">Medicine Assistance</label>
                     </div>
 
                     <div class="form-check">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="laboratory" name="TypeassistanceOptions" value="Laboratory"
+                        <input class="form-check-input assistance-type" type="radio"
+                               id="laboratory" name="AssistanceType" value="Laboratory"
                                @(checkedAssistance.ContainsKey("Laboratory") ? "checked" : "")>
                         <label class="form-check-label" for="laboratory">Laboratory</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="LaboratoryDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Laboratory") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Laboratory") ? checkedAssistance["Laboratory"] : "")">
                     </div>
                 </div>
 
                 <div class="col-12 col-sm-12 col-md-6 col-lg-6">
                     <div class="form-check">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="apparatus" name="TypeassistanceOptions" value="Apparatus"
-                               @(checkedAssistance.ContainsKey("Apparatus") ? "checked" : "")>
-                        <label class="form-check-label" for="apparatus">Apparatus</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="ApparatusDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Apparatus") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Apparatus") ? checkedAssistance["Apparatus"] : "")">
+                        <input class="form-check-input assistance-type" type="radio"
+                               id="therapy" name="AssistanceType" value="Therapy"
+                               @(checkedAssistance.ContainsKey("Therapy") ? "checked" : "")>
+                        <label class="form-check-label" for="therapy">Therapy</label>
                     </div>
 
                     <div class="form-check">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="others" name="TypeassistanceOptions" value="Others"
-                               @(checkedAssistance.ContainsKey("Others") ? "checked" : "")>
-                        <label class="form-check-label" for="others">Others</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="OthersDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Others") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Others") ? checkedAssistance["Others"] : "")">
+                        <input class="form-check-input assistance-type" type="radio"
+                               id="apparatus" name="AssistanceType" value="Medical Equipment/ Apparatus"
+                               @(checkedAssistance.ContainsKey("Apparatus") || checkedAssistance.ContainsKey("Medical Equipment") ? "checked" : "")>
+                        <label class="form-check-label" for="apparatus">Medical Equipment/ Apparatus</label>
                     </div>
                 </div>
             </div>
@@ -359,6 +347,202 @@
                        value="@(Model?.Typeassistance ?? "")"
                        placeholder="Auto-generated info..." readonly>
                 <span asp-validation-for="Typeassistance"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information Section (Password-Protected) - Conditional Content -->
+    <!-- Medicines Section (Conditional) -->
+    <div id="medicinesSection" class="card mt-4" style="@(Model?.Typeassistance?.Contains("Medicine") == true ? "" : "display: none;")">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-shield-lock-fill me-2"></i>Medicine Details (Encrypted)</span>
+            <button type="button" class="btn btn-sm btn-primary"
+                    onclick="viewOtherAdditionalInfo()"
+                    title="Click to view encrypted information">
+                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                <div>
+                    <strong>This information is encrypted for security.</strong><br>
+                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Name of the Medicine</label>
+                    <input asp-for="MedicineName" type="text" class="form-control" placeholder="Enter medicine name">
+                    <span asp-validation-for="MedicineName" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Quantity</label>
+                    <input asp-for="MedicineQuantity" type="text" class="form-control" placeholder="Enter quantity">
+                    <span asp-validation-for="MedicineQuantity" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <label class="form-label">Cost</label>
+                    <input asp-for="MedicineCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱500.00)">
+                    <span asp-validation-for="MedicineCost" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Prescribing Doctor/ Medical Practitioner</label>
+                    <input asp-for="PrescribingDoctor" type="text" class="form-control" placeholder="Enter doctor's name">
+                    <span asp-validation-for="PrescribingDoctor" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Contact Detail of the Prescribing Doctor</label>
+                    <input asp-for="DoctorContactDetail" type="text" class="form-control" placeholder="Enter contact number">
+                    <span asp-validation-for="DoctorContactDetail" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Laboratory Tests Section (Conditional) -->
+    <div id="laboratorySection" class="card mt-4" style="@(Model?.Typeassistance?.Contains("Laboratory") == true ? "" : "display: none;")">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-shield-lock-fill me-2"></i>Laboratory Test Details (Encrypted)</span>
+            <button type="button" class="btn btn-sm btn-primary"
+                    onclick="viewOtherAdditionalInfo()"
+                    title="Click to view encrypted information">
+                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                <div>
+                    <strong>This information is encrypted for security.</strong><br>
+                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Laboratory or Diagnostic Center Name</label>
+                    <input asp-for="LaboratoryCenterName" type="text" class="form-control" placeholder="Enter laboratory name">
+                    <span asp-validation-for="LaboratoryCenterName" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Laboratory or Diagnostic Center Address</label>
+                    <input asp-for="LaboratoryCenterAddress" type="text" class="form-control" placeholder="Enter address">
+                    <span asp-validation-for="LaboratoryCenterAddress" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Name of the Test</label>
+                    <input asp-for="TestName" type="text" class="form-control" placeholder="Enter test name">
+                    <span asp-validation-for="TestName" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Cost</label>
+                    <input asp-for="TestCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱1,500.00)">
+                    <span asp-validation-for="TestCost" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <label class="form-label">Other Information</label>
+                    <input asp-for="TestOtherInfo" type="text" class="form-control" placeholder="Enter other information">
+                    <span asp-validation-for="TestOtherInfo" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Therapy Section (Conditional) -->
+    <div id="therapySection" class="card mt-4" style="@(Model?.Typeassistance?.Contains("Therapy") == true ? "" : "display: none;")">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-shield-lock-fill me-2"></i>Therapy/Rehabilitation Details (Encrypted)</span>
+            <button type="button" class="btn btn-sm btn-primary"
+                    onclick="viewOtherAdditionalInfo()"
+                    title="Click to view encrypted information">
+                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                <div>
+                    <strong>This information is encrypted for security.</strong><br>
+                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Therapy or Rehabilitation Facility Name</label>
+                    <input asp-for="TherapyFacilityName" type="text" class="form-control" placeholder="Enter facility name">
+                    <span asp-validation-for="TherapyFacilityName" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Facility Address</label>
+                    <input asp-for="TherapyFacilityAddress" type="text" class="form-control" placeholder="Enter facility address">
+                    <span asp-validation-for="TherapyFacilityAddress" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Facility Contact Detail</label>
+                    <input asp-for="TherapyFacilityContact" type="text" class="form-control" placeholder="Enter contact number">
+                    <span asp-validation-for="TherapyFacilityContact" class="text-danger"></span>
+                </div>
+                <div class="col-lg-8 col-md-12">
+                    <label class="form-label">Type or Name of Therapy or Rehabilitation Done</label>
+                    <input asp-for="TherapyType" type="text" class="form-control" placeholder="Enter therapy type">
+                    <span asp-validation-for="TherapyType" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Equipment/Apparatus Section (Conditional) -->
+    <div id="apparatusSection" class="card mt-4" style="@(Model?.Typeassistance?.Contains("Equipment") == true || Model?.Typeassistance?.Contains("Apparatus") == true ? "" : "display: none;")">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-shield-lock-fill me-2"></i>Medical Equipment/Apparatus Details (Encrypted)</span>
+            <button type="button" class="btn btn-sm btn-primary"
+                    onclick="viewOtherAdditionalInfo()"
+                    title="Click to view encrypted information">
+                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                <div>
+                    <strong>This information is encrypted for security.</strong><br>
+                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Equipment Name</label>
+                    <input asp-for="EquipmentName" type="text" class="form-control" placeholder="Enter equipment name">
+                    <span asp-validation-for="EquipmentName" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Brand (if applicable)</label>
+                    <input asp-for="EquipmentBrand" type="text" class="form-control" placeholder="Enter brand name">
+                    <span asp-validation-for="EquipmentBrand" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Category/ Type</label>
+                    <input asp-for="EquipmentCategory" type="text" class="form-control" placeholder="Enter category or type">
+                    <span asp-validation-for="EquipmentCategory" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Quantity Needed</label>
+                    <input asp-for="EquipmentQuantity" type="number" class="form-control" placeholder="Enter quantity" min="1">
+                    <span asp-validation-for="EquipmentQuantity" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <label class="form-label">Cost</label>
+                    <input asp-for="EquipmentCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱5,000.00)">
+                    <span asp-validation-for="EquipmentCost" class="text-danger"></span>
+                </div>
             </div>
         </div>
     </div>
@@ -1031,8 +1215,112 @@
             }
         }
 
+        // View Additional Information (Password-Protected)
+        function viewOtherAdditionalInfo() {
+            const formId = parseInt('@ViewData["Id"]');
+            const assistanceType = '@ViewData["Typeassistance"]';
+
+            let fieldNames = [];
+            let fieldLabels = [];
+            let fieldValues = [];
+
+            // Conditional fields based on assistance type
+            if (assistanceType === 'Medicine Assistance') {
+                fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
+                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
+                fieldValues = [
+                    '@ViewData["MedicineName"]',
+                    '@ViewData["MedicineQuantity"]',
+                    '@ViewData["MedicineCost"]',
+                    '@ViewData["PrescribingDoctor"]',
+                    '@ViewData["DoctorContactDetail"]'
+                ];
+            } else if (assistanceType === 'Laboratory') {
+                fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
+                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
+                fieldValues = [
+                    '@ViewData["LaboratoryCenterName"]',
+                    '@ViewData["LaboratoryCenterAddress"]',
+                    '@ViewData["TestName"]',
+                    '@ViewData["TestCost"]',
+                    '@ViewData["TestOtherInfo"]'
+                ];
+            } else if (assistanceType === 'Therapy') {
+                fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
+                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
+                fieldValues = [
+                    '@ViewData["TherapyFacilityName"]',
+                    '@ViewData["TherapyFacilityAddress"]',
+                    '@ViewData["TherapyFacilityContact"]',
+                    '@ViewData["TherapyType"]'
+                ];
+            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+                fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
+                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
+                fieldValues = [
+                    '@ViewData["EquipmentName"]',
+                    '@ViewData["EquipmentBrand"]',
+                    '@ViewData["EquipmentCategory"]',
+                    '@ViewData["EquipmentQuantity"]',
+                    '@ViewData["EquipmentCost"]'
+                ];
+            }
+
+            const encryptedFields = {
+                names: fieldNames,
+                labels: fieldLabels,
+                values: fieldValues
+            };
+
+            openViewAdditionalInfoModal('Other', formId, encryptedFields);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             checkFormSubmission();
-                    });
+            
+            // Toggle conditional sections based on assistance type selection
+            const assistanceRadios = document.querySelectorAll('input[name="AssistanceType"]');
+            const medicinesSection = document.getElementById('medicinesSection');
+            const laboratorySection = document.getElementById('laboratorySection');
+            const therapySection = document.getElementById('therapySection');
+            const apparatusSection = document.getElementById('apparatusSection');
+            const assistanceReflection = document.getElementById('assistanceReflection');
+            
+            function toggleSections() {
+                const selectedValue = document.querySelector('input[name="AssistanceType"]:checked')?.value || '';
+                
+                // Hide all sections first
+                if (medicinesSection) medicinesSection.style.display = 'none';
+                if (laboratorySection) laboratorySection.style.display = 'none';
+                if (therapySection) therapySection.style.display = 'none';
+                if (apparatusSection) apparatusSection.style.display = 'none';
+                
+                // Show the appropriate section
+                if (selectedValue.includes('Medicine')) {
+                    if (medicinesSection) medicinesSection.style.display = 'block';
+                } else if (selectedValue.includes('Laboratory')) {
+                    if (laboratorySection) laboratorySection.style.display = 'block';
+                } else if (selectedValue.includes('Therapy')) {
+                    if (therapySection) therapySection.style.display = 'block';
+                } else if (selectedValue.includes('Equipment') || selectedValue.includes('Apparatus')) {
+                    if (apparatusSection) apparatusSection.style.display = 'block';
+                }
+                
+                // Update reflection field
+                if (assistanceReflection) {
+                    assistanceReflection.value = selectedValue;
+                }
+            }
+            
+            // Add event listeners to all radio buttons
+            assistanceRadios.forEach(radio => {
+                radio.addEventListener('change', toggleSections);
+            });
+            
+            // Initialize on page load
+            toggleSections();
+        });
     </script>
 }
+
+@Html.Partial("_ViewEncryptedDataModal")

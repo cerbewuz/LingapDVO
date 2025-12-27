@@ -23,8 +23,9 @@ namespace LingapDVO.Controllers
         private readonly IMultiChannelNotificationService _notificationService;
         private readonly PriorityTrackingService _priorityService;
         private readonly IDateTimeService _dateTimeService;
+        private readonly IAesEncryptionService _aesEncryptionService;
 
-        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig, IMultiChannelNotificationService notificationService, PriorityTrackingService priorityService, IDateTimeService dateTimeService)
+        public Adminuser(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration, ISessionConfigurationService sessionConfig, IMultiChannelNotificationService notificationService, PriorityTrackingService priorityService, IDateTimeService dateTimeService, IAesEncryptionService aesEncryptionService)
         {
             this.context = context;
             this.environment = environment;
@@ -33,6 +34,7 @@ namespace LingapDVO.Controllers
             _notificationService = notificationService;
             _priorityService = priorityService;
             _dateTimeService = dateTimeService;
+            _aesEncryptionService = aesEncryptionService;
         }
         public IActionResult Index()
         {
@@ -170,6 +172,14 @@ namespace LingapDVO.Controllers
 
             ViewData["Comments"] = HospitalAssistance.Comments;
 
+            // Additional Information - Encrypted Fields
+            ViewData["HospitalFacilityName"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddress"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalCondition"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCost"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDate"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDate"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomType"] = HospitalAssistance.WardRoomType;
 
             return View();
 
@@ -407,6 +417,26 @@ namespace LingapDVO.Controllers
             ViewData["DeathCertificate"] = OtherAssistance.DeathCertificate;
             ViewData["Comments"] = OtherAssistance.Comments;
 
+            // Additional Information - Encrypted Fields (All fields for conditional display)
+            ViewData["MedicineName"] = OtherAssistance.MedicineName;
+            ViewData["MedicineQuantity"] = OtherAssistance.MedicineQuantity;
+            ViewData["MedicineCost"] = OtherAssistance.MedicineCost;
+            ViewData["PrescribingDoctor"] = OtherAssistance.PrescribingDoctor;
+            ViewData["DoctorContactDetail"] = OtherAssistance.DoctorContactDetail;
+            ViewData["LaboratoryCenterName"] = OtherAssistance.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddress"] = OtherAssistance.LaboratoryCenterAddress;
+            ViewData["TestName"] = OtherAssistance.TestName;
+            ViewData["TestCost"] = OtherAssistance.TestCost;
+            ViewData["TestOtherInfo"] = OtherAssistance.TestOtherInfo;
+            ViewData["TherapyFacilityName"] = OtherAssistance.TherapyFacilityName;
+            ViewData["TherapyFacilityAddress"] = OtherAssistance.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContact"] = OtherAssistance.TherapyFacilityContact;
+            ViewData["TherapyType"] = OtherAssistance.TherapyType;
+            ViewData["EquipmentName"] = OtherAssistance.EquipmentName;
+            ViewData["EquipmentBrand"] = OtherAssistance.EquipmentBrand;
+            ViewData["EquipmentCategory"] = OtherAssistance.EquipmentCategory;
+            ViewData["EquipmentQuantity"] = OtherAssistance.EquipmentQuantity;
+            ViewData["EquipmentCost"] = OtherAssistance.EquipmentCost;
 
             return View();
 
@@ -648,6 +678,17 @@ namespace LingapDVO.Controllers
             ViewData["DeathCertificate"] = FuneralAssistance.DeathCertificate;
             ViewData["Comments"] = FuneralAssistance.Comments;
 
+            // Additional Information - Encrypted Fields
+            ViewData["DeceasedPersonName"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceased"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeath"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeath"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeath"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeName"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddress"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDate"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTime"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationType"] = FuneralAssistance.BurialCremationType;
 
             return View();
 
@@ -1239,6 +1280,15 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = HospitalAssistance.ValidBackimage;
             ViewData["Comments"] = HospitalAssistance.Comments;
 
+            // Additional Information - Encrypted Fields
+            ViewData["HospitalFacilityName"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddress"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalCondition"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCost"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDate"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDate"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomType"] = HospitalAssistance.WardRoomType;
+
             return View();
         }
 
@@ -1466,6 +1516,27 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
             ViewData["Comments"] = medicallabform.Comments;
 
+            // Additional Information - Encrypted Fields (All fields for conditional display)
+            ViewData["MedicineName"] = medicallabform.MedicineName;
+            ViewData["MedicineQuantity"] = medicallabform.MedicineQuantity;
+            ViewData["MedicineCost"] = medicallabform.MedicineCost;
+            ViewData["PrescribingDoctor"] = medicallabform.PrescribingDoctor;
+            ViewData["DoctorContactDetail"] = medicallabform.DoctorContactDetail;
+            ViewData["LaboratoryCenterName"] = medicallabform.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddress"] = medicallabform.LaboratoryCenterAddress;
+            ViewData["TestName"] = medicallabform.TestName;
+            ViewData["TestCost"] = medicallabform.TestCost;
+            ViewData["TestOtherInfo"] = medicallabform.TestOtherInfo;
+            ViewData["TherapyFacilityName"] = medicallabform.TherapyFacilityName;
+            ViewData["TherapyFacilityAddress"] = medicallabform.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContact"] = medicallabform.TherapyFacilityContact;
+            ViewData["TherapyType"] = medicallabform.TherapyType;
+            ViewData["EquipmentName"] = medicallabform.EquipmentName;
+            ViewData["EquipmentBrand"] = medicallabform.EquipmentBrand;
+            ViewData["EquipmentCategory"] = medicallabform.EquipmentCategory;
+            ViewData["EquipmentQuantity"] = medicallabform.EquipmentQuantity;
+            ViewData["EquipmentCost"] = medicallabform.EquipmentCost;
+
             return View();
         }
         public IActionResult FuneralAssistanceProcessingStatus(int id)
@@ -1652,6 +1723,18 @@ namespace LingapDVO.Controllers
             ViewData["Validfrontimage"] = FuneralAssistance.Validfrontimage;
             ViewData["ValidBackimage"] = FuneralAssistance.ValidBackimage;
             ViewData["Comments"] = FuneralAssistance.Comments;
+
+            // Additional Information - Encrypted Fields
+            ViewData["DeceasedPersonName"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceased"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeath"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeath"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeath"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeName"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddress"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDate"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTime"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationType"] = FuneralAssistance.BurialCremationType;
 
             return View();
         }
@@ -1842,6 +1925,15 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = HospitalAssistance.ValidBackimage;
             ViewData["Comments"] = HospitalAssistance.Comments;
 
+            // Additional Information - Encrypted Fields
+            ViewData["HospitalFacilityName"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddress"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalCondition"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCost"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDate"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDate"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomType"] = HospitalAssistance.WardRoomType;
+
             return View();
         }
 
@@ -2029,6 +2121,18 @@ namespace LingapDVO.Controllers
             ViewData["Validfrontimage"] = FuneralAssistance.Validfrontimage;
             ViewData["ValidBackimage"] = FuneralAssistance.ValidBackimage;
             ViewData["Comments"] = FuneralAssistance.Comments;
+
+            // Additional Information - Encrypted Fields
+            ViewData["DeceasedPersonName"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceased"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeath"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeath"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeath"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeName"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddress"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDate"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTime"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationType"] = FuneralAssistance.BurialCremationType;
 
             return View();
         }
@@ -2257,6 +2361,27 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
             ViewData["Comments"] = medicallabform.Comments;
 
+            // Additional Information - Encrypted Fields (All fields for conditional display)
+            ViewData["MedicineName"] = medicallabform.MedicineName;
+            ViewData["MedicineQuantity"] = medicallabform.MedicineQuantity;
+            ViewData["MedicineCost"] = medicallabform.MedicineCost;
+            ViewData["PrescribingDoctor"] = medicallabform.PrescribingDoctor;
+            ViewData["DoctorContactDetail"] = medicallabform.DoctorContactDetail;
+            ViewData["LaboratoryCenterName"] = medicallabform.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddress"] = medicallabform.LaboratoryCenterAddress;
+            ViewData["TestName"] = medicallabform.TestName;
+            ViewData["TestCost"] = medicallabform.TestCost;
+            ViewData["TestOtherInfo"] = medicallabform.TestOtherInfo;
+            ViewData["TherapyFacilityName"] = medicallabform.TherapyFacilityName;
+            ViewData["TherapyFacilityAddress"] = medicallabform.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContact"] = medicallabform.TherapyFacilityContact;
+            ViewData["TherapyType"] = medicallabform.TherapyType;
+            ViewData["EquipmentName"] = medicallabform.EquipmentName;
+            ViewData["EquipmentBrand"] = medicallabform.EquipmentBrand;
+            ViewData["EquipmentCategory"] = medicallabform.EquipmentCategory;
+            ViewData["EquipmentQuantity"] = medicallabform.EquipmentQuantity;
+            ViewData["EquipmentCost"] = medicallabform.EquipmentCost;
+
             return View();
         }
 
@@ -2446,6 +2571,15 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = HospitalAssistance.ValidBackimage;
             ViewData["Comments"] = HospitalAssistance.Comments;
 
+            // Additional Information - Encrypted Fields
+            ViewData["HospitalFacilityName"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddress"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalCondition"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCost"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDate"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDate"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomType"] = HospitalAssistance.WardRoomType;
+
             return View();
         }
 
@@ -2633,6 +2767,18 @@ namespace LingapDVO.Controllers
             ViewData["Validfrontimage"] = FuneralAssistance.Validfrontimage;
             ViewData["ValidBackimage"] = FuneralAssistance.ValidBackimage;
             ViewData["Comments"] = FuneralAssistance.Comments;
+
+            // Additional Information - Encrypted Fields
+            ViewData["DeceasedPersonName"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceased"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeath"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeath"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeath"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeName"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddress"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDate"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTime"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationType"] = FuneralAssistance.BurialCremationType;
 
             return View();
         }
@@ -2861,6 +3007,27 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
             ViewData["Comments"] = medicallabform.Comments;
 
+            // Additional Information - Encrypted Fields (All fields for conditional display)
+            ViewData["MedicineName"] = medicallabform.MedicineName;
+            ViewData["MedicineQuantity"] = medicallabform.MedicineQuantity;
+            ViewData["MedicineCost"] = medicallabform.MedicineCost;
+            ViewData["PrescribingDoctor"] = medicallabform.PrescribingDoctor;
+            ViewData["DoctorContactDetail"] = medicallabform.DoctorContactDetail;
+            ViewData["LaboratoryCenterName"] = medicallabform.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddress"] = medicallabform.LaboratoryCenterAddress;
+            ViewData["TestName"] = medicallabform.TestName;
+            ViewData["TestCost"] = medicallabform.TestCost;
+            ViewData["TestOtherInfo"] = medicallabform.TestOtherInfo;
+            ViewData["TherapyFacilityName"] = medicallabform.TherapyFacilityName;
+            ViewData["TherapyFacilityAddress"] = medicallabform.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContact"] = medicallabform.TherapyFacilityContact;
+            ViewData["TherapyType"] = medicallabform.TherapyType;
+            ViewData["EquipmentName"] = medicallabform.EquipmentName;
+            ViewData["EquipmentBrand"] = medicallabform.EquipmentBrand;
+            ViewData["EquipmentCategory"] = medicallabform.EquipmentCategory;
+            ViewData["EquipmentQuantity"] = medicallabform.EquipmentQuantity;
+            ViewData["EquipmentCost"] = medicallabform.EquipmentCost;
+
             return View();
         }
 
@@ -2987,6 +3154,15 @@ namespace LingapDVO.Controllers
             ViewData["DebugMessages"] = debugMessages;
             ViewData["Validfrontimage"] = HospitalAssistance.Validfrontimage;
             ViewData["ValidBackimage"] = HospitalAssistance.ValidBackimage;
+
+            // Additional Information - Encrypted Fields
+            ViewData["HospitalFacilityName"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddress"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalCondition"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCost"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDate"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDate"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomType"] = HospitalAssistance.WardRoomType;
 
             // Create DTO for the view
             var dto = new HospitalAssistanceDto
@@ -3140,6 +3316,27 @@ namespace LingapDVO.Controllers
             ViewData["Validfrontimage"] = OtherAssistance.Validfrontimage;
             ViewData["ValidBackimage"] = OtherAssistance.ValidBackimage;
 
+            // Additional Information - Encrypted Fields (All fields for conditional display)
+            ViewData["MedicineName"] = OtherAssistance.MedicineName;
+            ViewData["MedicineQuantity"] = OtherAssistance.MedicineQuantity;
+            ViewData["MedicineCost"] = OtherAssistance.MedicineCost;
+            ViewData["PrescribingDoctor"] = OtherAssistance.PrescribingDoctor;
+            ViewData["DoctorContactDetail"] = OtherAssistance.DoctorContactDetail;
+            ViewData["LaboratoryCenterName"] = OtherAssistance.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddress"] = OtherAssistance.LaboratoryCenterAddress;
+            ViewData["TestName"] = OtherAssistance.TestName;
+            ViewData["TestCost"] = OtherAssistance.TestCost;
+            ViewData["TestOtherInfo"] = OtherAssistance.TestOtherInfo;
+            ViewData["TherapyFacilityName"] = OtherAssistance.TherapyFacilityName;
+            ViewData["TherapyFacilityAddress"] = OtherAssistance.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContact"] = OtherAssistance.TherapyFacilityContact;
+            ViewData["TherapyType"] = OtherAssistance.TherapyType;
+            ViewData["EquipmentName"] = OtherAssistance.EquipmentName;
+            ViewData["EquipmentBrand"] = OtherAssistance.EquipmentBrand;
+            ViewData["EquipmentCategory"] = OtherAssistance.EquipmentCategory;
+            ViewData["EquipmentQuantity"] = OtherAssistance.EquipmentQuantity;
+            ViewData["EquipmentCost"] = OtherAssistance.EquipmentCost;
+
             // Create DTO for the view
             var dto = new OtherAssistanceDto
             {
@@ -3291,6 +3488,18 @@ namespace LingapDVO.Controllers
             ViewData["DebugMessages"] = debugMessages;
             ViewData["Validfrontimage"] = FuneralAssistance.Validfrontimage;
             ViewData["ValidBackimage"] = FuneralAssistance.ValidBackimage;
+
+            // Additional Information - Encrypted Fields
+            ViewData["DeceasedPersonName"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceased"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeath"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeath"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeath"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeName"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddress"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDate"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTime"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationType"] = FuneralAssistance.BurialCremationType;
 
             // Create DTO for the view
             var dto = new FuneralAssistanceDto
@@ -3515,6 +3724,15 @@ namespace LingapDVO.Controllers
             ViewData["Validfrontimage"] = HospitalAssistance.Validfrontimage;
             ViewData["ValidBackimage"] = HospitalAssistance.ValidBackimage;
             ViewData["Comments"] = HospitalAssistance.Comments;
+
+            // Additional Information - Encrypted Fields
+            ViewData["HospitalFacilityName"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddress"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalCondition"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCost"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDate"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDate"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomType"] = HospitalAssistance.WardRoomType;
 
             return View();
         }
@@ -3743,6 +3961,27 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
             ViewData["Comments"] = medicallabform.Comments;
 
+            // Additional Information - Encrypted Fields (All fields for conditional display)
+            ViewData["MedicineName"] = medicallabform.MedicineName;
+            ViewData["MedicineQuantity"] = medicallabform.MedicineQuantity;
+            ViewData["MedicineCost"] = medicallabform.MedicineCost;
+            ViewData["PrescribingDoctor"] = medicallabform.PrescribingDoctor;
+            ViewData["DoctorContactDetail"] = medicallabform.DoctorContactDetail;
+            ViewData["LaboratoryCenterName"] = medicallabform.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddress"] = medicallabform.LaboratoryCenterAddress;
+            ViewData["TestName"] = medicallabform.TestName;
+            ViewData["TestCost"] = medicallabform.TestCost;
+            ViewData["TestOtherInfo"] = medicallabform.TestOtherInfo;
+            ViewData["TherapyFacilityName"] = medicallabform.TherapyFacilityName;
+            ViewData["TherapyFacilityAddress"] = medicallabform.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContact"] = medicallabform.TherapyFacilityContact;
+            ViewData["TherapyType"] = medicallabform.TherapyType;
+            ViewData["EquipmentName"] = medicallabform.EquipmentName;
+            ViewData["EquipmentBrand"] = medicallabform.EquipmentBrand;
+            ViewData["EquipmentCategory"] = medicallabform.EquipmentCategory;
+            ViewData["EquipmentQuantity"] = medicallabform.EquipmentQuantity;
+            ViewData["EquipmentCost"] = medicallabform.EquipmentCost;
+
             return View();
         }
         public IActionResult FuneralAssistanceClaimStatus(int id)
@@ -3929,6 +4168,18 @@ namespace LingapDVO.Controllers
             ViewData["Validfrontimage"] = FuneralAssistance.Validfrontimage;
             ViewData["ValidBackimage"] = FuneralAssistance.ValidBackimage;
             ViewData["Comments"] = FuneralAssistance.Comments;
+
+            // Additional Information - Encrypted Fields
+            ViewData["DeceasedPersonName"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceased"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeath"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeath"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeath"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeName"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddress"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDate"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTime"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationType"] = FuneralAssistance.BurialCremationType;
 
             return View();
         }
@@ -7267,6 +7518,212 @@ namespace LingapDVO.Controllers
             else
             {
                 return random.Next(120, 241);
+            }
+        }
+
+        // ==============================================
+        // DECRYPTION API FOR ADDITIONAL INFORMATION
+        // ==============================================
+        [HttpPost]
+        public IActionResult DecryptField(string fieldValue, string formType, int formId)
+        {
+            try
+            {
+                // Get current user info
+                var userIdString = HttpContext.Session.GetString("UserId");
+                var isAdmin = HttpContext.Session.GetString("IsAdmin");
+                var isSuperadmin = HttpContext.Session.GetString("IsSuperadmin");
+
+                // Authorization check
+                if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                // Check if user has permission to decrypt
+                bool canDecrypt = false;
+
+                if (isAdmin == "true" || isSuperadmin == "true")
+                {
+                    // Admin and Superadmin can decrypt all records
+                    canDecrypt = true;
+                }
+                else
+                {
+                    // Regular users can only decrypt their own records
+                    int? recordUserId = null;
+
+                    switch (formType)
+                    {
+                        case "Hospital":
+                            recordUserId = context.HospitalAssistance
+                                .Where(h => h.Id == formId)
+                                .Select(h => h.UserId)
+                                .FirstOrDefault();
+                            break;
+                        case "Funeral":
+                            recordUserId = context.FuneralAssistance
+                                .Where(f => f.Id == formId)
+                                .Select(f => f.UserId)
+                                .FirstOrDefault();
+                            break;
+                        case "Other":
+                            recordUserId = context.OtherAssistance
+                                .Where(o => o.Id == formId)
+                                .Select(o => o.UserId)
+                                .FirstOrDefault();
+                            break;
+                    }
+
+                    canDecrypt = (recordUserId == userId);
+                }
+
+                if (!canDecrypt)
+                {
+                    return Json(new { success = false, message = "Unauthorized" });
+                }
+
+                // Check if fieldValue is empty or null
+                if (string.IsNullOrEmpty(fieldValue))
+                {
+                    return Json(new { success = true, data = "" });
+                }
+
+                // Check if fieldValue is only whitespace
+                if (string.IsNullOrWhiteSpace(fieldValue))
+                {
+                    return Json(new { success = true, data = "" });
+                }
+
+                // Try to decrypt the field
+                string decryptedValue;
+
+                Console.WriteLine($"=== Processing Field for Form {formType} ID {formId} ===");
+                Console.WriteLine($"Field value (first 100 chars): {fieldValue.Substring(0, Math.Min(100, fieldValue.Length))}");
+                Console.WriteLine($"Field value length: {fieldValue.Length}");
+                Console.WriteLine($"Is Base64: {IsBase64String(fieldValue)}");
+
+                try
+                {
+                    // Check if the value looks like Base64 encrypted data
+                    if (IsBase64String(fieldValue))
+                    {
+                        Console.WriteLine($"Attempting to decrypt Base64 field...");
+
+                        // Attempt decryption
+                        decryptedValue = _aesEncryptionService.Decrypt(fieldValue);
+
+                        Console.WriteLine($"✓ Successfully decrypted! Decrypted length: {decryptedValue.Length}");
+                        Console.WriteLine($"Decrypted value (first 50 chars): {decryptedValue.Substring(0, Math.Min(50, decryptedValue.Length))}");
+                    }
+                    else
+                    {
+                        // Not Base64, likely plain text - return as is
+                        decryptedValue = fieldValue;
+                        Console.WriteLine($"✓ Not Base64 - treating as plain text");
+                    }
+                }
+                catch (Exception decryptEx)
+                {
+                    // Decryption failed
+                    Console.WriteLine($"✗ DECRYPTION FAILED!");
+                    Console.WriteLine($"Error Type: {decryptEx.GetType().Name}");
+                    Console.WriteLine($"Error Message: {decryptEx.Message}");
+                    Console.WriteLine($"Stack Trace: {decryptEx.StackTrace}");
+
+                    // Return error message instead of encrypted data
+                    decryptedValue = $"[Decryption Error: {decryptEx.Message}]";
+                }
+
+                return Json(new { success = true, data = decryptedValue });
+            }
+            catch (Exception ex)
+            {
+                // Log detailed error information for debugging
+                Console.WriteLine($"=== DecryptField Error ===");
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                Console.WriteLine($"Field value length: {fieldValue?.Length ?? 0}");
+                Console.WriteLine($"Form type: {formType}, Form ID: {formId}");
+                Console.WriteLine($"==========================");
+
+                // Return error to frontend for display
+                return Json(new { success = false, message = $"Decryption failed: {ex.Message}" });
+            }
+        }
+
+        // Helper method to check if a string is valid Base64
+        private bool IsBase64String(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return false;
+
+            // Base64 string length should be divisible by 4
+            if (value.Length % 4 != 0)
+                return false;
+
+            // Check if string contains only valid Base64 characters
+            try
+            {
+                Convert.FromBase64String(value);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // ========================================================
+        // PASSWORD VERIFICATION FOR VIEWING ENCRYPTED DATA
+        // ========================================================
+        [HttpPost]
+        public IActionResult VerifyPasswordForDecryption(string password)
+        {
+            try
+            {
+                // Get current user info
+                var userIdString = HttpContext.Session.GetString("UserId");
+                var sessionPassword = HttpContext.Session.GetString("UserPassword");
+                var isGoogleUser = HttpContext.Session.GetString("IsGoogleUser");
+
+                if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                if (string.IsNullOrEmpty(password))
+                {
+                    return Json(new { success = false, message = "Password is required" });
+                }
+
+                // Google users don't have passwords, so they're automatically verified
+                if (isGoogleUser == "true")
+                {
+                    return Json(new { success = true, message = "Verified (Google user)" });
+                }
+
+                if (string.IsNullOrEmpty(sessionPassword))
+                {
+                    return Json(new { success = false, message = "Session expired. Please log in again." });
+                }
+
+                // Verify the typed password matches the session password
+                // This confirms user intent without hitting the database
+                if (password == sessionPassword)
+                {
+                    return Json(new { success = true, message = "Password verified successfully" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Invalid password" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Password verification error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = "Verification failed: " + ex.Message });
             }
         }
 

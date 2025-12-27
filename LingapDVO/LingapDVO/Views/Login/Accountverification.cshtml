@@ -77,7 +77,7 @@
                                 <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
                                     <i class="fas fa-id-card text-lg crimson-500"></i>
                                 </div>
-                                <h2 class="text-2xl font-bold text-gray-800">ID Verification</h2>
+                                <h2 class="text-2xl font-bold text-gray-800">Verify Your Account</h2>
                             </div>
 
                             <!-- Auto-Detected ID Type (Hidden) -->
@@ -86,6 +86,12 @@
                             <!-- User Face Picture (Hidden - populated by JS) -->
                             <input type="hidden" asp-for="userfacepictureBase64" id="userfacepictureBase64" />
 
+                            <!-- Verification Decision (Hidden - populated by ID Analyzer API) -->
+                            <input type="hidden" name="VerificationDecision" id="verification-decision" value="" />
+
+                            <!-- Transaction ID (Hidden - populated by ID Analyzer API) -->
+                            <input type="hidden" name="TransactionId" id="transaction-id" value="" />
+
                             <!-- ID Type Display (Hidden - shown in console only) -->
                             <div id="id-type-display" class="hidden"></div>
 
@@ -93,7 +99,7 @@
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
                                     <div class="text-sm text-gray-600 mb-4">
-                                        <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                        <i class="fas   fa-check-circle text-green-500 mr-1"></i>
                                         <strong>Accepted IDs:</strong> National ID, Driver's License, UMID
                                     </div>
                                     <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1 block"></span>
@@ -112,58 +118,68 @@
                                 </div>
                             </div>
 
-                            <!-- ID Upload Sections -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Front ID Upload -->
-                                <div class="upload-area rounded-xl p-6 text-center cursor-pointer" id="upload-area-front">
-                                    <div class="id-upload-content">
-                                        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <i class="fas fa-id-card text-2xl crimson-500"></i>
-                                        </div>
-                                        <div class="font-semibold text-gray-800 mb-2">Front of ID</div>
-                                        <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
-                                        <div class="text-xs text-gray-400 mb-2">Accepted formats: JPG, JPEG, PNG only</div>
-                                        <input asp-for="ValidFrontID" type="file" id="file-input-front" class="hidden" accept="image/jpeg,image/jpg,image/png">
-                                        <img id="image-preview" class="id-preview w-full max-w-xs mx-auto hidden" alt="Front ID Preview">
-                                        <span asp-validation-for="ValidFrontID" class="text-red-500 text-sm mt-2 block"></span>
-                                    </div>
-                                </div>
+                            <!-- Hidden File Inputs (for form submission) -->
+                            <input asp-for="ValidFrontID" type="file" id="file-input-front" class="hidden" accept="image/jpeg,image/jpg,image/png">
+                            <input asp-for="ValidBackID" type="file" id="file-input-back" class="hidden" accept="image/jpeg,image/jpg,image/png">
+                            <span asp-validation-for="ValidFrontID" class="text-red-500 text-sm mt-2 block hidden"></span>
+                            <span asp-validation-for="ValidBackID" class="text-red-500 text-sm mt-2 block hidden"></span>
 
-                                <!-- Back ID Upload -->
-                                <div class="upload-area rounded-xl p-6 text-center cursor-pointer" id="upload-area-back">
-                                    <div class="id-upload-content">
-                                        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <i class="fas fa-id-card text-2xl crimson-500"></i>
+                            <!-- Start Upload Button -->
+                            <div class="mt-6">
+                                <button type="button"
+                                        id="start-verification-btn"
+                                        onclick="IDUploadModal.startFlow()"
+                                        class="w-full py-4 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3">
+                                    <i class="fas fa-id-card"></i>
+                                    <span>Start Verification</span>
+                                </button>
+                            </div>
+
+                            <!-- Your Photos Preview -->
+                            <div id="uploaded-docs-preview" class="hidden mt-6">
+                                <h4 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    Your Photos
+                                </h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <!-- Front ID Preview -->
+                                    <div class="bg-gray-50 rounded-xl p-4 text-center border-2 border-gray-200" id="preview-front-container">
+                                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <i class="fas fa-id-card text-blue-500"></i>
                                         </div>
-                                        <div class="font-semibold text-gray-800 mb-2">Back of ID</div>
-                                        <div class="text-gray-500 text-sm mb-4">Click to upload or drag and drop</div>
-                                        <div class="text-xs text-gray-400 mb-2">Accepted formats: JPG, JPEG, PNG only</div>
-                                        <input asp-for="ValidBackID" type="file" id="file-input-back" class="hidden" accept="image/jpeg,image/jpg,image/png">
-                                        <img id="image-preview-back" class="id-preview w-full max-w-xs mx-auto hidden" alt="Back ID Preview">
-                                        <span asp-validation-for="ValidBackID" class="text-red-500 text-sm mt-2 block"></span>
+                                        <div class="text-sm font-medium text-gray-700 mb-2">Front of ID</div>
+                                        <img id="preview-front-img" class="w-full max-w-[120px] mx-auto rounded-lg hidden" alt="Front ID">
+                                        <div id="preview-front-status" class="text-xs text-gray-400">No photo yet</div>
+                                    </div>
+                                    <!-- Back ID Preview -->
+                                    <div class="bg-gray-50 rounded-xl p-4 text-center border-2 border-gray-200" id="preview-back-container">
+                                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <i class="fas fa-id-card text-blue-500"></i>
+                                        </div>
+                                        <div class="text-sm font-medium text-gray-700 mb-2">Back of ID</div>
+                                        <img id="preview-back-img" class="w-full max-w-[120px] mx-auto rounded-lg hidden" alt="Back ID">
+                                        <div id="preview-back-status" class="text-xs text-gray-400">No photo yet</div>
+                                    </div>
+                                    <!-- Selfie Preview -->
+                                    <div class="bg-gray-50 rounded-xl p-4 text-center border-2 border-gray-200" id="preview-selfie-container">
+                                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
+                                            <i class="fas fa-user-circle text-blue-500"></i>
+                                        </div>
+                                        <div class="text-sm font-medium text-gray-700 mb-2">Selfie</div>
+                                        <img id="preview-selfie-img" class="w-16 h-16 rounded-full mx-auto object-cover hidden border-2 border-green-500" alt="Selfie">
+                                        <div id="preview-selfie-status" class="text-xs text-gray-400">No photo yet</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-                            <!-- SELFIE CAPTURE SECTION -->
-                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-                            <div class="mt-6">
-                                <h4 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                    <i class="fas fa-camera text-red-500"></i>
-                                    Step 2: Take a Selfie
-                                </h4>
-                                <div class="upload-area rounded-xl p-6 text-center cursor-pointer" id="selfie-capture-area" onclick="FaceVerificationFlow.startSelfieCapture()">
-                                    <div class="selfie-capture-content">
-                                        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <i class="fas fa-user-circle text-2xl text-red-500"></i>
-                                        </div>
-                                        <div class="font-semibold text-gray-800 mb-2">Capture Selfie</div>
-                                        <div class="text-gray-500 text-sm mb-4">Click to open camera and take a selfie</div>
-                                        <div class="text-xs text-gray-400 mb-2">Your face will be compared with your ID photo</div>
-                                        <img id="selfie-preview" class="w-32 h-32 rounded-full mx-auto object-cover hidden border-4 border-green-500" alt="Selfie Preview">
-                                    </div>
-                                </div>
+                            <!-- Legacy elements (hidden, for JS compatibility) -->
+                            <div class="hidden">
+                                <div id="upload-area-front"></div>
+                                <div id="upload-area-back"></div>
+                                <img id="image-preview" alt="Front ID Preview">
+                                <img id="image-preview-back" alt="Back ID Preview">
+                                <div id="selfie-capture-area"></div>
+                                <img id="selfie-preview" alt="Selfie Preview">
                             </div>
 
                             <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -183,22 +199,12 @@
                                 </div>
                             </div>
 
-                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-                            <!-- VERIFY & SUBMIT BUTTON -->
-                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-                            <div class="mt-6">
-                                <button type="button" 
-                                        id="verify-submit-btn" 
-                                        onclick="submitVerification()"
-                                        disabled
-                                        class="w-full py-4 px-6 bg-gray-400 text-white rounded-xl font-semibold text-lg opacity-50 cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-3">
-                                    <i class="fas fa-shield-alt"></i>
-                                    <span>Verify & Extract ID Data</span>
-                                </button>
-                                <p class="text-center text-gray-500 text-sm mt-2">
-                                    Upload Front ID, Back ID (optional), and Selfie to enable verification
-                                </p>
-                            </div>
+                            <!-- Hidden verify button (triggered automatically after selfie capture) -->
+                            <button type="button" 
+                                    id="verify-submit-btn" 
+                                    onclick="submitVerification()"
+                                    class="hidden">
+                            </button>
 
                             <!-- ═══════════════════════════════════════════════════════════════════════════ -->
                             <!-- FACE VERIFICATION RESULT -->
@@ -207,10 +213,6 @@
 
                             <!-- OCR Status -->
                             <div class="space-y-4">
-                                <div id="ocr-status" class="text-gray-600 text-sm">
-                                    <i class="fas fa-info-circle mr-2"></i>Select a document to begin
-                                </div>
-
                                 <div class="progress-bar-container hidden" id="progress-bar">
                                     <div class="w-full bg-gray-200 rounded-full h-2">
                                         <div class="bg-crimson-500 h-2 rounded-full transition-all duration-300"
@@ -244,7 +246,6 @@
                                             <li>Avoid glare, shadows, or reflections</li>
                                             <li>Maximum file size: 5MB per image</li>
                                             <li>Supported IDs: National ID, Driver's License, UMID</li>
-                                            <li><strong>Back upload:</strong> Required for National ID only. Driver's License and UMID don't need back upload.</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -258,17 +259,6 @@
                                     <i class="fas fa-user text-lg text-green-500"></i>
                                 </div>
                                 <h2 class="text-2xl font-bold text-gray-800">Personal Information</h2>
-                            </div>
-
-                            <!-- Ñ/ñ Support Notice -->
-                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                                <div class="flex items-start gap-3">
-                                    <i class="fas fa-info-circle text-blue-600 text-lg mt-0.5"></i>
-                                    <div class="flex-1">
-                                        <p class="text-blue-800 font-semibold text-sm mb-1">Philippine Spanish Names Supported</p>
-                                        <p class="text-blue-700 text-xs">Names with <strong>Ñ/ñ</strong> characters are fully supported (e.g., Peña, Niño, Muñoz, Nuñez). Please enter your name exactly as it appears on your ID.</p>
-                                    </div>
-                                </div>
                             </div>
 
                             <!-- Name Fields -->
@@ -545,7 +535,9 @@
 
                             <div class="flex justify-center">
                                 <button type="submit"
-                                        class="submitbtn-color text-white py-3 px-6 sm:px-8 md:px-10 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0 outline-none"
+                                        id="verify-account-btn"
+                                        disabled
+                                        class="submitbtn-color text-white py-3 px-6 sm:px-8 md:px-10 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0 outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-lg"
                                         style="border: none;">
                                     <i class="fas fa-check-circle mr-2"></i>Verify Account
                                 </button>
@@ -699,6 +691,9 @@
             suffix: '@ViewBag.RegisteredSuffix'
         };
 
+        // Pass user ID for verification status polling
+        window.currentUserId = @ViewBag.UserId;
+
         // ID Analyzer API v2 is handled server-side via /api/IdAnalyzer endpoints
         // No client-side API keys needed - all requests go through the backend
 
@@ -727,6 +722,301 @@
                     });
                 }
             });
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // COMPREHENSIVE FORM VALIDATION - VERIFY ACCOUNT BUTTON
+            // ═══════════════════════════════════════════════════════════════════════════
+            // Ensures all requirements are met before form submission:
+            // 1. All form fields are filled
+            // 2. Front ID uploaded
+            // 3. Back ID uploaded
+            // 4. Selfie captured and saved
+            // 5. Terms checkbox checked
+            // ═══════════════════════════════════════════════════════════════════════════
+            
+            const registrationForm = document.getElementById('registrationForm');
+            if (registrationForm) {
+                registrationForm.addEventListener('submit', function(e) {
+                    // Collect validation errors
+                    const errors = [];
+                    
+                    // ═══════════════════════════════════════════════════════════════
+                    // CHECK 1: Verify all required form fields are filled
+                    // ═══════════════════════════════════════════════════════════════
+                    const requiredFields = {
+                        'idnumber': 'ID Number',
+                        'lastname': 'Last Name',
+                        'firstname': 'First Name',
+                        'gender': 'Gender',
+                        'civil-status': 'Civil Status',
+                        'phonenumber': 'Phone Number',
+                        'birthdate': 'Date of Birth',
+                        'address': 'Address',
+                        'Barangay': 'Barangay',
+                        'District': 'District'
+                    };
+                    
+                    const missingFields = [];
+                    for (const [fieldId, fieldName] of Object.entries(requiredFields)) {
+                        const field = document.getElementById(fieldId);
+                        if (!field || !field.value || field.value.trim() === '' || field.value === '') {
+                            missingFields.push(fieldName);
+                        }
+                    }
+                    
+                    if (missingFields.length > 0) {
+                        errors.push(`Please fill in the following fields: ${missingFields.join(', ')}`);
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════════
+                    // CHECK 2: Verify Front ID is uploaded
+                    // ═══════════════════════════════════════════════════════════════
+                    const frontIdInput = document.getElementById('file-input-front');
+                    const hasFrontId = (frontIdInput && frontIdInput.files && frontIdInput.files.length > 0) || 
+                                       (typeof VerificationState !== 'undefined' && VerificationState.frontIdUploaded);
+                    
+                    if (!hasFrontId) {
+                        errors.push('Front ID image is required. Please upload the front of your ID.');
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════════
+                    // CHECK 3: Verify Back ID is uploaded
+                    // ═══════════════════════════════════════════════════════════════
+                    const backIdInput = document.getElementById('file-input-back');
+                    const hasBackId = (backIdInput && backIdInput.files && backIdInput.files.length > 0) || 
+                                      (typeof VerificationState !== 'undefined' && VerificationState.backIdUploaded);
+                    
+                    if (!hasBackId) {
+                        errors.push('Back ID image is required. Please upload the back of your ID.');
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════════
+                    // CHECK 4: Verify Selfie is captured and saved
+                    // ═══════════════════════════════════════════════════════════════
+                    const hasSelfie = (typeof VerificationState !== 'undefined' && VerificationState.selfieUploaded) ||
+                                      (typeof IDUploadModal !== 'undefined' && IDUploadModal.selfieImage);
+                    
+                    if (!hasSelfie) {
+                        errors.push('Selfie is required. Please capture your selfie photo.');
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════════
+                    // CHECK 5: Verify Terms checkbox is checked
+                    // ═══════════════════════════════════════════════════════════════
+                    const termsCheckbox = document.getElementById('terms');
+                    if (!termsCheckbox || !termsCheckbox.checked) {
+                        errors.push('You must agree to the Terms and Conditions.');
+                    }
+                    
+                    // ═══════════════════════════════════════════════════════════════
+                    // IF ERRORS EXIST: Prevent form submission and show modal
+                    // ═══════════════════════════════════════════════════════════════
+                    if (errors.length > 0) {
+                        e.preventDefault();
+                        
+                        // Show validation error modal
+                        showVerificationRequirementsModal(errors);
+                        
+                        return false;
+                    }
+                    
+                    // All checks passed - form will submit normally
+                    console.log('✅ All verification requirements met. Submitting form...');
+                });
+            }
+            
+            // ═══════════════════════════════════════════════════════════════════════════
+            // MODAL: Show verification requirements error
+            // ═══════════════════════════════════════════════════════════════════════════
+            window.showVerificationRequirementsModal = function(errors) {
+                // Create modal if it doesn't exist
+                let modal = document.getElementById('verificationRequirementsModal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'verificationRequirementsModal';
+                    modal.className = 'modal fade';
+                    modal.setAttribute('tabindex', '-1');
+                    modal.setAttribute('aria-labelledby', 'verificationRequirementsModalLabel');
+                    modal.setAttribute('aria-hidden', 'true');
+                    modal.innerHTML = `
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden">
+                                <div class="modal-header bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 border-b-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-exclamation-triangle text-white text-lg"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="modal-title font-bold text-lg" id="verificationRequirementsModalLabel">Things You Need to Complete</h5>
+                                            <p class="text-red-100 text-sm">Please complete all requirements</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-6">
+                                    <div class="mb-4">
+                                        <p class="text-gray-700 text-sm mb-4">Please complete these steps before submitting your information:</p>
+                                        <ul id="requirements-error-list" class="space-y-2"></ul>
+                                    </div>
+                                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-info-circle text-blue-500 text-lg mt-0.5"></i>
+                                            <div>
+                                                <p class="text-blue-800 font-semibold text-sm mb-1">How to complete these steps:</p>
+                                                <ol class="text-blue-700 text-xs space-y-1 list-decimal list-inside">
+                                                    <li>Fill in all required information in the form</li>
+                                                    <li>Click "Upload My ID" to upload photos of your ID (front & back)</li>
+                                                    <li>Take a photo of yourself</li>
+                                                    <li>Agree to Terms and Conditions</li>
+                                                    <li>Click "Submit My Information" when done</li>
+                                                </ol>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0">
+                                    <button type="button" class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200" data-bs-dismiss="modal">
+                                        I Understand
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                }
+                
+                // Populate error list
+                const errorList = modal.querySelector('#requirements-error-list');
+                errorList.innerHTML = errors.map(error => `
+                    <li class="flex items-start gap-2 text-red-700 text-sm">
+                        <i class="fas fa-times-circle text-red-500 mt-0.5"></i>
+                        <span>${error}</span>
+                    </li>
+                `).join('');
+                
+                // Show modal
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+            };
+            
+            // ═══════════════════════════════════════════════════════════════════════════
+            // REAL-TIME CHECKLIST UPDATE & BUTTON ENABLE/DISABLE
+            // ═══════════════════════════════════════════════════════════════════════════
+            // Updates the checklist UI and enables/disables the submit button in real-time
+            // ═══════════════════════════════════════════════════════════════════════════
+            
+            window.updateVerificationChecklist = function() {
+                const verifyBtn = document.getElementById('verify-account-btn');
+                let allRequirementsMet = true;
+                
+                // Helper function to update checklist item
+                function updateCheckItem(elementId, isComplete) {
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        const icon = element.querySelector('i');
+                        if (isComplete) {
+                            element.classList.remove('text-gray-500');
+                            element.classList.add('text-green-600');
+                            if (icon) {
+                                icon.classList.remove('fa-circle');
+                                icon.classList.add('fa-check-circle');
+                            }
+                        } else {
+                            element.classList.remove('text-green-600');
+                            element.classList.add('text-gray-500');
+                            if (icon) {
+                                icon.classList.remove('fa-check-circle');
+                                icon.classList.add('fa-circle');
+                            }
+                            allRequirementsMet = false;
+                        }
+                    }
+                    return isComplete;
+                }
+                
+                // Check 1: All required fields filled
+                const requiredFieldIds = ['idnumber', 'lastname', 'firstname', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'address', 'Barangay', 'District'];
+                let allFieldsFilled = true;
+                for (const fieldId of requiredFieldIds) {
+                    const field = document.getElementById(fieldId);
+                    if (!field || !field.value || field.value.trim() === '') {
+                        allFieldsFilled = false;
+                        break;
+                    }
+                }
+                updateCheckItem('check-fields', allFieldsFilled);
+                
+                // Check 2: Front ID uploaded
+                const frontIdInput = document.getElementById('file-input-front');
+                const hasFrontId = (frontIdInput && frontIdInput.files && frontIdInput.files.length > 0) || 
+                                   (typeof VerificationState !== 'undefined' && VerificationState.frontIdUploaded);
+                updateCheckItem('check-front-id', hasFrontId);
+                
+                // Check 3: Back ID uploaded
+                const backIdInput = document.getElementById('file-input-back');
+                const hasBackId = (backIdInput && backIdInput.files && backIdInput.files.length > 0) || 
+                                  (typeof VerificationState !== 'undefined' && VerificationState.backIdUploaded);
+                updateCheckItem('check-back-id', hasBackId);
+                
+                // Check 4: Selfie captured
+                const hasSelfie = (typeof VerificationState !== 'undefined' && VerificationState.selfieUploaded) ||
+                                  (typeof IDUploadModal !== 'undefined' && IDUploadModal.selfieImage);
+                updateCheckItem('check-selfie', hasSelfie);
+                
+                // Check 5: Terms accepted
+                const termsCheckbox = document.getElementById('terms');
+                const termsAccepted = termsCheckbox && termsCheckbox.checked;
+                updateCheckItem('check-terms', termsAccepted);
+                
+                // Enable/disable submit button based on all requirements
+                if (verifyBtn) {
+                    if (allRequirementsMet) {
+                        verifyBtn.disabled = false;
+                        verifyBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
+                    } else {
+                        verifyBtn.disabled = true;
+                        verifyBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
+                    }
+                }
+                
+                return allRequirementsMet;
+            };
+            
+            // ═══════════════════════════════════════════════════════════════════════════
+            // EVENT LISTENERS FOR REAL-TIME UPDATES
+            // ═══════════════════════════════════════════════════════════════════════════
+            
+            // Listen to form field changes
+            const formFields = ['idnumber', 'lastname', 'firstname', 'middlename', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'address', 'Barangay', 'District'];
+            formFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', window.updateVerificationChecklist);
+                    field.addEventListener('change', window.updateVerificationChecklist);
+                }
+            });
+            
+            // Listen to terms checkbox
+            const termsCheckbox = document.getElementById('terms');
+            if (termsCheckbox) {
+                termsCheckbox.addEventListener('change', window.updateVerificationChecklist);
+            }
+            
+            // Listen to file input changes
+            const frontIdInput = document.getElementById('file-input-front');
+            const backIdInput = document.getElementById('file-input-back');
+            if (frontIdInput) {
+                frontIdInput.addEventListener('change', window.updateVerificationChecklist);
+            }
+            if (backIdInput) {
+                backIdInput.addEventListener('change', window.updateVerificationChecklist);
+            }
+            
+            // Initial checklist update
+            setTimeout(window.updateVerificationChecklist, 500);
+            
+            // Set up interval to periodically check (catches updates from modal flows)
+            setInterval(window.updateVerificationChecklist, 1000);
         });
     </script>
 
@@ -1131,5 +1421,1703 @@
             });
         </script>
     }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════════════ -->
+    <!-- SEQUENTIAL ID UPLOAD MODALS -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Front ID Upload Modal -->
+    <div class="modal fade" id="frontIdModal" tabindex="-1" aria-labelledby="frontIdModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header -->
+                <div class="modal-header py-3 sm:py-4 px-4 sm:px-6 border-b-0" style="background-color: #EDF9FA;">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-black/10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-id-card text-black text-sm sm:text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-base sm:text-lg text-black" id="frontIdModalLabel">Step 1: Front of ID</h5>
+                            <div class="text-black/70 text-xs sm:text-sm">Upload a clear photo of the front of your ID</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-black/10 text-black text-xs px-2 py-1 rounded-full font-medium">1 of 3</span>
+                    </div>
+                </div>
+                <!-- Body -->
+                <div class="modal-body p-4 sm:p-6" style="background-color: white">
+                    <!-- Progress Indicator -->
+                    <div class="flex items-center justify-center mb-4 sm:mb-6">
+                        <div class="flex items-center gap-2 sm:gap-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 text-black rounded-full flex items-center justify-center font-bold text-sm sm:text-base" style="background-color: #A3FFF9;">1</div>
+                                <span class="text-xs text-black mt-1 font-medium">Front</span>
+                            </div>
+                            <div class="w-8 sm:w-12 h-1 bg-gray-300 rounded"></div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">2</div>
+                                <span class="text-xs text-gray-500 mt-1">Back</span>
+                            </div>
+                            <div class="w-8 sm:w-12 h-1 bg-gray-300 rounded"></div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">3</div>
+                                <span class="text-xs text-gray-500 mt-1">Selfie</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Area -->
+                    <div class="upload-area-modal rounded-xl p-6 sm:p-10 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 transition-all duration-300 w-full" 
+                         id="modal-upload-area-front"
+                         onclick="document.getElementById('modal-file-input-front').click()">
+                        <div id="front-upload-content">
+                            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5" style="background-color: #C4FCFF;">
+                                <i class="fas fa-cloud-upload-alt text-3xl sm:text-4xl text-black"></i>
+                            </div>
+                            <div class="font-semibold text-black mb-2 text-lg sm:text-xl">Upload Front of ID</div>
+                            <div class="text-black/60 text-sm sm:text-base mb-4 sm:mb-5">Click to select or drag & drop your file</div>
+                            <div class="text-xs sm:text-sm text-black/50">JPG, JPEG, or PNG • Max 5MB</div>
+                            <!-- Camera capture button -->
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <span class="text-black/50 text-sm">or</span>
+                                <button type="button" class="mt-2 w-full text-black px-4 py-2 rounded-xl font-medium text-sm border border-gray-300 hover:bg-gray-100 transition-all duration-200 flex items-center justify-center gap-2" onclick="event.stopPropagation(); IDUploadModal.startFrontCamera()">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Capture with Camera</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Camera View for Front ID -->
+                        <div id="front-camera-view" class="hidden">
+                            <div class="relative">
+                                <video id="front-modal-video" class="w-full rounded-xl" autoplay playsinline muted style="max-height: 300px;"></video>
+                                <canvas id="front-modal-canvas" class="hidden"></canvas>
+                            </div>
+                            <div class="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
+                                <button type="button" class="text-black px-6 py-2 rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200" style="background-color: #A3FFF9;" onclick="event.stopPropagation(); IDUploadModal.captureFrontId()">
+                                    <i class="fas fa-camera mr-2"></i>Capture
+                                </button>
+                                <button type="button" class="text-black hover:text-black/70 px-4 py-2 rounded-xl font-medium text-sm border border-gray-300 hover:bg-gray-100 transition-all duration-200" onclick="event.stopPropagation(); IDUploadModal.cancelFrontCamera()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                        <div id="front-preview-content" class="hidden">
+                            <img id="modal-preview-front" class="max-w-full max-h-56 sm:max-h-72 mx-auto rounded-lg shadow-md" alt="Front ID Preview">
+                            <div class="mt-4 sm:mt-5 text-green-600 font-medium text-sm sm:text-base">
+                                <i class="fas fa-check-circle mr-1"></i> Front ID uploaded
+                            </div>
+                            <button type="button" class="mt-2 text-black hover:text-black/70 text-sm underline" onclick="IDUploadModal.clearFrontUpload(event)">
+                                Choose different image
+                            </button>
+                        </div>
+                        <input type="file" id="modal-file-input-front" class="hidden" accept="image/jpeg,image/jpg,image/png" onchange="IDUploadModal.handleFrontUpload(event)">
+                    </div>
+                    
+                    <!-- Tips -->
+                    <div class="mt-4 sm:mt-6 rounded-xl p-3 sm:p-4 border" style="background-color: #EDF9FA; border-color: #7EEEE7;">
+                        <div class="flex items-start gap-2 sm:gap-3">
+                            <i class="fas fa-lightbulb text-black mt-0.5 text-sm sm:text-base"></i>
+                            <div class="text-xs sm:text-sm text-black">
+                                <strong class="text-black">Tips:</strong> Make sure all text is readable, avoid glare or shadows, and capture the entire ID within the frame.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="modal-footer bg-gray-50 py-3 sm:py-4 px-4 sm:px-6 border-t-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" class="w-full sm:w-auto order-2 sm:order-1 text-black hover:text-black/70 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-medium text-sm sm:text-base transition-colors" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" id="front-next-btn" class="w-full sm:w-auto order-1 sm:order-2 disabled:bg-gray-300 disabled:cursor-not-allowed text-black px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" style="background-color: #A3FFF9;" disabled onclick="IDUploadModal.goToBack()">
+                        Proceed <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back ID Upload Modal -->
+    <div class="modal fade" id="backIdModal" tabindex="-1" aria-labelledby="backIdModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header -->
+                <div class="modal-header py-3 sm:py-4 px-4 sm:px-6 border-b-0" style="background-color: #A3FFF9;">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-black/10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-id-card text-black text-sm sm:text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-base sm:text-lg text-black" id="backIdModalLabel">Step 2: Back of ID</h5>
+                            <div class="text-black/70 text-xs sm:text-sm">Upload a clear photo of the back of your ID</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-black/10 text-black text-xs px-2 py-1 rounded-full font-medium">2 of 3</span>
+                    </div>
+                </div>
+                <!-- Body -->
+                <div class="modal-body p-4 sm:p-6" style="background-color: #EDF9FA;">
+                    <!-- Progress Indicator -->
+                    <div class="flex items-center justify-center mb-4 sm:mb-6">
+                        <div class="flex items-center gap-2 sm:gap-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 text-white rounded-full flex items-center justify-center"><i class="fas fa-check text-xs sm:text-sm"></i></div>
+                                <span class="text-xs text-black mt-1 font-medium">Front</span>
+                            </div>
+                            <div class="w-8 sm:w-12 h-1 bg-green-500 rounded"></div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 text-black rounded-full flex items-center justify-center font-bold text-sm sm:text-base" style="background-color: #A3FFF9;">2</div>
+                                <span class="text-xs text-black mt-1 font-medium">Back</span>
+                            </div>
+                            <div class="w-8 sm:w-12 h-1 bg-gray-300 rounded"></div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center font-bold text-sm sm:text-base">3</div>
+                                <span class="text-xs text-gray-500 mt-1">Selfie</span>
+                            </div>
+                        </div>
+                    </div>
+                   
+                    <!-- Upload Area -->
+                    <div class="upload-area-modal rounded-xl p-6 sm:p-10 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 transition-all duration-300 w-full" 
+                         id="modal-upload-area-back"
+                         onclick="document.getElementById('modal-file-input-back').click()">
+                        <div id="back-upload-content">
+                            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5" style="background-color: #A3FFF9;">
+                                <i class="fas fa-cloud-upload-alt text-3xl sm:text-4xl text-black"></i>
+                            </div>
+                            <div class="font-semibold text-black mb-2 text-lg sm:text-xl">Upload Back of ID</div>
+                            <div class="text-black/60 text-sm sm:text-base mb-4 sm:mb-5">Click to select or drag & drop your file</div>
+                            <div class="text-xs sm:text-sm text-black/50">JPG, JPEG, or PNG • Max 5MB</div>
+                            <!-- Camera capture button -->
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <span class="text-black/50 text-sm">or</span>
+                                <button type="button" class="mt-2 w-full text-black px-4 py-2 rounded-xl font-medium text-sm border border-gray-300 hover:bg-gray-100 transition-all duration-200 flex items-center justify-center gap-2" onclick="event.stopPropagation(); IDUploadModal.startBackCamera()">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Capture with Camera</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Camera View for Back ID -->
+                        <div id="back-camera-view" class="hidden">
+                            <div class="relative">
+                                <video id="back-modal-video" class="w-full rounded-xl" autoplay playsinline muted style="max-height: 300px;"></video>
+                                <canvas id="back-modal-canvas" class="hidden"></canvas>
+                            </div>
+                            <div class="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
+                                <button type="button" class="text-black px-6 py-2 rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200" style="background-color: #A3FFF9;" onclick="event.stopPropagation(); IDUploadModal.captureBackId()">
+                                    <i class="fas fa-camera mr-2"></i>Capture
+                                </button>
+                                <button type="button" class="text-black hover:text-black/70 px-4 py-2 rounded-xl font-medium text-sm border border-gray-300 hover:bg-gray-100 transition-all duration-200" onclick="event.stopPropagation(); IDUploadModal.cancelBackCamera()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                        <div id="back-preview-content" class="hidden">
+                            <img id="modal-preview-back" class="max-w-full max-h-56 sm:max-h-72 mx-auto rounded-lg shadow-md" alt="Back ID Preview">
+                            <div class="mt-4 sm:mt-5 text-green-600 font-medium text-sm sm:text-base">
+                                <i class="fas fa-check-circle mr-1"></i> Back ID uploaded
+                            </div>
+                            <button type="button" class="mt-2 text-black hover:text-black/70 text-sm underline" onclick="IDUploadModal.clearBackUpload(event)">
+                                Choose different image
+                            </button>
+                        </div>
+                        <input type="file" id="modal-file-input-back" class="hidden" accept="image/jpeg,image/jpg,image/png" onchange="IDUploadModal.handleBackUpload(event)">
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="modal-footer bg-gray-50 py-3 sm:py-4 px-4 sm:px-6 border-t-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" class="w-full sm:w-auto order-3 sm:order-1 text-black hover:text-black/70 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-medium text-sm sm:text-base transition-colors" onclick="IDUploadModal.goBackToFront()">
+                        <i class="fas fa-arrow-left mr-2"></i> Back
+                    </button>
+                    <button type="button" id="back-next-btn" class="w-full sm:w-auto order-1 sm:order-3 disabled:bg-gray-300 disabled:cursor-not-allowed text-black px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" style="background-color: #A3FFF9;" disabled onclick="IDUploadModal.goToSelfie()">
+                        Proceed <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Selfie Capture Modal -->
+    <div class="modal fade" id="selfieModal" tabindex="-1" aria-labelledby="selfieModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header -->
+                <div class="modal-header py-3 sm:py-4 px-4 sm:px-6 border-b-0" style="background-color: #A3FFF9;">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-black/10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-camera text-black text-sm sm:text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-base sm:text-lg text-black" id="selfieModalLabel">Step 3: Take a Selfie</h5>
+                            <div class="text-black/70 text-xs sm:text-sm">Your face will be matched with your ID photo</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-black/10 text-black text-xs px-2 py-1 rounded-full font-medium">3 of 3</span>
+                    </div>
+                </div>
+                <!-- Body -->
+                <div class="modal-body p-4 sm:p-6" style="background-color: #EDF9FA;">
+                    <!-- Progress Indicator -->
+                    <div class="flex items-center justify-center mb-4 sm:mb-6">
+                        <div class="flex items-center gap-2 sm:gap-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 text-white rounded-full flex items-center justify-center"><i class="fas fa-check text-xs sm:text-sm"></i></div>
+                                <span class="text-xs text-black mt-1 font-medium">Front</span>
+                            </div>
+                            <div class="w-8 sm:w-12 h-1 bg-green-500 rounded"></div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 text-white rounded-full flex items-center justify-center"><i class="fas fa-check text-xs sm:text-sm"></i></div>
+                                <span class="text-xs text-black mt-1 font-medium">Back</span>
+                            </div>
+                            <div class="w-8 sm:w-12 h-1 bg-green-500 rounded"></div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 text-black rounded-full flex items-center justify-center font-bold text-sm sm:text-base" style="background-color: #A3FFF9;">3</div>
+                                <span class="text-xs text-black mt-1 font-medium">Selfie</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Selfie Area -->
+                    <div class="selfie-capture-modal-area rounded-xl p-6 sm:p-8 text-center bg-gray-100 w-full" style="min-height: 350px;">
+                        <!-- Camera View (initially hidden) -->
+                        <div id="selfie-camera-view" class="hidden">
+                            <div class="relative mx-auto" style="max-width: 480px;">
+                                <video id="selfie-modal-video" class="w-full rounded-xl mirror-video" autoplay playsinline muted></video>
+                                <canvas id="selfie-modal-canvas" class="hidden"></canvas>
+                                <!-- Oval Guide Overlay -->
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div class="w-44 h-56 sm:w-56 sm:h-72 border-4 rounded-full opacity-50" style="border-color: #A3FFF9;"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 text-black text-sm sm:text-base font-medium">
+                                <i class="fas fa-user-circle mr-1"></i> Position your face within the oval
+                            </div>
+                        </div>
+                        
+                        <!-- Start Camera Button (initially shown) -->
+                        <div id="selfie-start-view">
+                            <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5" style="background-color: #A3FFF9;">
+                                <i class="fas fa-video text-4xl sm:text-5xl text-black"></i>
+                            </div>
+                            <div class="font-semibold text-black mb-2 text-lg sm:text-xl">Take a Selfie</div>
+                            <div class="text-black/60 text-sm sm:text-base mb-5">Click below to start your camera</div>
+                            <button type="button" id="start-selfie-camera-btn" class="text-black px-8 py-3 rounded-xl font-semibold text-base shadow-md hover:shadow-lg transition-all duration-200" style="background-color: #A3FFF9;" onclick="IDUploadModal.startSelfieCamera()">
+                                <i class="fas fa-camera mr-2"></i> Start Camera
+                            </button>
+                        </div>
+                        
+                        <!-- Selfie Preview (after capture) -->
+                        <div id="selfie-preview-view" class="hidden">
+                            <img id="modal-preview-selfie" class="w-36 h-36 sm:w-48 sm:h-48 rounded-full mx-auto object-cover border-4 border-green-500 shadow-lg" alt="Selfie Preview">
+                            <div class="mt-4 sm:mt-5 text-green-600 font-medium text-base sm:text-lg">
+                                <i class="fas fa-check-circle mr-1"></i> Selfie captured successfully!
+                            </div>
+                            <button type="button" class="mt-2 text-black hover:text-black/70 text-sm underline" onclick="IDUploadModal.retakeSelfie()">
+                                Retake selfie
+                            </button>
+                        </div>
+                        
+                        <!-- Countdown Overlay -->
+                        <div id="selfie-countdown-overlay" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
+                            <span id="selfie-countdown-number" class="text-6xl sm:text-8xl font-bold text-white">3</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Tips -->
+                    <div class="mt-4 sm:mt-6 rounded-xl p-3 sm:p-4 border" style="background-color: #A3FFF9; border-color: #7EEEE7;">
+                        <div class="flex items-start gap-2 sm:gap-3">
+                            <i class="fas fa-lightbulb text-black mt-0.5 text-sm sm:text-base"></i>
+                            <div class="text-xs sm:text-sm text-black">
+                                <strong class="text-black">Tips:</strong> Ensure good lighting, remove glasses/hats, look directly at the camera, and keep a neutral expression.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="modal-footer bg-gray-50 py-3 sm:py-4 px-4 sm:px-6 border-t-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" class="w-full sm:w-auto order-3 sm:order-1 text-black hover:text-black/70 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-medium text-sm sm:text-base transition-colors" onclick="IDUploadModal.goBackToBack()">
+                        <i class="fas fa-arrow-left mr-2"></i> Back
+                    </button>
+                    <button type="button" id="capture-selfie-btn" class="w-full sm:w-auto order-2 sm:order-2 text-black px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200 hidden" style="background-color: #A3FFF9;" onclick="IDUploadModal.captureSelfie()">
+                        <i class="fas fa-camera mr-2"></i> Capture
+                    </button>
+                    <button type="button" id="finish-upload-btn" class="w-full sm:w-auto order-1 sm:order-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" disabled onclick="IDUploadModal.finishAndVerify()">
+                        <i class="fas fa-shield-alt mr-2"></i> Verify & Complete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Retry Verification Modal (Yellow Theme) -->
+    <div class="modal fade" id="retryVerificationModal" tabindex="-1" aria-labelledby="retryVerificationModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header - Yellow Theme -->
+                <div class="modal-header bg-gradient-to-r from-amber-500 to-yellow-500 text-white py-3 sm:py-4 px-4 sm:px-6 border-b-0">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-white/30 rounded-full flex items-center justify-center">
+                            <i class="fas fa-redo text-white text-sm sm:text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-base sm:text-lg" id="retryVerificationModalLabel">Retry Verification</h5>
+                            <div class="text-amber-100 text-xs sm:text-sm">Re-upload your documents to verify again</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="retry-attempts-badge" class="bg-white/20 text-white text-xs px-2 py-1 rounded-full">Attempt 1 of 3</span>
+                    </div>
+                </div>
+                <!-- Body -->
+                <div class="modal-body p-4 sm:p-6">
+                    <!-- Warning Message -->
+                    <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-exclamation-triangle text-amber-500 text-xl mt-0.5"></i>
+                            <div>
+                                <h6 class="font-semibold text-amber-800 mb-1">Verification Failed</h6>
+                                <p class="text-sm text-amber-700" id="retry-reason-text">
+                                    Your previous verification attempt was unsuccessful. Please re-upload clear photos of your ID and take a new selfie.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Areas Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- Front ID Re-upload -->
+                        <div class="retry-upload-card rounded-xl p-4 text-center border-2 border-dashed border-amber-300 hover:border-amber-500 bg-amber-50 hover:bg-amber-100 cursor-pointer transition-all duration-300"
+                             id="retry-upload-front"
+                             onclick="document.getElementById('retry-file-input-front').click()">
+                            <div id="retry-front-upload-content">
+                                <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-id-card text-xl text-amber-600"></i>
+                                </div>
+                                <div class="font-medium text-gray-800 mb-1 text-sm">Front of ID</div>
+                                <div class="text-xs text-gray-500">Click to upload</div>
+                            </div>
+                            <div id="retry-front-preview-content" class="hidden">
+                                <img id="retry-preview-front" class="w-full max-h-24 object-contain mx-auto rounded-lg mb-2" alt="Front ID">
+                                <div class="text-xs text-green-600 font-medium"><i class="fas fa-check mr-1"></i>Uploaded</div>
+                                <button type="button" class="text-amber-600 text-xs underline mt-1" onclick="RetryVerification.clearFront(event)">Change</button>
+                            </div>
+                            <input type="file" id="retry-file-input-front" class="hidden" accept="image/jpeg,image/jpg,image/png" onchange="RetryVerification.handleFrontUpload(event)">
+                        </div>
+                        
+                        <!-- Back ID Re-upload -->
+                        <div class="retry-upload-card rounded-xl p-4 text-center border-2 border-dashed border-amber-300 hover:border-amber-500 bg-amber-50 hover:bg-amber-100 cursor-pointer transition-all duration-300"
+                             id="retry-upload-back"
+                             onclick="document.getElementById('retry-file-input-back').click()">
+                            <div id="retry-back-upload-content">
+                                <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-id-card text-xl text-amber-600"></i>
+                                </div>
+                                <div class="font-medium text-gray-800 mb-1 text-sm">Back of ID</div>
+                                <div class="text-xs text-gray-500">Click to upload (optional)</div>
+                            </div>
+                            <div id="retry-back-preview-content" class="hidden">
+                                <img id="retry-preview-back" class="w-full max-h-24 object-contain mx-auto rounded-lg mb-2" alt="Back ID">
+                                <div class="text-xs text-green-600 font-medium"><i class="fas fa-check mr-1"></i>Uploaded</div>
+                                <button type="button" class="text-amber-600 text-xs underline mt-1" onclick="RetryVerification.clearBack(event)">Change</button>
+                            </div>
+                            <input type="file" id="retry-file-input-back" class="hidden" accept="image/jpeg,image/jpg,image/png" onchange="RetryVerification.handleBackUpload(event)">
+                        </div>
+                        
+                        <!-- Selfie Re-capture -->
+                        <div class="retry-upload-card rounded-xl p-4 text-center border-2 border-dashed border-amber-300 hover:border-amber-500 bg-amber-50 hover:bg-amber-100 cursor-pointer transition-all duration-300"
+                             id="retry-upload-selfie"
+                             onclick="RetryVerification.openSelfieCapture()">
+                            <div id="retry-selfie-upload-content">
+                                <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-camera text-xl text-amber-600"></i>
+                                </div>
+                                <div class="font-medium text-gray-800 mb-1 text-sm">Selfie</div>
+                                <div class="text-xs text-gray-500">Click to capture</div>
+                            </div>
+                            <div id="retry-selfie-preview-content" class="hidden">
+                                <img id="retry-preview-selfie" class="w-16 h-16 rounded-full object-cover mx-auto border-2 border-green-500 mb-2" alt="Selfie">
+                                <div class="text-xs text-green-600 font-medium"><i class="fas fa-check mr-1"></i>Captured</div>
+                                <button type="button" class="text-amber-600 text-xs underline mt-1" onclick="RetryVerification.clearSelfie(event)">Retake</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Attempts Warning -->
+                    <div id="retry-attempts-warning" class="mt-4 bg-red-50 border border-red-200 rounded-xl p-3 hidden">
+                        <div class="flex items-center gap-2 text-red-700 text-sm">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span id="retry-attempts-warning-text">You have 2 attempts remaining.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="modal-footer bg-gray-50 py-3 sm:py-4 px-4 sm:px-6 border-t-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button type="button" class="w-full sm:w-auto order-2 sm:order-1 text-gray-600 hover:text-gray-800 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-medium text-sm sm:text-base transition-colors" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" id="retry-submit-btn" class="w-full sm:w-auto order-1 sm:order-2 bg-amber-500 hover:bg-amber-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" disabled onclick="RetryVerification.submitRetry()">
+                        <i class="fas fa-shield-alt mr-2"></i> Verify Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Selfie Capture Modal for Retry -->
+    <div class="modal fade" id="retrySelfieModal" tabindex="-1" aria-labelledby="retrySelfieModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header - Yellow Theme -->
+                <div class="modal-header bg-gradient-to-r from-amber-500 to-yellow-500 text-white py-3 px-4 sm:px-6 border-b-0">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-camera"></i>
+                        <h5 class="modal-title font-bold text-base" id="retrySelfieModalLabel">Capture Selfie</h5>
+                    </div>
+                    <button type="button" class="text-white/80 hover:text-white" onclick="RetryVerification.closeSelfieCapture()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <!-- Body -->
+                <div class="modal-body p-4">
+                    <div class="selfie-capture-area rounded-xl bg-gray-100 relative" style="min-height: 300px;">
+                        <!-- Camera View -->
+                        <div id="retry-selfie-camera-view" class="hidden">
+                            <div class="relative mx-auto" style="max-width: 350px;">
+                                <video id="retry-selfie-video" class="w-full rounded-xl mirror-video" autoplay playsinline muted></video>
+                                <canvas id="retry-selfie-canvas" class="hidden"></canvas>
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div class="w-36 h-48 border-4 border-amber-500 rounded-full opacity-50"></div>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <button type="button" id="retry-capture-btn" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md" onclick="RetryVerification.captureSelfie()">
+                                    <i class="fas fa-camera mr-2"></i> Capture
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Start Camera -->
+                        <div id="retry-selfie-start-view" class="flex flex-col items-center justify-center h-full py-8">
+                            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-video text-3xl text-amber-500"></i>
+                            </div>
+                            <button type="button" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md" onclick="RetryVerification.startSelfieCamera()">
+                                <i class="fas fa-camera mr-2"></i> Start Camera
+                            </button>
+                        </div>
+                        
+                        <!-- Countdown -->
+                        <div id="retry-selfie-countdown" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
+                            <span id="retry-countdown-number" class="text-6xl font-bold text-white">3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cooldown Modal (Try Again After Hour) -->
+    <div class="modal fade" id="cooldownModal" tabindex="-1" aria-labelledby="cooldownModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+                <!-- Header - Warning Yellow Theme -->
+                <div class="modal-header bg-gradient-to-r from-amber-600 to-orange-500 text-white py-4 px-6 border-b-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clock text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title font-bold text-lg" id="cooldownModalLabel">Verification Limit Reached</h5>
+                        </div>
+                    </div>
+                </div>
+                <!-- Body -->
+                <div class="modal-body p-6 text-center">
+                    <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-hourglass-half text-4xl text-amber-500"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-3">Maximum Attempts Reached</h4>
+                    <p class="text-gray-600 mb-4">
+                        You have used all 3 verification attempts. To protect your account security and prevent misuse, please wait before trying again.
+                    </p>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                        <div class="flex items-center justify-center gap-2 text-amber-700">
+                            <i class="fas fa-clock"></i>
+                            <span class="font-semibold">Try again after:</span>
+                        </div>
+                        <div id="cooldown-timer" class="text-3xl font-bold text-amber-600 mt-2">59:59</div>
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        This waiting period helps ensure secure verification and prevents automated abuse.
+                    </p>
+                </div>
+                <!-- Footer -->
+                <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0 justify-center">
+                    <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-8 py-2.5 rounded-xl font-medium transition-colors" data-bs-dismiss="modal">
+                        I Understand
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ID Upload Modal Controller Script -->
+    <script>
+    // Retry Verification Controller
+    const RetryVerification = {
+        // State
+        frontIdImage: null,
+        backIdImage: null,
+        frontIdFile: null,   // RAW FILE OBJECT for API submission
+        backIdFile: null,    // RAW FILE OBJECT for API submission
+        selfieImage: null,
+        selfieFileName: null,
+        videoStream: null,
+        countdownInterval: null,
+        
+        // Retry tracking
+        maxAttempts: 3,
+        storageKey: 'verificationRetryData',
+        
+        // Modal instances
+        modals: {},
+        
+        // Initialize
+        init() {
+            this.modals.retry = new bootstrap.Modal(document.getElementById('retryVerificationModal'));
+            this.modals.selfie = new bootstrap.Modal(document.getElementById('retrySelfieModal'));
+            this.modals.cooldown = new bootstrap.Modal(document.getElementById('cooldownModal'));
+        },
+        
+        // Get retry data from localStorage
+        getRetryData() {
+            const data = localStorage.getItem(this.storageKey);
+            if (data) {
+                return JSON.parse(data);
+            }
+            return { attempts: 0, cooldownUntil: null };
+        },
+        
+        // Save retry data to localStorage
+        saveRetryData(data) {
+            localStorage.setItem(this.storageKey, JSON.stringify(data));
+        },
+        
+        // Check if in cooldown period
+        isInCooldown() {
+            const data = this.getRetryData();
+            if (data.cooldownUntil) {
+                const now = new Date().getTime();
+                return now < data.cooldownUntil;
+            }
+            return false;
+        },
+        
+        // Get remaining cooldown time in seconds
+        getRemainingCooldown() {
+            const data = this.getRetryData();
+            if (data.cooldownUntil) {
+                const now = new Date().getTime();
+                return Math.max(0, Math.floor((data.cooldownUntil - now) / 1000));
+            }
+            return 0;
+        },
+        
+        // Start retry flow
+        startRetryFlow(reason = null) {
+            this.init();
+            
+            // Check cooldown first
+            if (this.isInCooldown()) {
+                this.showCooldownModal();
+                return;
+            }
+            
+            // Reset state
+            this.frontIdImage = null;
+            this.backIdImage = null;
+            this.selfieImage = null;
+            this.selfieFileName = null;
+            
+            // Reset UI
+            this.resetUploadUI();
+            
+            // Update attempt counter display
+            const data = this.getRetryData();
+            const currentAttempt = data.attempts + 1;
+            document.getElementById('retry-attempts-badge').textContent = `Attempt ${currentAttempt} of ${this.maxAttempts}`;
+            
+            // Show warning if low on attempts
+            if (currentAttempt >= 2) {
+                const remaining = this.maxAttempts - currentAttempt + 1;
+                document.getElementById('retry-attempts-warning').classList.remove('hidden');
+                document.getElementById('retry-attempts-warning-text').textContent = 
+                    remaining === 1 ? 'This is your last attempt!' : `You have ${remaining} attempts remaining.`;
+            } else {
+                document.getElementById('retry-attempts-warning').classList.add('hidden');
+            }
+            
+            // Set reason text if provided
+            if (reason) {
+                document.getElementById('retry-reason-text').textContent = reason;
+            }
+            
+            // Show modal
+            this.modals.retry.show();
+        },
+        
+        // Reset upload UI
+        resetUploadUI() {
+            // Clear file objects
+            this.frontIdImage = null;
+            this.backIdImage = null;
+            this.frontIdFile = null;
+            this.backIdFile = null;
+            this.selfieImage = null;
+            this.selfieFileName = null;
+            
+            document.getElementById('retry-front-upload-content').classList.remove('hidden');
+            document.getElementById('retry-front-preview-content').classList.add('hidden');
+            document.getElementById('retry-back-upload-content').classList.remove('hidden');
+            document.getElementById('retry-back-preview-content').classList.add('hidden');
+            document.getElementById('retry-selfie-upload-content').classList.remove('hidden');
+            document.getElementById('retry-selfie-preview-content').classList.add('hidden');
+            document.getElementById('retry-submit-btn').disabled = true;
+            document.getElementById('retry-file-input-front').value = '';
+            document.getElementById('retry-file-input-back').value = '';
+        },
+        
+        // Handle front upload - STORES RAW FILE OBJECT for API submission
+        handleFrontUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !this.validateFile(file)) return;
+            
+            // Store reference to file for use in reader callback
+            const uploadedFile = file;
+            this.frontIdFile = file;  // Store raw file object
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.frontIdImage = e.target.result;
+                document.getElementById('retry-preview-front').src = e.target.result;
+                document.getElementById('retry-front-upload-content').classList.add('hidden');
+                document.getElementById('retry-front-preview-content').classList.remove('hidden');
+                
+                // Update main form
+                const mainInput = document.getElementById('file-input-front');
+                if (mainInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(uploadedFile);
+                    mainInput.files = dt.files;
+                }
+                
+                // Store in VerificationState with RAW FILE for API submission
+                if (typeof VerificationState !== 'undefined') {
+                    VerificationState.setFrontId(e.target.result, uploadedFile);
+                    console.log('✅ Retry: Front ID stored with RAW FILE:', uploadedFile.name, uploadedFile.size, 'bytes');
+                }
+                
+                this.updateSubmitButton();
+            };
+            reader.readAsDataURL(file);
+        },
+        
+        // Handle back upload - STORES RAW FILE OBJECT for API submission
+        handleBackUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !this.validateFile(file)) return;
+            
+            // Store reference to file for use in reader callback
+            const uploadedFile = file;
+            this.backIdFile = file;  // Store raw file object
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.backIdImage = e.target.result;
+                document.getElementById('retry-preview-back').src = e.target.result;
+                document.getElementById('retry-back-upload-content').classList.add('hidden');
+                document.getElementById('retry-back-preview-content').classList.remove('hidden');
+                
+                // Update main form
+                const mainInput = document.getElementById('file-input-back');
+                if (mainInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(uploadedFile);
+                    mainInput.files = dt.files;
+                }
+                
+                // Store in VerificationState with RAW FILE for API submission
+                if (typeof VerificationState !== 'undefined') {
+                    VerificationState.setBackId(e.target.result, uploadedFile);
+                    console.log('✅ Retry: Back ID stored with RAW FILE:', uploadedFile.name, uploadedFile.size, 'bytes');
+                }
+            };
+            reader.readAsDataURL(file);
+        },
+        
+        // Clear front
+        clearFront(event) {
+            event.stopPropagation();
+            this.frontIdImage = null;
+            this.frontIdFile = null;  // Clear raw file object
+            document.getElementById('retry-file-input-front').value = '';
+            document.getElementById('retry-front-upload-content').classList.remove('hidden');
+            document.getElementById('retry-front-preview-content').classList.add('hidden');
+            this.updateSubmitButton();
+        },
+        
+        // Clear back
+        clearBack(event) {
+            event.stopPropagation();
+            this.backIdImage = null;
+            this.backIdFile = null;  // Clear raw file object
+            document.getElementById('retry-file-input-back').value = '';
+            document.getElementById('retry-back-upload-content').classList.remove('hidden');
+            document.getElementById('retry-back-preview-content').classList.add('hidden');
+        },
+        
+        // Clear selfie
+        clearSelfie(event) {
+            event.stopPropagation();
+            this.selfieImage = null;
+            this.selfieFileName = null;
+            document.getElementById('retry-selfie-upload-content').classList.remove('hidden');
+            document.getElementById('retry-selfie-preview-content').classList.add('hidden');
+            this.updateSubmitButton();
+        },
+        
+        // Open selfie capture modal
+        openSelfieCapture() {
+            document.getElementById('retry-selfie-start-view').classList.remove('hidden');
+            document.getElementById('retry-selfie-camera-view').classList.add('hidden');
+            this.modals.selfie.show();
+        },
+        
+        // Close selfie capture
+        closeSelfieCapture() {
+            this.stopCamera();
+            this.modals.selfie.hide();
+        },
+        
+        // Start selfie camera
+        async startSelfieCamera() {
+            try {
+                const video = document.getElementById('retry-selfie-video');
+                this.videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+                    audio: false
+                });
+                video.srcObject = this.videoStream;
+                
+                document.getElementById('retry-selfie-start-view').classList.add('hidden');
+                document.getElementById('retry-selfie-camera-view').classList.remove('hidden');
+            } catch (error) {
+                alert('Could not access camera. Please ensure camera permissions are enabled.');
+            }
+        },
+        
+        // Capture selfie with countdown
+        captureSelfie() {
+            let count = 3;
+            const overlay = document.getElementById('retry-selfie-countdown');
+            const number = document.getElementById('retry-countdown-number');
+            
+            overlay.classList.remove('hidden');
+            number.textContent = count;
+            document.getElementById('retry-capture-btn').disabled = true;
+            
+            this.countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    number.textContent = count;
+                } else {
+                    clearInterval(this.countdownInterval);
+                    overlay.classList.add('hidden');
+                    this.takeSelfiePhoto();
+                }
+            }, 1000);
+        },
+        
+        // Take selfie photo - ORIGINAL QUALITY PRESERVED
+        // CRITICAL: No resizing, rescaling, or repositioning - send original image to API
+        async takeSelfiePhoto() {
+            const video = document.getElementById('retry-selfie-video');
+            const canvas = document.getElementById('retry-selfie-canvas');
+            
+            // Set canvas dimensions to EXACT video dimensions (no scaling)
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            
+            const ctx = canvas.getContext('2d');
+            // Disable image smoothing to preserve original pixel data
+            ctx.imageSmoothingEnabled = false;
+            // Draw at ORIGINAL size without any transformation
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Get image data - Use maximum JPEG quality (1.0) to preserve original image
+            this.selfieImage = canvas.toDataURL('image/jpeg', 1.0);
+            
+            // Save to server
+            try {
+                const response = await fetch('/api/IdAnalyzer/saveSelfie', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageData: this.selfieImage })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    this.selfieFileName = result.fileName;
+                }
+            } catch (e) {
+                console.error('Failed to save selfie:', e);
+            }
+            
+            this.stopCamera();
+            this.modals.selfie.hide();
+            
+            // Update preview in retry modal
+            document.getElementById('retry-preview-selfie').src = this.selfieImage;
+            document.getElementById('retry-selfie-upload-content').classList.add('hidden');
+            document.getElementById('retry-selfie-preview-content').classList.remove('hidden');
+            
+            this.updateSubmitButton();
+        },
+        
+        // Stop camera
+        stopCamera() {
+            if (this.videoStream) {
+                this.videoStream.getTracks().forEach(track => track.stop());
+                this.videoStream = null;
+            }
+            if (this.countdownInterval) {
+                clearInterval(this.countdownInterval);
+            }
+            document.getElementById('retry-capture-btn').disabled = false;
+        },
+        
+        // Update submit button state
+        updateSubmitButton() {
+            const canSubmit = this.frontIdImage && this.selfieImage;
+            document.getElementById('retry-submit-btn').disabled = !canSubmit;
+        },
+        
+        // Submit retry verification
+        async submitRetry() {
+            // Increment attempt counter
+            const data = this.getRetryData();
+            data.attempts++;
+            
+            // Check if max attempts reached
+            if (data.attempts >= this.maxAttempts) {
+                // Set cooldown for 1 hour
+                data.cooldownUntil = new Date().getTime() + (60 * 60 * 1000);
+            }
+            
+            this.saveRetryData(data);
+            
+            // Close retry modal
+            this.modals.retry.hide();
+            
+            // Update main page previews and state
+            IDUploadModal.frontIdImage = this.frontIdImage;
+            IDUploadModal.backIdImage = this.backIdImage;
+            IDUploadModal.selfieImage = this.selfieImage;
+            IDUploadModal.selfieFileName = this.selfieFileName;
+            IDUploadModal.updateMainPagePreviews();
+            
+            // Update VerificationState
+            if (typeof VerificationState !== 'undefined') {
+                VerificationState.setFrontId(this.frontIdImage);
+                if (this.backIdImage) {
+                    VerificationState.setBackId(this.backIdImage);
+                }
+                VerificationState.setSelfie(this.selfieImage, this.selfieFileName);
+                VerificationState.updateVerifyButtonState();
+            }
+            
+            // Update verification checklist
+            if (typeof window.updateVerificationChecklist === 'function') {
+                window.updateVerificationChecklist();
+            }
+
+            // AUTO-EXTRACT DATA: Call API to extract ID data and populate fields
+            // This does NOT save to database - only extracts data for user review
+            if (typeof submitVerification === 'function') {
+                console.log('🔄 Auto-extracting ID data for user review...');
+                submitVerification();
+            }
+        },
+        
+        // Show cooldown modal
+        showCooldownModal() {
+            this.modals.cooldown.show();
+            this.startCooldownTimer();
+        },
+        
+        // Start cooldown timer
+        startCooldownTimer() {
+            const timerEl = document.getElementById('cooldown-timer');
+            
+            const updateTimer = () => {
+                const remaining = this.getRemainingCooldown();
+                if (remaining <= 0) {
+                    // Cooldown finished, reset attempts
+                    this.saveRetryData({ attempts: 0, cooldownUntil: null });
+                    timerEl.textContent = '00:00';
+                    this.modals.cooldown.hide();
+                    return;
+                }
+                
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                setTimeout(updateTimer, 1000);
+            };
+            
+            updateTimer();
+        },
+        
+        // Validate file
+        validateFile(file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            const maxSize = 5 * 1024 * 1024;
+            
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a JPG, JPEG, or PNG file.');
+                return false;
+            }
+            
+            if (file.size > maxSize) {
+                alert('File size must be less than 5MB.');
+                return false;
+            }
+            
+            return true;
+        },
+        
+        // Reset attempts (for testing or admin use)
+        resetAttempts() {
+            this.saveRetryData({ attempts: 0, cooldownUntil: null });
+        }
+    };
+    
+    // Global function to trigger retry flow
+    function showRetryVerification(reason) {
+        RetryVerification.startRetryFlow(reason);
+    }
+    
+    const IDUploadModal = {
+        // State
+        frontIdImage: null,
+        backIdImage: null,
+        frontIdFile: null,   // RAW FILE OBJECT for API submission
+        backIdFile: null,    // RAW FILE OBJECT for API submission
+        selfieImage: null,
+        selfieFileName: null,
+        videoStream: null,
+        countdownInterval: null,
+        
+        // Modal instances
+        modals: {},
+        
+        // Initialize
+        init() {
+            // Cache modal instances
+            this.modals.front = new bootstrap.Modal(document.getElementById('frontIdModal'));
+            this.modals.back = new bootstrap.Modal(document.getElementById('backIdModal'));
+            this.modals.selfie = new bootstrap.Modal(document.getElementById('selfieModal'));
+        },
+        
+        // Start the upload flow
+        startFlow() {
+            this.init();
+            this.resetState();
+            this.modals.front.show();
+        },
+        
+        // Reset all state
+        resetState() {
+            this.frontIdImage = null;
+            this.backIdImage = null;
+            this.frontIdFile = null;   // Clear raw file object
+            this.backIdFile = null;    // Clear raw file object
+            this.selfieImage = null;
+            this.selfieFileName = null;
+            this.stopCamera();
+            this.stopFrontCamera();
+            this.stopBackCamera();
+            
+            // Reset UI
+            document.getElementById('front-upload-content').classList.remove('hidden');
+            document.getElementById('front-camera-view').classList.add('hidden');
+            document.getElementById('front-preview-content').classList.add('hidden');
+            document.getElementById('back-upload-content').classList.remove('hidden');
+            document.getElementById('back-camera-view').classList.add('hidden');
+            document.getElementById('back-preview-content').classList.add('hidden');
+            document.getElementById('selfie-start-view').classList.remove('hidden');
+            document.getElementById('selfie-camera-view').classList.add('hidden');
+            document.getElementById('selfie-preview-view').classList.add('hidden');
+            document.getElementById('front-next-btn').disabled = true;
+            document.getElementById('back-next-btn').disabled = true;
+            document.getElementById('finish-upload-btn').disabled = true;
+            document.getElementById('capture-selfie-btn').classList.add('hidden');
+        },
+        
+        // Front ID Camera stream
+        frontVideoStream: null,
+        
+        // Start front ID camera
+        async startFrontCamera() {
+            try {
+                const video = document.getElementById('front-modal-video');
+                const constraints = {
+                    video: {
+                        width: { ideal: 1280, min: 640 },
+                        height: { ideal: 720, min: 480 },
+                        facingMode: 'environment' // Use back camera for ID capture
+                    },
+                    audio: false
+                };
+                
+                this.frontVideoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = this.frontVideoStream;
+                
+                document.getElementById('front-upload-content').classList.add('hidden');
+                document.getElementById('front-camera-view').classList.remove('hidden');
+                document.getElementById('front-preview-content').classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Camera access failed:', error);
+                alert('Could not access camera. Please ensure camera permissions are enabled.');
+            }
+        },
+        
+        // Stop front ID camera
+        stopFrontCamera() {
+            if (this.frontVideoStream) {
+                this.frontVideoStream.getTracks().forEach(track => track.stop());
+                this.frontVideoStream = null;
+            }
+        },
+        
+        // Cancel front camera
+        cancelFrontCamera() {
+            this.stopFrontCamera();
+            document.getElementById('front-upload-content').classList.remove('hidden');
+            document.getElementById('front-camera-view').classList.add('hidden');
+        },
+        
+        // Capture front ID from camera
+        captureFrontId() {
+            const video = document.getElementById('front-modal-video');
+            const canvas = document.getElementById('front-modal-canvas');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            // Convert to blob/file
+            canvas.toBlob((blob) => {
+                const file = new File([blob], 'front-id-capture.jpg', { type: 'image/jpeg' });
+                this.frontIdFile = file;
+                this.frontIdImage = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // Update preview
+                document.getElementById('modal-preview-front').src = this.frontIdImage;
+                document.getElementById('front-camera-view').classList.add('hidden');
+                document.getElementById('front-preview-content').classList.remove('hidden');
+                document.getElementById('front-next-btn').disabled = false;
+                
+                // Also update the main form's file input
+                const mainInput = document.getElementById('file-input-front');
+                if (mainInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    mainInput.files = dt.files;
+                }
+                
+                // Store in VerificationState
+                if (typeof VerificationState !== 'undefined') {
+                    VerificationState.setFrontId(this.frontIdImage, file);
+                    console.log('✅ Front ID captured from camera and stored:', file.name, file.size, 'bytes');
+                }
+                
+                this.stopFrontCamera();
+            }, 'image/jpeg', 0.9);
+        },
+        
+        // Back ID Camera stream
+        backVideoStream: null,
+        
+        // Start back ID camera
+        async startBackCamera() {
+            try {
+                const video = document.getElementById('back-modal-video');
+                const constraints = {
+                    video: {
+                        width: { ideal: 1280, min: 640 },
+                        height: { ideal: 720, min: 480 },
+                        facingMode: 'environment' // Use back camera for ID capture
+                    },
+                    audio: false
+                };
+                
+                this.backVideoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = this.backVideoStream;
+                
+                document.getElementById('back-upload-content').classList.add('hidden');
+                document.getElementById('back-camera-view').classList.remove('hidden');
+                document.getElementById('back-preview-content').classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Camera access failed:', error);
+                alert('Could not access camera. Please ensure camera permissions are enabled.');
+            }
+        },
+        
+        // Stop back ID camera
+        stopBackCamera() {
+            if (this.backVideoStream) {
+                this.backVideoStream.getTracks().forEach(track => track.stop());
+                this.backVideoStream = null;
+            }
+        },
+        
+        // Cancel back camera
+        cancelBackCamera() {
+            this.stopBackCamera();
+            document.getElementById('back-upload-content').classList.remove('hidden');
+            document.getElementById('back-camera-view').classList.add('hidden');
+        },
+        
+        // Capture back ID from camera
+        captureBackId() {
+            const video = document.getElementById('back-modal-video');
+            const canvas = document.getElementById('back-modal-canvas');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            // Convert to blob/file
+            canvas.toBlob((blob) => {
+                const file = new File([blob], 'back-id-capture.jpg', { type: 'image/jpeg' });
+                this.backIdFile = file;
+                this.backIdImage = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // Update preview
+                document.getElementById('modal-preview-back').src = this.backIdImage;
+                document.getElementById('back-camera-view').classList.add('hidden');
+                document.getElementById('back-preview-content').classList.remove('hidden');
+                document.getElementById('back-next-btn').disabled = false;
+                
+                // Also update the main form's file input
+                const mainInput = document.getElementById('file-input-back');
+                if (mainInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    mainInput.files = dt.files;
+                }
+                
+                // Store in VerificationState
+                if (typeof VerificationState !== 'undefined') {
+                    VerificationState.setBackId(this.backIdImage, file);
+                    console.log('✅ Back ID captured from camera and stored:', file.name, file.size, 'bytes');
+                }
+                
+                this.stopBackCamera();
+            }, 'image/jpeg', 0.9);
+        },
+        
+        // Handle front ID upload - STORES RAW FILE OBJECT for API submission
+        handleFrontUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!this.validateFile(file)) return;
+            
+            // Store reference to file for use in reader callback
+            const uploadedFile = file;
+            this.frontIdFile = file;  // Store raw file object
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.frontIdImage = e.target.result;
+                
+                // Update preview
+                document.getElementById('modal-preview-front').src = e.target.result;
+                document.getElementById('front-upload-content').classList.add('hidden');
+                document.getElementById('front-camera-view').classList.add('hidden');
+                document.getElementById('front-preview-content').classList.remove('hidden');
+                document.getElementById('front-next-btn').disabled = false;
+                
+                // Also update the main form's file input
+                const mainInput = document.getElementById('file-input-front');
+                if (mainInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(uploadedFile);
+                    mainInput.files = dt.files;
+                }
+                
+                // Store in VerificationState - PASS BOTH base64 (preview) AND File object (API submission)
+                // CRITICAL: File object is sent to API without any modification to preserve EXIF metadata
+                if (typeof VerificationState !== 'undefined') {
+                    VerificationState.setFrontId(e.target.result, uploadedFile);
+                    console.log('✅ Front ID stored in VerificationState with RAW FILE:', uploadedFile.name, uploadedFile.size, 'bytes');
+                }
+            };
+            reader.readAsDataURL(file);
+        },
+        
+        // Clear front upload
+        clearFrontUpload(event) {
+            event.stopPropagation();
+            this.frontIdImage = null;
+            this.frontIdFile = null;  // Clear raw file object
+            document.getElementById('modal-file-input-front').value = '';
+            document.getElementById('front-upload-content').classList.remove('hidden');
+            document.getElementById('front-camera-view').classList.add('hidden');
+            document.getElementById('front-preview-content').classList.add('hidden');
+            document.getElementById('front-next-btn').disabled = true;
+        },
+        
+        // Go to back ID modal
+        goToBack() {
+            this.stopFrontCamera();
+            this.modals.front.hide();
+            setTimeout(() => {
+                this.modals.back.show();
+            }, 300);
+        },
+        
+        // Go back to front modal
+        goBackToFront() {
+            this.stopBackCamera();
+            this.modals.back.hide();
+            setTimeout(() => {
+                this.modals.front.show();
+            }, 300);
+        },
+        
+        // Handle back ID upload - STORES RAW FILE OBJECT for API submission
+        handleBackUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!this.validateFile(file)) return;
+            
+            // Store reference to file for use in reader callback
+            const uploadedFile = file;
+            this.backIdFile = file;  // Store raw file object
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.backIdImage = e.target.result;
+                
+                // Update preview
+                document.getElementById('modal-preview-back').src = e.target.result;
+                document.getElementById('back-upload-content').classList.add('hidden');
+                document.getElementById('back-camera-view').classList.add('hidden');
+                document.getElementById('back-preview-content').classList.remove('hidden');
+                
+                // Enable Next button since back ID is now uploaded
+                document.getElementById('back-next-btn').disabled = false;
+                
+                // Also update the main form's file input
+                const mainInput = document.getElementById('file-input-back');
+                if (mainInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(uploadedFile);
+                    mainInput.files = dt.files;
+                }
+                
+                // Store in VerificationState - PASS BOTH base64 (preview) AND File object (API submission)
+                // CRITICAL: File object is sent to API without any modification to preserve EXIF metadata
+                if (typeof VerificationState !== 'undefined') {
+                    VerificationState.setBackId(e.target.result, uploadedFile);
+                    console.log('✅ Back ID stored in VerificationState with RAW FILE:', uploadedFile.name, uploadedFile.size, 'bytes');
+                }
+            };
+            reader.readAsDataURL(file);
+        },
+        
+        // Clear back upload
+        clearBackUpload(event) {
+            event.stopPropagation();
+            this.backIdImage = null;
+            this.backIdFile = null;  // Clear raw file object
+            document.getElementById('modal-file-input-back').value = '';
+            document.getElementById('back-upload-content').classList.remove('hidden');
+            document.getElementById('back-camera-view').classList.add('hidden');
+            document.getElementById('back-preview-content').classList.add('hidden');
+            // Disable Next button since back ID is cleared
+            document.getElementById('back-next-btn').disabled = true;
+        },
+        
+        // Skip back ID - REMOVED: Back ID is now required
+        // skipBackId() is no longer available as back ID upload is mandatory
+        
+        // Go to selfie modal - REQUIRES Back ID to be uploaded
+        goToSelfie() {
+            // Check if back ID is uploaded - REQUIRED
+            if (!this.backIdImage && !this.backIdFile) {
+                alert('Back ID upload is required. Please upload the back of your ID before proceeding to selfie capture.');
+                return;
+            }
+            
+            this.stopBackCamera();
+            this.modals.back.hide();
+            setTimeout(() => {
+                this.modals.selfie.show();
+            }, 300);
+        },
+        
+        // Go back to back modal
+        goBackToBack() {
+            this.stopCamera();
+            this.modals.selfie.hide();
+            setTimeout(() => {
+                this.modals.back.show();
+            }, 300);
+        },
+        
+        // Start selfie camera
+        async startSelfieCamera() {
+            try {
+                const video = document.getElementById('selfie-modal-video');
+                const constraints = {
+                    video: {
+                        width: { ideal: 1280, min: 640 },
+                        height: { ideal: 720, min: 480 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                };
+                
+                this.videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = this.videoStream;
+                
+                document.getElementById('selfie-start-view').classList.add('hidden');
+                document.getElementById('selfie-camera-view').classList.remove('hidden');
+                document.getElementById('capture-selfie-btn').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Camera access failed:', error);
+                alert('Could not access camera. Please ensure camera permissions are enabled.');
+            }
+        },
+        
+        // Capture selfie
+        captureSelfie() {
+            // Start countdown
+            let count = 3;
+            const countdownOverlay = document.getElementById('selfie-countdown-overlay');
+            const countdownNumber = document.getElementById('selfie-countdown-number');
+            
+            countdownOverlay.classList.remove('hidden');
+            countdownNumber.textContent = count;
+            
+            document.getElementById('capture-selfie-btn').disabled = true;
+            
+            this.countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownNumber.textContent = count;
+                } else {
+                    clearInterval(this.countdownInterval);
+                    countdownOverlay.classList.add('hidden');
+                    this.takeSelfiePhoto();
+                }
+            }, 1000);
+        },
+        
+        // Take the actual selfie photo - ORIGINAL QUALITY PRESERVED
+        // CRITICAL: No resizing, rescaling, or repositioning - send original image to API
+        async takeSelfiePhoto() {
+            const video = document.getElementById('selfie-modal-video');
+            const canvas = document.getElementById('selfie-modal-canvas');
+            
+            // Set canvas dimensions to EXACT video dimensions (no scaling)
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            
+            const ctx = canvas.getContext('2d');
+            // Disable image smoothing to preserve original pixel data
+            ctx.imageSmoothingEnabled = false;
+            // Draw at ORIGINAL size without any transformation
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Get image data - Use maximum JPEG quality (1.0) to preserve original image
+            this.selfieImage = canvas.toDataURL('image/jpeg', 1.0);
+            
+            // Stop camera
+            this.stopCamera();
+            
+            // Save selfie to server
+            try {
+                const response = await fetch('/api/IdAnalyzer/saveSelfie', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageData: this.selfieImage })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    this.selfieFileName = result.fileName;
+                }
+            } catch (e) {
+                console.error('Failed to save selfie:', e);
+            }
+            
+            // Update preview
+            document.getElementById('modal-preview-selfie').src = this.selfieImage;
+            document.getElementById('selfie-camera-view').classList.add('hidden');
+            document.getElementById('selfie-preview-view').classList.remove('hidden');
+            document.getElementById('capture-selfie-btn').classList.add('hidden');
+            document.getElementById('finish-upload-btn').disabled = false;
+            
+            // Store in VerificationState
+            if (typeof VerificationState !== 'undefined') {
+                VerificationState.setSelfie(this.selfieImage, this.selfieFileName);
+            }
+        },
+        
+        // Retake selfie
+        retakeSelfie() {
+            this.selfieImage = null;
+            this.selfieFileName = null;
+            document.getElementById('selfie-preview-view').classList.add('hidden');
+            document.getElementById('selfie-start-view').classList.remove('hidden');
+            document.getElementById('finish-upload-btn').disabled = true;
+            document.getElementById('capture-selfie-btn').disabled = false;
+        },
+        
+        // Stop camera
+        stopCamera() {
+            if (this.videoStream) {
+                this.videoStream.getTracks().forEach(track => track.stop());
+                this.videoStream = null;
+            }
+            if (this.countdownInterval) {
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = null;
+            }
+        },
+        
+        // Finish upload and close modals
+        finishUpload() {
+            this.stopCamera();
+            this.modals.selfie.hide();
+            
+            // Update main page previews
+            this.updateMainPagePreviews();
+            
+            // Show verification button is ready
+            document.getElementById('start-verification-btn').innerHTML = '<i class="fas fa-shield-alt"></i><span>Documents Ready - Verify Now</span>';
+            document.getElementById('start-verification-btn').classList.remove('from-blue-500', 'to-blue-600', 'hover:from-blue-600', 'hover:to-blue-700');
+            document.getElementById('start-verification-btn').classList.add('from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
+            
+            // Update VerificationState button
+            if (typeof VerificationState !== 'undefined') {
+                VerificationState.updateVerifyButtonState();
+            }
+            
+            // Update verification checklist (enables Verify Account button if all requirements met)
+            if (typeof window.updateVerificationChecklist === 'function') {
+                window.updateVerificationChecklist();
+            }
+        },
+        
+        // Finish upload and immediately trigger verification
+        finishAndVerify() {
+            this.stopCamera();
+            this.modals.selfie.hide();
+            
+            // Update main page previews
+            this.updateMainPagePreviews();
+            
+            // HIDE start-verification-btn during processing
+            const startVerificationBtn = document.getElementById('start-verification-btn');
+            if (startVerificationBtn) {
+                startVerificationBtn.style.display = 'none';
+                // Also hide the helper text below the button
+                const helperText = startVerificationBtn.parentElement?.querySelector('p');
+                if (helperText) {
+                    helperText.style.display = 'none';
+                }
+            }
+            
+            // Update VerificationState
+            if (typeof VerificationState !== 'undefined') {
+                VerificationState.updateVerifyButtonState();
+            }
+            
+            // Update verification checklist (enables Verify Account button if all requirements met)
+            if (typeof window.updateVerificationChecklist === 'function') {
+                window.updateVerificationChecklist();
+            }
+            
+            // AUTO-EXTRACT DATA: Automatically extract ID data for user review
+            // This does NOT save to database - only populates form fields
+            setTimeout(() => {
+                if (typeof submitVerification === 'function') {
+                    console.log('🔄 Auto-extracting ID data from all uploaded images...');
+                    submitVerification();
+                } else {
+                    console.log('⚠️ submitVerification function not found');
+                }
+            }, 500); // Small delay to ensure modal is closed and UI is updated
+        },
+        
+        // Update main page previews
+        updateMainPagePreviews() {
+            const previewContainer = document.getElementById('uploaded-docs-preview');
+            if (previewContainer) {
+                previewContainer.classList.remove('hidden');
+            }
+            
+            // Front ID
+            if (this.frontIdImage) {
+                document.getElementById('preview-front-img').src = this.frontIdImage;
+                document.getElementById('preview-front-img').classList.remove('hidden');
+                document.getElementById('preview-front-status').textContent = 'Uploaded ✓';
+                document.getElementById('preview-front-status').classList.add('text-green-600');
+                document.getElementById('preview-front-container').classList.add('border-green-300', 'bg-green-50');
+            }
+            
+            // Back ID
+            if (this.backIdImage) {
+                document.getElementById('preview-back-img').src = this.backIdImage;
+                document.getElementById('preview-back-img').classList.remove('hidden');
+                document.getElementById('preview-back-status').textContent = 'Uploaded ✓';
+                document.getElementById('preview-back-status').classList.add('text-green-600');
+                document.getElementById('preview-back-container').classList.add('border-green-300', 'bg-green-50');
+            } else {
+                document.getElementById('preview-back-status').textContent = 'Skipped';
+                document.getElementById('preview-back-status').classList.add('text-gray-500');
+            }
+            
+            // Selfie
+            if (this.selfieImage) {
+                document.getElementById('preview-selfie-img').src = this.selfieImage;
+                document.getElementById('preview-selfie-img').classList.remove('hidden');
+                document.getElementById('preview-selfie-status').textContent = 'Captured ✓';
+                document.getElementById('preview-selfie-status').classList.add('text-green-600');
+                document.getElementById('preview-selfie-container').classList.add('border-green-300', 'bg-green-50');
+            }
+        },
+        
+        // Validate file
+        validateFile(file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a JPG, JPEG, or PNG file.');
+                return false;
+            }
+            
+            if (file.size > maxSize) {
+                alert('File size must be less than 5MB.');
+                return false;
+            }
+            
+            return true;
+        }
+    };
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add drag and drop support for modal upload areas
+        ['modal-upload-area-front', 'modal-upload-area-back'].forEach(areaId => {
+            const area = document.getElementById(areaId);
+            if (area) {
+                area.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    area.classList.add('border-solid', 'border-blue-500');
+                });
+                area.addEventListener('dragleave', () => {
+                    area.classList.remove('border-solid', 'border-blue-500');
+                });
+                area.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    area.classList.remove('border-solid', 'border-blue-500');
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        const inputId = areaId.includes('front') ? 'modal-file-input-front' : 'modal-file-input-back';
+                        const input = document.getElementById(inputId);
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        input.files = dt.files;
+                        input.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+        });
+    });
+    </script>
+    
+    <!-- Additional Responsive Styles for Modals -->
+    <style>
+        /* Mirror video for selfie preview */
+        .mirror-video {
+            transform: scaleX(-1);
+        }
+        
+        /* Modal responsive adjustments */
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        @@media (min-width: 576px) {
+            .modal-dialog {
+                margin: 1.75rem auto;
+            }
+        }
+        
+        /* Upload area hover effect */
+        .upload-area-modal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Countdown overlay */
+        #selfie-countdown-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+        }
+        
+        /* Selfie capture area positioning */
+        .selfie-capture-modal-area {
+            position: relative;
+            min-height: 280px;
+        }
+        
+        @@media (min-width: 640px) {
+            .selfie-capture-modal-area {
+                min-height: 350px;
+            }
+        }
+        
+        /* Preview containers */
+        #uploaded-docs-preview .grid > div {
+            transition: all 0.3s ease;
+        }
+        
+        #uploaded-docs-preview .grid > div:hover {
+            transform: translateY(-2px);
+        }
+    </style>
 </body>
 </html>

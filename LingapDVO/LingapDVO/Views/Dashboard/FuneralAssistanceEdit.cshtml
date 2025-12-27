@@ -329,6 +329,94 @@
         </div>
     </div>
 
+    <!-- Additional Information Section (Password-Protected) -->
+    <div class="card mt-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
+            <button type="button" class="btn btn-sm btn-primary"
+                    onclick="viewFuneralAdditionalInfo()"
+                    title="Click to view encrypted information">
+                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                <div>
+                    <strong>This information is encrypted for security.</strong><br>
+                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Name of the Deceased Person</label>
+                    <input asp-for="DeceasedPersonName" type="text" class="form-control"
+                           placeholder="Enter full name of the deceased">
+                    <span asp-validation-for="DeceasedPersonName" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Relationship of Claimant to the Deceased</label>
+                    <input asp-for="RelationshipToDeceased" type="text" class="form-control"
+                           placeholder="Enter relationship (e.g., Spouse, Child, Sibling)">
+                    <span asp-validation-for="RelationshipToDeceased" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Date of Death</label>
+                    <input asp-for="DateOfDeath" type="date" class="form-control">
+                    <span asp-validation-for="DateOfDeath" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Time of Death</label>
+                    <input asp-for="TimeOfDeath" type="time" class="form-control">
+                    <span asp-validation-for="TimeOfDeath" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <label class="form-label">Cause of Death</label>
+                    <input asp-for="CauseOfDeath" type="text" class="form-control"
+                           placeholder="Enter cause of death">
+                    <span asp-validation-for="CauseOfDeath" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Funeral Home/ Parlor Name</label>
+                    <input asp-for="FuneralHomeName" type="text" class="form-control"
+                           placeholder="Enter funeral home or parlor name">
+                    <span asp-validation-for="FuneralHomeName" class="text-danger"></span>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <label class="form-label">Funeral Home/ Parlor Address</label>
+                    <input asp-for="FuneralHomeAddress" type="text" class="form-control"
+                           placeholder="Enter funeral home or parlor address">
+                    <span asp-validation-for="FuneralHomeAddress" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Date of Burial or Cremation</label>
+                    <input asp-for="BurialCremationDate" type="date" class="form-control">
+                    <span asp-validation-for="BurialCremationDate" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Time of Burial or Cremation</label>
+                    <input asp-for="BurialCremationTime" type="time" class="form-control">
+                    <span asp-validation-for="BurialCremationTime" class="text-danger"></span>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <label class="form-label">Type</label>
+                    <select asp-for="BurialCremationType" class="form-select">
+                        <option value="">Select Type</option>
+                        <option value="Burial">Burial</option>
+                        <option value="Cremation">Cremation</option>
+                    </select>
+                    <span asp-validation-for="BurialCremationType" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Upload Section -->
     <div class="card mt-4">
         <div class="card-header">Upload Required Documents</div>
@@ -1044,5 +1132,52 @@
                 closePDFViewer();
             }
         }
+
+        // View Additional Information (Password-Protected)
+        function viewFuneralAdditionalInfo() {
+            const formId = parseInt('@ViewData["Id"]');
+            const encryptedFields = {
+                names: [
+                    'DeceasedPersonName',
+                    'RelationshipToDeceased',
+                    'DateOfDeath',
+                    'TimeOfDeath',
+                    'CauseOfDeath',
+                    'FuneralHomeName',
+                    'FuneralHomeAddress',
+                    'BurialCremationDate',
+                    'BurialCremationTime',
+                    'BurialCremationType'
+                ],
+                labels: [
+                    'Name of Deceased Person',
+                    'Relationship to Deceased',
+                    'Date of Death',
+                    'Time of Death',
+                    'Cause of Death',
+                    'Funeral Home/Parlor Name',
+                    'Funeral Home/Parlor Address',
+                    'Date of Burial/Cremation',
+                    'Time of Burial/Cremation',
+                    'Type (Burial/Cremation)'
+                ],
+                values: [
+                    '@ViewData["DeceasedPersonName"]',
+                    '@ViewData["RelationshipToDeceased"]',
+                    '@ViewData["DateOfDeath"]',
+                    '@ViewData["TimeOfDeath"]',
+                    '@ViewData["CauseOfDeath"]',
+                    '@ViewData["FuneralHomeName"]',
+                    '@ViewData["FuneralHomeAddress"]',
+                    '@ViewData["BurialCremationDate"]',
+                    '@ViewData["BurialCremationTime"]',
+                    '@ViewData["BurialCremationType"]'
+                ]
+            };
+
+            openViewAdditionalInfoModal('Funeral', formId, encryptedFields);
+        }
     </script>
 }
+
+@Html.Partial("_ViewEncryptedDataModal")
