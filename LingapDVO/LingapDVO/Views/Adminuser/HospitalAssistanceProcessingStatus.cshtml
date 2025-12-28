@@ -1030,11 +1030,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-3 text-end">
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="hideHospitalInfo()">
-                            <i class="bi bi-eye-slash me-1"></i>Hide Information
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -1545,9 +1540,16 @@
         // Hospital Information Functions
         function hideHospitalInfo() {
             const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            const viewButton = document.getElementById('viewHospitalInfoBtn');
+
             if (hospitalInfoContainer) {
                 hospitalInfoContainer.classList.remove('hospital-info-visible');
                 hospitalInfoContainer.style.display = 'none';
+            }
+
+            // Show the button again when hiding the info
+            if (viewButton) {
+                viewButton.style.display = 'inline-block';
             }
         }
 
@@ -1559,6 +1561,12 @@
             const loadingContainer = document.getElementById('hospitalLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'none';
+            }
+
+            // Hide the "View Hospital Information" button
+            const viewButton = document.getElementById('viewHospitalInfoBtn');
+            if (viewButton) {
+                viewButton.style.display = 'none';
             }
 
             // Show the hospital information container
@@ -1615,35 +1623,6 @@
                 }, interval);
             }
         }
-
-        // Override the modal's decryption function to start loading animation
-        document.addEventListener('DOMContentLoaded', function() {
-            // Wait for the modal to be loaded
-            setTimeout(function() {
-                // Override the modal's showDecryptedData function
-                if (typeof showDecryptedData === 'function') {
-                    // Store original function
-                    const originalShowDecryptedData = showDecryptedData;
-
-                    // Override with our custom function
-                    window.showDecryptedData = function(formType, formId, encryptedFields) {
-                        console.log('Custom showDecryptedData called - Password verified, starting loading animation');
-
-                        // Close the modal first
-                        const modalElement = document.getElementById('viewAdditionalInfoModal');
-                        if (modalElement) {
-                            const modal = bootstrap.Modal.getInstance(modalElement);
-                            if (modal) {
-                                modal.hide();
-                            }
-                        }
-
-                        // Start the 5-second loading animation
-                        startHospitalInfoLoading();
-                    };
-                }
-            }, 1000);
-        });
 
         // Form Validation Function
         function validateCMOForm() {
