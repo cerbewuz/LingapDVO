@@ -1102,7 +1102,6 @@ namespace LingapDVO.Controllers
                 return RedirectToAction("Landingpage", "Dashboard");
             }
 
-
             var HospitalAssistance = context.HospitalAssistance.Find(id);
             if (HospitalAssistance == null)
             {
@@ -1280,17 +1279,82 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = HospitalAssistance.ValidBackimage;
             ViewData["Comments"] = HospitalAssistance.Comments;
 
-            // Additional Information - Encrypted Fields
-            ViewData["HospitalFacilityName"] = HospitalAssistance.HospitalFacilityName;
-            ViewData["HospitalFacilityAddress"] = HospitalAssistance.HospitalFacilityAddress;
-            ViewData["DiagnosisMedicalCondition"] = HospitalAssistance.DiagnosisMedicalCondition;
-            ViewData["HospitalBillCost"] = HospitalAssistance.HospitalBillCost;
-            ViewData["AdmissionDate"] = HospitalAssistance.AdmissionDate;
-            ViewData["DischargeDate"] = HospitalAssistance.DischargeDate;
-            ViewData["WardRoomType"] = HospitalAssistance.WardRoomType;
+            // ============================================
+            // ADD DECRYPTION FOR THESE 7 FIELDS ONLY
+            // ============================================
+
+            // Use your existing DecryptFile logic to decrypt text fields
+            ViewData["HospitalFacilityName"] = DecryptFieldText(HospitalAssistance.HospitalFacilityName);
+            ViewData["HospitalFacilityAddress"] = DecryptFieldText(HospitalAssistance.HospitalFacilityAddress);
+            ViewData["DiagnosisMedicalCondition"] = DecryptFieldText(HospitalAssistance.DiagnosisMedicalCondition);
+            ViewData["HospitalBillCost"] = DecryptFieldText(HospitalAssistance.HospitalBillCost);
+            ViewData["AdmissionDate"] = DecryptFieldText(HospitalAssistance.AdmissionDate);
+            ViewData["DischargeDate"] = DecryptFieldText(HospitalAssistance.DischargeDate);
+            ViewData["WardRoomType"] = DecryptFieldText(HospitalAssistance.WardRoomType);
 
             return View();
         }
+
+        // ADD THIS HELPER METHOD INSIDE YOUR CONTROLLER CLASS
+        private string DecryptFieldText(string encryptedText)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(encryptedText))
+                    return "";
+
+                // If it's not Base64, it's probably already decrypted
+                if (!IsBase64String(encryptedText))
+                    return encryptedText;
+
+                // Convert from Base64
+                byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+
+                // Use the same decryption logic as your DecryptFile method
+                using var memoryStream = new MemoryStream(encryptedBytes);
+
+                // Read IV (first 16 bytes)
+                byte[] iv = new byte[16];
+                memoryStream.Read(iv, 0, iv.Length);
+
+                // Get AES key from your configuration helper
+                var aesHelper = new AesEncryptionHelper(_configuration);
+                var keyField = typeof(AesEncryptionHelper).GetField("_aesKey",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                if (keyField == null)
+                    return "[Key Error]";
+
+                byte[]? key = keyField.GetValue(aesHelper) as byte[];
+                if (key == null)
+                    return "[Key Error]";
+
+                // Decrypt
+                using var aes = Aes.Create();
+                aes.Key = key;
+                aes.IV = iv;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var decryptedStream = new MemoryStream();
+                using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
+                {
+                    cryptoStream.CopyTo(decryptedStream);
+                }
+
+                // Convert to text
+                return Encoding.UTF8.GetString(decryptedStream.ToArray());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"DecryptFieldText error: {ex.Message}");
+                // Return original text if decryption fails
+                return encryptedText ?? "[Error]";
+            }
+        }
+
+     
+   
 
         public IActionResult OtherAssistanceProcessingStatus(int id)
         {
