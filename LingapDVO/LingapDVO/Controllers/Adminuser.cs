@@ -1629,7 +1629,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] = FuneralAssistance.Status2;
+            ViewData["Status"] = FuneralAssistance.Status;
             ViewData["Id"] = FuneralAssistance.Id;
             ViewData["Lastname"] = FuneralAssistance.Lastname;
             ViewData["Firstname"] = FuneralAssistance.Firstname;
