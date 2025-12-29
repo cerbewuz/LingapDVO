@@ -1,7 +1,7 @@
 @model OtherAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Hospital Assistance View";
+    ViewData["Title"] = "Other Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
@@ -466,6 +466,31 @@
         color: #28a745;
         margin-bottom: 1rem;
     }
+
+    /* Additional Information Container */
+    .additional-info-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .additional-info-visible {
+        display: block;
+    }
+
+    /* Additional Information Loading Container */
+    .additional-loading-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
 </style>
 
 <!-- Image Zoom Modal -->
@@ -637,10 +662,10 @@
             <div class="receipt-section">
                 <h5 class="section-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            onclick="viewOtherAdditionalInfo()"
+                    <button type="button" class="btn btn-sm btn-primary" id="viewAdditionalInfoBtn"
+                            onclick="openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields())"
                             title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                        <i class="bi bi-eye-fill me-2"></i>View Additional Information
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -648,11 +673,32 @@
                         <div class="alert alert-info d-flex align-items-center" role="alert">
                             <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
                             <div>
-                                <strong>This information is encrypted for security.</strong><br>
-                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                                <strong>This additional information is encrypted for security.</strong><br>
+                                Click the "View Additional Information" button above and enter your password to view the details.
                                 The fields shown will depend on the type of assistance requested.
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information Loading Container (shown while decrypting) -->
+                <div class="additional-loading-container" id="additionalLoadingContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Decrypting additional information... Please wait 5 seconds</p>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" id="additionalLoadingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information Container (hidden by default, shown after successful decryption) -->
+                <div class="additional-info-container" id="additionalInfoContainer">
+                    <div class="row">
+                        <!-- Fields will be dynamically populated here based on assistance type -->
                     </div>
                 </div>
             </div>
@@ -820,6 +866,9 @@
         const requestorLastname = '@ViewData["RLastname"]';
         const requestorSuffix = '@ViewData["RSuffix"]';
         const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
+
+        // Assistance Type
+        const assistanceType = '@ViewData["Typeassistance"]';
 
         // Image Zoom Functionality
         function zoomImage(src) {
@@ -994,33 +1043,299 @@
         }
 
         // Status Submission Functions
-        function submitApprove() {
-            // Set the status and comments
+        function markAsClaimed() {
+            // Set the status to "Claimed"
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
             const processByInput = document.getElementById('processByInput');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
 
-            if (statusInput) statusInput.value = 'Approve';
-            if (commentsInput) commentsInput.value = ''; // Empty comments for approval
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
+            if (statusInput) statusInput.value = 'Claimed';
+            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
             if (processByInput) {
                 const processedBy = document.getElementById('processedBy');
                 if (processedBy) processByInput.value = processedBy.value;
             }
 
-            // Show loading modal
+            // Show success modal
             showSuccessModal();
 
-            // Submit the form
+            // Submit the form after a short delay to show the modal
             setTimeout(() => {
                 document.getElementById('statusForm').submit();
-            }, 500);
+            }, 2000); // Show modal for 2 seconds before redirecting
         }
 
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) modal.style.display = 'block';
+        }
+
+        // Additional Information Functions (from OtherAssistanceProcessingStatus pattern)
+        function getOtherAssistanceFields() {
+            const assistanceType = '@ViewData["Typeassistance"]';
+
+            let fieldNames = [];
+            let fieldLabels = [];
+            let fieldValues = [];
+
+            // Conditional fields based on assistance type
+            if (assistanceType === 'Medicine Assistance') {
+                fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
+                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
+                fieldValues = [
+                    '@ViewData["MedicineName"]',
+                    '@ViewData["MedicineQuantity"]',
+                    '@ViewData["MedicineCost"]',
+                    '@ViewData["PrescribingDoctor"]',
+                    '@ViewData["DoctorContactDetail"]'
+                ];
+            } else if (assistanceType === 'Laboratory') {
+                fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
+                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
+                fieldValues = [
+                    '@ViewData["LaboratoryCenterName"]',
+                    '@ViewData["LaboratoryCenterAddress"]',
+                    '@ViewData["TestName"]',
+                    '@ViewData["TestCost"]',
+                    '@ViewData["TestOtherInfo"]'
+                ];
+            } else if (assistanceType === 'Therapy') {
+                fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
+                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
+                fieldValues = [
+                    '@ViewData["TherapyFacilityName"]',
+                    '@ViewData["TherapyFacilityAddress"]',
+                    '@ViewData["TherapyFacilityContact"]',
+                    '@ViewData["TherapyType"]'
+                ];
+            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+                fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
+                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
+                fieldValues = [
+                    '@ViewData["EquipmentName"]',
+                    '@ViewData["EquipmentBrand"]',
+                    '@ViewData["EquipmentCategory"]',
+                    '@ViewData["EquipmentQuantity"]',
+                    '@ViewData["EquipmentCost"]'
+                ];
+            }
+
+            return {
+                names: fieldNames,
+                labels: fieldLabels,
+                values: fieldValues
+            };
+        }
+
+        // Function to hide additional information
+        function hideAdditionalInfo() {
+            const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+
+            if (additionalInfoContainer) {
+                additionalInfoContainer.classList.remove('additional-info-visible');
+                additionalInfoContainer.style.display = 'none';
+            }
+
+            // Show the button again when hiding the info
+            if (viewButton) {
+                viewButton.style.display = 'inline-block';
+            }
+        }
+
+        // Function to show additional information after successful decryption
+        function showAdditionalInfoAfterDecryption() {
+            console.log('Showing additional information after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('additionalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the "View Additional Information" button
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            if (viewButton) {
+                viewButton.style.display = 'none';
+            }
+
+            // Show the additional information container
+            const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            if (additionalInfoContainer) {
+                additionalInfoContainer.style.display = 'block';
+                additionalInfoContainer.classList.add('additional-info-visible');
+
+                // Populate the fields based on assistance type
+                populateAdditionalInfoFields();
+
+                // Scroll to the additional information section
+                setTimeout(() => {
+                    additionalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        // Function to populate additional information fields
+        function populateAdditionalInfoFields() {
+            const assistanceType = '@ViewData["Typeassistance"]';
+            const container = document.getElementById('additionalInfoContainer');
+
+            if (!container) return;
+
+            let htmlContent = '';
+
+            if (assistanceType === 'Medicine Assistance') {
+                htmlContent = `
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Medicine Name:</div>
+                            <div class="info-value" id="medicineName">@ViewData["MedicineName"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Quantity:</div>
+                            <div class="info-value" id="medicineQuantity">@ViewData["MedicineQuantity"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Cost:</div>
+                            <div class="info-value" id="medicineCost">@ViewData["MedicineCost"]</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Prescribing Doctor:</div>
+                            <div class="info-value" id="prescribingDoctor">@ViewData["PrescribingDoctor"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Doctor Contact:</div>
+                            <div class="info-value" id="doctorContact">@ViewData["DoctorContactDetail"]</div>
+                        </div>
+                    </div>
+                `;
+            } else if (assistanceType === 'Laboratory') {
+                htmlContent = `
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Laboratory Center Name:</div>
+                            <div class="info-value" id="labCenterName">@ViewData["LaboratoryCenterName"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Center Address:</div>
+                            <div class="info-value" id="labCenterAddress">@ViewData["LaboratoryCenterAddress"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Test Name:</div>
+                            <div class="info-value" id="testName">@ViewData["TestName"]</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Test Cost:</div>
+                            <div class="info-value" id="testCost">@ViewData["TestCost"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Other Information:</div>
+                            <div class="info-value" id="testOtherInfo">@ViewData["TestOtherInfo"]</div>
+                        </div>
+                    </div>
+                `;
+            } else if (assistanceType === 'Therapy') {
+                htmlContent = `
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Therapy Facility Name:</div>
+                            <div class="info-value" id="therapyFacilityName">@ViewData["TherapyFacilityName"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Facility Address:</div>
+                            <div class="info-value" id="therapyFacilityAddress">@ViewData["TherapyFacilityAddress"]</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Facility Contact:</div>
+                            <div class="info-value" id="therapyFacilityContact">@ViewData["TherapyFacilityContact"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Therapy Type:</div>
+                            <div class="info-value" id="therapyType">@ViewData["TherapyType"]</div>
+                        </div>
+                    </div>
+                `;
+            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+                htmlContent = `
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Equipment Name:</div>
+                            <div class="info-value" id="equipmentName">@ViewData["EquipmentName"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Brand:</div>
+                            <div class="info-value" id="equipmentBrand">@ViewData["EquipmentBrand"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Category:</div>
+                            <div class="info-value" id="equipmentCategory">@ViewData["EquipmentCategory"]</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <div class="info-label">Quantity:</div>
+                            <div class="info-value" id="equipmentQuantity">@ViewData["EquipmentQuantity"]</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Cost:</div>
+                            <div class="info-value" id="equipmentCost">@ViewData["EquipmentCost"]</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.querySelector('.row').innerHTML = htmlContent;
+        }
+
+        // Function to start the 5-second loading animation
+        function startAdditionalInfoLoading() {
+            console.log('Starting additional information loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('additionalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide any existing additional info container
+            const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            if (additionalInfoContainer) {
+                additionalInfoContainer.style.display = 'none';
+                additionalInfoContainer.classList.remove('additional-info-visible');
+            }
+
+            // Start 5-second progress bar
+            const progressBar = document.getElementById('additionalLoadingProgress');
+            if (progressBar) {
+                let progress = 0;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
+                const increment = (interval / totalTime) * 100;
+
+                const progressInterval = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+
+                        // After 5 seconds, show the additional information
+                        setTimeout(() => {
+                            showAdditionalInfoAfterDecryption();
+                        }, 300);
+                    } else {
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
+            }
+        }
+
+        // Comments modal functions
         function showCommentsModal() {
             const modal = document.getElementById('commentsModal');
             const textarea = document.getElementById('commentsTextarea');
@@ -1052,15 +1367,10 @@
 
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
             const processByInput = document.getElementById('processByInput');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
 
             if (statusInput) statusInput.value = 'Disapprove';
             if (commentsInput) commentsInput.value = comments;
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
             if (processByInput) {
                 const processedBy = document.getElementById('processedBy');
                 if (processedBy) processByInput.value = processedBy.value;
@@ -1074,89 +1384,6 @@
                 document.getElementById('statusForm').submit();
             }, 500);
         }
-
-        // Mark as Claimed Function
-        function markAsClaimed() {
-            // Set the status to "Claimed"
-            const statusInput = document.getElementById('statusInput');
-            const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
-            const processByInput = document.getElementById('processByInput');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-
-            if (statusInput) statusInput.value = 'Claimed';
-            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
-            if (processByInput) {
-                const processedBy = document.getElementById('processedBy');
-                if (processedBy) processByInput.value = processedBy.value;
-            }
-
-            // Show success modal
-            showSuccessModal();
-
-            // Submit the form after a short delay to show the modal
-            setTimeout(() => {
-                document.getElementById('statusForm').submit();
-            }, 2000); // Show modal for 2 seconds before redirecting
-        }
-
-        function showSuccessModal() {
-            const modal = document.getElementById('successModal');
-            if (modal) modal.style.display = 'block';
-        }
-
-        // CMO Reflection Auto-generation
-        document.addEventListener('DOMContentLoaded', function() {
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-            cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    updateReflection();
-                });
-            });
-
-            function updateReflection() {
-                const billInput = document.getElementById('billAmountInput');
-                const cmoNotes = document.getElementById('cmoNotesInput');
-                const reflectionField = document.getElementById('cmoReflectionField');
-                const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-                const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-                if (!reflectionField) return;
-
-                let parts = [];
-                if (billInput && billInput.value.trim()) {
-                    parts.push(`Bill: ${billInput.value.trim()}`);
-                }
-                const checkedDocs = [];
-                docCheckboxes.forEach(cb => {
-                    if (cb.checked) checkedDocs.push(cb.value);
-                });
-                if (checkedDocs.length) {
-                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                }
-                if (cmoNotes && cmoNotes.value.trim()) {
-                    parts.push(`Others: ${cmoNotes.value.trim()}`);
-                }
-                const reflectionValue = parts.join(' , ');
-                reflectionField.value = reflectionValue;
-
-                // Update the hidden field as well
-                if (forCMOPersonnelInput) {
-                    forCMOPersonnelInput.value = reflectionValue;
-                }
-            }
-
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            if (billInput) billInput.addEventListener('input', updateReflection);
-            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
-
-            // Initialize reflection field
-            updateReflection();
-        });
 
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
@@ -1215,63 +1442,11 @@
         // Function to view encrypted Additional Information
         function viewOtherAdditionalInfo() {
             const formId = parseInt('@ViewData["Id"]');
-            const assistanceType = '@ViewData["Typeassistance"]';
-
-            let fieldNames = [];
-            let fieldLabels = [];
-            let fieldValues = [];
-
-            // Conditional fields based on assistance type
-            if (assistanceType === 'Medicine Assistance') {
-                fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
-                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
-                fieldValues = [
-                    '@ViewData["MedicineName"]',
-                    '@ViewData["MedicineQuantity"]',
-                    '@ViewData["MedicineCost"]',
-                    '@ViewData["PrescribingDoctor"]',
-                    '@ViewData["DoctorContactDetail"]'
-                ];
-            } else if (assistanceType === 'Laboratory') {
-                fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
-                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
-                fieldValues = [
-                    '@ViewData["LaboratoryCenterName"]',
-                    '@ViewData["LaboratoryCenterAddress"]',
-                    '@ViewData["TestName"]',
-                    '@ViewData["TestCost"]',
-                    '@ViewData["TestOtherInfo"]'
-                ];
-            } else if (assistanceType === 'Therapy') {
-                fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
-                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
-                fieldValues = [
-                    '@ViewData["TherapyFacilityName"]',
-                    '@ViewData["TherapyFacilityAddress"]',
-                    '@ViewData["TherapyFacilityContact"]',
-                    '@ViewData["TherapyType"]'
-                ];
-            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
-                fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
-                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
-                fieldValues = [
-                    '@ViewData["EquipmentName"]',
-                    '@ViewData["EquipmentBrand"]',
-                    '@ViewData["EquipmentCategory"]',
-                    '@ViewData["EquipmentQuantity"]',
-                    '@ViewData["EquipmentCost"]'
-                ];
-            }
-
-            const encryptedFields = {
-                names: fieldNames,
-                labels: fieldLabels,
-                values: fieldValues
-            };
+            const encryptedFields = getOtherAssistanceFields();
 
             openViewAdditionalInfoModal('Other', formId, encryptedFields);
         }
     </script>
 
-    @Html.Partial("_ViewEncryptedDataModal")
+    @Html.Partial("_ViewEncryptedDataModalForAdmin")
 }

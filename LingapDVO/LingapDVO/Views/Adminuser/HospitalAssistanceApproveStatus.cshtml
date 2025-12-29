@@ -466,6 +466,31 @@
         color: #28a745;
         margin-bottom: 1rem;
     }
+
+    /* Hospital Info Container */
+    .hospital-info-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .hospital-info-visible {
+        display: block;
+    }
+
+    /* Hospital Loading Container */
+    .hospital-loading-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
 </style>
 
 <!-- Image Zoom Modal -->
@@ -633,14 +658,18 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- Additional Information Section (Password-Protected) -->
+            <!-- Hospital Information Section (Password-Protected) -->
             <div class="receipt-section">
                 <h5 class="section-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            onclick="viewHospitalAdditionalInfo()"
-                            title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Hospital Information (Encrypted)</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="viewHospitalInfoBtn"
+                            onclick="openViewAdditionalInfoModal('Hospital', '@ViewData["Id"]', {
+                                labels: ['Hospital/Facility Name', 'Hospital Address', 'Diagnosis/Medical Condition', 'Ward/Room Type', 'Hospital Bill/Cost', 'Admission Date', 'Discharge Date'],
+                                values: ['@ViewData["HospitalFacilityName"]', '@ViewData["HospitalFacilityAddress"]', '@ViewData["DiagnosisMedicalCondition"]', '@ViewData["WardRoomType"]', '@ViewData["HospitalBillCost"]', '@ViewData["AdmissionDate"]', '@ViewData["DischargeDate"]'],
+                                names: ['HospitalFacilityName', 'HospitalFacilityAddress', 'DiagnosisMedicalCondition', 'WardRoomType', 'HospitalBillCost', 'AdmissionDate', 'DischargeDate']
+                            })"
+                            title="Click to view encrypted hospital information">
+                        <i class="bi bi-eye-fill me-2"></i>View Hospital Information
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -648,8 +677,60 @@
                         <div class="alert alert-info d-flex align-items-center" role="alert">
                             <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
                             <div>
-                                <strong>This information is encrypted for security.</strong><br>
-                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                                <strong>This hospital information is encrypted for security.</strong><br>
+                                Click the "View Hospital Information" button above and enter your password to view the details.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hospital Loading Container (shown while decrypting) -->
+                <div class="hospital-loading-container" id="hospitalLoadingContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Decrypting hospital information... Please wait 5 seconds</p>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" id="hospitalLoadingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
+                <div class="hospital-info-container" id="hospitalInfoContainer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Hospital/Facility Name:</div>
+                                <div class="info-value" id="hospitalName">@ViewData["HospitalFacilityName"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Hospital Address:</div>
+                                <div class="info-value" id="hospitalAddress">@ViewData["HospitalFacilityAddress"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Diagnosis/Medical Condition:</div>
+                                <div class="info-value" id="diagnosis">@ViewData["DiagnosisMedicalCondition"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Ward/Room Type:</div>
+                                <div class="info-value" id="wardRoomType">@ViewData["WardRoomType"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Hospital Bill/Cost:</div>
+                                <div class="info-value" id="hospitalBill">@ViewData["HospitalBillCost"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Admission Date:</div>
+                                <div class="info-value" id="admissionDate">@ViewData["AdmissionDate"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Discharge Date:</div>
+                                <div class="info-value" id="dischargeDate">@ViewData["DischargeDate"]</div>
                             </div>
                         </div>
                     </div>
@@ -993,33 +1074,122 @@
         }
 
         // Status Submission Functions
-        function submitApprove() {
-            // Set the status and comments
+        function markAsClaimed() {
+            // Set the status to "Claimed"
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
             const processByInput = document.getElementById('processByInput');
             const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
 
-            if (statusInput) statusInput.value = 'Approve';
-            if (commentsInput) commentsInput.value = ''; // Empty comments for approval
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
+            if (statusInput) statusInput.value = 'Claimed';
+            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
             if (processByInput) {
                 const processedBy = document.getElementById('processedBy');
                 if (processedBy) processByInput.value = processedBy.value;
             }
 
-            // Show loading modal
+            // Show success modal
             showSuccessModal();
 
-            // Submit the form
+            // Submit the form after a short delay to show the modal
             setTimeout(() => {
                 document.getElementById('statusForm').submit();
-            }, 500);
+            }, 2000); // Show modal for 2 seconds before redirecting
         }
 
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) modal.style.display = 'block';
+        }
+
+        // Hospital Information Functions
+        function hideHospitalInfo() {
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            const viewButton = document.getElementById('viewHospitalInfoBtn');
+
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.classList.remove('hospital-info-visible');
+                hospitalInfoContainer.style.display = 'none';
+            }
+
+            // Show the button again when hiding the info
+            if (viewButton) {
+                viewButton.style.display = 'inline-block';
+            }
+        }
+
+        // Function to show hospital information after successful decryption
+        function showHospitalInfoAfterDecryption() {
+            console.log('Showing hospital information after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('hospitalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the "View Hospital Information" button
+            const viewButton = document.getElementById('viewHospitalInfoBtn');
+            if (viewButton) {
+                viewButton.style.display = 'none';
+            }
+
+            // Show the hospital information container
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.style.display = 'block';
+                hospitalInfoContainer.classList.add('hospital-info-visible');
+
+                // Scroll to the hospital information section
+                setTimeout(() => {
+                    hospitalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        // Function to start the 5-second loading animation
+        function startHospitalInfoLoading() {
+            console.log('Starting hospital information loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('hospitalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide any existing hospital info container
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.style.display = 'none';
+                hospitalInfoContainer.classList.remove('hospital-info-visible');
+            }
+
+            // Start 5-second progress bar
+            const progressBar = document.getElementById('hospitalLoadingProgress');
+            if (progressBar) {
+                let progress = 0;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
+                const increment = (interval / totalTime) * 100;
+
+                const progressInterval = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+
+                        // After 5 seconds, show the hospital information
+                        setTimeout(() => {
+                            showHospitalInfoAfterDecryption();
+                        }, 300);
+                    } else {
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
+            }
+        }
+
+        // Comments modal functions (if needed for other actions)
         function showCommentsModal() {
             const modal = document.getElementById('commentsModal');
             const textarea = document.getElementById('commentsTextarea');
@@ -1051,15 +1221,10 @@
 
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
             const processByInput = document.getElementById('processByInput');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
 
             if (statusInput) statusInput.value = 'Disapprove';
             if (commentsInput) commentsInput.value = comments;
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
             if (processByInput) {
                 const processedBy = document.getElementById('processedBy');
                 if (processedBy) processByInput.value = processedBy.value;
@@ -1073,89 +1238,6 @@
                 document.getElementById('statusForm').submit();
             }, 500);
         }
-
-        // Mark as Claimed Function
-        function markAsClaimed() {
-            // Set the status to "Claimed"
-            const statusInput = document.getElementById('statusInput');
-            const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
-            const processByInput = document.getElementById('processByInput');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-
-            if (statusInput) statusInput.value = 'Claimed';
-            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
-            if (processByInput) {
-                const processedBy = document.getElementById('processedBy');
-                if (processedBy) processByInput.value = processedBy.value;
-            }
-
-            // Show success modal
-            showSuccessModal();
-
-            // Submit the form after a short delay to show the modal
-            setTimeout(() => {
-                document.getElementById('statusForm').submit();
-            }, 2000); // Show modal for 2 seconds before redirecting
-        }
-
-        function showSuccessModal() {
-            const modal = document.getElementById('successModal');
-            if (modal) modal.style.display = 'block';
-        }
-
-        // CMO Reflection Auto-generation
-        document.addEventListener('DOMContentLoaded', function() {
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-            cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    updateReflection();
-                });
-            });
-
-            function updateReflection() {
-                const billInput = document.getElementById('billAmountInput');
-                const cmoNotes = document.getElementById('cmoNotesInput');
-                const reflectionField = document.getElementById('cmoReflectionField');
-                const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-                const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-                if (!reflectionField) return;
-
-                let parts = [];
-                if (billInput && billInput.value.trim()) {
-                    parts.push(`Bill: ${billInput.value.trim()}`);
-                }
-                const checkedDocs = [];
-                docCheckboxes.forEach(cb => {
-                    if (cb.checked) checkedDocs.push(cb.value);
-                });
-                if (checkedDocs.length) {
-                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                }
-                if (cmoNotes && cmoNotes.value.trim()) {
-                    parts.push(`Others: ${cmoNotes.value.trim()}`);
-                }
-                const reflectionValue = parts.join(' , ');
-                reflectionField.value = reflectionValue;
-
-                // Update the hidden field as well
-                if (forCMOPersonnelInput) {
-                    forCMOPersonnelInput.value = reflectionValue;
-                }
-            }
-
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            if (billInput) billInput.addEventListener('input', updateReflection);
-            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
-
-            // Initialize reflection field
-            updateReflection();
-        });
 
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
@@ -1210,43 +1292,7 @@
                 successModal.style.display = "none";
             }
         }
-
-        // Function to view encrypted Additional Information
-        function viewHospitalAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = {
-                names: [
-                    'HospitalFacilityName',
-                    'HospitalFacilityAddress',
-                    'DiagnosisMedicalCondition',
-                    'HospitalBillCost',
-                    'AdmissionDate',
-                    'DischargeDate',
-                    'WardRoomType'
-                ],
-                labels: [
-                    'Hospital/Medical Facility Name',
-                    'Hospital/Medical Facility Address',
-                    'Diagnosis/Medical Condition',
-                    'Hospital Bill/Cost',
-                    'Admission Date',
-                    'Discharge Date',
-                    'Ward/Room Type'
-                ],
-                values: [
-                    '@ViewData["HospitalFacilityName"]',
-                    '@ViewData["HospitalFacilityAddress"]',
-                    '@ViewData["DiagnosisMedicalCondition"]',
-                    '@ViewData["HospitalBillCost"]',
-                    '@ViewData["AdmissionDate"]',
-                    '@ViewData["DischargeDate"]',
-                    '@ViewData["WardRoomType"]'
-                ]
-            };
-
-            openViewAdditionalInfoModal('Hospital', formId, encryptedFields);
-        }
     </script>
 
-    @Html.Partial("_ViewEncryptedDataModal")
+    @Html.Partial("_ViewEncryptedDataModalForAdmin")
 }

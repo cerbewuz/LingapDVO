@@ -1,7 +1,7 @@
 @model FuneralAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Hospital Assistance View";
+    ViewData["Title"] = "Funeral Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
@@ -466,6 +466,31 @@
         color: #28a745;
         margin-bottom: 1rem;
     }
+
+    /* Funeral Information Container */
+    .funeral-info-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .funeral-info-visible {
+        display: block;
+    }
+
+    /* Funeral Loading Container */
+    .funeral-loading-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
 </style>
 
 <!-- Image Zoom Modal -->
@@ -633,14 +658,14 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- Additional Information Section (Password-Protected) -->
+            <!-- Funeral Information Section (Password-Protected) -->
             <div class="receipt-section">
                 <h5 class="section-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            onclick="viewFuneralAdditionalInfo()"
-                            title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Funeral Information (Encrypted)</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="viewFuneralInfoBtn"
+                            onclick="openViewAdditionalInfoModal('Funeral', '@ViewData["Id"]', getFuneralAssistanceFields())"
+                            title="Click to view encrypted funeral information">
+                        <i class="bi bi-eye-fill me-2"></i>View Funeral Information
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -648,8 +673,72 @@
                         <div class="alert alert-info d-flex align-items-center" role="alert">
                             <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
                             <div>
-                                <strong>This information is encrypted for security.</strong><br>
-                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                                <strong>This funeral information is encrypted for security.</strong><br>
+                                Click the "View Funeral Information" button above and enter your password to view the details.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Funeral Loading Container (shown while decrypting) -->
+                <div class="funeral-loading-container" id="funeralLoadingContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Decrypting funeral information... Please wait 5 seconds</p>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" id="funeralLoadingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Funeral Information Container (hidden by default, shown after successful decryption) -->
+                <div class="funeral-info-container" id="funeralInfoContainer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Name of Deceased Person:</div>
+                                <div class="info-value" id="deceasedPersonName">@ViewData["DeceasedPersonName"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Relationship to Deceased:</div>
+                                <div class="info-value" id="relationshipToDeceased">@ViewData["RelationshipToDeceased"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Date of Death:</div>
+                                <div class="info-value" id="dateOfDeath">@ViewData["DateOfDeath"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Time of Death:</div>
+                                <div class="info-value" id="timeOfDeath">@ViewData["TimeOfDeath"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Cause of Death:</div>
+                                <div class="info-value" id="causeOfDeath">@ViewData["CauseOfDeath"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Funeral Home/Parlor Name:</div>
+                                <div class="info-value" id="funeralHomeName">@ViewData["FuneralHomeName"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Funeral Home/Parlor Address:</div>
+                                <div class="info-value" id="funeralHomeAddress">@ViewData["FuneralHomeAddress"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Date of Burial/Cremation:</div>
+                                <div class="info-value" id="burialCremationDate">@ViewData["BurialCremationDate"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Time of Burial/Cremation:</div>
+                                <div class="info-value" id="burialCremationTime">@ViewData["BurialCremationTime"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Type (Burial/Cremation):</div>
+                                <div class="info-value" id="burialCremationType">@ViewData["BurialCremationType"]</div>
                             </div>
                         </div>
                     </div>
@@ -993,33 +1082,169 @@
         }
 
         // Status Submission Functions
-        function submitApprove() {
-            // Set the status and comments
+        function markAsClaimed() {
+            // Set the status to "Claimed"
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
             const processByInput = document.getElementById('processByInput');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
 
-            if (statusInput) statusInput.value = 'Approve';
-            if (commentsInput) commentsInput.value = ''; // Empty comments for approval
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
+            if (statusInput) statusInput.value = 'Claimed';
+            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
             if (processByInput) {
                 const processedBy = document.getElementById('processedBy');
                 if (processedBy) processByInput.value = processedBy.value;
             }
 
-            // Show loading modal
+            // Show success modal
             showSuccessModal();
 
-            // Submit the form
+            // Submit the form after a short delay to show the modal
             setTimeout(() => {
                 document.getElementById('statusForm').submit();
-            }, 500);
+            }, 2000); // Show modal for 2 seconds before redirecting
         }
 
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) modal.style.display = 'block';
+        }
+
+        // Funeral Information Functions (Matching Hospital Assistance pattern)
+        function getFuneralAssistanceFields() {
+            const fieldNames = [
+                'DeceasedPersonName',
+                'RelationshipToDeceased',
+                'DateOfDeath',
+                'TimeOfDeath',
+                'CauseOfDeath',
+                'FuneralHomeName',
+                'FuneralHomeAddress',
+                'BurialCremationDate',
+                'BurialCremationTime',
+                'BurialCremationType'
+            ];
+
+            const fieldLabels = [
+                'Name of Deceased Person',
+                'Relationship to Deceased',
+                'Date of Death',
+                'Time of Death',
+                'Cause of Death',
+                'Funeral Home/Parlor Name',
+                'Funeral Home/Parlor Address',
+                'Date of Burial/Cremation',
+                'Time of Burial/Cremation',
+                'Type (Burial/Cremation)'
+            ];
+
+            const fieldValues = [
+                '@ViewData["DeceasedPersonName"]',
+                '@ViewData["RelationshipToDeceased"]',
+                '@ViewData["DateOfDeath"]',
+                '@ViewData["TimeOfDeath"]',
+                '@ViewData["CauseOfDeath"]',
+                '@ViewData["FuneralHomeName"]',
+                '@ViewData["FuneralHomeAddress"]',
+                '@ViewData["BurialCremationDate"]',
+                '@ViewData["BurialCremationTime"]',
+                '@ViewData["BurialCremationType"]'
+            ];
+
+            return {
+                names: fieldNames,
+                labels: fieldLabels,
+                values: fieldValues
+            };
+        }
+
+        // Function to hide funeral information
+        function hideFuneralInfo() {
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+
+            if (funeralInfoContainer) {
+                funeralInfoContainer.classList.remove('funeral-info-visible');
+                funeralInfoContainer.style.display = 'none';
+            }
+
+            // Show the button again when hiding the info
+            if (viewButton) {
+                viewButton.style.display = 'inline-block';
+            }
+        }
+
+        // Function to show funeral information after successful decryption
+        function showFuneralInfoAfterDecryption() {
+            console.log('Showing funeral information after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('funeralLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the "View Funeral Information" button
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+            if (viewButton) {
+                viewButton.style.display = 'none';
+            }
+
+            // Show the funeral information container
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            if (funeralInfoContainer) {
+                funeralInfoContainer.style.display = 'block';
+                funeralInfoContainer.classList.add('funeral-info-visible');
+
+                // Scroll to the funeral information section
+                setTimeout(() => {
+                    funeralInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        // Function to start the 5-second loading animation
+        function startFuneralInfoLoading() {
+            console.log('Starting funeral information loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('funeralLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide any existing funeral info container
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            if (funeralInfoContainer) {
+                funeralInfoContainer.style.display = 'none';
+                funeralInfoContainer.classList.remove('funeral-info-visible');
+            }
+
+            // Start 5-second progress bar
+            const progressBar = document.getElementById('funeralLoadingProgress');
+            if (progressBar) {
+                let progress = 0;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
+                const increment = (interval / totalTime) * 100;
+
+                const progressInterval = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+
+                        // After 5 seconds, show the funeral information
+                        setTimeout(() => {
+                            showFuneralInfoAfterDecryption();
+                        }, 300);
+                    } else {
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
+            }
+        }
+
+        // Comments modal functions (if needed for other actions)
         function showCommentsModal() {
             const modal = document.getElementById('commentsModal');
             const textarea = document.getElementById('commentsTextarea');
@@ -1051,15 +1276,10 @@
 
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
             const processByInput = document.getElementById('processByInput');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
 
             if (statusInput) statusInput.value = 'Disapprove';
             if (commentsInput) commentsInput.value = comments;
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
             if (processByInput) {
                 const processedBy = document.getElementById('processedBy');
                 if (processedBy) processByInput.value = processedBy.value;
@@ -1073,89 +1293,6 @@
                 document.getElementById('statusForm').submit();
             }, 500);
         }
-
-        // Mark as Claimed Function
-        function markAsClaimed() {
-            // Set the status to "Claimed"
-            const statusInput = document.getElementById('statusInput');
-            const commentsInput = document.getElementById('commentsInput');
-            const cmoReflectionField = document.getElementById('cmoReflectionField');
-            const processByInput = document.getElementById('processByInput');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-
-            if (statusInput) statusInput.value = 'Claimed';
-            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
-            if (cmoReflectionField && forCMOPersonnelInput) {
-                forCMOPersonnelInput.value = cmoReflectionField.value;
-            }
-            if (processByInput) {
-                const processedBy = document.getElementById('processedBy');
-                if (processedBy) processByInput.value = processedBy.value;
-            }
-
-            // Show success modal
-            showSuccessModal();
-
-            // Submit the form after a short delay to show the modal
-            setTimeout(() => {
-                document.getElementById('statusForm').submit();
-            }, 2000); // Show modal for 2 seconds before redirecting
-        }
-
-        function showSuccessModal() {
-            const modal = document.getElementById('successModal');
-            if (modal) modal.style.display = 'block';
-        }
-
-        // CMO Reflection Auto-generation
-        document.addEventListener('DOMContentLoaded', function() {
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-            cmoCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    updateReflection();
-                });
-            });
-
-            function updateReflection() {
-                const billInput = document.getElementById('billAmountInput');
-                const cmoNotes = document.getElementById('cmoNotesInput');
-                const reflectionField = document.getElementById('cmoReflectionField');
-                const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-                const docCheckboxes = document.querySelectorAll('.supporting-doc');
-
-                if (!reflectionField) return;
-
-                let parts = [];
-                if (billInput && billInput.value.trim()) {
-                    parts.push(`Bill: ${billInput.value.trim()}`);
-                }
-                const checkedDocs = [];
-                docCheckboxes.forEach(cb => {
-                    if (cb.checked) checkedDocs.push(cb.value);
-                });
-                if (checkedDocs.length) {
-                    parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                }
-                if (cmoNotes && cmoNotes.value.trim()) {
-                    parts.push(`Others: ${cmoNotes.value.trim()}`);
-                }
-                const reflectionValue = parts.join(' , ');
-                reflectionField.value = reflectionValue;
-
-                // Update the hidden field as well
-                if (forCMOPersonnelInput) {
-                    forCMOPersonnelInput.value = reflectionValue;
-                }
-            }
-
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            if (billInput) billInput.addEventListener('input', updateReflection);
-            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
-
-            // Initialize reflection field
-            updateReflection();
-        });
 
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
@@ -1211,51 +1348,14 @@
             }
         }
 
-        // Function to view encrypted Additional Information
+        // Function to view encrypted Funeral Information
         function viewFuneralAdditionalInfo() {
             const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = {
-                names: [
-                    'DeceasedPersonName',
-                    'RelationshipToDeceased',
-                    'DateOfDeath',
-                    'TimeOfDeath',
-                    'CauseOfDeath',
-                    'FuneralHomeName',
-                    'FuneralHomeAddress',
-                    'BurialCremationDate',
-                    'BurialCremationTime',
-                    'BurialCremationType'
-                ],
-                labels: [
-                    'Name of Deceased Person',
-                    'Relationship to Deceased',
-                    'Date of Death',
-                    'Time of Death',
-                    'Cause of Death',
-                    'Funeral Home/Parlor Name',
-                    'Funeral Home/Parlor Address',
-                    'Date of Burial/Cremation',
-                    'Time of Burial/Cremation',
-                    'Type (Burial/Cremation)'
-                ],
-                values: [
-                    '@ViewData["DeceasedPersonName"]',
-                    '@ViewData["RelationshipToDeceased"]',
-                    '@ViewData["DateOfDeath"]',
-                    '@ViewData["TimeOfDeath"]',
-                    '@ViewData["CauseOfDeath"]',
-                    '@ViewData["FuneralHomeName"]',
-                    '@ViewData["FuneralHomeAddress"]',
-                    '@ViewData["BurialCremationDate"]',
-                    '@ViewData["BurialCremationTime"]',
-                    '@ViewData["BurialCremationType"]'
-                ]
-            };
+            const encryptedFields = getFuneralAssistanceFields();
 
             openViewAdditionalInfoModal('Funeral', formId, encryptedFields);
         }
     </script>
 
-    @Html.Partial("_ViewEncryptedDataModal")
+    @Html.Partial("_ViewEncryptedDataModalForAdmin")
 }
