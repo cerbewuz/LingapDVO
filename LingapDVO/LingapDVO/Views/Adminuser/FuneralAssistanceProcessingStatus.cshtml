@@ -1,7 +1,7 @@
 @model FuneralAssistanceDto
 @{
     Layout = "_AdminProcessingLayout";
-    ViewData["Title"] = "Process Hospital Assistance";
+    ViewData["Title"] = "Process Funeral Assistance";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
@@ -458,78 +458,6 @@
         margin-bottom: 1rem;
     }
 
-    /* Status Buttons Styling */
-    .status-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .btn-approved {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-approved:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-disapproved {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-disapproved:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-warning {
-        background-color: #ff9800;
-        border-color: #ff9800;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-warning:hover {
-            background-color: #e68900;
-            border-color: #d17d00;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
     /* CMO Details Styles */
     .cmo-details {
         background-color: #f8f9fa;
@@ -686,6 +614,103 @@
         background-color: #fff3e0;
         color: #ff6f00;
     }
+
+    /* Funeral Information Container */
+    .funeral-info-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .funeral-info-visible {
+        display: block;
+    }
+
+    /* Funeral Information Loading Container */
+    .funeral-loading-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    /* Status Buttons Styling */
+    .status-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-approved {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-approved:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .btn-disapproved {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-disapproved:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .btn-warning {
+        background-color: #ff9800;
+        border-color: #ff9800;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-warning:hover {
+            background-color: #e68900;
+            border-color: #d17d00;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
 
     /* Responsive adjustments */
     @@media (max-width: 768px) {
@@ -999,14 +1024,14 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- Additional Information Section (Password-Protected) -->
+            <!-- Funeral Information Section (Password-Protected) -->
             <div class="receipt-section">
                 <h5 class="section-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            onclick="viewFuneralAdditionalInfo()"
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Funeral Information (Encrypted)</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="viewFuneralInfoBtn"
+                            onclick="openViewAdditionalInfoModal('Funeral', '@ViewData["Id"]', getFuneralAssistanceFields())"
                             title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                        <i class="bi bi-eye-fill me-2"></i>View Funeral Information
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -1014,10 +1039,31 @@
                         <div class="alert alert-info d-flex align-items-center" role="alert">
                             <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
                             <div>
-                                <strong>This information is encrypted for security.</strong><br>
-                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                                <strong>This funeral information is encrypted for security.</strong><br>
+                                Click the "View Funeral Information" button above and enter your password to view the details.
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Funeral Information Loading Container (shown while decrypting) -->
+                <div class="funeral-loading-container" id="funeralLoadingContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Decrypting funeral information... Please wait 5 seconds</p>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" id="funeralLoadingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Funeral Information Container (hidden by default, shown after successful decryption) -->
+                <div class="funeral-info-container" id="funeralInfoContainer">
+                    <div class="row">
+                        <!-- Fields will be dynamically populated here -->
                     </div>
                 </div>
             </div>
@@ -1097,181 +1143,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Add this JavaScript code in your Scripts section -->
-            <script>
-                // Function to handle single checkbox selection
-                function handleSingleCheckboxSelection(event) {
-                    const clickedCheckbox = event.target;
-
-                    // If the clicked checkbox is being checked
-                    if (clickedCheckbox.checked) {
-                        // Uncheck all other single-doc checkboxes
-                        const allCheckboxes = document.querySelectorAll('.single-doc');
-                        allCheckboxes.forEach(checkbox => {
-                            if (checkbox !== clickedCheckbox) {
-                                checkbox.checked = false;
-                            }
-                        });
-
-                        // Hide any error message
-                        hideSingleDocError();
-
-                        // If "Others" is checked, show the input field
-                        if (clickedCheckbox.id === 'othersCheckbox') {
-                            document.getElementById('cmoOthersRow').style.display = 'flex';
-                            document.getElementById('cmoNotesInput').required = true;
-                        } else {
-                            // If another checkbox is checked, hide the Others input field
-                            document.getElementById('cmoOthersRow').style.display = 'none';
-                            document.getElementById('cmoNotesInput').required = false;
-                            document.getElementById('cmoNotesInput').classList.remove('is-invalid');
-                        }
-                    }
-                    // If the clicked checkbox is being unchecked, don't allow it if it's the only one checked
-                    else {
-                        const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
-                        if (checkedCheckboxes.length === 0) {
-                            // Don't allow unchecking if it would leave none checked
-                            clickedCheckbox.checked = true;
-                            showSingleDocError("You must select at least one document.");
-                        }
-                    }
-
-                    // Update CMO reflection
-                    updateReflection();
-                }
-
-                // Function to show single document error
-                function showSingleDocError(message = "Only one document can be selected at a time. Please choose only one supporting document.") {
-                    const errorDiv = document.getElementById('singleDocError');
-                    if (errorDiv) {
-                        errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
-                        errorDiv.style.display = 'block';
-                    }
-                }
-
-                // Function to hide single document error
-                function hideSingleDocError() {
-                    const errorDiv = document.getElementById('singleDocError');
-                    if (errorDiv) {
-                        errorDiv.style.display = 'none';
-                    }
-                }
-
-                // Function to validate single document selection
-                function validateSingleDocument() {
-                    const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
-
-                    if (checkedCheckboxes.length === 0) {
-                        showSingleDocError("Please select at least one supporting document.");
-                        return false;
-                    }
-
-                    if (checkedCheckboxes.length > 1) {
-                        showSingleDocError();
-                        return false;
-                    }
-
-                    // Validate "Others" field if "Others" is selected
-                    const othersCheckbox = document.getElementById('othersCheckbox');
-                    const cmoNotesInput = document.getElementById('cmoNotesInput');
-                    if (othersCheckbox && othersCheckbox.checked) {
-                        if (!cmoNotesInput.value.trim()) {
-                            cmoNotesInput.classList.add('is-invalid');
-                            showSingleDocError("Please specify the other documents when 'Others' is selected.");
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-
-                // Initialize single checkbox selection
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Add event listeners to all single-doc checkboxes
-                    const singleDocCheckboxes = document.querySelectorAll('.single-doc');
-                    singleDocCheckboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', handleSingleCheckboxSelection);
-                    });
-
-                    // Initialize Others field visibility
-                    const othersCheckbox = document.getElementById('othersCheckbox');
-                    if (othersCheckbox && othersCheckbox.checked) {
-                        document.getElementById('cmoOthersRow').style.display = 'flex';
-                    }
-
-                    // Update form validation to use single document validation
-                    const originalValidateCMOForm = validateCMOForm;
-                    window.validateCMOForm = function() {
-                        // Reset errors
-                        document.getElementById('supportingDocsError').style.display = 'none';
-                        document.getElementById('grantedAmountInput').classList.remove('is-invalid');
-                        document.getElementById('grantedAmountError').style.display = 'none';
-
-                        // Validate single document
-                        if (!validateSingleDocument()) {
-                            const cmoSection = document.querySelector('.cmo-details');
-                            if (cmoSection) {
-                                cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                            return false;
-                        }
-
-                        // Validate amount granted
-                        const grantedAmountInput = document.getElementById('grantedAmountInput');
-                        if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
-                            grantedAmountInput.classList.add('is-invalid');
-                            document.getElementById('grantedAmountError').style.display = 'block';
-                            const cmoSection = document.querySelector('.cmo-details');
-                            if (cmoSection) {
-                                cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                            alert('Please enter a valid amount granted (must be greater than 0).');
-                            return false;
-                        }
-
-                        return true;
-                    };
-                });
-
-                // Also update the updateReflection function if needed
-                function updateReflection() {
-                    const grantedAmountInput = document.getElementById('grantedAmountInput');
-                    const cmoNotes = document.getElementById('cmoNotesInput');
-                    const reflectionField = document.getElementById('cmoReflectionField');
-                    const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-                    const docCheckboxes = document.querySelectorAll('.single-doc:checked');
-
-                    let parts = [];
-
-                    // Add granted amount if exists
-                    if (grantedAmountInput && grantedAmountInput.value.trim()) {
-                        parts.push(`GrantedAmount: ${grantedAmountInput.value.trim()}`);
-                    }
-
-                    // Add checked document (only one should be checked)
-                    const checkedDocs = Array.from(docCheckboxes).map(cb => {
-                        if (cb.value === 'Others' && cmoNotes && cmoNotes.value.trim()) {
-                            return `Others: ${cmoNotes.value.trim()}`;
-                        }
-                        return cb.value;
-                    });
-
-                    if (checkedDocs.length > 0) {
-                        parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                    }
-
-                    const reflectionValue = parts.join(' , ');
-                    if (reflectionField) reflectionField.value = reflectionValue;
-
-                    // Update the hidden field as well
-                    if (forCMOPersonnelInput) forCMOPersonnelInput.value = reflectionValue;
-
-                    console.log('CMO Reflection updated:', reflectionValue);
-                    return reflectionValue;
-                }
-            </script>
 
             <!-- Valid ID and Submitted Documents Section -->
             <div class="receipt-section">
@@ -1702,6 +1573,194 @@
             if (pdfDocument) {
                 pdfDocument.destroy();
                 pdfDocument = null;
+            }
+        }
+
+        // Funeral Information Functions (Matching Other Assistance pattern)
+        function getFuneralAssistanceFields() {
+            return {
+                names: [
+                    'DeceasedPersonName',
+                    'RelationshipToDeceased',
+                    'DateOfDeath',
+                    'TimeOfDeath',
+                    'CauseOfDeath',
+                    'FuneralHomeName',
+                    'FuneralHomeAddress',
+                    'BurialCremationDate',
+                    'BurialCremationTime',
+                    'BurialCremationType'
+                ],
+                labels: [
+                    'Name of Deceased Person',
+                    'Relationship to Deceased',
+                    'Date of Death',
+                    'Time of Death',
+                    'Cause of Death',
+                    'Funeral Home/Parlor Name',
+                    'Funeral Home/Parlor Address',
+                    'Date of Burial/Cremation',
+                    'Time of Burial/Cremation',
+                    'Type (Burial/Cremation)'
+                ],
+                values: [
+                    '@ViewData["DeceasedPersonName"]',
+                    '@ViewData["RelationshipToDeceased"]',
+                    '@ViewData["DateOfDeath"]',
+                    '@ViewData["TimeOfDeath"]',
+                    '@ViewData["CauseOfDeath"]',
+                    '@ViewData["FuneralHomeName"]',
+                    '@ViewData["FuneralHomeAddress"]',
+                    '@ViewData["BurialCremationDate"]',
+                    '@ViewData["BurialCremationTime"]',
+                    '@ViewData["BurialCremationType"]'
+                ]
+            };
+        }
+
+        // Function to hide funeral information
+        function hideFuneralInfo() {
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+
+            if (funeralInfoContainer) {
+                funeralInfoContainer.classList.remove('funeral-info-visible');
+                funeralInfoContainer.style.display = 'none';
+            }
+
+            // Show the button again when hiding the info
+            if (viewButton) {
+                viewButton.style.display = 'inline-block';
+            }
+        }
+
+        // Function to show funeral information after successful decryption
+        function showFuneralInfoAfterDecryption() {
+            console.log('Showing funeral information after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('funeralLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the "View Funeral Information" button
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+            if (viewButton) {
+                viewButton.style.display = 'none';
+            }
+
+            // Show the funeral information container
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            if (funeralInfoContainer) {
+                funeralInfoContainer.style.display = 'block';
+                funeralInfoContainer.classList.add('funeral-info-visible');
+
+                // Populate the fields
+                populateFuneralInfoFields();
+
+                // Scroll to the funeral information section
+                setTimeout(() => {
+                    funeralInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        // Function to populate funeral information fields
+        function populateFuneralInfoFields() {
+            const container = document.getElementById('funeralInfoContainer');
+
+            if (!container) return;
+
+            const htmlContent = `
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <div class="info-label">Name of Deceased Person:</div>
+                        <div class="info-value" id="deceasedPersonName">@ViewData["DeceasedPersonName"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Relationship to Deceased:</div>
+                        <div class="info-value" id="relationshipToDeceased">@ViewData["RelationshipToDeceased"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Date of Death:</div>
+                        <div class="info-value" id="dateOfDeath">@ViewData["DateOfDeath"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Time of Death:</div>
+                        <div class="info-value" id="timeOfDeath">@ViewData["TimeOfDeath"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Cause of Death:</div>
+                        <div class="info-value" id="causeOfDeath">@ViewData["CauseOfDeath"]</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <div class="info-label">Funeral Home/Parlor Name:</div>
+                        <div class="info-value" id="funeralHomeName">@ViewData["FuneralHomeName"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Funeral Home/Parlor Address:</div>
+                        <div class="info-value" id="funeralHomeAddress">@ViewData["FuneralHomeAddress"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Date of Burial/Cremation:</div>
+                        <div class="info-value" id="burialCremationDate">@ViewData["BurialCremationDate"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Time of Burial/Cremation:</div>
+                        <div class="info-value" id="burialCremationTime">@ViewData["BurialCremationTime"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Type (Burial/Cremation):</div>
+                        <div class="info-value" id="burialCremationType">@ViewData["BurialCremationType"]</div>
+                    </div>
+                </div>
+            `;
+
+            container.querySelector('.row').innerHTML = htmlContent;
+        }
+
+        // Function to start the 5-second loading animation
+        function startFuneralInfoLoading() {
+            console.log('Starting funeral information loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('funeralLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide any existing funeral info container
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            if (funeralInfoContainer) {
+                funeralInfoContainer.style.display = 'none';
+                funeralInfoContainer.classList.remove('funeral-info-visible');
+            }
+
+            // Start 5-second progress bar
+            const progressBar = document.getElementById('funeralLoadingProgress');
+            if (progressBar) {
+                let progress = 0;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
+                const increment = (interval / totalTime) * 100;
+
+                const progressInterval = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+
+                        // After 5 seconds, show the funeral information
+                        setTimeout(() => {
+                            showFuneralInfoAfterDecryption();
+                        }, 300);
+                    } else {
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
             }
         }
 
@@ -2206,51 +2265,140 @@
             }
         });
 
-        // Function to view encrypted Additional Information
-        function viewFuneralAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = {
-                names: [
-                    'DeceasedPersonName',
-                    'RelationshipToDeceased',
-                    'DateOfDeath',
-                    'TimeOfDeath',
-                    'CauseOfDeath',
-                    'FuneralHomeName',
-                    'FuneralHomeAddress',
-                    'BurialCremationDate',
-                    'BurialCremationTime',
-                    'BurialCremationType'
-                ],
-                labels: [
-                    'Name of Deceased Person',
-                    'Relationship to Deceased',
-                    'Date of Death',
-                    'Time of Death',
-                    'Cause of Death',
-                    'Funeral Home/Parlor Name',
-                    'Funeral Home/Parlor Address',
-                    'Date of Burial/Cremation',
-                    'Time of Burial/Cremation',
-                    'Type (Burial/Cremation)'
-                ],
-                values: [
-                    '@ViewData["DeceasedPersonName"]',
-                    '@ViewData["RelationshipToDeceased"]',
-                    '@ViewData["DateOfDeath"]',
-                    '@ViewData["TimeOfDeath"]',
-                    '@ViewData["CauseOfDeath"]',
-                    '@ViewData["FuneralHomeName"]',
-                    '@ViewData["FuneralHomeAddress"]',
-                    '@ViewData["BurialCremationDate"]',
-                    '@ViewData["BurialCremationTime"]',
-                    '@ViewData["BurialCremationType"]'
-                ]
-            };
+        // Function to handle single checkbox selection
+        function handleSingleCheckboxSelection(event) {
+            const clickedCheckbox = event.target;
 
-            openViewAdditionalInfoModal('Funeral', formId, encryptedFields);
+            // If the clicked checkbox is being checked
+            if (clickedCheckbox.checked) {
+                // Uncheck all other single-doc checkboxes
+                const allCheckboxes = document.querySelectorAll('.single-doc');
+                allCheckboxes.forEach(checkbox => {
+                    if (checkbox !== clickedCheckbox) {
+                        checkbox.checked = false;
+                    }
+                });
+
+                // Hide any error message
+                hideSingleDocError();
+
+                // If "Others" is checked, show the input field
+                if (clickedCheckbox.id === 'othersCheckbox') {
+                    document.getElementById('cmoOthersRow').style.display = 'flex';
+                    document.getElementById('cmoNotesInput').required = true;
+                } else {
+                    // If another checkbox is checked, hide the Others input field
+                    document.getElementById('cmoOthersRow').style.display = 'none';
+                    document.getElementById('cmoNotesInput').required = false;
+                    document.getElementById('cmoNotesInput').classList.remove('is-invalid');
+                }
+            }
+            // If the clicked checkbox is being unchecked, don't allow it if it's the only one checked
+            else {
+                const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+                if (checkedCheckboxes.length === 0) {
+                    // Don't allow unchecking if it would leave none checked
+                    clickedCheckbox.checked = true;
+                    showSingleDocError("You must select at least one document.");
+                }
+            }
+
+            // Update CMO reflection
+            updateReflection();
         }
+
+        // Function to show single document error
+        function showSingleDocError(message = "Only one document can be selected at a time. Please choose only one supporting document.") {
+            const errorDiv = document.getElementById('singleDocError');
+            if (errorDiv) {
+                errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        // Function to hide single document error
+        function hideSingleDocError() {
+            const errorDiv = document.getElementById('singleDocError');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Function to validate single document selection
+        function validateSingleDocument() {
+            const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+
+            if (checkedCheckboxes.length === 0) {
+                showSingleDocError("Please select at least one supporting document.");
+                return false;
+            }
+
+            if (checkedCheckboxes.length > 1) {
+                showSingleDocError();
+                return false;
+            }
+
+            // Validate "Others" field if "Others" is selected
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            if (othersCheckbox && othersCheckbox.checked) {
+                if (!cmoNotesInput.value.trim()) {
+                    cmoNotesInput.classList.add('is-invalid');
+                    showSingleDocError("Please specify the other documents when 'Others' is selected.");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Update the validation function to use single document validation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all single-doc checkboxes
+            const singleDocCheckboxes = document.querySelectorAll('.single-doc');
+            singleDocCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', handleSingleCheckboxSelection);
+            });
+
+            // Initialize Others field visibility
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            if (othersCheckbox && othersCheckbox.checked) {
+                document.getElementById('cmoOthersRow').style.display = 'flex';
+            }
+
+            // Update form validation to use single document validation
+            window.validateCMOForm = function() {
+                // Reset errors
+                document.getElementById('supportingDocsError').style.display = 'none';
+                document.getElementById('grantedAmountInput').classList.remove('is-invalid');
+                document.getElementById('grantedAmountError').style.display = 'none';
+
+                // Validate single document
+                if (!validateSingleDocument()) {
+                    const cmoSection = document.querySelector('.cmo-details');
+                    if (cmoSection) {
+                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return false;
+                }
+
+                // Validate amount granted
+                const grantedAmountInput = document.getElementById('grantedAmountInput');
+                if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                    grantedAmountInput.classList.add('is-invalid');
+                    document.getElementById('grantedAmountError').style.display = 'block';
+                    const cmoSection = document.querySelector('.cmo-details');
+                    if (cmoSection) {
+                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    alert('Please enter a valid amount granted (must be greater than 0).');
+                    return false;
+                }
+
+                return true;
+            };
+        });
     </script>
 
-    @Html.Partial("_ViewEncryptedDataModal")
+    @Html.Partial("_ViewEncryptedDataModalForAdmin")
 }

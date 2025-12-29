@@ -61,11 +61,14 @@
                         </div>
                     </div>
 
-
+                    <!-- Decrypted Data Container -->
+                    <div id="decryptedDataContainer" class="mb-4">
+                        <!-- Decrypted data will be populated here -->
+                    </div>
 
                     <div class="mt-3 d-grid">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-shield-lock-fill me-2"></i>Proceed
+                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                            <i class="bi bi-check-circle-fill me-2"></i>Continue to Processing
                         </button>
                     </div>
                 </div>
@@ -187,11 +190,22 @@
         $('#viewAdditionalInfoModal').data('formId', formId);
         $('#viewAdditionalInfoModal').data('encryptedFields', encryptedFields);
 
-        // Show modal using Bootstrap 5 syntax WITHOUT backdrop
+        // Update modal title based on form type
+        let modalTitle = 'Additional Information (Encrypted)';
+        if (formType === 'Hospital') {
+            modalTitle = 'Hospital Information (Encrypted)';
+        } else if (formType === 'Other') {
+            modalTitle = 'Additional Information (Encrypted)';
+        } else if (formType === 'Funeral') {
+            modalTitle = 'Funeral Information (Encrypted)';
+        }
+        $('#viewAdditionalInfoModalLabel').html('<i class="bi bi-shield-lock-fill me-2"></i>' + modalTitle);
+
+        // Show modal using Bootstrap 5 syntax
         var modalElement = document.getElementById('viewAdditionalInfoModal');
         if (modalElement) {
             var modal = new bootstrap.Modal(modalElement, {
-                backdrop: 'static',  // Changed to 'static' to prevent closing on backdrop click but still show it
+                backdrop: 'static',
                 keyboard: true,
                 focus: true
             });
@@ -345,10 +359,23 @@
                 console.log('All fields decrypted:', decryptedData);
 
                 // Store decrypted data globally for the page to access
-                window.decryptedHospitalData = {};
-                decryptedData.forEach(function(field) {
-                    window.decryptedHospitalData[field.name] = field.value;
-                });
+                // We'll use different global variables for different form types
+                if (formType === 'Hospital') {
+                    window.decryptedHospitalData = {};
+                    decryptedData.forEach(function(field) {
+                        window.decryptedHospitalData[field.name] = field.value;
+                    });
+                } else if (formType === 'Other') {
+                    window.decryptedAdditionalData = {};
+                    decryptedData.forEach(function(field) {
+                        window.decryptedAdditionalData[field.name] = field.value;
+                    });
+                } else if (formType === 'Funeral') {
+                    window.decryptedFuneralData = {};
+                    decryptedData.forEach(function(field) {
+                        window.decryptedFuneralData[field.name] = field.value;
+                    });
+                }
 
                 // Build the display HTML for the modal
                 let html = '';
@@ -372,49 +399,188 @@
             });
         }
 
-        // Handle modal close event - populate the hospital info container on the page
+        // Handle modal close event - populate the appropriate container on the page
         $('#viewAdditionalInfoModal').on('hidden.bs.modal', function() {
             console.log('Modal closed');
 
-            // Check if we have decrypted data
-            if (window.decryptedHospitalData && Object.keys(window.decryptedHospitalData).length > 0) {
-                console.log('Populating hospital info container with decrypted data');
+            const formType = $('#viewAdditionalInfoModal').data('formType');
+            console.log('Form type on modal close:', formType);
 
-                // Start the loading animation
-                if (typeof startHospitalInfoLoading === 'function') {
-                    startHospitalInfoLoading();
+            if (formType === 'Hospital') {
+                // Check if we have decrypted hospital data
+                if (window.decryptedHospitalData && Object.keys(window.decryptedHospitalData).length > 0) {
+                    console.log('Populating hospital info container with decrypted data');
+
+                    // Start the loading animation
+                    if (typeof startHospitalInfoLoading === 'function') {
+                        startHospitalInfoLoading();
+                    }
+
+                    // After a delay, populate the fields and show the container
+                    setTimeout(function() {
+                        // Populate the hospital info fields on the page
+                        if (window.decryptedHospitalData['HospitalFacilityName']) {
+                            $('#hospitalName').text(window.decryptedHospitalData['HospitalFacilityName']);
+                        }
+                        if (window.decryptedHospitalData['HospitalFacilityAddress']) {
+                            $('#hospitalAddress').text(window.decryptedHospitalData['HospitalFacilityAddress']);
+                        }
+                        if (window.decryptedHospitalData['DiagnosisMedicalCondition']) {
+                            $('#diagnosis').text(window.decryptedHospitalData['DiagnosisMedicalCondition']);
+                        }
+                        if (window.decryptedHospitalData['WardRoomType']) {
+                            $('#wardRoomType').text(window.decryptedHospitalData['WardRoomType']);
+                        }
+                        if (window.decryptedHospitalData['HospitalBillCost']) {
+                            $('#hospitalBill').text(window.decryptedHospitalData['HospitalBillCost']);
+                        }
+                        if (window.decryptedHospitalData['AdmissionDate']) {
+                            $('#admissionDate').text(window.decryptedHospitalData['AdmissionDate']);
+                        }
+                        if (window.decryptedHospitalData['DischargeDate']) {
+                            $('#dischargeDate').text(window.decryptedHospitalData['DischargeDate']);
+                        }
+
+                        // Show the hospital information container
+                        if (typeof showHospitalInfoAfterDecryption === 'function') {
+                            showHospitalInfoAfterDecryption();
+                        }
+                    }, 100);
                 }
+            } else if (formType === 'Other') {
+                // Check if we have decrypted additional data
+                if (window.decryptedAdditionalData && Object.keys(window.decryptedAdditionalData).length > 0) {
+                    console.log('Populating additional info container with decrypted data');
 
-                // After a delay, populate the fields and show the container
-                setTimeout(function() {
-                    // Populate the hospital info fields on the page
-                    if (window.decryptedHospitalData['HospitalFacilityName']) {
-                        $('#hospitalName').text(window.decryptedHospitalData['HospitalFacilityName']);
-                    }
-                    if (window.decryptedHospitalData['HospitalFacilityAddress']) {
-                        $('#hospitalAddress').text(window.decryptedHospitalData['HospitalFacilityAddress']);
-                    }
-                    if (window.decryptedHospitalData['DiagnosisMedicalCondition']) {
-                        $('#diagnosis').text(window.decryptedHospitalData['DiagnosisMedicalCondition']);
-                    }
-                    if (window.decryptedHospitalData['WardRoomType']) {
-                        $('#wardRoomType').text(window.decryptedHospitalData['WardRoomType']);
-                    }
-                    if (window.decryptedHospitalData['HospitalBillCost']) {
-                        $('#hospitalBill').text(window.decryptedHospitalData['HospitalBillCost']);
-                    }
-                    if (window.decryptedHospitalData['AdmissionDate']) {
-                        $('#admissionDate').text(window.decryptedHospitalData['AdmissionDate']);
-                    }
-                    if (window.decryptedHospitalData['DischargeDate']) {
-                        $('#dischargeDate').text(window.decryptedHospitalData['DischargeDate']);
+                    // Start the loading animation for additional info
+                    if (typeof startAdditionalInfoLoading === 'function') {
+                        startAdditionalInfoLoading();
                     }
 
-                    // Show the hospital information container
-                    if (typeof showHospitalInfoAfterDecryption === 'function') {
-                        showHospitalInfoAfterDecryption();
+                    // After a delay, populate the fields and show the container
+                    setTimeout(function() {
+                        // Populate the additional info fields on the page
+                        const assistanceType = '@ViewData["Typeassistance"]';
+
+                        if (assistanceType === 'Medicine Assistance') {
+                            if (window.decryptedAdditionalData['MedicineName']) {
+                                $('#medicineName').text(window.decryptedAdditionalData['MedicineName']);
+                            }
+                            if (window.decryptedAdditionalData['MedicineQuantity']) {
+                                $('#medicineQuantity').text(window.decryptedAdditionalData['MedicineQuantity']);
+                            }
+                            if (window.decryptedAdditionalData['MedicineCost']) {
+                                $('#medicineCost').text(window.decryptedAdditionalData['MedicineCost']);
+                            }
+                            if (window.decryptedAdditionalData['PrescribingDoctor']) {
+                                $('#prescribingDoctor').text(window.decryptedAdditionalData['PrescribingDoctor']);
+                            }
+                            if (window.decryptedAdditionalData['DoctorContactDetail']) {
+                                $('#doctorContact').text(window.decryptedAdditionalData['DoctorContactDetail']);
+                            }
+                        } else if (assistanceType === 'Laboratory') {
+                            if (window.decryptedAdditionalData['LaboratoryCenterName']) {
+                                $('#labCenterName').text(window.decryptedAdditionalData['LaboratoryCenterName']);
+                            }
+                            if (window.decryptedAdditionalData['LaboratoryCenterAddress']) {
+                                $('#labCenterAddress').text(window.decryptedAdditionalData['LaboratoryCenterAddress']);
+                            }
+                            if (window.decryptedAdditionalData['TestName']) {
+                                $('#testName').text(window.decryptedAdditionalData['TestName']);
+                            }
+                            if (window.decryptedAdditionalData['TestCost']) {
+                                $('#testCost').text(window.decryptedAdditionalData['TestCost']);
+                            }
+                            if (window.decryptedAdditionalData['TestOtherInfo']) {
+                                $('#testOtherInfo').text(window.decryptedAdditionalData['TestOtherInfo']);
+                            }
+                        } else if (assistanceType === 'Therapy') {
+                            if (window.decryptedAdditionalData['TherapyFacilityName']) {
+                                $('#therapyFacilityName').text(window.decryptedAdditionalData['TherapyFacilityName']);
+                            }
+                            if (window.decryptedAdditionalData['TherapyFacilityAddress']) {
+                                $('#therapyFacilityAddress').text(window.decryptedAdditionalData['TherapyFacilityAddress']);
+                            }
+                            if (window.decryptedAdditionalData['TherapyFacilityContact']) {
+                                $('#therapyFacilityContact').text(window.decryptedAdditionalData['TherapyFacilityContact']);
+                            }
+                            if (window.decryptedAdditionalData['TherapyType']) {
+                                $('#therapyType').text(window.decryptedAdditionalData['TherapyType']);
+                            }
+                        } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+                            if (window.decryptedAdditionalData['EquipmentName']) {
+                                $('#equipmentName').text(window.decryptedAdditionalData['EquipmentName']);
+                            }
+                            if (window.decryptedAdditionalData['EquipmentBrand']) {
+                                $('#equipmentBrand').text(window.decryptedAdditionalData['EquipmentBrand']);
+                            }
+                            if (window.decryptedAdditionalData['EquipmentCategory']) {
+                                $('#equipmentCategory').text(window.decryptedAdditionalData['EquipmentCategory']);
+                            }
+                            if (window.decryptedAdditionalData['EquipmentQuantity']) {
+                                $('#equipmentQuantity').text(window.decryptedAdditionalData['EquipmentQuantity']);
+                            }
+                            if (window.decryptedAdditionalData['EquipmentCost']) {
+                                $('#equipmentCost').text(window.decryptedAdditionalData['EquipmentCost']);
+                            }
+                        }
+
+                        // Show the additional information container
+                        if (typeof showAdditionalInfoAfterDecryption === 'function') {
+                            showAdditionalInfoAfterDecryption();
+                        }
+                    }, 100);
+                }
+            } else if (formType === 'Funeral') {
+                // Check if we have decrypted funeral data
+                if (window.decryptedFuneralData && Object.keys(window.decryptedFuneralData).length > 0) {
+                    console.log('Populating funeral info container with decrypted data');
+
+                    // Start the loading animation for funeral info
+                    if (typeof startFuneralInfoLoading === 'function') {
+                        startFuneralInfoLoading();
                     }
-                }, 100);
+
+                    // After a delay, populate the fields and show the container
+                    setTimeout(function() {
+                        // Populate the funeral info fields on the page
+                        if (window.decryptedFuneralData['DeceasedName']) {
+                            $('#deceasedName').text(window.decryptedFuneralData['DeceasedName']);
+                        }
+                        if (window.decryptedFuneralData['DeceasedAge']) {
+                            $('#deceasedAge').text(window.decryptedFuneralData['DeceasedAge']);
+                        }
+                        if (window.decryptedFuneralData['RelationshipToDeceased']) {
+                            $('#relationshipToDeceased').text(window.decryptedFuneralData['RelationshipToDeceased']);
+                        }
+                        if (window.decryptedFuneralData['DateOfDeath']) {
+                            $('#dateOfDeath').text(window.decryptedFuneralData['DateOfDeath']);
+                        }
+                        if (window.decryptedFuneralData['CauseOfDeath']) {
+                            $('#causeOfDeath').text(window.decryptedFuneralData['CauseOfDeath']);
+                        }
+                        if (window.decryptedFuneralData['FuneralServiceProvider']) {
+                            $('#funeralServiceProvider').text(window.decryptedFuneralData['FuneralServiceProvider']);
+                        }
+                        if (window.decryptedFuneralData['FuneralServiceAddress']) {
+                            $('#funeralServiceAddress').text(window.decryptedFuneralData['FuneralServiceAddress']);
+                        }
+                        if (window.decryptedFuneralData['FuneralServiceContact']) {
+                            $('#funeralServiceContact').text(window.decryptedFuneralData['FuneralServiceContact']);
+                        }
+                        if (window.decryptedFuneralData['FuneralCost']) {
+                            $('#funeralCost').text(window.decryptedFuneralData['FuneralCost']);
+                        }
+                        if (window.decryptedFuneralData['AdditionalFuneralInfo']) {
+                            $('#additionalFuneralInfo').text(window.decryptedFuneralData['AdditionalFuneralInfo']);
+                        }
+
+                        // Show the funeral information container
+                        if (typeof showFuneralInfoAfterDecryption === 'function') {
+                            showFuneralInfoAfterDecryption();
+                        }
+                    }, 100);
+                }
             }
 
             // Reset modal state for next use
