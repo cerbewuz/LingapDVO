@@ -5,13 +5,6 @@
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
-    
-    // Extract retake reason from Comments
-    var retakeReason = "";
-    if (!string.IsNullOrEmpty(Model.Comments) && Model.Comments.Contains("RETAKE REQUEST:"))
-    {
-        retakeReason = Model.Comments.Replace("RETAKE REQUEST:", "").Trim();
-    }
 }
 
 <style>
@@ -237,61 +230,94 @@
             margin-bottom: 1rem;
         }
 
-    /* Status badge styles */
-    .status-badge {
-        display: inline-block;
-        padding: 0.35rem 0.75rem;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-
-    .status-pending {
-        background-color: #fff3cd;
-        color: #856404;
-    }
-
-    .status-approve {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .status-disapprove {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-
-    .status-processing {
-        background-color: #cce5ff;
-        color: #004085;
-    }
-
-    .status-claimed {
-        background-color: #d1ecf1;
-        color: #0c5460;
-    }
-
-    /* Disapproval-specific styles */
-    .disapproval-reason {
+    /* Status Buttons Styling */
+    .status-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
         margin-top: 1rem;
-        padding: 1rem;
-        background-color: #fff5f5;
-        border-left: 4px solid #dc3545;
-        border-radius: 4px;
+        flex-wrap: wrap;
     }
 
-    .disapproval-label {
+    .btn-approved {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.75rem 2rem;
         font-weight: 600;
-        color: #721c24;
-        margin-bottom: 0.5rem;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
     }
 
-    .disapproval-comments {
-        color: #555;
-        line-height: 1.5;
+        .btn-approved:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .btn-disapproved {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
     }
 
-    /* Comments Modal Styles */
+        .btn-disapproved:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Retake Button Styling */
+    .btn-retake {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-retake:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+            color: #212529;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Claimed Button Styling */
+    .btn-claimed {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-claimed:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Comments Modal Styling */
     .comments-modal {
         display: none;
         position: fixed;
@@ -345,46 +371,196 @@
         background-color: #fff5f5;
     }
 
-    /* Button Styles */
-    .btn-approved {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
+    /* Form Validation */
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
     }
 
-        .btn-approved:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            color: white;
-        }
-
-    .btn-disapproved {
-        background-color: #dc3545;
+    .is-invalid {
         border-color: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     }
 
-        .btn-disapproved:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
+        .is-invalid ~ .invalid-feedback {
+            display: block;
         }
 
-    .status-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
     }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approve {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-disapprove {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-retake {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+    }
+
+    .status-claimed {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    /* Receipt Sections */
+    .receipt-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-header {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-label {
+        flex: 0 0 30%;
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
+
+    .info-value {
+        flex: 1;
+        color: #555;
+    }
+
+    /* Success Modal */
+    .success-modal {
+        display: none;
+        position: fixed;
+        z-index: 4000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
+
+    .success-modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .success-icon {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+
+    /* Hospital Info Container */
+    .hospital-info-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .hospital-info-visible {
+        display: block;
+    }
+
+    /* Hospital Loading Container */
+    .hospital-loading-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    /* Retake Comments Modal */
+    .retake-modal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .retake-modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .retake-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .retake-modal-title {
+        color: #ffc107;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .retake-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+    }
+
+        .retake-modal-close:hover {
+            color: var(--primary-color);
+        }
 </style>
 
 <!-- Image Zoom Modal -->
@@ -434,32 +610,74 @@
     </div>
 </div>
 
+<!-- Comments Modal for Disapproval -->
+<div id="commentsModal" class="comments-modal">
+    <div class="comments-modal-content">
+        <div class="comments-modal-header">
+            <h5 class="comments-modal-title">Comments Required</h5>
+            <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
+        </div>
+        <div class="mb-3">
+            <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
+            <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
+            <div class="invalid-feedback">Comments are required when disapproving an application.</div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
+            <button type="button" class="btn btn-disapproved" onclick="submitDisapprove()">Submit Disapproval</button>
+        </div>
+    </div>
+</div>
+
+<!-- Retake Modal -->
+<div id="retakeModal" class="retake-modal">
+    <div class="retake-modal-content">
+        <div class="retake-modal-header">
+            <h5 class="retake-modal-title">Mark as Retake</h5>
+            <button class="retake-modal-close" onclick="closeRetakeModal()">&times;</button>
+        </div>
+        <div class="mb-3">
+            <label for="retakeCommentsTextarea" class="form-label">Please specify what needs to be retaken or corrected:</label>
+            <textarea class="form-control" id="retakeCommentsTextarea" rows="4" placeholder="Enter details about what documents or information need to be retaken (e.g., 'Need clearer ID photo', 'Missing medical certificate', etc.)..." required></textarea>
+            <div class="invalid-feedback">Comments are required when marking as retake.</div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeRetakeModal()">Cancel</button>
+            <button type="button" class="btn btn-retake" onclick="submitRetake()">Mark as Retake</button>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="success-modal">
+    <div class="success-modal-content">
+        <div class="success-icon">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <h4>Status Updated Successfully!</h4>
+        <p>Application marked as <strong id="successStatusText"></strong></p>
+        <p>Redirecting to Admin page...</p>
+        <div class="mt-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="receipt-container">
-    <form asp-action="HospitalAssistanceView" enctype="multipart/form-data" method="post" id="statusForm">
-        <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
-        <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
+    <form asp-action="HospitalAssistanceApproveStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
+        @Html.AntiForgeryToken()
+
+        <!-- Hidden fields for form submission -->
+        <input type="hidden" name="id" value="@ViewData["Id"]" />
+        <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
+        <input type="hidden" id="commentsInput" name="Comments" value="" />
+        <input type="hidden" id="forCMOPersonnelInput" name="ForCMOPERSONNEL" value="@ViewData["ForCMOPERSONNEL"]" />
+        <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
 
         <div class="receipt-body">
-            <!-- Retake Reason Alert -->
-            @if (!string.IsNullOrEmpty(retakeReason))
-            {
-                <div class="alert alert-warning mb-4" style="border-left: 4px solid #ff9800;">
-                    <div class="d-flex align-items-start">
-                        <i class="bi bi-arrow-clockwise me-3" style="font-size: 1.5rem; color: #ff9800;"></i>
-                        <div>
-                            <h6 class="alert-heading mb-2"><strong>Retake Request Reason:</strong></h6>
-                            <p class="mb-0">@retakeReason</p>
-                            @if (Model.RetakeRequestedAt.HasValue)
-                            {
-                                <small class="text-muted d-block mt-2">
-                                    <i class="bi bi-clock me-1"></i>Requested on: @Model.RetakeRequestedAt.Value.ToString("MMMM dd, yyyy 'at' hh:mm tt")
-                                </small>
-                            }
-                        </div>
-                    </div>
-                </div>
-            }
-            
+
             <!-- Patient Information -->
             <div class="receipt-section">
                 <h5 class="section-header">Patient Information</h5>
@@ -529,14 +747,18 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- Additional Information Section (Password-Protected) -->
+            <!-- Hospital Information Section (Password-Protected) -->
             <div class="receipt-section">
                 <h5 class="section-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            onclick="viewHospitalAdditionalInfo()"
-                            title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Hospital Information (Encrypted)</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="viewHospitalInfoBtn"
+                            onclick="openViewAdditionalInfoModal('Hospital', '@ViewData["Id"]', {
+                                labels: ['Hospital/Facility Name', 'Hospital Address', 'Diagnosis/Medical Condition', 'Ward/Room Type', 'Hospital Bill/Cost', 'Admission Date', 'Discharge Date'],
+                                values: ['@ViewData["HospitalFacilityName"]', '@ViewData["HospitalFacilityAddress"]', '@ViewData["DiagnosisMedicalCondition"]', '@ViewData["WardRoomType"]', '@ViewData["HospitalBillCost"]', '@ViewData["AdmissionDate"]', '@ViewData["DischargeDate"]'],
+                                names: ['HospitalFacilityName', 'HospitalFacilityAddress', 'DiagnosisMedicalCondition', 'WardRoomType', 'HospitalBillCost', 'AdmissionDate', 'DischargeDate']
+                            })"
+                            title="Click to view encrypted hospital information">
+                        <i class="bi bi-eye-fill me-2"></i>View Hospital Information
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -544,12 +766,70 @@
                         <div class="alert alert-info d-flex align-items-center" role="alert">
                             <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
                             <div>
-                                <strong>This information is encrypted for security.</strong><br>
-                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                                <strong>This hospital information is encrypted for security.</strong><br>
+                                Click the "View Hospital Information" button above and enter your password to view the details.
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Hospital Loading Container (shown while decrypting) -->
+                <div class="hospital-loading-container" id="hospitalLoadingContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Decrypting hospital information... Please wait 5 seconds</p>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" id="hospitalLoadingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
+                <div class="hospital-info-container" id="hospitalInfoContainer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Hospital/Facility Name:</div>
+                                <div class="info-value" id="hospitalName">@ViewData["HospitalFacilityName"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Hospital Address:</div>
+                                <div class="info-value" id="hospitalAddress">@ViewData["HospitalFacilityAddress"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Diagnosis/Medical Condition:</div>
+                                <div class="info-value" id="diagnosis">@ViewData["DiagnosisMedicalCondition"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Ward/Room Type:</div>
+                                <div class="info-value" id="wardRoomType">@ViewData["WardRoomType"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Hospital Bill/Cost:</div>
+                                <div class="info-value" id="hospitalBill">@ViewData["HospitalBillCost"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Admission Date:</div>
+                                <div class="info-value" id="admissionDate">@ViewData["AdmissionDate"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Discharge Date:</div>
+                                <div class="info-value" id="dischargeDate">@ViewData["DischargeDate"]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CMO Section -->
+            <div class="receipt-section">
+                <h5 class="section-header">CMO Details</h5>
+                <div class="info-value">@ViewData["ForCMOPERSONNEL"]</div>
             </div>
 
             <!-- Valid ID and Submitted Documents Section -->
@@ -677,16 +957,9 @@
                         </span>
                     </div>
                 </div>
-
-                <!-- Show disapproval reason if application is disapproved -->
-                @if (ViewData["Status2"]?.ToString() == "Disapprove" && !string.IsNullOrEmpty(ViewData["Comments"]?.ToString()))
-                {
-                    <div class="disapproval-reason">
-                        <div class="disapproval-label">Reason for Disapproval:</div>
-                        <div class="disapproval-comments">@ViewData["Comments"]</div>
-                    </div>
-                }
             </div>
+
+
         </div>
     </form>
 </div>
@@ -695,7 +968,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         // Configure PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
 
         // PDF Viewer Variables
         let currentPDF = null;
@@ -703,18 +978,33 @@
         let totalPages = 1;
         let currentScale = 1.2;
 
+        // Requestor's Name Variables
+        const requestorFirstname = '@ViewData["RFirstname"]';
+        const requestorMiddlename = '@ViewData["RMiddlename"]';
+        const requestorLastname = '@ViewData["RLastname"]';
+        const requestorSuffix = '@ViewData["RSuffix"]';
+        const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
+
         // Image Zoom Functionality
         function zoomImage(src) {
             const modal = document.getElementById("zoomModal");
             const modalImg = document.getElementById("zoomedImage");
-            modal.style.display = "block";
-            modalImg.src = src;
+            if (modal && modalImg) {
+                modal.style.display = "block";
+                modalImg.src = src;
+            }
         }
 
         // Close zoom modal
-        document.querySelector(".close-zoom").onclick = function() {
-            document.getElementById("zoomModal").style.display = "none";
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeZoom = document.querySelector(".close-zoom");
+            if (closeZoom) {
+                closeZoom.onclick = function() {
+                    const modal = document.getElementById("zoomModal");
+                    if (modal) modal.style.display = "none";
+                }
+            }
+        });
 
         // PDF Viewer Function
         async function viewPDFInModal(fileName, fileType, displayName) {
@@ -723,12 +1013,17 @@
             const loading = document.getElementById('pdfLoading');
             const errorDiv = document.getElementById('pdfError');
             const canvas = document.getElementById('pdfCanvas');
-            const context = canvas.getContext('2d');
+            const context = canvas ? canvas.getContext('2d') : null;
             const currentPageSpan = document.getElementById('currentPage');
             const totalPagesSpan = document.getElementById('totalPages');
             const zoomLevelSpan = document.getElementById('zoomLevel');
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
+
+            if (!modal || !title || !loading || !errorDiv || !canvas || !context) {
+                console.error('PDF viewer elements not found');
+                return;
+            }
 
             title.textContent = displayName || 'PDF Document';
             modal.style.display = 'block';
@@ -758,20 +1053,23 @@
                 currentPDF = await loadingTask.promise;
 
                 totalPages = currentPDF.numPages;
-                totalPagesSpan.textContent = totalPages;
-                currentPageSpan.textContent = currentPage;
+                if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
+                if (currentPageSpan) currentPageSpan.textContent = currentPage;
 
                 updateNavigationButtons();
                 await renderPage(currentPage);
 
                 loading.style.display = 'none';
                 canvas.style.display = 'block';
-                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                                loading.style.display = 'none';
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
                 errorDiv.style.display = 'block';
-                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+                if (errorDiv.querySelector('p')) {
+                    errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+                }
             }
         }
 
@@ -782,6 +1080,8 @@
             const canvas = document.getElementById('pdfCanvas');
             const context = canvas.getContext('2d');
             const currentPageSpan = document.getElementById('currentPage');
+
+            if (!canvas || !context) return;
 
             try {
                 const page = await currentPDF.getPage(pageNum);
@@ -796,10 +1096,11 @@
                 };
 
                 await page.render(renderContext).promise;
-                currentPageSpan.textContent = pageNum;
+                if (currentPageSpan) currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                            }
+                console.error('Error rendering page:', error);
+            }
         }
 
         // Navigation functions
@@ -822,14 +1123,16 @@
         function zoomIn() {
             currentScale += 0.2;
             renderPage(currentPage);
-            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
         }
 
         function zoomOut() {
             if (currentScale > 0.5) {
                 currentScale -= 0.2;
                 renderPage(currentPage);
-                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+                const zoomLevelSpan = document.getElementById('zoomLevel');
+                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
             }
         }
 
@@ -837,14 +1140,16 @@
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
 
-            prevBtn.disabled = currentPage <= 1;
-            nextBtn.disabled = currentPage >= totalPages;
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
         }
 
         // Close PDF Viewer
         function closePDFViewer() {
             const modal = document.getElementById('pdfViewerModal');
-            modal.style.display = 'none';
+            if (modal) {
+                modal.style.display = 'none';
+            }
 
             if (currentPDF) {
                 currentPDF.destroy();
@@ -852,15 +1157,259 @@
             }
         }
 
+        // Status Submission Functions
+        function markAsApprove() {
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            const processByInput = document.getElementById('processByInput');
+            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
+
+            if (statusInput) statusInput.value = 'Approve';
+            if (commentsInput) commentsInput.value = 'Application approved';
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
+            }
+
+            // Show success modal
+            showSuccessModal('Approve');
+        }
+
+        function markAsRetake() {
+            showRetakeModal();
+        }
+
+        function showRetakeModal() {
+            const modal = document.getElementById('retakeModal');
+            const textarea = document.getElementById('retakeCommentsTextarea');
+            if (modal) modal.style.display = 'block';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+                textarea.focus();
+            }
+        }
+
+        function closeRetakeModal() {
+            const modal = document.getElementById('retakeModal');
+            const textarea = document.getElementById('retakeCommentsTextarea');
+            if (modal) modal.style.display = 'none';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+            }
+        }
+
+        function submitRetake() {
+            const retakeCommentsTextarea = document.getElementById('retakeCommentsTextarea');
+            const comments = retakeCommentsTextarea ? retakeCommentsTextarea.value.trim() : '';
+
+            if (comments === '') {
+                if (retakeCommentsTextarea) {
+                    retakeCommentsTextarea.classList.add('is-invalid');
+                    retakeCommentsTextarea.focus();
+                }
+                return;
+            }
+
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            const processByInput = document.getElementById('processByInput');
+
+            if (statusInput) statusInput.value = 'Retake';
+            if (commentsInput) commentsInput.value = comments;
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
+            }
+
+            // Show success modal
+            showSuccessModal('Retake');
+        }
+
+        function markAsClaimed() {
+            // Set the status to "Claimed"
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            const processByInput = document.getElementById('processByInput');
+            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
+
+            if (statusInput) statusInput.value = 'Claimed';
+            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
+            }
+
+            // Show success modal
+            showSuccessModal('Claimed');
+        }
+
+        function showSuccessModal(status) {
+            const modal = document.getElementById('successModal');
+            const statusText = document.getElementById('successStatusText');
+
+            if (modal) {
+                if (statusText) {
+                    statusText.textContent = status;
+                }
+                modal.style.display = 'block';
+            }
+
+            // Submit the form after a short delay to show the modal
+            setTimeout(() => {
+                document.getElementById('statusForm').submit();
+            }, 2000); // Show modal for 2 seconds before redirecting
+        }
+
+        // Hospital Information Functions
+        function hideHospitalInfo() {
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            const viewButton = document.getElementById('viewHospitalInfoBtn');
+
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.classList.remove('hospital-info-visible');
+                hospitalInfoContainer.style.display = 'none';
+            }
+
+            // Show the button again when hiding the info
+            if (viewButton) {
+                viewButton.style.display = 'inline-block';
+            }
+        }
+
+        // Function to show hospital information after successful decryption
+        function showHospitalInfoAfterDecryption() {
+            console.log('Showing hospital information after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('hospitalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the "View Hospital Information" button
+            const viewButton = document.getElementById('viewHospitalInfoBtn');
+            if (viewButton) {
+                viewButton.style.display = 'none';
+            }
+
+            // Show the hospital information container
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.style.display = 'block';
+                hospitalInfoContainer.classList.add('hospital-info-visible');
+
+                // Scroll to the hospital information section
+                setTimeout(() => {
+                    hospitalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        // Function to start the 5-second loading animation
+        function startHospitalInfoLoading() {
+            console.log('Starting hospital information loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('hospitalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide any existing hospital info container
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.style.display = 'none';
+                hospitalInfoContainer.classList.remove('hospital-info-visible');
+            }
+
+            // Start 5-second progress bar
+            const progressBar = document.getElementById('hospitalLoadingProgress');
+            if (progressBar) {
+                let progress = 0;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
+                const increment = (interval / totalTime) * 100;
+
+                const progressInterval = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+
+                        // After 5 seconds, show the hospital information
+                        setTimeout(() => {
+                            showHospitalInfoAfterDecryption();
+                        }, 300);
+                    } else {
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
+            }
+        }
+
+        // Comments modal functions for disapproval
+        function showCommentsModal() {
+            const modal = document.getElementById('commentsModal');
+            const textarea = document.getElementById('commentsTextarea');
+            if (modal) modal.style.display = 'block';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+                textarea.focus();
+            }
+        }
+
+        function closeCommentsModal() {
+            const modal = document.getElementById('commentsModal');
+            const textarea = document.getElementById('commentsTextarea');
+            if (modal) modal.style.display = 'none';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+            }
+        }
+
+        function submitDisapprove() {
+            const commentsTextarea = document.getElementById('commentsTextarea');
+            const comments = commentsTextarea ? commentsTextarea.value.trim() : '';
+
+            if (comments === '') {
+                if (commentsTextarea) {
+                    commentsTextarea.classList.add('is-invalid');
+                    commentsTextarea.focus();
+                }
+                return;
+            }
+
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            const processByInput = document.getElementById('processByInput');
+
+            if (statusInput) statusInput.value = 'Disapprove';
+            if (commentsInput) commentsInput.value = comments;
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
+            }
+
+            // Show success modal
+            showSuccessModal('Disapprove');
+        }
+
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                document.getElementById("zoomModal").style.display = "none";
+                const zoomModal = document.getElementById("zoomModal");
+                if (zoomModal) zoomModal.style.display = "none";
                 closePDFViewer();
+                closeCommentsModal();
+                closeRetakeModal();
             }
 
             const pdfModal = document.getElementById('pdfViewerModal');
-            if (pdfModal.style.display === 'block') {
+            if (pdfModal && pdfModal.style.display === 'block') {
                 switch(e.key) {
                     case 'ArrowLeft':
                         e.preventDefault();
@@ -883,59 +1432,31 @@
             }
         });
 
-        // Function to view encrypted Additional Information
-        function viewHospitalAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = {
-                names: [
-                    'HospitalFacilityName',
-                    'HospitalFacilityAddress',
-                    'DiagnosisMedicalCondition',
-                    'HospitalBillCost',
-                    'AdmissionDate',
-                    'DischargeDate',
-                    'WardRoomType'
-                ],
-                labels: [
-                    'Hospital/Medical Facility Name',
-                    'Hospital/Medical Facility Address',
-                    'Diagnosis/Medical Condition',
-                    'Hospital Bill/Cost',
-                    'Admission Date',
-                    'Discharge Date',
-                    'Ward/Room Type'
-                ],
-                values: [
-                    '@ViewData["HospitalFacilityName"]',
-                    '@ViewData["HospitalFacilityAddress"]',
-                    '@ViewData["DiagnosisMedicalCondition"]',
-                    '@ViewData["HospitalBillCost"]',
-                    '@ViewData["AdmissionDate"]',
-                    '@ViewData["DischargeDate"]',
-                    '@ViewData["WardRoomType"]'
-                ]
-            };
-
-            openViewAdditionalInfoModal('Hospital', formId, encryptedFields);
-        }
-
         // Close modal when clicking outside
         window.onclick = function(event) {
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
             const commentsModal = document.getElementById("commentsModal");
+            const retakeModal = document.getElementById("retakeModal");
+            const successModal = document.getElementById("successModal");
 
-            if (event.target == zoomModal) {
+            if (event.target == zoomModal && zoomModal) {
                 zoomModal.style.display = "none";
             }
-            if (event.target == pdfModal) {
+            if (event.target == pdfModal && pdfModal) {
                 closePDFViewer();
             }
-            if (event.target == commentsModal) {
+            if (event.target == commentsModal && commentsModal) {
                 closeCommentsModal();
+            }
+            if (event.target == retakeModal && retakeModal) {
+                closeRetakeModal();
+            }
+            if (event.target == successModal && successModal) {
+                successModal.style.display = "none";
             }
         }
     </script>
 
-    @Html.Partial("_ViewEncryptedDataModal")
+    @Html.Partial("_ViewEncryptedDataModalForAdmin")
 }
