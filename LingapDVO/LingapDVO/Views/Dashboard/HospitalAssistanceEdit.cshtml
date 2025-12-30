@@ -6,6 +6,480 @@
     var selectedSex = ViewData["Sex"]?.ToString();
 }
 
+<style>
+    /* Hospital Info Container for Edit Form */
+    .hospital-info-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .hospital-info-visible {
+        display: block;
+    }
+
+    /* Hospital Loading Container */
+    .hospital-loading-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    /* Image Zoom Modal */
+    .zoom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 50px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .zoom-modal-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    .close-zoom {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .document-preview-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+        margin-top: 10px;
+    }
+
+        .document-preview-container:hover {
+            transform: scale(1.02);
+        }
+
+    .document-preview {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    /* PDF Viewer Modal */
+    .pdf-viewer-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.95);
+    }
+
+    .pdf-viewer-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-viewer-header {
+        background-color: #333;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .pdf-viewer-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .pdf-viewer-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 0 0.5rem;
+        line-height: 1;
+    }
+
+        .pdf-viewer-close:hover {
+            color: #dc143c;
+        }
+
+    .pdf-viewer-body {
+        flex: 1;
+        background-color: #525659;
+        position: relative;
+        overflow: auto;
+    }
+
+    .pdf-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        min-height: 100%;
+    }
+
+    #pdfCanvas {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        background-color: white;
+    }
+
+    .pdf-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        flex-wrap: wrap;
+    }
+
+    .page-info {
+        color: white;
+        font-size: 0.9rem;
+        margin: 0 10px;
+    }
+
+    .zoom-level {
+        color: white;
+        font-size: 0.9rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .pdf-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        display: none;
+    }
+
+        .pdf-error i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+    /* PDF Preview Styles */
+    .pdf-preview {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        background-color: #fafafa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+        .pdf-preview:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+    .pdf-icon {
+        font-size: 3rem;
+        color: #dc143c;
+        margin-right: 1rem;
+    }
+
+    .pdf-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-filename {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+
+    .pdf-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    /* Success Modal Styles */
+    #successModal .modal-content {
+        border-radius: 12px;
+        border: none;
+    }
+
+    #successModal .modal-body {
+        padding: 2rem;
+    }
+
+    .modal.fade .modal-dialog {
+        transform: scale(0.8);
+        transition: transform 0.3s ease-out;
+    }
+
+    .modal.show .modal-dialog {
+        transform: scale(1);
+    }
+
+    /* Edit Form Specific Styles */
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .section-header {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
+    }
+
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    .required-field:after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    .upload-box {
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #fafafa;
+    }
+
+        .upload-box:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .form-note {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+
+    .btn-submit {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-submit:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .current-file {
+        background-color: var(--primary-light);
+        padding: 8px 12px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .img-preview {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: 300px;
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        object-fit: contain;
+        display: none;
+    }
+
+    .file-status {
+        margin-top: 5px;
+        font-size: 0.85rem;
+    }
+
+    .file-success {
+        color: #28a745;
+    }
+
+    .file-error {
+        color: #dc3545;
+    }
+
+    /* Type of Assistance Requested Styles - FROM FIRST CODE */
+    /* Compact checkbox and radio button styling */
+    .form-check-input {
+        width: 1.1rem;
+        height: 1.1rem;
+        border: 1.5px solid #adb5bd;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        margin-top: 0.15rem;
+        margin-right: 0.4rem;
+        flex-shrink: 0;
+        appearance: auto;
+        -webkit-appearance: auto;
+    }
+
+        .form-check-input:checked {
+            background-color: #dc143c;
+            border-color: #dc143c;
+        }
+
+        .form-check-input:focus {
+            border-color: #dc143c;
+            box-shadow: 0 0 0 0.2rem rgba(220, 20, 60, 0.15);
+            outline: none;
+        }
+
+        .form-check-input:hover {
+            border-color: #dc143c;
+        }
+
+    /* Compact label alignment */
+    .form-check-label {
+        margin-left: 0;
+        cursor: pointer;
+        user-select: none;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    /* Compact form-check container */
+    .form-check {
+        display: flex;
+        align-items: center;
+        padding-left: 0;
+        margin-bottom: 0.5rem;
+        min-height: 1.4rem;
+    }
+
+    /* Inline checkboxes/radios with tighter spacing */
+    .form-check-inline {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Reduce spacing for checkbox groups */
+    .form-check.mt-2 {
+        margin-top: 0.5rem !important;
+    }
+
+    /* Required field indicator */
+    label.required::after {
+        content: " *";
+        color: var(--primary-color);
+        font-weight: bold;
+        transition: opacity 0.3s ease;
+    }
+
+    label.required.filled::after {
+        opacity: 0;
+    }
+
+    /* Validation error styles for checkbox/radio groups */
+    .checkbox-group-error {
+        border: 2px solid #dc3545 !important;
+        border-radius: 8px;
+        padding: 1rem;
+        animation: shake 0.3s ease;
+    }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+        .error-message.show {
+            display: block;
+        }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <!-- Success Modal -->
 <div class="modal fade" id="successModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -306,187 +780,197 @@
         </div>
     </div>
 
-    <!-- Type of Assistance Requested Section -->
-    <div class="card mt-4">
-        <div class="card-header">Type of Assistance Requested</div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-12 col-sm-12 col-md-6 col-lg-6">
-                    <!-- Column 1 -->
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="governmentAssistance" name="TypeassistanceOptions" value="Government"
-                               @(checkedAssistance.ContainsKey("Government") ? "checked" : "")>
-                        <label class="form-check-label" for="governmentAssistance">Government</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="GovernmentDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Government") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Government") ? checkedAssistance["Government"] : "")">
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="privateAssistance" name="TypeassistanceOptions" value="Private"
-                               @(checkedAssistance.ContainsKey("Private") ? "checked" : "")>
-                        <label class="form-check-label" for="privateAssistance">Private</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="PrivateDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Private") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Private") ? checkedAssistance["Private"] : "")">
-                    </div>
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input assistance-type" type="checkbox"
-                               id="caseAssistance" name="TypeassistanceOptions" value="Case"
-                               @(checkedAssistance.ContainsKey("Case") ? "checked" : "")>
-                        <label class="form-check-label" for="caseAssistance">Case</label>
-                        <input type="text" class="form-control mt-1 assistance-spec"
-                               name="CaseDetails" placeholder="Specify"
-                               style="@(checkedAssistance.ContainsKey("Case") ? "" : "display: none;")"
-                               value="@(checkedAssistance.ContainsKey("Case") ? checkedAssistance["Case"] : "")">
-                    </div>
+    <!-- Type of Assistance Requested Section - MODIFIED FROM FIRST CODE -->
+    <div class="form-section">
+        <h5 class="section-header">Type of Assistance Requested</h5>
+        <div class="row g-3" id="assistanceSection">
+            <div class="col-12 col-sm-12 col-md-6 col-lg-6">
+                <!-- Column 1 - MODIFIED FROM FIRST CODE -->
+                <div class="form-check mt-2">
+                    <input class="form-check-input assistance-type" type="checkbox"
+                           id="governmentAssistance" name="TypeassistanceOptions" value="Government"
+                           @(checkedAssistance.ContainsKey("Government") ? "checked" : "")>
+                    <label class="form-check-label ms-1" for="governmentAssistance">Government</label>
+                    <input type="text" class="form-control mt-1 assistance-spec"
+                           name="GovernmentDetails" placeholder="Specify"
+                           style="@(checkedAssistance.ContainsKey("Government") ? "" : "display: none;")"
+                           value="@(checkedAssistance.ContainsKey("Government") ? checkedAssistance["Government"] : "")">
                 </div>
 
-                <div class="col-12 col-sm-12 col-md-6 col-lg-6">
-                    <!-- Column 2 (empty but keeping structure) -->
+                <div class="form-check mt-2">
+                    <input class="form-check-input assistance-type" type="checkbox"
+                           id="privateAssistance" name="TypeassistanceOptions" value="Private"
+                           @(checkedAssistance.ContainsKey("Private") ? "checked" : "")>
+                    <label class="form-check-label ms-1" for="privateAssistance">Private</label>
+                    <input type="text" class="form-control mt-1 assistance-spec"
+                           name="PrivateDetails" placeholder="Specify"
+                           style="@(checkedAssistance.ContainsKey("Private") ? "" : "display: none;")"
+                           value="@(checkedAssistance.ContainsKey("Private") ? checkedAssistance["Private"] : "")">
+                </div>
+
+                <div class="form-check mt-2">
+                    <input class="form-check-input assistance-type" type="checkbox"
+                           id="caseAssistance" name="TypeassistanceOptions" value="Case"
+                           @(checkedAssistance.ContainsKey("Case") ? "checked" : "")>
+                    <label class="form-check-label ms-1" for="caseAssistance">Case</label>
+                    <input type="text" class="form-control mt-1 assistance-spec"
+                           name="CaseDetails" placeholder="Specify"
+                           style="@(checkedAssistance.ContainsKey("Case") ? "" : "display: none;")"
+                           value="@(checkedAssistance.ContainsKey("Case") ? checkedAssistance["Case"] : "")">
                 </div>
             </div>
+        </div>
 
-            <div class="form-group mt-4">
-                <label for="assistanceReflection" class="form-label">Reflection info:</label>
-                <input type="text" class="form-control" id="assistanceReflection"
-                       name="Typeassistance"
-                       value="@(Model?.Typeassistance ?? "")"
-                       placeholder="Auto-generated info..." readonly>
-                <span asp-validation-for="Typeassistance"></span>
-            </div>
+        <!-- Hidden field to store the combined assistance types - FROM FIRST CODE -->
+        <div class="form-group mt-3">
+            <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
+                   name="Typeassistance" placeholder="Auto-generated info..." readonly>
+            <span asp-validation-for="Typeassistance" class="text-danger"></span>
         </div>
     </div>
 
     <!-- Additional Information Section (Password-Protected) -->
-    <div class="card mt-4">
-        <div class="card-header d-flex align-items-center justify-content-between">
+    <div class="form-section">
+        <h5 class="section-header d-flex align-items-center justify-content-between">
             <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-            <button type="button" class="btn btn-sm btn-primary"
-                    onclick="viewHospitalAdditionalInfo()"
-                    title="Click to view encrypted information">
+            <button type="button" class="btn btn-sm btn-primary" id="viewHospitalInfoBtn"
+                    onclick="openViewAdditionalInfoModal('Hospital', '@ViewData["Id"]', {
+                        labels: ['Hospital/Facility Name', 'Hospital Address', 'Diagnosis/Medical Condition', 'Ward/Room Type', 'Hospital Bill/Cost', 'Admission Date', 'Discharge Date'],
+                        values: ['@ViewData["HospitalFacilityName"]', '@ViewData["HospitalFacilityAddress"]', '@ViewData["DiagnosisMedicalCondition"]', '@ViewData["WardRoomType"]', '@ViewData["HospitalBillCost"]', '@ViewData["AdmissionDate"]', '@ViewData["DischargeDate"]'],
+                        names: ['HospitalFacilityName', 'HospitalFacilityAddress', 'DiagnosisMedicalCondition', 'WardRoomType', 'HospitalBillCost', 'AdmissionDate', 'DischargeDate']
+                    })"
+                    title="Click to view encrypted hospital information">
                 <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
             </button>
+        </h5>
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="alert alert-info d-flex align-items-center" role="alert">
+                    <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
+                    <div>
+                        <strong>This hospital information is encrypted for security.</strong><br>
+                        Click the "View Encrypted Data" button above and enter your password to view the details.
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <div class="alert alert-info d-flex align-items-center" role="alert">
-                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
-                <div>
-                    <strong>This information is encrypted for security.</strong><br>
-                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
+
+        <!-- Hospital Loading Container (shown while decrypting) -->
+        <div class="hospital-loading-container" id="hospitalLoadingContainer">
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Decrypting hospital information... Please wait 5 seconds</p>
+                <div class="progress mt-2" style="height: 8px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                         role="progressbar" id="hospitalLoadingProgress" style="width: 0%"></div>
                 </div>
             </div>
-            <div class="row g-3">
-                <div class="col-lg-6 col-md-12">
-                    <label class="form-label">Hospital/ Medical Facility Name</label>
-                    <input asp-for="HospitalFacilityName" type="text" class="form-control"
-                           placeholder="Enter hospital or medical facility name">
-                    <span asp-validation-for="HospitalFacilityName" class="text-danger"></span>
+        </div>
+
+        <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
+        <div class="hospital-info-container" id="hospitalInfoContainer">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <div class="info-label">Hospital/Facility Name:</div>
+                        <div class="info-value" id="hospitalName">@ViewData["HospitalFacilityName"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Hospital Address:</div>
+                        <div class="info-value" id="hospitalAddress">@ViewData["HospitalFacilityAddress"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Diagnosis/Medical Condition:</div>
+                        <div class="info-value" id="diagnosis">@ViewData["DiagnosisMedicalCondition"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Ward/Room Type:</div>
+                        <div class="info-value" id="wardRoomType">@ViewData["WardRoomType"]</div>
+                    </div>
                 </div>
-                <div class="col-lg-6 col-md-12">
-                    <label class="form-label">Hospital/ Medical Facility Address</label>
-                    <input asp-for="HospitalFacilityAddress" type="text" class="form-control"
-                           placeholder="Enter hospital or medical facility address">
-                    <span asp-validation-for="HospitalFacilityAddress" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row g-3 mt-2">
-                <div class="col-lg-6 col-md-12">
-                    <label class="form-label">Diagnosis/ Medical Condition</label>
-                    <textarea asp-for="DiagnosisMedicalCondition" class="form-control" rows="3"
-                              placeholder="Enter diagnosis or medical condition"></textarea>
-                    <span asp-validation-for="DiagnosisMedicalCondition" class="text-danger"></span>
-                </div>
-                <div class="col-lg-6 col-md-12">
-                    <label class="form-label">Hospital Bill or Cost</label>
-                    <input asp-for="HospitalBillCost" type="text" class="form-control"
-                           placeholder="Enter hospital bill or cost (e.g., ₱10,000.00)">
-                    <span asp-validation-for="HospitalBillCost" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row g-3 mt-2">
-                <div class="col-lg-3 col-md-6">
-                    <label class="form-label">Admission Date</label>
-                    <input asp-for="AdmissionDate" type="date" class="form-control">
-                    <span asp-validation-for="AdmissionDate" class="text-danger"></span>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <label class="form-label">Discharge Date</label>
-                    <input asp-for="DischargeDate" type="date" class="form-control">
-                    <span asp-validation-for="DischargeDate" class="text-danger"></span>
-                </div>
-                <div class="col-lg-6 col-md-12">
-                    <label class="form-label">Ward/Room Type</label>
-                    <input asp-for="WardRoomType" type="text" class="form-control"
-                           placeholder="Enter ward or room type (e.g., Private, Semi-Private, Ward)">
-                    <span asp-validation-for="WardRoomType" class="text-danger"></span>
+                <div class="col-md-6">
+                    <div class="info-row">
+                        <div class="info-label">Hospital Bill/Cost:</div>
+                        <div class="info-value" id="hospitalBill">@ViewData["HospitalBillCost"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Admission Date:</div>
+                        <div class="info-value" id="admissionDate">@ViewData["AdmissionDate"]</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Discharge Date:</div>
+                        <div class="info-value" id="dischargeDate">@ViewData["DischargeDate"]</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Upload Section -->
-    <div class="card mt-4">
-        <div class="card-header">Upload Required Documents</div>
-        <div class="card-body">
-            <div class="mb-3">
-                <label>Doctor's Prescription/Receipt</label>
+    <div class="form-section">
+        <h5 class="section-header">Upload Required Documents</h5>
+        <div class="mb-3">
+            <label class="form-label">Doctor's Prescription/Receipt</label>
 
-                <!-- Current Document Display -->
-                @if (ViewData["DoctorPrescription"] != null)
-                {
-                    <div class="current-file">
-                        <strong>Current Document:</strong> @ViewData["DoctorPrescription"]
-                        @if (ViewData["DoctorPrescriptionBase64"] != null)
-                        {
-                            <div class="mt-2">
-                                @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
-                                {
-                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
-                                        <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
-                                        <div class="pdf-info">
-                                            <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                            <span class="pdf-label">Click to view PDF</span>
-                                        </div>
+            <!-- Current Document Display -->
+            @if (ViewData["DoctorPrescription"] != null)
+            {
+                <div class="current-file">
+                    <strong>Current Document:</strong> @ViewData["DoctorPrescription"]
+                    @if (ViewData["DoctorPrescriptionBase64"] != null)
+                    {
+                        <div class="mt-2">
+                            @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                            {
+                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                    <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-label">Click to view PDF</span>
                                     </div>
-                                }
-                                else
-                                {
-                                    <div class="document-preview-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
-                                        <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="document-preview" />
-                                    </div>
-                                }
-                            </div>
-                        }
-                    </div>
-                }
-
-                <div class="upload-box" onclick="document.getElementById('medicalCertificate').click()">
-                    <div class="upload-icon">
-                        <i class="fas fa-file-medical"></i>
-                    </div>
-                    <p id="uploadTextMedical">Click to upload new document</p>
-                    <p id="fileNameMedical" class="text-success fw-bold mt-2"></p>
-                    <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="document-preview-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                    <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="document-preview" />
+                                </div>
+                            }
+                        </div>
+                    }
                 </div>
+            }
 
-                <input asp-for="HospitalAssistanceDocument"
-                       type="file"
-                       id="medicalCertificate"
-                       class="d-none"
-                       accept=".png,.jpg,.jpeg,.pdf"
-                       onchange="handleFileSelect(this)">
-                <span asp-validation-for="HospitalAssistanceDocument"></span>
-
-                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
-                <div id="fileStatus" class="file-status"></div>
-                <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
+            <div class="upload-box" onclick="document.getElementById('medicalCertificate').click()">
+                <div class="upload-icon">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <p id="uploadTextMedical">Click to upload new document</p>
+                <p id="fileNameMedical" class="text-success fw-bold mt-2"></p>
+                <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
             </div>
+
+            <input asp-for="HospitalAssistanceDocument"
+                   type="file"
+                   id="medicalCertificate"
+                   class="d-none"
+                   accept=".png,.jpg,.jpeg,.pdf"
+                   onchange="handleFileSelect(this)">
+            <span asp-validation-for="HospitalAssistanceDocument"></span>
+
+            <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
+            <div id="fileStatus" class="file-status"></div>
+            <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
+        </div>
+    </div>
+
+    <!-- Terms and Conditions - FROM FIRST CODE -->
+    <div class="mb-4">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="termsCheck" required>
+            <label class="form-check-label ms-1" for="termsCheck">I certify that all information provided is true and accurate</label>
         </div>
     </div>
 
@@ -498,307 +982,243 @@
     </div>
 </form>
 
-@section Styles {
-    <style>
-        /* Success Modal Styles */
-        #successModal .modal-content {
-            border-radius: 12px;
-            border: none;
-        }
-
-        #successModal .modal-body {
-            padding: 2rem;
-        }
-
-        .modal.fade .modal-dialog {
-            transform: scale(0.8);
-            transition: transform 0.3s ease-out;
-        }
-
-        .modal.show .modal-dialog {
-            transform: scale(1);
-        }
-
-        .form-check {
-            margin-left: 20px;
-        }
-
-        .card-body .row {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .col-md-6 {
-            padding-left: 30px;
-        }
-
-        .form-check {
-            margin-bottom: 10px;
-        }
-
-        /* PDF Viewer Modal Styles */
-        .pdf-viewer-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.95);
-        }
-
-        .pdf-viewer-content {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .pdf-viewer-header {
-            background-color: #333;
-            color: white;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .pdf-viewer-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .pdf-viewer-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            padding: 0 0.5rem;
-            line-height: 1;
-        }
-
-            .pdf-viewer-close:hover {
-                color: #dc143c;
-            }
-
-        .pdf-viewer-body {
-            flex: 1;
-            background-color: #525659;
-            position: relative;
-            overflow: auto;
-        }
-
-        .pdf-container {
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            min-height: 100%;
-        }
-
-        #pdfCanvas {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            background-color: white;
-        }
-
-        .pdf-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-left: auto;
-            flex-wrap: wrap;
-        }
-
-        .page-info {
-            color: white;
-            font-size: 0.9rem;
-            margin: 0 10px;
-        }
-
-        .zoom-level {
-            color: white;
-            font-size: 0.9rem;
-            min-width: 40px;
-            text-align: center;
-        }
-
-        .pdf-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .pdf-error {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: white;
-            display: none;
-        }
-
-            .pdf-error i {
-                font-size: 3rem;
-                margin-bottom: 1rem;
-            }
-
-        .btn-light {
-            background-color: rgba(255, 255, 255, 0.9);
-            border: none;
-        }
-
-            .btn-light:hover {
-                background-color: white;
-            }
-
-            .btn-light:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-
-        /* Image Zoom Modal */
-        .zoom-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            padding-top: 50px;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.9);
-        }
-
-        .zoom-modal-content {
-            margin: auto;
-            display: block;
-            max-width: 90%;
-            max-height: 90%;
-        }
-
-        .close-zoom {
-            position: absolute;
-            top: 15px;
-            right: 35px;
-            color: #fff;
-            font-size: 40px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* Document Preview Styles */
-        .document-preview-container {
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 10px;
-        }
-
-            .document-preview-container:hover {
-                transform: scale(1.02);
-            }
-
-        .document-preview {
-            width: 100%;
-            height: 200px;
-            object-fit: contain;
-            background-color: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .pdf-preview {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            background-color: #fafafa;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-            .pdf-preview:hover {
-                border-color: var(--primary-color);
-                background-color: var(--primary-light);
-                transform: translateY(-2px);
-            }
-
-        .pdf-icon {
-            font-size: 3rem;
-            color: #dc143c;
-            margin-right: 1rem;
-        }
-
-        .pdf-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .pdf-filename {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 0.25rem;
-        }
-
-        .pdf-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-
-        .file-status {
-            margin-top: 5px;
-            font-size: 0.85rem;
-        }
-
-        .file-success {
-            color: var(--success-color);
-        }
-
-        .file-error {
-            color: #dc3545;
-        }
-
-        .current-file {
-            background-color: var(--primary-light);
-            padding: 8px 12px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .img-preview {
-            width: 100%;
-            max-width: 100%;
-            height: auto;
-            max-height: 300px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            object-fit: contain;
-            display: none;
-        }
-    </style>
-}
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
+        // Main initialization function - FROM FIRST CODE
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAssistanceCheckboxes();
+            initializeFormValidation();
+            initializeImageModal();
+
+            // Check for successful form submission
+            checkFormSubmission();
+
+            // Initialize existing functions
+            initializeExistingFunctions();
+        });
+
+        // Assistance Checkboxes - SINGLE SELECTION FROM FIRST CODE
+        function initializeAssistanceCheckboxes() {
+            const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+            const assistanceSpecs = document.querySelectorAll('.assistance-spec');
+            const assistanceReflection = document.getElementById('assistanceReflection');
+
+            // Single selection function
+            assistanceCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Uncheck all other checkboxes
+                        assistanceCheckboxes.forEach(cb => {
+                            if (cb !== this) {
+                                cb.checked = false;
+                                const specField = cb.closest('.form-check').querySelector('.assistance-spec');
+                                if (specField) specField.style.display = 'none';
+                            }
+                        });
+
+                        // Show specification field for checked box
+                        const specField = this.closest('.form-check').querySelector('.assistance-spec');
+                        if (specField) {
+                            specField.style.display = 'block';
+                        }
+                    } else {
+                        // Hide specification field when unchecked
+                        const specField = this.closest('.form-check').querySelector('.assistance-spec');
+                        if (specField) {
+                            specField.style.display = 'none';
+                        }
+                    }
+                    updateAssistanceReflection();
+                });
+            });
+
+            // Update reflection function
+            function updateAssistanceReflection() {
+                let selectedOptions = [];
+                assistanceCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const label = checkbox.nextElementSibling.textContent.trim();
+                        const specField = checkbox.closest('.form-check').querySelector('.assistance-spec');
+                        if (specField && specField.value.trim() !== '') {
+                            selectedOptions.push(`${label}: ${specField.value.trim()}`);
+                        } else {
+                            selectedOptions.push(label);
+                        }
+                    }
+                });
+                if (assistanceReflection) {
+                    assistanceReflection.value = selectedOptions.join(', ');
+                }
+            }
+
+            // Add input listeners to specification fields
+            assistanceSpecs.forEach(field => {
+                field.addEventListener('input', updateAssistanceReflection);
+            });
+
+            // Initial update
+            updateAssistanceReflection();
+        }
+
+        // Form Validation - ENHANCED FROM FIRST CODE
+        function initializeFormValidation() {
+            const form = document.getElementById('editForm');
+            if (!form) return;
+
+            function validateAssistanceCheckboxes() {
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                const checked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
+                const assistanceSection = document.querySelector('.assistance-type')?.closest('.row');
+                const existingError = assistanceSection?.querySelector('.error-message');
+                if (existingError) existingError.remove();
+
+                if (!checked) {
+                    if (assistanceSection) {
+                        assistanceSection.classList.add('checkbox-group-error');
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message show';
+                        errorMsg.textContent = 'Please select at least one type of assistance';
+                        assistanceSection.appendChild(errorMsg);
+                    }
+                    return false;
+                } else {
+                    assistanceSection?.classList.remove('checkbox-group-error');
+                    return true;
+                }
+            }
+
+            function attachCheckboxListeners() {
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                assistanceCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            const assistanceSection = checkbox.closest('.row');
+                            assistanceSection?.classList.remove('checkbox-group-error');
+                            const errorMsg = assistanceSection?.querySelector('.error-message');
+                            if (errorMsg) errorMsg.remove();
+                        }
+                    });
+                });
+            }
+
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                const missingFields = [];
+                const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+
+                // Clear previous validation states
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                form.querySelectorAll('.checkbox-group-error').forEach(el => {
+                    el.classList.remove('checkbox-group-error');
+                });
+
+                // Helper function to get field label
+                function getFieldLabel(input) {
+                    const container = input.closest('.col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-12, .col-sm-6, .col-sm-12, .mb-3, .mb-4');
+                    const label = container?.querySelector('label:not(.form-check-label)');
+                    return label?.textContent?.replace('*', '').trim() || input.name || 'Unknown field';
+                }
+
+                requiredInputs.forEach(input => {
+                    if (input.type !== 'checkbox' && input.type !== 'radio') {
+                        if (!input.value.trim()) {
+                            input.classList.add('is-invalid');
+                            missingFields.push(getFieldLabel(input));
+                            isValid = false;
+                        }
+                    }
+                });
+
+                // Validate assistance checkboxes
+                const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
+                const isAnyAssistanceChecked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
+                if (!isAnyAssistanceChecked) {
+                    const assistanceSection = document.querySelector('.assistance-type')?.closest('.row');
+                    if (assistanceSection) {
+                        assistanceSection.classList.add('checkbox-group-error');
+                    }
+                    missingFields.push('Type of Assistance Requested');
+                    isValid = false;
+                }
+
+                // Validate file upload (Upload Required Documents)
+                const fileInput = document.getElementById('medicalCertificate');
+                // Note: For edit forms, file upload might be optional
+                // Remove or comment out this validation if file upload is not required in edit mode
+                /*
+                if (fileInput && fileInput.files.length === 0) {
+                    missingFields.push('Upload Required Documents');
+                    isValid = false;
+                    // Highlight the upload box
+                    const uploadBox = fileInput.closest('.mb-3')?.querySelector('.upload-box');
+                    if (uploadBox) {
+                        uploadBox.style.borderColor = '#dc3545';
+                        uploadBox.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+                    }
+                }
+                */
+
+                // Validate terms checkbox
+                const termsCheck = document.getElementById('termsCheck');
+                if (termsCheck && !termsCheck.checked) {
+                    missingFields.push('Terms and Conditions acceptance');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+
+                    // Show unified warning message with bullet points
+                    let message = 'Please complete the following required fields:\n\n';
+                    missingFields.forEach(field => {
+                        message += '• ' + field + '\n';
+                    });
+                    alert(message);
+
+                    // Scroll to first error
+                    const firstError = form.querySelector('.is-invalid, .checkbox-group-error');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+
+            attachCheckboxListeners();
+        }
+
+        // Image Modal and Zoom Functionality - FROM FIRST CODE
+        function initializeImageModal() {
+            const previewImages = document.querySelectorAll('.img-preview');
+            const modalImage = document.getElementById('zoomedImage');
+            const zoomModal = document.getElementById('zoomModal');
+            const closeZoom = document.querySelector('.close-zoom');
+
+            if (!modalImage || !zoomModal || !closeZoom) return;
+
+            previewImages.forEach(img => {
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', function() {
+                    modalImage.src = this.src;
+                    zoomModal.style.display = 'block';
+                });
+            });
+
+            closeZoom.addEventListener('click', function() {
+                zoomModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target == zoomModal) {
+                    zoomModal.style.display = 'none';
+                }
+            });
+        }
+
         // Success Modal Functions
         function showSuccessModal() {
-                        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
             successModal.show();
 
             let countdown = 2;
@@ -815,12 +1235,12 @@
         }
 
         function redirectToList() {
-                        window.location.href = '/Home';
+            window.location.href = '/Home';
         }
 
         // Check for successful form submission on page load
         function checkFormSubmission() {
-                        // Method 1: Check URL parameter
+            // Method 1: Check URL parameter
             const urlParams = new URLSearchParams(window.location.search);
             const success = urlParams.get('success');
 
@@ -830,23 +1250,22 @@
             // Method 3: Check TempData (common in ASP.NET)
             const tempDataSuccess = @Json.Serialize(TempData["Success"] ?? false);
 
-                                                if (success === 'true' || serverSuccess === true || tempDataSuccess === true) {
-                                setTimeout(() => {
+            if (success === 'true' || serverSuccess === true || tempDataSuccess === true) {
+                setTimeout(() => {
                     showSuccessModal();
                 }, 500);
-            } else {
-                            }
+            }
         }
 
         // Enhanced form submission handler
         document.addEventListener('DOMContentLoaded', function() {
-                        const form = document.getElementById('editForm');
+            const form = document.getElementById('editForm');
             const submitButton = document.getElementById('submitButton');
             const formSubmittedField = document.getElementById('formSubmitted');
 
             if (form) {
                 form.addEventListener('submit', function(e) {
-                                        // Set the hidden field to indicate form was submitted
+                    // Set the hidden field to indicate form was submitted
                     if (formSubmittedField) {
                         formSubmittedField.value = 'true';
                     }
@@ -856,25 +1275,28 @@
                         submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
                         submitButton.disabled = true;
                     }
-
-                    // Form will continue with normal submission
-                    // The success modal will be shown on the next page load if successful
                 });
             }
-
-            // Check for success on page load
-            checkFormSubmission();
 
             // Also check if we're coming back from a post with validation errors
             const hasValidationErrors = document.querySelector('.alert-danger, .field-validation-error');
             if (hasValidationErrors) {
-                                // Re-enable submit button if it was disabled
+                // Re-enable submit button if it was disabled
                 if (submitButton) {
                     submitButton.innerHTML = '<i class="bi bi-save"></i> Save Changes';
                     submitButton.disabled = false;
                 }
             }
         });
+
+        // Initialize existing functions from second code
+        function initializeExistingFunctions() {
+            // Initialize existing checkbox handling if any
+            const existingCheckboxes = document.querySelectorAll('.assistance-type:not([data-initialized])');
+            existingCheckboxes.forEach(checkbox => {
+                checkbox.dataset.initialized = 'true';
+            });
+        }
 
         // PDF Viewer Variables and Functions
         let currentPDF = null;
@@ -894,17 +1316,6 @@
                     document.head.appendChild(script);
                 }
             });
-        }
-
-        function zoomImage(src) {
-            const modal = document.getElementById("zoomModal");
-            const modalImg = document.getElementById("zoomedImage");
-            modal.style.display = "block";
-            modalImg.src = src;
-        }
-
-        document.querySelector(".close-zoom").onclick = function() {
-            document.getElementById("zoomModal").style.display = "none";
         }
 
         async function viewPDFInModal(fileName, fileType, displayName) {
@@ -962,7 +1373,7 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                                const loading = document.getElementById('pdfLoading');
+                const loading = document.getElementById('pdfLoading');
                 const errorDiv = document.getElementById('pdfError');
                 loading.style.display = 'none';
                 errorDiv.style.display = 'block';
@@ -993,7 +1404,8 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                            }
+                console.error('Error rendering page:', error);
+            }
         }
 
         function nextPage() {
@@ -1104,14 +1516,92 @@
             }
         }
 
+        // Hospital Information Functions
+        function showHospitalInfoAfterDecryption() {
+            console.log('Showing hospital information after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('hospitalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the "View Hospital Information" button
+            const viewButton = document.getElementById('viewHospitalInfoBtn');
+            if (viewButton) {
+                viewButton.style.display = 'none';
+            }
+
+            // Show the hospital information container
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.style.display = 'block';
+                hospitalInfoContainer.classList.add('hospital-info-visible');
+
+                // Scroll to the hospital information section
+                setTimeout(() => {
+                    hospitalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        function startHospitalInfoLoading() {
+            console.log('Starting hospital information loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('hospitalLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide any existing hospital info container
+            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            if (hospitalInfoContainer) {
+                hospitalInfoContainer.style.display = 'none';
+                hospitalInfoContainer.classList.remove('hospital-info-visible');
+            }
+
+            // Start 5-second progress bar
+            const progressBar = document.getElementById('hospitalLoadingProgress');
+            if (progressBar) {
+                let progress = 0;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
+                const increment = (interval / totalTime) * 100;
+
+                const progressInterval = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+
+                        // After 5 seconds, show the hospital information
+                        setTimeout(() => {
+                            showHospitalInfoAfterDecryption();
+                        }, 300);
+                    } else {
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
+            }
+        }
+
+        // Function to be called from the partial modal after successful password verification
+        function onPasswordVerifiedSuccessfully() {
+            console.log('Password verified, showing hospital information...');
+            startHospitalInfoLoading();
+        }
+
+        // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                document.getElementById("zoomModal").style.display = "none";
+                const zoomModal = document.getElementById("zoomModal");
+                if (zoomModal) zoomModal.style.display = "none";
                 closePDFViewer();
             }
 
             const pdfModal = document.getElementById('pdfViewerModal');
-            if (pdfModal.style.display === 'block') {
+            if (pdfModal && pdfModal.style.display === 'block') {
                 switch(e.key) {
                     case 'ArrowLeft':
                         e.preventDefault();
@@ -1145,43 +1635,7 @@
                 closePDFViewer();
             }
         }
-
-        // View Additional Information (Password-Protected)
-        function viewHospitalAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = {
-                names: [
-                    'HospitalFacilityName',
-                    'HospitalFacilityAddress',
-                    'DiagnosisMedicalCondition',
-                    'HospitalBillCost',
-                    'AdmissionDate',
-                    'DischargeDate',
-                    'WardRoomType'
-                ],
-                labels: [
-                    'Hospital/Medical Facility Name',
-                    'Hospital/Medical Facility Address',
-                    'Diagnosis/Medical Condition',
-                    'Hospital Bill/Cost',
-                    'Admission Date',
-                    'Discharge Date',
-                    'Ward/Room Type'
-                ],
-                values: [
-                    '@ViewData["HospitalFacilityName"]',
-                    '@ViewData["HospitalFacilityAddress"]',
-                    '@ViewData["DiagnosisMedicalCondition"]',
-                    '@ViewData["HospitalBillCost"]',
-                    '@ViewData["AdmissionDate"]',
-                    '@ViewData["DischargeDate"]',
-                    '@ViewData["WardRoomType"]'
-                ]
-            };
-
-            openViewAdditionalInfoModal('Hospital', formId, encryptedFields);
-        }
     </script>
-}
 
-@Html.Partial("_ViewEncryptedDataModal")
+    @Html.Partial("_ViewEncryptedDataModalForAdmin")
+}

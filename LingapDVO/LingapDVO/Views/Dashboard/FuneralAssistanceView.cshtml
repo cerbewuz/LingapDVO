@@ -1,7 +1,7 @@
 @model FuneralAssistanceDto
 @{
     Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Hospital Assistance View";
+    ViewData["Title"] = "Funeral Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
@@ -229,7 +229,340 @@
             font-size: 3rem;
             margin-bottom: 1rem;
         }
+
+    /* Status Buttons Styling */
+    .status-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-approved {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-approved:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .btn-disapproved {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-disapproved:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Retake Button Styling */
+    .btn-retake {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-retake:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+            color: #212529;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Claimed Button Styling */
+    .btn-claimed {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-claimed:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Comments Modal Styling */
+    .comments-modal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .comments-modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .comments-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .comments-modal-title {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .comments-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+    }
+
+        .comments-modal-close:hover {
+            color: var(--primary-color);
+        }
+
+    .comments-required {
+        border: 2px solid #dc3545 !important;
+        background-color: #fff5f5;
+    }
+
+    /* Form Validation */
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+        .is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approve {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-disapprove {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-retake {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+    }
+
+    .status-claimed {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    /* Receipt Sections */
+    .receipt-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-header {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-label {
+        flex: 0 0 30%;
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
+
+    .info-value {
+        flex: 1;
+        color: #555;
+    }
+
+    /* Success Modal */
+    .success-modal {
+        display: none;
+        position: fixed;
+        z-index: 4000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
+
+    .success-modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .success-icon {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+
+    /* Funeral Information Container */
+    .funeral-info-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .funeral-info-visible {
+        display: block;
+    }
+
+    /* Funeral Loading Container */
+    .funeral-loading-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    /* Retake Comments Modal */
+    .retake-modal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .retake-modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .retake-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .retake-modal-title {
+        color: #ffc107;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .retake-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+    }
+
+        .retake-modal-close:hover {
+            color: var(--primary-color);
+        }
 </style>
+
 <!-- Image Zoom Modal -->
 <div id="zoomModal" class="zoom-modal">
     <span class="close-zoom">&times;</span>
@@ -277,12 +610,74 @@
     </div>
 </div>
 
+<!-- Comments Modal for Disapproval -->
+<div id="commentsModal" class="comments-modal">
+    <div class="comments-modal-content">
+        <div class="comments-modal-header">
+            <h5 class="comments-modal-title">Comments Required</h5>
+            <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
+        </div>
+        <div class="mb-3">
+            <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
+            <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
+            <div class="invalid-feedback">Comments are required when disapproving an application.</div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
+            <button type="button" class="btn btn-disapproved" onclick="submitDisapprove()">Submit Disapproval</button>
+        </div>
+    </div>
+</div>
+
+<!-- Retake Modal -->
+<div id="retakeModal" class="retake-modal">
+    <div class="retake-modal-content">
+        <div class="retake-modal-header">
+            <h5 class="retake-modal-title">Mark as Retake</h5>
+            <button class="retake-modal-close" onclick="closeRetakeModal()">&times;</button>
+        </div>
+        <div class="mb-3">
+            <label for="retakeCommentsTextarea" class="form-label">Please specify what needs to be retaken or corrected:</label>
+            <textarea class="form-control" id="retakeCommentsTextarea" rows="4" placeholder="Enter details about what documents or information need to be retaken (e.g., 'Need clearer ID photo', 'Missing death certificate', etc.)..." required></textarea>
+            <div class="invalid-feedback">Comments are required when marking as retake.</div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeRetakeModal()">Cancel</button>
+            <button type="button" class="btn btn-retake" onclick="submitRetake()">Mark as Retake</button>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="success-modal">
+    <div class="success-modal-content">
+        <div class="success-icon">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <h4>Status Updated Successfully!</h4>
+        <p>Application marked as <strong id="successStatusText"></strong></p>
+        <p>Redirecting to Admin page...</p>
+        <div class="mt-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="receipt-container">
-    <form asp-action="HospitalAssistanceView" enctype="multipart/form-data" method="post" id="statusForm">
-        <input type="hidden" id="statusInput" name="status2" value="@ViewData["Status"]">
-        <input type="hidden" id="commentsInput" name="Comments" value="@ViewData["Comments"]">
+    <form asp-action="FuneralAssistanceApproveStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
+        @Html.AntiForgeryToken()
+
+        <!-- Hidden fields for form submission -->
+        <input type="hidden" name="id" value="@ViewData["Id"]" />
+        <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
+        <input type="hidden" id="commentsInput" name="Comments" value="" />
+        <input type="hidden" id="forCMOPersonnelInput" name="ForCMOPERSONNEL" value="@ViewData["ForCMOPERSONNEL"]" />
+        <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
 
         <div class="receipt-body">
+
             <!-- Patient Information -->
             <div class="receipt-section">
                 <h5 class="section-header">Patient Information</h5>
@@ -352,14 +747,14 @@
                 <div class="info-value">@ViewData["Typeassistance"]</div>
             </div>
 
-            <!-- Additional Information Section (Password-Protected) -->
+            <!-- Funeral Information Section (Password-Protected) -->
             <div class="receipt-section">
                 <h5 class="section-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            onclick="viewFuneralAdditionalInfo()"
-                            title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Funeral Information (Encrypted)</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="viewFuneralInfoBtn"
+                            onclick="openViewAdditionalInfoModal('Funeral', '@ViewData["Id"]', getFuneralAssistanceFields())"
+                            title="Click to view encrypted funeral information">
+                        <i class="bi bi-eye-fill me-2"></i>View Funeral Information
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -367,12 +762,82 @@
                         <div class="alert alert-info d-flex align-items-center" role="alert">
                             <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
                             <div>
-                                <strong>This information is encrypted for security.</strong><br>
-                                Click the "View Encrypted Data" button above and enter your password to view the details.
+                                <strong>This funeral information is encrypted for security.</strong><br>
+                                Click the "View Funeral Information" button above and enter your password to view the details.
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Funeral Loading Container (shown while decrypting) -->
+                <div class="funeral-loading-container" id="funeralLoadingContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Decrypting funeral information... Please wait 5 seconds</p>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" id="funeralLoadingProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Funeral Information Container (hidden by default, shown after successful decryption) -->
+                <div class="funeral-info-container" id="funeralInfoContainer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Name of Deceased Person:</div>
+                                <div class="info-value" id="deceasedPersonName">@ViewData["DeceasedPersonName"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Relationship to Deceased:</div>
+                                <div class="info-value" id="relationshipToDeceased">@ViewData["RelationshipToDeceased"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Date of Death:</div>
+                                <div class="info-value" id="dateOfDeath">@ViewData["DateOfDeath"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Time of Death:</div>
+                                <div class="info-value" id="timeOfDeath">@ViewData["TimeOfDeath"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Cause of Death:</div>
+                                <div class="info-value" id="causeOfDeath">@ViewData["CauseOfDeath"]</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-row">
+                                <div class="info-label">Funeral Home/Parlor Name:</div>
+                                <div class="info-value" id="funeralHomeName">@ViewData["FuneralHomeName"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Funeral Home/Parlor Address:</div>
+                                <div class="info-value" id="funeralHomeAddress">@ViewData["FuneralHomeAddress"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Date of Burial/Cremation:</div>
+                                <div class="info-value" id="burialCremationDate">@ViewData["BurialCremationDate"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Time of Burial/Cremation:</div>
+                                <div class="info-value" id="burialCremationTime">@ViewData["BurialCremationTime"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Type (Burial/Cremation):</div>
+                                <div class="info-value" id="burialCremationType">@ViewData["BurialCremationType"]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CMO Section -->
+            <div class="receipt-section">
+                <h5 class="section-header">CMO Details</h5>
+                <div class="info-value">@ViewData["ForCMOPERSONNEL"]</div>
             </div>
 
             <!-- Valid ID and Submitted Documents Section -->
@@ -414,7 +879,7 @@
                 @if (ViewData["DoctorPrescriptionBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Doctor Prescription</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
                             <div class="pdf-container">
@@ -440,7 +905,7 @@
                 @if (ViewData["MedicalCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Medical Certificate</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                         {
                             <div class="pdf-container">
@@ -466,7 +931,7 @@
                 @if (ViewData["DeathCertificateBase64"] != null)
                 {
                     <div class="receipt-section">
-                        <h5 class="section-header">Death Certificate</h5>
+                        <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
                             <div class="pdf-container">
@@ -489,15 +954,20 @@
                 }
             </div>
 
-        </div>
 
+
+
+        </div>
     </form>
 </div>
+
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         // Configure PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
 
         // PDF Viewer Variables
         let currentPDF = null;
@@ -505,18 +975,33 @@
         let totalPages = 1;
         let currentScale = 1.2;
 
+        // Requestor's Name Variables
+        const requestorFirstname = '@ViewData["RFirstname"]';
+        const requestorMiddlename = '@ViewData["RMiddlename"]';
+        const requestorLastname = '@ViewData["RLastname"]';
+        const requestorSuffix = '@ViewData["RSuffix"]';
+        const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
+
         // Image Zoom Functionality
         function zoomImage(src) {
             const modal = document.getElementById("zoomModal");
             const modalImg = document.getElementById("zoomedImage");
-            modal.style.display = "block";
-            modalImg.src = src;
+            if (modal && modalImg) {
+                modal.style.display = "block";
+                modalImg.src = src;
+            }
         }
 
         // Close zoom modal
-        document.querySelector(".close-zoom").onclick = function() {
-            document.getElementById("zoomModal").style.display = "none";
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeZoom = document.querySelector(".close-zoom");
+            if (closeZoom) {
+                closeZoom.onclick = function() {
+                    const modal = document.getElementById("zoomModal");
+                    if (modal) modal.style.display = "none";
+                }
+            }
+        });
 
         // PDF Viewer Function
         async function viewPDFInModal(fileName, fileType, displayName) {
@@ -525,12 +1010,17 @@
             const loading = document.getElementById('pdfLoading');
             const errorDiv = document.getElementById('pdfError');
             const canvas = document.getElementById('pdfCanvas');
-            const context = canvas.getContext('2d');
+            const context = canvas ? canvas.getContext('2d') : null;
             const currentPageSpan = document.getElementById('currentPage');
             const totalPagesSpan = document.getElementById('totalPages');
             const zoomLevelSpan = document.getElementById('zoomLevel');
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
+
+            if (!modal || !title || !loading || !errorDiv || !canvas || !context) {
+                console.error('PDF viewer elements not found');
+                return;
+            }
 
             title.textContent = displayName || 'PDF Document';
             modal.style.display = 'block';
@@ -560,20 +1050,23 @@
                 currentPDF = await loadingTask.promise;
 
                 totalPages = currentPDF.numPages;
-                totalPagesSpan.textContent = totalPages;
-                currentPageSpan.textContent = currentPage;
+                if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
+                if (currentPageSpan) currentPageSpan.textContent = currentPage;
 
                 updateNavigationButtons();
                 await renderPage(currentPage);
 
                 loading.style.display = 'none';
                 canvas.style.display = 'block';
-                zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                                loading.style.display = 'none';
+                console.error('Error loading PDF:', error);
+                loading.style.display = 'none';
                 errorDiv.style.display = 'block';
-                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+                if (errorDiv.querySelector('p')) {
+                    errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
+                }
             }
         }
 
@@ -584,6 +1077,8 @@
             const canvas = document.getElementById('pdfCanvas');
             const context = canvas.getContext('2d');
             const currentPageSpan = document.getElementById('currentPage');
+
+            if (!canvas || !context) return;
 
             try {
                 const page = await currentPDF.getPage(pageNum);
@@ -598,10 +1093,11 @@
                 };
 
                 await page.render(renderContext).promise;
-                currentPageSpan.textContent = pageNum;
+                if (currentPageSpan) currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                            }
+                console.error('Error rendering page:', error);
+            }
         }
 
         // Navigation functions
@@ -624,14 +1120,16 @@
         function zoomIn() {
             currentScale += 0.2;
             renderPage(currentPage);
-            document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            const zoomLevelSpan = document.getElementById('zoomLevel');
+            if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
         }
 
         function zoomOut() {
             if (currentScale > 0.5) {
                 currentScale -= 0.2;
                 renderPage(currentPage);
-                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+                const zoomLevelSpan = document.getElementById('zoomLevel');
+                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
             }
         }
 
@@ -639,14 +1137,16 @@
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
 
-            prevBtn.disabled = currentPage <= 1;
-            nextBtn.disabled = currentPage >= totalPages;
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
         }
 
         // Close PDF Viewer
         function closePDFViewer() {
             const modal = document.getElementById('pdfViewerModal');
-            modal.style.display = 'none';
+            if (modal) {
+                modal.style.display = 'none';
+            }
 
             if (currentPDF) {
                 currentPDF.destroy();
@@ -655,95 +1155,304 @@
         }
 
         // Status Submission Functions
-        function submitApprove() {
-            document.getElementById('statusInput').value = 'Approve';
-            document.getElementById('commentsInput').value = document.getElementById('idFrontDescription').value;
-            document.getElementById('statusForm').submit();
+        function markAsApprove() {
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            const processByInput = document.getElementById('processByInput');
+
+            if (statusInput) statusInput.value = 'Approve';
+            if (commentsInput) commentsInput.value = 'Application approved';
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
+            }
+
+            // Show success modal
+            showSuccessModal('Approve');
         }
 
+        function markAsRetake() {
+            showRetakeModal();
+        }
+
+        function showRetakeModal() {
+            const modal = document.getElementById('retakeModal');
+            const textarea = document.getElementById('retakeCommentsTextarea');
+            if (modal) modal.style.display = 'block';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+                textarea.focus();
+            }
+        }
+
+        function closeRetakeModal() {
+            const modal = document.getElementById('retakeModal');
+            const textarea = document.getElementById('retakeCommentsTextarea');
+            if (modal) modal.style.display = 'none';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+            }
+        }
+
+        function submitRetake() {
+            const retakeCommentsTextarea = document.getElementById('retakeCommentsTextarea');
+            const comments = retakeCommentsTextarea ? retakeCommentsTextarea.value.trim() : '';
+
+            if (comments === '') {
+                if (retakeCommentsTextarea) {
+                    retakeCommentsTextarea.classList.add('is-invalid');
+                    retakeCommentsTextarea.focus();
+                }
+                return;
+            }
+
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            const processByInput = document.getElementById('processByInput');
+
+            if (statusInput) statusInput.value = 'Retake';
+            if (commentsInput) commentsInput.value = comments;
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
+            }
+
+            // Show success modal
+            showSuccessModal('Retake');
+        }
+
+        function markAsClaimed() {
+            // Set the status to "Claimed"
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            const processByInput = document.getElementById('processByInput');
+
+            if (statusInput) statusInput.value = 'Claimed';
+            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
+            }
+
+            // Show success modal
+            showSuccessModal('Claimed');
+        }
+
+        function showSuccessModal(status) {
+            const modal = document.getElementById('successModal');
+            const statusText = document.getElementById('successStatusText');
+
+            if (modal) {
+                if (statusText) {
+                    statusText.textContent = status;
+                }
+                modal.style.display = 'block';
+            }
+
+            // Submit the form after a short delay to show the modal
+            setTimeout(() => {
+                document.getElementById('statusForm').submit();
+            }, 2000); // Show modal for 2 seconds before redirecting
+        }
+
+        // Funeral Information Functions (Matching Hospital Assistance pattern)
+        function getFuneralAssistanceFields() {
+            const fieldNames = [
+                'DeceasedPersonName',
+                'RelationshipToDeceased',
+                'DateOfDeath',
+                'TimeOfDeath',
+                'CauseOfDeath',
+                'FuneralHomeName',
+                'FuneralHomeAddress',
+                'BurialCremationDate',
+                'BurialCremationTime',
+                'BurialCremationType'
+            ];
+
+            const fieldLabels = [
+                'Name of Deceased Person',
+                'Relationship to Deceased',
+                'Date of Death',
+                'Time of Death',
+                'Cause of Death',
+                'Funeral Home/Parlor Name',
+                'Funeral Home/Parlor Address',
+                'Date of Burial/Cremation',
+                'Time of Burial/Cremation',
+                'Type (Burial/Cremation)'
+            ];
+
+            const fieldValues = [
+                '@ViewData["DeceasedPersonName"]',
+                '@ViewData["RelationshipToDeceased"]',
+                '@ViewData["DateOfDeath"]',
+                '@ViewData["TimeOfDeath"]',
+                '@ViewData["CauseOfDeath"]',
+                '@ViewData["FuneralHomeName"]',
+                '@ViewData["FuneralHomeAddress"]',
+                '@ViewData["BurialCremationDate"]',
+                '@ViewData["BurialCremationTime"]',
+                '@ViewData["BurialCremationType"]'
+            ];
+
+            return {
+                names: fieldNames,
+                labels: fieldLabels,
+                values: fieldValues
+            };
+        }
+
+        // Function to hide funeral information
+        function hideFuneralInfo() {
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+
+            if (funeralInfoContainer) {
+                funeralInfoContainer.classList.remove('funeral-info-visible');
+                funeralInfoContainer.style.display = 'none';
+            }
+
+            // Show the button again when hiding the info
+            if (viewButton) {
+                viewButton.style.display = 'inline-block';
+            }
+        }
+
+        // Function to show funeral information after successful decryption
+        function showFuneralInfoAfterDecryption() {
+            console.log('Showing funeral information after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('funeralLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the "View Funeral Information" button
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+            if (viewButton) {
+                viewButton.style.display = 'none';
+            }
+
+            // Show the funeral information container
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            if (funeralInfoContainer) {
+                funeralInfoContainer.style.display = 'block';
+                funeralInfoContainer.classList.add('funeral-info-visible');
+
+                // Scroll to the funeral information section
+                setTimeout(() => {
+                    funeralInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        // Function to start the 5-second loading animation
+        function startFuneralInfoLoading() {
+            console.log('Starting funeral information loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('funeralLoadingContainer');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide any existing funeral info container
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            if (funeralInfoContainer) {
+                funeralInfoContainer.style.display = 'none';
+                funeralInfoContainer.classList.remove('funeral-info-visible');
+            }
+
+            // Start 5-second progress bar
+            const progressBar = document.getElementById('funeralLoadingProgress');
+            if (progressBar) {
+                let progress = 0;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
+                const increment = (interval / totalTime) * 100;
+
+                const progressInterval = setInterval(() => {
+                    progress += increment;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(progressInterval);
+
+                        // After 5 seconds, show the funeral information
+                        setTimeout(() => {
+                            showFuneralInfoAfterDecryption();
+                        }, 300);
+                    } else {
+                        progressBar.style.width = progress + '%';
+                    }
+                }, interval);
+            }
+        }
+
+        // Comments modal functions for disapproval
         function showCommentsModal() {
-            document.getElementById('commentsModal').style.display = 'block';
-            document.getElementById('commentsTextarea').focus();
+            const modal = document.getElementById('commentsModal');
+            const textarea = document.getElementById('commentsTextarea');
+            if (modal) modal.style.display = 'block';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+                textarea.focus();
+            }
         }
 
         function closeCommentsModal() {
-            document.getElementById('commentsModal').style.display = 'none';
-            document.getElementById('commentsTextarea').value = '';
-            document.getElementById('commentsTextarea').classList.remove('is-invalid');
+            const modal = document.getElementById('commentsModal');
+            const textarea = document.getElementById('commentsTextarea');
+            if (modal) modal.style.display = 'none';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+            }
         }
 
         function submitDisapprove() {
             const commentsTextarea = document.getElementById('commentsTextarea');
-            const comments = commentsTextarea.value.trim();
+            const comments = commentsTextarea ? commentsTextarea.value.trim() : '';
 
             if (comments === '') {
-                commentsTextarea.classList.add('is-invalid');
-                commentsTextarea.focus();
+                if (commentsTextarea) {
+                    commentsTextarea.classList.add('is-invalid');
+                    commentsTextarea.focus();
+                }
                 return;
             }
 
-            document.getElementById('statusInput').value = 'Disapprove';
-            document.getElementById('commentsInput').value = comments;
-            document.getElementById('statusForm').submit();
-        }
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            const processByInput = document.getElementById('processByInput');
 
-        // CMO Reflection Auto-generation (only for admin views with these fields)
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if this is an admin view with CMO fields
-            const billInput = document.getElementById('billAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            const reflectionField = document.getElementById('cmoReflectionField');
-            const cmoCheckboxes = document.querySelectorAll('.supporting-doc');
-
-            // Only initialize if the CMO fields exist (admin view)
-            if (billInput && cmoNotes && reflectionField && cmoCheckboxes.length > 0) {
-                cmoCheckboxes.forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
-                        if (this.checked) {
-                            cmoCheckboxes.forEach(cb => {
-                                if (cb !== this) cb.checked = false;
-                            });
-                        }
-                        updateReflection();
-                    });
-                });
-
-                function updateReflection() {
-                    let parts = [];
-                    if (billInput && billInput.value && billInput.value.trim()) {
-                        parts.push(`Bill: ${billInput.value.trim()}`);
-                    }
-                    const checkedDocs = [];
-                    cmoCheckboxes.forEach(cb => {
-                        if (cb.checked) checkedDocs.push(cb.value);
-                    });
-                    if (checkedDocs.length) {
-                        parts.push(`Docs: ${checkedDocs.join(', ')}`);
-                    }
-                    if (cmoNotes && cmoNotes.value && cmoNotes.value.trim()) {
-                        parts.push(`Others: ${cmoNotes.value.trim()}`);
-                    }
-                    if (reflectionField) {
-                        reflectionField.value = parts.join(' , ');
-                    }
-                }
-
-                billInput.addEventListener('input', updateReflection);
-                cmoNotes.addEventListener('input', updateReflection);
-                updateReflection();
+            if (statusInput) statusInput.value = 'Disapprove';
+            if (commentsInput) commentsInput.value = comments;
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
             }
-        });
+
+            // Show success modal
+            showSuccessModal('Disapprove');
+        }
 
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                document.getElementById("zoomModal").style.display = "none";
+                const zoomModal = document.getElementById("zoomModal");
+                if (zoomModal) zoomModal.style.display = "none";
                 closePDFViewer();
                 closeCommentsModal();
+                closeRetakeModal();
             }
 
             const pdfModal = document.getElementById('pdfViewerModal');
-            if (pdfModal.style.display === 'block') {
+            if (pdfModal && pdfModal.style.display === 'block') {
                 switch(e.key) {
                     case 'ArrowLeft':
                         e.preventDefault();
@@ -771,63 +1480,34 @@
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
             const commentsModal = document.getElementById("commentsModal");
+            const retakeModal = document.getElementById("retakeModal");
+            const successModal = document.getElementById("successModal");
 
-            if (event.target == zoomModal) {
+            if (event.target == zoomModal && zoomModal) {
                 zoomModal.style.display = "none";
             }
-            if (event.target == pdfModal) {
+            if (event.target == pdfModal && pdfModal) {
                 closePDFViewer();
             }
-            if (event.target == commentsModal) {
+            if (event.target == commentsModal && commentsModal) {
                 closeCommentsModal();
+            }
+            if (event.target == retakeModal && retakeModal) {
+                closeRetakeModal();
+            }
+            if (event.target == successModal && successModal) {
+                successModal.style.display = "none";
             }
         }
 
-        // View Additional Information (Password-Protected)
+        // Function to view encrypted Funeral Information
         function viewFuneralAdditionalInfo() {
             const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = {
-                names: [
-                    'DeceasedPersonName',
-                    'RelationshipToDeceased',
-                    'DateOfDeath',
-                    'TimeOfDeath',
-                    'CauseOfDeath',
-                    'FuneralHomeName',
-                    'FuneralHomeAddress',
-                    'BurialCremationDate',
-                    'BurialCremationTime',
-                    'BurialCremationType'
-                ],
-                labels: [
-                    'Name of Deceased Person',
-                    'Relationship to Deceased',
-                    'Date of Death',
-                    'Time of Death',
-                    'Cause of Death',
-                    'Funeral Home/Parlor Name',
-                    'Funeral Home/Parlor Address',
-                    'Date of Burial/Cremation',
-                    'Time of Burial/Cremation',
-                    'Type (Burial/Cremation)'
-                ],
-                values: [
-                    '@ViewData["DeceasedPersonName"]',
-                    '@ViewData["RelationshipToDeceased"]',
-                    '@ViewData["DateOfDeath"]',
-                    '@ViewData["TimeOfDeath"]',
-                    '@ViewData["CauseOfDeath"]',
-                    '@ViewData["FuneralHomeName"]',
-                    '@ViewData["FuneralHomeAddress"]',
-                    '@ViewData["BurialCremationDate"]',
-                    '@ViewData["BurialCremationTime"]',
-                    '@ViewData["BurialCremationType"]'
-                ]
-            };
+            const encryptedFields = getFuneralAssistanceFields();
 
             openViewAdditionalInfoModal('Funeral', formId, encryptedFields);
         }
     </script>
-}
 
-@Html.Partial("_ViewEncryptedDataModal")
+    @Html.Partial("_ViewEncryptedDataModalForAdmin")
+}
