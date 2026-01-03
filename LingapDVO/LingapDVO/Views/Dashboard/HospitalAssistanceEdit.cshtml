@@ -807,17 +807,6 @@
                            style="@(checkedAssistance.ContainsKey("Private") ? "" : "display: none;")"
                            value="@(checkedAssistance.ContainsKey("Private") ? checkedAssistance["Private"] : "")">
                 </div>
-
-                <div class="form-check mt-2">
-                    <input class="form-check-input assistance-type" type="checkbox"
-                           id="caseAssistance" name="TypeassistanceOptions" value="Case"
-                           @(checkedAssistance.ContainsKey("Case") ? "checked" : "")>
-                    <label class="form-check-label ms-1" for="caseAssistance">Case</label>
-                    <input type="text" class="form-control mt-1 assistance-spec"
-                           name="CaseDetails" placeholder="Specify"
-                           style="@(checkedAssistance.ContainsKey("Case") ? "" : "display: none;")"
-                           value="@(checkedAssistance.ContainsKey("Case") ? checkedAssistance["Case"] : "")">
-                </div>
             </div>
         </div>
 
