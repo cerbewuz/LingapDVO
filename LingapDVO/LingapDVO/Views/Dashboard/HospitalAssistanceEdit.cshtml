@@ -802,37 +802,52 @@
         </div>
     </div>
 
-    <!-- Additional Information Section - REMOVED REQUIRED ATTRIBUTES -->
-    <div class="form-section" id="additionalInfoSection" style="display: none;">
+    <!-- Additional Information Section -->
+    <div class="form-section">
         <h5 class="section-header">Additional Information</h5>
         <div class="row g-3">
             <div class="col-lg-6 col-md-12">
                 <label class="form-label">Hospital/ Medical Facility Name</label>
                 <input asp-for="HospitalFacilityName" type="text" class="form-control"
-                       placeholder="Enter hospital or medical facility name">
+                       placeholder="Enter hospital or medical facility name"
+                       value="@ViewData["HospitalFacilityName"]">
                 <span asp-validation-for="HospitalFacilityName" class="text-danger"></span>
             </div>
 
             <div class="col-lg-6 col-md-12">
                 <label class="form-label">Hospital/ Medical Facility Address</label>
                 <input asp-for="HospitalFacilityAddress" type="text" class="form-control"
-                       placeholder="Enter hospital or medical facility address">
+                       placeholder="Enter hospital or medical facility address"
+                       value="@ViewData["HospitalFacilityAddress"]">
                 <span asp-validation-for="HospitalFacilityAddress" class="text-danger"></span>
             </div>
         </div>
 
         <div class="row g-3 mt-2">
+            <!-- Debug Section -->
             <div class="col-lg-6 col-md-12">
                 <label class="form-label">Diagnosis/ Medical Condition</label>
-                <textarea asp-for="DiagnosisMedicalCondition" class="form-control" rows="3"
-                          placeholder="Enter diagnosis or medical condition"></textarea>
+                <textarea asp-for="DiagnosisMedicalCondition" class="form-control" rows="5"
+                          style="min-height: 120px; resize: vertical;"
+                          placeholder="Enter diagnosis or medical condition"
+                          id="diagnosisTextarea"></textarea>
                 <span asp-validation-for="DiagnosisMedicalCondition" class="text-danger"></span>
             </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const value = '@Html.Raw(ViewData["DiagnosisMedicalCondition"])';
+                    if (value && value !== 'null') {
+                        document.getElementById('diagnosisTextarea').value = value;
+                    }
+                });
+            </script>
 
             <div class="col-lg-6 col-md-12">
                 <label class="form-label">Hospital Bill or Cost</label>
                 <input asp-for="HospitalBillCost" type="text" class="form-control"
-                       placeholder="Enter hospital bill or cost (e.g., ₱10,000.00)">
+                       placeholder="Enter hospital bill or cost (e.g., ₱10,000.00)"
+                       value="@ViewData["HospitalBillCost"]">
                 <span asp-validation-for="HospitalBillCost" class="text-danger"></span>
             </div>
         </div>
@@ -840,100 +855,24 @@
         <div class="row g-3 mt-2">
             <div class="col-lg-3 col-md-6">
                 <label class="form-label">Admission Date</label>
-                <input asp-for="AdmissionDate" type="date" class="form-control">
+                <input asp-for="AdmissionDate" type="date" class="form-control"
+                       value="@ViewData["AdmissionDate"]">
                 <span asp-validation-for="AdmissionDate" class="text-danger"></span>
             </div>
 
             <div class="col-lg-3 col-md-6">
                 <label class="form-label">Discharge Date</label>
-                <input asp-for="DischargeDate" type="date" class="form-control">
+                <input asp-for="DischargeDate" type="date" class="form-control"
+                       value="@ViewData["DischargeDate"]">
                 <span asp-validation-for="DischargeDate" class="text-danger"></span>
             </div>
 
             <div class="col-lg-6 col-md-12">
                 <label class="form-label">Ward/Room Type</label>
                 <input asp-for="WardRoomType" type="text" class="form-control"
-                       placeholder="Enter ward or room type (e.g., Private, Semi-Private, Ward)">
+                       placeholder="Enter ward or room type (e.g., Private, Semi-Private, Ward)"
+                       value="@ViewData["WardRoomType"]">
                 <span asp-validation-for="WardRoomType" class="text-danger"></span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Additional Information Section (Password-Protected) -->
-    <div class="form-section">
-        <h5 class="section-header d-flex align-items-center justify-content-between">
-            <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
-            <button type="button" class="btn btn-sm btn-primary" id="viewHospitalInfoBtn"
-                    onclick="openViewAdditionalInfoModal('Hospital', '@ViewData["Id"]', {
-                        labels: ['Hospital/Facility Name', 'Hospital Address', 'Diagnosis/Medical Condition', 'Ward/Room Type', 'Hospital Bill/Cost', 'Admission Date', 'Discharge Date'],
-                        values: ['@ViewData["HospitalFacilityName"]', '@ViewData["HospitalFacilityAddress"]', '@ViewData["DiagnosisMedicalCondition"]', '@ViewData["WardRoomType"]', '@ViewData["HospitalBillCost"]', '@ViewData["AdmissionDate"]', '@ViewData["DischargeDate"]'],
-                        names: ['HospitalFacilityName', 'HospitalFacilityAddress', 'DiagnosisMedicalCondition', 'WardRoomType', 'HospitalBillCost', 'AdmissionDate', 'DischargeDate']
-                    })"
-                    title="Click to view encrypted hospital information">
-                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
-            </button>
-        </h5>
-        <div class="row g-3">
-            <div class="col-12">
-                <div class="alert alert-info d-flex align-items-center" role="alert">
-                    <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
-                    <div>
-                        <strong>This hospital information is encrypted for security.</strong><br>
-                        Click the "View Encrypted Data" button above and enter your password to view the details.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Hospital Loading Container (shown while decrypting) -->
-        <div class="hospital-loading-container" id="hospitalLoadingContainer">
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-3">Decrypting hospital information... Please wait 5 seconds</p>
-                <div class="progress mt-2" style="height: 8px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated"
-                         role="progressbar" id="hospitalLoadingProgress" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
-        <div class="hospital-info-container" id="hospitalInfoContainer">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="info-row">
-                        <div class="info-label">Hospital/Facility Name:</div>
-                        <div class="info-value" id="hospitalName">@ViewData["HospitalFacilityName"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Hospital Address:</div>
-                        <div class="info-value" id="hospitalAddress">@ViewData["HospitalFacilityAddress"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Diagnosis/Medical Condition:</div>
-                        <div class="info-value" id="diagnosis">@ViewData["DiagnosisMedicalCondition"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Ward/Room Type:</div>
-                        <div class="info-value" id="wardRoomType">@ViewData["WardRoomType"]</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="info-row">
-                        <div class="info-label">Hospital Bill/Cost:</div>
-                        <div class="info-value" id="hospitalBill">@ViewData["HospitalBillCost"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Admission Date:</div>
-                        <div class="info-value" id="admissionDate">@ViewData["AdmissionDate"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Discharge Date:</div>
-                        <div class="info-value" id="dischargeDate">@ViewData["DischargeDate"]</div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1036,7 +975,7 @@
         function initializeAssistanceCheckboxes() {
             const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
             const assistanceReflection = document.getElementById('assistanceReflection');
-            const additionalInfoSection = document.getElementById('additionalInfoSection');
+            const additionalInfoSection = document.querySelector('.form-section:nth-child(4)'); // Get the Additional Information section
 
             // Single selection function - like radio buttons
             assistanceCheckboxes.forEach(checkbox => {
@@ -1048,17 +987,6 @@
                                 cb.checked = false;
                             }
                         });
-
-                        // Show additional information section
-                        if (additionalInfoSection) {
-                            additionalInfoSection.style.display = 'block';
-                        }
-                    } else {
-                        // If unchecking the last checkbox, hide additional section
-                        const anyChecked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
-                        if (!anyChecked && additionalInfoSection) {
-                            additionalInfoSection.style.display = 'none';
-                        }
                     }
                     updateAssistanceReflection();
                 });
@@ -1093,13 +1021,8 @@
         // Check initial state on page load
         function checkInitialAssistanceState() {
             const assistanceCheckboxes = document.querySelectorAll('.assistance-type');
-            const additionalInfoSection = document.getElementById('additionalInfoSection');
-
             const anyChecked = Array.from(assistanceCheckboxes).some(cb => cb.checked);
-
-            if (anyChecked && additionalInfoSection) {
-                additionalInfoSection.style.display = 'block';
-            }
+            // No need to show/hide sections since Additional Information is always visible now
         }
 
         // Form Validation - ENHANCED
@@ -1536,82 +1459,7 @@
             }
         }
 
-        // Hospital Information Functions
-        function showHospitalInfoAfterDecryption() {
-            console.log('Showing hospital information after decryption...');
-
-            // Hide the loading container
-            const loadingContainer = document.getElementById('hospitalLoadingContainer');
-            if (loadingContainer) {
-                loadingContainer.style.display = 'none';
-            }
-
-            // Hide the "View Hospital Information" button
-            const viewButton = document.getElementById('viewHospitalInfoBtn');
-            if (viewButton) {
-                viewButton.style.display = 'none';
-            }
-
-            // Show the hospital information container
-            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
-            if (hospitalInfoContainer) {
-                hospitalInfoContainer.style.display = 'block';
-                hospitalInfoContainer.classList.add('hospital-info-visible');
-
-                // Scroll to the hospital information section
-                setTimeout(() => {
-                    hospitalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            }
-        }
-
-        function startHospitalInfoLoading() {
-            console.log('Starting hospital information loading...');
-
-            // Show loading container
-            const loadingContainer = document.getElementById('hospitalLoadingContainer');
-            if (loadingContainer) {
-                loadingContainer.style.display = 'block';
-            }
-
-            // Hide any existing hospital info container
-            const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
-            if (hospitalInfoContainer) {
-                hospitalInfoContainer.style.display = 'none';
-                hospitalInfoContainer.classList.remove('hospital-info-visible');
-            }
-
-            // Start 5-second progress bar
-            const progressBar = document.getElementById('hospitalLoadingProgress');
-            if (progressBar) {
-                let progress = 0;
-                const totalTime = 5000; // 5 seconds
-                const interval = 100; // Update every 100ms
-                const increment = (interval / totalTime) * 100;
-
-                const progressInterval = setInterval(() => {
-                    progress += increment;
-                    if (progress >= 100) {
-                        progress = 100;
-                        clearInterval(progressInterval);
-
-                        // After 5 seconds, show the hospital information
-                        setTimeout(() => {
-                            showHospitalInfoAfterDecryption();
-                        }, 300);
-                    } else {
-                        progressBar.style.width = progress + '%';
-                    }
-                }, interval);
-            }
-        }
-
-        // Function to be called from the partial modal after successful password verification
-        function onPasswordVerifiedSuccessfully() {
-            console.log('Password verified, showing hospital information...');
-            startHospitalInfoLoading();
-        }
-
+        // Remove the hospital information functions since they're no longer needed
         // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
@@ -1656,6 +1504,4 @@
             }
         }
     </script>
-
-    @Html.Partial("_ViewEncryptedDataModalForAdmin")
 }

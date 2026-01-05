@@ -1202,41 +1202,8 @@ namespace LingapDVO.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Repopulate view data for the form
-                ViewData["Id"] = existing.Id;
-                ViewData["Lastname"] = existing.Lastname;
-                ViewData["Firstname"] = existing.Firstname;
-                ViewData["Middlename"] = existing.Middlename;
-                ViewData["Suffix"] = existing.Suffix;
-                ViewData["BlkLotStreet"] = existing.BlkLotStreet;
-                ViewData["SubVill"] = existing.SubVill;
-                ViewData["Brgy"] = existing.Brgy;
-                ViewData["District"] = existing.District;
-                ViewData["Sex"] = existing.Sex;
-                ViewData["PhilHealth"] = existing.PhilHealth;
-                ViewData["PhilHealthNo"] = existing.PhilHealthNo;
-                ViewData["Dateofbirth"] = existing.Dateofbirth;
-                ViewData["Age"] = existing.Age;
-
-                ViewData["RLastname"] = existing.RLastname;
-                ViewData["RFirstname"] = existing.RFirstname;
-                ViewData["RMiddlename"] = existing.RMiddlename;
-                ViewData["RSuffix"] = existing.RSuffix;
-                ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
-                ViewData["RSubVill"] = existing.RSubVill;
-                ViewData["RBrgy"] = existing.RBrgy;
-                ViewData["RDistrict"] = existing.RDistrict;
-                ViewData["RelationshipPatient"] = existing.RelationshipPatient;
-                ViewData["ContactNo"] = existing.ContactNo;
-
-                ViewData["Typeassistance"] = existing.Typeassistance;
-                ViewData["ForCMOPERSONNEL"] = existing.ForCMOPERSONNEL;
-
-                ViewData["CurrentDoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["CurrentDeathCertificate"] = existing.DeathCertificate;
-                ViewData["CurrentValidFront"] = existing.Validfrontimage;
-                ViewData["CurrentValidBack"] = existing.ValidBackimage;
-
+                // Repopulate ViewData for validation errors
+                PopulateViewDataForEdit(existing);
                 return View(dto);
             }
 
@@ -1262,7 +1229,7 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    // Encrypt the original filename
+                    // Encrypt and save new file
                     string originalFileName = dto.HospitalAssistanceDocument.FileName;
                     string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
@@ -1270,19 +1237,19 @@ namespace LingapDVO.Controllers
                     using (var fs = new FileStream(filePath, FileMode.Create))
                     {
                         byte[] encrypted = aesHelper.EncryptStream(dto.HospitalAssistanceDocument.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
+                        await fs.WriteAsync(encrypted, 0, encrypted.Length);
                     }
 
-                    // Store in DoctorPrescription field (unified field)
+                    // Store in DoctorPrescription field
                     existing.DoctorPrescription = fileName;
                     existing.DeathCertificate = ""; // Clear the other field
                 }
 
-                // ? 7. Update text fields safely
+                // ? 6. Update patient information with null checks
                 existing.Lastname = dto.Lastname ?? existing.Lastname;
                 existing.Firstname = dto.Firstname ?? existing.Firstname;
                 existing.Middlename = dto.Middlename ?? existing.Middlename;
-                existing.Suffix = dto.Suffix ?? existing.Suffix;
+                existing.Suffix = (dto.Suffix == "None" ? "" : dto.Suffix) ?? existing.Suffix;
                 existing.BlkLotStreet = dto.BlkLotStreet ?? existing.BlkLotStreet;
                 existing.SubVill = dto.SubVill ?? existing.SubVill;
                 existing.Brgy = dto.Brgy ?? existing.Brgy;
@@ -1293,11 +1260,11 @@ namespace LingapDVO.Controllers
                 existing.Dateofbirth = dto.Dateofbirth ?? existing.Dateofbirth;
                 existing.Age = dto.Age ?? existing.Age;
 
-                // ? Requestor details
+                // ? 7. Update requestor details
                 existing.RLastname = dto.RLastname ?? existing.RLastname;
                 existing.RFirstname = dto.RFirstname ?? existing.RFirstname;
                 existing.RMiddlename = dto.RMiddlename ?? existing.RMiddlename;
-                existing.RSuffix = dto.RSuffix ?? existing.RSuffix;
+                existing.RSuffix = (dto.RSuffix == "None" ? "" : dto.RSuffix) ?? existing.RSuffix;
                 existing.RBlkLotStreet = dto.RBlkLotStreet ?? existing.RBlkLotStreet;
                 existing.RSubVill = dto.RSubVill ?? existing.RSubVill;
                 existing.RBrgy = dto.RBrgy ?? existing.RBrgy;
@@ -1305,162 +1272,161 @@ namespace LingapDVO.Controllers
                 existing.RelationshipPatient = dto.RelationshipPatient ?? existing.RelationshipPatient;
                 existing.ContactNo = dto.ContactNo ?? existing.ContactNo;
 
-                // ? Assistance info
+                // ? 8. Update assistance information
                 existing.Typeassistance = dto.Typeassistance ?? existing.Typeassistance;
                 existing.ForCMOPERSONNEL = dto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
 
-                // ? 8. Update ID images (if session updated)
+                // ? 9. Encrypt and update hospital information fields
+                if (!string.IsNullOrEmpty(dto.HospitalFacilityName))
+                    existing.HospitalFacilityName = _aesEncryptionService.Encrypt(dto.HospitalFacilityName);
+
+                if (!string.IsNullOrEmpty(dto.HospitalFacilityAddress))
+                    existing.HospitalFacilityAddress = _aesEncryptionService.Encrypt(dto.HospitalFacilityAddress);
+
+                if (!string.IsNullOrEmpty(dto.DiagnosisMedicalCondition))
+                    existing.DiagnosisMedicalCondition = _aesEncryptionService.Encrypt(dto.DiagnosisMedicalCondition);
+
+                if (!string.IsNullOrEmpty(dto.HospitalBillCost))
+                    existing.HospitalBillCost = _aesEncryptionService.Encrypt(dto.HospitalBillCost);
+
+                if (!string.IsNullOrEmpty(dto.AdmissionDate))
+                    existing.AdmissionDate = _aesEncryptionService.Encrypt(dto.AdmissionDate);
+
+                if (!string.IsNullOrEmpty(dto.DischargeDate))
+                    existing.DischargeDate = _aesEncryptionService.Encrypt(dto.DischargeDate);
+
+                if (!string.IsNullOrEmpty(dto.WardRoomType))
+                    existing.WardRoomType = _aesEncryptionService.Encrypt(dto.WardRoomType);
+
+                // ? 10. Update ID images (if session has updated IDs)
                 string frontID = HttpContext.Session.GetString("FrontID") ?? "";
                 string backID = HttpContext.Session.GetString("BackID") ?? "";
                 if (!string.IsNullOrEmpty(frontID)) existing.Validfrontimage = frontID;
                 if (!string.IsNullOrEmpty(backID)) existing.ValidBackimage = backID;
 
-                // ? 9. Update timestamp properly (preserve original CreatedAt for non-retake mode)
+                // ? 11. Handle retake mode vs normal edit mode
                 if (!isRetakeMode)
                 {
+                    // Normal edit - update timestamp
                     existing.CreatedAt = _dateTimeService.Now;
                 }
-
-                // ? 9.5. If retake mode, set to Processing status (skip Pending) and clear ALL processing fields
-                // CRITICAL: Retake applications go directly to Processing for immediate admin review
-                // FLOW: Admin sets Status2="Retake" → User resubmits → Status="processing", Status2="Resubmitted" (priority queue)
-                if (isRetakeMode)
+                else
                 {
-                    existing.Status = "processing"; // Skip Pending, go directly to Processing for immediate review
-                    existing.Status2 = "Resubmitted"; // Mark as resubmitted so admin knows this is a retake
-                    existing.Status3 = ""; // Clear any Status3 as well
-                    existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
-                    existing.ProcessAt = _dateTimeService.Now; // Set to current date for resubmission timestamp display
-                    existing.Processby = ""; // Clear processor name (use empty string, not null)
-                    existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
-                    existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
-                    existing.IsRetakeApplication = false; // Clear retake flag (no longer in retake state)
-                    existing.RetakeReason = ""; // Clear retake reason
-                    existing.RetakeRequestedAt = null; // Clear retake timestamp
-                    existing.Comments = ""; // Remove comments as per requirement
+                    // Retake mode - reset all processing fields
+                    existing.Status = "Processing"; // Go directly to Processing for review
+                    existing.Status2 = "Resubmitted"; // Mark as resubmitted
+                    existing.Status3 = "";
+                    existing.CreatedAt = _dateTimeService.Now; // Reset timestamp
+                    existing.ProcessAt = _dateTimeService.Now;
+                    existing.Processby = "";
+                    existing.Result = new DateTime(1900, 1, 1);
+                    existing.ClaimedAt = new DateTime(1900, 1, 1);
+                    existing.IsRetakeApplication = false;
+                    existing.RetakeReason = "";
+                    existing.RetakeRequestedAt = null;
+                    existing.Comments = "";
                 }
 
-                // ? 10. Save changes
+                // ? 12. Save changes
                 context.Entry(existing).State = EntityState.Modified;
                 await context.SaveChangesAsync();
 
-                // ? 10.5. Send notifications for resubmission if it was retake mode
+                // ? 13. Send notifications for retake mode
                 if (isRetakeMode)
                 {
-                    var userFullName = $"{existing.Firstname} {existing.Lastname}";
-                    var assistanceType = existing.GetType().Name; // Get the actual type
-
-                    // Send user notification - application is now in Processing queue (priority)
                     try
                     {
+                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
+
+                        // User notification
                         await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
                             userFullName,
-                            assistanceType == "HospitalAssistance" ? "HospitalBill" : assistanceType == "OtherAssistance" ? "MedicalLab" : "Funeral",
-                            "processing", // Send as Processing status (priority queue for retake)
+                            "HospitalBill",
+                            "Processing",
                             existing.Id
                         );
-                    }
-                    catch { /* Notification failure should not block form submission */ }
 
-                    // Send admin notification - retake application has been resubmitted (priority)
-                    try
-                    {
+                        // Admin notification
                         await _adminNotificationService.SendAdminNotificationAsync(
                             "application_submitted",
-                            assistanceType,
+                            "HospitalAssistance",
                             existing.Id,
                             userId,
                             userFullName,
-                            $"[PRIORITY] Retake Resubmitted - {assistanceType.Replace("Assistance", " Assistance")}",
-                            $"{userFullName} resubmitted their retake application for {assistanceType.Replace("Assistance", " Assistance")}. PRIORITY: Ready for immediate review.",
-                            $"/{assistanceType}ProcessingStatus/{existing.Id}"
+                            "[PRIORITY] Retake Resubmitted - Hospital Assistance",
+                            $"{userFullName} resubmitted their retake application for Hospital Assistance. PRIORITY: Ready for immediate review.",
+                            $"/HospitalAssistanceProcessingStatus/{existing.Id}"
                         );
                     }
-                    catch { /* Notification failure should not block form submission */ }
+                    catch (Exception ex)
+                    {
+                        // Log but don't fail
+                        Console.WriteLine($"Notification error: {ex.Message}");
+                    }
                 }
 
-                // ? 11. Set success flag and RAF number for modal - Convert int to string for varchar field
-                ViewBag.Success = true;
-                TempData["SuccessRAF"] = id.ToString(); // This converts int to string
+                // ? 14. Set success flag
+                TempData["Success"] = true;
+                TempData["RAF"] = id.ToString();
 
-                // ? 12. Repopulate view data for success display
-                ViewData["Id"] = existing.Id;
-                ViewData["Lastname"] = existing.Lastname;
-                ViewData["Firstname"] = existing.Firstname;
-                ViewData["Middlename"] = existing.Middlename;
-                ViewData["Suffix"] = existing.Suffix;
-                ViewData["BlkLotStreet"] = existing.BlkLotStreet;
-                ViewData["SubVill"] = existing.SubVill;
-                ViewData["Brgy"] = existing.Brgy;
-                ViewData["District"] = existing.District;
-                ViewData["Sex"] = existing.Sex;
-                ViewData["PhilHealth"] = existing.PhilHealth;
-                ViewData["PhilHealthNo"] = existing.PhilHealthNo;
-                ViewData["Dateofbirth"] = existing.Dateofbirth;
-                ViewData["Age"] = existing.Age;
-
-                ViewData["RLastname"] = existing.RLastname;
-                ViewData["RFirstname"] = existing.RFirstname;
-                ViewData["RMiddlename"] = existing.RMiddlename;
-                ViewData["RSuffix"] = existing.RSuffix;
-                ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
-                ViewData["RSubVill"] = existing.RSubVill;
-                ViewData["RBrgy"] = existing.RBrgy;
-                ViewData["RDistrict"] = existing.RDistrict;
-                ViewData["RelationshipPatient"] = existing.RelationshipPatient;
-                ViewData["ContactNo"] = existing.ContactNo;
-
-                ViewData["Typeassistance"] = existing.Typeassistance;
-                ViewData["ForCMOPERSONNEL"] = existing.ForCMOPERSONNEL;
-
-                ViewData["CurrentDoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["CurrentDeathCertificate"] = existing.DeathCertificate;
-                ViewData["CurrentValidFront"] = existing.Validfrontimage;
-                ViewData["CurrentValidBack"] = existing.ValidBackimage;
-
-                return View(dto);
+                // ? 15. Return with success - redirect to show updated data
+                return RedirectToAction("HospitalAssistanceEdit", new { id = id, success = true });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while updating the form: " + ex.Message);
-
-                ViewData["Id"] = existing.Id;
-                ViewData["Lastname"] = existing.Lastname;
-                ViewData["Firstname"] = existing.Firstname;
-                ViewData["Middlename"] = existing.Middlename;
-                ViewData["Suffix"] = existing.Suffix;
-                ViewData["BlkLotStreet"] = existing.BlkLotStreet;
-                ViewData["SubVill"] = existing.SubVill;
-                ViewData["Brgy"] = existing.Brgy;
-                ViewData["District"] = existing.District;
-                ViewData["Sex"] = existing.Sex;
-                ViewData["PhilHealth"] = existing.PhilHealth;
-                ViewData["PhilHealthNo"] = existing.PhilHealthNo;
-                ViewData["Dateofbirth"] = existing.Dateofbirth;
-                ViewData["Age"] = existing.Age;
-
-                ViewData["RLastname"] = existing.RLastname;
-                ViewData["RFirstname"] = existing.RFirstname;
-                ViewData["RMiddlename"] = existing.RMiddlename;
-                ViewData["RSuffix"] = existing.RSuffix;
-                ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
-                ViewData["RSubVill"] = existing.RSubVill;
-                ViewData["RBrgy"] = existing.RBrgy;
-                ViewData["RDistrict"] = existing.RDistrict;
-                ViewData["RelationshipPatient"] = existing.RelationshipPatient;
-                ViewData["ContactNo"] = existing.ContactNo;
-
-                ViewData["Typeassistance"] = existing.Typeassistance;
-                ViewData["ForCMOPERSONNEL"] = existing.ForCMOPERSONNEL;
-
-                ViewData["CurrentDoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["CurrentDeathCertificate"] = existing.DeathCertificate;
-                ViewData["CurrentValidFront"] = existing.Validfrontimage;
-                ViewData["CurrentValidBack"] = existing.ValidBackimage;
-
+                ModelState.AddModelError("", $"An error occurred while updating the form: {ex.Message}");
+                PopulateViewDataForEdit(existing);
                 return View(dto);
             }
+        }
+
+        // Helper method to populate ViewData
+        private void PopulateViewDataForEdit(HospitalAssistance existing)
+        {
+            ViewData["Id"] = existing.Id;
+            ViewData["Lastname"] = existing.Lastname;
+            ViewData["Firstname"] = existing.Firstname;
+            ViewData["Middlename"] = existing.Middlename;
+            ViewData["Suffix"] = existing.Suffix;
+            ViewData["BlkLotStreet"] = existing.BlkLotStreet;
+            ViewData["SubVill"] = existing.SubVill;
+            ViewData["Brgy"] = existing.Brgy;
+            ViewData["District"] = existing.District;
+            ViewData["Sex"] = existing.Sex;
+            ViewData["PhilHealth"] = existing.PhilHealth;
+            ViewData["PhilHealthNo"] = existing.PhilHealthNo;
+            ViewData["Dateofbirth"] = existing.Dateofbirth;
+            ViewData["Age"] = existing.Age;
+
+            ViewData["RLastname"] = existing.RLastname;
+            ViewData["RFirstname"] = existing.RFirstname;
+            ViewData["RMiddlename"] = existing.RMiddlename;
+            ViewData["RSuffix"] = existing.RSuffix;
+            ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
+            ViewData["RSubVill"] = existing.RSubVill;
+            ViewData["RBrgy"] = existing.RBrgy;
+            ViewData["RDistrict"] = existing.RDistrict;
+            ViewData["RelationshipPatient"] = existing.RelationshipPatient;
+            ViewData["ContactNo"] = existing.ContactNo;
+
+            ViewData["Typeassistance"] = existing.Typeassistance;
+            ViewData["ForCMOPERSONNEL"] = existing.ForCMOPERSONNEL;
+
+            // Decrypt and show hospital information fields
+            ViewData["HospitalFacilityName"] = DecryptFieldText(existing.HospitalFacilityName);
+            ViewData["HospitalFacilityAddress"] = DecryptFieldText(existing.HospitalFacilityAddress);
+            ViewData["DiagnosisMedicalCondition"] = DecryptFieldText(existing.DiagnosisMedicalCondition);
+            ViewData["HospitalBillCost"] = DecryptFieldText(existing.HospitalBillCost);
+            ViewData["AdmissionDate"] = DecryptFieldText(existing.AdmissionDate);
+            ViewData["DischargeDate"] = DecryptFieldText(existing.DischargeDate);
+            ViewData["WardRoomType"] = DecryptFieldText(existing.WardRoomType);
+
+            ViewData["CurrentDoctorPrescription"] = existing.DoctorPrescription;
+            ViewData["CurrentDeathCertificate"] = existing.DeathCertificate;
+            ViewData["CurrentValidFront"] = existing.Validfrontimage;
+            ViewData["CurrentValidBack"] = existing.ValidBackimage;
+            ViewData["IsRetakeMode"] = existing.Status2 == "Retake";
         }
 
         public IActionResult HospitalAssistancedelete(int id)
