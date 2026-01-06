@@ -2810,7 +2810,7 @@ namespace LingapDVO.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> FuneralAssistanceEdit(int id, FuneralAssistanceDto FuneralAssistanceDto)
+        public async Task<IActionResult> FuneralAssistanceEdit(int id, FuneralAssistanceDto dto)
         {
             // ? 1. Check user session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -2842,38 +2842,29 @@ namespace LingapDVO.Controllers
             }
 
             // ? 4. Remove validations for optional fields
-            if (string.IsNullOrEmpty(FuneralAssistanceDto.PhilHealthNo))
+            if (string.IsNullOrEmpty(dto.PhilHealthNo))
                 ModelState.Remove("PhilHealthNo");
 
-            // Remove validation requirements for images if they're not provided
-            if (FuneralAssistanceDto.IdFrontimage == null) ModelState.Remove("IdFrontimage");
-            if (FuneralAssistanceDto.IdBackimage == null) ModelState.Remove("IdBackimage");
+            // Remove validation for ID images - they use session data instead
+            ModelState.Remove("IdFrontimage");
+            ModelState.Remove("IdBackimage");
 
-            // ? Require document ONLY if both existing docs are empty and no new upload
-            if (string.IsNullOrEmpty(existing.DoctorPrescription) &&
-                string.IsNullOrEmpty(existing.DeathCertificate) &&
-                FuneralAssistanceDto.FuneralAssistanceDocument == null)
-            {
-                ModelState.AddModelError("FuneralAssistanceDocument", "At least one document is required.");
-            }
+            // Remove validation for document - it's optional in edit
+            ModelState.Remove("FuneralAssistanceDocument");
 
             if (!ModelState.IsValid)
             {
-                // Populate ViewData with current image paths
-                ViewData["Validfrontimage"] = existing.Validfrontimage;
-                ViewData["ValidBackimage"] = existing.ValidBackimage;
-                ViewData["DoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["DeathCertificate"] = existing.DeathCertificate;
-
-                return View(FuneralAssistanceDto);
+                // Repopulate ViewData for validation errors
+                PopulateViewDataForFuneralEdit(existing);
+                return View(dto);
             }
 
             try
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // ? 5. Update Funeral Assistance Document (replaces both DoctorPrescription and DeathCertificate)
-                if (FuneralAssistanceDto.FuneralAssistanceDocument != null)
+                // ? 5. Update Funeral Assistance Document (optional - only if provided)
+                if (dto.FuneralAssistanceDocument != null)
                 {
                     string folder = Path.Combine(environment.WebRootPath, "FuneralAssistanceFileStorage");
                     Directory.CreateDirectory(folder);
@@ -2890,195 +2881,216 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    // Encrypt the original filename
-                    string originalFileName = FuneralAssistanceDto.FuneralAssistanceDocument.FileName;
+                    // Encrypt and save new file
+                    string originalFileName = dto.FuneralAssistanceDocument.FileName;
                     string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var fs = new FileStream(filePath, FileMode.Create))
                     {
-                        byte[] encrypted = aesHelper.EncryptStream(FuneralAssistanceDto.FuneralAssistanceDocument.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
+                        byte[] encrypted = aesHelper.EncryptStream(dto.FuneralAssistanceDocument.OpenReadStream());
+                        await fs.WriteAsync(encrypted, 0, encrypted.Length);
                     }
 
-                    // Store in DoctorPrescription field (unified field)
+                    // Store in DoctorPrescription field
                     existing.DoctorPrescription = fileName;
                     existing.DeathCertificate = ""; // Clear the other field
                 }
 
-                // ? 6. Update ID images (if new ones provided)
-                if (FuneralAssistanceDto.IdFrontimage != null)
-                {
-                    string folder = Path.Combine(environment.WebRootPath, "Validimg");
-                    Directory.CreateDirectory(folder);
+                // ? 6. Update patient information with null checks
+                existing.Lastname = dto.Lastname ?? existing.Lastname;
+                existing.Firstname = dto.Firstname ?? existing.Firstname;
+                existing.Middlename = dto.Middlename ?? existing.Middlename;
+                existing.Suffix = (dto.Suffix == "None" ? "" : dto.Suffix) ?? existing.Suffix;
+                existing.BlkLotStreet = dto.BlkLotStreet ?? existing.BlkLotStreet;
+                existing.SubVill = dto.SubVill ?? existing.SubVill;
+                existing.Brgy = dto.Brgy ?? existing.Brgy;
+                existing.District = dto.District ?? existing.District;
+                existing.Sex = dto.Sex ?? existing.Sex;
+                existing.PhilHealth = dto.PhilHealth ?? existing.PhilHealth;
+                existing.PhilHealthNo = dto.PhilHealthNo ?? existing.PhilHealthNo;
+                existing.Dateofbirth = dto.Dateofbirth ?? existing.Dateofbirth;
+                existing.Age = dto.Age ?? existing.Age;
 
-                    // Delete old file if exists
-                    if (!string.IsNullOrEmpty(existing.Validfrontimage))
-                    {
-                        string oldPath = Path.Combine(folder, existing.Validfrontimage);
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                    }
+                // ? 7. Update requestor details
+                existing.RLastname = dto.RLastname ?? existing.RLastname;
+                existing.RFirstname = dto.RFirstname ?? existing.RFirstname;
+                existing.RMiddlename = dto.RMiddlename ?? existing.RMiddlename;
+                existing.RSuffix = (dto.RSuffix == "None" ? "" : dto.RSuffix) ?? existing.RSuffix;
+                existing.RBlkLotStreet = dto.RBlkLotStreet ?? existing.RBlkLotStreet;
+                existing.RSubVill = dto.RSubVill ?? existing.RSubVill;
+                existing.RBrgy = dto.RBrgy ?? existing.RBrgy;
+                existing.RDistrict = dto.RDistrict ?? existing.RDistrict;
+                existing.RelationshipPatient = dto.RelationshipPatient ?? existing.RelationshipPatient;
+                existing.ContactNo = dto.ContactNo ?? existing.ContactNo;
 
-                    // Encrypt the original filename
-                    string originalFileName = FuneralAssistanceDto.IdFrontimage.FileName;
-                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePath = Path.Combine(folder, fileName);
+                // ? 8. Update assistance information
+                existing.Typeassistance = dto.Typeassistance ?? existing.Typeassistance;
+                existing.ForCMOPERSONNEL = dto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
 
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        byte[] encrypted = aesHelper.EncryptStream(FuneralAssistanceDto.IdFrontimage.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
-                    }
+                // ? 9. Encrypt and update funeral information fields
+                if (!string.IsNullOrEmpty(dto.DeceasedPersonName))
+                    existing.DeceasedPersonName = _aesEncryptionService.Encrypt(dto.DeceasedPersonName);
 
-                    existing.Validfrontimage = fileName;
-                }
+                if (!string.IsNullOrEmpty(dto.RelationshipToDeceased))
+                    existing.RelationshipToDeceased = _aesEncryptionService.Encrypt(dto.RelationshipToDeceased);
 
-                if (FuneralAssistanceDto.IdBackimage != null)
-                {
-                    string folder = Path.Combine(environment.WebRootPath, "Validimg");
-                    Directory.CreateDirectory(folder);
+                if (!string.IsNullOrEmpty(dto.DateOfDeath))
+                    existing.DateOfDeath = _aesEncryptionService.Encrypt(dto.DateOfDeath);
 
-                    // Delete old file if exists
-                    if (!string.IsNullOrEmpty(existing.ValidBackimage))
-                    {
-                        string oldPath = Path.Combine(folder, existing.ValidBackimage);
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                    }
+                if (!string.IsNullOrEmpty(dto.TimeOfDeath))
+                    existing.TimeOfDeath = _aesEncryptionService.Encrypt(dto.TimeOfDeath);
 
-                    // Encrypt the original filename
-                    string originalFileName = FuneralAssistanceDto.IdBackimage.FileName;
-                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePath = Path.Combine(folder, fileName);
+                if (!string.IsNullOrEmpty(dto.CauseOfDeath))
+                    existing.CauseOfDeath = _aesEncryptionService.Encrypt(dto.CauseOfDeath);
 
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        byte[] encrypted = aesHelper.EncryptStream(FuneralAssistanceDto.IdBackimage.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
-                    }
+                if (!string.IsNullOrEmpty(dto.FuneralHomeName))
+                    existing.FuneralHomeName = _aesEncryptionService.Encrypt(dto.FuneralHomeName);
 
-                    existing.ValidBackimage = fileName;
-                }
+                if (!string.IsNullOrEmpty(dto.FuneralHomeAddress))
+                    existing.FuneralHomeAddress = _aesEncryptionService.Encrypt(dto.FuneralHomeAddress);
 
-                // ? 8. Update text fields safely
-                existing.Lastname = FuneralAssistanceDto.Lastname ?? existing.Lastname;
-                existing.Firstname = FuneralAssistanceDto.Firstname ?? existing.Firstname;
-                existing.Middlename = FuneralAssistanceDto.Middlename ?? existing.Middlename;
-                existing.Suffix = FuneralAssistanceDto.Suffix ?? existing.Suffix;
-                existing.BlkLotStreet = FuneralAssistanceDto.BlkLotStreet ?? existing.BlkLotStreet;
-                existing.SubVill = FuneralAssistanceDto.SubVill ?? existing.SubVill;
-                existing.Brgy = FuneralAssistanceDto.Brgy ?? existing.Brgy;
-                existing.District = FuneralAssistanceDto.District ?? existing.District;
-                existing.Sex = FuneralAssistanceDto.Sex ?? existing.Sex;
-                existing.PhilHealth = FuneralAssistanceDto.PhilHealth ?? existing.PhilHealth;
-                existing.PhilHealthNo = FuneralAssistanceDto.PhilHealthNo ?? existing.PhilHealthNo;
-                existing.Dateofbirth = FuneralAssistanceDto.Dateofbirth ?? existing.Dateofbirth;
-                existing.Age = FuneralAssistanceDto.Age ?? existing.Age;
+                if (!string.IsNullOrEmpty(dto.BurialCremationDate))
+                    existing.BurialCremationDate = _aesEncryptionService.Encrypt(dto.BurialCremationDate);
 
-                // ? Requestor details
-                existing.RLastname = FuneralAssistanceDto.RLastname ?? existing.RLastname;
-                existing.RFirstname = FuneralAssistanceDto.RFirstname ?? existing.RFirstname;
-                existing.RMiddlename = FuneralAssistanceDto.RMiddlename ?? existing.RMiddlename;
-                existing.RSuffix = FuneralAssistanceDto.RSuffix ?? existing.RSuffix;
-                existing.RBlkLotStreet = FuneralAssistanceDto.RBlkLotStreet ?? existing.RBlkLotStreet;
-                existing.RSubVill = FuneralAssistanceDto.RSubVill ?? existing.RSubVill;
-                existing.RBrgy = FuneralAssistanceDto.RBrgy ?? existing.RBrgy;
-                existing.RDistrict = FuneralAssistanceDto.RDistrict ?? existing.RDistrict;
-                existing.RelationshipPatient = FuneralAssistanceDto.RelationshipPatient ?? existing.RelationshipPatient;
-                existing.ContactNo = FuneralAssistanceDto.ContactNo ?? existing.ContactNo;
+                if (!string.IsNullOrEmpty(dto.BurialCremationTime))
+                    existing.BurialCremationTime = _aesEncryptionService.Encrypt(dto.BurialCremationTime);
 
-                // ? Assistance info
-                existing.Typeassistance = FuneralAssistanceDto.Typeassistance ?? existing.Typeassistance;
-                existing.ForCMOPERSONNEL = FuneralAssistanceDto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
+                if (!string.IsNullOrEmpty(dto.BurialCremationType))
+                    existing.BurialCremationType = _aesEncryptionService.Encrypt(dto.BurialCremationType);
 
-                // ? 9. Update timestamp properly (preserve original CreatedAt for non-retake mode)
+                // ? 10. Update ID images (if session has updated IDs)
+                string frontID = HttpContext.Session.GetString("FrontID") ?? "";
+                string backID = HttpContext.Session.GetString("BackID") ?? "";
+                if (!string.IsNullOrEmpty(frontID)) existing.Validfrontimage = frontID;
+                if (!string.IsNullOrEmpty(backID)) existing.ValidBackimage = backID;
+
+                // ? 11. Handle retake mode vs normal edit mode
                 if (!isRetakeMode)
                 {
+                    // Normal edit - update timestamp
                     existing.CreatedAt = _dateTimeService.Now;
                 }
-
-                // ? 9.5. If retake mode, set to Processing status (skip Pending) and clear ALL processing fields
-                // CRITICAL: Retake applications go directly to Processing for immediate admin review
-                // FLOW: Admin sets Status2="Retake" → User resubmits → Status="processing", Status2="Resubmitted" (priority queue)
-                if (isRetakeMode)
+                else
                 {
-                    existing.Status = "processing"; // Skip Pending, go directly to Processing for immediate review
-                    existing.Status2 = "Resubmitted"; // Mark as resubmitted so admin knows this is a retake
-                    existing.Status3 = ""; // Clear any Status3 as well
-                    existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
-                    existing.ProcessAt = _dateTimeService.Now; // Set to current date for resubmission timestamp display
-                    existing.Processby = ""; // Clear processor name (use empty string, not null)
-                    existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
-                    existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
-                    existing.IsRetakeApplication = false; // Clear retake flag (no longer in retake state)
-                    existing.RetakeReason = ""; // Clear retake reason
-                    existing.RetakeRequestedAt = null; // Clear retake timestamp
-                    existing.Comments = ""; // Remove comments as per requirement
+                    // Retake mode - reset all processing fields
+                    existing.Status = "Processing"; // Go directly to Processing for review
+                    existing.Status2 = "Resubmitted"; // Mark as resubmitted
+                    existing.Status3 = "";
+                    existing.CreatedAt = _dateTimeService.Now; // Reset timestamp
+                    existing.ProcessAt = _dateTimeService.Now;
+                    existing.Processby = "";
+                    existing.Result = new DateTime(1900, 1, 1);
+                    existing.ClaimedAt = new DateTime(1900, 1, 1);
+                    existing.IsRetakeApplication = false;
+                    existing.RetakeReason = "";
+                    existing.RetakeRequestedAt = null;
+                    existing.Comments = "";
                 }
 
-                // ? 10. Save changes
+                // ? 12. Save changes
                 context.Entry(existing).State = EntityState.Modified;
                 await context.SaveChangesAsync();
 
-                // ? 10.5. Send notifications for resubmission if it was retake mode
+                // ? 13. Send notifications for retake mode
                 if (isRetakeMode)
                 {
-                    var userFullName = $"{existing.Firstname} {existing.Lastname}";
-                    var assistanceType = existing.GetType().Name; // Get the actual type
-
-                    // Send user notification - application is now in Processing queue (priority)
                     try
                     {
+                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
+
+                        // User notification
                         await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
                             userFullName,
-                            assistanceType == "HospitalAssistance" ? "HospitalBill" : assistanceType == "OtherAssistance" ? "MedicalLab" : "Funeral",
-                            "processing", // Send as Processing status (priority queue for retake)
+                            "Funeral",
+                            "Processing",
                             existing.Id
                         );
-                    }
-                    catch { /* Notification failure should not block form submission */ }
 
-                    // Send admin notification - retake application has been resubmitted (priority)
-                    try
-                    {
+                        // Admin notification
                         await _adminNotificationService.SendAdminNotificationAsync(
                             "application_submitted",
-                            assistanceType,
+                            "FuneralAssistance",
                             existing.Id,
                             userId,
                             userFullName,
-                            $"[PRIORITY] Retake Resubmitted - {assistanceType.Replace("Assistance", " Assistance")}",
-                            $"{userFullName} resubmitted their retake application for {assistanceType.Replace("Assistance", " Assistance")}. PRIORITY: Ready for immediate review.",
-                            $"/{assistanceType}ProcessingStatus/{existing.Id}"
+                            "[PRIORITY] Retake Resubmitted - Funeral Assistance",
+                            $"{userFullName} resubmitted their retake application for Funeral Assistance. PRIORITY: Ready for immediate review.",
+                            $"/FuneralAssistanceProcessingStatus/{existing.Id}"
                         );
                     }
-                    catch { /* Notification failure should not block form submission */ }
+                    catch (Exception ex)
+                    {
+                        // Log but don't fail
+                        Console.WriteLine($"Notification error: {ex.Message}");
+                    }
                 }
 
-                // ? 11. Set success flag and RAF number for modal
-                ViewBag.Success = true;
-                TempData["SuccessRAF"] = id.ToString();
+                // ? 14. Set success flag
+                TempData["Success"] = true;
+                TempData["RAF"] = id.ToString();
 
-                // ? 12. Repopulate view data for success display
-                ViewData["Validfrontimage"] = existing.Validfrontimage;
-                ViewData["ValidBackimage"] = existing.ValidBackimage;
-                ViewData["DoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["DeathCertificate"] = existing.DeathCertificate;
-
-                return View(FuneralAssistanceDto);
+                // ? 15. Return with success - redirect to show updated data
+                return RedirectToAction("FuneralAssistanceEdit", new { id = id, success = true });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while updating the form: " + ex.Message);
-
-                // Populate ViewData with current image paths
-                ViewData["Validfrontimage"] = existing.Validfrontimage;
-                ViewData["ValidBackimage"] = existing.ValidBackimage;
-                ViewData["DoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["DeathCertificate"] = existing.DeathCertificate;
-
-                return View(FuneralAssistanceDto);
+                ModelState.AddModelError("", $"An error occurred while updating the form: {ex.Message}");
+                PopulateViewDataForFuneralEdit(existing);
+                return View(dto);
             }
+        }
+
+        // Helper method to populate ViewData for Funeral Assistance edit
+        private void PopulateViewDataForFuneralEdit(FuneralAssistance existing)
+        {
+            ViewData["Id"] = existing.Id;
+            ViewData["Lastname"] = existing.Lastname;
+            ViewData["Firstname"] = existing.Firstname;
+            ViewData["Middlename"] = existing.Middlename;
+            ViewData["Suffix"] = existing.Suffix;
+            ViewData["BlkLotStreet"] = existing.BlkLotStreet;
+            ViewData["SubVill"] = existing.SubVill;
+            ViewData["Brgy"] = existing.Brgy;
+            ViewData["District"] = existing.District;
+            ViewData["Sex"] = existing.Sex;
+            ViewData["PhilHealth"] = existing.PhilHealth;
+            ViewData["PhilHealthNo"] = existing.PhilHealthNo;
+            ViewData["Dateofbirth"] = existing.Dateofbirth;
+            ViewData["Age"] = existing.Age;
+
+            ViewData["RLastname"] = existing.RLastname;
+            ViewData["RFirstname"] = existing.RFirstname;
+            ViewData["RMiddlename"] = existing.RMiddlename;
+            ViewData["RSuffix"] = existing.RSuffix;
+            ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
+            ViewData["RSubVill"] = existing.RSubVill;
+            ViewData["RBrgy"] = existing.RBrgy;
+            ViewData["RDistrict"] = existing.RDistrict;
+            ViewData["RelationshipPatient"] = existing.RelationshipPatient;
+            ViewData["ContactNo"] = existing.ContactNo;
+
+            ViewData["Typeassistance"] = existing.Typeassistance;
+            ViewData["ForCMOPERSONNEL"] = existing.ForCMOPERSONNEL;
+
+            // Decrypt and show funeral information fields
+            ViewData["DeceasedPersonName"] = DecryptFieldText(existing.DeceasedPersonName);
+            ViewData["RelationshipToDeceased"] = DecryptFieldText(existing.RelationshipToDeceased);
+            ViewData["DateOfDeath"] = DecryptFieldText(existing.DateOfDeath);
+            ViewData["TimeOfDeath"] = DecryptFieldText(existing.TimeOfDeath);
+            ViewData["CauseOfDeath"] = DecryptFieldText(existing.CauseOfDeath);
+            ViewData["FuneralHomeName"] = DecryptFieldText(existing.FuneralHomeName);
+            ViewData["FuneralHomeAddress"] = DecryptFieldText(existing.FuneralHomeAddress);
+            ViewData["BurialCremationDate"] = DecryptFieldText(existing.BurialCremationDate);
+            ViewData["BurialCremationTime"] = DecryptFieldText(existing.BurialCremationTime);
+            ViewData["BurialCremationType"] = DecryptFieldText(existing.BurialCremationType);
+
+            ViewData["CurrentDoctorPrescription"] = existing.DoctorPrescription;
+            ViewData["CurrentDeathCertificate"] = existing.DeathCertificate;
+            ViewData["CurrentValidFront"] = existing.Validfrontimage;
+            ViewData["CurrentValidBack"] = existing.ValidBackimage;
+            ViewData["IsRetakeMode"] = existing.Status2 == "Retake";
         }
 
 
