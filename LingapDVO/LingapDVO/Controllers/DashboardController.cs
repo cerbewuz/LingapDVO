@@ -1191,14 +1191,7 @@ namespace LingapDVO.Controllers
 
             ModelState.Remove("IdFrontimage");
             ModelState.Remove("IdBackimage");
-
-            // ? Require document ONLY if both existing docs are empty and no new upload
-            if (string.IsNullOrEmpty(existing.DoctorPrescription) &&
-                string.IsNullOrEmpty(existing.DeathCertificate) &&
-                dto.HospitalAssistanceDocument == null)
-            {
-                ModelState.AddModelError("HospitalAssistanceDocument", "At least one document is required.");
-            }
+            ModelState.Remove("HospitalAssistanceDocument");
 
             if (!ModelState.IsValid)
             {
@@ -1211,7 +1204,7 @@ namespace LingapDVO.Controllers
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // ? 5. Update Hospital Assistance Document (replaces both DoctorPrescription and DeathCertificate)
+                // ? 5. Update Hospital Assistance Document (optional - only if provided)
                 if (dto.HospitalAssistanceDocument != null)
                 {
                     string folder = Path.Combine(environment.WebRootPath, "HospitalAssistanceFileStorage");
