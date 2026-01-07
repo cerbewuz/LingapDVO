@@ -1773,7 +1773,6 @@ namespace LingapDVO.Controllers
 
             // Basic ViewData setup
             ViewData["Status"] = medicallabform.Status;
-            ViewData["IsRetakeMode"] = medicallabform.Status2 == "Retake"; // Check if in retake mode
             ViewData["Id"] = medicallabform.Id;
             ViewData["Lastname"] = medicallabform.Lastname;
             ViewData["Firstname"] = medicallabform.Firstname;
@@ -1839,7 +1838,7 @@ namespace LingapDVO.Controllers
                     {
                         byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
-                        debugMessages.Add("? Front ID decrypted");
+                        debugMessages.Add("✓ Front ID decrypted");
                     }
                 }
 
@@ -1851,17 +1850,17 @@ namespace LingapDVO.Controllers
                     {
                         byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
-                        debugMessages.Add("? Back ID decrypted");
+                        debugMessages.Add("✓ Back ID decrypted");
                     }
                 }
 
-                // ? DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✓ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, medicallabform.DoctorPrescription);
-                    debugMessages.Add($"?? Doctor Prescription filename: {medicallabform.DoctorPrescription}");
-                    debugMessages.Add($"?? Full path: {prescPath}");
-                    debugMessages.Add($"?? File exists: {System.IO.File.Exists(prescPath)}");
+                    debugMessages.Add($"📄 Doctor Prescription filename: {medicallabform.DoctorPrescription}");
+                    debugMessages.Add($"📄 Full path: {prescPath}");
+                    debugMessages.Add($"📄 File exists: {System.IO.File.Exists(prescPath)}");
 
                     if (System.IO.File.Exists(prescPath))
                     {
@@ -1875,32 +1874,32 @@ namespace LingapDVO.Controllers
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
-                            debugMessages.Add($"? Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
-                            debugMessages.Add($"?? IsDoctorPrescriptionPdf = {isPdf}");
-                            debugMessages.Add($"?? PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"✓ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"📄 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"? Doctor Prescription decryption failed: {ex.Message}");
+                            debugMessages.Add($"✗ Doctor Prescription decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("? Doctor Prescription file NOT FOUND");
+                        debugMessages.Add("✗ Doctor Prescription file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("?? No Doctor Prescription in database");
+                    debugMessages.Add("📄 No Doctor Prescription in database");
                 }
 
-                // ? MEDICAL CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✓ MEDICAL CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.MedCertificate))
                 {
                     string medicalPath = Path.Combine(medicalCertificateFolder, medicallabform.MedCertificate);
-                    debugMessages.Add($"?? Medical Certificate filename: {medicallabform.MedCertificate}");
-                    debugMessages.Add($"?? Full path: {medicalPath}");
-                    debugMessages.Add($"?? File exists: {System.IO.File.Exists(medicalPath)}");
+                    debugMessages.Add($"📄 Medical Certificate filename: {medicallabform.MedCertificate}");
+                    debugMessages.Add($"📄 Full path: {medicalPath}");
+                    debugMessages.Add($"📄 File exists: {System.IO.File.Exists(medicalPath)}");
 
                     if (System.IO.File.Exists(medicalPath))
                     {
@@ -1914,32 +1913,32 @@ namespace LingapDVO.Controllers
                             bool isPdf = IsPdfFile(decryptedMedical);
                             ViewData["IsMedicalCertificatePdf"] = isPdf;
 
-                            debugMessages.Add($"? Medical Certificate decrypted - {decryptedMedical.Length} bytes");
-                            debugMessages.Add($"?? IsMedicalCertificatePdf = {isPdf}");
-                            debugMessages.Add($"?? PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"✓ Medical Certificate decrypted - {decryptedMedical.Length} bytes");
+                            debugMessages.Add($"📄 IsMedicalCertificatePdf = {isPdf}");
+                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"? Medical Certificate decryption failed: {ex.Message}");
+                            debugMessages.Add($"✗ Medical Certificate decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("? Medical Certificate file NOT FOUND");
+                        debugMessages.Add("✗ Medical Certificate file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("?? No Medical Certificate in database");
+                    debugMessages.Add("📄 No Medical Certificate in database");
                 }
 
-                // ? DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✓ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
                 if (!string.IsNullOrEmpty(medicallabform.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, medicallabform.DeathCertificate);
-                    debugMessages.Add($"?? Death Certificate filename: {medicallabform.DeathCertificate}");
-                    debugMessages.Add($"?? Full path: {deathPath}");
-                    debugMessages.Add($"?? File exists: {System.IO.File.Exists(deathPath)}");
+                    debugMessages.Add($"📄 Death Certificate filename: {medicallabform.DeathCertificate}");
+                    debugMessages.Add($"📄 Full path: {deathPath}");
+                    debugMessages.Add($"📄 File exists: {System.IO.File.Exists(deathPath)}");
 
                     if (System.IO.File.Exists(deathPath))
                     {
@@ -1953,28 +1952,28 @@ namespace LingapDVO.Controllers
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
-                            debugMessages.Add($"? Death Certificate decrypted - {decryptedDeath.Length} bytes");
-                            debugMessages.Add($"?? IsDeathCertificatePdf = {isPdf}");
-                            debugMessages.Add($"?? PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"✓ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"📄 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"? Death Certificate decryption failed: {ex.Message}");
+                            debugMessages.Add($"✗ Death Certificate decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("? Death Certificate file NOT FOUND");
+                        debugMessages.Add("✗ Death Certificate file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("?? No Death Certificate in database");
+                    debugMessages.Add("📄 No Death Certificate in database");
                 }
             }
             catch (Exception ex)
             {
-                debugMessages.Add($"? GENERAL ERROR: {ex.Message}");
+                debugMessages.Add($"⚠️ GENERAL ERROR: {ex.Message}");
                 ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
             }
 
@@ -1983,33 +1982,43 @@ namespace LingapDVO.Controllers
             ViewData["ValidBackimage"] = medicallabform.ValidBackimage;
             ViewData["Comments"] = medicallabform.Comments;
 
-            // Additional Information - Encrypted Fields
-            ViewData["MedicineName"] = medicallabform.MedicineName;
-            ViewData["MedicineQuantity"] = medicallabform.MedicineQuantity;
-            ViewData["MedicineCost"] = medicallabform.MedicineCost;
-            ViewData["PrescribingDoctor"] = medicallabform.PrescribingDoctor;
-            ViewData["DoctorContactDetail"] = medicallabform.DoctorContactDetail;
-            ViewData["LaboratoryCenterName"] = medicallabform.LaboratoryCenterName;
-            ViewData["LaboratoryCenterAddress"] = medicallabform.LaboratoryCenterAddress;
-            ViewData["TestName"] = medicallabform.TestName;
-            ViewData["TestCost"] = medicallabform.TestCost;
-            ViewData["TestOtherInfo"] = medicallabform.TestOtherInfo;
-            ViewData["TherapyFacilityName"] = medicallabform.TherapyFacilityName;
-            ViewData["TherapyFacilityAddress"] = medicallabform.TherapyFacilityAddress;
-            ViewData["TherapyFacilityContact"] = medicallabform.TherapyFacilityContact;
-            ViewData["TherapyType"] = medicallabform.TherapyType;
-            ViewData["EquipmentName"] = medicallabform.EquipmentName;
-            ViewData["EquipmentBrand"] = medicallabform.EquipmentBrand;
-            ViewData["EquipmentCategory"] = medicallabform.EquipmentCategory;
-            ViewData["EquipmentQuantity"] = medicallabform.EquipmentQuantity;
-            ViewData["EquipmentCost"] = medicallabform.EquipmentCost;
+            // ============================================
+            // ADD DECRYPTION FOR THESE 19 FIELDS ONLY
+            // ============================================
+
+            // Medicine Assistance Fields
+            ViewData["MedicineName"] = DecryptFieldText(medicallabform.MedicineName);
+            ViewData["MedicineQuantity"] = DecryptFieldText(medicallabform.MedicineQuantity);
+            ViewData["MedicineCost"] = DecryptFieldText(medicallabform.MedicineCost);
+            ViewData["PrescribingDoctor"] = DecryptFieldText(medicallabform.PrescribingDoctor);
+            ViewData["DoctorContactDetail"] = DecryptFieldText(medicallabform.DoctorContactDetail);
+
+            // Laboratory Assistance Fields
+            ViewData["LaboratoryCenterName"] = DecryptFieldText(medicallabform.LaboratoryCenterName);
+            ViewData["LaboratoryCenterAddress"] = DecryptFieldText(medicallabform.LaboratoryCenterAddress);
+            ViewData["TestName"] = DecryptFieldText(medicallabform.TestName);
+            ViewData["TestCost"] = DecryptFieldText(medicallabform.TestCost);
+            ViewData["TestOtherInfo"] = DecryptFieldText(medicallabform.TestOtherInfo);
+
+            // Therapy Assistance Fields
+            ViewData["TherapyFacilityName"] = DecryptFieldText(medicallabform.TherapyFacilityName);
+            ViewData["TherapyFacilityAddress"] = DecryptFieldText(medicallabform.TherapyFacilityAddress);
+            ViewData["TherapyFacilityContact"] = DecryptFieldText(medicallabform.TherapyFacilityContact);
+            ViewData["TherapyType"] = DecryptFieldText(medicallabform.TherapyType);
+
+            // Equipment Assistance Fields
+            ViewData["EquipmentName"] = DecryptFieldText(medicallabform.EquipmentName);
+            ViewData["EquipmentBrand"] = DecryptFieldText(medicallabform.EquipmentBrand);
+            ViewData["EquipmentCategory"] = DecryptFieldText(medicallabform.EquipmentCategory);
+            ViewData["EquipmentQuantity"] = DecryptFieldText(medicallabform.EquipmentQuantity);
+            ViewData["EquipmentCost"] = DecryptFieldText(medicallabform.EquipmentCost);
 
             return View();
 
         }
 
         [HttpPost]
-        public async Task<IActionResult> OtherAssistanceedit(int id, OtherAssistanceDto OtherAssistanceDto)
+        public async Task<IActionResult> OtherAssistanceEdit(int id, OtherAssistanceDto OtherAssistanceDto)
         {
             // ? 1. Check user session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -2044,28 +2053,14 @@ namespace LingapDVO.Controllers
             if (string.IsNullOrEmpty(OtherAssistanceDto.PhilHealthNo))
                 ModelState.Remove("PhilHealthNo");
 
-            // Remove validation requirements for images if they're not provided
-            if (OtherAssistanceDto.IdFrontimage == null) ModelState.Remove("IdFrontimage");
-            if (OtherAssistanceDto.IdBackimage == null) ModelState.Remove("IdBackimage");
-
-            // ? Require document ONLY if all existing docs are empty and no new upload
-            if (string.IsNullOrEmpty(existing.DoctorPrescription) &&
-                string.IsNullOrEmpty(existing.DeathCertificate) &&
-                string.IsNullOrEmpty(existing.MedCertificate) &&
-                OtherAssistanceDto.OtherAssistanceDocument == null)
-            {
-                ModelState.AddModelError("OtherAssistanceDocument", "At least one document is required.");
-            }
+            ModelState.Remove("IdFrontimage");
+            ModelState.Remove("IdBackimage");
+            ModelState.Remove("OtherAssistanceDocument");
 
             if (!ModelState.IsValid)
             {
-                // Populate ViewData with current image paths
-                ViewData["Validfrontimage"] = existing.Validfrontimage;
-                ViewData["ValidBackimage"] = existing.ValidBackimage;
-                ViewData["DoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["DeathCertificate"] = existing.DeathCertificate;
-                ViewData["MedCertificate"] = existing.MedCertificate;
-
+                // Repopulate ViewData for validation errors
+                PopulateViewDataForOtherAssistanceEdit(existing);
                 return View(OtherAssistanceDto);
             }
 
@@ -2073,7 +2068,7 @@ namespace LingapDVO.Controllers
             {
                 var aesHelper = new AesEncryptionHelper(_configuration);
 
-                // ? 5. Update Other Assistance Document (replaces DoctorPrescription, DeathCertificate, MedCertificate)
+                // ? 5. Update Other Assistance Document (optional - only if provided)
                 if (OtherAssistanceDto.OtherAssistanceDocument != null)
                 {
                     string folder = Path.Combine(environment.WebRootPath, "OtherAssistanceFileStorage");
@@ -2096,7 +2091,7 @@ namespace LingapDVO.Controllers
                         if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
                     }
 
-                    // Encrypt the original filename
+                    // Encrypt and save new file
                     string originalFileName = OtherAssistanceDto.OtherAssistanceDocument.FileName;
                     string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
                     string filePath = Path.Combine(folder, fileName);
@@ -2104,73 +2099,20 @@ namespace LingapDVO.Controllers
                     using (var fs = new FileStream(filePath, FileMode.Create))
                     {
                         byte[] encrypted = aesHelper.EncryptStream(OtherAssistanceDto.OtherAssistanceDocument.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
+                        await fs.WriteAsync(encrypted, 0, encrypted.Length);
                     }
 
                     // Store in DoctorPrescription field (unified field)
                     existing.DoctorPrescription = fileName;
-                    existing.DeathCertificate = ""; // Clear other fields
+                    existing.DeathCertificate = ""; // Clear the other fields
                     existing.MedCertificate = "";
                 }
 
-                // ? 6. Update ID images (if new ones provided)
-                if (OtherAssistanceDto.IdFrontimage != null)
-                {
-                    string folder = Path.Combine(environment.WebRootPath, "Validimg");
-                    Directory.CreateDirectory(folder);
-
-                    // Delete old file if exists
-                    if (!string.IsNullOrEmpty(existing.Validfrontimage))
-                    {
-                        string oldPath = Path.Combine(folder, existing.Validfrontimage);
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                    }
-
-                    // Encrypt the original filename
-                    string originalFileName = OtherAssistanceDto.IdFrontimage.FileName;
-                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        byte[] encrypted = aesHelper.EncryptStream(OtherAssistanceDto.IdFrontimage.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
-                    }
-
-                    existing.Validfrontimage = fileName;
-                }
-
-                if (OtherAssistanceDto.IdBackimage != null)
-                {
-                    string folder = Path.Combine(environment.WebRootPath, "Validimg");
-                    Directory.CreateDirectory(folder);
-
-                    // Delete old file if exists
-                    if (!string.IsNullOrEmpty(existing.ValidBackimage))
-                    {
-                        string oldPath = Path.Combine(folder, existing.ValidBackimage);
-                        if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                    }
-
-                    // Encrypt the original filename
-                    string originalFileName = OtherAssistanceDto.IdBackimage.FileName;
-                    string fileName = aesHelper.EncryptFilename(originalFileName) + ".enc";
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var fs = new FileStream(filePath, FileMode.Create))
-                    {
-                        byte[] encrypted = aesHelper.EncryptStream(OtherAssistanceDto.IdBackimage.OpenReadStream());
-                        fs.Write(encrypted, 0, encrypted.Length);
-                    }
-
-                    existing.ValidBackimage = fileName;
-                }
-
-                // ? 9. Update text fields safely
+                // ? 6. Update patient information with null checks
                 existing.Lastname = OtherAssistanceDto.Lastname ?? existing.Lastname;
                 existing.Firstname = OtherAssistanceDto.Firstname ?? existing.Firstname;
                 existing.Middlename = OtherAssistanceDto.Middlename ?? existing.Middlename;
-                existing.Suffix = OtherAssistanceDto.Suffix ?? existing.Suffix;
+                existing.Suffix = (OtherAssistanceDto.Suffix == "None" ? "" : OtherAssistanceDto.Suffix) ?? existing.Suffix;
                 existing.BlkLotStreet = OtherAssistanceDto.BlkLotStreet ?? existing.BlkLotStreet;
                 existing.SubVill = OtherAssistanceDto.SubVill ?? existing.SubVill;
                 existing.Brgy = OtherAssistanceDto.Brgy ?? existing.Brgy;
@@ -2181,11 +2123,11 @@ namespace LingapDVO.Controllers
                 existing.Dateofbirth = OtherAssistanceDto.Dateofbirth ?? existing.Dateofbirth;
                 existing.Age = OtherAssistanceDto.Age ?? existing.Age;
 
-                // ? Requestor details
+                // ? 7. Update requestor details
                 existing.RLastname = OtherAssistanceDto.RLastname ?? existing.RLastname;
                 existing.RFirstname = OtherAssistanceDto.RFirstname ?? existing.RFirstname;
                 existing.RMiddlename = OtherAssistanceDto.RMiddlename ?? existing.RMiddlename;
-                existing.RSuffix = OtherAssistanceDto.RSuffix ?? existing.RSuffix;
+                existing.RSuffix = (OtherAssistanceDto.RSuffix == "None" ? "" : OtherAssistanceDto.RSuffix) ?? existing.RSuffix;
                 existing.RBlkLotStreet = OtherAssistanceDto.RBlkLotStreet ?? existing.RBlkLotStreet;
                 existing.RSubVill = OtherAssistanceDto.RSubVill ?? existing.RSubVill;
                 existing.RBrgy = OtherAssistanceDto.RBrgy ?? existing.RBrgy;
@@ -2193,101 +2135,236 @@ namespace LingapDVO.Controllers
                 existing.RelationshipPatient = OtherAssistanceDto.RelationshipPatient ?? existing.RelationshipPatient;
                 existing.ContactNo = OtherAssistanceDto.ContactNo ?? existing.ContactNo;
 
-                // ? Assistance info
+                // ? 8. Update assistance information
                 existing.Typeassistance = OtherAssistanceDto.Typeassistance ?? existing.Typeassistance;
                 existing.ForCMOPERSONNEL = OtherAssistanceDto.ForCMOPERSONNEL ?? existing.ForCMOPERSONNEL;
 
-                // ? 10. Update timestamp properly (preserve original CreatedAt for non-retake mode)
+                // ? 9. Encrypt and update conditional fields based on assistance type
+                switch (OtherAssistanceDto.Typeassistance)
+                {
+                    case "Medicine Assistance":
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.MedicineName))
+                            existing.MedicineName = _aesEncryptionService.Encrypt(OtherAssistanceDto.MedicineName);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.MedicineQuantity))
+                            existing.MedicineQuantity = _aesEncryptionService.Encrypt(OtherAssistanceDto.MedicineQuantity);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.MedicineCost))
+                            existing.MedicineCost = _aesEncryptionService.Encrypt(OtherAssistanceDto.MedicineCost);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.PrescribingDoctor))
+                            existing.PrescribingDoctor = _aesEncryptionService.Encrypt(OtherAssistanceDto.PrescribingDoctor);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.DoctorContactDetail))
+                            existing.DoctorContactDetail = _aesEncryptionService.Encrypt(OtherAssistanceDto.DoctorContactDetail);
+                        break;
+
+                    case "Laboratory":
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.LaboratoryCenterName))
+                            existing.LaboratoryCenterName = _aesEncryptionService.Encrypt(OtherAssistanceDto.LaboratoryCenterName);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.LaboratoryCenterAddress))
+                            existing.LaboratoryCenterAddress = _aesEncryptionService.Encrypt(OtherAssistanceDto.LaboratoryCenterAddress);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.TestName))
+                            existing.TestName = _aesEncryptionService.Encrypt(OtherAssistanceDto.TestName);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.TestCost))
+                            existing.TestCost = _aesEncryptionService.Encrypt(OtherAssistanceDto.TestCost);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.TestOtherInfo))
+                            existing.TestOtherInfo = _aesEncryptionService.Encrypt(OtherAssistanceDto.TestOtherInfo);
+                        break;
+
+                    case "Therapy":
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.TherapyFacilityName))
+                            existing.TherapyFacilityName = _aesEncryptionService.Encrypt(OtherAssistanceDto.TherapyFacilityName);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.TherapyFacilityAddress))
+                            existing.TherapyFacilityAddress = _aesEncryptionService.Encrypt(OtherAssistanceDto.TherapyFacilityAddress);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.TherapyFacilityContact))
+                            existing.TherapyFacilityContact = _aesEncryptionService.Encrypt(OtherAssistanceDto.TherapyFacilityContact);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.TherapyType))
+                            existing.TherapyType = _aesEncryptionService.Encrypt(OtherAssistanceDto.TherapyType);
+                        break;
+
+                    case "Medical Equipment/ Apparatus":
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.EquipmentName))
+                            existing.EquipmentName = _aesEncryptionService.Encrypt(OtherAssistanceDto.EquipmentName);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.EquipmentBrand))
+                            existing.EquipmentBrand = _aesEncryptionService.Encrypt(OtherAssistanceDto.EquipmentBrand);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.EquipmentCategory))
+                            existing.EquipmentCategory = _aesEncryptionService.Encrypt(OtherAssistanceDto.EquipmentCategory);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.EquipmentQuantity))
+                            existing.EquipmentQuantity = _aesEncryptionService.Encrypt(OtherAssistanceDto.EquipmentQuantity);
+                        if (!string.IsNullOrEmpty(OtherAssistanceDto.EquipmentCost))
+                            existing.EquipmentCost = _aesEncryptionService.Encrypt(OtherAssistanceDto.EquipmentCost);
+                        break;
+                }
+
+                // ? 10. Update ID images (if session has updated IDs)
+                string frontID = HttpContext.Session.GetString("FrontID") ?? "";
+                string backID = HttpContext.Session.GetString("BackID") ?? "";
+                if (!string.IsNullOrEmpty(frontID)) existing.Validfrontimage = frontID;
+                if (!string.IsNullOrEmpty(backID)) existing.ValidBackimage = backID;
+
+                // ? 11. Handle retake mode vs normal edit mode
                 if (!isRetakeMode)
                 {
+                    // Normal edit - update timestamp
                     existing.CreatedAt = _dateTimeService.Now;
                 }
-
-                // ? 10.5. If retake mode, set to Processing status (skip Pending) and clear ALL processing fields
-                // CRITICAL: Retake applications go directly to Processing for immediate admin review
-                // FLOW: Admin sets Status2="Retake" → User resubmits → Status="processing", Status2="Resubmitted" (priority queue)
-                if (isRetakeMode)
+                else
                 {
-                    existing.Status = "processing"; // Skip Pending, go directly to Processing for immediate review
-                    existing.Status2 = "Resubmitted"; // Mark as resubmitted so admin knows this is a retake
-                    existing.Status3 = ""; // Clear any Status3 as well
-                    existing.CreatedAt = _dateTimeService.Now; // RESET TIMESTAMP - Priority timer uses this
-                    existing.ProcessAt = _dateTimeService.Now; // Set to current date for resubmission timestamp display
-                    existing.Processby = ""; // Clear processor name (use empty string, not null)
-                    existing.Result = new DateTime(1900, 1, 1); // Clear result date (SQL Server compatible)
-                    existing.ClaimedAt = new DateTime(1900, 1, 1); // Clear claimed timestamp (SQL Server compatible)
-                    existing.IsRetakeApplication = false; // Clear retake flag (no longer in retake state)
-                    existing.RetakeReason = ""; // Clear retake reason
-                    existing.RetakeRequestedAt = null; // Clear retake timestamp
-                    existing.Comments = ""; // Remove comments as per requirement
+                    // Retake mode - reset all processing fields
+                    existing.Status = "Processing"; // Go directly to Processing for review
+                    existing.Status2 = "Resubmitted"; // Mark as resubmitted
+                    existing.Status3 = "";
+                    existing.CreatedAt = _dateTimeService.Now; // Reset timestamp
+                    existing.ProcessAt = _dateTimeService.Now;
+                    existing.Processby = "";
+                    existing.Result = new DateTime(1900, 1, 1);
+                    existing.ClaimedAt = new DateTime(1900, 1, 1);
+                    existing.IsRetakeApplication = false;
+                    existing.RetakeReason = "";
+                    existing.RetakeRequestedAt = null;
+                    existing.Comments = "";
                 }
 
-                // ? 11. Save changes
+                // ? 12. Save changes
                 context.Entry(existing).State = EntityState.Modified;
                 await context.SaveChangesAsync();
 
-                // ? 11.5. Send notification for resubmission if it was retake mode
+                // ? 13. Send notifications for retake mode
                 if (isRetakeMode)
                 {
-                    var userFullName = $"{existing.Firstname} {existing.Lastname}";
-
-                    // Send user notification - application is now in Processing queue (priority)
                     try
                     {
+                        var userFullName = $"{existing.Firstname} {existing.Lastname}";
+
+                        // User notification
                         await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
                             userFullName,
-                            "MedicalLab", // OtherAssistance maps to MedicalLab
-                            "processing", // Send as Processing status (priority queue for retake)
+                            "Other",
+                            "Processing",
                             existing.Id
                         );
-                    }
-                    catch { /* Notification failure should not block form submission */ }
 
-                    // Send admin notification - retake application has been resubmitted (priority)
-                    try
-                    {
+                        // Admin notification
                         await _adminNotificationService.SendAdminNotificationAsync(
                             "application_submitted",
                             "OtherAssistance",
                             existing.Id,
                             userId,
                             userFullName,
-                            "[PRIORITY] Retake Resubmitted - Medical and Laboratory Assistance",
-                            $"{userFullName} resubmitted their retake application for Medical and Laboratory Assistance. PRIORITY: Ready for immediate review.",
+                            "[PRIORITY] Retake Resubmitted - Other Assistance",
+                            $"{userFullName} resubmitted their retake application for Other Assistance. PRIORITY: Ready for immediate review.",
                             $"/OtherAssistanceProcessingStatus/{existing.Id}"
                         );
                     }
-                    catch { /* Notification failure should not block form submission */ }
+                    catch (Exception ex)
+                    {
+                        // Log but don't fail
+                        Console.WriteLine($"Notification error: {ex.Message}");
+                    }
                 }
 
-                // ? 12. Set success flag and RAF number for modal
+                // ? 14. Set success flag - FIXED: Use ViewBag instead of TempData
                 ViewBag.Success = true;
-                TempData["SuccessRAF"] = id.ToString();
+                TempData["RAF"] = id.ToString();
 
-                // ? 13. Repopulate view data for success display
-                ViewData["Validfrontimage"] = existing.Validfrontimage;
-                ViewData["ValidBackimage"] = existing.ValidBackimage;
-                ViewData["DoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["DeathCertificate"] = existing.DeathCertificate;
-                ViewData["MedCertificate"] = existing.MedCertificate;
-
+                // ? 15. Return with success - IMPORTANT: Populate ViewData before returning
+                PopulateViewDataForOtherAssistanceEdit(existing);
                 return View(OtherAssistanceDto);
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while updating the form: " + ex.Message);
-
-                // Populate ViewData with current image paths
-                ViewData["Validfrontimage"] = existing.Validfrontimage;
-                ViewData["ValidBackimage"] = existing.ValidBackimage;
-                ViewData["DoctorPrescription"] = existing.DoctorPrescription;
-                ViewData["DeathCertificate"] = existing.DeathCertificate;
-                ViewData["MedCertificate"] = existing.MedCertificate;
-
+                ModelState.AddModelError("", $"An error occurred while updating the form: {ex.Message}");
+                PopulateViewDataForOtherAssistanceEdit(existing);
                 return View(OtherAssistanceDto);
             }
         }
+        // Helper method to populate ViewData for Other Assistance
+        private void PopulateViewDataForOtherAssistanceEdit(OtherAssistance existing)
+        {
+            // Basic patient information
+            ViewData["Id"] = existing.Id;
+            ViewData["Lastname"] = existing.Lastname;
+            ViewData["Firstname"] = existing.Firstname;
+            ViewData["Middlename"] = existing.Middlename;
+            ViewData["Suffix"] = existing.Suffix;
+            ViewData["BlkLotStreet"] = existing.BlkLotStreet;
+            ViewData["SubVill"] = existing.SubVill;
+            ViewData["Brgy"] = existing.Brgy;
+            ViewData["District"] = existing.District;
+            ViewData["Sex"] = existing.Sex;
+            ViewData["PhilHealth"] = existing.PhilHealth;
+            ViewData["PhilHealthNo"] = existing.PhilHealthNo;
+            ViewData["Dateofbirth"] = existing.Dateofbirth;
+            ViewData["Age"] = existing.Age;
+
+            // Requestor information
+            ViewData["RLastname"] = existing.RLastname;
+            ViewData["RFirstname"] = existing.RFirstname;
+            ViewData["RMiddlename"] = existing.RMiddlename;
+            ViewData["RSuffix"] = existing.RSuffix;
+            ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
+            ViewData["RSubVill"] = existing.RSubVill;
+            ViewData["RBrgy"] = existing.RBrgy;
+            ViewData["RDistrict"] = existing.RDistrict;
+            ViewData["RelationshipPatient"] = existing.RelationshipPatient;
+            ViewData["ContactNo"] = existing.ContactNo;
+
+            // Assistance information
+            ViewData["Typeassistance"] = existing.Typeassistance;
+            ViewData["ForCMOPERSONNEL"] = existing.ForCMOPERSONNEL;
+
+            // Decrypt and show conditional fields based on assistance type
+            if (!string.IsNullOrEmpty(existing.Typeassistance))
+            {
+                switch (existing.Typeassistance)
+                {
+                    case "Medicine Assistance":
+                        ViewData["MedicineName"] = DecryptFieldText(existing.MedicineName);
+                        ViewData["MedicineQuantity"] = DecryptFieldText(existing.MedicineQuantity);
+                        ViewData["MedicineCost"] = DecryptFieldText(existing.MedicineCost);
+                        ViewData["PrescribingDoctor"] = DecryptFieldText(existing.PrescribingDoctor);
+                        ViewData["DoctorContactDetail"] = DecryptFieldText(existing.DoctorContactDetail);
+                        break;
+
+                    case "Laboratory":
+                        ViewData["LaboratoryCenterName"] = DecryptFieldText(existing.LaboratoryCenterName);
+                        ViewData["LaboratoryCenterAddress"] = DecryptFieldText(existing.LaboratoryCenterAddress);
+                        ViewData["TestName"] = DecryptFieldText(existing.TestName);
+                        ViewData["TestCost"] = DecryptFieldText(existing.TestCost);
+                        ViewData["TestOtherInfo"] = DecryptFieldText(existing.TestOtherInfo);
+                        break;
+
+                    case "Therapy":
+                        ViewData["TherapyFacilityName"] = DecryptFieldText(existing.TherapyFacilityName);
+                        ViewData["TherapyFacilityAddress"] = DecryptFieldText(existing.TherapyFacilityAddress);
+                        ViewData["TherapyFacilityContact"] = DecryptFieldText(existing.TherapyFacilityContact);
+                        ViewData["TherapyType"] = DecryptFieldText(existing.TherapyType);
+                        break;
+
+                    case "Medical Equipment/ Apparatus":
+                        ViewData["EquipmentName"] = DecryptFieldText(existing.EquipmentName);
+                        ViewData["EquipmentBrand"] = DecryptFieldText(existing.EquipmentBrand);
+                        ViewData["EquipmentCategory"] = DecryptFieldText(existing.EquipmentCategory);
+                        ViewData["EquipmentQuantity"] = DecryptFieldText(existing.EquipmentQuantity);
+                        ViewData["EquipmentCost"] = DecryptFieldText(existing.EquipmentCost);
+                        break;
+                }
+            }
+
+            // File information
+            ViewData["Validfrontimage"] = existing.Validfrontimage;
+            ViewData["ValidBackimage"] = existing.ValidBackimage;
+            ViewData["DoctorPrescription"] = existing.DoctorPrescription;
+            ViewData["DeathCertificate"] = existing.DeathCertificate;
+            ViewData["MedCertificate"] = existing.MedCertificate;
+
+            // Check for current document to display
+            ViewData["OtherAssistanceDocument"] = existing.DoctorPrescription ?? existing.DeathCertificate ?? existing.MedCertificate;
+
+            // Check if it's a retake mode
+            ViewData["IsRetakeMode"] = existing.Status2 == "Retake";
+        }
+
+  
+ 
 
         public IActionResult OtherAssistanceedelete(int id)
         {
