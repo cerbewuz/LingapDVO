@@ -69,190 +69,87 @@
             <!-- Main Form Card -->
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden glass-effect scale-in w-full max-w-full lg:max-w-4xl mx-auto">
                 <div class="p-6 md:p-8">
-                    <form asp-action="Accountverification" method="post" enctype="multipart/form-data" id="registrationForm" class="space-y-8">
+                    <form asp-action="Accountverification" method="post" enctype="multipart/form-data" id="registrationForm" class="space-y-8" onsubmit="return validateFinalSubmission()">
 
-                        <!-- ID Verification Section -->
-                        <div class="space-y-6">
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-id-card text-lg crimson-500"></i>
-                                </div>
-                                <h2 class="text-2xl font-bold text-gray-800">Verify Your Account</h2>
-                            </div>
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                        <!-- STEP 1: PERSONAL INFORMATION (Fill First) -->
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
-                            <!-- Auto-Detected ID Type (Hidden) -->
-                            <input type="hidden" asp-for="IDtype" id="document-type" />
-                            
-                            <!-- User Face Picture (Hidden - populated by JS) -->
-                            <input type="hidden" asp-for="userfacepictureBase64" id="userfacepictureBase64" />
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                        <!-- HIDDEN FIELDS (Form Structure) -->
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
-                            <!-- Verification Decision (Hidden - populated by ID Analyzer API) -->
-                            <input type="hidden" name="VerificationDecision" id="verification-decision" value="" />
+                        <!-- Auto-Detected ID Type (Hidden - populated by API) -->
+                        <input type="hidden" asp-for="IDtype" id="document-type" />
 
-                            <!-- Transaction ID (Hidden - populated by ID Analyzer API) -->
-                            <input type="hidden" name="TransactionId" id="transaction-id" value="" />
+                        <!-- User Face Picture (Hidden - populated by JS) -->
+                        <input type="hidden" asp-for="userfacepictureBase64" id="userfacepictureBase64" />
 
-                            <!-- ID Type Display (Hidden - shown in console only) -->
-                            <div id="id-type-display" class="hidden"></div>
+                        <!-- Verification Decision (Hidden - populated by ID Analyzer API) -->
+                        <input type="hidden" name="VerificationDecision" id="verification-decision" value="" />
 
-                            <!-- ID Type Info -->
-                            <div class="grid grid-cols-1 gap-6">
-                                <div>
-                                    <div class="text-sm text-gray-600 mb-4">
-                                        <i class="fas   fa-check-circle text-green-500 mr-1"></i>
-                                        <strong>Accepted IDs:</strong> National ID, Driver's License, UMID
+                        <!-- Transaction ID (Hidden - populated by ID Analyzer API) -->
+                        <input type="hidden" name="TransactionId" id="transaction-id" value="" />
+
+                        <!-- Hidden File Inputs (for form submission) -->
+                        <input asp-for="ValidFrontID" type="file" id="file-input-front" class="hidden" accept="image/jpeg,image/jpg,image/png">
+                        <input asp-for="ValidBackID" type="file" id="file-input-back" class="hidden" accept="image/jpeg,image/jpg,image/png">
+
+                        <!-- Legacy/Support Elements (hidden for JS compatibility) -->
+                        <div class="hidden">
+                            <div id="id-type-display"></div>
+                            <div id="uploaded-photos-container"></div>
+                            <div id="face-verify-container"></div>
+                            <img id="frontIDImg" />
+                            <img id="backIDImg" />
+                            <canvas id="captured-selfie"></canvas>
+                        </div>
+
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                        <!-- MULTI-STEP WIZARD NAVIGATION -->
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+                        <!-- Tab Indicators -->
+                        <div class="flex justify-center mb-8">
+                            <div class="flex items-center gap-4">
+                                <!-- Tab 1 Indicator -->
+                                <div class="flex flex-col items-center">
+                                    <div id="tab-indicator-1" class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg mb-2 transition-all duration-300">
+                                        1
                                     </div>
-                                    <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1 block"></span>
+                                    <span id="tab-label-1" class="text-sm font-semibold text-blue-500">Personal Info</span>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">ID Number</label>
-                                    <input asp-for="IDnumber" type="text" id="idnumber"
-                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
-                                           placeholder="Enter your ID number (letters, numbers, dashes allowed)"
-                                           required
-                                           maxlength="100"
-                                           pattern="[A-Za-z0-9\-\/\s]+"
-                                           title="ID Number can contain letters, numbers, dashes, slashes, and spaces">
-                                    <span asp-validation-for="IDnumber" class="text-red-500 text-sm mt-1"></span>
+                                <!-- Connector Line -->
+                                <div class="w-16 h-1 bg-gray-300"></div>
+
+                                <!-- Tab 2 Indicator -->
+                                <div class="flex flex-col items-center">
+                                    <div id="tab-indicator-2" class="w-12 h-12 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-bold text-lg mb-2 transition-all duration-300">
+                                        2
+                                    </div>
+                                    <span id="tab-label-2" class="text-sm font-medium text-gray-500">ID Verification</span>
                                 </div>
-                            </div>
 
-                            <!-- Hidden File Inputs (for form submission) -->
-                            <input asp-for="ValidFrontID" type="file" id="file-input-front" class="hidden" accept="image/jpeg,image/jpg,image/png">
-                            <input asp-for="ValidBackID" type="file" id="file-input-back" class="hidden" accept="image/jpeg,image/jpg,image/png">
-                            <span asp-validation-for="ValidFrontID" class="text-red-500 text-sm mt-2 block hidden"></span>
-                            <span asp-validation-for="ValidBackID" class="text-red-500 text-sm mt-2 block hidden"></span>
+                                <!-- Connector Line -->
+                                <div class="w-16 h-1 bg-gray-300"></div>
 
-                            <!-- Start Upload Button -->
-                            <div class="mt-6">
-                                <button type="button"
-                                        id="start-verification-btn"
-                                        onclick="IDUploadModal.startFlow()"
-                                        class="w-full py-4 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3">
-                                    <i class="fas fa-id-card"></i>
-                                    <span>Start Verification</span>
-                                </button>
-                            </div>
-
-                            <!-- Your Photos Preview -->
-                            <div id="uploaded-docs-preview" class="hidden mt-6">
-                                <h4 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                    Your Photos
-                                </h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <!-- Front ID Preview -->
-                                    <div class="bg-gray-50 rounded-xl p-4 text-center border-2 border-gray-200" id="preview-front-container">
-                                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
-                                            <i class="fas fa-id-card text-blue-500"></i>
-                                        </div>
-                                        <div class="text-sm font-medium text-gray-700 mb-2">Front of ID</div>
-                                        <img id="preview-front-img" class="w-full max-w-[120px] mx-auto rounded-lg hidden" alt="Front ID">
-                                        <div id="preview-front-status" class="text-xs text-gray-400">No photo yet</div>
+                                <!-- Tab 3 Indicator -->
+                                <div class="flex flex-col items-center">
+                                    <div id="tab-indicator-3" class="w-12 h-12 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-bold text-lg mb-2 transition-all duration-300">
+                                        3
                                     </div>
-                                    <!-- Back ID Preview -->
-                                    <div class="bg-gray-50 rounded-xl p-4 text-center border-2 border-gray-200" id="preview-back-container">
-                                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
-                                            <i class="fas fa-id-card text-blue-500"></i>
-                                        </div>
-                                        <div class="text-sm font-medium text-gray-700 mb-2">Back of ID</div>
-                                        <img id="preview-back-img" class="w-full max-w-[120px] mx-auto rounded-lg hidden" alt="Back ID">
-                                        <div id="preview-back-status" class="text-xs text-gray-400">No photo yet</div>
-                                    </div>
-                                    <!-- Selfie Preview -->
-                                    <div class="bg-gray-50 rounded-xl p-4 text-center border-2 border-gray-200" id="preview-selfie-container">
-                                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
-                                            <i class="fas fa-user-circle text-blue-500"></i>
-                                        </div>
-                                        <div class="text-sm font-medium text-gray-700 mb-2">Selfie</div>
-                                        <img id="preview-selfie-img" class="w-16 h-16 rounded-full mx-auto object-cover hidden border-2 border-green-500" alt="Selfie">
-                                        <div id="preview-selfie-status" class="text-xs text-gray-400">No photo yet</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Legacy elements (hidden, for JS compatibility) -->
-                            <div class="hidden">
-                                <div id="upload-area-front"></div>
-                                <div id="upload-area-back"></div>
-                                <img id="image-preview" alt="Front ID Preview">
-                                <img id="image-preview-back" alt="Back ID Preview">
-                                <div id="selfie-capture-area"></div>
-                                <img id="selfie-preview" alt="Selfie Preview">
-                            </div>
-
-                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-                            <!-- UPLOAD STATUS DISPLAY -->
-                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-                            <div id="upload-status-container" class="mt-6 p-4 bg-gray-50 rounded-xl">
-                                <div class="flex flex-wrap gap-4 justify-center text-sm">
-                                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500">
-                                        ⏳ Front ID
-                                    </span>
-                                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500">
-                                        ⏳ Back ID
-                                    </span>
-                                    <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-500">
-                                        ⏳ Selfie
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Hidden verify button (triggered automatically after selfie capture) -->
-                            <button type="button" 
-                                    id="verify-submit-btn" 
-                                    onclick="submitVerification()"
-                                    class="hidden">
-                            </button>
-
-                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-                            <!-- FACE VERIFICATION RESULT -->
-                            <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-                            <div id="face-verification-result" class="mt-6 hidden"></div>
-
-                            <!-- OCR Status -->
-                            <div class="space-y-4">
-                                <div class="progress-bar-container hidden" id="progress-bar">
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-crimson-500 h-2 rounded-full transition-all duration-300"
-                                             id="progress" style="width: 0%"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Davao Verification Result -->
-                            <div id="davao-verification" class="hidden p-6 rounded-xl border-l-4 slide-down">
-                                <div class="flex items-start gap-4">
-                                    <i id="davao-result-icon" class="fas fa-check-circle text-2xl mt-1"></i>
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <h4 id="davao-result-title" class="font-semibold text-lg"></h4>
-                                            <span id="davao-status-badge" class="px-3 py-1 rounded-full text-sm font-semibold"></span>
-                                        </div>
-                                        <p id="davao-result-message" class="text-gray-700"></p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
-                                <div class="flex items-start gap-3">
-                                    <i class="fas fa-lightbulb text-blue-500 mt-0.5"></i>
-                                    <div class="text-gray-700">
-                                        <p class="font-semibold text-blue-700 mb-2">Tips for best results:</p>
-                                        <ul class="space-y-1 list-disc list-inside">
-                                            <li>Upload clear, well-lit images (JPEG or PNG format)</li>
-                                            <li>Ensure all text on the ID is readable</li>
-                                            <li>Avoid glare, shadows, or reflections</li>
-                                            <li>Maximum file size: 5MB per image</li>
-                                            <li>Supported IDs: National ID, Driver's License, UMID</li>
-                                        </ul>
-                                    </div>
+                                    <span id="tab-label-3" class="text-sm font-medium text-gray-500">Review & Submit</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Personal Information Section -->
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                        <!-- TAB 1: PERSONAL INFORMATION & ADDRESS -->
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+                        <div id="tab-1" class="tab-content">
+                            <!-- Personal Information Section -->
                         <div class="space-y-6">
                             <div class="flex items-center gap-3 mb-2">
                                 <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
@@ -524,25 +421,400 @@
                             </div>
                         </div>
 
-                        <!-- Terms and Submit -->
-                        <div class="space-y-6 pt-6 border-t border-gray-200">
+                        <!-- Terms and Conditions -->
+                        <div class="space-y-4 pt-6 border-t border-gray-200">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-file-contract text-lg text-blue-500"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-gray-800">Terms and Conditions</h2>
+                            </div>
+
                             <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
                                 <input type="checkbox" id="terms" required class="mt-1 w-4 h-4 text-crimson-500 border-gray-300 rounded focus:ring-crimson-500">
                                 <label for="terms" class="text-sm text-gray-700">
                                     I agree to the <a href="#" class="text-blue-500 font-semibold hover:text-blue-800 hover:underline" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
                                 </label>
                             </div>
+                        </div>
 
-                            <div class="flex justify-center">
+                        <!-- Tab 1 Navigation -->
+                        <div class="flex justify-end pt-6">
+                            <button type="button" onclick="WizardNav.goToTab(2)" class="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                                Next: ID Verification
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                        </div>
+                        <!-- End Tab 1 -->
+
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                        <!-- TAB 2: ID VERIFICATION -->
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+                        <div id="tab-2" class="tab-content hidden">
+                            <div class="space-y-6" id="id-verification-section">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-id-card text-lg crimson-500"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-gray-800">ID Verification</h2>
+                            </div>
+
+                            <!-- Info about accepted IDs -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                <div class="text-sm text-gray-700">
+                                    <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                    <strong>Accepted IDs:</strong> National ID, Driver's License, UMID
+                                </div>
+                                <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1 block"></span>
+                            </div>
+
+                            <!-- ID Number Field (readonly, auto-populated by API) -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    ID Number <span class="text-gray-500 text-xs">(Auto-filled after ID upload)</span>
+                                </label>
+                                <input asp-for="IDnumber" type="text" id="idnumber"
+                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300 bg-gray-50"
+                                       placeholder="Will be extracted from your ID"
+                                       readonly
+                                       maxlength="100">
+                                <span asp-validation-for="IDnumber" class="text-red-500 text-sm mt-1"></span>
+                            </div>
+
+                            <!-- Upload Button -->
+                            <div class="mt-6">
+                                <button type="button"
+                                        id="start-verification-btn"
+                                        onclick="IDUploadModal.startFlow()"
+                                        class="w-full py-4 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3">
+                                    <i class="fas fa-id-card"></i>
+                                    <span>Upload ID & Capture Selfie</span>
+                                </button>
+                            </div>
+
+                            <!-- Photos Preview (Hidden Initially) -->
+                            <div id="uploaded-docs-preview" class="hidden mt-6">
+                                <h4 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    Your Uploaded Documents
+                                </h4>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <!-- Front ID Preview -->
+                                    <div class="bg-gray-50 rounded-xl p-4 border-2 border-gray-200" id="preview-front-container">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-id-card text-blue-500"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="text-sm font-medium text-gray-700 mb-1">Front of ID</div>
+                                                <div id="preview-front-status" class="text-xs text-gray-400">Not uploaded</div>
+                                            </div>
+                                            <img id="preview-front-img" class="w-20 h-20 rounded-lg hidden object-cover" alt="Front ID">
+                                        </div>
+                                    </div>
+                                    <!-- Back ID Preview -->
+                                    <div class="bg-gray-50 rounded-xl p-4 border-2 border-gray-200" id="preview-back-container">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-id-card text-blue-500"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="text-sm font-medium text-gray-700 mb-1">Back of ID</div>
+                                                <div id="preview-back-status" class="text-xs text-gray-400">Not uploaded</div>
+                                            </div>
+                                            <img id="preview-back-img" class="w-20 h-20 rounded-lg hidden object-cover" alt="Back ID">
+                                        </div>
+                                    </div>
+                                    <!-- Selfie Preview -->
+                                    <div class="bg-gray-50 rounded-xl p-4 border-2 border-gray-200" id="preview-selfie-container">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-user text-green-500"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="text-sm font-medium text-gray-700 mb-1">Your Selfie</div>
+                                                <div id="preview-selfie-status" class="text-xs text-gray-400">Not captured</div>
+                                            </div>
+                                            <img id="preview-selfie-img" class="w-20 h-20 rounded-full hidden object-cover border-2 border-green-500" alt="Selfie">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- API Processing Results (Hidden until processing) -->
+                            <div id="ocr-status-container" class="mt-6 hidden">
+                                <div id="ocr-status" class="p-4 rounded-xl"></div>
+                            </div>
+
+                            <div id="davao-verification-result" class="hidden mt-6 p-4 rounded-xl">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center" id="davao-icon-container">
+                                            <i class="fas fa-map-marker-alt text-lg" id="davao-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h4 class="font-semibold text-lg" id="davao-title"></h4>
+                                        </div>
+                                        <p class="text-sm" id="davao-message"></p>
+                                        <div id="davao-details" class="mt-2 text-xs space-y-1"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="face-match-result" class="mt-6 hidden"></div>
+                            </div>
+
+                            <!-- Tab 2 Navigation -->
+                            <div class="flex justify-between pt-6 border-t border-gray-200">
+                                <button type="button" onclick="WizardNav.goToTab(1)" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                                    <i class="fas fa-arrow-left mr-2"></i>
+                                    Previous
+                                </button>
+                                <button type="button"
+                                        id="next-to-review-btn"
+                                        onclick="WizardNav.goToTab(3)"
+                                        disabled
+                                        class="px-8 py-3 bg-gray-300 text-gray-500 rounded-xl font-semibold cursor-not-allowed transition-all duration-300">
+                                    <i class="fas fa-lock mr-2"></i>
+                                    <span id="next-btn-text">Complete ID Upload & Processing</span>
+                                </button>
+                            </div>
+
+                            <!-- API Processing Status with Progress Bar -->
+                            <div id="api-processing-status" class="hidden mt-4">
+                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 shadow-lg">
+                                    <!-- Header -->
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="relative">
+                                            <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center animate-pulse">
+                                                <i class="fas fa-shield-alt text-white text-lg"></i>
+                                            </div>
+                                            <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-ping"></div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-base font-bold text-gray-800">Verifying Your Identity</p>
+                                            <p id="upload-status" class="text-xs text-gray-600 mt-1">
+                                                <i class="fas fa-spinner fa-spin mr-1"></i>
+                                                <span id="progress-status-text">Preparing your files...</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Progress Bar Container -->
+                                    <div class="relative mb-3">
+                                        <div class="h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                                            <div id="upload-progress" class="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500 ease-out relative overflow-hidden"
+                                                 style="width: 0%">
+                                                <!-- Animated shine effect -->
+                                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-shimmer"></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between mt-1 text-xs text-gray-500">
+                                            <span id="progress-percentage">0%</span>
+                                            <span id="progress-time-estimate">Estimating...</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Processing Steps Checklist -->
+                                    <div class="space-y-2 text-xs">
+                                        <div id="step-upload" class="flex items-center gap-2 text-gray-400">
+                                            <i class="fas fa-circle-notch fa-spin w-3"></i>
+                                            <span>Uploading documents</span>
+                                        </div>
+                                        <div id="step-scan" class="flex items-center gap-2 text-gray-400">
+                                            <i class="fas fa-circle w-3"></i>
+                                            <span>Scanning ID information</span>
+                                        </div>
+                                        <div id="step-extract" class="flex items-center gap-2 text-gray-400">
+                                            <i class="fas fa-circle w-3"></i>
+                                            <span>Extracting personal data</span>
+                                        </div>
+                                        <div id="step-verify" class="flex items-center gap-2 text-gray-400">
+                                            <i class="fas fa-circle w-3"></i>
+                                            <span>Verifying face match</span>
+                                        </div>
+                                        <div id="step-complete" class="flex items-center gap-2 text-gray-400">
+                                            <i class="fas fa-circle w-3"></i>
+                                            <span>Finalizing verification</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Security Badge -->
+                                    <div class="mt-4 pt-3 border-t border-blue-200">
+                                        <div class="flex items-center justify-center gap-2 text-xs text-gray-500">
+                                            <i class="fas fa-lock text-green-600"></i>
+                                            <span>Your data is encrypted and secure</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <style>
+                                @@keyframes shimmer {
+                                    0% { transform: translateX(-100%); }
+                                    100% { transform: translateX(100%); }
+                                }
+                                .animate-shimmer {
+                                    animation: shimmer 2s infinite;
+                                }
+                            </style>
+                        </div>
+                        <!-- End Tab 2 -->
+
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                        <!-- TAB 3: REVIEW & CONFIRMATION -->
+                        <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+                        <div id="tab-3" class="tab-content hidden">
+                            <div class="space-y-6">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-clipboard-check text-lg text-green-500"></i>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-gray-800">Review Your Information</h2>
+                                </div>
+
+                                <p class="text-gray-600 mb-6">Please review all your information before submitting. You can go back to make changes if needed.</p>
+
+                                <!-- Personal Information Review -->
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-user text-green-500"></i>
+                                        Personal Information
+                                    </h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Last Name:</span>
+                                            <p id="review-lastname" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">First Name:</span>
+                                            <p id="review-firstname" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Middle Name:</span>
+                                            <p id="review-middlename" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Suffix:</span>
+                                            <p id="review-suffix" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Gender:</span>
+                                            <p id="review-gender" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Civil Status:</span>
+                                            <p id="review-civilstatus" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Phone Number:</span>
+                                            <p id="review-phonenumber" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Date of Birth:</span>
+                                            <p id="review-birthdate" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Address Information Review -->
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-home text-purple-500"></i>
+                                        Address Information
+                                    </h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="md:col-span-2">
+                                            <span class="text-sm font-medium text-gray-500">Address:</span>
+                                            <p id="review-address" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Barangay:</span>
+                                            <p id="review-barangay" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">District:</span>
+                                            <p id="review-district" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ID Verification Review -->
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-id-card text-blue-500"></i>
+                                        ID Verification
+                                    </h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <!-- Front ID Review -->
+                                        <div class="text-center">
+                                            <span class="text-sm font-medium text-gray-500 block mb-2">Front of ID</span>
+                                            <div class="border-2 border-gray-200 rounded-lg p-2 bg-gray-50">
+                                                <img id="review-front-img" src="#" alt="Front ID" class="w-full h-32 object-contain rounded hidden">
+                                                <div id="review-front-placeholder" class="w-full h-32 flex items-center justify-center text-gray-400">
+                                                    <i class="fas fa-image text-4xl"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Back ID Review -->
+                                        <div class="text-center">
+                                            <span class="text-sm font-medium text-gray-500 block mb-2">Back of ID</span>
+                                            <div class="border-2 border-gray-200 rounded-lg p-2 bg-gray-50">
+                                                <img id="review-back-img" src="#" alt="Back ID" class="w-full h-32 object-contain rounded hidden">
+                                                <div id="review-back-placeholder" class="w-full h-32 flex items-center justify-center text-gray-400">
+                                                    <i class="fas fa-image text-4xl"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Selfie Review -->
+                                        <div class="text-center">
+                                            <span class="text-sm font-medium text-gray-500 block mb-2">Selfie</span>
+                                            <div class="border-2 border-gray-200 rounded-lg p-2 bg-gray-50">
+                                                <img id="review-selfie-img" src="#" alt="Selfie" class="w-full h-32 object-cover rounded hidden">
+                                                <div id="review-selfie-placeholder" class="w-full h-32 flex items-center justify-center text-gray-400">
+                                                    <i class="fas fa-user text-4xl"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <span class="text-sm font-medium text-gray-500">ID Number:</span>
+                                        <p id="review-idnumber" class="text-gray-800 font-semibold text-lg">-</p>
+                                    </div>
+                                </div>
+
+                                <!-- Terms Confirmation -->
+                                <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-check-circle text-blue-500 mt-1"></i>
+                                        <div>
+                                            <p class="text-sm font-semibold text-blue-800">Terms and Conditions</p>
+                                            <p id="review-terms-status" class="text-sm text-blue-700">Not accepted</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 3 Navigation -->
+                            <div class="flex justify-between pt-6 border-t border-gray-200">
+                                <button type="button" onclick="WizardNav.goToTab(2)" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                                    <i class="fas fa-arrow-left mr-2"></i>
+                                    Previous
+                                </button>
                                 <button type="submit"
                                         id="verify-account-btn"
-                                        disabled
-                                        class="submitbtn-color text-white py-3 px-6 sm:px-8 md:px-10 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0 outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-lg"
+                                        class="submitbtn-color text-white py-3 px-8 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0 outline-none"
                                         style="border: none;">
-                                    <i class="fas fa-check-circle mr-2"></i>Verify Account
+                                    <i class="fas fa-paper-plane mr-2"></i>Submit My Information
                                 </button>
                             </div>
                         </div>
+                        <!-- End Tab 3 -->
                     </form>
                 </div>
             </div>
@@ -742,9 +1014,9 @@
                     
                     // ═══════════════════════════════════════════════════════════════
                     // CHECK 1: Verify all required form fields are filled
+                    // NOTE: ID Number is NOT in this list - it's auto-filled from API after ID upload
                     // ═══════════════════════════════════════════════════════════════
                     const requiredFields = {
-                        'idnumber': 'ID Number',
                         'lastname': 'Last Name',
                         'firstname': 'First Name',
                         'gender': 'Gender',
@@ -934,8 +1206,8 @@
                     return isComplete;
                 }
                 
-                // Check 1: All required fields filled
-                const requiredFieldIds = ['idnumber', 'lastname', 'firstname', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'address', 'Barangay', 'District'];
+                // Check 1: All required fields filled (ID Number excluded - auto-filled from API)
+                const requiredFieldIds = ['lastname', 'firstname', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'address', 'Barangay', 'District'];
                 let allFieldsFilled = true;
                 for (const fieldId of requiredFieldIds) {
                     const field = document.getElementById(fieldId);
@@ -986,8 +1258,8 @@
             // EVENT LISTENERS FOR REAL-TIME UPDATES
             // ═══════════════════════════════════════════════════════════════════════════
             
-            // Listen to form field changes
-            const formFields = ['idnumber', 'lastname', 'firstname', 'middlename', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'address', 'Barangay', 'District'];
+            // Listen to form field changes (ID Number excluded - readonly, auto-filled from API)
+            const formFields = ['lastname', 'firstname', 'middlename', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'address', 'Barangay', 'District'];
             formFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (field) {
@@ -1014,10 +1286,414 @@
             
             // Initial checklist update
             setTimeout(window.updateVerificationChecklist, 500);
-            
+
             // Set up interval to periodically check (catches updates from modal flows)
             setInterval(window.updateVerificationChecklist, 1000);
         });
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // WIZARD TAB NAVIGATION - 3-Tab Account Verification Flow
+        // ═══════════════════════════════════════════════════════════════════════════
+
+        const WizardNav = {
+            currentTab: 1,
+
+            // Navigate to a specific tab
+            goToTab: function(tabNumber) {
+                if (tabNumber < 1 || tabNumber > 3) {
+                    console.error('Invalid tab number:', tabNumber);
+                    return;
+                }
+
+                console.log(`🔄 Navigating from Tab ${this.currentTab} to Tab ${tabNumber}`);
+
+                // Hide all tabs
+                document.getElementById('tab-1').classList.add('hidden');
+                document.getElementById('tab-2').classList.add('hidden');
+                document.getElementById('tab-3').classList.add('hidden');
+
+                // Show the requested tab
+                document.getElementById(`tab-${tabNumber}`).classList.remove('hidden');
+
+                // Update tab indicators
+                this.updateIndicators(tabNumber);
+
+                // If navigating to Tab 3, populate the review page
+                if (tabNumber === 3) {
+                    this.populateReviewPage();
+                }
+
+                // Update current tab
+                this.currentTab = tabNumber;
+
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                console.log(`✅ Now on Tab ${tabNumber}`);
+            },
+
+            // Update tab indicator styles
+            updateIndicators: function(activeTab) {
+                for (let i = 1; i <= 3; i++) {
+                    const indicator = document.getElementById(`tab-indicator-${i}`);
+                    const label = document.getElementById(`tab-label-${i}`);
+
+                    if (i === activeTab) {
+                        // Active tab - blue
+                        indicator.classList.remove('bg-gray-300', 'text-gray-500');
+                        indicator.classList.add('bg-blue-500', 'text-white');
+                        label.classList.remove('text-gray-500', 'font-medium');
+                        label.classList.add('text-blue-500', 'font-semibold');
+                    } else {
+                        // Inactive tab - gray
+                        indicator.classList.remove('bg-blue-500', 'text-white');
+                        indicator.classList.add('bg-gray-300', 'text-gray-500');
+                        label.classList.remove('text-blue-500', 'font-semibold');
+                        label.classList.add('text-gray-500', 'font-medium');
+                    }
+                }
+            },
+
+            // Populate Tab 3 review page with form data
+            populateReviewPage: function() {
+                console.log('📋 Populating review page with form data...');
+
+                // Personal Information
+                this.setReviewValue('lastname', 'review-lastname');
+                this.setReviewValue('firstname', 'review-firstname');
+                this.setReviewValue('middlename', 'review-middlename');
+                this.setReviewValue('suffix', 'review-suffix');
+                this.setReviewValue('gender', 'review-gender');
+                this.setReviewValue('civil-status', 'review-civilstatus');
+                this.setReviewValue('phonenumber', 'review-phonenumber');
+                this.setReviewValue('birthdate', 'review-birthdate');
+
+                // Address Information
+                this.setReviewValue('address', 'review-address');
+                this.setReviewValue('Barangay', 'review-barangay');
+                this.setReviewValue('District', 'review-district');
+
+                // ID Verification Information
+                this.setReviewValue('idnumber', 'review-idnumber');
+                this.setReviewValue('document-type', 'review-idtype');
+
+                // Terms and Conditions
+                const termsCheckbox = document.getElementById('terms');
+                const termsReview = document.getElementById('review-terms');
+                if (termsReview) {
+                    termsReview.textContent = termsCheckbox && termsCheckbox.checked ? 'Agreed' : 'Not Agreed';
+                    termsReview.classList.toggle('text-green-600', termsCheckbox && termsCheckbox.checked);
+                    termsReview.classList.toggle('text-red-600', !termsCheckbox || !termsCheckbox.checked);
+                }
+
+                // Uploaded Images
+                this.populateImages();
+
+                console.log('✅ Review page populated');
+            },
+
+            // Helper function to set review value
+            setReviewValue: function(inputId, reviewId) {
+                const inputField = document.getElementById(inputId);
+                const reviewField = document.getElementById(reviewId);
+
+                if (inputField && reviewField) {
+                    const value = inputField.value || '-';
+                    reviewField.textContent = value;
+                }
+            },
+
+            // Populate uploaded images in review page
+            populateImages: function() {
+                // Front ID
+                const frontImg = document.getElementById('preview-front-img');
+                const reviewFrontImg = document.getElementById('review-front-img');
+                const reviewFrontPlaceholder = document.getElementById('review-front-placeholder');
+
+                if (frontImg && !frontImg.classList.contains('hidden') && frontImg.src) {
+                    if (reviewFrontImg) {
+                        reviewFrontImg.src = frontImg.src;
+                        reviewFrontImg.classList.remove('hidden');
+                    }
+                    if (reviewFrontPlaceholder) {
+                        reviewFrontPlaceholder.classList.add('hidden');
+                    }
+                } else {
+                    if (reviewFrontImg) reviewFrontImg.classList.add('hidden');
+                    if (reviewFrontPlaceholder) reviewFrontPlaceholder.classList.remove('hidden');
+                }
+
+                // Back ID
+                const backImg = document.getElementById('preview-back-img');
+                const reviewBackImg = document.getElementById('review-back-img');
+                const reviewBackPlaceholder = document.getElementById('review-back-placeholder');
+
+                if (backImg && !backImg.classList.contains('hidden') && backImg.src) {
+                    if (reviewBackImg) {
+                        reviewBackImg.src = backImg.src;
+                        reviewBackImg.classList.remove('hidden');
+                    }
+                    if (reviewBackPlaceholder) {
+                        reviewBackPlaceholder.classList.add('hidden');
+                    }
+                } else {
+                    if (reviewBackImg) reviewBackImg.classList.add('hidden');
+                    if (reviewBackPlaceholder) reviewBackPlaceholder.classList.remove('hidden');
+                }
+
+                // Selfie
+                const selfieImg = document.getElementById('preview-selfie-img');
+                const reviewSelfieImg = document.getElementById('review-selfie-img');
+                const reviewSelfiePlaceholder = document.getElementById('review-selfie-placeholder');
+
+                if (selfieImg && !selfieImg.classList.contains('hidden') && selfieImg.src) {
+                    if (reviewSelfieImg) {
+                        reviewSelfieImg.src = selfieImg.src;
+                        reviewSelfieImg.classList.remove('hidden');
+                    }
+                    if (reviewSelfiePlaceholder) {
+                        reviewSelfiePlaceholder.classList.add('hidden');
+                    }
+                } else {
+                    if (reviewSelfieImg) reviewSelfieImg.classList.add('hidden');
+                    if (reviewSelfiePlaceholder) reviewSelfiePlaceholder.classList.remove('hidden');
+                }
+            }
+        };
+
+        // Initialize wizard on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧙‍♂️ Wizard navigation initialized');
+            WizardNav.goToTab(1); // Start on Tab 1
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // FINAL FORM VALIDATION - Validates Everything Before Submission
+        // ═══════════════════════════════════════════════════════════════════════════
+
+        function validateFinalSubmission() {
+            console.log('🔍 Starting final form validation...');
+
+            let errors = [];
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 1: Validate Personal Information
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            const requiredPersonalFields = [
+                { id: 'lastname', label: 'Last Name' },
+                { id: 'firstname', label: 'First Name' },
+                { id: 'gender', label: 'Gender' },
+                { id: 'civil-status', label: 'Civil Status' },
+                { id: 'phonenumber', label: 'Phone Number' },
+                { id: 'birthdate', label: 'Date of Birth' }
+            ];
+
+            for (let field of requiredPersonalFields) {
+                const element = document.getElementById(field.id);
+                if (!element || !element.value || element.value.trim() === '') {
+                    errors.push(`${field.label} is required`);
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 2: Validate Address Information
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            const requiredAddressFields = [
+                { id: 'address', label: 'Complete Address' },
+                { id: 'Barangay', label: 'Barangay' },
+                { id: 'District', label: 'District' }
+            ];
+
+            for (let field of requiredAddressFields) {
+                const element = document.getElementById(field.id);
+                if (!element || !element.value || element.value.trim() === '') {
+                    errors.push(`${field.label} is required`);
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 3: Validate Terms and Conditions
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox || !termsCheckbox.checked) {
+                errors.push('You must agree to the Terms and Conditions');
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 4: Validate ID Document Uploads
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            // Check Front ID
+            const frontIdInput = document.getElementById('file-input-front');
+            if (!frontIdInput || !frontIdInput.files || frontIdInput.files.length === 0) {
+                errors.push('Front ID photo is required');
+            }
+
+            // Check Back ID
+            const backIdInput = document.getElementById('file-input-back');
+            if (!backIdInput || !backIdInput.files || backIdInput.files.length === 0) {
+                errors.push('Back ID photo is required');
+            }
+
+            // Check Selfie/Face Picture
+            const faceBase64 = document.getElementById('userfacepictureBase64');
+            if (!faceBase64 || !faceBase64.value || faceBase64.value.trim() === '') {
+                errors.push('Selfie/Face photo is required');
+            }
+
+            // NOTE: ID Number is NOT validated here as it's auto-populated by the ID Analyzer API
+            // after the user uploads their ID documents. It will be filled automatically.
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // Display Validation Results
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            if (errors.length > 0) {
+                console.error('❌ Validation failed:', errors);
+
+                // Create error message
+                let errorMessage = '<div class="text-left"><strong>Please correct the following errors:</strong><ul class="mt-2 ml-4 list-disc">';
+                errors.forEach(error => {
+                    errorMessage += `<li>${error}</li>`;
+                });
+                errorMessage += '</ul></div>';
+
+                // Show error modal
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Failed',
+                    html: errorMessage,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc2626',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        title: 'text-2xl font-bold',
+                        htmlContainer: 'text-sm'
+                    }
+                });
+
+                return false; // Prevent form submission
+            }
+
+            console.log('✅ All validations passed - submitting form');
+            return true; // Allow form submission
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // TAB 2: MONITOR API PROCESSING & ENABLE NEXT BUTTON
+        // ═══════════════════════════════════════════════════════════════════════════
+
+        const Tab2Controller = {
+            apiProcessing: false,
+            apiCompleted: false,
+            progressBarVisible: false,
+
+            // Show progress bar when API processing starts
+            showProgressBar: function() {
+                const progressContainer = document.getElementById('api-processing-status');
+                if (progressContainer && !this.progressBarVisible) {
+                    progressContainer.classList.remove('hidden');
+                    this.progressBarVisible = true;
+                    console.log('📊 Progress bar shown - API processing started');
+                    console.log('📊 Progress will be driven by real API calls via ProgressTracker');
+                }
+            },
+
+            // Hide progress bar when API processing completes
+            hideProgressBar: function() {
+                // The ProgressTracker will handle setting everything to 100%
+                // Just hide the container after a delay
+                const progressContainer = document.getElementById('api-processing-status');
+                if (progressContainer && this.progressBarVisible) {
+                    setTimeout(() => {
+                        progressContainer.classList.add('hidden');
+                        this.progressBarVisible = false;
+                        console.log('✅ Progress bar hidden - API processing complete');
+                    }, 2000);
+                }
+            },
+
+            // Called when API processing starts (from finishAndVerify)
+            onAPIStart: function() {
+                console.log('🚀 API processing started');
+                this.apiProcessing = true;
+                this.apiCompleted = false;
+                this.showProgressBar();
+                // Progress will be updated by ProgressTracker.updateProgress() in verification-idanalyzer.js
+            },
+
+            // Called when API processing completes successfully
+            onAPIComplete: function() {
+                console.log('✅ API processing completed successfully');
+                this.apiProcessing = false;
+                this.apiCompleted = true;
+                this.hideProgressBar();
+
+                // Check if ID number is populated
+                const idNumber = document.getElementById('idnumber');
+                if (idNumber && idNumber.value && idNumber.value.trim() !== '') {
+                    this.enableNextButton();
+                } else {
+                    console.warn('⚠️ API completed but ID number not populated yet - waiting...');
+                    // Keep checking for ID number (max 5 seconds)
+                    let attempts = 0;
+                    const checkInterval = setInterval(() => {
+                        attempts++;
+                        const idNum = document.getElementById('idnumber');
+                        if (idNum && idNum.value && idNum.value.trim() !== '') {
+                            this.enableNextButton();
+                            clearInterval(checkInterval);
+                        } else if (attempts >= 10) {
+                            console.error('❌ ID number not populated after 5 seconds');
+                            clearInterval(checkInterval);
+                            // Enable button anyway if verification was successful
+                            if (typeof VerificationState !== 'undefined' && VerificationState.verificationComplete) {
+                                this.enableNextButton();
+                            }
+                        }
+                    }, 500);
+                }
+            },
+
+            // Enable the "Next: Review & Submit" button
+            enableNextButton: function() {
+                const nextBtn = document.getElementById('next-to-review-btn');
+                const btnText = document.getElementById('next-btn-text');
+                const btnIcon = nextBtn ? nextBtn.querySelector('i') : null;
+
+                if (nextBtn) {
+                    nextBtn.disabled = false;
+                    nextBtn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                    nextBtn.classList.add('bg-gradient-to-r', 'from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700', 'text-white', 'shadow-lg', 'hover:shadow-xl', 'transform', 'hover:scale-105');
+
+                    if (btnIcon) {
+                        btnIcon.classList.remove('fa-lock');
+                        btnIcon.classList.add('fa-arrow-right');
+                    }
+
+                    if (btnText) {
+                        btnText.textContent = 'Next: Review & Submit';
+                    }
+
+                    console.log('✅ Next button enabled - user can proceed to Tab 3');
+                }
+            }
+        };
+
+        // Expose Tab2Controller globally for callbacks
+        window.Tab2Controller = Tab2Controller;
+
+        // Expose callback functions for API
+        window.onIDAnalyzerStart = function() {
+            Tab2Controller.onAPIStart();
+        };
+
+        window.onIDAnalyzerComplete = function() {
+            Tab2Controller.onAPIComplete();
+        };
     </script>
 
     <!-- Go Back Button Behavior -->
@@ -1028,6 +1704,49 @@
 
     <!-- ID Analyzer v2 API - ID Scanning and Verification -->
     <script src="~/js/verification-idanalyzer.js?v=@DateTime.Now.Ticks"></script>
+
+    <!-- Verification Script Loaded - Check Functions -->
+    <script>
+        // Wait for DOMContentLoaded to ensure verification-idanalyzer.js has fully initialized
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(() => {
+                    console.log('═══════════════════════════════════════════════════════════════');
+                    console.log('🔍 VERIFICATION SCRIPT LOADED CHECK:');
+                    console.log('═══════════════════════════════════════════════════════════════');
+                    console.log('window.submitVerification:', typeof window.submitVerification);
+                    console.log('window.VerificationState:', typeof window.VerificationState);
+                    console.log('window.ProgressTracker:', typeof window.ProgressTracker);
+
+                    if (typeof window.submitVerification === 'function') {
+                        console.log('✅ submitVerification is available globally');
+                    } else {
+                        console.error('❌ submitVerification is NOT available!');
+                        console.error('This will cause finishAndVerify() to fail');
+                    }
+                    console.log('═══════════════════════════════════════════════════════════════');
+                }, 500); // Small delay to ensure DOMContentLoaded in verification-idanalyzer.js completes
+            });
+        } else {
+            // DOM already loaded
+            setTimeout(() => {
+                console.log('═══════════════════════════════════════════════════════════════');
+                console.log('🔍 VERIFICATION SCRIPT LOADED CHECK (DOM already loaded):');
+                console.log('═══════════════════════════════════════════════════════════════');
+                console.log('window.submitVerification:', typeof window.submitVerification);
+                console.log('window.VerificationState:', typeof window.VerificationState);
+                console.log('window.ProgressTracker:', typeof window.ProgressTracker);
+
+                if (typeof window.submitVerification === 'function') {
+                    console.log('✅ submitVerification is available globally');
+                } else {
+                    console.error('❌ submitVerification is NOT available!');
+                    console.error('This will cause finishAndVerify() to fail');
+                }
+                console.log('═══════════════════════════════════════════════════════════════');
+            }, 500);
+        }
+    </script>
 
     <!-- Facial Recognition Module (Face Capture for ID Analyzer) -->
     <script src="~/js/facial-recognition.js?v=@DateTime.Now.Ticks"></script>
@@ -2936,13 +3655,17 @@
         },
         
         // Finish upload and immediately trigger verification
-        finishAndVerify() {
+        async finishAndVerify() {
+            console.log('═══════════════════════════════════════════════════════════════');
+            console.log('🎬 finishAndVerify() CALLED');
+            console.log('═══════════════════════════════════════════════════════════════');
+
             this.stopCamera();
             this.modals.selfie.hide();
-            
+
             // Update main page previews
             this.updateMainPagePreviews();
-            
+
             // HIDE start-verification-btn during processing
             const startVerificationBtn = document.getElementById('start-verification-btn');
             if (startVerificationBtn) {
@@ -2953,27 +3676,103 @@
                     helperText.style.display = 'none';
                 }
             }
-            
+
             // Update VerificationState
             if (typeof VerificationState !== 'undefined') {
                 VerificationState.updateVerifyButtonState();
             }
-            
+
             // Update verification checklist (enables Verify Account button if all requirements met)
             if (typeof window.updateVerificationChecklist === 'function') {
                 window.updateVerificationChecklist();
             }
-            
+
+            // DEBUG: Log current verification state before calling API
+            console.log('═══════════════════════════════════════════════════════════════');
+            console.log('🔍 VERIFICATION STATE BEFORE API CALL:');
+            console.log('═══════════════════════════════════════════════════════════════');
+            if (typeof VerificationState !== 'undefined') {
+                console.log('VerificationState exists:', true);
+                console.log('Front ID File:', VerificationState.frontIdFile ? `✅ ${VerificationState.frontIdFile.name} (${VerificationState.frontIdFile.size} bytes)` : '❌ NOT SET');
+                console.log('Back ID File:', VerificationState.backIdFile ? `✅ ${VerificationState.backIdFile.name} (${VerificationState.backIdFile.size} bytes)` : '❌ NOT SET');
+                console.log('Selfie Filename:', VerificationState.selfieFileName ? `✅ ${VerificationState.selfieFileName}` : '❌ NOT SET');
+                console.log('Selfie Image Base64:', VerificationState.selfieImage ? `✅ ${VerificationState.selfieImage.substring(0, 50)}...` : '❌ NOT SET');
+                console.log('Ready for Verification:', VerificationState.isReadyForVerification());
+                console.log('Full Summary:', VerificationState.getSummary());
+            } else {
+                console.error('❌ VerificationState is undefined!');
+            }
+            console.log('═══════════════════════════════════════════════════════════════');
+
+            // Notify Tab2Controller that API processing is starting
+            console.log('📢 Calling window.onIDAnalyzerStart()...');
+            if (typeof window.onIDAnalyzerStart === 'function') {
+                window.onIDAnalyzerStart();
+            } else {
+                console.error('❌ window.onIDAnalyzerStart is not defined!');
+            }
+
+            // Small delay to ensure modal is fully closed and UI is updated
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             // AUTO-EXTRACT DATA: Automatically extract ID data for user review
             // This does NOT save to database - only populates form fields
-            setTimeout(() => {
-                if (typeof submitVerification === 'function') {
-                    console.log('🔄 Auto-extracting ID data from all uploaded images...');
-                    submitVerification();
-                } else {
-                    console.log('⚠️ submitVerification function not found');
+            console.log('🔄 Auto-extracting ID data from all uploaded images...');
+
+            // Wait for submitVerification to be available (max 10 seconds)
+            const waitForSubmitVerification = async () => {
+                let attempts = 0;
+                const maxAttempts = 100; // 100 attempts * 100ms = 10 seconds max
+
+                // First ensure DOMContentLoaded has fired
+                if (document.readyState === 'loading') {
+                    console.log('⏳ Waiting for DOMContentLoaded...');
+                    await new Promise(resolve => {
+                        document.addEventListener('DOMContentLoaded', resolve, { once: true });
+                    });
+                    console.log('✅ DOMContentLoaded fired');
                 }
-            }, 500); // Small delay to ensure modal is closed and UI is updated
+
+                while (attempts < maxAttempts) {
+                    if (typeof window.submitVerification === 'function') {
+                        console.log('✅ submitVerification found after', attempts * 100, 'ms');
+                        return true;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                    
+                    // Log progress every second
+                    if (attempts % 10 === 0) {
+                        console.log(`⏳ Waiting for submitVerification... ${attempts * 100}ms elapsed`);
+                        console.log('   window.VerificationState:', !!window.VerificationState);
+                        console.log('   window.submitVerification:', typeof window.submitVerification);
+                    }
+                }
+
+                console.error('❌ submitVerification not found after 10 seconds');
+                return false;
+            };
+
+            const isAvailable = await waitForSubmitVerification();
+
+            if (isAvailable) {
+                console.log('🚀 Calling window.submitVerification() NOW...');
+                try {
+                    await window.submitVerification();
+                    console.log('✅ window.submitVerification() completed successfully');
+                } catch (error) {
+                    console.error('❌ window.submitVerification() failed:', error);
+                    console.error('Error details:', error.message, error.stack);
+                }
+            } else {
+                console.error('❌ submitVerification function never became available!');
+                console.error('Available window functions:', Object.keys(window).filter(k => typeof window[k] === 'function' && k.includes('submit')));
+                console.error('Checking if verification-idanalyzer.js loaded:', !!window.VerificationState);
+                console.error('Document readyState:', document.readyState);
+
+                // Show error to user
+                alert('Failed to start verification. Please refresh the page and try again.');
+            }
         },
         
         // Update main page previews

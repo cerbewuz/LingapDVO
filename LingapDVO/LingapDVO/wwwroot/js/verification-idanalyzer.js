@@ -279,6 +279,152 @@ const VerificationState = {
 // Make VerificationState globally accessible
 window.VerificationState = VerificationState;
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// GLOBAL SUBMIT VERIFICATION FUNCTION
+// ═══════════════════════════════════════════════════════════════════════════════
+// Defined at global scope to be immediately available when script loads.
+// Sends Front ID, Back ID, and Selfie to the API as Base64.
+// ═══════════════════════════════════════════════════════════════════════════════
+window.submitVerification = async function() {
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('🚀 window.submitVerification() CALLED');
+    console.log('═══════════════════════════════════════════════════════════════');
+
+    // Check if all required images are ready
+    if (!VerificationState.isReadyForVerification()) {
+        console.error('❌ Not ready for verification:', VerificationState.getSummary());
+        alert('Please upload all required photos:\n• Front of ID\n• Back of ID\n• Your photo (selfie)');
+        return;
+    }
+
+    // Update UI to show processing state
+    VerificationState.verificationInProgress = true;
+    const verifyButton = document.getElementById('verify-submit-btn');
+    if (verifyButton) {
+        verifyButton.disabled = true;
+        verifyButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verifying...';
+    }
+
+    try {
+        console.log('🔍 VERIFICATION STATE:');
+        console.log('   frontIdFile:', VerificationState.frontIdFile ? `✅ ${VerificationState.frontIdFile.name}` : '❌ NULL');
+        console.log('   backIdFile:', VerificationState.backIdFile ? `✅ ${VerificationState.backIdFile.name}` : '❌ NULL');
+        console.log('   selfieFileName:', VerificationState.selfieFileName || '❌ NULL');
+
+        // Verify required files exist
+        if (!VerificationState.frontIdFile || !(VerificationState.frontIdFile instanceof File)) {
+            throw new Error('Front ID file is missing. Please upload your ID again.');
+        }
+        if (!VerificationState.backIdFile || !(VerificationState.backIdFile instanceof File)) {
+            throw new Error('Back ID file is missing. Please upload your ID again.');
+        }
+
+        // Build FormData - files will be converted to Base64 by the backend
+        const formData = new FormData();
+        formData.append('documentFile', VerificationState.frontIdFile);
+        formData.append('backFile', VerificationState.backIdFile);
+        
+        if (VerificationState.selfieFileName) {
+            formData.append('selfieFileName', VerificationState.selfieFileName);
+        }
+        if (window.currentUserId) {
+            formData.append('userId', window.currentUserId);
+        }
+
+        console.log('📤 Sending to:', ID_ANALYZER_CONFIG.SCAN_ENDPOINT);
+
+        // Send to API
+        const response = await fetch(ID_ANALYZER_CONFIG.SCAN_ENDPOINT, {
+            method: 'POST',
+            body: formData
+        });
+
+        const responseText = await response.text();
+        console.log('📥 Response status:', response.status);
+
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            throw new Error('Invalid API response');
+        }
+
+        if (!result.success) {
+            throw new Error(result.error || 'Verification failed');
+        }
+
+        // Store result
+        VerificationState.scanResult = result;
+        VerificationState.extractedData = result;
+
+        const decision = (result.decision || '').toLowerCase();
+        console.log('📋 Decision:', decision);
+
+        if (decision === 'reject') {
+            VerificationState.verificationInProgress = false;
+            if (verifyButton) {
+                verifyButton.disabled = false;
+                verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry';
+            }
+            alert('Verification rejected. Please ensure photos are clear and try again.');
+            return;
+        }
+
+        if (decision === 'review') {
+            alert('Your ID is under review. We will notify you when complete.');
+            return;
+        }
+
+        // SUCCESS - populate form fields
+        VerificationState.verificationComplete = true;
+        console.log('✅ Verification ACCEPTED');
+
+        // Populate form fields
+        const fields = {
+            'IDnumber': result.idNumber || result.documentNumber,
+            'lastname': result.lastName || result.surname,
+            'firstname': result.firstName || result.givenName,
+            'middlename': result.middleName,
+            'birthdate': result.dob || result.dateOfBirth,
+            'sex': result.sex || result.gender,
+            'BlkLotStreet': result.address,
+            'Barangay': result.barangay
+        };
+
+        for (const [id, value] of Object.entries(fields)) {
+            if (value) {
+                const el = document.getElementById(id);
+                if (el) el.value = value;
+            }
+        }
+
+        // Store decision
+        const decisionField = document.getElementById('verification-decision');
+        const transactionField = document.getElementById('transaction-id');
+        if (decisionField) decisionField.value = result.decision || '';
+        if (transactionField) transactionField.value = result.transactionId || '';
+
+        if (verifyButton) {
+            verifyButton.disabled = false;
+            verifyButton.innerHTML = '<i class="fas fa-check mr-2"></i>Verified';
+            verifyButton.classList.add('bg-green-600');
+        }
+
+        console.log('✅ VERIFICATION COMPLETE');
+
+    } catch (error) {
+        console.error('❌ Verification error:', error);
+        VerificationState.verificationInProgress = false;
+        if (verifyButton) {
+            verifyButton.disabled = false;
+            verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry';
+        }
+        alert('Verification failed: ' + error.message);
+    }
+};
+
+console.log('✅ window.submitVerification defined at global scope');
+
 document.addEventListener('DOMContentLoaded', function () {
     // Initialize animations
     setTimeout(() => {

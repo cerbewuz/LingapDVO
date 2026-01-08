@@ -539,23 +539,33 @@ label {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   UPLOADED DOCUMENTS PREVIEW SECTION
+   UPLOADED DOCUMENTS PREVIEW SECTION - COMPACT COLUMN LAYOUT
    ═══════════════════════════════════════════════════════════════════════════ */
 
 #uploaded-docs-preview {
     animation: fadeIn 0.4s ease-out;
 }
 
+/* Default: Column layout for better compactness */
 #uploaded-docs-preview .grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
     gap: 1rem;
 }
 
-@media (max-width: 640px) {
+/* Keep column layout on small and medium screens for compactness */
+@media (max-width: 991px) {
     #uploaded-docs-preview .grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
+        grid-template-columns: 1fr !important;
+        gap: 0.875rem;
+    }
+}
+
+/* Only use 3-column layout on large screens (desktop) */
+@media (min-width: 992px) {
+    #uploaded-docs-preview .grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
     }
 }
 
@@ -565,6 +575,14 @@ label {
 
 #uploaded-docs-preview .bg-gray-50:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Make preview cards more compact on mobile */
+@media (max-width: 576px) {
+    #uploaded-docs-preview .bg-gray-50 {
+        padding: 0.875rem !important;
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -603,6 +621,7 @@ label {
     align-items: center;
     justify-content: center;
     width: 100%;
+    overflow: hidden;
 }
 
 .upload-area-modal:hover {
@@ -615,10 +634,26 @@ label {
     background-color: #A3FFF9 !important;
 }
 
+/* Ensure buttons in upload areas have proper touch targets */
+.upload-area-modal button {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Prevent text wrapping issues in camera buttons */
+.upload-area-modal button span {
+    white-space: nowrap;
+}
+
 @media (max-width: 640px) {
     .upload-area-modal {
         min-height: 240px;
         padding: 1.5rem !important;
+    }
+
+    /* Allow text wrapping on very small screens */
+    .upload-area-modal button span {
+        white-space: normal;
     }
 }
 
@@ -659,6 +694,13 @@ label {
     align-items: center;
     justify-content: center;
     width: 100%;
+    overflow: hidden;
+}
+
+/* Ensure buttons in selfie area have proper touch targets */
+.selfie-capture-modal-area button {
+    min-height: 44px;
+    min-width: 44px;
 }
 
 @media (min-width: 640px) {
@@ -670,6 +712,17 @@ label {
 /* Mirror effect for selfie video */
 .mirror-video {
     transform: scaleX(-1);
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* Video container improvements */
+#selfie-camera-view .relative,
+#front-camera-view .relative,
+#back-camera-view .relative {
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Countdown overlay animation */
@@ -693,62 +746,412 @@ label {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MODAL RESPONSIVE STYLES
+   MODAL RESPONSIVE STYLES - FULL SCREEN ON MOBILE/TABLET
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.modal-dialog {
-    margin: 0.5rem !important;
+/* Mobile: Full-screen modal for better UX and consistency */
+@media (max-width: 991px) {
+    /* Modal positioning - full screen */
+    .modal-dialog {
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* Modal content - full screen with flexbox layout */
+    .modal-content {
+        width: 100% !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+    }
+
+    /* Modal body - scrollable with proper overflow */
+    .modal-body {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Modal header and footer - fixed at top and bottom */
+    .modal-header,
+    .modal-footer {
+        flex-shrink: 0 !important;
+        position: relative !important;
+        z-index: 10 !important;
+    }
+
+    /* Add subtle shadow to header for depth */
+    .modal-header {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* Add subtle shadow to footer for depth */
+    .modal-footer {
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* Smooth modal open/close animations */
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s ease-out !important;
+    }
+
+    .modal.show .modal-dialog {
+        transform: none !important;
+    }
 }
 
-@media (min-width: 576px) {
+/* Desktop: Normal modal behavior */
+@media (min-width: 992px) {
     .modal-dialog {
         margin: 1.75rem auto !important;
         max-width: 650px !important;
     }
-}
 
-@media (min-width: 992px) {
     .modal-dialog.modal-lg {
         max-width: 800px !important;
+    }
+
+    .modal-content {
+        max-height: 90vh !important;
+        border-radius: 1rem !important;
     }
 }
 
 /* Modal content styling */
 .modal-content {
-    max-height: 90vh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scroll-behavior: smooth;
+}
+
+/* Image preview responsiveness */
+#modal-preview-front,
+#modal-preview-back {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+#modal-preview-selfie {
+    object-fit: cover;
 }
 
 @media (max-width: 576px) {
-    .modal-content {
-        border-radius: 1rem !important;
-    }
-    
+    /* Compact padding for full-screen modals */
     .modal-header {
-        padding: 0.75rem 1rem !important;
+        padding: 1rem 1.25rem !important;
     }
-    
+
     .modal-body {
-        padding: 1rem !important;
+        padding: 1.25rem !important;
     }
-    
+
     .modal-footer {
-        padding: 0.75rem 1rem !important;
+        padding: 1rem 1.25rem !important;
     }
-    
+
     /* Adjust progress indicator on mobile */
     .modal-body .flex.items-center.gap-4 {
         gap: 0.5rem !important;
     }
-    
+
     .modal-body .w-10.h-10 {
         width: 2rem !important;
         height: 2rem !important;
         font-size: 0.75rem !important;
     }
-    
+
     .modal-body .w-12 {
         width: 1.5rem !important;
+    }
+
+    /* Upload area adjustments for full-screen mobile modals */
+    .upload-area-modal {
+        min-height: 300px !important;
+        padding: 1.5rem !important;
+    }
+
+    /* Selfie capture area adjustments for full-screen modals */
+    .selfie-capture-modal-area {
+        min-height: 350px !important;
+        padding: 1.5rem !important;
+    }
+
+    /* Video elements responsive sizing */
+    #front-modal-video,
+    #back-modal-video,
+    #selfie-modal-video {
+        max-height: 240px !important;
+    }
+
+    /* Oval guide on mobile */
+    .selfie-capture-modal-area .rounded-full {
+        width: 10rem !important;
+        height: 12rem !important;
+    }
+
+    /* Icon containers in upload areas */
+    .upload-area-modal .w-20,
+    .upload-area-modal .w-24 {
+        width: 4rem !important;
+        height: 4rem !important;
+    }
+
+    .selfie-capture-modal-area .w-24,
+    .selfie-capture-modal-area .w-32 {
+        width: 5rem !important;
+        height: 5rem !important;
+    }
+
+    /* Button text sizing */
+    .modal-footer button {
+        font-size: 0.875rem !important;
+        padding: 0.625rem 1rem !important;
+    }
+
+    /* Camera capture buttons inside upload areas */
+    .upload-area-modal button,
+    .selfie-capture-modal-area button {
+        font-size: 0.875rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+
+    /* Progress indicator text */
+    .modal-body .flex.items-center.justify-center span {
+        font-size: 0.625rem !important;
+    }
+
+    /* Modal title adjustments */
+    .modal-title {
+        font-size: 0.9375rem !important;
+    }
+
+    .modal-header .text-xs {
+        font-size: 0.6875rem !important;
+    }
+
+    /* Modal footer button improvements */
+    .modal-footer {
+        flex-direction: column-reverse !important;
+    }
+
+    .modal-footer button {
+        width: 100% !important;
+    }
+
+    /* Ensure proper button order on mobile */
+    .modal-footer button.order-1 {
+        order: 3 !important;
+    }
+
+    .modal-footer button.order-2 {
+        order: 2 !important;
+    }
+
+    .modal-footer button.order-3 {
+        order: 1 !important;
+    }
+
+    /* Gap between footer buttons */
+    .modal-footer.gap-2,
+    .modal-footer.gap-3 {
+        gap: 0.5rem !important;
+    }
+
+    /* Header icon and badge spacing */
+    .modal-header .gap-2,
+    .modal-header .gap-3 {
+        gap: 0.5rem !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXTRA SMALL SCREENS (VERY SMALL PHONES)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+    /* Further reduce modal padding on very small screens */
+    .modal-header {
+        padding: 0.625rem 0.875rem !important;
+    }
+
+    .modal-body {
+        padding: 0.875rem !important;
+    }
+
+    .modal-footer {
+        padding: 0.625rem 0.875rem !important;
+    }
+
+    /* Smaller upload areas */
+    .upload-area-modal {
+        min-height: 200px !important;
+        padding: 1rem !important;
+    }
+
+    .selfie-capture-modal-area {
+        min-height: 260px !important;
+        padding: 1rem !important;
+    }
+
+    /* Video elements even smaller */
+    #front-modal-video,
+    #back-modal-video,
+    #selfie-modal-video {
+        max-height: 200px !important;
+    }
+
+    /* Smaller oval guide */
+    .selfie-capture-modal-area .rounded-full {
+        width: 8rem !important;
+        height: 10rem !important;
+        border-width: 3px !important;
+    }
+
+    /* Smaller icons */
+    .upload-area-modal .w-20,
+    .upload-area-modal .w-24 {
+        width: 3.5rem !important;
+        height: 3.5rem !important;
+    }
+
+    .selfie-capture-modal-area .w-24,
+    .selfie-capture-modal-area .w-32 {
+        width: 4rem !important;
+        height: 4rem !important;
+    }
+
+    /* Progress indicator even smaller */
+    .modal-body .flex.items-center.gap-2 {
+        gap: 0.375rem !important;
+    }
+
+    .modal-body .w-8.h-8 {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+        font-size: 0.625rem !important;
+    }
+
+    /* Tips section */
+    .modal-body .rounded-xl.p-3,
+    .modal-body .rounded-xl.p-4 {
+        padding: 0.625rem !important;
+    }
+
+    /* Countdown number in selfie */
+    #selfie-countdown-number {
+        font-size: 3rem !important;
+    }
+
+    /* Preview images */
+    #modal-preview-front,
+    #modal-preview-back {
+        max-height: 12rem !important;
+    }
+
+    #modal-preview-selfie {
+        width: 8rem !important;
+        height: 8rem !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABLET AND MEDIUM SCREENS (FULL-SCREEN MODALS)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 577px) and (max-width: 991px) {
+    /* Tablets also get full-screen modals for consistency */
+    .modal-header {
+        padding: 1.25rem 1.5rem !important;
+    }
+
+    .modal-body {
+        padding: 1.5rem !important;
+    }
+
+    .modal-footer {
+        padding: 1.25rem 1.5rem !important;
+    }
+
+    /* Optimize upload areas for tablet full-screen */
+    .upload-area-modal {
+        min-height: 320px !important;
+        padding: 2rem !important;
+    }
+
+    .selfie-capture-modal-area {
+        min-height: 380px !important;
+        padding: 2rem !important;
+    }
+
+    /* Video sizing for tablets */
+    #front-modal-video,
+    #back-modal-video,
+    #selfie-modal-video {
+        max-height: 320px !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANDSCAPE ORIENTATION ON MOBILE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 896px) and (orientation: landscape) {
+    /* Adjust modal height for landscape */
+    .modal-content {
+        max-height: 85vh !important;
+    }
+
+    /* Reduce vertical spacing in landscape */
+    .upload-area-modal {
+        min-height: 180px !important;
+        padding: 0.875rem 1.25rem !important;
+    }
+
+    .selfie-capture-modal-area {
+        min-height: 200px !important;
+        padding: 0.875rem 1.25rem !important;
+    }
+
+    /* Smaller videos in landscape */
+    #front-modal-video,
+    #back-modal-video,
+    #selfie-modal-video {
+        max-height: 180px !important;
+    }
+
+    /* Compact progress indicator */
+    .modal-body .mb-4,
+    .modal-body .mb-6 {
+        margin-bottom: 0.75rem !important;
+    }
+
+    /* Smaller oval in landscape */
+    .selfie-capture-modal-area .rounded-full {
+        width: 7rem !important;
+        height: 9rem !important;
+    }
+
+    /* Reduce icon sizes */
+    .upload-area-modal .w-20,
+    .upload-area-modal .w-24 {
+        width: 3rem !important;
+        height: 3rem !important;
+    }
+
+    .selfie-capture-modal-area .w-24,
+    .selfie-capture-modal-area .w-32 {
+        width: 3.5rem !important;
+        height: 3.5rem !important;
     }
 }
 
@@ -815,7 +1218,7 @@ label {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   RETRY VERIFICATION MODAL STYLES (Yellow Theme)
+   RETRY VERIFICATION MODAL STYLES (Yellow Theme) - COMPACT COLUMN LAYOUT
    ═══════════════════════════════════════════════════════════════════════════ */
 
 #retryVerificationModal .modal-header {
@@ -841,13 +1244,30 @@ label {
     background-color: #f0fdf4 !important;
 }
 
-@media (max-width: 640px) {
+/* Column layout for all mobile and tablet screens */
+@media (max-width: 991px) {
     #retryVerificationModal .retry-upload-card {
-        min-height: 120px;
+        min-height: 140px;
     }
-    
+
     #retryVerificationModal .grid {
         grid-template-columns: 1fr !important;
+        gap: 0.875rem !important;
+    }
+}
+
+/* Even more compact on very small screens */
+@media (max-width: 576px) {
+    #retryVerificationModal .retry-upload-card {
+        min-height: 120px;
+        padding: 0.875rem !important;
+    }
+}
+
+/* 3-column layout only on desktop */
+@media (min-width: 992px) {
+    #retryVerificationModal .grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -902,6 +1322,89 @@ label {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODAL BACKDROP IMPROVEMENTS FOR FULL-SCREEN
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Backdrop styling for better visibility on mobile */
+@media (max-width: 991px) {
+    .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .modal-backdrop.show {
+        opacity: 1 !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY IMPROVEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Focus states for better keyboard navigation */
+.modal button:focus,
+.upload-area-modal:focus {
+    outline: 3px solid #4A90E2 !important;
+    outline-offset: 2px !important;
+}
+
+/* Ensure all interactive elements have sufficient touch targets */
+.modal-footer button,
+.modal-body button,
+.upload-area-modal button,
+.selfie-capture-modal-area button {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+}
+
+/* Better text contrast */
+.modal-body .text-black\/60 {
+    color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.modal-body .text-black\/50 {
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Smooth transitions for better UX */
+.modal-content,
+.upload-area-modal,
+.selfie-capture-modal-area {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent accidental text selection in modals */
+.modal-header,
+.modal-footer {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PERFORMANCE OPTIMIZATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* GPU acceleration for animations */
+.modal-content,
+.upload-area-modal,
+#selfie-countdown-overlay {
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* Optimize video rendering */
+video {
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 /* Print Styles */
