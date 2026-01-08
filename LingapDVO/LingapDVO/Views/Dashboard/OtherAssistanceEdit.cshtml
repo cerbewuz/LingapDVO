@@ -198,27 +198,6 @@
                 <span asp-validation-for="PhilHealthNo" class="text-danger"></span>
             </div>
         </div>
-
-        <script>
-            const select = document.getElementById("philHealthSelect");
-            const phNo = document.getElementById("philHealthNo");
-
-            function togglePhilHealthNo() {
-                if (select.value === "Without PhilHealth") {
-                    phNo.value = "";
-                    phNo.disabled = true;
-                } else {
-                    phNo.disabled = false;
-                }
-            }
-
-            // Execute on page load (for edit forms)
-            togglePhilHealthNo();
-
-            // Execute on change
-            select.addEventListener("change", togglePhilHealthNo);
-        </script>
-
     </div>
 
     <!-- Requestor Information -->
@@ -302,245 +281,191 @@
         </div>
     </div>
 
-    <!-- Type of Assistance Requested Section -->
+    <!-- Type of Assistance Requested Section - UPDATED WITH RADIO BUTTONS INSIDE THE CARD -->
     <div class="card mt-4">
         <div class="card-header">Type of Assistance Requested</div>
         <div class="card-body">
-            <div class="row g-3">
-                <div class="col-12 col-sm-12 col-md-6 col-lg-6">
-                    <div class="form-check">
+            <!-- Radio buttons now inside the card body -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                    <!-- Column 1 -->
+                    <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="radio"
                                id="medicineAssistance" name="AssistanceType" value="Medicine Assistance"
-                               @(checkedAssistance.ContainsKey("Medicine Assistance") ? "checked" : "")>
-                        <label class="form-check-label" for="medicineAssistance">Medicine Assistance</label>
+                               @(checkedAssistance.ContainsKey("Medicine Assistance") || Model?.Typeassistance?.Contains("Medicine") == true ? "checked" : "")>
+                        <label class="form-check-label ms-1" for="medicineAssistance">Medicine Assistance</label>
                     </div>
 
-                    <div class="form-check">
+                    <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="radio"
-                               id="laboratory" name="AssistanceType" value="Laboratory"
-                               @(checkedAssistance.ContainsKey("Laboratory") ? "checked" : "")>
-                        <label class="form-check-label" for="laboratory">Laboratory</label>
+                               id="laboratoryAssistance" name="AssistanceType" value="Laboratory"
+                               @(checkedAssistance.ContainsKey("Laboratory") || Model?.Typeassistance?.Contains("Laboratory") == true ? "checked" : "")>
+                        <label class="form-check-label ms-1" for="laboratoryAssistance">Laboratory</label>
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-12 col-md-6 col-lg-6">
-                    <div class="form-check">
+                <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                    <!-- Column 2 -->
+                    <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="radio"
-                               id="therapy" name="AssistanceType" value="Therapy"
-                               @(checkedAssistance.ContainsKey("Therapy") ? "checked" : "")>
-                        <label class="form-check-label" for="therapy">Therapy</label>
+                               id="therapyAssistance" name="AssistanceType" value="Therapy"
+                               @(checkedAssistance.ContainsKey("Therapy") || Model?.Typeassistance?.Contains("Therapy") == true ? "checked" : "")>
+                        <label class="form-check-label ms-1" for="therapyAssistance">Therapy</label>
                     </div>
 
-                    <div class="form-check">
+                    <div class="form-check mt-2">
                         <input class="form-check-input assistance-type" type="radio"
-                               id="apparatus" name="AssistanceType" value="Medical Equipment/ Apparatus"
-                               @(checkedAssistance.ContainsKey("Apparatus") || checkedAssistance.ContainsKey("Medical Equipment") ? "checked" : "")>
-                        <label class="form-check-label" for="apparatus">Medical Equipment/ Apparatus</label>
+                               id="apparatusAssistance" name="AssistanceType" value="Medical Equipment/ Apparatus"
+                               @(checkedAssistance.ContainsKey("Apparatus") || Model?.Typeassistance?.Contains("Equipment") == true || Model?.Typeassistance?.Contains("Apparatus") == true ? "checked" : "")>
+                        <label class="form-check-label ms-1" for="apparatusAssistance">Medical Equipment/ Apparatus</label>
                     </div>
                 </div>
             </div>
 
-            <div class="form-group mt-4">
-                <label for="assistanceReflection" class="form-label">Reflection info:</label>
-                <input type="text" class="form-control" id="assistanceReflection"
-                       name="Typeassistance"
-                       value="@(Model?.Typeassistance ?? "")"
-                       placeholder="Auto-generated info..." readonly>
-                <span asp-validation-for="Typeassistance"></span>
+            <!-- Selected Assistance Type field -->
+            <div class="form-group mt-3">
+                <label for="assistanceReflection" class="form-label">Selected Assistance Type:</label>
+                <input asp-for="Typeassistance" type="text" class="form-control" id="assistanceReflection"
+                       name="Typeassistance" placeholder="Auto-generated info..." readonly>
+                <span asp-validation-for="Typeassistance" class="text-danger"></span>
             </div>
         </div>
     </div>
 
-    <!-- Additional Information Section (Password-Protected) - Conditional Content -->
-    <!-- Medicines Section (Conditional) -->
-    <div id="medicinesSection" class="card mt-4" style="@(Model?.Typeassistance?.Contains("Medicine") == true ? "" : "display: none;")">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <span><i class="bi bi-shield-lock-fill me-2"></i>Medicine Details (Encrypted)</span>
-            <button type="button" class="btn btn-sm btn-primary"
-                    onclick="viewOtherAdditionalInfo()"
-                    title="Click to view encrypted information">
-                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
-            </button>
-        </div>
+    <!-- Conditional Sections -->
+    <!-- Medicines Section (Conditional) - SIMPLIFIED LIKE ORIGINAL FORM -->
+    <div id="medicinesSection" class="card mt-4" style="display: none;">
+        <div class="card-header">Medicine Details</div>
         <div class="card-body">
-            <div class="alert alert-info d-flex align-items-center" role="alert">
-                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
-                <div>
-                    <strong>This information is encrypted for security.</strong><br>
-                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
-                </div>
-            </div>
             <div class="row g-3">
                 <div class="col-lg-4 col-md-6">
                     <label class="form-label">Name of the Medicine</label>
-                    <input asp-for="MedicineName" type="text" class="form-control" placeholder="Enter medicine name">
+                    <input asp-for="MedicineName" type="text" class="form-control" placeholder="Enter medicine name" value="@ViewData["MedicineName"]">
                     <span asp-validation-for="MedicineName" class="text-danger"></span>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <label class="form-label">Quantity</label>
-                    <input asp-for="MedicineQuantity" type="text" class="form-control" placeholder="Enter quantity">
+                    <input asp-for="MedicineQuantity" type="text" class="form-control" placeholder="Enter quantity" value="@ViewData["MedicineQuantity"]">
                     <span asp-validation-for="MedicineQuantity" class="text-danger"></span>
                 </div>
                 <div class="col-lg-4 col-md-12">
                     <label class="form-label">Cost</label>
-                    <input asp-for="MedicineCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱500.00)">
+                    <input asp-for="MedicineCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱500.00)" value="@ViewData["MedicineCost"]">
                     <span asp-validation-for="MedicineCost" class="text-danger"></span>
                 </div>
             </div>
             <div class="row g-3 mt-2">
                 <div class="col-lg-6 col-md-12">
                     <label class="form-label">Prescribing Doctor/ Medical Practitioner</label>
-                    <input asp-for="PrescribingDoctor" type="text" class="form-control" placeholder="Enter doctor's name">
+                    <input asp-for="PrescribingDoctor" type="text" class="form-control" placeholder="Enter doctor's name" value="@ViewData["PrescribingDoctor"]">
                     <span asp-validation-for="PrescribingDoctor" class="text-danger"></span>
                 </div>
                 <div class="col-lg-6 col-md-12">
                     <label class="form-label">Contact Detail of the Prescribing Doctor</label>
-                    <input asp-for="DoctorContactDetail" type="text" class="form-control" placeholder="Enter contact number">
+                    <input asp-for="DoctorContactDetail" type="text" class="form-control" placeholder="Enter contact number" value="@ViewData["DoctorContactDetail"]">
                     <span asp-validation-for="DoctorContactDetail" class="text-danger"></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Laboratory Tests Section (Conditional) -->
-    <div id="laboratorySection" class="card mt-4" style="@(Model?.Typeassistance?.Contains("Laboratory") == true ? "" : "display: none;")">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <span><i class="bi bi-shield-lock-fill me-2"></i>Laboratory Test Details (Encrypted)</span>
-            <button type="button" class="btn btn-sm btn-primary"
-                    onclick="viewOtherAdditionalInfo()"
-                    title="Click to view encrypted information">
-                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
-            </button>
-        </div>
+    <!-- Laboratory Tests Section (Conditional) - SIMPLIFIED LIKE ORIGINAL FORM -->
+    <div id="laboratorySection" class="card mt-4" style="display: none;">
+        <div class="card-header">Laboratory Test Details</div>
         <div class="card-body">
-            <div class="alert alert-info d-flex align-items-center" role="alert">
-                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
-                <div>
-                    <strong>This information is encrypted for security.</strong><br>
-                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
-                </div>
-            </div>
             <div class="row g-3">
                 <div class="col-lg-6 col-md-12">
                     <label class="form-label">Laboratory or Diagnostic Center Name</label>
-                    <input asp-for="LaboratoryCenterName" type="text" class="form-control" placeholder="Enter laboratory name">
+                    <input asp-for="LaboratoryCenterName" type="text" class="form-control" placeholder="Enter laboratory name" value="@ViewData["LaboratoryCenterName"]">
                     <span asp-validation-for="LaboratoryCenterName" class="text-danger"></span>
                 </div>
                 <div class="col-lg-6 col-md-12">
                     <label class="form-label">Laboratory or Diagnostic Center Address</label>
-                    <input asp-for="LaboratoryCenterAddress" type="text" class="form-control" placeholder="Enter address">
+                    <input asp-for="LaboratoryCenterAddress" type="text" class="form-control" placeholder="Enter address" value="@ViewData["LaboratoryCenterAddress"]">
                     <span asp-validation-for="LaboratoryCenterAddress" class="text-danger"></span>
                 </div>
             </div>
             <div class="row g-3 mt-2">
                 <div class="col-lg-4 col-md-6">
                     <label class="form-label">Name of the Test</label>
-                    <input asp-for="TestName" type="text" class="form-control" placeholder="Enter test name">
+                    <input asp-for="TestName" type="text" class="form-control" placeholder="Enter test name" value="@ViewData["TestName"]">
                     <span asp-validation-for="TestName" class="text-danger"></span>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <label class="form-label">Cost</label>
-                    <input asp-for="TestCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱1,500.00)">
+                    <input asp-for="TestCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱1,500.00)" value="@ViewData["TestCost"]">
                     <span asp-validation-for="TestCost" class="text-danger"></span>
                 </div>
                 <div class="col-lg-4 col-md-12">
                     <label class="form-label">Other Information</label>
-                    <input asp-for="TestOtherInfo" type="text" class="form-control" placeholder="Enter other information">
+                    <input asp-for="TestOtherInfo" type="text" class="form-control" placeholder="Enter other information" value="@ViewData["TestOtherInfo"]">
                     <span asp-validation-for="TestOtherInfo" class="text-danger"></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Therapy Section (Conditional) -->
-    <div id="therapySection" class="card mt-4" style="@(Model?.Typeassistance?.Contains("Therapy") == true ? "" : "display: none;")">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <span><i class="bi bi-shield-lock-fill me-2"></i>Therapy/Rehabilitation Details (Encrypted)</span>
-            <button type="button" class="btn btn-sm btn-primary"
-                    onclick="viewOtherAdditionalInfo()"
-                    title="Click to view encrypted information">
-                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
-            </button>
-        </div>
+    <!-- Therapy Section (Conditional) - SIMPLIFIED LIKE ORIGINAL FORM -->
+    <div id="therapySection" class="card mt-4" style="display: none;">
+        <div class="card-header">Therapy/Rehabilitation Details</div>
         <div class="card-body">
-            <div class="alert alert-info d-flex align-items-center" role="alert">
-                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
-                <div>
-                    <strong>This information is encrypted for security.</strong><br>
-                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
-                </div>
-            </div>
             <div class="row g-3">
                 <div class="col-lg-6 col-md-12">
                     <label class="form-label">Therapy or Rehabilitation Facility Name</label>
-                    <input asp-for="TherapyFacilityName" type="text" class="form-control" placeholder="Enter facility name">
+                    <input asp-for="TherapyFacilityName" type="text" class="form-control" placeholder="Enter facility name" value="@ViewData["TherapyFacilityName"]">
                     <span asp-validation-for="TherapyFacilityName" class="text-danger"></span>
                 </div>
                 <div class="col-lg-6 col-md-12">
                     <label class="form-label">Facility Address</label>
-                    <input asp-for="TherapyFacilityAddress" type="text" class="form-control" placeholder="Enter facility address">
+                    <input asp-for="TherapyFacilityAddress" type="text" class="form-control" placeholder="Enter facility address" value="@ViewData["TherapyFacilityAddress"]">
                     <span asp-validation-for="TherapyFacilityAddress" class="text-danger"></span>
                 </div>
             </div>
             <div class="row g-3 mt-2">
                 <div class="col-lg-4 col-md-6">
                     <label class="form-label">Facility Contact Detail</label>
-                    <input asp-for="TherapyFacilityContact" type="text" class="form-control" placeholder="Enter contact number">
+                    <input asp-for="TherapyFacilityContact" type="text" class="form-control" placeholder="Enter contact number" value="@ViewData["TherapyFacilityContact"]">
                     <span asp-validation-for="TherapyFacilityContact" class="text-danger"></span>
                 </div>
                 <div class="col-lg-8 col-md-12">
                     <label class="form-label">Type or Name of Therapy or Rehabilitation Done</label>
-                    <input asp-for="TherapyType" type="text" class="form-control" placeholder="Enter therapy type">
+                    <input asp-for="TherapyType" type="text" class="form-control" placeholder="Enter therapy type" value="@ViewData["TherapyType"]">
                     <span asp-validation-for="TherapyType" class="text-danger"></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Medical Equipment/Apparatus Section (Conditional) -->
-    <div id="apparatusSection" class="card mt-4" style="@(Model?.Typeassistance?.Contains("Equipment") == true || Model?.Typeassistance?.Contains("Apparatus") == true ? "" : "display: none;")">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <span><i class="bi bi-shield-lock-fill me-2"></i>Medical Equipment/Apparatus Details (Encrypted)</span>
-            <button type="button" class="btn btn-sm btn-primary"
-                    onclick="viewOtherAdditionalInfo()"
-                    title="Click to view encrypted information">
-                <i class="bi bi-eye-fill me-2"></i>View Encrypted Data
-            </button>
-        </div>
+    <!-- Medical Equipment/Apparatus Section (Conditional) - SIMPLIFIED LIKE ORIGINAL FORM -->
+    <div id="apparatusSection" class="card mt-4" style="display: none;">
+        <div class="card-header">Medical Equipment/Apparatus Details</div>
         <div class="card-body">
-            <div class="alert alert-info d-flex align-items-center" role="alert">
-                <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
-                <div>
-                    <strong>This information is encrypted for security.</strong><br>
-                    Click the "View Encrypted Data" button above and enter your password to view and edit the details.
-                </div>
-            </div>
             <div class="row g-3">
                 <div class="col-lg-6 col-md-12">
                     <label class="form-label">Equipment Name</label>
-                    <input asp-for="EquipmentName" type="text" class="form-control" placeholder="Enter equipment name">
+                    <input asp-for="EquipmentName" type="text" class="form-control" placeholder="Enter equipment name" value="@ViewData["EquipmentName"]">
                     <span asp-validation-for="EquipmentName" class="text-danger"></span>
                 </div>
                 <div class="col-lg-6 col-md-12">
                     <label class="form-label">Brand (if applicable)</label>
-                    <input asp-for="EquipmentBrand" type="text" class="form-control" placeholder="Enter brand name">
+                    <input asp-for="EquipmentBrand" type="text" class="form-control" placeholder="Enter brand name" value="@ViewData["EquipmentBrand"]">
                     <span asp-validation-for="EquipmentBrand" class="text-danger"></span>
                 </div>
             </div>
             <div class="row g-3 mt-2">
                 <div class="col-lg-4 col-md-6">
                     <label class="form-label">Category/ Type</label>
-                    <input asp-for="EquipmentCategory" type="text" class="form-control" placeholder="Enter category or type">
+                    <input asp-for="EquipmentCategory" type="text" class="form-control" placeholder="Enter category or type" value="@ViewData["EquipmentCategory"]">
                     <span asp-validation-for="EquipmentCategory" class="text-danger"></span>
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <label class="form-label">Quantity Needed</label>
-                    <input asp-for="EquipmentQuantity" type="number" class="form-control" placeholder="Enter quantity" min="1">
+                    <input asp-for="EquipmentQuantity" type="number" class="form-control" placeholder="Enter quantity" min="1" value="@ViewData["EquipmentQuantity"]">
                     <span asp-validation-for="EquipmentQuantity" class="text-danger"></span>
                 </div>
                 <div class="col-lg-4 col-md-12">
                     <label class="form-label">Cost</label>
-                    <input asp-for="EquipmentCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱5,000.00)">
+                    <input asp-for="EquipmentCost" type="text" class="form-control" placeholder="Enter cost (e.g., ₱5,000.00)" value="@ViewData["EquipmentCost"]">
                     <span asp-validation-for="EquipmentCost" class="text-danger"></span>
                 </div>
             </div>
@@ -552,29 +477,29 @@
         <div class="card-header">Upload Required Documents</div>
         <div class="card-body">
             <div class="mb-3">
-                <label>Doctor's Prescription/Receipt</label>
+                <label>Other Assistance Document</label>
 
-                @if (ViewData["MedicalCertificate"] != null)
+                @if (ViewData["OtherAssistanceDocument"] != null)
                 {
                     <div class="current-file">
-                        <strong>Current Document:</strong> @ViewData["MedicalCertificate"]
-                        @if (ViewData["MedicalCertificateBase64"] != null)
+                        <strong>Current Document:</strong> @ViewData["OtherAssistanceDocument"]
+                        @if (ViewData["OtherAssistanceDocumentBase64"] != null)
                         {
                             <div class="mt-2">
-                                @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                                @if (ViewData["IsOtherAssistanceDocumentPdf"] != null && (bool)ViewData["IsOtherAssistanceDocumentPdf"])
                                 {
-                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["OtherAssistanceDocument"]', 'otherassistance', 'Other Assistance Document')">
                                         <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
                                         <div class="pdf-info">
-                                            <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                            <span class="pdf-filename">@ViewData["OtherAssistanceDocument"]</span>
                                             <span class="pdf-label">Click to view PDF</span>
                                         </div>
                                     </div>
                                 }
                                 else
                                 {
-                                    <div class="document-preview-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
-                                        <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="document-preview" />
+                                    <div class="document-preview-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["OtherAssistanceDocumentBase64"]')">
+                                        <img src="data:image/jpeg;base64,@ViewData["OtherAssistanceDocumentBase64"]" alt="Other Assistance Document" class="document-preview" />
                                     </div>
                                 }
                             </div>
@@ -582,24 +507,24 @@
                     </div>
                 }
 
-                <div class="upload-box" onclick="document.getElementById('medicalCertificate').click()">
+                <div class="upload-box" onclick="document.getElementById('otherDocument').click()">
                     <div class="upload-icon">
                         <i class="fas fa-file-medical"></i>
                     </div>
-                    <p id="uploadTextMedical">Click to upload new document</p>
-                    <p id="fileNameMedical" class="text-success fw-bold mt-2"></p>
+                    <p id="uploadTextOther">Click to upload new document</p>
+                    <p id="fileNameOther" class="text-success fw-bold mt-2"></p>
                     <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
                 </div>
 
                 <input asp-for="OtherAssistanceDocument"
                        type="file"
-                       id="medicalCertificate"
+                       id="otherDocument"
                        class="d-none"
                        accept=".png,.jpg,.jpeg,.pdf"
                        onchange="handleFileSelect(this)">
                 <span asp-validation-for="OtherAssistanceDocument"></span>
 
-                <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
+                <img id="otherDocumentPreview" class="img-preview mt-2" alt="Other Assistance Document Preview">
                 <div id="fileStatus" class="file-status"></div>
                 <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
             </div>
@@ -633,23 +558,6 @@
 
         .modal.show .modal-dialog {
             transform: scale(1);
-        }
-
-        .form-check {
-            margin-left: 20px;
-        }
-
-        .card-body .row {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .col-md-6 {
-            padding-left: 30px;
-        }
-
-        .form-check {
-            margin-bottom: 10px;
         }
 
         /* PDF Viewer Modal Styles */
@@ -905,6 +813,79 @@
             object-fit: contain;
             display: none;
         }
+
+        /* Form Check Styling */
+        .form-check {
+            padding-left: 0;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-check-input {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-right: 0.4rem;
+            margin-top: 0;
+        }
+
+        .form-check-label {
+            cursor: pointer;
+        }
+
+        /* Upload Box Styles */
+        .upload-box {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #fafafa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+            .upload-box:hover {
+                border-color: var(--primary-color);
+                background-color: var(--primary-light);
+            }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        /* Card styling for Type of Assistance Requested */
+        .card-header {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            color: #495057;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
     </style>
 }
 
@@ -934,6 +915,267 @@
             window.location.href = '/Home';
         }
 
+        // Main initialization function
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeConditionalSections();
+            initializeContactNumber();
+            initializePhilHealth();
+            initializeFileValidation();
+
+            // Check for successful form submission
+            checkFormSubmission();
+        });
+
+        // Initialize conditional sections
+        function initializeConditionalSections() {
+            const assistanceRadios = document.querySelectorAll('.assistance-type');
+            const assistanceReflection = document.getElementById('assistanceReflection');
+
+            // Get conditional sections
+            const medicinesSection = document.getElementById('medicinesSection');
+            const laboratorySection = document.getElementById('laboratorySection');
+            const therapySection = document.getElementById('therapySection');
+            const apparatusSection = document.getElementById('apparatusSection');
+
+            // Function to toggle sections based on selection
+            function toggleSections() {
+                const selectedValue = document.querySelector('input[name="AssistanceType"]:checked')?.value || '';
+
+                // Hide all sections first
+                if (medicinesSection) medicinesSection.style.display = 'none';
+                if (laboratorySection) laboratorySection.style.display = 'none';
+                if (therapySection) therapySection.style.display = 'none';
+                if (apparatusSection) apparatusSection.style.display = 'none';
+
+                // Show the appropriate section
+                if (selectedValue.includes('Medicine')) {
+                    if (medicinesSection) medicinesSection.style.display = 'block';
+                } else if (selectedValue.includes('Laboratory')) {
+                    if (laboratorySection) laboratorySection.style.display = 'block';
+                } else if (selectedValue.includes('Therapy')) {
+                    if (therapySection) therapySection.style.display = 'block';
+                } else if (selectedValue.includes('Equipment') || selectedValue.includes('Apparatus')) {
+                    if (apparatusSection) apparatusSection.style.display = 'block';
+                }
+
+                // Update reflection field
+                if (assistanceReflection) {
+                    assistanceReflection.value = selectedValue;
+                }
+            }
+
+            // Add event listeners to all radio buttons
+            assistanceRadios.forEach(radio => {
+                radio.addEventListener('change', toggleSections);
+            });
+
+            // Initialize based on current selection
+            const currentSelection = document.querySelector('input[name="AssistanceType"]:checked');
+            if (currentSelection) {
+                toggleSections();
+            } else {
+                // If no selection, check the reflection field for existing value
+                const currentValue = assistanceReflection?.value;
+                if (currentValue) {
+                    // Find and check the appropriate radio button
+                    assistanceRadios.forEach(radio => {
+                        if (currentValue.includes(radio.value) ||
+                            (radio.value.includes(currentValue))) {
+                            radio.checked = true;
+                        }
+                    });
+                    toggleSections();
+                }
+            }
+        }
+
+        // Contact Number Validation
+        function initializeContactNumber() {
+            const contactNoInput = document.getElementById('contactNoInput');
+            if (!contactNoInput) return;
+
+            contactNoInput.addEventListener('input', function(e) {
+                let value = this.value.replace(/\D/g, '');
+                if (value.length > 11) {
+                    value = value.substring(0, 11);
+                }
+                // Format for display
+                if (value.length > 0) {
+                    if (value.startsWith('0') && value.length <= 11) {
+                        // Mobile format: 0912-345-6789
+                        if (value.length > 3) {
+                            value = value.substring(0, 4) + '-' + value.substring(4);
+                        }
+                        if (value.length > 8) {
+                            value = value.substring(0, 8) + '-' + value.substring(8);
+                        }
+                    } else if (value.startsWith('02') && value.length <= 10) {
+                        // Landline format: 02-123-4567
+                        if (value.length > 2) {
+                            value = value.substring(0, 2) + '-' + value.substring(2);
+                        }
+                        if (value.length > 6) {
+                            value = value.substring(0, 6) + '-' + value.substring(6);
+                        }
+                    }
+                }
+                this.value = value;
+            });
+        }
+
+        // PhilHealth Number Handling
+        function initializePhilHealth() {
+            const philHealthSelect = document.getElementById('philHealthSelect');
+            const philHealthNo = document.getElementById('philHealthNo');
+
+            function togglePhilHealthNo() {
+                if (philHealthSelect.value === "Without PhilHealth") {
+                    if (philHealthNo) {
+                        philHealthNo.value = "";
+                        philHealthNo.disabled = true;
+                        philHealthNo.classList.add('readonly-field');
+                    }
+                } else {
+                    if (philHealthNo) {
+                        philHealthNo.disabled = false;
+                        philHealthNo.classList.remove('readonly-field');
+                    }
+                }
+            }
+
+            if (philHealthSelect) {
+                // Execute on page load
+                togglePhilHealthNo();
+
+                // Execute on change
+                philHealthSelect.addEventListener('change', togglePhilHealthNo);
+            }
+        }
+
+        // File Validation
+        function initializeFileValidation() {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+
+            fileInputs.forEach(input => {
+                input.addEventListener('change', function(e) {
+                    validateFile(this);
+                });
+            });
+
+            function validateFile(input) {
+                const file = input.files[0];
+                const fileNameDisplay = input.id === 'otherDocument' ?
+                    document.getElementById('fileNameOther') :
+                    document.getElementById('fileNameMedical');
+                const uploadText = input.id === 'otherDocument' ?
+                    document.getElementById('uploadTextOther') :
+                    document.getElementById('uploadTextMedical');
+                const preview = input.id === 'otherDocument' ?
+                    document.getElementById('otherDocumentPreview') :
+                    document.getElementById('receiptPreview');
+                const uploadBox = input.previousElementSibling;
+
+                if (file) {
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                    const maxSize = 10 * 1024 * 1024;
+
+                    if (!validTypes.includes(file.type)) {
+                        alert('Invalid file type. Please upload only JPG, PNG, or PDF files.');
+                        input.value = '';
+                        return;
+                    }
+
+                    if (file.size > maxSize) {
+                        alert('File size exceeds 10MB limit. Please choose a smaller file.');
+                        input.value = '';
+                        return;
+                    }
+
+                    if (fileNameDisplay) {
+                        fileNameDisplay.textContent = file.name;
+                    }
+
+                    if (uploadText) {
+                        uploadText.textContent = 'Click to change document';
+                    }
+
+                    if (uploadBox) {
+                        uploadBox.style.borderColor = "var(--success-color)";
+                        uploadBox.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
+                    }
+
+                    if (file.type.startsWith("image/") && preview) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                            preview.style.display = "block";
+                        };
+                        reader.readAsDataURL(file);
+                    } else if (preview) {
+                        preview.style.display = "none";
+                    }
+                } else {
+                    if (preview) {
+                        preview.style.display = "none";
+                    }
+                    if (fileNameDisplay) {
+                        fileNameDisplay.textContent = '';
+                    }
+                    if (uploadText) {
+                        uploadText.textContent = input.id === 'otherDocument' ?
+                            'Click to upload new document' :
+                            'Click to upload new document';
+                    }
+                    if (uploadBox) {
+                        uploadBox.style.borderColor = "#ddd";
+                        uploadBox.style.backgroundColor = "#fafafa";
+                    }
+                }
+            }
+        }
+
+        // File Select Handler
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            const fileNameDisplay = input.id === 'otherDocument' ?
+                document.getElementById('fileNameOther') :
+                document.getElementById('fileNameMedical');
+            const uploadText = input.id === 'otherDocument' ?
+                document.getElementById('uploadTextOther') :
+                document.getElementById('uploadTextMedical');
+            const preview = input.id === 'otherDocument' ?
+                document.getElementById('otherDocumentPreview') :
+                document.getElementById('receiptPreview');
+            const uploadBox = input.previousElementSibling;
+
+            if (file) {
+                if (fileNameDisplay) {
+                    fileNameDisplay.textContent = file.name;
+                }
+
+                if (uploadText) {
+                    uploadText.textContent = 'Click to change document';
+                }
+
+                if (uploadBox) {
+                    uploadBox.style.borderColor = "var(--success-color)";
+                    uploadBox.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
+                }
+
+                if (file.type.startsWith("image/") && preview) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                    };
+                    reader.readAsDataURL(file);
+                } else if (preview) {
+                    preview.style.display = "none";
+                }
+            }
+        }
+
+        // Form Submission Success
         function checkFormSubmission() {
             @if (ViewBag.Success != null && ViewBag.Success == true)
             {
@@ -945,7 +1187,7 @@
             }
         }
 
-        // PDF Viewer Variables
+        // PDF Viewer Variables and Functions
         let currentPDF = null;
         let currentPage = 1;
         let totalPages = 1;
@@ -1031,7 +1273,7 @@
                 zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
 
             } catch (error) {
-                                const loading = document.getElementById('pdfLoading');
+                const loading = document.getElementById('pdfLoading');
                 const errorDiv = document.getElementById('pdfError');
                 loading.style.display = 'none';
                 errorDiv.style.display = 'block';
@@ -1062,7 +1304,8 @@
                 currentPageSpan.textContent = pageNum;
 
             } catch (error) {
-                            }
+                console.error('Error rendering PDF page:', error);
+            }
         }
 
         function nextPage() {
@@ -1113,66 +1356,10 @@
             }
         }
 
-        function handleFileSelect(input) {
-            const file = input.files[0];
-            const fileNameDisplay = document.getElementById('fileNameMedical');
-            const uploadText = document.getElementById('uploadTextMedical');
-            const fileStatus = document.getElementById('fileStatus');
-            const preview = document.getElementById('receiptPreview');
-            const uploadBox = input.previousElementSibling;
+        // REMOVED: View Additional Information (Password-Protected) function
+        // Since we removed the encrypted feature, this function is no longer needed
 
-            if (file) {
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-                const maxSize = 10 * 1024 * 1024;
-
-                if (!validTypes.includes(file.type)) {
-                    fileStatus.innerHTML = '<span class="file-error">Invalid file type. Please upload JPG, PNG, or PDF files only.</span>';
-                    input.value = '';
-                    return;
-                }
-
-                if (file.size > maxSize) {
-                    fileStatus.innerHTML = '<span class="file-error">File size too large. Maximum size is 10MB.</span>';
-                    input.value = '';
-                    return;
-                }
-
-                fileNameDisplay.textContent = file.name;
-                fileStatus.innerHTML = '<span class="file-success">File selected: ' + file.name + '</span>';
-
-                if (uploadText) {
-                    uploadText.textContent = 'Click to change document';
-                }
-
-                if (uploadBox) {
-                    uploadBox.style.borderColor = "var(--success-color)";
-                    uploadBox.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
-                }
-
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = "block";
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    preview.style.display = "none";
-                }
-            } else {
-                preview.style.display = "none";
-                fileNameDisplay.textContent = '';
-                fileStatus.innerHTML = '';
-                if (uploadText) {
-                    uploadText.textContent = 'Click to upload new document';
-                }
-                if (uploadBox) {
-                    uploadBox.style.borderColor = "#ddd";
-                    uploadBox.style.backgroundColor = "#fafafa";
-                }
-            }
-        }
-
+        // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.getElementById("zoomModal").style.display = "none";
@@ -1214,113 +1401,7 @@
                 closePDFViewer();
             }
         }
-
-        // View Additional Information (Password-Protected)
-        function viewOtherAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const assistanceType = '@ViewData["Typeassistance"]';
-
-            let fieldNames = [];
-            let fieldLabels = [];
-            let fieldValues = [];
-
-            // Conditional fields based on assistance type
-            if (assistanceType === 'Medicine Assistance') {
-                fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
-                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
-                fieldValues = [
-                    '@ViewData["MedicineName"]',
-                    '@ViewData["MedicineQuantity"]',
-                    '@ViewData["MedicineCost"]',
-                    '@ViewData["PrescribingDoctor"]',
-                    '@ViewData["DoctorContactDetail"]'
-                ];
-            } else if (assistanceType === 'Laboratory') {
-                fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
-                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
-                fieldValues = [
-                    '@ViewData["LaboratoryCenterName"]',
-                    '@ViewData["LaboratoryCenterAddress"]',
-                    '@ViewData["TestName"]',
-                    '@ViewData["TestCost"]',
-                    '@ViewData["TestOtherInfo"]'
-                ];
-            } else if (assistanceType === 'Therapy') {
-                fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
-                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
-                fieldValues = [
-                    '@ViewData["TherapyFacilityName"]',
-                    '@ViewData["TherapyFacilityAddress"]',
-                    '@ViewData["TherapyFacilityContact"]',
-                    '@ViewData["TherapyType"]'
-                ];
-            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
-                fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
-                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
-                fieldValues = [
-                    '@ViewData["EquipmentName"]',
-                    '@ViewData["EquipmentBrand"]',
-                    '@ViewData["EquipmentCategory"]',
-                    '@ViewData["EquipmentQuantity"]',
-                    '@ViewData["EquipmentCost"]'
-                ];
-            }
-
-            const encryptedFields = {
-                names: fieldNames,
-                labels: fieldLabels,
-                values: fieldValues
-            };
-
-            openViewAdditionalInfoModal('Other', formId, encryptedFields);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            checkFormSubmission();
-            
-            // Toggle conditional sections based on assistance type selection
-            const assistanceRadios = document.querySelectorAll('input[name="AssistanceType"]');
-            const medicinesSection = document.getElementById('medicinesSection');
-            const laboratorySection = document.getElementById('laboratorySection');
-            const therapySection = document.getElementById('therapySection');
-            const apparatusSection = document.getElementById('apparatusSection');
-            const assistanceReflection = document.getElementById('assistanceReflection');
-            
-            function toggleSections() {
-                const selectedValue = document.querySelector('input[name="AssistanceType"]:checked')?.value || '';
-                
-                // Hide all sections first
-                if (medicinesSection) medicinesSection.style.display = 'none';
-                if (laboratorySection) laboratorySection.style.display = 'none';
-                if (therapySection) therapySection.style.display = 'none';
-                if (apparatusSection) apparatusSection.style.display = 'none';
-                
-                // Show the appropriate section
-                if (selectedValue.includes('Medicine')) {
-                    if (medicinesSection) medicinesSection.style.display = 'block';
-                } else if (selectedValue.includes('Laboratory')) {
-                    if (laboratorySection) laboratorySection.style.display = 'block';
-                } else if (selectedValue.includes('Therapy')) {
-                    if (therapySection) therapySection.style.display = 'block';
-                } else if (selectedValue.includes('Equipment') || selectedValue.includes('Apparatus')) {
-                    if (apparatusSection) apparatusSection.style.display = 'block';
-                }
-                
-                // Update reflection field
-                if (assistanceReflection) {
-                    assistanceReflection.value = selectedValue;
-                }
-            }
-            
-            // Add event listeners to all radio buttons
-            assistanceRadios.forEach(radio => {
-                radio.addEventListener('change', toggleSections);
-            });
-            
-            // Initialize on page load
-            toggleSections();
-        });
     </script>
 }
 
-@Html.Partial("_ViewEncryptedDataModal")
+<!-- REMOVED: @Html.Partial("_ViewEncryptedDataModal") -->
