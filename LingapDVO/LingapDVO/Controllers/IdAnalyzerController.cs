@@ -312,122 +312,124 @@ namespace LingapDVO.Controllers
         /// API Reference: https://developer.idanalyzer.com/reference/post-scan
         /// </summary>
         [HttpPost("scan")]
-        public async Task<IActionResult> ScanId([FromForm] IFormFile? documentFile, [FromForm] IFormFile? backFile, [FromForm] string? selfieFileName, [FromForm] int? userId)
+        public async Task<IActionResult> ScanId([FromBody] IdAnalyzerScanRequest request)
         {
             try
             {
                 _logger.LogInformation("═══════════════════════════════════════════════════════════════");
-                _logger.LogInformation("📥 SCAN REQUEST RECEIVED");
+                _logger.LogInformation("📥 SCAN REQUEST RECEIVED (JSON with Base64)");
                 _logger.LogInformation("═══════════════════════════════════════════════════════════════");
-                _logger.LogInformation("   Front ID File: {FrontId}", documentFile?.FileName ?? "NULL");
-                _logger.LogInformation("   Back ID File: {BackId}", backFile?.FileName ?? "NULL");
-                _logger.LogInformation("   Selfie Filename: {Selfie}", selfieFileName ?? "NULL");
+                _logger.LogInformation("   Front ID (Base64): {HasFront} ({Length} chars)", !string.IsNullOrEmpty(request.DocumentImage), request.DocumentImage?.Length ?? 0);
+                _logger.LogInformation("   Back ID (Base64): {HasBack} ({Length} chars)", !string.IsNullOrEmpty(request.BackImage), request.BackImage?.Length ?? 0);
+                _logger.LogInformation("   Selfie (Base64): {HasFace} ({Length} chars)", !string.IsNullOrEmpty(request.FaceImage), request.FaceImage?.Length ?? 0);
                 _logger.LogInformation("═══════════════════════════════════════════════════════════════");
 
                 // ═══════════════════════════════════════════════════════════════
-                // STEP 1: Read uploaded files and convert to base64
-                // CRITICAL: Preserve 100% of original file data including EXIF
+                // STEP 1: Validate and clean Base64 strings
+                // Remove data URI prefix if present (e.g., "data:image/jpeg;base64,")
                 // ═══════════════════════════════════════════════════════════════
-                string? documentBase64 = null;
-                byte[]? frontIdBytes = null;
-
-                if (documentFile != null && documentFile.Length > 0)
+                if (string.IsNullOrEmpty(request.DocumentImage))
                 {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await documentFile.CopyToAsync(memoryStream);
-                        frontIdBytes = memoryStream.ToArray();
-                        documentBase64 = Convert.ToBase64String(frontIdBytes);
-                    }
-
-                    _logger.LogInformation("✅ Front ID received:");
-                    _logger.LogInformation("   - Filename: {FileName}", documentFile.FileName);
-                    _logger.LogInformation("   - Size: {Size} bytes ({KB} KB)", frontIdBytes.Length, Math.Round(frontIdBytes.Length / 1024.0, 2));
-                    _logger.LogInformation("   - 🔐 Original bytes: PRESERVED from upload");
-                    _logger.LogInformation("   - 📝 EXIF metadata: INTACT");
-                }
-                else
-                {
-                    return BadRequest(new { success = false, error = "Front ID file is required" });
+                    return BadRequest(new { success = false, error = "Front ID is required" });
                 }
 
-                // Read Back ID (REQUIRED)
-                string? backBase64 = null;
-                byte[]? backIdBytes = null;
-
-                if (backFile != null && backFile.Length > 0)
+                if (string.IsNullOrEmpty(request.BackImage))
                 {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await backFile.CopyToAsync(memoryStream);
-                        backIdBytes = memoryStream.ToArray();
-                        backBase64 = Convert.ToBase64String(backIdBytes);
-                    }
-
-                    _logger.LogInformation("✅ Back ID received:");
-                    _logger.LogInformation("   - Filename: {FileName}", backFile.FileName);
-                    _logger.LogInformation("   - Size: {Size} bytes ({KB} KB)", backIdBytes.Length, Math.Round(backIdBytes.Length / 1024.0, 2));
-                    _logger.LogInformation("   - 🔐 Original bytes: PRESERVED from upload");
-                    _logger.LogInformation("   - 📝 EXIF metadata: INTACT");
-                }
-                else
-                {
-                    return BadRequest(new { success = false, error = "Back ID file is required" });
+                    return BadRequest(new { success = false, error = "Back ID is required" });
                 }
 
-                // Read Selfie from UsersImg folder (if filename provided)
-                string? faceBase64 = null;
-                byte[]? selfieBytes = null;
-
-                if (!string.IsNullOrEmpty(selfieFileName))
+                if (string.IsNullOrEmpty(request.FaceImage))
                 {
-                    var usersImgPath = Path.Combine(_environment.WebRootPath, "UsersImg");
-                    var selfiePath = Path.Combine(usersImgPath, selfieFileName);
-
-                    if (System.IO.File.Exists(selfiePath))
-                    {
-                        selfieBytes = await System.IO.File.ReadAllBytesAsync(selfiePath);
-                        faceBase64 = Convert.ToBase64String(selfieBytes);
-
-                        _logger.LogInformation("✅ Selfie loaded from disk:");
-                        _logger.LogInformation("   - File: {FileName}", selfieFileName);
-                        _logger.LogInformation("   - Size: {Size} bytes ({KB} KB)", selfieBytes.Length, Math.Round(selfieBytes.Length / 1024.0, 2));
-                    }
-                    else
-                    {
-                        _logger.LogWarning("⚠️ Selfie file not found: {Path}", selfiePath);
-                    }
+                    return BadRequest(new { success = false, error = "Selfie is required" });
                 }
+
+                // Clean Base64 strings (remove data URI prefix)
+                var documentBase64 = RemoveDataUrlPrefix(request.DocumentImage);
+                var backBase64 = RemoveDataUrlPrefix(request.BackImage);
+                var faceBase64 = RemoveDataUrlPrefix(request.FaceImage);
+
+                _logger.LogInformation("✅ Base64 strings cleaned and validated");
+                _logger.LogInformation("   - Document: {Length} chars", documentBase64.Length);
+                _logger.LogInformation("   - Back: {Length} chars", backBase64.Length);
+                _logger.LogInformation("   - Face: {Length} chars", faceBase64.Length);
 
                 // ═══════════════════════════════════════════════════════════════
-                // STEP 2: Send UNENCRYPTED data to ID Analyzer API
-                // IMPORTANT: ID Analyzer needs actual image data, not encrypted data
-                // The API must be able to analyze the actual images
+                // STEP 2: Send Base64 data directly to ID Analyzer API
+                // Images are NOT saved to disk yet - only sent to API
+                // Files will be saved ONLY if API returns "accept" decision
                 // ═══════════════════════════════════════════════════════════════
                 _logger.LogInformation("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-                _logger.LogInformation("📤 Sending UNENCRYPTED data to ID Analyzer API:");
-                _logger.LogInformation("   - Document: {HasDoc} ({DocLen} chars)", !string.IsNullOrEmpty(documentBase64), documentBase64?.Length ?? 0);
-                _logger.LogInformation("   - Face: {HasFace} ({FaceLen} chars)", !string.IsNullOrEmpty(faceBase64), faceBase64?.Length ?? 0);
-                _logger.LogInformation("   - Back: {HasBack} ({BackLen} chars)", !string.IsNullOrEmpty(backBase64), backBase64?.Length ?? 0);
-                _logger.LogInformation("   - ⚠️ NOTE: Images sent as-is (unencrypted) for API analysis");
+                _logger.LogInformation("📤 Sending Base64 data to ID Analyzer API (no disk save yet)");
+                _logger.LogInformation("   - Document: {DocLen} chars", documentBase64.Length);
+                _logger.LogInformation("   - Face: {FaceLen} chars", faceBase64.Length);
+                _logger.LogInformation("   - Back: {BackLen} chars", backBase64.Length);
+                _logger.LogInformation("   - 💾 Files saved to disk: NO (pending API decision)");
                 _logger.LogInformation("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-                var result = await _verificationService.ScanIdAsync(documentBase64!, faceBase64, backBase64);
+                var result = await _verificationService.ScanIdAsync(documentBase64, faceBase64, backBase64);
 
                 // Concatenate Address 1 and Address 2 into full address (needed for database storage)
                 var fullAddress = string.Join(", ", new[] { result.Address, result.Address2 }
                     .Where(s => !string.IsNullOrWhiteSpace(s)));
 
                 // ═══════════════════════════════════════════════════════════════
-                // STEP 4: ONLY if decision = "accept" → Save files and data to storage
-                // This ensures only verified/accepted files and data are stored permanently
+                // STEP 3: ONLY if decision = "accept" → Save files to disk
+                // This ensures only verified/accepted files are stored permanently
                 // ═══════════════════════════════════════════════════════════════
-                // REFACTORED: Do NOT automatically save to database
-                // The scan endpoint now ONLY returns extracted data for user review
-                // Database save happens later when user clicks "Verify Account" button
-                _logger.LogInformation("✅ API Decision: {Decision} - Data extracted successfully", result.Decision ?? "UNKNOWN");
-                _logger.LogInformation("   ⚠️ NOTE: Files and data NOT saved yet - waiting for user confirmation");
-                _logger.LogInformation("   → User must review data and click 'Verify Account' to complete verification");
+                var decision = (result.Decision ?? "").ToLower();
+                _logger.LogInformation("✅ API Decision: {Decision}", result.Decision ?? "UNKNOWN");
+
+                if (decision == "accept" && result.Success)
+                {
+                    _logger.LogInformation("💾 Decision is 'accept' - Saving files to disk...");
+
+                    try
+                    {
+                        // Convert Base64 back to bytes for saving
+                        var frontIdBytes = Convert.FromBase64String(documentBase64);
+                        var backIdBytes = Convert.FromBase64String(backBase64);
+                        var selfieBytes = Convert.FromBase64String(faceBase64);
+
+                        // Create directories if they don't exist
+                        var validImgPath = Path.Combine(_environment.WebRootPath, "Validimg");
+                        var usersImgPath = Path.Combine(_environment.WebRootPath, "UsersImg");
+                        Directory.CreateDirectory(validImgPath);
+                        Directory.CreateDirectory(usersImgPath);
+
+                        // Generate unique filenames
+                        var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                        var guid = Guid.NewGuid().ToString("N").Substring(0, 8);
+
+                        var frontIdFileName = $"front_id_{guid}_{timestamp}.jpg";
+                        var backIdFileName = $"back_id_{guid}_{timestamp}.jpg";
+                        var selfieFileName = $"selfie_{guid}_{timestamp}.jpg";
+
+                        var frontIdPath = Path.Combine(validImgPath, frontIdFileName);
+                        var backIdPath = Path.Combine(validImgPath, backIdFileName);
+                        var selfiePath = Path.Combine(usersImgPath, selfieFileName);
+
+                        // Save files
+                        await System.IO.File.WriteAllBytesAsync(frontIdPath, frontIdBytes);
+                        await System.IO.File.WriteAllBytesAsync(backIdPath, backIdBytes);
+                        await System.IO.File.WriteAllBytesAsync(selfiePath, selfieBytes);
+
+                        _logger.LogInformation("✅ Files saved successfully:");
+                        _logger.LogInformation("   - Front ID: {FileName} ({Size} KB)", frontIdFileName, Math.Round(frontIdBytes.Length / 1024.0, 2));
+                        _logger.LogInformation("   - Back ID: {FileName} ({Size} KB)", backIdFileName, Math.Round(backIdBytes.Length / 1024.0, 2));
+                        _logger.LogInformation("   - Selfie: {FileName} ({Size} KB)", selfieFileName, Math.Round(selfieBytes.Length / 1024.0, 2));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Error saving files to disk");
+                        // Continue execution - file save error should not fail the entire verification
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("⚠️ Files NOT saved to disk - Decision: {Decision}, Success: {Success}", result.Decision, result.Success);
+                }
+
+                _logger.LogInformation("   ⚠️ NOTE: Database save happens when user clicks 'Verify Account'");
 
                 if (!result.Success)
                 {
@@ -668,10 +670,9 @@ namespace LingapDVO.Controllers
     /// </summary>
     public class IdAnalyzerScanRequest
     {
-        public string DocumentImage { get; set; } = string.Empty;
-        public string? FaceImage { get; set; }          // Deprecated: Use SelfieFileName instead
-        public string? SelfieFileName { get; set; }     // NEW: Filename of stored selfie in /wwwroot/UsersImg
-        public string? BackImage { get; set; }
+        public string DocumentImage { get; set; } = string.Empty;  // Front ID as Base64
+        public string? BackImage { get; set; }                      // Back ID as Base64
+        public string? FaceImage { get; set; }                      // Selfie as Base64
     }
 
     /// <summary>

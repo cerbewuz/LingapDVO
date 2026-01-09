@@ -255,31 +255,39 @@
                                 </div>
                             </div>
                         </div>
-
+                        <br />
                         <!-- Address Section -->
                         <div class="space-y-6">
                             <div class="flex items-center gap-3 mb-2">
                                 <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
                                     <i class="fas fa-home text-lg text-purple-500"></i>
+                                
                                 </div>
                                 <h2 class="text-2xl font-bold text-gray-800">Address Information</h2>
                             </div>
 
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Address</label>
-                                    <input asp-for="BlkLotStreet" type="text" id="address"
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Block/Lot/Street</label>
+                                    <input asp-for="BlkLotStreet" type="text" id="blklotstreet"
                                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
-                                           placeholder="Enter complete address (Block/Lot/Street, Subdivision/Village)" required>
+                                           placeholder="e.g., Block 5 Lot 12 Main Street" required>
                                     <span asp-validation-for="BlkLotStreet" class="text-red-500 text-sm mt-1"></span>
-                                    <p class="text-xs text-gray-500 mt-1">This field will be auto-populated from your ID (Address 1 + Address 2)</p>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Subdivision/Village</label>
+                                    <input asp-for="SubVill" type="text" id="subdivision"
+                                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300"
+                                           placeholder="Enter Subdivision or Village name">
+                                    <span asp-validation-for="SubVill" class="text-red-500 text-sm mt-1"></span>
+                                </div>
+
+                                <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Barangay</label>
-                                    <select asp-for="Barangay" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
+                                    <select asp-for="Barangay" id="barangay" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
                                         <option value="" disabled selected>--Select Barangay--</option>
                                         <option value="Acacia">Acacia</option>
                                         <option value="Agdao">Agdao</option>
@@ -399,25 +407,6 @@
                                     </select>
                                     <span asp-validation-for="Barangay" class="text-red-500 text-sm mt-1"></span>
                                 </div>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">District</label>
-                                    <select asp-for="District" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300" required>
-                                        <option value="" disabled selected>--Select district--</option>
-                                        <option value="1">District 1</option>
-                                        <option value="2">District 2</option>
-                                        <option value="3">District 3</option>
-                                        <option value="4">District 4</option>
-                                        <option value="5">District 5</option>
-                                        <option value="6">District 6</option>
-                                        <option value="7">District 7</option>
-                                        <option value="8">District 8</option>
-                                        <option value="9">District 9</option>
-                                        <option value="10">District 10</option>
-                                        <option value="11">District 11</option>
-                                    </select>
-                                    <span asp-validation-for="District" class="text-red-500 text-sm mt-1"></span>
-                                </div>
                             </div>
                         </div>
 
@@ -440,7 +429,7 @@
 
                         <!-- Tab 1 Navigation -->
                         <div class="flex justify-end pt-6">
-                            <button type="button" onclick="WizardNav.goToTab(2)" class="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                            <button type="button" id="tab1-next-btn" onclick="validateTab1AndProceed()" class="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                                 Next: ID Verification
                                 <i class="fas fa-arrow-right ml-2"></i>
                             </button>
@@ -470,17 +459,34 @@
                                 <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1 block"></span>
                             </div>
 
-                            <!-- ID Number Field (readonly, auto-populated by API) -->
-                            <div>
+                            <!-- ID Type Field (readonly, auto-populated by API) - Hidden until verification -->
+                            <div id="idtype-container" class="hidden">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    ID Number <span class="text-gray-500 text-xs">(Auto-filled after ID upload)</span>
+                                    ID Type <span class="text-green-600 text-xs"><i class="fas fa-check-circle"></i> Verified</span>
+                                </label>
+                                <input type="text" id="idtype-display"
+                                       class="w-full px-4 py-3 border-2 border-green-300 rounded-xl bg-green-50 text-gray-800 font-medium"
+                                       placeholder="Will be extracted from your ID"
+                                       readonly>
+                                <div class="text-xs text-green-600 mt-1">
+                                    <i class="fas fa-shield-check"></i> Extracted and verified from your ID
+                                </div>
+                            </div>
+
+                            <!-- ID Number Field (readonly, auto-populated by API) - Hidden until verification -->
+                            <div id="idnumber-container" class="hidden">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    ID Number <span class="text-green-600 text-xs"><i class="fas fa-check-circle"></i> Verified</span>
                                 </label>
                                 <input asp-for="IDnumber" type="text" id="idnumber"
-                                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-crimson-500 focus:ring-2 focus:ring-red-200 transition-all duration-300 bg-gray-50"
+                                       class="w-full px-4 py-3 border-2 border-green-300 rounded-xl bg-green-50 text-gray-800 font-medium"
                                        placeholder="Will be extracted from your ID"
                                        readonly
                                        maxlength="100">
                                 <span asp-validation-for="IDnumber" class="text-red-500 text-sm mt-1"></span>
+                                <div class="text-xs text-green-600 mt-1">
+                                    <i class="fas fa-shield-check"></i> Extracted and verified from your ID
+                                </div>
                             </div>
 
                             <!-- Upload Button -->
@@ -490,54 +496,48 @@
                                         onclick="IDUploadModal.startFlow()"
                                         class="w-full py-4 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3">
                                     <i class="fas fa-id-card"></i>
-                                    <span>Upload ID & Capture Selfie</span>
+                                    <span>Start Verification</span>
                                 </button>
                             </div>
 
-                            <!-- Photos Preview (Hidden Initially) -->
+                            <!-- Photos Preview (Hidden Initially) - Row Layout for All Screens -->
                             <div id="uploaded-docs-preview" class="hidden mt-6">
                                 <h4 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                                     <i class="fas fa-check-circle text-green-500"></i>
                                     Your Uploaded Documents
                                 </h4>
-                                <div class="grid grid-cols-1 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                                     <!-- Front ID Preview -->
-                                    <div class="bg-gray-50 rounded-xl p-4 border-2 border-gray-200" id="preview-front-container">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <div class="bg-gray-50 rounded-xl p-3 sm:p-4 border-2 border-gray-200" id="preview-front-container">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2">
                                                 <i class="fas fa-id-card text-blue-500"></i>
                                             </div>
-                                            <div class="flex-1">
-                                                <div class="text-sm font-medium text-gray-700 mb-1">Front of ID</div>
-                                                <div id="preview-front-status" class="text-xs text-gray-400">Not uploaded</div>
-                                            </div>
-                                            <img id="preview-front-img" class="w-20 h-20 rounded-lg hidden object-cover" alt="Front ID">
+                                            <div class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Front of ID</div>
+                                            <div id="preview-front-status" class="text-xs text-gray-400 mb-2">Not uploaded</div>
+                                            <img id="preview-front-img" class="w-full h-24 sm:h-32 rounded-lg hidden object-cover" alt="Front ID">
                                         </div>
                                     </div>
                                     <!-- Back ID Preview -->
-                                    <div class="bg-gray-50 rounded-xl p-4 border-2 border-gray-200" id="preview-back-container">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <div class="bg-gray-50 rounded-xl p-3 sm:p-4 border-2 border-gray-200" id="preview-back-container">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2">
                                                 <i class="fas fa-id-card text-blue-500"></i>
                                             </div>
-                                            <div class="flex-1">
-                                                <div class="text-sm font-medium text-gray-700 mb-1">Back of ID</div>
-                                                <div id="preview-back-status" class="text-xs text-gray-400">Not uploaded</div>
-                                            </div>
-                                            <img id="preview-back-img" class="w-20 h-20 rounded-lg hidden object-cover" alt="Back ID">
+                                            <div class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Back of ID</div>
+                                            <div id="preview-back-status" class="text-xs text-gray-400 mb-2">Not uploaded</div>
+                                            <img id="preview-back-img" class="w-full h-24 sm:h-32 rounded-lg hidden object-cover" alt="Back ID">
                                         </div>
                                     </div>
                                     <!-- Selfie Preview -->
-                                    <div class="bg-gray-50 rounded-xl p-4 border-2 border-gray-200" id="preview-selfie-container">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <div class="bg-gray-50 rounded-xl p-3 sm:p-4 border-2 border-gray-200" id="preview-selfie-container">
+                                        <div class="flex flex-col items-center text-center">
+                                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-full flex items-center justify-center mb-2">
                                                 <i class="fas fa-user text-green-500"></i>
                                             </div>
-                                            <div class="flex-1">
-                                                <div class="text-sm font-medium text-gray-700 mb-1">Your Selfie</div>
-                                                <div id="preview-selfie-status" class="text-xs text-gray-400">Not captured</div>
-                                            </div>
-                                            <img id="preview-selfie-img" class="w-20 h-20 rounded-full hidden object-cover border-2 border-green-500" alt="Selfie">
+                                            <div class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Your Selfie</div>
+                                            <div id="preview-selfie-status" class="text-xs text-gray-400 mb-2">Not captured</div>
+                                            <img id="preview-selfie-img" class="w-full h-24 sm:h-32 rounded-lg hidden object-cover border-2 border-green-500" alt="Selfie">
                                         </div>
                                     </div>
                                 </div>
@@ -584,84 +584,6 @@
                                 </button>
                             </div>
 
-                            <!-- API Processing Status with Progress Bar -->
-                            <div id="api-processing-status" class="hidden mt-4">
-                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 shadow-lg">
-                                    <!-- Header -->
-                                    <div class="flex items-center gap-3 mb-4">
-                                        <div class="relative">
-                                            <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center animate-pulse">
-                                                <i class="fas fa-shield-alt text-white text-lg"></i>
-                                            </div>
-                                            <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-ping"></div>
-                                        </div>
-                                        <div class="flex-1">
-                                            <p class="text-base font-bold text-gray-800">Verifying Your Identity</p>
-                                            <p id="upload-status" class="text-xs text-gray-600 mt-1">
-                                                <i class="fas fa-spinner fa-spin mr-1"></i>
-                                                <span id="progress-status-text">Preparing your files...</span>
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Progress Bar Container -->
-                                    <div class="relative mb-3">
-                                        <div class="h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                                            <div id="upload-progress" class="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500 ease-out relative overflow-hidden"
-                                                 style="width: 0%">
-                                                <!-- Animated shine effect -->
-                                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-shimmer"></div>
-                                            </div>
-                                        </div>
-                                        <div class="flex justify-between mt-1 text-xs text-gray-500">
-                                            <span id="progress-percentage">0%</span>
-                                            <span id="progress-time-estimate">Estimating...</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Processing Steps Checklist -->
-                                    <div class="space-y-2 text-xs">
-                                        <div id="step-upload" class="flex items-center gap-2 text-gray-400">
-                                            <i class="fas fa-circle-notch fa-spin w-3"></i>
-                                            <span>Uploading documents</span>
-                                        </div>
-                                        <div id="step-scan" class="flex items-center gap-2 text-gray-400">
-                                            <i class="fas fa-circle w-3"></i>
-                                            <span>Scanning ID information</span>
-                                        </div>
-                                        <div id="step-extract" class="flex items-center gap-2 text-gray-400">
-                                            <i class="fas fa-circle w-3"></i>
-                                            <span>Extracting personal data</span>
-                                        </div>
-                                        <div id="step-verify" class="flex items-center gap-2 text-gray-400">
-                                            <i class="fas fa-circle w-3"></i>
-                                            <span>Verifying face match</span>
-                                        </div>
-                                        <div id="step-complete" class="flex items-center gap-2 text-gray-400">
-                                            <i class="fas fa-circle w-3"></i>
-                                            <span>Finalizing verification</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Security Badge -->
-                                    <div class="mt-4 pt-3 border-t border-blue-200">
-                                        <div class="flex items-center justify-center gap-2 text-xs text-gray-500">
-                                            <i class="fas fa-lock text-green-600"></i>
-                                            <span>Your data is encrypted and secure</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <style>
-                                @@keyframes shimmer {
-                                    0% { transform: translateX(-100%); }
-                                    100% { transform: translateX(100%); }
-                                }
-                                .animate-shimmer {
-                                    animation: shimmer 2s infinite;
-                                }
-                            </style>
                         </div>
                         <!-- End Tab 2 -->
 
@@ -730,16 +652,16 @@
                                     </h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div class="md:col-span-2">
-                                            <span class="text-sm font-medium text-gray-500">Address:</span>
-                                            <p id="review-address" class="text-gray-800 font-semibold">-</p>
+                                            <span class="text-sm font-medium text-gray-500">Block/Lot/Street:</span>
+                                            <p id="review-blklotstreet" class="text-gray-800 font-semibold">-</p>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-500">Subdivision/Village:</span>
+                                            <p id="review-subdivision" class="text-gray-800 font-semibold">-</p>
                                         </div>
                                         <div>
                                             <span class="text-sm font-medium text-gray-500">Barangay:</span>
                                             <p id="review-barangay" class="text-gray-800 font-semibold">-</p>
-                                        </div>
-                                        <div>
-                                            <span class="text-sm font-medium text-gray-500">District:</span>
-                                            <p id="review-district" class="text-gray-800 font-semibold">-</p>
                                         </div>
                                     </div>
                                 </div>
@@ -952,6 +874,18 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- API PROCESSING MODAL -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="apiProcessingModal" tabindex="-1" aria-labelledby="apiProcessingModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden">
+                <!-- Modal Content Container -->
+                <div id="api-modal-content" class="p-6 sm:p-8"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -968,6 +902,46 @@
 
         // ID Analyzer API v2 is handled server-side via /api/IdAnalyzer endpoints
         // No client-side API keys needed - all requests go through the backend
+
+        // ═══════════════════════════════════════════════════════════════
+        // TAB 1 VALIDATION - Ensure all required fields are filled
+        // ═══════════════════════════════════════════════════════════════
+        window.validateTab1AndProceed = function() {
+            const requiredFields = [
+                { id: 'lastname', label: 'Last Name' },
+                { id: 'firstname', label: 'First Name' },
+                { id: 'gender', label: 'Gender' },
+                { id: 'civil-status', label: 'Civil Status' },
+                { id: 'phonenumber', label: 'Phone Number' },
+                { id: 'birthdate', label: 'Date of Birth' },
+                { id: 'blklotstreet', label: 'Block/Lot/Street' },
+                { id: 'barangay', label: 'Barangay' }
+                // Note: Suffix is optional, not included in validation
+            ];
+
+            const missingFields = [];
+
+            for (const field of requiredFields) {
+                const element = document.getElementById(field.id);
+                if (!element || !element.value || element.value.trim() === '') {
+                    missingFields.push(field.label);
+                }
+            }
+
+            // Check Terms and Conditions checkbox
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox || !termsCheckbox.checked) {
+                missingFields.push('Terms and Conditions (must be accepted)');
+            }
+
+            if (missingFields.length > 0) {
+                alert('Please complete the following required fields before proceeding:\n\n• ' + missingFields.join('\n• '));
+                return;
+            }
+
+            // All validations passed - proceed to Tab 2
+            WizardNav.goToTab(2);
+        }
 
         // ═══════════════════════════════════════════════════════════════
         // Ñ/ñ CHARACTER SUPPORT - ACCOUNT VERIFICATION
@@ -1009,6 +983,10 @@
             const registrationForm = document.getElementById('registrationForm');
             if (registrationForm) {
                 registrationForm.addEventListener('submit', function(e) {
+                    console.log('═══════════════════════════════════════════════════════════════');
+                    console.log('📝 FORM SUBMISSION STARTED - Validating requirements...');
+                    console.log('═══════════════════════════════════════════════════════════════');
+
                     // Collect validation errors
                     const errors = [];
                     
@@ -1023,9 +1001,8 @@
                         'civil-status': 'Civil Status',
                         'phonenumber': 'Phone Number',
                         'birthdate': 'Date of Birth',
-                        'address': 'Address',
-                        'Barangay': 'Barangay',
-                        'District': 'District'
+                        'blklotstreet': 'Block/Lot/Street',
+                        'barangay': 'Barangay'
                     };
                     
                     const missingFields = [];
@@ -1037,63 +1014,106 @@
                     }
                     
                     if (missingFields.length > 0) {
+                        console.log('❌ CHECK 1 FAILED: Missing form fields:', missingFields);
                         errors.push(`Please fill in the following fields: ${missingFields.join(', ')}`);
+                    } else {
+                        console.log('✅ CHECK 1 PASSED: All form fields filled');
                     }
-                    
+
                     // ═══════════════════════════════════════════════════════════════
                     // CHECK 2: Verify Front ID is uploaded
                     // ═══════════════════════════════════════════════════════════════
                     const frontIdInput = document.getElementById('file-input-front');
-                    const hasFrontId = (frontIdInput && frontIdInput.files && frontIdInput.files.length > 0) || 
+                    const hasFrontId = (frontIdInput && frontIdInput.files && frontIdInput.files.length > 0) ||
                                        (typeof VerificationState !== 'undefined' && VerificationState.frontIdUploaded);
-                    
+
                     if (!hasFrontId) {
+                        console.log('❌ CHECK 2 FAILED: Front ID not uploaded');
                         errors.push('Front ID image is required. Please upload the front of your ID.');
+                    } else {
+                        console.log('✅ CHECK 2 PASSED: Front ID uploaded');
                     }
-                    
+
                     // ═══════════════════════════════════════════════════════════════
                     // CHECK 3: Verify Back ID is uploaded
                     // ═══════════════════════════════════════════════════════════════
                     const backIdInput = document.getElementById('file-input-back');
-                    const hasBackId = (backIdInput && backIdInput.files && backIdInput.files.length > 0) || 
+                    const hasBackId = (backIdInput && backIdInput.files && backIdInput.files.length > 0) ||
                                       (typeof VerificationState !== 'undefined' && VerificationState.backIdUploaded);
-                    
+
                     if (!hasBackId) {
+                        console.log('❌ CHECK 3 FAILED: Back ID not uploaded');
                         errors.push('Back ID image is required. Please upload the back of your ID.');
+                    } else {
+                        console.log('✅ CHECK 3 PASSED: Back ID uploaded');
                     }
-                    
+
                     // ═══════════════════════════════════════════════════════════════
                     // CHECK 4: Verify Selfie is captured and saved
                     // ═══════════════════════════════════════════════════════════════
                     const hasSelfie = (typeof VerificationState !== 'undefined' && VerificationState.selfieUploaded) ||
                                       (typeof IDUploadModal !== 'undefined' && IDUploadModal.selfieImage);
-                    
+
                     if (!hasSelfie) {
+                        console.log('❌ CHECK 4 FAILED: Selfie not captured');
                         errors.push('Selfie is required. Please capture your selfie photo.');
+                    } else {
+                        console.log('✅ CHECK 4 PASSED: Selfie captured');
                     }
-                    
+
                     // ═══════════════════════════════════════════════════════════════
-                    // CHECK 5: Verify Terms checkbox is checked
+                    // CHECK 5: Verify ID verification completed successfully
+                    // ═══════════════════════════════════════════════════════════════
+                    const idNumberField = document.getElementById('idnumber');
+                    const isVerificationComplete = (typeof VerificationState !== 'undefined' && VerificationState.verificationComplete) ||
+                                                   (idNumberField && idNumberField.value && idNumberField.value.trim() !== '');
+
+                    console.log('🔍 Verification status:', {
+                        verificationState: typeof VerificationState !== 'undefined' ? VerificationState.verificationComplete : 'undefined',
+                        idNumberValue: idNumberField ? idNumberField.value : 'field not found',
+                        isComplete: isVerificationComplete
+                    });
+
+                    if (!isVerificationComplete) {
+                        console.log('❌ CHECK 5 FAILED: ID Verification incomplete');
+                        errors.push('ID Verification is incomplete. Please click "Start Verification" button in Tab 2 to verify your ID and complete the process.');
+                    } else {
+                        console.log('✅ CHECK 5 PASSED: ID Verification complete');
+                    }
+
+                    // ═══════════════════════════════════════════════════════════════
+                    // CHECK 6: Verify Terms checkbox is checked
                     // ═══════════════════════════════════════════════════════════════
                     const termsCheckbox = document.getElementById('terms');
                     if (!termsCheckbox || !termsCheckbox.checked) {
+                        console.log('❌ CHECK 6 FAILED: Terms not accepted');
                         errors.push('You must agree to the Terms and Conditions.');
+                    } else {
+                        console.log('✅ CHECK 6 PASSED: Terms accepted');
                     }
-                    
+
                     // ═══════════════════════════════════════════════════════════════
                     // IF ERRORS EXIST: Prevent form submission and show modal
                     // ═══════════════════════════════════════════════════════════════
                     if (errors.length > 0) {
+                        console.log('❌ FORM SUBMISSION BLOCKED - Errors found:');
+                        errors.forEach((error, index) => {
+                            console.log(`   ${index + 1}. ${error}`);
+                        });
+                        console.log('═══════════════════════════════════════════════════════════════');
+
                         e.preventDefault();
-                        
+
                         // Show validation error modal
                         showVerificationRequirementsModal(errors);
-                        
+
                         return false;
                     }
-                    
+
                     // All checks passed - form will submit normally
-                    console.log('✅ All verification requirements met. Submitting form...');
+                    console.log('✅ ✅ ✅ ALL VALIDATION CHECKS PASSED!');
+                    console.log('📤 Submitting form to server...');
+                    console.log('═══════════════════════════════════════════════════════════════');
                 });
             }
             
@@ -1207,7 +1227,7 @@
                 }
                 
                 // Check 1: All required fields filled (ID Number excluded - auto-filled from API)
-                const requiredFieldIds = ['lastname', 'firstname', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'address', 'Barangay', 'District'];
+                const requiredFieldIds = ['lastname', 'firstname', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'blklotstreet', 'barangay'];
                 let allFieldsFilled = true;
                 for (const fieldId of requiredFieldIds) {
                     const field = document.getElementById(fieldId);
@@ -1259,7 +1279,7 @@
             // ═══════════════════════════════════════════════════════════════════════════
             
             // Listen to form field changes (ID Number excluded - readonly, auto-filled from API)
-            const formFields = ['lastname', 'firstname', 'middlename', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'address', 'Barangay', 'District'];
+            const formFields = ['lastname', 'firstname', 'middlename', 'gender', 'civil-status', 'phonenumber', 'birthdate', 'blklotstreet', 'subdivision', 'barangay'];
             formFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (field) {
@@ -1369,9 +1389,9 @@
                 this.setReviewValue('birthdate', 'review-birthdate');
 
                 // Address Information
-                this.setReviewValue('address', 'review-address');
-                this.setReviewValue('Barangay', 'review-barangay');
-                this.setReviewValue('District', 'review-district');
+                this.setReviewValue('blklotstreet', 'review-blklotstreet');
+                this.setReviewValue('subdivision', 'review-subdivision');
+                this.setReviewValue('barangay', 'review-barangay');
 
                 // ID Verification Information
                 this.setReviewValue('idnumber', 'review-idnumber');
@@ -1379,11 +1399,11 @@
 
                 // Terms and Conditions
                 const termsCheckbox = document.getElementById('terms');
-                const termsReview = document.getElementById('review-terms');
+                const termsReview = document.getElementById('review-terms-status');
                 if (termsReview) {
-                    termsReview.textContent = termsCheckbox && termsCheckbox.checked ? 'Agreed' : 'Not Agreed';
-                    termsReview.classList.toggle('text-green-600', termsCheckbox && termsCheckbox.checked);
-                    termsReview.classList.toggle('text-red-600', !termsCheckbox || !termsCheckbox.checked);
+                    termsReview.textContent = termsCheckbox && termsCheckbox.checked ? 'Accepted' : 'Not accepted';
+                    termsReview.classList.toggle('text-green-700', termsCheckbox && termsCheckbox.checked);
+                    termsReview.classList.toggle('text-blue-700', !termsCheckbox || !termsCheckbox.checked);
                 }
 
                 // Uploaded Images
@@ -1501,9 +1521,8 @@
             // ═══════════════════════════════════════════════════════════════════════════
 
             const requiredAddressFields = [
-                { id: 'address', label: 'Complete Address' },
-                { id: 'Barangay', label: 'Barangay' },
-                { id: 'District', label: 'District' }
+                { id: 'blklotstreet', label: 'Block/Lot/Street' },
+                { id: 'barangay', label: 'Barangay' }
             ];
 
             for (let field of requiredAddressFields) {

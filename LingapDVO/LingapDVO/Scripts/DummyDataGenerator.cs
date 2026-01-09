@@ -153,8 +153,7 @@ namespace LingapDVO.Scripts
                 IDtype = new[] { "umid", "phil-id", "driver-license" }[_random.Next(3)],
                 IDnumber = $"{_random.Next(1000, 9999)}-{_random.Next(1000, 9999)}-{_random.Next(1000, 9999)}",
                 BlkLotStreet = $"{_random.Next(1, 999)} Main St",
-                SubVill = "Subdivision " + _random.Next(1, 20),
-                District = $"District {_random.Next(1, 4)}"
+                SubVill = "Subdivision " + _random.Next(1, 20)
             };
 
             _context.Verifyaccount.Add(verifyAccount);
@@ -206,7 +205,6 @@ namespace LingapDVO.Scripts
                 BlkLotStreet = verifyAccount.BlkLotStreet,
                 SubVill = verifyAccount.SubVill,
                 Brgy = verifyAccount.Barangay,
-                District = verifyAccount.District,
                 Sex = verifyAccount.Gender,
                 PhilHealth = _random.Next(2) == 0 ? "Yes" : "No",
                 PhilHealthNo = _random.Next(2) == 0 ? $"12-{_random.Next(100000000, 999999999)}" : "",
@@ -219,7 +217,6 @@ namespace LingapDVO.Scripts
                 RBlkLotStreet = verifyAccount.BlkLotStreet,
                 RSubVill = verifyAccount.SubVill,
                 RBrgy = verifyAccount.Barangay,
-                RDistrict = verifyAccount.District,
                 RelationshipPatient = "Self",
                 Status = status2 == "Approve" || status2 == "Disapprove" || status2 == "Retake" ? "Processing" : "Pending",
                 Status2 = status2,
@@ -279,7 +276,6 @@ namespace LingapDVO.Scripts
                 BlkLotStreet = verifyAccount.BlkLotStreet,
                 SubVill = verifyAccount.SubVill,
                 Brgy = verifyAccount.Barangay,
-                District = verifyAccount.District,
                 Sex = verifyAccount.Gender,
                 PhilHealth = _random.Next(2) == 0 ? "Yes" : "No",
                 PhilHealthNo = _random.Next(2) == 0 ? $"12-{_random.Next(100000000, 999999999)}" : "",
@@ -292,7 +288,6 @@ namespace LingapDVO.Scripts
                 RBlkLotStreet = verifyAccount.BlkLotStreet,
                 RSubVill = verifyAccount.SubVill,
                 RBrgy = verifyAccount.Barangay,
-                RDistrict = verifyAccount.District,
                 RelationshipPatient = "Self",
                 Status = status2 == "Approve" || status2 == "Disapprove" || status2 == "Retake" ? "Processing" : "Pending",
                 Status2 = status2,
@@ -350,7 +345,6 @@ namespace LingapDVO.Scripts
                 BlkLotStreet = verifyAccount.BlkLotStreet,
                 SubVill = verifyAccount.SubVill,
                 Brgy = verifyAccount.Barangay,
-                District = verifyAccount.District,
                 Sex = verifyAccount.Gender,
                 PhilHealth = _random.Next(2) == 0 ? "Yes" : "No",
                 PhilHealthNo = _random.Next(2) == 0 ? $"12-{_random.Next(100000000, 999999999)}" : "",
@@ -363,7 +357,6 @@ namespace LingapDVO.Scripts
                 RBlkLotStreet = verifyAccount.BlkLotStreet,
                 RSubVill = verifyAccount.SubVill,
                 RBrgy = verifyAccount.Barangay,
-                RDistrict = verifyAccount.District,
                 RelationshipPatient = "Self",
                 Status = status2 == "Approve" || status2 == "Disapprove" || status2 == "Retake" ? "Processing" : "Pending",
                 Status2 = status2,

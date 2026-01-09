@@ -433,31 +433,20 @@ const FaceRecognition = {
             };
         }
 
-        // Store selfie image data in memory
+        // Store selfie image data in memory (Base64)
+        // No disk save - sent directly to API as Base64
+        // Only saved to disk AFTER API returns "accept" decision
         this.storeSelfieImageData(imageData);
 
-        // CRITICAL: Save selfie to server disk FIRST before sending to ID Analyzer
-        const saveResult = await this.saveSelfieToServer(imageData);
-
-        if (!saveResult.success) {
-            this.captureInProgress = false;  // Reset flag on failure
-            return {
-                success: false,
-                error: 'Failed to save selfie to server: ' + saveResult.error
-            };
-        }
-
-        // Store filename for later use
-        this.selfieFileName = saveResult.fileName;
-
-        
         // Reset flag on success (allow retry later if needed)
         this.captureInProgress = false;
 
+        console.log('✅ Selfie captured and stored as Base64 (no disk save)');
+        console.log('   Length:', imageData.length, 'chars');
+
         return {
             success: true,
-            imageData: imageData,
-            fileName: saveResult.fileName
+            imageData: imageData
         };
     },
 
@@ -1050,15 +1039,14 @@ const FaceRecognitionUI = {
         this.hideButtons();
         
         // Auto-close after delay and callback
-        // IMPORTANT: Include fileName for file-based submission
+        // Image is stored as Base64 in memory (no disk save)
         setTimeout(() => {
             this.isCapturing = false;  // Reset flag after success
             this.closeModal();
             if (this.onSelfieCompleteCallback) {
                 this.onSelfieCompleteCallback({
                     success: true,
-                    imageData: captureResult.imageData,
-                    fileName: captureResult.fileName  // Include filename for API submission
+                    imageData: captureResult.imageData
                 });
             }
         }, 1500);

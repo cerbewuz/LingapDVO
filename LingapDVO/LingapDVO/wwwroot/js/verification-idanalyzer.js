@@ -132,21 +132,46 @@ const ProgressTracker = {
 window.ProgressTracker = ProgressTracker;
 
 // ════════════════════════════════════════════════════════════════════════════
+// FILE TO BASE64 CONVERTER
+// ════════════════════════════════════════════════════════════════════════════
+// Converts a File object to Base64 string using FileReader API
+// Returns a Promise that resolves with Base64 string (includes data URI prefix)
+// ════════════════════════════════════════════════════════════════════════════
+async function convertFileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        if (!file || !(file instanceof File)) {
+            reject(new Error('Invalid file object'));
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            // reader.result contains data URI: "data:image/jpeg;base64,..."
+            resolve(reader.result);
+        };
+
+        reader.onerror = () => {
+            reject(new Error('Failed to read file'));
+        };
+
+        // Read file as Data URL (Base64)
+        reader.readAsDataURL(file);
+    });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // VERIFICATION STATE MANAGEMENT
 // ════════════════════════════════════════════════════════════════════════════
 // Stores all collected images before sending to API
 // ════════════════════════════════════════════════════════════════════════════
 const VerificationState = {
-    // CRITICAL CHANGE: Store actual File objects instead of base64
-    // This preserves 100% of original file data including EXIF metadata
-    frontIdFile: null,        // Raw File object (front ID)
-    backIdFile: null,         // Raw File object (back ID)
-    selfieImage: null,        // Selfie still uses base64 (captured from camera)
-    selfieFileName: null,     // Filename of saved selfie (for file-based API submission)
-
-    // Legacy base64 storage (for preview only)
-    frontIdImage: null,
-    backIdImage: null,
+    // Store Base64 encoded images - sent directly to API
+    // Files are converted to Base64 immediately upon upload/capture
+    // Only saved to disk AFTER API returns "accept" decision
+    frontIdImage: null,       // Front ID as Base64 string
+    backIdImage: null,        // Back ID as Base64 string
+    selfieImage: null,        // Selfie as Base64 string (captured from camera)
 
     // Status flags
     frontIdUploaded: false,
@@ -160,30 +185,25 @@ const VerificationState = {
     faceMatchResult: null,
     extractedData: null,
 
-    // Store front ID image - NOW STORES RAW FILE OBJECT
-    setFrontId(base64Image, fileObject = null) {
-        this.frontIdImage = base64Image;  // For preview only
-        this.frontIdFile = fileObject;     // RAW FILE - sent to API
-        this.frontIdUploaded = !!(fileObject || base64Image);
+    // Store front ID image as Base64
+    setFrontId(base64Image) {
+        this.frontIdImage = base64Image;
+        this.frontIdUploaded = !!base64Image;
         this.updateVerifyButtonState();
     },
 
-    // Store back ID image - NOW STORES RAW FILE OBJECT
-    setBackId(base64Image, fileObject = null) {
-        this.backIdImage = base64Image;   // For preview only
-        this.backIdFile = fileObject;      // RAW FILE - sent to API
-        this.backIdUploaded = !!(fileObject || base64Image);
+    // Store back ID image as Base64
+    setBackId(base64Image) {
+        this.backIdImage = base64Image;
+        this.backIdUploaded = !!base64Image;
         this.updateVerifyButtonState();
     },
 
-    // Store selfie image and filename
-    setSelfie(base64Image, fileName = null) {
+    // Store selfie image as Base64
+    setSelfie(base64Image) {
         this.selfieImage = base64Image;
-        this.selfieFileName = fileName;
         this.selfieUploaded = !!base64Image;
         this.updateVerifyButtonState();
-        if (fileName) {
-        }
     },
     
     // Check if all required images are uploaded
@@ -244,12 +264,9 @@ const VerificationState = {
     
     // Reset all state
     reset() {
-        this.frontIdFile = null;      // Clear File object
-        this.backIdFile = null;       // Clear File object
         this.frontIdImage = null;
         this.backIdImage = null;
         this.selfieImage = null;
-        this.selfieFileName = null;
         this.frontIdUploaded = false;
         this.backIdUploaded = false;
         this.selfieUploaded = false;
@@ -265,11 +282,11 @@ const VerificationState = {
     getSummary() {
         return {
             frontId: this.frontIdUploaded,
-            frontIdFile: this.frontIdFile?.name || 'none',
+            frontIdLength: this.frontIdImage?.length || 0,
             backId: this.backIdUploaded,
-            backIdFile: this.backIdFile?.name || 'none',
+            backIdLength: this.backIdImage?.length || 0,
             selfie: this.selfieUploaded,
-            selfieFileName: this.selfieFileName,
+            selfieLength: this.selfieImage?.length || 0,
             ready: this.isReadyForVerification(),
             complete: this.hasAllImages()
         };
@@ -280,10 +297,320 @@ const VerificationState = {
 window.VerificationState = VerificationState;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GLOBAL SUBMIT VERIFICATION FUNCTION
+// DAVAO CITY BARANGAYS LIST - For Address Validation
+// ═══════════════════════════════════════════════════════════════════════════════
+const DAVAO_CITY_BARANGAYS = [
+    "Acacia", "Agdao", "Alambre", "Alejandro Navarro", "Alfonso Angliongto Sr.",
+    "Angalan", "Baguio Proper", "Baliok", "Bangkas Heights", "Baracatan",
+    "Bato", "Bayabas", "Biao Escuela", "Biao Guianga", "Binugao",
+    "Bucana", "Buhangin", "Buhangin (Pob.)", "Buhangin Proper", "Cabantian",
+    "Cadalian", "Calinan Proper", "Callawa", "Camansi", "Carmen",
+    "Catalunan Grande", "Catalunan Pequeño", "Catigan", "Cawayan", "Centro (San Juan)",
+    "Colosas", "Communal", "Crossing Bayabas", "Dacudao", "Dalagdag",
+    "Daliao", "Dalican", "Datu Salumay", "Dominga", "Eden",
+    "Fatima (Benowang)", "Gatungan", "Gov. Paciano Bangoy", "Gov. Vicente Duterte", "Gumalang",
+    "Gumitan", "Indangan", "Kap. Tomas Monteverde Sr.", "Kilate", "Lamanan",
+    "Lampianao", "Langub", "Lapu-lapu", "Leon Garcia Sr.", "Los Amigos",
+    "Lubogan", "Lumiad", "Ma-a", "Mabuhay", "Madapo",
+    "Magtuod", "Mahayag", "Malabog", "Malagos", "Malamba",
+    "Malandog", "Mampising", "Manambulan", "Mandug", "Manuel Guianga",
+    "Mapula", "Marapangi", "Marilog Proper", "Matina Aplaya", "Matina Crossing",
+    "Matina Pangi", "Mintal", "Mudiang", "Mulig", "New Carmen",
+    "New Valencia", "Pampanga", "Panacan", "Pandaitan", "Panorama",
+    "Paquibato Proper", "Paradise Embak", "Rafael Castillo", "Salapawan", "Salaysay",
+    "Saloy", "San Antonio", "San Isidro", "Sasa", "Sirib",
+    "Suawan", "Tacunan", "Tagakpan", "Tagluno", "Tagurano",
+    "Talomo Proper", "Talomo River", "Tamurayan", "Tibungco", "Tigatto",
+    "Tungkalan", "Ubalde", "Ugac", "Ula", "Vicente Hizon Sr.",
+    "Waan", "Wangan", "Wilfredo Aquino", "Wines"
+];
+
+// ACCEPTED ID TYPES - Only these ID types are allowed
+const ACCEPTED_ID_TYPES = {
+    'National ID': ['NATIONAL ID', 'PHIL-SYS', 'PHILSYS', 'PHILIPPINE IDENTIFICATION', 'PHILID'],
+    'Driver\'s License': ['DRIVER LICENSE', 'DRIVER\'S LICENSE', 'DRIVERS LICENSE', 'DL'],
+    'UMID': ['UMID', 'UNIFIED MULTI-PURPOSE ID', 'SSS UMID']
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VALIDATION FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Validate if address is from Davao City and barangay is valid
+// NOTE: This ONLY validates the API address data, NOT the user's input from Tab 1
+function validateDavaoCityAddress(address1, address2) {
+    const fullAddress = `${address1 || ''} ${address2 || ''}`.toUpperCase().trim();
+
+    console.log('🏠 Address Validation - API Data:');
+    console.log('   Address 1:', address1 || 'N/A');
+    console.log('   Address 2:', address2 || 'N/A');
+    console.log('   Full Address:', fullAddress || 'EMPTY');
+
+    // If no address data from API, skip validation (API might not always return address)
+    if (!fullAddress || fullAddress === '') {
+        console.warn('⚠️ No address data from API - Skipping address validation');
+        return {
+            valid: true,
+            message: 'Address validation skipped (no data from API)',
+            warning: true
+        };
+    }
+
+    // Check if address contains "DAVAO CITY" or "DAVAO"
+    const isDavaoCity = fullAddress.includes('DAVAO CITY') ||
+                        fullAddress.includes('DAVAO,') ||
+                        fullAddress.includes('DAVAO ') ||
+                        fullAddress.includes(' DAVAO');
+
+    console.log('   Contains "Davao":', isDavaoCity);
+
+    if (!isDavaoCity) {
+        console.log('❌ Address validation failed: Not from Davao City');
+        return {
+            valid: false,
+            message: 'Your ID shows an address outside Davao City. Only Davao City residents can register.'
+        };
+    }
+
+    // Check if barangay is in the Davao City barangays list
+    let barangayFound = false;
+    let matchedBarangay = '';
+
+    for (const barangay of DAVAO_CITY_BARANGAYS) {
+        if (fullAddress.includes(barangay.toUpperCase())) {
+            barangayFound = true;
+            matchedBarangay = barangay;
+            break;
+        }
+    }
+
+    console.log('   Barangay found:', barangayFound);
+    if (barangayFound) {
+        console.log('   Matched Barangay:', matchedBarangay);
+    }
+
+    // If barangay not found in the list, still allow but with warning
+    // (Some IDs might have abbreviated or alternate barangay names)
+    if (!barangayFound) {
+        console.warn('⚠️ Barangay not in standard list, but Davao City confirmed - Allowing');
+        return {
+            valid: true,
+            message: 'Address validated: Davao City resident (barangay name may vary)',
+            warning: true
+        };
+    }
+
+    console.log('✅ Address validation passed');
+    return {
+        valid: true,
+        message: `Address validated: Davao City, ${matchedBarangay}`,
+        barangay: matchedBarangay
+    };
+}
+
+// Validate if ID type is accepted
+function validateIdType(documentName) {
+    if (!documentName) {
+        return {
+            valid: false,
+            message: 'ID type not detected. Please use a clearer photo.'
+        };
+    }
+
+    const docNameUpper = documentName.toUpperCase();
+
+    for (const [acceptedType, variants] of Object.entries(ACCEPTED_ID_TYPES)) {
+        for (const variant of variants) {
+            if (docNameUpper.includes(variant)) {
+                return {
+                    valid: true,
+                    message: `ID type accepted: ${acceptedType}`,
+                    idType: acceptedType
+                };
+            }
+        }
+    }
+
+    return {
+        valid: false,
+        message: `ID type "${documentName}" is not accepted. Only National ID, Driver's License, and UMID are accepted.`,
+        documentName: documentName
+    };
+}
+
+// Validate if names match between ID and registration
+function validateNameMatch(apiData, registeredData) {
+    console.log('👤 Name Validation - Comparing ID with Registration:');
+    console.log('   API Data:', apiData);
+    console.log('   Registered Data:', registeredData);
+
+    const errors = [];
+
+    // Normalize function - remove extra spaces, convert to uppercase, remove special chars
+    const normalize = (str) => (str || '').trim().toUpperCase().replace(/\s+/g, ' ').replace(/[.,]/g, '');
+
+    const apiFirst = normalize(apiData.firstName);
+    const apiMiddle = normalize(apiData.middleName);
+    const apiLast = normalize(apiData.lastName);
+
+    const regFirst = normalize(registeredData.firstName);
+    const regMiddle = normalize(registeredData.middleName);
+    const regLast = normalize(registeredData.lastName);
+
+    console.log('   Normalized API:', { first: apiFirst, middle: apiMiddle, last: apiLast });
+    console.log('   Normalized Reg:', { first: regFirst, middle: regMiddle, last: regLast });
+
+    // Check last name (more lenient - check if one contains the other)
+    if (apiLast && regLast) {
+        const lastNameMatch = apiLast === regLast ||
+                             apiLast.includes(regLast) ||
+                             regLast.includes(apiLast);
+        if (!lastNameMatch) {
+            console.log('❌ Last name mismatch');
+            errors.push(`Last name mismatch: ID shows "${apiData.lastName}" but you entered "${registeredData.lastName}"`);
+        } else {
+            console.log('✅ Last name matches');
+        }
+    }
+
+    // Check first name (more lenient - check if one contains the other)
+    if (apiFirst && regFirst) {
+        const firstNameMatch = apiFirst === regFirst ||
+                              apiFirst.includes(regFirst) ||
+                              regFirst.includes(apiFirst);
+        if (!firstNameMatch) {
+            console.log('❌ First name mismatch');
+            errors.push(`First name mismatch: ID shows "${apiData.firstName}" but you entered "${registeredData.firstName}"`);
+        } else {
+            console.log('✅ First name matches');
+        }
+    }
+
+    // Check middle name (optional - only if both have values, and be more lenient)
+    if (apiMiddle && regMiddle) {
+        const middleNameMatch = apiMiddle === regMiddle ||
+                               apiMiddle.includes(regMiddle) ||
+                               regMiddle.includes(apiMiddle) ||
+                               apiMiddle.charAt(0) === regMiddle.charAt(0); // Match first initial
+        if (!middleNameMatch) {
+            console.log('⚠️ Middle name mismatch (allowing due to variations)');
+            // Don't add to errors - middle names often have variations
+        } else {
+            console.log('✅ Middle name matches');
+        }
+    }
+
+    if (errors.length > 0) {
+        console.log('❌ Name validation failed');
+        return {
+            valid: false,
+            errors: errors,
+            message: 'Name mismatch detected. Please ensure your personal information matches your ID.'
+        };
+    }
+
+    console.log('✅ Name validation passed');
+    return {
+        valid: true,
+        message: 'Names match successfully'
+    };
+}
+
+// Show processing modal
+function showProcessingModal() {
+    const modalElement = document.getElementById('apiProcessingModal');
+    const modalContent = document.getElementById('api-modal-content');
+
+    if (!modalElement || !modalContent) return;
+
+    modalContent.innerHTML = `
+        <div class="flex flex-col items-center text-center">
+            <div class="mb-4">
+                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center animate-spin">
+                    <i class="fas fa-spinner text-white text-2xl"></i>
+                </div>
+            </div>
+            <h3 class="text-lg sm:text-xl font-bold text-blue-800 mb-2">Processing Your Documents...</h3>
+            <p class="text-blue-700 text-sm">Please wait while we verify your identity</p>
+            <div class="mt-4 flex items-center gap-2 text-gray-600 text-xs">
+                <i class="fas fa-lock text-green-600"></i>
+                <span>Your data is encrypted and secure</span>
+            </div>
+        </div>
+    `;
+
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+// Show success animation in modal
+function showSuccessAnimation(message = 'Verification Complete!') {
+    const modalElement = document.getElementById('apiProcessingModal');
+    const modalContent = document.getElementById('api-modal-content');
+
+    if (!modalElement || !modalContent) return;
+
+    modalContent.innerHTML = `
+        <div class="flex flex-col items-center text-center">
+            <div class="mb-4 relative">
+                <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
+                    <i class="fas fa-check text-white text-4xl"></i>
+                </div>
+                <div class="absolute -top-1 -right-1 w-6 h-6 bg-emerald-400 rounded-full animate-ping"></div>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-green-800 mb-2">${message}</h3>
+            <p class="text-green-700 text-sm mb-4">Your ID has been successfully verified and data extracted.</p>
+            <div class="flex items-center gap-2 text-green-600 text-sm mb-4">
+                <i class="fas fa-shield-check"></i>
+                <span class="font-medium">Secure & Encrypted</span>
+            </div>
+            <button onclick="closeProcessingModal()" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all">
+                <i class="fas fa-check mr-2"></i>Continue
+            </button>
+        </div>
+    `;
+}
+
+// Show failure animation in modal
+function showFailureAnimation(message = 'Verification Failed', details = '') {
+    const modalElement = document.getElementById('apiProcessingModal');
+    const modalContent = document.getElementById('api-modal-content');
+
+    if (!modalElement || !modalContent) return;
+
+    modalContent.innerHTML = `
+        <div class="flex flex-col items-center text-center">
+            <div class="mb-4 relative">
+                <div class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                    <i class="fas fa-times text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold text-red-800 mb-2">${message}</h3>
+            <p class="text-red-700 text-sm mb-4">${details || 'Please check your documents and try again.'}</p>
+            <button onclick="closeProcessingModal()" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all">
+                <i class="fas fa-redo mr-2"></i>Try Again
+            </button>
+        </div>
+    `;
+}
+
+// Close processing modal
+function closeProcessingModal() {
+    const modalElement = document.getElementById('apiProcessingModal');
+    if (modalElement) {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GLOBAL SUBMIT VERIFICATION FUNCTION (WITH COMPREHENSIVE VALIDATION)
 // ═══════════════════════════════════════════════════════════════════════════════
 // Defined at global scope to be immediately available when script loads.
 // Sends Front ID, Back ID, and Selfie to the API as Base64.
+// Validates: Address (Davao City + Barangay), ID Type, Document Number, Name Matching
 // ═══════════════════════════════════════════════════════════════════════════════
 window.submitVerification = async function() {
     console.log('═══════════════════════════════════════════════════════════════');
@@ -305,38 +632,47 @@ window.submitVerification = async function() {
         verifyButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verifying...';
     }
 
+    // Show processing modal
+    showProcessingModal();
+
     try {
         console.log('🔍 VERIFICATION STATE:');
-        console.log('   frontIdFile:', VerificationState.frontIdFile ? `✅ ${VerificationState.frontIdFile.name}` : '❌ NULL');
-        console.log('   backIdFile:', VerificationState.backIdFile ? `✅ ${VerificationState.backIdFile.name}` : '❌ NULL');
-        console.log('   selfieFileName:', VerificationState.selfieFileName || '❌ NULL');
+        console.log('   frontIdImage:', VerificationState.frontIdImage ? `✅ ${VerificationState.frontIdImage.length} chars` : '❌ NULL');
+        console.log('   backIdImage:', VerificationState.backIdImage ? `✅ ${VerificationState.backIdImage.length} chars` : '❌ NULL');
+        console.log('   selfieImage:', VerificationState.selfieImage ? `✅ ${VerificationState.selfieImage.length} chars` : '❌ NULL');
 
-        // Verify required files exist
-        if (!VerificationState.frontIdFile || !(VerificationState.frontIdFile instanceof File)) {
-            throw new Error('Front ID file is missing. Please upload your ID again.');
+        // Verify required Base64 images exist
+        if (!VerificationState.frontIdImage) {
+            throw new Error('Front ID image is missing. Please upload your ID again.');
         }
-        if (!VerificationState.backIdFile || !(VerificationState.backIdFile instanceof File)) {
-            throw new Error('Back ID file is missing. Please upload your ID again.');
+        if (!VerificationState.backIdImage) {
+            throw new Error('Back ID image is missing. Please upload your ID again.');
+        }
+        if (!VerificationState.selfieImage) {
+            throw new Error('Selfie image is missing. Please capture your photo again.');
         }
 
-        // Build FormData - files will be converted to Base64 by the backend
-        const formData = new FormData();
-        formData.append('documentFile', VerificationState.frontIdFile);
-        formData.append('backFile', VerificationState.backIdFile);
-        
-        if (VerificationState.selfieFileName) {
-            formData.append('selfieFileName', VerificationState.selfieFileName);
-        }
-        if (window.currentUserId) {
-            formData.append('userId', window.currentUserId);
-        }
+        // Build JSON payload with Base64 images
+        // IMPORTANT: Property names must match C# model (PascalCase)
+        const payload = {
+            DocumentImage: VerificationState.frontIdImage,
+            BackImage: VerificationState.backIdImage,
+            FaceImage: VerificationState.selfieImage
+        };
 
         console.log('📤 Sending to:', ID_ANALYZER_CONFIG.SCAN_ENDPOINT);
+        console.log('📦 Payload sizes:');
+        console.log('   DocumentImage:', payload.DocumentImage.length, 'chars');
+        console.log('   BackImage:', payload.BackImage.length, 'chars');
+        console.log('   FaceImage:', payload.FaceImage.length, 'chars');
 
-        // Send to API
+        // Send to API with JSON payload
         const response = await fetch(ID_ANALYZER_CONFIG.SCAN_ENDPOINT, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
         });
 
         const responseText = await response.text();
@@ -360,66 +696,154 @@ window.submitVerification = async function() {
         const decision = (result.decision || '').toLowerCase();
         console.log('📋 Decision:', decision);
 
+        // Handle REJECT decision
         if (decision === 'reject') {
             VerificationState.verificationInProgress = false;
+            showFailureAnimation('Verification Rejected', 'Your ID verification was rejected. Please ensure your photos are clear and try again.');
             if (verifyButton) {
                 verifyButton.disabled = false;
                 verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry';
             }
-            alert('Verification rejected. Please ensure photos are clear and try again.');
             return;
         }
 
+        // Handle REVIEW decision
         if (decision === 'review') {
-            alert('Your ID is under review. We will notify you when complete.');
+            showFailureAnimation('Manual Review Required', 'Your ID is under review. We will notify you when the review is complete.');
+            if (verifyButton) {
+                verifyButton.disabled = false;
+                verifyButton.innerHTML = '<i class="fas fa-clock mr-2"></i>Pending Review';
+            }
             return;
         }
 
-        // SUCCESS - populate form fields
-        VerificationState.verificationComplete = true;
-        console.log('✅ Verification ACCEPTED');
+        // ═══════════════════════════════════════════════════════════════════════
+        // ACCEPT DECISION - PERFORM COMPREHENSIVE VALIDATION
+        // ═══════════════════════════════════════════════════════════════════════
 
-        // Populate form fields
-        const fields = {
-            'IDnumber': result.idNumber || result.documentNumber,
-            'lastname': result.lastName || result.surname,
-            'firstname': result.firstName || result.givenName,
-            'middlename': result.middleName,
-            'birthdate': result.dob || result.dateOfBirth,
-            'sex': result.sex || result.gender,
-            'BlkLotStreet': result.address,
-            'Barangay': result.barangay
-        };
+        if (decision === 'accept') {
+            console.log('✅ API Decision: ACCEPT - Performing validation checks...');
 
-        for (const [id, value] of Object.entries(fields)) {
-            if (value) {
-                const el = document.getElementById(id);
-                if (el) el.value = value;
+            const validationErrors = [];
+
+            // VALIDATION 1: Check ID Type (documentName)
+            const idTypeValidation = validateIdType(result.data?.documentName);
+            if (!idTypeValidation.valid) {
+                validationErrors.push(idTypeValidation.message);
+            } else {
+                console.log('✅ ID Type Validation:', idTypeValidation.message);
             }
+
+            // VALIDATION 2: Check Davao City Address (address1 + address2)
+            const addressValidation = validateDavaoCityAddress(
+                result.data?.address1,
+                result.data?.address2
+            );
+            if (!addressValidation.valid) {
+                validationErrors.push(addressValidation.message);
+            } else {
+                console.log('✅ Address Validation:', addressValidation.message);
+            }
+
+            // VALIDATION 3: Check Name Matching (firstName, middleName, lastName)
+            const registeredNames = {
+                firstName: document.getElementById('firstname')?.value || '',
+                middleName: document.getElementById('middlename')?.value || '',
+                lastName: document.getElementById('lastname')?.value || ''
+            };
+
+            const nameValidation = validateNameMatch(result.data, registeredNames);
+            if (!nameValidation.valid) {
+                validationErrors.push(...nameValidation.errors);
+            } else {
+                console.log('✅ Name Validation:', nameValidation.message);
+            }
+
+            // If any validation failed, show error and stop
+            if (validationErrors.length > 0) {
+                const errorMessage = validationErrors.join('<br>');
+                showFailureAnimation('Validation Failed', errorMessage);
+                VerificationState.verificationInProgress = false;
+                if (verifyButton) {
+                    verifyButton.disabled = false;
+                    verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry';
+                }
+                return;
+            }
+
+            // ALL VALIDATIONS PASSED - Proceed with success
+            VerificationState.verificationComplete = true;
+            console.log('✅ All validations passed! Verification ACCEPTED');
+
+            // Auto-populate ID Type if API returns "accept"
+            const idTypeField = document.getElementById('idtype-display');
+            if (idTypeField && idTypeValidation.idType) {
+                idTypeField.value = idTypeValidation.idType;
+                console.log('✅ ID Type auto-populated:', idTypeValidation.idType);
+            }
+
+            // Auto-populate ID Number if API returns "accept"
+            const idNumberField = document.getElementById('idnumber');
+            const idNumberContainer = document.getElementById('idnumber-container');
+            if (idNumberField && result.data?.documentNumber) {
+                idNumberField.value = result.data.documentNumber;
+                idNumberField.readOnly = true; // Make it readonly after auto-population
+                console.log('✅ ID Number auto-populated:', result.data.documentNumber);
+
+                // Show ID Number field after successful verification
+                if (idNumberContainer) {
+                    idNumberContainer.classList.remove('hidden');
+                }
+            }
+
+            // Show ID Type field after successful verification
+            const idTypeContainer = document.getElementById('idtype-container');
+            if (idTypeContainer) {
+                idTypeContainer.classList.remove('hidden');
+            }
+
+            // NOTE: Block/Lot/Street is NOT auto-populated - user must enter it in Tab 1
+            // Address validation only checks if it matches Davao City from API data
+
+            // Store decision and transaction ID
+            const decisionField = document.getElementById('verification-decision');
+            const transactionField = document.getElementById('transaction-id');
+            if (decisionField) decisionField.value = result.decision || '';
+            if (transactionField) transactionField.value = result.transactionId || '';
+
+            // Show success animation
+            showSuccessAnimation('Verification Successful!');
+
+            // Update button to show success
+            if (verifyButton) {
+                verifyButton.disabled = false;
+                verifyButton.innerHTML = '<i class="fas fa-check mr-2"></i>Verified';
+                verifyButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                verifyButton.classList.add('bg-green-600', 'hover:bg-green-700');
+            }
+
+            // Enable "Next" button to proceed to Review tab
+            const nextButton = document.getElementById('next-to-review-btn');
+            if (nextButton) {
+                nextButton.disabled = false;
+                nextButton.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                nextButton.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+                nextButton.querySelector('#next-btn-text').textContent = 'Next: Review & Submit';
+                nextButton.querySelector('i').classList.remove('fa-lock');
+                nextButton.querySelector('i').classList.add('fa-arrow-right');
+            }
+
+            console.log('✅ VERIFICATION COMPLETE');
         }
-
-        // Store decision
-        const decisionField = document.getElementById('verification-decision');
-        const transactionField = document.getElementById('transaction-id');
-        if (decisionField) decisionField.value = result.decision || '';
-        if (transactionField) transactionField.value = result.transactionId || '';
-
-        if (verifyButton) {
-            verifyButton.disabled = false;
-            verifyButton.innerHTML = '<i class="fas fa-check mr-2"></i>Verified';
-            verifyButton.classList.add('bg-green-600');
-        }
-
-        console.log('✅ VERIFICATION COMPLETE');
 
     } catch (error) {
         console.error('❌ Verification error:', error);
         VerificationState.verificationInProgress = false;
+        showFailureAnimation('Error Occurred', error.message);
         if (verifyButton) {
             verifyButton.disabled = false;
-            verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Retry';
+            verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2></i>Retry';
         }
-        alert('Verification failed: ' + error.message);
     }
 };
 
@@ -1994,17 +2418,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Store the RAW FILE OBJECT without ANY conversion
-     * This is the ONLY way to preserve 100% of original file data
-     * - ZERO JavaScript conversion
-     * - ZERO base64 encoding in browser
-     * - Preserves ALL EXIF metadata
-     * - File will be sent to backend as multipart/form-data
+     * Convert file to Base64 and store for API submission
+     * Converts File object to Base64 string immediately upon upload
+     * Files are sent to backend as JSON payload for direct API submission
+     * Only saved to disk AFTER API returns "accept" decision
      * @param {File} file - The raw File object from input
      * @param {HTMLElement} preview - Preview image element
      * @param {boolean} isBack - Whether this is back ID or front ID
      */
-    function storeOriginalFile(file, preview, isBack) {
+    async function storeOriginalFile(file, preview, isBack) {
         try {
             if (!file || !(file instanceof File)) {
                 throw new Error('Invalid file object');
@@ -2012,34 +2434,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Log detailed information for verification
             console.log('═══════════════════════════════════════════════════════════════');
-            console.log(`📁 STORING ${isBack ? 'BACK' : 'FRONT'} ID FILE (RAW FILE OBJECT)`);
+            console.log(`📁 CONVERTING ${isBack ? 'BACK' : 'FRONT'} ID TO BASE64`);
             console.log('═══════════════════════════════════════════════════════════════');
             console.log(`📄 Filename: ${file.name}`);
             console.log(`🖼️  MIME Type: ${file.type}`);
             console.log(`💾 File Size: ${Math.round(file.size / 1024)} KB`);
             console.log(`📅 Last Modified: ${new Date(file.lastModified).toLocaleString()}`);
-            console.log(`🔐 Conversion: ❌ NONE - Raw File Object stored`);
-            console.log(`📝 EXIF Preserved: ✅ YES - 100% original file`);
-            console.log(`🎨 Paint Detection: ✅ SAFE - untouched file data`);
-            console.log(`📤 Will be sent as: multipart/form-data (FormData)`);
+            console.log(`🔐 Converting to: Base64 string`);
+            console.log(`📤 Will be sent as: JSON payload to API`);
+            console.log(`💾 Saved to disk: Only if API returns "accept"`);
             console.log('═══════════════════════════════════════════════════════════════');
 
-            // Store RAW FILE OBJECT - NO CONVERSION AT ALL
-            // setFrontId/setBackId now accept a File object as second parameter
+            // Convert File to Base64 string
+            const base64Image = await convertFileToBase64(file);
+            console.log(`✅ Base64 conversion complete: ${base64Image.length} chars`);
+
+            // Store Base64 string in VerificationState
             if (isBack) {
-                VerificationState.setBackId(null, file);  // null for base64 (not used), file object
+                VerificationState.setBackId(base64Image);
                 if (status) {
-                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Back ID uploaded (RAW FILE, EXIF intact). Ready for verification.';
+                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Back ID converted to Base64. Ready for verification.';
                 }
             } else {
-                VerificationState.setFrontId(null, file);  // null for base64 (not used), file object
+                VerificationState.setFrontId(base64Image);
                 if (status) {
-                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Front ID uploaded (RAW FILE, EXIF intact). Please upload back ID and selfie.';
+                    status.innerHTML = '<i class="fas fa-check-circle mr-2 text-green-500"></i>Front ID converted to Base64. Please upload back ID and selfie.';
                 }
             }
 
         } catch (error) {
-            console.error('❌ Error storing file:', error);
+            console.error('❌ Error converting file to Base64:', error);
             if (status) {
                 status.innerHTML = '<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Error processing file. Please try again.';
             }

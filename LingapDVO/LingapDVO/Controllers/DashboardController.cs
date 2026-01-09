@@ -187,7 +187,6 @@ namespace LingapDVO.Controllers
                      ViewBag.Suffix = verifyAccount.Suffix ?? "";
                      ViewBag.BlkLotStreet = verifyAccount.BlkLotStreet ?? "";
                      ViewBag.SubVill = verifyAccount.SubVill ?? "";
-                     ViewBag.District = verifyAccount.District ?? "";
                      ViewBag.Barangay = verifyAccount.Barangay ?? "";
                      ViewBag.Dateofbirth = verifyAccount.Dateofbirth ?? "";
                      ViewBag.Gender = verifyAccount.Gender ?? "";

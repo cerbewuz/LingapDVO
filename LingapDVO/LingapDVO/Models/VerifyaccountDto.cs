@@ -53,9 +53,6 @@ namespace LingapDVO.Models
         [Required, MaxLength(100)]
         public string Barangay { get; set; } = "";
 
-        [Required, MaxLength(100)]
-        public string District { get; set; } = "";
-
 
         [Required]
         [MaxLength(100)]

@@ -508,7 +508,6 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
                     HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
                     HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
-                    HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                     HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
                     HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
                     HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
@@ -1015,7 +1014,6 @@ namespace LingapDVO.Controllers
                             HttpContext.Session.SetString("Dateofbirth", verifiedUser.Dateofbirth ?? "");
                             HttpContext.Session.SetString("BlkLotStreet", verifiedUser.BlkLotStreet ?? "");
                             HttpContext.Session.SetString("SubVill", verifiedUser.SubVill ?? "");
-                            HttpContext.Session.SetString("District", verifiedUser.District ?? "");
                             HttpContext.Session.SetString("Barangay", verifiedUser.Barangay ?? "");
                             HttpContext.Session.SetString("CivilStatus", verifiedUser.CivilStatus ?? "");
                             HttpContext.Session.SetString("Phonenumber", verifiedUser.Phonenumber ?? "");
@@ -2438,7 +2436,6 @@ namespace LingapDVO.Controllers
                     BlkLotStreet = VerifyaccountDto.BlkLotStreet,
                     SubVill = VerifyaccountDto.SubVill,
                     Barangay = VerifyaccountDto.Barangay,
-                    District = VerifyaccountDto.District,
                     Phonenumber = VerifyaccountDto.Phonenumber,
                     CivilStatus = VerifyaccountDto.CivilStatus,
                     decision = VerificationDecision,
@@ -2459,7 +2456,6 @@ namespace LingapDVO.Controllers
                 HttpContext.Session.SetString("Dateofbirth", verifyaccount.Dateofbirth ?? "");
                 HttpContext.Session.SetString("BlkLotStreet", verifyaccount.BlkLotStreet ?? "");
                 HttpContext.Session.SetString("SubVill", verifyaccount.SubVill ?? "");
-                HttpContext.Session.SetString("District", verifyaccount.District ?? "");
                 HttpContext.Session.SetString("Barangay", verifyaccount.Barangay ?? "");
                 HttpContext.Session.SetString("CivilStatus", verifyaccount.CivilStatus ?? "");
                 HttpContext.Session.SetString("Phonenumber", verifyaccount.Phonenumber ?? "");
