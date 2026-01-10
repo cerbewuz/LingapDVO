@@ -2,18 +2,21 @@
 
 namespace LingapDVO.Models
 {
-    public class VerifyaccountDto
+    public class VerifiedAccountDto
     {
 
         public int Id { get; set; }
 
 
-        [Required, MaxLength(100)]
+        // IDtype is auto-populated by the ID Analyzer API after verification (readonly field)
+        // [Required] removed - server-side validation is done manually in the controller
+        [MaxLength(100)]
         public string IDtype { get; set; } = "";
 
-        [Required]
+        // IDnumber is auto-populated by the ID Analyzer API after verification
+        // Server-side validation is done manually in the controller
         [MaxLength(100)]
-        [RegularExpression(@"^[A-Za-z0-9\-]+$", ErrorMessage = "ID number can only contain letters, numbers, and dashes")]
+        [RegularExpression(@"^[A-Za-z0-9\-]*$", ErrorMessage = "ID number can only contain letters, numbers, and dashes")]
         public string IDnumber { get; set; } = "";
 
         [Required]
@@ -61,7 +64,5 @@ namespace LingapDVO.Models
 
         [Required, MaxLength(100)]
         public string CivilStatus { get; set; } = "";
-
-        public string? userfacepictureBase64 { get; set; }
     }
 }

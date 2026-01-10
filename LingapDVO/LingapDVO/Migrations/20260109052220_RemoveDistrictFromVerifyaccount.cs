@@ -12,7 +12,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "District",
-                table: "Verifyaccount");
+                table: "VerifiedAccount");
         }
 
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "District",
-                table: "Verifyaccount",
+                table: "VerifiedAccount",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,

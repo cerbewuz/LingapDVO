@@ -12,7 +12,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "Status",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(max)",
                 nullable: true);
         }
@@ -22,7 +22,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "Status",
-                table: "RegisterAcc");
+                table: "UserAccount");
         }
     }
 }

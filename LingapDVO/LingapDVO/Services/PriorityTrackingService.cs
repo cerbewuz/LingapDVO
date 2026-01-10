@@ -176,7 +176,7 @@ namespace LingapDVO.Services
                     var priority = hoursElapsed >= 2 ? "Critical Delay" : "Standard Delay";
 
                     // Get applicant name
-                    var verifyAccount = await _context.Verifyaccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
+                    var verifyAccount = await _context.VerifiedAccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
                     var applicantName = verifyAccount != null
                         ? $"{verifyAccount.Firstname} {verifyAccount.Lastname}".Trim()
                         : "Applicant";
@@ -231,7 +231,7 @@ namespace LingapDVO.Services
                     var priority = hoursElapsed >= 2 ? "Critical Delay" : "Standard Delay";
 
                     // Get applicant name
-                    var verifyAccount = await _context.Verifyaccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
+                    var verifyAccount = await _context.VerifiedAccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
                     var applicantName = verifyAccount != null
                         ? $"{verifyAccount.Firstname} {verifyAccount.Lastname}".Trim()
                         : "Applicant";
@@ -286,7 +286,7 @@ namespace LingapDVO.Services
                     var priority = hoursElapsed >= 2 ? "Critical Delay" : "Standard Delay";
 
                     // Get applicant name
-                    var verifyAccount = await _context.Verifyaccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
+                    var verifyAccount = await _context.VerifiedAccount.FirstOrDefaultAsync(v => v.UserId == app.UserId);
                     var applicantName = verifyAccount != null
                         ? $"{verifyAccount.Firstname} {verifyAccount.Lastname}".Trim()
                         : "Applicant";

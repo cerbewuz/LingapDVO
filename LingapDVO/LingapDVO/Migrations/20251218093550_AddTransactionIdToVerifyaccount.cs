@@ -12,7 +12,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "TransactionId",
-                table: "Verifyaccount",
+                table: "VerifiedAccount",
                 type: "nvarchar(200)",
                 maxLength: 200,
                 nullable: true);
@@ -23,7 +23,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "TransactionId",
-                table: "Verifyaccount");
+                table: "VerifiedAccount");
         }
     }
 }

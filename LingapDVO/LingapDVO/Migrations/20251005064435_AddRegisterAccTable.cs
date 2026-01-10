@@ -11,7 +11,7 @@ namespace LingapDVO.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "RegisterAcc",
+                name: "UserAccount",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -27,13 +27,13 @@ namespace LingapDVO.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_RegisterAcc_Email",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_RegisterAcc_Phonenumber",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 column: "Phonenumber",
                 unique: true);
         }
@@ -42,7 +42,7 @@ namespace LingapDVO.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "RegisterAcc");
+                name: "UserAccount");
         }
     }
 }

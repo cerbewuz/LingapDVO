@@ -36,6 +36,7 @@ namespace LingapDVO.Controllers
             _dateTimeService = dateTimeService;
             _aesEncryptionService = aesEncryptionService;
         }
+
         public IActionResult Index()
         {
             return View();
@@ -209,7 +210,7 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Send multi-channel notification (In-App, SMS, Email based on preferences)
-                var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
+                var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                 _ = _notificationService.SendStatusChangeNotificationAsync(
@@ -220,8 +221,8 @@ namespace LingapDVO.Controllers
                     HospitalAssistance.Id
                 );
 
-                // Get the user's info from RegisterAcc
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == HospitalAssistance.UserId);
+                // Get the user's info from UserAccount
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == HospitalAssistance.UserId);
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
@@ -471,7 +472,7 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Send multi-channel notification
-                var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == OtherAssistance.UserId);
+                var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == OtherAssistance.UserId);
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                 _ = _notificationService.SendStatusChangeNotificationAsync(
@@ -483,7 +484,7 @@ namespace LingapDVO.Controllers
                 );
 
                 // Get user info
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == OtherAssistance.UserId);
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == OtherAssistance.UserId);
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
@@ -722,7 +723,7 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Send multi-channel notification
-                var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == FuneralAssistance.UserId);
+                var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == FuneralAssistance.UserId);
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                 _ = _notificationService.SendStatusChangeNotificationAsync(
@@ -734,7 +735,7 @@ namespace LingapDVO.Controllers
                 );
 
                 // Get user info
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == FuneralAssistance.UserId);
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == FuneralAssistance.UserId);
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
@@ -4749,7 +4750,7 @@ namespace LingapDVO.Controllers
                     status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) ||
                     status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
+                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                     // Send notification (fire and forget)
@@ -4841,7 +4842,7 @@ namespace LingapDVO.Controllers
             try
             {
                 // Get user with explicit null checking
-                var user = await context.RegisterAcc.FindAsync(assistance.UserId);
+                var user = await context.UserAccount.FindAsync(assistance.UserId);
 
                 if (user == null)
                 {
@@ -5292,7 +5293,7 @@ namespace LingapDVO.Controllers
                     status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) ||
                     status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == medicallabform.UserId);
+                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == medicallabform.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                     // Send notification (fire and forget)
@@ -5384,7 +5385,7 @@ namespace LingapDVO.Controllers
             try
             {
                 // Get user with explicit null checking
-                var user = await context.RegisterAcc.FindAsync(assistance.UserId);
+                var user = await context.UserAccount.FindAsync(assistance.UserId);
 
                 if (user == null)
                 {
@@ -5838,7 +5839,7 @@ namespace LingapDVO.Controllers
                     status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) ||
                     status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == funeralAssistance.UserId);
+                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == funeralAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                     // Send notification (fire and forget)
@@ -5930,7 +5931,7 @@ namespace LingapDVO.Controllers
             try
             {
                 // Get user with explicit null checking
-                var user = await context.RegisterAcc.FindAsync(assistance.UserId);
+                var user = await context.UserAccount.FindAsync(assistance.UserId);
 
                 if (user == null)
                 {
@@ -6323,13 +6324,13 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // ? Get user info
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == HospitalAssistance.UserId);
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == HospitalAssistance.UserId);
 
                 // ? Only send email if status is "Claimed"
                 if (HospitalAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
                 {
                     // ? Get first name from VerifyAccount
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == user.Id);
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // ? Get email settings
@@ -6474,13 +6475,13 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Get user info
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == otherAssistance.UserId);
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == otherAssistance.UserId);
 
                 // Only send email if status is "Claimed"
                 if (OtherAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
                 {
                     // Get first name from VerifyAccount
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == user.Id);
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // Get email settings
@@ -6598,7 +6599,7 @@ namespace LingapDVO.Controllers
                 var status = OtherAssistanceDto.Status3?.Trim();
                 if (!string.IsNullOrEmpty(status))
                 {
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == otherAssistance.UserId);
+                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == otherAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                     _ = _notificationService.SendStatusChangeNotificationAsync(
@@ -6645,14 +6646,14 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Get user info
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == funeralAssistance.UserId);
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == funeralAssistance.UserId);
 
                 // Only send email if status is "Claimed"
                 if (FuneralAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true
                     && user != null && !string.IsNullOrEmpty(user.Email))
                 {
                     // Get first name from VerifyAccount
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == user.Id);
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // Get email settings
@@ -6768,7 +6769,7 @@ namespace LingapDVO.Controllers
                 var status = FuneralAssistanceDto.Status3?.Trim();
                 if (!string.IsNullOrEmpty(status))
                 {
-                    var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == funeralAssistance.UserId);
+                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == funeralAssistance.UserId);
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                     _ = _notificationService.SendStatusChangeNotificationAsync(
@@ -7117,8 +7118,8 @@ namespace LingapDVO.Controllers
                     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
                 };
 
-                // STEP 1: Create unique user accounts (RegisterAcc)
-                var createdUsers = new List<RegisterAcc>();
+                // STEP 1: Create unique user accounts (UserAccount)
+                var createdUsers = new List<UserAccount>();
                 var userCount = 50; // Create 50 unique users
 
                 for (int i = 0; i < userCount; i++)
@@ -7130,12 +7131,8 @@ namespace LingapDVO.Controllers
                     var username = $"{firstName.ToLower()}.{lastName.ToLower()}{i}";
                     var email = $"{firstName.ToLower()}.{lastName.ToLower()}{i}@gmail.com";
 
-                    var user = new RegisterAcc
+                    var user = new UserAccount
                     {
-                        FirstName = firstName,
-                        MiddleName = middleName,
-                        LastName = lastName,
-                        Suffix = random.Next(10) > 8 ? (random.Next(2) == 0 ? "Jr." : "Sr.") : "",
                         Email = email,
                         Password = BCrypt.Net.BCrypt.HashPassword("Password123!"),
                         Username = username,
@@ -7146,7 +7143,7 @@ namespace LingapDVO.Controllers
                         PreferInAppNotification = true
                     };
 
-                    context.RegisterAcc.Add(user);
+                    context.UserAccount.Add(user);
                     createdUsers.Add(user);
                 }
 
@@ -7184,7 +7181,7 @@ namespace LingapDVO.Controllers
                         UserAgent = userAgent,
                         Email = user.Email,
                         Username = user.Username,
-                        FullName = $"{user.LastName} {user.FirstName} {user.MiddleName}",
+                        FullName = user.Username,
                         Action = "SUCCESS",
                         Source = "WEB_FORM",
                         Reason = "User registered successfully",
@@ -7589,7 +7586,7 @@ namespace LingapDVO.Controllers
                                 Suggestion = random.Next(2) == 0 ? "Please add more seating in the waiting area." : null,
                                 Request = null,
                                 Complaint = random.Next(10) == 0 ? "The waiting time was a bit long." : null,
-                                Signature = $"{user.FirstName}_{user.LastName}",
+                                Signature = user.Username,
                                 SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)), // Feedback within 7 days of claiming
                                 IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
                             };
@@ -7637,7 +7634,7 @@ namespace LingapDVO.Controllers
                                 Suggestion = random.Next(2) == 0 ? "Online tracking of application status would be helpful." : null,
                                 Request = null,
                                 Complaint = random.Next(10) == 0 ? "Process could be streamlined." : null,
-                                Signature = $"{user.FirstName}_{user.LastName}",
+                                Signature = user.Username,
                                 SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)),
                                 IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
                             };
@@ -7685,7 +7682,7 @@ namespace LingapDVO.Controllers
                                 Suggestion = random.Next(2) == 0 ? "More information about requirements would help." : null,
                                 Request = null,
                                 Complaint = random.Next(10) == 0 ? "Needed faster processing for emergency cases." : null,
-                                Signature = $"{user.FirstName}_{user.LastName}",
+                                Signature = user.Username,
                                 SubmittedAt = app.ClaimedAt.AddDays(random.Next(1, 7)),
                                 IpAddress = ipAddresses[random.Next(ipAddresses.Length)]
                             };

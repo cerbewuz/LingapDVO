@@ -673,7 +673,7 @@ namespace LingapDVO.Migrations
                     b.ToTable("Register");
                 });
 
-            modelBuilder.Entity("LingapDVO.Models.RegisterAcc", b =>
+            modelBuilder.Entity("LingapDVO.Models.UserAccount", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -707,7 +707,7 @@ namespace LingapDVO.Migrations
                     b.HasIndex("Phonenumber")
                         .IsUnique();
 
-                    b.ToTable("RegisterAcc");
+                    b.ToTable("UserAccount");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Superadminaccount", b =>

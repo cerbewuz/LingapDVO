@@ -220,7 +220,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-accountverification",
-    pattern: "Verifyaccount",
+    pattern: "VerifyAccount",
     defaults: new { controller = "Login", action = "Accountverification" });
 
 app.MapControllerRoute(

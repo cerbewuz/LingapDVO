@@ -113,9 +113,6 @@ namespace LingapDVO.Scripts
 
             var user = new RegisterAcc
             {
-                FirstName = firstName,
-                MiddleName = FilipinoFirstNames[_random.Next(FilipinoFirstNames.Length)],
-                LastName = lastName,
                 Email = email,
                 Username = username,
                 Password = BCrypt.Net.BCrypt.HashPassword("DummyPass123!")
@@ -129,9 +126,14 @@ namespace LingapDVO.Scripts
 
         private async Task<Verifyaccount> CreateVerifiedAccountAsync(RegisterAcc user)
         {
+            // Generate names for verification
+            string firstName = FilipinoFirstNames[_random.Next(FilipinoFirstNames.Length)];
+            string middleName = FilipinoFirstNames[_random.Next(FilipinoFirstNames.Length)];
+            string lastName = FilipinoLastNames[_random.Next(FilipinoLastNames.Length)];
+
             // Generate realistic original filenames
-            string validIdOriginal = $"ValidID_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.jpg";
-            string backIdOriginal = $"BackID_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.jpg";
+            string validIdOriginal = $"ValidID_{firstName}_{lastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.jpg";
+            string backIdOriginal = $"BackID_{firstName}_{lastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.jpg";
 
             // Encrypt filenames using real AES-256 encryption
             string encryptedValidId = _aesHelper.EncryptFilename(validIdOriginal) + ".enc";
@@ -140,9 +142,9 @@ namespace LingapDVO.Scripts
             var verifyAccount = new Verifyaccount
             {
                 UserId = user.Id,
-                Firstname = user.FirstName,
-                Middlename = user.MiddleName,
-                Lastname = user.LastName,
+                Firstname = firstName,
+                Middlename = middleName,
+                Lastname = lastName,
                 FrontID = TruncateToMaxLength(encryptedValidId, 100),
                 BackID = TruncateToMaxLength(encryptedBackId, 100),
                 Barangay = BarangaysInDavao[_random.Next(BarangaysInDavao.Length)],
@@ -165,10 +167,10 @@ namespace LingapDVO.Scripts
         private async Task CreateHospitalAssistanceApplicationAsync(RegisterAcc user, Verifyaccount verifyAccount)
         {
             // Generate original document filenames
-            string validIdOriginal = $"HospitalValidID_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string validBackOriginal = $"HospitalBackID_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string prescriptionOriginal = $"Prescription_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string deathCertOriginal = $"DeathCert_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string validIdOriginal = $"HospitalValidID_{verifyAccount.Firstname}_{verifyAccount.Lastname}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string validBackOriginal = $"HospitalBackID_{verifyAccount.Firstname}_{verifyAccount.Lastname}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string prescriptionOriginal = $"Prescription_{verifyAccount.Firstname}_{verifyAccount.Lastname}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string deathCertOriginal = $"DeathCert_{verifyAccount.Firstname}_{verifyAccount.Lastname}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
 
             // Encrypt all filenames
             string encryptedValidId = _aesHelper.EncryptFilename(validIdOriginal) + ".enc";
@@ -193,10 +195,10 @@ namespace LingapDVO.Scripts
             var application = new HospitalAssistance
             {
                 UserId = user.Id,
-                Firstname = user.FirstName,
-                Middlename = user.MiddleName,
-                Lastname = user.LastName,
-                Suffix = "",
+                Firstname = verifyAccount.Firstname,
+                Middlename = verifyAccount.Middlename,
+                Lastname = verifyAccount.Lastname,
+                Suffix = verifyAccount.Suffix,
                 Validfrontimage = TruncateToMaxLength(encryptedValidId, 100),
                 ValidBackimage = TruncateToMaxLength(encryptedValidBack, 100),
                 DoctorPrescription = TruncateToMaxLength(encryptedPrescription, 100),
@@ -210,9 +212,9 @@ namespace LingapDVO.Scripts
                 PhilHealthNo = _random.Next(2) == 0 ? $"12-{_random.Next(100000000, 999999999)}" : "",
                 Dateofbirth = verifyAccount.Dateofbirth,
                 Age = CalculateAge(verifyAccount.Dateofbirth).ToString(),
-                RLastname = user.LastName,
-                RFirstname = user.FirstName,
-                RMiddlename = user.MiddleName,
+                RLastname = verifyAccount.Lastname,
+                RFirstname = verifyAccount.Firstname,
+                RMiddlename = verifyAccount.Middlename,
                 RSuffix = "",
                 RBlkLotStreet = verifyAccount.BlkLotStreet,
                 RSubVill = verifyAccount.SubVill,
@@ -238,10 +240,10 @@ namespace LingapDVO.Scripts
         private async Task CreateOtherAssistanceApplicationAsync(RegisterAcc user, Verifyaccount verifyAccount)
         {
             // Generate original document filenames
-            string validIdOriginal = $"OtherValidID_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string validBackOriginal = $"OtherBackID_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string medCertOriginal = $"MedCert_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string prescriptionOriginal = $"Prescription_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string validIdOriginal = $"OtherValidID_{User}_{TestUser}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string validBackOriginal = $"OtherBackID_{User}_{TestUser}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string medCertOriginal = $"MedCert_{User}_{TestUser}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string prescriptionOriginal = $"Prescription_{User}_{TestUser}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
 
             // Encrypt all filenames
             string encryptedValidId = _aesHelper.EncryptFilename(validIdOriginal) + ".enc";
@@ -263,9 +265,9 @@ namespace LingapDVO.Scripts
             var application = new OtherAssistance
             {
                 UserId = user.Id,
-                Firstname = user.FirstName,
-                Middlename = user.MiddleName,
-                Lastname = user.LastName,
+                Firstname = User,
+                Middlename = FilipinoFirstNames[_random.Next(FilipinoFirstNames.Length)],
+                Lastname = TestUser,
                 Suffix = "",
                 Validfrontimage = TruncateToMaxLength(encryptedValidId, 100),
                 ValidBackimage = TruncateToMaxLength(encryptedValidBack, 100),
@@ -281,9 +283,9 @@ namespace LingapDVO.Scripts
                 PhilHealthNo = _random.Next(2) == 0 ? $"12-{_random.Next(100000000, 999999999)}" : "",
                 Dateofbirth = verifyAccount.Dateofbirth,
                 Age = CalculateAge(verifyAccount.Dateofbirth).ToString(),
-                RLastname = user.LastName,
-                RFirstname = user.FirstName,
-                RMiddlename = user.MiddleName,
+                RLastname = TestUser,
+                RFirstname = User,
+                RMiddlename = FilipinoFirstNames[_random.Next(FilipinoFirstNames.Length)],
                 RSuffix = "",
                 RBlkLotStreet = verifyAccount.BlkLotStreet,
                 RSubVill = verifyAccount.SubVill,
@@ -308,10 +310,10 @@ namespace LingapDVO.Scripts
         private async Task CreateFuneralAssistanceApplicationAsync(RegisterAcc user, Verifyaccount verifyAccount)
         {
             // Generate original document filenames
-            string validIdOriginal = $"FuneralValidID_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string validBackOriginal = $"FuneralBackID_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string deathCertOriginal = $"DeathCert_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
-            string prescriptionOriginal = $"Prescription_{user.FirstName}_{user.LastName}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string validIdOriginal = $"FuneralValidID_{User}_{TestUser}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string validBackOriginal = $"FuneralBackID_{User}_{TestUser}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string deathCertOriginal = $"DeathCert_{User}_{TestUser}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
+            string prescriptionOriginal = $"Prescription_{User}_{TestUser}_{Guid.NewGuid().ToString("N").Substring(0, 8)}.pdf";
 
             // Encrypt all filenames
             string encryptedValidId = _aesHelper.EncryptFilename(validIdOriginal) + ".enc";
@@ -333,9 +335,9 @@ namespace LingapDVO.Scripts
             var application = new FuneralAssistance
             {
                 UserId = user.Id,
-                Firstname = user.FirstName,
-                Middlename = user.MiddleName,
-                Lastname = user.LastName,
+                Firstname = User,
+                Middlename = FilipinoFirstNames[_random.Next(FilipinoFirstNames.Length)],
+                Lastname = TestUser,
                 Suffix = "",
                 Validfrontimage = TruncateToMaxLength(encryptedValidId, 100),
                 ValidBackimage = TruncateToMaxLength(encryptedValidBack, 100),
@@ -350,9 +352,9 @@ namespace LingapDVO.Scripts
                 PhilHealthNo = _random.Next(2) == 0 ? $"12-{_random.Next(100000000, 999999999)}" : "",
                 Dateofbirth = verifyAccount.Dateofbirth,
                 Age = CalculateAge(verifyAccount.Dateofbirth).ToString(),
-                RLastname = user.LastName,
-                RFirstname = user.FirstName,
-                RMiddlename = user.MiddleName,
+                RLastname = TestUser,
+                RFirstname = User,
+                RMiddlename = FilipinoFirstNames[_random.Next(FilipinoFirstNames.Length)],
                 RSuffix = "",
                 RBlkLotStreet = verifyAccount.BlkLotStreet,
                 RSubVill = verifyAccount.SubVill,

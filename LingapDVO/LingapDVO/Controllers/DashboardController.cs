@@ -89,7 +89,7 @@ namespace LingapDVO.Controllers
                 ViewBag.Username = HttpContext.Session.GetString("Username");
 
                 // Get profile picture from database
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == userId);
                 ViewBag.Profilepicture = user?.Profilepicture ?? "";
             }
             else if (isAuthenticated)
@@ -102,7 +102,7 @@ namespace LingapDVO.Controllers
                 // Get profile picture from database if userId is available
                 if (userId > 0)
                 {
-                    var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+                    var user = context.UserAccount.FirstOrDefault(u => u.Id == userId);
                     ViewBag.Profilepicture = user?.Profilepicture ?? "";
                 }
                 else
@@ -112,7 +112,7 @@ namespace LingapDVO.Controllers
             }
 
             // ? Check if user has completed verification
-            var verification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            var verification = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
             bool isVerified = verification != null;
             ViewBag.IsVerified = isVerified;
 
@@ -174,7 +174,7 @@ namespace LingapDVO.Controllers
              if (int.TryParse(userIdString, out int userId))
              {
                  // Fetch data from VerifyAccount table
-                 var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+                 var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
 
                  if (verifyAccount != null)
                  {
@@ -221,7 +221,7 @@ namespace LingapDVO.Controllers
              // Get profile picture from database
              if (int.TryParse(userIdString, out int userIdForPicture))
              {
-                 var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userIdForPicture);
+                 var user = context.UserAccount.FirstOrDefault(u => u.Id == userIdForPicture);
                  ViewBag.Profilepicture = user?.Profilepicture ?? "";
              }
              else
@@ -299,7 +299,7 @@ namespace LingapDVO.Controllers
                 }
 
                 // Update database
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == userId);
                 if (user != null)
                 {
                     // Delete old profile picture if exists
@@ -352,7 +352,7 @@ namespace LingapDVO.Controllers
                 }
 
                 // Get user from database
-                var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == userId);
                 if (user != null)
                 {
                     // Delete old picture file if exists
@@ -421,7 +421,7 @@ namespace LingapDVO.Controllers
             ViewBag.BackID = HttpContext.Session.GetString("BackID");
 
             // Get phone number from Verifyaccount table
-            var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
             ViewBag.Phonenumber = verifyAccount?.Phonenumber ?? "";
 
             return View();
@@ -1481,7 +1481,7 @@ namespace LingapDVO.Controllers
             ViewBag.BackID = HttpContext.Session.GetString("BackID");
 
             // Get phone number from Verifyaccount table
-            var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
             ViewBag.Phonenumber = verifyAccount?.Phonenumber ?? "";
 
             return View();
@@ -2425,7 +2425,7 @@ namespace LingapDVO.Controllers
             ViewBag.BackID = HttpContext.Session.GetString("BackID");
 
             // Get phone number from Verifyaccount table
-            var verifyAccount = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
             ViewBag.Phonenumber = verifyAccount?.Phonenumber ?? "";
 
             return View();
@@ -4338,7 +4338,7 @@ namespace LingapDVO.Controllers
                 return Json(new { success = false, error = "User not authenticated" });
             }
 
-            var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+            var user = context.UserAccount.FirstOrDefault(u => u.Id == userId);
             if (user == null)
             {
                 return Json(new { success = false, error = "User not found" });
@@ -4365,7 +4365,7 @@ namespace LingapDVO.Controllers
                 return Json(new { success = false, error = "User not authenticated" });
             }
 
-            var user = context.RegisterAcc.FirstOrDefault(u => u.Id == userId);
+            var user = context.UserAccount.FirstOrDefault(u => u.Id == userId);
             if (user == null)
             {
                 return Json(new { success = false, error = "User not found" });
@@ -4504,10 +4504,21 @@ namespace LingapDVO.Controllers
                     string userName = "Anonymous";
                     if (feedback.UserId.HasValue)
                     {
-                        var user = await context.RegisterAcc.FindAsync(feedback.UserId.Value);
-                        if (user != null)
+                        var verifiedAccount = await context.VerifiedAccount.FirstOrDefaultAsync(v => v.UserId == feedback.UserId.Value);
+                        if (verifiedAccount != null)
                         {
-                            userName = $"{user.FirstName} {user.LastName}";
+                            // Construct full name from VerifiedAccount
+                            var nameParts = new List<string>
+                            {
+                                verifiedAccount.Firstname,
+                                verifiedAccount.Middlename,
+                                verifiedAccount.Lastname
+                            };
+                            if (!string.IsNullOrWhiteSpace(verifiedAccount.Suffix) && verifiedAccount.Suffix != "None")
+                            {
+                                nameParts.Add(verifiedAccount.Suffix);
+                            }
+                            userName = string.Join(" ", nameParts.Where(p => !string.IsNullOrWhiteSpace(p)));
                         }
                     }
 

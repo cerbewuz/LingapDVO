@@ -12,7 +12,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AddColumn<int>(
                 name: "UserId",
-                table: "Verifyaccount",
+                table: "VerifiedAccount",
                 type: "int",
                 nullable: false,
                 defaultValue: 0);
@@ -23,7 +23,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "UserId",
-                table: "Verifyaccount");
+                table: "VerifiedAccount");
         }
     }
 }

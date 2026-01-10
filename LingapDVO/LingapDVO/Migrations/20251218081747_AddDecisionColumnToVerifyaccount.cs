@@ -12,7 +12,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "decision",
-                table: "Verifyaccount",
+                table: "VerifiedAccount",
                 type: "nvarchar(20)",
                 maxLength: 20,
                 nullable: true);
@@ -23,7 +23,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "decision",
-                table: "Verifyaccount");
+                table: "VerifiedAccount");
         }
     }
 }

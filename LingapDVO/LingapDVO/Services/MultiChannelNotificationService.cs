@@ -42,7 +42,7 @@ namespace LingapDVO.Services
             try
             {
                 // Get user preferences
-                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _context.UserAccount.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null)
                 {
                     _logger.LogWarning($"User with ID {userId} not found");
@@ -50,7 +50,7 @@ namespace LingapDVO.Services
                 }
 
                 // Get user's full name
-                var verifyAccount = await _context.Verifyaccount.FirstOrDefaultAsync(v => v.UserId == userId);
+                var verifyAccount = await _context.VerifiedAccount.FirstOrDefaultAsync(v => v.UserId == userId);
                 var userName = verifyAccount != null
                     ? $"{verifyAccount.Firstname} {verifyAccount.Middlename} {verifyAccount.Lastname}".Trim()
                     : user.Username ?? "User";
@@ -179,7 +179,7 @@ namespace LingapDVO.Services
             try
             {
                 // Get user preferences
-                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _context.UserAccount.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null)
                 {
                     _logger.LogWarning($"User with ID {userId} not found");
@@ -257,7 +257,7 @@ namespace LingapDVO.Services
                 // Send SMS notification if preferred (formal and concise automated message)
                 if (user.PreferSmsNotification)
                 {
-                    var verifyAccount = await _context.Verifyaccount
+                    var verifyAccount = await _context.VerifiedAccount
                         .FirstOrDefaultAsync(v => v.UserId == userId);
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
@@ -281,7 +281,7 @@ namespace LingapDVO.Services
             try
             {
                 // Get user preferences
-                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _context.UserAccount.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null)
                 {
                     _logger.LogWarning($"User with ID {userId} not found");
@@ -352,7 +352,7 @@ namespace LingapDVO.Services
                 // Send SMS notification with nearby offices link if preferred (formal and concise)
                 if (user.PreferSmsNotification)
                 {
-                    var verifyAccount = await _context.Verifyaccount
+                    var verifyAccount = await _context.VerifiedAccount
                         .FirstOrDefaultAsync(v => v.UserId == userId);
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
@@ -375,7 +375,7 @@ namespace LingapDVO.Services
             try
             {
                 // Get user preferences
-                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _context.UserAccount.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null)
                 {
                     _logger.LogWarning($"User with ID {userId} not found");
@@ -446,7 +446,7 @@ namespace LingapDVO.Services
                 // Send SMS notification with feedback link if preferred (formal and concise)
                 if (user.PreferSmsNotification)
                 {
-                    var verifyAccount = await _context.Verifyaccount
+                    var verifyAccount = await _context.VerifiedAccount
                         .FirstOrDefaultAsync(v => v.UserId == userId);
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
@@ -469,7 +469,7 @@ namespace LingapDVO.Services
             try
             {
                 // Get user preferences
-                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _context.UserAccount.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null)
                 {
                     _logger.LogWarning($"User with ID {userId} not found");
@@ -544,7 +544,7 @@ namespace LingapDVO.Services
                 // Send SMS notification with application tracking link if preferred
                 if (user.PreferSmsNotification)
                 {
-                    var verifyAccount = await _context.Verifyaccount
+                    var verifyAccount = await _context.VerifiedAccount
                         .FirstOrDefaultAsync(v => v.UserId == userId);
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
@@ -567,7 +567,7 @@ namespace LingapDVO.Services
         {
             try
             {
-                var user = await _context.RegisterAcc.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _context.UserAccount.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null)
                 {
                     _logger.LogWarning($"User with ID {userId} not found");
@@ -656,7 +656,7 @@ namespace LingapDVO.Services
                 // Send SMS notification if preferred
                 if (user.PreferSmsNotification)
                 {
-                    var verifyAccount = await _context.Verifyaccount
+                    var verifyAccount = await _context.VerifiedAccount
                         .FirstOrDefaultAsync(v => v.UserId == userId);
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))

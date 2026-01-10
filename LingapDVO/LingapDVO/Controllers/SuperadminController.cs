@@ -52,7 +52,7 @@ namespace LingapDVO.Controllers
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            var RegisterAcc = context.RegisterAcc
+            var UserAccount = context.UserAccount
               .OrderByDescending(f => f.Id)
               .ToList();
 
@@ -67,7 +67,7 @@ namespace LingapDVO.Controllers
                 HospitalAssistance = hospitalBills,
                 OtherAssistance = medicalLabForms,
                 FuneralAssistance = FuneralAssistance,
-                RegisterAcc = RegisterAcc,
+                UserAccount = UserAccount,
                 Adminaccount = Admin
             };
 

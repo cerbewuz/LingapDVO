@@ -673,7 +673,7 @@ namespace LingapDVO.Migrations
                     b.ToTable("Register");
                 });
 
-            modelBuilder.Entity("LingapDVO.Models.RegisterAcc", b =>
+            modelBuilder.Entity("LingapDVO.Models.UserAccount", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -704,7 +704,7 @@ namespace LingapDVO.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("RegisterAcc");
+                    b.ToTable("UserAccount");
                 });
 
             modelBuilder.Entity("LingapDVO.Models.Superadminaccount", b =>
@@ -876,7 +876,7 @@ namespace LingapDVO.Migrations
                     b.ToTable("Useraccount");
                 });
 
-            modelBuilder.Entity("LingapDVO.Models.Verifyaccount", b =>
+            modelBuilder.Entity("LingapDVO.Models.VerifiedAccount", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -969,7 +969,7 @@ namespace LingapDVO.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Verifyaccount");
+                    b.ToTable("VerifiedAccount");
                 });
 #pragma warning restore 612, 618
         }

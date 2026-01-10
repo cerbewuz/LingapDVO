@@ -395,7 +395,7 @@ function validateDavaoCityAddress(address1, address2) {
         console.warn('⚠️ Barangay not in standard list, but Davao City confirmed - Allowing');
         return {
             valid: true,
-            message: 'Address validated: Davao City resident (barangay name may vary)',
+            message: 'Address validated: Davao City',
             warning: true
         };
     }
@@ -403,7 +403,7 @@ function validateDavaoCityAddress(address1, address2) {
     console.log('✅ Address validation passed');
     return {
         valid: true,
-        message: `Address validated: Davao City, ${matchedBarangay}`,
+        message: 'Address validated: Davao City',
         barangay: matchedBarangay
     };
 }
@@ -513,6 +513,139 @@ function validateNameMatch(apiData, registeredData) {
     return {
         valid: true,
         message: 'Names match successfully'
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BARANGAY VALIDATION FUNCTION
+// ═══════════════════════════════════════════════════════════════════════════════
+// Compares user-selected barangay with barangay found in ID address
+// Uses partial, case-insensitive matching (e.g., 'Brgy. Talomo' matches 'Talomo')
+function validateBarangayMatch(address1, userSelectedBarangay) {
+    console.log('🏘️ Barangay Validation Input:', {
+        address1: address1,
+        userSelectedBarangay: userSelectedBarangay,
+        address1Length: address1?.length || 0
+    });
+
+    // If no address data from API, skip validation
+    if (!address1 || address1.trim() === '') {
+        console.warn('⚠️ Barangay validation skipped - no address');
+        return {
+            valid: true,
+            message: 'Barangay validation skipped (no address data from API)',
+            warning: true
+        };
+    }
+
+    // If user didn't select a barangay, fail validation
+    if (!userSelectedBarangay || userSelectedBarangay.trim() === '') {
+        return {
+            valid: false,
+            message: 'Please select your barangay in Tab 1'
+        };
+    }
+
+    const fullAddress = address1.toUpperCase().trim();
+    const selectedBarangay = userSelectedBarangay.toUpperCase().trim();
+
+    // Remove common prefixes for matching (Brgy., Barangay, etc.)
+    const cleanBarangay = selectedBarangay
+        .replace(/^BRGY\.?\s*/i, '')
+        .replace(/^BARANGAY\s*/i, '')
+        .trim();
+
+    // Check if address contains the barangay (partial match)
+    const barangayFound = fullAddress.includes(selectedBarangay) ||
+                         fullAddress.includes(cleanBarangay);
+
+    if (!barangayFound) {
+        return {
+            valid: false,
+            message: `Your ID address does not match the selected barangay "${userSelectedBarangay}"`
+        };
+    }
+
+    return {
+        valid: true,
+        message: `Barangay confirmed: ${userSelectedBarangay}`,
+        matchedBarangay: userSelectedBarangay
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TAB 3 REVIEW PAGE VALIDATION ORCHESTRATOR
+// ═══════════════════════════════════════════════════════════════════════════════
+// This function runs all three validation checks when user enters Tab 3
+// Returns an object with individual validation results and overall pass/fail status
+function runTab3Validations() {
+    console.log('🔍 Tab 3 Validations - VerificationState:', {
+        hasExtractedData: !!VerificationState.extractedData,
+        hasScanResult: !!VerificationState.scanResult,
+        extractedData: VerificationState.extractedData,
+        scanResultData: VerificationState.scanResult?.data
+    });
+
+    // Check if API data exists
+    if (!VerificationState.extractedData) {
+        console.warn('⚠️ No extractedData available');
+        return {
+            hasData: false,
+            overallPass: false,
+            validations: {
+                nameValidation: { valid: false, message: 'No verification data available' },
+                barangayValidation: { valid: false, message: 'No verification data available' },
+                davaoCityValidation: { valid: false, message: 'No verification data available' }
+            }
+        };
+    }
+
+    const apiData = VerificationState.extractedData;
+
+    // Get address from scanResult if not in extractedData
+    const address1 = apiData.address1 || VerificationState.scanResult?.data?.address1 || '';
+
+    console.log('📍 Address data for validation:', {
+        fromExtractedData: apiData.address1,
+        fromScanResult: VerificationState.scanResult?.data?.address1,
+        finalAddress: address1
+    });
+
+    // VALIDATION 1: Name Matching
+    const userInputData = {
+        firstName: (document.getElementById('firstname')?.value || '').trim(),
+        middleName: (document.getElementById('middlename')?.value || '').trim(),
+        lastName: (document.getElementById('lastname')?.value || '').trim(),
+        suffix: (document.getElementById('suffix')?.value || '').trim()
+    };
+
+    const nameValidation = validateNameMatch(apiData, userInputData);
+
+    // VALIDATION 2: Barangay Matching (moved before Davao City)
+    const barangayValidation = validateBarangayMatch(
+        address1,
+        document.getElementById('barangay')?.value || ''
+    );
+
+    // VALIDATION 3: Davao City Address (moved after Barangay)
+    const davaoCityValidation = validateDavaoCityAddress(
+        address1,
+        null
+    );
+
+    // Determine overall pass/fail
+    const overallPass = nameValidation.valid &&
+                       barangayValidation.valid &&
+                       davaoCityValidation.valid;
+
+    return {
+        hasData: true,
+        overallPass: overallPass,
+        validations: {
+            nameValidation,
+            barangayValidation,
+            davaoCityValidation
+        }
     };
 }
 
@@ -777,8 +910,13 @@ window.submitVerification = async function() {
 
             // Auto-populate ID Type if API returns "accept"
             const idTypeField = document.getElementById('idtype-display');
+            const idTypeHidden = document.getElementById('document-type'); // Hidden form field for submission
             if (idTypeField && idTypeValidation.idType) {
                 idTypeField.value = idTypeValidation.idType;
+                // Also sync to the hidden form field for form submission
+                if (idTypeHidden) {
+                    idTypeHidden.value = idTypeValidation.idType;
+                }
                 console.log('✅ ID Type auto-populated:', idTypeValidation.idType);
             }
 
@@ -828,9 +966,15 @@ window.submitVerification = async function() {
                 nextButton.disabled = false;
                 nextButton.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
                 nextButton.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
-                nextButton.querySelector('#next-btn-text').textContent = 'Next: Review & Submit';
-                nextButton.querySelector('i').classList.remove('fa-lock');
-                nextButton.querySelector('i').classList.add('fa-arrow-right');
+                const nextBtnText = nextButton.querySelector('#next-btn-text');
+                if (nextBtnText) {
+                    nextBtnText.textContent = 'Next: Review & Submit';
+                }
+                const nextBtnIcon = nextButton.querySelector('i');
+                if (nextBtnIcon) {
+                    nextBtnIcon.classList.remove('fa-lock');
+                    nextBtnIcon.classList.add('fa-arrow-right');
+                }
             }
 
             console.log('✅ VERIFICATION COMPLETE');
@@ -916,11 +1060,35 @@ document.addEventListener('DOMContentLoaded', function () {
     let lastAPICallTime = 0;
     const MIN_TIME_BETWEEN_CALLS = 1000; // 1 second minimum between calls
 
-    // Get registered user's name from window object (passed from ViewBag)
-    let registeredFirstName = window.registeredUserName?.firstName || "";
-    let registeredMiddleName = window.registeredUserName?.middleName || "";
-    let registeredLastName = window.registeredUserName?.lastName || "";
-    let registeredSuffix = window.registeredUserName?.suffix || "";
+    // Get user's name from Tab 1 form fields (Personal Info) dynamically
+    // These are updated when needed by calling getUserEnteredName()
+    function getRegisteredUserName() {
+        if (typeof window.getUserEnteredName === 'function') {
+            return window.getUserEnteredName();
+        }
+        // Fallback to reading form fields directly
+        return {
+            firstName: (document.getElementById('firstname')?.value || '').trim(),
+            middleName: (document.getElementById('middlename')?.value || '').trim(),
+            lastName: (document.getElementById('lastname')?.value || '').trim(),
+            suffix: (document.getElementById('suffix')?.value || '').trim()
+        };
+    }
+
+    // Variables to hold current user name (updated dynamically)
+    let registeredFirstName = "";
+    let registeredMiddleName = "";
+    let registeredLastName = "";
+    let registeredSuffix = "";
+
+    // Function to refresh registered user name from form fields
+    function refreshRegisteredUserName() {
+        const userName = getRegisteredUserName();
+        registeredFirstName = userName.firstName;
+        registeredMiddleName = userName.middleName;
+        registeredLastName = userName.lastName;
+        registeredSuffix = userName.suffix;
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // BACK ID TOGGLE - Disable/Enable based on ID type

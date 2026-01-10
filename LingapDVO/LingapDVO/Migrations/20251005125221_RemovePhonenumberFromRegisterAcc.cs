@@ -12,11 +12,11 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.DropIndex(
                 name: "IX_RegisterAcc_Phonenumber",
-                table: "RegisterAcc");
+                table: "UserAccount");
 
             migrationBuilder.DropColumn(
                 name: "Phonenumber",
-                table: "RegisterAcc");
+                table: "UserAccount");
         }
 
         /// <inheritdoc />
@@ -24,7 +24,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "Phonenumber",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
@@ -32,7 +32,7 @@ namespace LingapDVO.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_RegisterAcc_Phonenumber",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 column: "Phonenumber",
                 unique: true);
         }

@@ -1,4 +1,4 @@
-@model VerifyaccountDto
+@model VerifiedAccountDto
 @{
     Layout = null;
 }
@@ -69,6 +69,39 @@
             <!-- Main Form Card -->
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden glass-effect scale-in w-full max-w-full lg:max-w-4xl mx-auto">
                 <div class="p-6 md:p-8">
+
+                    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                    <!-- SERVER-SIDE ERROR DISPLAY -->
+                    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-start gap-3">
+                            <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                            <div>
+                                <strong class="font-semibold">Error:</strong>
+                                <span>@TempData["ErrorMessage"]</span>
+                            </div>
+                        </div>
+                    }
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-6">
+                            <div class="flex items-start gap-3 mb-2">
+                                <i class="fas fa-exclamation-triangle text-red-500 mt-0.5"></i>
+                                <strong class="font-semibold">Please fix the following issues:</strong>
+                            </div>
+                            <ul class="list-disc ml-8 mt-2 space-y-1 text-sm">
+                                @foreach (var modelState in ViewData.ModelState.Values)
+                                {
+                                    @foreach (var error in modelState.Errors)
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+
                     <form asp-action="Accountverification" method="post" enctype="multipart/form-data" id="registrationForm" class="space-y-8" onsubmit="return validateFinalSubmission()">
 
                         <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -82,8 +115,7 @@
                         <!-- Auto-Detected ID Type (Hidden - populated by API) -->
                         <input type="hidden" asp-for="IDtype" id="document-type" />
 
-                        <!-- User Face Picture (Hidden - populated by JS) -->
-                        <input type="hidden" asp-for="userfacepictureBase64" id="userfacepictureBase64" />
+
 
                         <!-- Verification Decision (Hidden - populated by ID Analyzer API) -->
                         <input type="hidden" name="VerificationDecision" id="verification-decision" value="" />
@@ -430,8 +462,7 @@
                         <!-- Tab 1 Navigation -->
                         <div class="flex justify-end pt-6">
                             <button type="button" id="tab1-next-btn" onclick="validateTab1AndProceed()" class="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                                Next: ID Verification
-                                <i class="fas fa-arrow-right ml-2"></i>
+                                Next
                             </button>
                         </div>
                         </div>
@@ -495,7 +526,6 @@
                                         id="start-verification-btn"
                                         onclick="IDUploadModal.startFlow()"
                                         class="w-full py-4 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3">
-                                    <i class="fas fa-id-card"></i>
                                     <span>Start Verification</span>
                                 </button>
                             </div>
@@ -570,8 +600,7 @@
 
                             <!-- Tab 2 Navigation -->
                             <div class="flex justify-between pt-6 border-t border-gray-200">
-                                <button type="button" onclick="WizardNav.goToTab(1)" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                                    <i class="fas fa-arrow-left mr-2"></i>
+                                <button type="button" onclick="WizardNav.goToTab(1)" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">                    
                                     Previous
                                 </button>
                                 <button type="button"
@@ -579,8 +608,7 @@
                                         onclick="WizardNav.goToTab(3)"
                                         disabled
                                         class="px-8 py-3 bg-gray-300 text-gray-500 rounded-xl font-semibold cursor-not-allowed transition-all duration-300">
-                                    <i class="fas fa-lock mr-2"></i>
-                                    <span id="next-btn-text">Complete ID Upload & Processing</span>
+                                    <span id="next-btn-text">Proceed</span>
                                 </button>
                             </div>
 
@@ -601,6 +629,11 @@
                                 </div>
 
                                 <p class="text-gray-600 mb-6">Please review all your information before submitting. You can go back to make changes if needed.</p>
+
+                                <!-- Validation Results Section -->
+                                <div id="validation-results-container" class="mb-6">
+                                    <!-- Validation results will be dynamically populated here by JavaScript -->
+                                </div>
 
                                 <!-- Personal Information Review -->
                                 <div class="bg-white border-2 border-gray-200 rounded-xl p-6">
@@ -725,14 +758,13 @@
                             <!-- Tab 3 Navigation -->
                             <div class="flex justify-between pt-6 border-t border-gray-200">
                                 <button type="button" onclick="WizardNav.goToTab(2)" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                                    <i class="fas fa-arrow-left mr-2"></i>
                                     Previous
                                 </button>
                                 <button type="submit"
                                         id="verify-account-btn"
                                         class="submitbtn-color text-white py-3 px-8 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0 outline-none"
                                         style="border: none;">
-                                    <i class="fas fa-paper-plane mr-2"></i>Submit My Information
+                                        Submit
                                 </button>
                             </div>
                         </div>
@@ -889,16 +921,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Pass registered user's name from ViewBag to JavaScript for name matching validation
-        window.registeredUserName = {
-            firstName: '@ViewBag.RegisteredFirstName',
-            middleName: '@ViewBag.RegisteredMiddleName',
-            lastName: '@ViewBag.RegisteredLastName',
-            suffix: '@ViewBag.RegisteredSuffix'
+        // User's name will be read from Tab 1 form fields (Personal Info) for name matching validation
+        // This function gets the current values from the form fields
+        window.getUserEnteredName = function() {
+            return {
+                firstName: (document.getElementById('firstname')?.value || '').trim(),
+                middleName: (document.getElementById('middlename')?.value || '').trim(),
+                lastName: (document.getElementById('lastname')?.value || '').trim(),
+                suffix: (document.getElementById('suffix')?.value || '').trim()
+            };
         };
 
         // Pass user ID for verification status polling
-        window.currentUserId = @ViewBag.UserId;
+        window.currentUserId = @(ViewBag.UserId ?? "null");
 
         // ID Analyzer API v2 is handled server-side via /api/IdAnalyzer endpoints
         // No client-side API keys needed - all requests go through the backend
@@ -970,152 +1005,10 @@
             });
 
             // ═══════════════════════════════════════════════════════════════════════════
-            // COMPREHENSIVE FORM VALIDATION - VERIFY ACCOUNT BUTTON
+            // NOTE: Form submission validation is now consolidated in validateFinalSubmission()
+            // which is called via onsubmit="return validateFinalSubmission()" on the form.
+            // The duplicate addEventListener validation has been removed to avoid conflicts.
             // ═══════════════════════════════════════════════════════════════════════════
-            // Ensures all requirements are met before form submission:
-            // 1. All form fields are filled
-            // 2. Front ID uploaded
-            // 3. Back ID uploaded
-            // 4. Selfie captured and saved
-            // 5. Terms checkbox checked
-            // ═══════════════════════════════════════════════════════════════════════════
-            
-            const registrationForm = document.getElementById('registrationForm');
-            if (registrationForm) {
-                registrationForm.addEventListener('submit', function(e) {
-                    console.log('═══════════════════════════════════════════════════════════════');
-                    console.log('📝 FORM SUBMISSION STARTED - Validating requirements...');
-                    console.log('═══════════════════════════════════════════════════════════════');
-
-                    // Collect validation errors
-                    const errors = [];
-                    
-                    // ═══════════════════════════════════════════════════════════════
-                    // CHECK 1: Verify all required form fields are filled
-                    // NOTE: ID Number is NOT in this list - it's auto-filled from API after ID upload
-                    // ═══════════════════════════════════════════════════════════════
-                    const requiredFields = {
-                        'lastname': 'Last Name',
-                        'firstname': 'First Name',
-                        'gender': 'Gender',
-                        'civil-status': 'Civil Status',
-                        'phonenumber': 'Phone Number',
-                        'birthdate': 'Date of Birth',
-                        'blklotstreet': 'Block/Lot/Street',
-                        'barangay': 'Barangay'
-                    };
-                    
-                    const missingFields = [];
-                    for (const [fieldId, fieldName] of Object.entries(requiredFields)) {
-                        const field = document.getElementById(fieldId);
-                        if (!field || !field.value || field.value.trim() === '' || field.value === '') {
-                            missingFields.push(fieldName);
-                        }
-                    }
-                    
-                    if (missingFields.length > 0) {
-                        console.log('❌ CHECK 1 FAILED: Missing form fields:', missingFields);
-                        errors.push(`Please fill in the following fields: ${missingFields.join(', ')}`);
-                    } else {
-                        console.log('✅ CHECK 1 PASSED: All form fields filled');
-                    }
-
-                    // ═══════════════════════════════════════════════════════════════
-                    // CHECK 2: Verify Front ID is uploaded
-                    // ═══════════════════════════════════════════════════════════════
-                    const frontIdInput = document.getElementById('file-input-front');
-                    const hasFrontId = (frontIdInput && frontIdInput.files && frontIdInput.files.length > 0) ||
-                                       (typeof VerificationState !== 'undefined' && VerificationState.frontIdUploaded);
-
-                    if (!hasFrontId) {
-                        console.log('❌ CHECK 2 FAILED: Front ID not uploaded');
-                        errors.push('Front ID image is required. Please upload the front of your ID.');
-                    } else {
-                        console.log('✅ CHECK 2 PASSED: Front ID uploaded');
-                    }
-
-                    // ═══════════════════════════════════════════════════════════════
-                    // CHECK 3: Verify Back ID is uploaded
-                    // ═══════════════════════════════════════════════════════════════
-                    const backIdInput = document.getElementById('file-input-back');
-                    const hasBackId = (backIdInput && backIdInput.files && backIdInput.files.length > 0) ||
-                                      (typeof VerificationState !== 'undefined' && VerificationState.backIdUploaded);
-
-                    if (!hasBackId) {
-                        console.log('❌ CHECK 3 FAILED: Back ID not uploaded');
-                        errors.push('Back ID image is required. Please upload the back of your ID.');
-                    } else {
-                        console.log('✅ CHECK 3 PASSED: Back ID uploaded');
-                    }
-
-                    // ═══════════════════════════════════════════════════════════════
-                    // CHECK 4: Verify Selfie is captured and saved
-                    // ═══════════════════════════════════════════════════════════════
-                    const hasSelfie = (typeof VerificationState !== 'undefined' && VerificationState.selfieUploaded) ||
-                                      (typeof IDUploadModal !== 'undefined' && IDUploadModal.selfieImage);
-
-                    if (!hasSelfie) {
-                        console.log('❌ CHECK 4 FAILED: Selfie not captured');
-                        errors.push('Selfie is required. Please capture your selfie photo.');
-                    } else {
-                        console.log('✅ CHECK 4 PASSED: Selfie captured');
-                    }
-
-                    // ═══════════════════════════════════════════════════════════════
-                    // CHECK 5: Verify ID verification completed successfully
-                    // ═══════════════════════════════════════════════════════════════
-                    const idNumberField = document.getElementById('idnumber');
-                    const isVerificationComplete = (typeof VerificationState !== 'undefined' && VerificationState.verificationComplete) ||
-                                                   (idNumberField && idNumberField.value && idNumberField.value.trim() !== '');
-
-                    console.log('🔍 Verification status:', {
-                        verificationState: typeof VerificationState !== 'undefined' ? VerificationState.verificationComplete : 'undefined',
-                        idNumberValue: idNumberField ? idNumberField.value : 'field not found',
-                        isComplete: isVerificationComplete
-                    });
-
-                    if (!isVerificationComplete) {
-                        console.log('❌ CHECK 5 FAILED: ID Verification incomplete');
-                        errors.push('ID Verification is incomplete. Please click "Start Verification" button in Tab 2 to verify your ID and complete the process.');
-                    } else {
-                        console.log('✅ CHECK 5 PASSED: ID Verification complete');
-                    }
-
-                    // ═══════════════════════════════════════════════════════════════
-                    // CHECK 6: Verify Terms checkbox is checked
-                    // ═══════════════════════════════════════════════════════════════
-                    const termsCheckbox = document.getElementById('terms');
-                    if (!termsCheckbox || !termsCheckbox.checked) {
-                        console.log('❌ CHECK 6 FAILED: Terms not accepted');
-                        errors.push('You must agree to the Terms and Conditions.');
-                    } else {
-                        console.log('✅ CHECK 6 PASSED: Terms accepted');
-                    }
-
-                    // ═══════════════════════════════════════════════════════════════
-                    // IF ERRORS EXIST: Prevent form submission and show modal
-                    // ═══════════════════════════════════════════════════════════════
-                    if (errors.length > 0) {
-                        console.log('❌ FORM SUBMISSION BLOCKED - Errors found:');
-                        errors.forEach((error, index) => {
-                            console.log(`   ${index + 1}. ${error}`);
-                        });
-                        console.log('═══════════════════════════════════════════════════════════════');
-
-                        e.preventDefault();
-
-                        // Show validation error modal
-                        showVerificationRequirementsModal(errors);
-
-                        return false;
-                    }
-
-                    // All checks passed - form will submit normally
-                    console.log('✅ ✅ ✅ ALL VALIDATION CHECKS PASSED!');
-                    console.log('📤 Submitting form to server...');
-                    console.log('═══════════════════════════════════════════════════════════════');
-                });
-            }
             
             // ═══════════════════════════════════════════════════════════════════════════
             // MODAL: Show verification requirements error
@@ -1409,6 +1302,11 @@
                 // Uploaded Images
                 this.populateImages();
 
+                // Run validations and display results
+                const validationResults = runTab3Validations();
+                this.displayValidationResults(validationResults);
+                this.updateSubmitButton(validationResults.overallPass);
+
                 console.log('✅ Review page populated');
             },
 
@@ -1478,6 +1376,92 @@
                     if (reviewSelfieImg) reviewSelfieImg.classList.add('hidden');
                     if (reviewSelfiePlaceholder) reviewSelfiePlaceholder.classList.remove('hidden');
                 }
+            },
+
+            // Display validation results with visual indicators
+            displayValidationResults: function(results) {
+                const container = document.getElementById('validation-results-container');
+                if (!container) return;
+
+                if (!results.hasData) {
+                    container.innerHTML = `
+                        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                                <div>
+                                    <p class="font-semibold text-red-800">Verification Required</p>
+                                    <p class="text-sm text-red-600">Please complete ID verification in Tab 2 before proceeding.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const { nameValidation, barangayValidation, davaoCityValidation } = results.validations;
+
+                container.innerHTML = `
+                    <div class="space-y-3">
+                        ${this.renderValidationItem('Name Verification', nameValidation)}
+                        ${this.renderValidationItem('Barangay Verification', barangayValidation)}
+                        ${this.renderValidationItem('Davao City Residency', davaoCityValidation)}
+                    </div>
+                `;
+            },
+
+            // Render individual validation item
+            renderValidationItem: function(title, validation) {
+                const isValid = validation.valid;
+                const isWarning = validation.warning || false;
+
+                const bgColor = isValid ? (isWarning ? 'bg-yellow-50' : 'bg-green-50') : 'bg-red-50';
+                const borderColor = isValid ? (isWarning ? 'border-yellow-200' : 'border-green-200') : 'border-red-200';
+                const iconColor = isValid ? (isWarning ? 'text-yellow-500' : 'text-green-500') : 'text-red-500';
+                const textColor = isValid ? (isWarning ? 'text-yellow-800' : 'text-green-800') : 'text-red-800';
+                const icon = isValid ? (isWarning ? 'fa-exclamation-circle' : 'fa-check-circle') : 'fa-times-circle';
+
+                let detailsHtml = '';
+                if (validation.errors && validation.errors.length > 0) {
+                    detailsHtml = `
+                        <ul class="mt-2 text-sm ${textColor} space-y-1">
+                            ${validation.errors.map(err => `<li class="flex items-start gap-2">
+                                <i class="fas fa-circle text-xs mt-1"></i>
+                                <span>${err}</span>
+                            </li>`).join('')}
+                        </ul>
+                    `;
+                }
+
+                return `
+                    <div class="${bgColor} border-2 ${borderColor} rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas ${icon} ${iconColor} text-xl mt-0.5"></i>
+                            <div class="flex-1">
+                                <p class="font-semibold ${textColor}">${title}</p>
+                                <p class="text-sm ${textColor} mt-1">${validation.message}</p>
+                                ${detailsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            // Enable/disable submit button based on validation
+            updateSubmitButton: function(isValid) {
+                const submitButton = document.getElementById('verify-account-btn');
+                if (!submitButton) return;
+
+                if (isValid) {
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
+                    submitButton.classList.add('submitbtn-color', 'hover:shadow-xl', 'transform', 'hover:scale-105');
+                    submitButton.title = '';
+                } else {
+                    submitButton.disabled = true;
+                    submitButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
+                    submitButton.classList.remove('submitbtn-color', 'hover:shadow-xl', 'transform', 'hover:scale-105');
+                    submitButton.title = 'Please resolve validation errors before submitting';
+                }
             }
         };
 
@@ -1493,6 +1477,25 @@
 
         function validateFinalSubmission() {
             console.log('🔍 Starting final form validation...');
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // SYNC ID TYPE AND ID NUMBER FROM TAB 2 TO HIDDEN FORM FIELDS
+            // ═══════════════════════════════════════════════════════════════════════════
+            // These fields are populated by the ID Analyzer API in Tab 2 (ID Verification Tab)
+            // We need to copy the values to the hidden form fields before submission
+            // ═══════════════════════════════════════════════════════════════════════════
+            
+            const idTypeDisplay = document.getElementById('idtype-display');
+            const idTypeHidden = document.getElementById('document-type');
+            if (idTypeDisplay && idTypeHidden && idTypeDisplay.value) {
+                idTypeHidden.value = idTypeDisplay.value;
+                console.log('✅ Synced ID Type:', idTypeDisplay.value);
+            }
+            
+            const idNumberField = document.getElementById('idnumber');
+            if (idNumberField && idNumberField.value) {
+                console.log('✅ ID Number already populated:', idNumberField.value);
+            }
 
             let errors = [];
 
@@ -1542,24 +1545,24 @@
             }
 
             // ═══════════════════════════════════════════════════════════════════════════
-            // STEP 4: Validate ID Document Uploads
+            // STEP 4: Validate ID Document Uploads - Uses VerificationState
             // ═══════════════════════════════════════════════════════════════════════════
 
-            // Check Front ID
-            const frontIdInput = document.getElementById('file-input-front');
-            if (!frontIdInput || !frontIdInput.files || frontIdInput.files.length === 0) {
+            // Check Front ID - use VerificationState (images are converted to Base64 and stored there)
+            const hasFrontId = (typeof VerificationState !== 'undefined' && VerificationState.frontIdUploaded);
+            if (!hasFrontId) {
                 errors.push('Front ID photo is required');
             }
 
-            // Check Back ID
-            const backIdInput = document.getElementById('file-input-back');
-            if (!backIdInput || !backIdInput.files || backIdInput.files.length === 0) {
+            // Check Back ID - use VerificationState
+            const hasBackId = (typeof VerificationState !== 'undefined' && VerificationState.backIdUploaded);
+            if (!hasBackId) {
                 errors.push('Back ID photo is required');
             }
 
-            // Check Selfie/Face Picture
-            const faceBase64 = document.getElementById('userfacepictureBase64');
-            if (!faceBase64 || !faceBase64.value || faceBase64.value.trim() === '') {
+            // Check Selfie/Face Picture - Now checks VerificationState instead of hidden field
+            const hasSelfie = (typeof VerificationState !== 'undefined' && VerificationState.selfieUploaded);
+            if (!hasSelfie) {
                 errors.push('Selfie/Face photo is required');
             }
 
@@ -1646,7 +1649,7 @@
 
             // Called when API processing completes successfully
             onAPIComplete: function() {
-                console.log('✅ API processing completed successfully');
+                console.log(' API processing completed successfully');
                 this.apiProcessing = false;
                 this.apiCompleted = true;
                 this.hideProgressBar();
@@ -1694,10 +1697,10 @@
                     }
 
                     if (btnText) {
-                        btnText.textContent = 'Next: Review & Submit';
+                        btnText.textContent = 'Next';
                     }
 
-                    console.log('✅ Next button enabled - user can proceed to Tab 3');
+                    console.log('Next button enabled - user can proceed to Tab 3');
                 }
             }
         };
@@ -2089,7 +2092,7 @@
 
                         <!-- Action Button -->
                         <button type="button" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200" onclick="window.location.href='/Home'">
-                            <i class="fas fa-arrow-right mr-2"></i>Continue to Homepage
+                            Continue to Homepage
                         </button>
                     </div>
                 </div>
@@ -2268,7 +2271,7 @@
                         Cancel
                     </button>
                     <button type="button" id="front-next-btn" class="w-full sm:w-auto order-1 sm:order-2 disabled:bg-gray-300 disabled:cursor-not-allowed text-black px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" style="background-color: #A3FFF9;" disabled onclick="IDUploadModal.goToBack()">
-                        Proceed <i class="fas fa-arrow-right ml-2"></i>
+                        Proceed
                     </button>
                 </div>
             </div>
@@ -2366,10 +2369,10 @@
                 <!-- Footer -->
                 <div class="modal-footer bg-gray-50 py-3 sm:py-4 px-4 sm:px-6 border-t-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button type="button" class="w-full sm:w-auto order-3 sm:order-1 text-black hover:text-black/70 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-medium text-sm sm:text-base transition-colors" onclick="IDUploadModal.goBackToFront()">
-                        <i class="fas fa-arrow-left mr-2"></i> Back
+                        Back
                     </button>
                     <button type="button" id="back-next-btn" class="w-full sm:w-auto order-1 sm:order-3 disabled:bg-gray-300 disabled:cursor-not-allowed text-black px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" style="background-color: #A3FFF9;" disabled onclick="IDUploadModal.goToSelfie()">
-                        Proceed <i class="fas fa-arrow-right ml-2"></i>
+                        Proceed 
                     </button>
                 </div>
             </div>
@@ -2476,13 +2479,13 @@
                 <!-- Footer -->
                 <div class="modal-footer bg-gray-50 py-3 sm:py-4 px-4 sm:px-6 border-t-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button type="button" class="w-full sm:w-auto order-3 sm:order-1 text-black hover:text-black/70 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-medium text-sm sm:text-base transition-colors" onclick="IDUploadModal.goBackToBack()">
-                        <i class="fas fa-arrow-left mr-2"></i> Back
+                        Back
                     </button>
                     <button type="button" id="capture-selfie-btn" class="w-full sm:w-auto order-2 sm:order-2 text-black px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200 hidden" style="background-color: #A3FFF9;" onclick="IDUploadModal.captureSelfie()">
                         <i class="fas fa-camera mr-2"></i> Capture
                     </button>
                     <button type="button" id="finish-upload-btn" class="w-full sm:w-auto order-1 sm:order-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" disabled onclick="IDUploadModal.finishAndVerify()">
-                        <i class="fas fa-shield-alt mr-2"></i> Verify & Complete
+                        Submit
                     </button>
                 </div>
             </div>
@@ -3803,32 +3806,61 @@
             
             // Front ID
             if (this.frontIdImage) {
-                document.getElementById('preview-front-img').src = this.frontIdImage;
-                document.getElementById('preview-front-img').classList.remove('hidden');
-                document.getElementById('preview-front-status').textContent = 'Uploaded ✓';
-                document.getElementById('preview-front-status').classList.add('text-green-600');
-                document.getElementById('preview-front-container').classList.add('border-green-300', 'bg-green-50');
+                const frontImg = document.getElementById('preview-front-img');
+                const frontStatus = document.getElementById('preview-front-status');
+                const frontContainer = document.getElementById('preview-front-container');
+                if (frontImg) {
+                    frontImg.src = this.frontIdImage;
+                    frontImg.classList.remove('hidden');
+                }
+                if (frontStatus) {
+                    frontStatus.textContent = 'Uploaded ✓';
+                    frontStatus.classList.add('text-green-600');
+                }
+                if (frontContainer) {
+                    frontContainer.classList.add('border-green-300', 'bg-green-50');
+                }
             }
             
             // Back ID
+            const backImg = document.getElementById('preview-back-img');
+            const backStatus = document.getElementById('preview-back-status');
+            const backContainer = document.getElementById('preview-back-container');
             if (this.backIdImage) {
-                document.getElementById('preview-back-img').src = this.backIdImage;
-                document.getElementById('preview-back-img').classList.remove('hidden');
-                document.getElementById('preview-back-status').textContent = 'Uploaded ✓';
-                document.getElementById('preview-back-status').classList.add('text-green-600');
-                document.getElementById('preview-back-container').classList.add('border-green-300', 'bg-green-50');
+                if (backImg) {
+                    backImg.src = this.backIdImage;
+                    backImg.classList.remove('hidden');
+                }
+                if (backStatus) {
+                    backStatus.textContent = 'Uploaded ✓';
+                    backStatus.classList.add('text-green-600');
+                }
+                if (backContainer) {
+                    backContainer.classList.add('border-green-300', 'bg-green-50');
+                }
             } else {
-                document.getElementById('preview-back-status').textContent = 'Skipped';
-                document.getElementById('preview-back-status').classList.add('text-gray-500');
+                if (backStatus) {
+                    backStatus.textContent = 'Skipped';
+                    backStatus.classList.add('text-gray-500');
+                }
             }
             
             // Selfie
             if (this.selfieImage) {
-                document.getElementById('preview-selfie-img').src = this.selfieImage;
-                document.getElementById('preview-selfie-img').classList.remove('hidden');
-                document.getElementById('preview-selfie-status').textContent = 'Captured ✓';
-                document.getElementById('preview-selfie-status').classList.add('text-green-600');
-                document.getElementById('preview-selfie-container').classList.add('border-green-300', 'bg-green-50');
+                const selfieImg = document.getElementById('preview-selfie-img');
+                const selfieStatus = document.getElementById('preview-selfie-status');
+                const selfieContainer = document.getElementById('preview-selfie-container');
+                if (selfieImg) {
+                    selfieImg.src = this.selfieImage;
+                    selfieImg.classList.remove('hidden');
+                }
+                if (selfieStatus) {
+                    selfieStatus.textContent = 'Captured ✓';
+                    selfieStatus.classList.add('text-green-600');
+                }
+                if (selfieContainer) {
+                    selfieContainer.classList.add('border-green-300', 'bg-green-50');
+                }
             }
         },
         

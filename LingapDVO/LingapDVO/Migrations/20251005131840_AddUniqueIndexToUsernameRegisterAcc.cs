@@ -13,7 +13,7 @@ namespace LingapDVO.Migrations
             // Create a unique index on the Username column
             migrationBuilder.CreateIndex(
                 name: "IX_RegisterAcc_Username",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 column: "Username",
                 unique: true);
 
@@ -25,7 +25,7 @@ namespace LingapDVO.Migrations
             // Remove the unique index if migration is rolled back
             migrationBuilder.DropIndex(
                 name: "IX_RegisterAcc_Username",
-                table: "RegisterAcc");
+                table: "UserAccount");
         }
     }
 }

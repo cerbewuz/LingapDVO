@@ -6,7 +6,8 @@ namespace LingapDVO.Models
 {
 
 
-    public class Verifyaccount
+    [Table("VerifiedAccount")]
+    public class VerifiedAccount
     {
 
         public int Id { get; set; }

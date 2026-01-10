@@ -12,9 +12,9 @@
         public List<OtherAssistance> ArchivedOtherAssistance { get; set; } = new();
         public List<FuneralAssistance> ArchivedFuneralAssistance { get; set; } = new();
 
-        public List<RegisterAcc> RegisterAcc { get; set; } = new();
+        public List<UserAccount> UserAccount { get; set; } = new();
         public List<Adminaccount> Adminaccount{ get; set; } = new();
 
-        public List<Verifyaccount> Verifyaccount { get; set; } = new();
+        public List<VerifiedAccount> VerifiedAccount { get; set; } = new();
     }
 }

@@ -12,7 +12,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "Username",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
@@ -24,7 +24,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "Username",
-                table: "RegisterAcc");
+                table: "UserAccount");
         }
     }
 }

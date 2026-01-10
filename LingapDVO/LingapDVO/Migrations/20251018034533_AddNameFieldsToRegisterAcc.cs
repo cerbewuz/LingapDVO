@@ -11,10 +11,10 @@ namespace LingapDVO.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Add name fields to RegisterAcc table
+            // Add name fields to UserAccount table
             migrationBuilder.AddColumn<string>(
                 name: "FirstName",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
@@ -22,7 +22,7 @@ namespace LingapDVO.Migrations
 
             migrationBuilder.AddColumn<string>(
                 name: "MiddleName",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
@@ -30,7 +30,7 @@ namespace LingapDVO.Migrations
 
             migrationBuilder.AddColumn<string>(
                 name: "LastName",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
@@ -38,7 +38,7 @@ namespace LingapDVO.Migrations
 
             migrationBuilder.AddColumn<string>(
                 name: "Suffix",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(50)",
                 maxLength: 50,
                 nullable: false,
@@ -63,7 +63,7 @@ namespace LingapDVO.Migrations
                     table.ForeignKey(
                         name: "FK_Notifications_RegisterAcc_UserId",
                         column: x => x.UserId,
-                        principalTable: "RegisterAcc",
+                        principalTable: "UserAccount",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -82,19 +82,19 @@ namespace LingapDVO.Migrations
 
             migrationBuilder.DropColumn(
                 name: "FirstName",
-                table: "RegisterAcc");
+                table: "UserAccount");
 
             migrationBuilder.DropColumn(
                 name: "MiddleName",
-                table: "RegisterAcc");
+                table: "UserAccount");
 
             migrationBuilder.DropColumn(
                 name: "LastName",
-                table: "RegisterAcc");
+                table: "UserAccount");
 
             migrationBuilder.DropColumn(
                 name: "Suffix",
-                table: "RegisterAcc");
+                table: "UserAccount");
         }
     }
 }

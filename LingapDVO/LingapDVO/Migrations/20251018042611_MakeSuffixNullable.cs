@@ -12,7 +12,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AlterColumn<string>(
                 name: "Suffix",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(50)",
                 maxLength: 50,
                 nullable: true,
@@ -26,7 +26,7 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.AlterColumn<string>(
                 name: "Suffix",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "nvarchar(50)",
                 maxLength: 50,
                 nullable: false,

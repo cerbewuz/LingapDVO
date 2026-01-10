@@ -608,7 +608,7 @@ namespace LingapDVO.Controllers
                     return StatusCode(500, new { success = false, error = "Database context not available" });
                 }
 
-                var verification = await dbContext.Verifyaccount
+                var verification = await dbContext.VerifiedAccount
                     .Where(v => v.UserId == userId)
                     .OrderByDescending(v => v.Id)
                     .FirstOrDefaultAsync();

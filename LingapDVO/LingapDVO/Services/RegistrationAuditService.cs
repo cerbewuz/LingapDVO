@@ -150,15 +150,15 @@ namespace LingapDVO.Services
 
             var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-            // Check if email already exists in RegisterAcc
-            var existingEmail = _context.RegisterAcc.Any(r => r.Email.ToLower() == email.ToLower());
+            // Check if email already exists in UserAccount
+            var existingEmail = _context.UserAccount.Any(r => r.Email.ToLower() == email.ToLower());
             if (existingEmail)
             {
                 return (true, "Email already registered");
             }
 
             // Check if username already exists
-            var existingUsername = _context.RegisterAcc.Any(r => r.Username.ToLower() == username.ToLower());
+            var existingUsername = _context.UserAccount.Any(r => r.Username.ToLower() == username.ToLower());
             if (existingUsername)
             {
                 return (true, "Username already taken");

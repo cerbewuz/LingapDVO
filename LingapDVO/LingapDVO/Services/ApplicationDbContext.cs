@@ -22,11 +22,11 @@ namespace LingapDVO.Services
 
         public DbSet<Superadminaccount> Superadminaccount { get; set; }
 
-        public DbSet<Useraccount> Useraccount { get; set; }
+        // public DbSet<Useraccount> Useraccount { get; set; } // Legacy model - commented out
 
-        public DbSet<RegisterAcc> RegisterAcc { get; set; }
+        public DbSet<UserAccount> UserAccount { get; set; }
 
-        public DbSet<Verifyaccount> Verifyaccount { get; set; }
+        public DbSet<VerifiedAccount> VerifiedAccount { get; set; }
 
         // ═══════════════════════════════════════════════════════════════
         // 🔒 ANTI-MANIPULATION SECURITY TABLES

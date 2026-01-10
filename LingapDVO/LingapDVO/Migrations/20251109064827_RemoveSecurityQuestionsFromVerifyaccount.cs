@@ -16,29 +16,29 @@ namespace LingapDVO.Migrations
 
             migrationBuilder.DropColumn(
                 name: "SecurityQuestions",
-                table: "Verifyaccount");
+                table: "VerifiedAccount");
 
             migrationBuilder.DropColumn(
                 name: "Securityanswer",
-                table: "Verifyaccount");
+                table: "VerifiedAccount");
 
             migrationBuilder.AddColumn<bool>(
                 name: "PreferEmailNotification",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "bit",
                 nullable: false,
                 defaultValue: false);
 
             migrationBuilder.AddColumn<bool>(
                 name: "PreferInAppNotification",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "bit",
                 nullable: false,
                 defaultValue: false);
 
             migrationBuilder.AddColumn<bool>(
                 name: "PreferSmsNotification",
-                table: "RegisterAcc",
+                table: "UserAccount",
                 type: "bit",
                 nullable: false,
                 defaultValue: false);
@@ -49,19 +49,19 @@ namespace LingapDVO.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "PreferEmailNotification",
-                table: "RegisterAcc");
+                table: "UserAccount");
 
             migrationBuilder.DropColumn(
                 name: "PreferInAppNotification",
-                table: "RegisterAcc");
+                table: "UserAccount");
 
             migrationBuilder.DropColumn(
                 name: "PreferSmsNotification",
-                table: "RegisterAcc");
+                table: "UserAccount");
 
             migrationBuilder.AddColumn<string>(
                 name: "SecurityQuestions",
-                table: "Verifyaccount",
+                table: "VerifiedAccount",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
@@ -69,7 +69,7 @@ namespace LingapDVO.Migrations
 
             migrationBuilder.AddColumn<string>(
                 name: "Securityanswer",
-                table: "Verifyaccount",
+                table: "VerifiedAccount",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
@@ -94,7 +94,7 @@ namespace LingapDVO.Migrations
                     table.ForeignKey(
                         name: "FK_Notifications_RegisterAcc_UserId",
                         column: x => x.UserId,
-                        principalTable: "RegisterAcc",
+                        principalTable: "UserAccount",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });

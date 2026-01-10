@@ -430,74 +430,29 @@ namespace LingapDVO.Controllers
             }
 
             // ===========================
-            // 🔐 COMPREHENSIVE CREDENTIAL VALIDATION LOGIC
+            // 🔐 SIMPLIFIED GOOGLE SIGN IN LOGIC
             // ===========================
-
-            // ===========================
-            // 📝 Parse Google Name (Flexible Handling)
-            // ===========================
-            string googleFullName = name ?? "";
-            string[] nameParts = googleFullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            // Handle different name formats from Google
-            string googleFirstName = "Google";
-            string googleLastName = "User";
-            string googleMiddleName = "";
-
-            if (nameParts.Length == 1)
-            {
-                // Only one name provided (e.g., "John")
-                googleFirstName = nameParts[0];
-            }
-            else if (nameParts.Length == 2)
-            {
-                // First and Last name (e.g., "John Doe")
-                googleFirstName = nameParts[0];
-                googleLastName = nameParts[1];
-            }
-            else if (nameParts.Length >= 3)
-            {
-                // First, Middle(s), and Last name (e.g., "John Lee Doe")
-                googleFirstName = nameParts[0];
-                googleLastName = nameParts[nameParts.Length - 1];
-                googleMiddleName = string.Join(" ", nameParts.Skip(1).Take(nameParts.Length - 2));
-            }
-
-            
-            // 🔍 Check for Existing Users
 
             // Check for existing users with same email
-            var userWithSameEmail = context.RegisterAcc.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
+            var existingUser = context.UserAccount.FirstOrDefault(u => u.Email.ToLower() == email.ToLower());
 
-            // Check for existing users with matching name (FLEXIBLE MATCHING)
-            // Match if First + Last names match, regardless of middle name
-            // This handles cases where:
-            // - Registered: "John Lee Cameron Doe" (First: John Lee, Middle: Cameron, Last: Doe)
-            // - Google: "John Lee Doe" (First: John Lee, Last: Doe) ✅ MATCH
-            var usersWithSameName = context.RegisterAcc
-                .Where(u => u.FirstName.ToLower() == googleFirstName.ToLower() &&
-                           u.LastName.ToLower() == googleLastName.ToLower())
-                .ToList();
-
-            // SCENARIO 1: Both email AND full name match - Allow login (existing user)
-            if (userWithSameEmail != null &&
-                usersWithSameName.Any(u => u.Id == userWithSameEmail.Id))
+            // SCENARIO 1: User exists - Log them in
+            if (existingUser != null)
             {
-                // ✅ Perfect match - existing user logging in
-                var user = userWithSameEmail;
-
                 // Store session data
-                HttpContext.Session.SetString("UserId", user.Id.ToString());
+                HttpContext.Session.SetString("UserId", existingUser.Id.ToString());
                 HttpContext.Session.SetString("IsGoogleUser", "true");
+                HttpContext.Session.SetString("Email", existingUser.Email ?? "");
+                HttpContext.Session.SetString("Username", existingUser.Username ?? "");
+                HttpContext.Session.SetString("GoogleEmail", email);
+                HttpContext.Session.SetString("GoogleName", name ?? "");
 
-                // ===========================
-                // 🔍 Check if verified
-                // ===========================
-                var verifiedUser = context.Verifyaccount.FirstOrDefault(v => v.UserId == user.Id);
+                // Check if verified
+                var verifiedUser = context.VerifiedAccount.FirstOrDefault(v => v.UserId == existingUser.Id);
 
                 if (verifiedUser != null)
                 {
-                    // ✅ Store full verified session
+                    // Store full verified session
                     HttpContext.Session.SetString("IDtype", verifiedUser.IDtype ?? "");
                     HttpContext.Session.SetString("IDnumber", verifiedUser.IDnumber ?? "");
                     HttpContext.Session.SetString("Firstname", verifiedUser.Firstname ?? "");
@@ -515,158 +470,71 @@ namespace LingapDVO.Controllers
                     HttpContext.Session.SetString("BackID", verifiedUser.BackID ?? "");
                     HttpContext.Session.SetString("IsVerifiedUser", "true");
                     HttpContext.Session.SetString("IsRegisteredUser", "true");
-                }
-                else
-                {
-                    // ⚙️ Not verified yet — store basic session info
-                    HttpContext.Session.SetString("Email", user.Email ?? "");
-                    HttpContext.Session.SetString("Username", user.Username ?? "");
-                    HttpContext.Session.SetString("IsRegisteredUser", "true");
-                    HttpContext.Session.SetString("IsVerifiedUser", "false");
-                }
 
-                // ✅ Always store Google metadata
-                HttpContext.Session.SetString("GoogleEmail", email);
-                HttpContext.Session.SetString("GoogleName", googleFullName);
-                HttpContext.Session.SetString("Username", user.Username ?? googleFullName);
-
-                // Redirect based on verification status
-                if (verifiedUser == null)
-                {
-                    return RedirectToAction("Accountverification", "Login");
-                }
-                else
-                {
+                    // Redirect to homepage for verified users
                     return RedirectToAction("Homepage", "Dashboard");
                 }
+                else
+                {
+                    // Not verified yet
+                    HttpContext.Session.SetString("IsRegisteredUser", "true");
+                    HttpContext.Session.SetString("IsVerifiedUser", "false");
+
+                    // Redirect to account verification
+                    return RedirectToAction("Accountverification", "Login");
+                }
             }
 
-            // SCENARIO 2: Email exists but different name - Block with modal
-            if (userWithSameEmail != null &&
-                !usersWithSameName.Any(u => u.Id == userWithSameEmail.Id))
-            {
-                TempData["GoogleCredentialConflict"] = "email";
-                TempData["GoogleConflictType"] = "Email Already Taken";
-                TempData["GoogleConflictMessage"] = $"The email <strong>{email}</strong> is already registered with a different name. Please use the account associated with this email or contact support if you believe this is an error.";
-                return RedirectToAction("Login", "Login");
-            }
-
-            // SCENARIO 3: Name exists but different email - Block with modal
-            if (userWithSameEmail == null && usersWithSameName.Any())
-            {
-                TempData["GoogleCredentialConflict"] = "name";
-                TempData["GoogleConflictType"] = "Name Already Taken";
-                TempData["GoogleConflictMessage"] = $"An account with the name <strong>{googleFullName}</strong> already exists with a different email address. Please use a different Google account or contact support if you believe this is an error.";
-                return RedirectToAction("Login", "Login");
-            }
-
-            // SCENARIO 4: No matches - Show modal to collect credentials
-            if (userWithSameEmail == null && !usersWithSameName.Any())
-            {
-                // Store Google data in TempData to show credentials modal
-                TempData["RequireGoogleCredentials"] = true;
-                TempData["GoogleEmail"] = email;
-                TempData["GoogleName"] = googleFullName;
-                TempData.Keep("RequireGoogleCredentials");
-                TempData.Keep("GoogleEmail");
-                TempData.Keep("GoogleName");
-
-                // Redirect to Login page which will show the credentials modal
-                return RedirectToAction("Login", "Login");
-            }
-
-            // Fallback (should never reach here)
-            TempData["ErrorMessage"] = "An unexpected error occurred during Google sign-in. Please try again.";
-            return RedirectToAction("Login", "Login");
+            // SCENARIO 2: New user - Create account directly
+            return await CompleteGoogleRegistration(email, name ?? "");
         }
 
         [HttpPost]
-        public async Task<IActionResult> CompleteGoogleRegistration(string GoogleEmail, string GoogleName, string FirstName, string MiddleName, string LastName, string Suffix, string Password, string ConfirmPassword)
+        public async Task<IActionResult> CompleteGoogleRegistration(string GoogleEmail, string GoogleName)
         {
             try
             {
                 // Validate required fields
-                if (string.IsNullOrWhiteSpace(GoogleEmail) || string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(MiddleName) || string.IsNullOrWhiteSpace(LastName) || string.IsNullOrWhiteSpace(Password))
+                if (string.IsNullOrWhiteSpace(GoogleEmail))
                 {
-                    TempData["ErrorMessage"] = "Please fill in all required fields (including Middle Name).";
-                    TempData["RequireGoogleCredentials"] = true;
-                    TempData["GoogleEmail"] = GoogleEmail;
-                    TempData["GoogleName"] = GoogleName;
-                    return RedirectToAction("Login", "Login");
-                }
-
-                // Validate passwords match
-                if (Password != ConfirmPassword)
-                {
-                    TempData["ErrorMessage"] = "Passwords do not match.";
-                    TempData["RequireGoogleCredentials"] = true;
-                    TempData["GoogleEmail"] = GoogleEmail;
-                    TempData["GoogleName"] = GoogleName;
-                    return RedirectToAction("Login", "Login");
-                }
-
-                // Validate password requirements
-                if (Password.Length < 8 ||
-                    !Password.Any(char.IsUpper) ||
-                    !Password.Any(char.IsLower) ||
-                    !Password.Any(char.IsDigit) ||
-                    !Password.Any(ch => !char.IsLetterOrDigit(ch)))
-                {
-                    TempData["ErrorMessage"] = "Password must meet all requirements (8+ characters, uppercase, lowercase, number, special character).";
-                    TempData["RequireGoogleCredentials"] = true;
-                    TempData["GoogleEmail"] = GoogleEmail;
-                    TempData["GoogleName"] = GoogleName;
+                    TempData["ErrorMessage"] = "Google email is missing. Please try signing in with Google again.";
                     return RedirectToAction("Login", "Login");
                 }
 
                 // Check if email already exists
-                var existingUser = context.RegisterAcc.FirstOrDefault(u => u.Email.ToLower() == GoogleEmail.ToLower());
+                var existingUser = context.UserAccount.FirstOrDefault(u => u.Email.ToLower() == GoogleEmail.ToLower());
                 if (existingUser != null)
                 {
                     TempData["ErrorMessage"] = "This email is already registered.";
                     return RedirectToAction("Login", "Login");
                 }
 
-                // Normalize suffix
-                string normalizedSuffix = string.IsNullOrWhiteSpace(Suffix) || Suffix.Equals("None", StringComparison.OrdinalIgnoreCase) ? "" : Suffix.Trim();
+                // Generate a secure random password for Google users (they don't need to know it)
+                var aesHelper = new AesEncryptionHelper(_configuration);
+                string randomPassword = GenerateSecureToken();
+                string encryptedPassword = aesHelper.Encrypt(randomPassword);
 
-                // Check for duplicate name
-                bool duplicateName = context.RegisterAcc.Any(u =>
-                    u.FirstName.ToLower() == FirstName.Trim().ToLower() &&
-                    u.MiddleName.ToLower() == (MiddleName ?? "").Trim().ToLower() &&
-                    u.LastName.ToLower() == LastName.Trim().ToLower() &&
-                    (u.Suffix ?? "").ToLower() == normalizedSuffix.ToLower()
-                );
+                // Create username from Google email (before @ symbol)
+                string username = GoogleEmail.Split('@')[0];
 
-                if (duplicateName)
+                // Make sure username is unique
+                int counter = 1;
+                string originalUsername = username;
+                while (context.UserAccount.Any(u => u.Username == username))
                 {
-                    TempData["ErrorMessage"] = "A user with this exact name already exists. Each person is allowed only one account.";
-                    TempData["RequireGoogleCredentials"] = true;
-                    TempData["GoogleEmail"] = GoogleEmail;
-                    TempData["GoogleName"] = GoogleName;
-                    return RedirectToAction("Login", "Login");
+                    username = $"{originalUsername}{counter}";
+                    counter++;
                 }
 
-                // Create new user with provided credentials
-                var aesHelper = new AesEncryptionHelper(_configuration);
-                string encryptedPassword = aesHelper.Encrypt(Password);
-
-                // Create username from full name
-                string username = $"{FirstName} {LastName}".Trim();
-
-                var newUser = new RegisterAcc
+                var newUser = new UserAccount
                 {
-                    FirstName = FirstName.Trim(),
-                    MiddleName = (MiddleName ?? "").Trim(),
-                    LastName = LastName.Trim(),
-                    Suffix = normalizedSuffix,
                     Email = GoogleEmail,
                     Username = username,
                     Password = encryptedPassword,
                     Status = "Active"
                 };
 
-                context.RegisterAcc.Add(newUser);
+                context.UserAccount.Add(newUser);
                 context.SaveChanges();
 
                 // Store session data for new user
@@ -683,7 +551,7 @@ namespace LingapDVO.Controllers
                 try
                 {
                     string welcomeEmailSubject = "Welcome to LingapDVO!";
-                    string welcomeEmailBody = GenerateWelcomeEmailBody(FirstName, username);
+                    string welcomeEmailBody = GenerateWelcomeEmailBody("User", username);
                     await _emailService.SendEmailAsync(GoogleEmail, welcomeEmailSubject, welcomeEmailBody);
                 }
                 catch (Exception emailEx)
@@ -695,7 +563,7 @@ namespace LingapDVO.Controllers
                 try
                 {
                     string welcomeTitle = "Welcome to LingapDVO!";
-                    string welcomeMessage = $"Hello {FirstName}! Welcome to LingapDVO. To start using our services, please verify your account by submitting your verification documents. Thank you!";
+                    string welcomeMessage = $"Hello! Welcome to LingapDVO. To start using our services, please verify your account by submitting your verification documents. Thank you!";
                     await _notificationService.SendNotificationAsync(
                         newUser.Id,
                         welcomeTitle,
@@ -711,16 +579,13 @@ namespace LingapDVO.Controllers
 
                 // Show success message and redirect to Account Verification
                 TempData["GoogleRegistrationSuccess"] = true;
-                TempData["WelcomeMessage"] = $"Welcome, {FirstName}! Your account has been created successfully. Please complete your account verification to access all features.";
+                TempData["WelcomeMessage"] = $"Welcome! Your account has been created successfully. Please complete your account verification to access all features.";
                 return RedirectToAction("Accountverification", "Login");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"⚠️ CompleteGoogleRegistration Error: {ex.Message}");
                 TempData["ErrorMessage"] = "An error occurred during registration. Please try again.";
-                TempData["RequireGoogleCredentials"] = true;
-                TempData["GoogleEmail"] = GoogleEmail;
-                TempData["GoogleName"] = GoogleName;
                 return RedirectToAction("Login", "Login");
             }
         }
@@ -977,8 +842,8 @@ namespace LingapDVO.Controllers
                     return RedirectToAction("Analyticsdashboard", "Adminuser");
                 }
 
-                // Check if it's a RegisterAcc user (new registration)
-                var registerAccUser = context.RegisterAcc.FirstOrDefault(u =>
+                // Check if it's a UserAccount user (new registration)
+                var registerAccUser = context.UserAccount.FirstOrDefault(u =>
                     u.Email == loginModel.Username || u.Username == loginModel.Username);
 
                 if (registerAccUser != null)
@@ -996,8 +861,8 @@ namespace LingapDVO.Controllers
                         // Store password in session for decryption verification
                         HttpContext.Session.SetString("UserPassword", loginModel.Password);
 
-                        // Check if user has verified account data using RegisterAcc ID
-                        var verifiedUser = context.Verifyaccount
+                        // Check if user has verified account data using UserAccount ID
+                        var verifiedUser = context.VerifiedAccount
                             .FirstOrDefault(v => v.UserId == registerAccUser.Id);
 
                         if (verifiedUser != null)
@@ -1025,7 +890,7 @@ namespace LingapDVO.Controllers
                         }
                         else
                         {
-                            // Set session for basic RegisterAcc user only
+                            // Set session for basic UserAccount user only
                             HttpContext.Session.SetString("UserId", registerAccUser.Id.ToString());
                             HttpContext.Session.SetString("Email", registerAccUser.Email ?? "");
                             HttpContext.Session.SetString("Username", registerAccUser.Username ?? "");
@@ -1487,7 +1352,7 @@ namespace LingapDVO.Controllers
                 return Json(new { exists = false });
             }
 
-            bool exists = context.RegisterAcc.Any(u => u.Email.ToLower() == email.ToLower());
+            bool exists = context.UserAccount.Any(u => u.Email.ToLower() == email.ToLower());
             return Json(new { exists = exists });
         }
 
@@ -1502,7 +1367,7 @@ namespace LingapDVO.Controllers
                 return Json(new { exists = false });
             }
 
-            bool exists = context.RegisterAcc.Any(u => u.Username.ToLower() == username.ToLower());
+            bool exists = context.UserAccount.Any(u => u.Username.ToLower() == username.ToLower());
             return Json(new { exists = exists });
         }
 
@@ -1622,58 +1487,14 @@ namespace LingapDVO.Controllers
 
         public JsonResult CheckNameExists(string firstName, string middleName, string lastName, string suffix)
         {
-            // Normalize inputs first (client-side)
-            firstName = NormalizePhilippineName(firstName);
-            middleName = NormalizePhilippineName(middleName);
-            lastName = NormalizePhilippineName(lastName);
-            suffix = suffix?.Trim().ToLower() ?? "";
-
-            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
-            {
-                return Json(new { exists = false, message = "" });
-            }
-
-            // Pull data from DB first, then do the NormalizePhilippineName comparisons in memory
-            var users = context.RegisterAcc.AsEnumerable(); // This line moves it to client-side processing
-
-            bool exactMatch = users.Any(u =>
-                NormalizePhilippineName(u.FirstName) == firstName &&
-                NormalizePhilippineName(u.MiddleName) == middleName &&
-                NormalizePhilippineName(u.LastName) == lastName &&
-                ((u.Suffix ?? "").ToLower() == suffix)
-            );
-
-            if (exactMatch)
-            {
-                return Json(new
-                {
-                    exists = true,
-                    message = "A user with this exact name already exists in our system."
-                });
-            }
-
-            bool similarMatch = users.Any(u =>
-                NormalizePhilippineName(u.FirstName) == firstName &&
-                NormalizePhilippineName(u.MiddleName) == middleName &&
-                NormalizePhilippineName(u.LastName) == lastName
-            );
-
-            if (similarMatch)
-            {
-                return Json(new
-                {
-                    exists = false,
-                    warning = true,
-                    message = "A user with a similar name already exists. Please ensure you are not creating a duplicate account."
-                });
-            }
-
+            // Name checking is no longer done during registration
+            // Names are collected during account verification
             return Json(new { exists = false, message = "" });
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterAccDto registerAccDto)
+        public async Task<IActionResult> Register(UserAccountDto registerAccDto)
         {
             // ═══════════════════════════════════════════════════════════════
             // 🔒 ANTI-MANIPULATION SECURITY LAYER 1: TOKEN VALIDATION
@@ -1681,7 +1502,6 @@ namespace LingapDVO.Controllers
 
             string ipAddress = GetClientIpAddress();
             string userAgent = Request.Headers["User-Agent"].ToString() ?? "Unknown";
-            string fullName = $"{registerAccDto.FirstName} {registerAccDto.MiddleName} {registerAccDto.LastName} {registerAccDto.Suffix}".Trim();
 
             // Create audit log for this attempt
             var auditLog = new RegistrationAuditLog
@@ -1690,7 +1510,7 @@ namespace LingapDVO.Controllers
                 UserAgent = userAgent,
                 Email = registerAccDto.Email,
                 Username = registerAccDto.Username,
-                FullName = fullName,
+                FullName = "", // Name will be collected during account verification
                 Action = "ATTEMPT",
                 Source = DetermineRequestSource(),
                 RegistrationToken = registerAccDto.RegistrationToken,
@@ -1888,7 +1708,7 @@ namespace LingapDVO.Controllers
             try
             {
                 // 🔎 Check for existing email or username before saving
-                if (context.RegisterAcc.Any(u => u.Email == registerAccDto.Email))
+                if (context.UserAccount.Any(u => u.Email == registerAccDto.Email))
                 {
                     if (IsAjaxRequest())
                     {
@@ -1898,37 +1718,13 @@ namespace LingapDVO.Controllers
                     return View(registerAccDto);
                 }
 
-                if (context.RegisterAcc.Any(u => u.Username == registerAccDto.Username))
+                if (context.UserAccount.Any(u => u.Username == registerAccDto.Username))
                 {
                     if (IsAjaxRequest())
                     {
                         return Json(new { success = false, errors = new List<string> { "This username is already taken." } });
                     }
                     ModelState.AddModelError("Username", "This username is already taken.");
-                    return View(registerAccDto);
-                }
-
-                // 🔎 Check for duplicate full name (exact match)
-                // Normalize suffix: treat "None" or "none" as empty/null
-                var normalizedSuffix = string.IsNullOrWhiteSpace(registerAccDto.Suffix) ||
-                                      registerAccDto.Suffix.Equals("None", StringComparison.OrdinalIgnoreCase)
-                                      ? ""
-                                      : registerAccDto.Suffix.Trim().ToLower();
-
-                bool duplicateName = context.RegisterAcc.Any(u =>
-                    u.FirstName.ToLower() == registerAccDto.FirstName.Trim().ToLower() &&
-                    u.MiddleName.ToLower() == registerAccDto.MiddleName.Trim().ToLower() &&
-                    u.LastName.ToLower() == registerAccDto.LastName.Trim().ToLower() &&
-                    (u.Suffix == null ? "" : u.Suffix.ToLower()) == normalizedSuffix
-                );
-
-                if (duplicateName)
-                {
-                    if (IsAjaxRequest())
-                    {
-                        return Json(new { success = false, errors = new List<string> { "A user with this exact name already exists in our system. Each person is allowed only one account." } });
-                    }
-                    ModelState.AddModelError("", "A user with this exact name already exists in our system. Each person is allowed only one account.");
                     return View(registerAccDto);
                 }
 
@@ -1939,25 +1735,15 @@ namespace LingapDVO.Controllers
                 var aesHelper = new AesEncryptionHelper(_configuration);
                 string encryptedPassword = aesHelper.Encrypt(registerAccDto.Password);
 
-                // Normalize suffix before saving: treat "None" as empty string
-                string? suffixToSave = string.IsNullOrWhiteSpace(registerAccDto.Suffix) ||
-                                       registerAccDto.Suffix.Equals("None", StringComparison.OrdinalIgnoreCase)
-                                       ? ""
-                                       : registerAccDto.Suffix.Trim();
-
-                var registercacc = new RegisterAcc
+                var registercacc = new UserAccount
                 {
-                    FirstName = registerAccDto.FirstName,
-                    MiddleName = registerAccDto.MiddleName,
-                    LastName = registerAccDto.LastName,
-                    Suffix = suffixToSave,
                     Email = registerAccDto.Email,
                     Username = registerAccDto.Username,
                     Password = encryptedPassword,
                     Status = "Active"
                 };
 
-                context.RegisterAcc.Add(registercacc);
+                context.UserAccount.Add(registercacc);
                 context.SaveChanges();
 
                 // ═══════════════════════════════════════════════════════════════
@@ -1983,7 +1769,7 @@ namespace LingapDVO.Controllers
                 try
                 {
                     string welcomeEmailSubject = "Welcome to LingapDVO!";
-                    string welcomeEmailBody = GenerateWelcomeEmailBody(registerAccDto.FirstName, registerAccDto.Username);
+                    string welcomeEmailBody = GenerateWelcomeEmailBody("User", registerAccDto.Username);
                     await _emailService.SendEmailAsync(registerAccDto.Email, welcomeEmailSubject, welcomeEmailBody);
                 }
                 catch (Exception emailEx)
@@ -1998,7 +1784,7 @@ namespace LingapDVO.Controllers
                 try
                 {
                     string welcomeTitle = "Welcome to LingapDVO!";
-                    string welcomeMessage = $"Hello {registerAccDto.FirstName}! Welcome to LingapDVO. To start using our services, please verify your account by submitting your verification documents. Thank you!";
+                    string welcomeMessage = $"Hello! Welcome to LingapDVO. To start using our services, please verify your account by submitting your verification documents. Thank you!";
                     await _notificationService.SendNotificationAsync(
                         registercacc.Id,
                         welcomeTitle,
@@ -2079,17 +1865,11 @@ namespace LingapDVO.Controllers
             }
 
             // Retrieve the registered user's information
-            var registeredUser = context.RegisterAcc.FirstOrDefault(r => r.Id == userId);
+            var registeredUser = context.UserAccount.FirstOrDefault(r => r.Id == userId);
             if (registeredUser == null)
             {
                 return RedirectToAction("Login", "Login");
             }
-
-            // Pass the registered user's name to ViewBag for comparison
-            ViewBag.RegisteredFirstName = registeredUser.FirstName;
-            ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-            ViewBag.RegisteredLastName = registeredUser.LastName;
-            ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
 
             // Pass user ID for verification status polling
             ViewBag.UserId = userId;
@@ -2102,7 +1882,7 @@ namespace LingapDVO.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Accountverification(VerifyaccountDto VerifyaccountDto, string? VerificationDecision, string? TransactionId)
+        public async Task<IActionResult> Accountverification(VerifiedAccountDto VerifiedAccountDto, string? VerificationDecision, string? TransactionId)
         {
             // Get the current user's ID from the session
             if (!int.TryParse(HttpContext.Session.GetString("UserId"), out int userId))
@@ -2122,7 +1902,7 @@ namespace LingapDVO.Controllers
             {
                 ModelState.AddModelError("", "ID verification is required. Please complete the ID and selfie upload process first.");
                 TempData["ErrorMessage"] = "Please complete ID verification before submitting.";
-                return View(VerifyaccountDto);
+                return View(VerifiedAccountDto);
             }
 
             if (!VerificationDecision.Equals("accept", StringComparison.OrdinalIgnoreCase))
@@ -2134,116 +1914,57 @@ namespace LingapDVO.Controllers
                 Console.WriteLine($"❌ VERIFICATION BLOCKED - Decision: {VerificationDecision}");
                 ModelState.AddModelError("", errorMessage);
                 TempData["ErrorMessage"] = errorMessage;
-                return View(VerifyaccountDto);
+                return View(VerifiedAccountDto);
             }
 
             Console.WriteLine($"✅ Verification Decision: {VerificationDecision} (Transaction: {TransactionId})");
 
             // Check for duplicate verification
-            var existingVerification = context.Verifyaccount.FirstOrDefault(v => v.UserId == userId);
+            var existingVerification = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
             if (existingVerification != null)
             {
                 Console.WriteLine("⚠️ DUPLICATE VERIFICATION ATTEMPT - User already verified");
                 ModelState.AddModelError("", "Your account has already been verified. You cannot verify again.");
                 TempData["ErrorMessage"] = "Your account has already been verified. You cannot verify again.";
-                return View(VerifyaccountDto);
+                return View(VerifiedAccountDto);
             }
 
-            // Name matching validation (ID vs Registered Account)
-            var registeredUser = context.RegisterAcc.FirstOrDefault(r => r.Id == userId);
+            // Verify user account exists
+            var registeredUser = context.UserAccount.FirstOrDefault(r => r.Id == userId);
             if (registeredUser == null)
             {
                 ModelState.AddModelError("", "User account not found. Please login again.");
                 return RedirectToAction("Login", "Login");
             }
 
-            // Pass registered user info back to view for comparison (ALWAYS do this)
-            ViewBag.RegisteredFirstName = registeredUser.FirstName;
-            ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-            ViewBag.RegisteredLastName = registeredUser.LastName;
-            ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
-
             // ═══════════════════════════════════════════════════════════════
             // Ñ/ñ CHARACTER DETECTION & LOGGING
             // ═══════════════════════════════════════════════════════════════
-            // Detect and log if user has Ñ/ñ in their registered or ID names
-            bool registeredHasEnye = ContainsEnye(registeredUser.FirstName) ||
-                                     ContainsEnye(registeredUser.MiddleName) ||
-                                     ContainsEnye(registeredUser.LastName);
+            // Detect and log if user has Ñ/ñ in their ID names
+            bool idHasEnye = ContainsEnye(VerifiedAccountDto.Firstname) ||
+                            ContainsEnye(VerifiedAccountDto.Middlename) ||
+                            ContainsEnye(VerifiedAccountDto.Lastname);
 
-            bool idHasEnye = ContainsEnye(VerifyaccountDto.Firstname) ||
-                            ContainsEnye(VerifyaccountDto.Middlename) ||
-                            ContainsEnye(VerifyaccountDto.Lastname);
-
-            if (registeredHasEnye || idHasEnye)
+            if (idHasEnye)
             {
                 Console.WriteLine("═══════════════════════════════════════════════════════════════");
                 Console.WriteLine("✓ Ñ/ñ CHARACTER DETECTED IN ACCOUNT VERIFICATION");
                 Console.WriteLine("═══════════════════════════════════════════════════════════════");
 
-                if (registeredHasEnye)
-                {
-                    var regFirstEnyeChars = ExtractEnyeCharacters(registeredUser.FirstName ?? "");
-                    var regMiddleEnyeChars = ExtractEnyeCharacters(registeredUser.MiddleName ?? "");
-                    var regLastEnyeChars = ExtractEnyeCharacters(registeredUser.LastName ?? "");
+                var idFirstEnyeChars = ExtractEnyeCharacters(VerifiedAccountDto.Firstname ?? "");
+                var idMiddleEnyeChars = ExtractEnyeCharacters(VerifiedAccountDto.Middlename ?? "");
+                var idLastEnyeChars = ExtractEnyeCharacters(VerifiedAccountDto.Lastname ?? "");
 
-                    Console.WriteLine($"Registered Name Contains Ñ/ñ:");
-                    Console.WriteLine($"  - First Name: {registeredUser.FirstName} (Ñ/ñ at positions: {string.Join(", ", regFirstEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
-                    Console.WriteLine($"  - Middle Name: {registeredUser.MiddleName} (Ñ/ñ at positions: {string.Join(", ", regMiddleEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
-                    Console.WriteLine($"  - Last Name: {registeredUser.LastName} (Ñ/ñ at positions: {string.Join(", ", regLastEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
-                }
-
-                if (idHasEnye)
-                {
-                    var idFirstEnyeChars = ExtractEnyeCharacters(VerifyaccountDto.Firstname ?? "");
-                    var idMiddleEnyeChars = ExtractEnyeCharacters(VerifyaccountDto.Middlename ?? "");
-                    var idLastEnyeChars = ExtractEnyeCharacters(VerifyaccountDto.Lastname ?? "");
-
-                    Console.WriteLine($"ID Name Contains Ñ/ñ:");
-                    Console.WriteLine($"  - First Name: {VerifyaccountDto.Firstname} (Ñ/ñ at positions: {string.Join(", ", idFirstEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
-                    Console.WriteLine($"  - Middle Name: {VerifyaccountDto.Middlename} (Ñ/ñ at positions: {string.Join(", ", idMiddleEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
-                    Console.WriteLine($"  - Last Name: {VerifyaccountDto.Lastname} (Ñ/ñ at positions: {string.Join(", ", idLastEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
-                }
+                Console.WriteLine($"ID Name Contains Ñ/ñ:");
+                Console.WriteLine($"  - First Name: {VerifiedAccountDto.Firstname} (Ñ/ñ at positions: {string.Join(", ", idFirstEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
+                Console.WriteLine($"  - Middle Name: {VerifiedAccountDto.Middlename} (Ñ/ñ at positions: {string.Join(", ", idMiddleEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
+                Console.WriteLine($"  - Last Name: {VerifiedAccountDto.Lastname} (Ñ/ñ at positions: {string.Join(", ", idLastEnyeChars.Select(e => $"{e.position}:'{e.character}'"))})");
 
                 Console.WriteLine("✓ Ñ/ñ characters successfully detected and extracted");
                 Console.WriteLine("═══════════════════════════════════════════════════════════════");
             }
 
-            // Normalize names for comparison
-            string regFirstName = NormalizePhilippineName(registeredUser.FirstName ?? "");
-            string regMiddleName = NormalizePhilippineName(registeredUser.MiddleName ?? "");
-            string regLastName = NormalizePhilippineName(registeredUser.LastName ?? "");
-
-            string idFirstName = NormalizePhilippineName(VerifyaccountDto.Firstname ?? "");
-            string idMiddleName = NormalizePhilippineName(VerifyaccountDto.Middlename ?? "");
-            string idLastName = NormalizePhilippineName(VerifyaccountDto.Lastname ?? "");
-
-            // Check if names match (allow some flexibility for middle names)
-            bool firstNameMatches = !string.IsNullOrEmpty(regFirstName) &&
-                                   !string.IsNullOrEmpty(idFirstName) &&
-                                   regFirstName.Equals(idFirstName, StringComparison.OrdinalIgnoreCase);
-
-            bool lastNameMatches = !string.IsNullOrEmpty(regLastName) &&
-                                  !string.IsNullOrEmpty(idLastName) &&
-                                  regLastName.Equals(idLastName, StringComparison.OrdinalIgnoreCase);
-
-            // Validation fails if either first name or last name doesn't match
-            if (!firstNameMatches || !lastNameMatches)
-            {
-                string errorMessage = $"Name mismatch: Your registered name is '{registeredUser.FirstName} {registeredUser.LastName}' but the ID shows '{VerifyaccountDto.Firstname} {VerifyaccountDto.Lastname}'. Please use your own valid ID.";
-                ModelState.AddModelError("", errorMessage);
-                TempData["ErrorMessage"] = errorMessage;
-
-                Console.WriteLine($"⚠️ NAME VALIDATION FAILED: Registered='{regFirstName} {regLastName}' vs ID='{idFirstName} {idLastName}'");
-
-                // Pass registered user info back to view for comparison
-                ViewBag.RegisteredFirstName = registeredUser.FirstName;
-                ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-                ViewBag.RegisteredLastName = registeredUser.LastName;
-                ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
-
-                return View(VerifyaccountDto);
-            }
+            Console.WriteLine($"✓ Account verification proceeding for user: {registeredUser.Username} (ID: {userId})");
 
             // Server-side Davao City validation
             // List of valid Davao City barangays (matches dropdown in Accountverification.cshtml)
@@ -2274,36 +1995,45 @@ namespace LingapDVO.Controllers
         "Waan", "Wangan", "Wilfredo Aquino", "Wines"
     };
 
-            if (!davaoBarangays.Contains(VerifyaccountDto.Barangay))
+            if (!davaoBarangays.Contains(VerifiedAccountDto.Barangay))
             {
-                string barangayError = $"Invalid barangay: '{VerifyaccountDto.Barangay}'. This service is only available for Davao City residents. Please select a valid Davao City barangay from the dropdown.";
+                string barangayError = $"Invalid barangay: '{VerifiedAccountDto.Barangay}'. This service is only available for Davao City residents. Please select a valid Davao City barangay from the dropdown.";
                 ModelState.AddModelError("Barangay", barangayError);
                 TempData["ErrorMessage"] = barangayError;
 
-                Console.WriteLine($"⚠️ BARANGAY VALIDATION FAILED: '{VerifyaccountDto.Barangay}' is not in the approved list");
+                Console.WriteLine($"⚠️ BARANGAY VALIDATION FAILED: '{VerifiedAccountDto.Barangay}' is not in the approved list");
 
-                // Pass registered user info back to view for comparison
-                ViewBag.RegisteredFirstName = registeredUser.FirstName;
-                ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-                ViewBag.RegisteredLastName = registeredUser.LastName;
-                ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
-
-                return View(VerifyaccountDto);
+                return View(VerifiedAccountDto);
             }
 
             // File validation
-            if (VerifyaccountDto.ValidFrontID == null)
+            if (VerifiedAccountDto.ValidFrontID == null)
                 ModelState.AddModelError("ValidFrontID", "Front ID image is required");
 
             // Back ID is only required for National ID (phil-id), not for Driver's License or UMID
-            if (VerifyaccountDto.IDtype == "phil-id" && VerifyaccountDto.ValidBackID == null)
+            if (VerifiedAccountDto.IDtype == "phil-id" && VerifiedAccountDto.ValidBackID == null)
             {
                 ModelState.AddModelError("ValidBackID", "Back ID image is required for National ID");
             }
-            else if (VerifyaccountDto.IDtype != "phil-id")
+            else if (VerifiedAccountDto.IDtype != "phil-id")
             {
                 // Remove any ValidBackID errors if ID type is not National ID
                 ModelState.Remove("ValidBackID");
+            }
+
+            // ID Number validation - required field (auto-populated by ID Analyzer API)
+            if (string.IsNullOrWhiteSpace(VerifiedAccountDto.IDnumber))
+            {
+                ModelState.AddModelError("IDnumber", "ID Number is required. Please complete ID verification first.");
+                TempData["ErrorMessage"] = "ID Number is missing. Please complete the ID verification process in Tab 2.";
+            }
+
+            // ID Type validation - required field (auto-populated by ID Analyzer API)
+            // Note: [Required] attribute was removed from DTO because this is a readonly field populated by API
+            if (string.IsNullOrWhiteSpace(VerifiedAccountDto.IDtype))
+            {
+                ModelState.AddModelError("IDtype", "ID Type is required. Please complete ID verification first.");
+                TempData["ErrorMessage"] = "ID Type is missing. Please complete the ID verification process in Tab 2.";
             }
 
             if (!ModelState.IsValid)
@@ -2317,13 +2047,7 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                // Pass registered user info back to view for comparison
-                ViewBag.RegisteredFirstName = registeredUser.FirstName;
-                ViewBag.RegisteredMiddleName = registeredUser.MiddleName;
-                ViewBag.RegisteredLastName = registeredUser.LastName;
-                ViewBag.RegisteredSuffix = registeredUser.Suffix ?? "";
-
-                return View(VerifyaccountDto);
+                return View(VerifiedAccountDto);
             }
 
             // ==========================
@@ -2349,13 +2073,13 @@ namespace LingapDVO.Controllers
                 Directory.CreateDirectory(validFolder);
 
                 // Encrypt the original filename
-                string originalFrontFileName = VerifyaccountDto.ValidFrontID!.FileName;
+                string originalFrontFileName = VerifiedAccountDto.ValidFrontID!.FileName;
                 string frontFileName = aesHelper.EncryptFilename(originalFrontFileName) + ".enc";
                 string frontPath = Path.Combine(validFolder, frontFileName);
                 using (var fileStream = new FileStream(frontPath, FileMode.Create))
                 {
                     // Use AES-256 helper from configuration to encrypt file stream
-                    byte[] encryptedData = aesHelper.EncryptStream(VerifyaccountDto.ValidFrontID!.OpenReadStream());
+                    byte[] encryptedData = aesHelper.EncryptStream(VerifiedAccountDto.ValidFrontID!.OpenReadStream());
                     fileStream.Write(encryptedData, 0, encryptedData.Length);
                 }
 
@@ -2363,50 +2087,17 @@ namespace LingapDVO.Controllers
                 // 🔙 Encrypt Back ID (Only for National ID)
                 // ==========================
                 string backFileName = "";
-                if (VerifyaccountDto.ValidBackID != null)
+                if (VerifiedAccountDto.ValidBackID != null)
                 {
                     // Encrypt the original filename
-                    string originalBackFileName = VerifyaccountDto.ValidBackID.FileName;
+                    string originalBackFileName = VerifiedAccountDto.ValidBackID.FileName;
                     backFileName = aesHelper.EncryptFilename(originalBackFileName) + ".enc";
                     string backPath = Path.Combine(validFolder, backFileName);
                     using (var fileStream = new FileStream(backPath, FileMode.Create))
                     {
                         // Use AES-256 helper from configuration to encrypt file stream
-                        byte[] encryptedData = aesHelper.EncryptStream(VerifyaccountDto.ValidBackID!.OpenReadStream());
+                        byte[] encryptedData = aesHelper.EncryptStream(VerifiedAccountDto.ValidBackID!.OpenReadStream());
                         fileStream.Write(encryptedData, 0, encryptedData.Length);
-                    }
-                }
-
-                // ==========================
-                // 📸 Encrypt User Face Picture
-                // ==========================
-                string userFaceFileName = "";
-                if (!string.IsNullOrEmpty(VerifyaccountDto.userfacepictureBase64))
-                {
-                    try 
-                    {
-                        // Remove data URI prefix if present
-                        string base64Data = VerifyaccountDto.userfacepictureBase64;
-                        if (base64Data.Contains(","))
-                        {
-                            base64Data = base64Data.Split(',')[1];
-                        }
-                        
-                        byte[] faceBytes = Convert.FromBase64String(base64Data);
-                        string originalFaceFileName = $"face_{userId}_{DateTime.Now.Ticks}.jpg";
-                        userFaceFileName = aesHelper.EncryptFilename(originalFaceFileName) + ".enc";
-                        string facePath = Path.Combine(validFolder, userFaceFileName);
-                        
-                        using (var fileStream = new FileStream(facePath, FileMode.Create))
-                        using (var memoryStream = new MemoryStream(faceBytes))
-                        {
-                            byte[] encryptedData = aesHelper.EncryptStream(memoryStream);
-                            fileStream.Write(encryptedData, 0, encryptedData.Length);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"⚠️ Failed to save face picture: {ex.Message}");
                     }
                 }
 
@@ -2414,35 +2105,35 @@ namespace LingapDVO.Controllers
                 // 🗃 Save to Database
                 // ==========================
                 // Normalize suffix: treat "None", "none", empty, or whitespace as empty string (database doesn't allow NULL)
-                string normalizedSuffix = string.IsNullOrWhiteSpace(VerifyaccountDto.Suffix) ||
-                                          VerifyaccountDto.Suffix.Equals("None", StringComparison.OrdinalIgnoreCase)
+                string normalizedSuffix = string.IsNullOrWhiteSpace(VerifiedAccountDto.Suffix) ||
+                                          VerifiedAccountDto.Suffix.Equals("None", StringComparison.OrdinalIgnoreCase)
                                           ? ""
-                                          : VerifyaccountDto.Suffix.Trim();
+                                          : VerifiedAccountDto.Suffix.Trim();
 
-                Verifyaccount verifyaccount = new Verifyaccount()
+                VerifiedAccount verifyaccount = new VerifiedAccount()
                 {
                     UserId = userId,
                     FrontID = frontFileName,
                     BackID = backFileName,
-                    userfacepicture = userFaceFileName,
-                    IDtype = VerifyaccountDto.IDtype ?? "",
-                    IDnumber = VerifyaccountDto.IDnumber ?? "",
-                    Lastname = VerifyaccountDto.Lastname ?? "",
-                    Firstname = VerifyaccountDto.Firstname ?? "",
-                    Middlename = VerifyaccountDto.Middlename ?? "",
+                    userfacepicture = "", // Face picture handled by ID Analyzer API, not stored locally
+                    IDtype = VerifiedAccountDto.IDtype ?? "",
+                    IDnumber = VerifiedAccountDto.IDnumber ?? "",
+                    Lastname = VerifiedAccountDto.Lastname ?? "",
+                    Firstname = VerifiedAccountDto.Firstname ?? "",
+                    Middlename = VerifiedAccountDto.Middlename ?? "",
                     Suffix = normalizedSuffix,
-                    Gender = VerifyaccountDto.Gender,
-                    Dateofbirth = VerifyaccountDto.Dateofbirth,
-                    BlkLotStreet = VerifyaccountDto.BlkLotStreet,
-                    SubVill = VerifyaccountDto.SubVill,
-                    Barangay = VerifyaccountDto.Barangay,
-                    Phonenumber = VerifyaccountDto.Phonenumber,
-                    CivilStatus = VerifyaccountDto.CivilStatus,
+                    Gender = VerifiedAccountDto.Gender,
+                    Dateofbirth = VerifiedAccountDto.Dateofbirth,
+                    BlkLotStreet = VerifiedAccountDto.BlkLotStreet,
+                    SubVill = VerifiedAccountDto.SubVill,
+                    Barangay = VerifiedAccountDto.Barangay,
+                    Phonenumber = VerifiedAccountDto.Phonenumber,
+                    CivilStatus = VerifiedAccountDto.CivilStatus,
                     decision = VerificationDecision,
                     TransactionId = TransactionId
                 };
 
-                context.Verifyaccount.Add(verifyaccount);
+                context.VerifiedAccount.Add(verifyaccount);
                 context.SaveChanges();
 
                 // Update session with verified user data
@@ -2521,12 +2212,12 @@ namespace LingapDVO.Controllers
                 ViewBag.VerificationSuccess = true;
                 ViewBag.VerificationMessage = "Your account has been successfully verified! You can now submit assistance requests.";
 
-                return View(VerifyaccountDto);
+                return View(VerifiedAccountDto);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "An unexpected error occurred: " + ex.Message);
-                return View(VerifyaccountDto);
+                return View(VerifiedAccountDto);
             }
         }
 
