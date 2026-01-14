@@ -1995,16 +1995,58 @@ namespace LingapDVO.Controllers
         "Waan", "Wangan", "Wilfredo Aquino", "Wines"
     };
 
-            if (!davaoBarangays.Contains(VerifiedAccountDto.Barangay))
+            // Flexible barangay validation - normalize and compare
+            // Helper function to normalize barangay names for comparison
+            string NormalizeBarangay(string barangay)
+            {
+                if (string.IsNullOrWhiteSpace(barangay)) return "";
+
+                // Convert to uppercase, remove special characters, extra spaces
+                string normalized = barangay.ToUpperInvariant()
+                    .Replace("(POB.)", "")
+                    .Replace("(POB)", "")
+                    .Replace("PROPER", "")
+                    .Replace("(", "")
+                    .Replace(")", "")
+                    .Replace(".", "")
+                    .Replace(",", "")
+                    .Replace("-", " ")
+                    .Trim();
+
+                // Remove extra spaces
+                while (normalized.Contains("  "))
+                {
+                    normalized = normalized.Replace("  ", " ");
+                }
+
+                return normalized;
+            }
+
+            // Normalize user input
+            string normalizedInput = NormalizeBarangay(VerifiedAccountDto.Barangay);
+
+            // Check if normalized input matches any normalized barangay in the list
+            bool isValidBarangay = davaoBarangays.Any(b =>
+            {
+                string normalizedBarangay = NormalizeBarangay(b);
+                // Check for exact match or if the input contains the barangay name
+                return normalizedBarangay.Equals(normalizedInput, StringComparison.OrdinalIgnoreCase) ||
+                       normalizedInput.Contains(normalizedBarangay, StringComparison.OrdinalIgnoreCase) ||
+                       normalizedBarangay.Contains(normalizedInput, StringComparison.OrdinalIgnoreCase);
+            });
+
+            if (!isValidBarangay)
             {
                 string barangayError = $"Invalid barangay: '{VerifiedAccountDto.Barangay}'. This service is only available for Davao City residents. Please select a valid Davao City barangay from the dropdown.";
                 ModelState.AddModelError("Barangay", barangayError);
                 TempData["ErrorMessage"] = barangayError;
 
-                Console.WriteLine($"⚠️ BARANGAY VALIDATION FAILED: '{VerifiedAccountDto.Barangay}' is not in the approved list");
+                Console.WriteLine($"⚠️ BARANGAY VALIDATION FAILED: '{VerifiedAccountDto.Barangay}' (normalized: '{normalizedInput}') is not in the approved list");
 
                 return View(VerifiedAccountDto);
             }
+
+            Console.WriteLine($"✅ BARANGAY VALIDATION PASSED: '{VerifiedAccountDto.Barangay}' (normalized: '{normalizedInput}') is valid");
 
             // File validation
             if (VerifiedAccountDto.ValidFrontID == null)

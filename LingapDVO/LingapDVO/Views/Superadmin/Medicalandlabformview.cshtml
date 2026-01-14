@@ -1,4 +1,4 @@
-﻿@model OtherAssistanceDto
+@model OtherAssistanceDto
 @{
     Layout = null;
     var selectedSex = ViewData["Sex"]?.ToString();
@@ -223,12 +223,6 @@
                     <input value="@ViewData["Brgy"]" asp-for="Brgy" type="text" class="form-control" required disabled>
                     <span asp-validation-for="Brgy" class="text-danger"></span>
                 </div>
-
-                <div class="col-md-3">
-                    <label class="">District</label>
-                    <input value="@ViewData["District"]" asp-for="District" type="text" class="form-control" required disabled>
-                    <span asp-validation-for="District" class="text-danger"></span>
-                </div>
             </div>
 
             <!-- Gender, PhilHealth, DOB, Age -->
@@ -333,12 +327,6 @@
                     <label class="">Brgy.</label>
                     <input value="@ViewData["RBrgy"]" asp-for="RBrgy" type="text" class="form-control" disabled>
                     <span asp-validation-for="RBrgy"></span>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="">District</label>
-                    <input value="@ViewData["RDistrict"]" asp-for="RDistrict" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RDistrict"></span>
                 </div>
 
             </div>
@@ -1101,3 +1089,4 @@
 </body>
 
 </html>
+

@@ -257,7 +257,6 @@ namespace LingapDVO.Services
                 BlkLotStreet = personData["BlkLotStreet"],
                 SubVill = personData["SubVill"],
                 Brgy = personData["Barangay"],
-                District = personData["District"],
                 Sex = personData["Sex"],
                 PhilHealth = personData["PhilHealth"],
                 PhilHealthNo = personData["PhilHealthNo"],
@@ -270,7 +269,6 @@ namespace LingapDVO.Services
                 RBlkLotStreet = rBlkLotStreet,
                 RSubVill = rSubVill,
                 RBrgy = rBrgy,
-                RDistrict = rDistrict,
                 RelationshipPatient = rRelationship,
                 ContactNo = personData["ContactNo"],
                 Typeassistance = _hospitalAssistanceTypes[_random.Next(_hospitalAssistanceTypes.Length)],
@@ -330,7 +328,6 @@ namespace LingapDVO.Services
                 BlkLotStreet = personData["BlkLotStreet"],
                 SubVill = personData["SubVill"],
                 Brgy = personData["Barangay"],
-                District = personData["District"],
                 Sex = personData["Sex"],
                 PhilHealth = personData["PhilHealth"],
                 PhilHealthNo = personData["PhilHealthNo"],
@@ -343,8 +340,6 @@ namespace LingapDVO.Services
                 RBlkLotStreet = personData["BlkLotStreet"],
                 RSubVill = personData["SubVill"],
                 RBrgy = personData["Barangay"],
-                RDistrict = personData["District"],
-                RelationshipPatient = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : "Self",
                 ContactNo = personData["ContactNo"],
                 Typeassistance = _funeralAssistanceTypes[_random.Next(_funeralAssistanceTypes.Length)],
                 Validfrontimage = frontId,
@@ -404,7 +399,6 @@ namespace LingapDVO.Services
                 BlkLotStreet = personData["BlkLotStreet"],
                 SubVill = personData["SubVill"],
                 Brgy = personData["Barangay"],
-                District = personData["District"],
                 Sex = personData["Sex"],
                 PhilHealth = personData["PhilHealth"],
                 PhilHealthNo = personData["PhilHealthNo"],
@@ -417,7 +411,6 @@ namespace LingapDVO.Services
                 RBlkLotStreet = personData["BlkLotStreet"],
                 RSubVill = personData["SubVill"],
                 RBrgy = personData["Barangay"],
-                RDistrict = personData["District"],
                 RelationshipPatient = hasDifferentRequestor ? new[] { "Spouse", "Child", "Parent", "Sibling", "Relative" }[_random.Next(5)] : "Self",
                 ContactNo = personData["ContactNo"],
                 Typeassistance = _otherAssistanceTypes[_random.Next(_otherAssistanceTypes.Length)],
@@ -612,3 +605,5 @@ Date Issued: {DateTime.Now.ToString("yyyy-MM-dd")}";
         }
     }
 }
+
+

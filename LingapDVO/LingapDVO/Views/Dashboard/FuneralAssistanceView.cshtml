@@ -692,7 +692,7 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Address:</div>
-                            <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
+                            <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"]</div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">Sex:</div>
@@ -729,11 +729,7 @@
                 </div>
                 <div class="info-row">
                     <div class="info-label">Address:</div>
-                    <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Relationship to Patient:</div>
-                    <div class="info-value">@ViewData["RelationshipPatient"]</div>
+                    <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"]</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">Contact No:</div>
@@ -752,9 +748,10 @@
                 <h5 class="section-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-shield-lock-fill me-2"></i>Funeral Information (Encrypted)</span>
                     <button type="button" class="btn btn-sm btn-primary" id="viewFuneralInfoBtn"
-                            onclick="openViewAdditionalInfoModal('Funeral', '@ViewData["Id"]', getFuneralAssistanceFields())"
+                            onclick="toggleFuneralInfo()"
+                            data-decrypted="false"
                             title="Click to view encrypted funeral information">
-                        <i class="bi bi-eye-fill me-2"></i>View Funeral Information
+                        <i class="bi bi-eye-fill me-2" id="funeralBtnIcon"></i><span id="funeralBtnText">View Funeral Information</span>
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -844,33 +841,51 @@
             <div class="receipt-section">
                 <!-- Valid ID Section -->
                 <div class="receipt-section">
-                    <h5 class="section-header">Valid ID</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <h6>Front ID</h6>
-                            @if (ViewData["ValidfrontimageBase64"] != null)
-                            {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No front ID image available</p>
-                            }
+                    <h5 class="section-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-shield-lock-fill me-2"></i>Valid ID (Encrypted)</span>
+                        @* Button to decrypt/hide Valid ID with toggle functionality *@
+                        @if (!string.IsNullOrEmpty(ViewData["Validfrontimage"]?.ToString()) || !string.IsNullOrEmpty(ViewData["ValidBackimage"]?.ToString()))
+                        {
+                            <button type="button" class="btn btn-sm btn-primary" id="viewValidIDBtn"
+                                    onclick="toggleValidID('/Validimg/@ViewData["Validfrontimage"]', '/Validimg/@ViewData["ValidBackimage"]')"
+                                    data-decrypted="false"
+                                    title="Click to view/hide encrypted ID images">
+                                <i class="bi bi-eye-fill me-1" id="validIDBtnIcon"></i>
+                                <span id="validIDBtnText">View Valid ID</span>
+                            </button>
+                        }
+                    </h5>
+                    
+                    <!-- Alert shown when IDs are encrypted -->
+                    <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <div>
+                            <strong>ID Images are Encrypted</strong><br>
+                            For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <h6>Back ID</h6>
-                            @if (ViewData["ValidBackimageBase64"] != null)
-                            {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No back ID image available</p>
-                            }
+                    </div>
+
+                    <!-- Loading Container (shown while decrypting) -->
+                    <div class="valid-id-loading" id="validIDLoading">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">Decrypting ID images... Please wait</p>
+                        </div>
+                    </div>
+
+                    <!-- Valid ID Container (hidden by default, shown after successful decryption) -->
+                    <div class="valid-id-container" id="validIDContainer">
+                        <div class="row">
+                            <div class="col-md-6 mb-3" id="frontIDInlineContainer">
+                                <h6><i class="bi bi-credit-card-2-front me-2"></i>Front ID</h6>
+                                <img id="decryptedFrontIDInline" src="" alt="Front ID" class="id-image" style="display: none;" onclick="zoomImage(this.src)" />
+                            </div>
+                            <div class="col-md-6 mb-3" id="backIDInlineContainer">
+                                <h6><i class="bi bi-credit-card-2-back me-2"></i>Back ID</h6>
+                                <img id="decryptedBackIDInline" src="" alt="Back ID" class="id-image" style="display: none;" onclick="zoomImage(this.src)" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1305,20 +1320,48 @@
             };
         }
 
+        // Toggle function for Funeral Information (View/Hide)
+        function toggleFuneralInfo() {
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+            
+            if (isDecrypted) {
+                // Currently showing decrypted data, hide it
+                hideFuneralInfo();
+            } else {
+                // Currently hidden, show the decrypt modal
+                openViewAdditionalInfoModal('Funeral', '@ViewData["Id"]', getFuneralAssistanceFields());
+            }
+        }
+
         // Function to hide funeral information
         function hideFuneralInfo() {
             const funeralInfoContainer = document.getElementById('funeralInfoContainer');
             const viewButton = document.getElementById('viewFuneralInfoBtn');
+            const btnIcon = document.getElementById('funeralBtnIcon');
+            const btnText = document.getElementById('funeralBtnText');
 
             if (funeralInfoContainer) {
                 funeralInfoContainer.classList.remove('funeral-info-visible');
                 funeralInfoContainer.style.display = 'none';
             }
 
-            // Show the button again when hiding the info
+            // Update button to "View" state
             if (viewButton) {
-                viewButton.style.display = 'inline-block';
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
             }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Funeral Information';
+            }
+            
+            // Clear decrypted data
+            window.decryptedFuneralData = {};
         }
 
         // Function to show funeral information after successful decryption
@@ -1331,12 +1374,6 @@
                 loadingContainer.style.display = 'none';
             }
 
-            // Hide the "View Funeral Information" button
-            const viewButton = document.getElementById('viewFuneralInfoBtn');
-            if (viewButton) {
-                viewButton.style.display = 'none';
-            }
-
             // Show the funeral information container
             const funeralInfoContainer = document.getElementById('funeralInfoContainer');
             if (funeralInfoContainer) {
@@ -1347,6 +1384,24 @@
                 setTimeout(() => {
                     funeralInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
+            }
+            
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+            const btnIcon = document.getElementById('funeralBtnIcon');
+            const btnText = document.getElementById('funeralBtnText');
+            
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Funeral Information';
             }
         }
 
@@ -1510,4 +1565,5 @@
     </script>
 
     @Html.Partial("_ViewEncryptedDataModalForAdmin")
+    @Html.Partial("_ViewEncryptedIDModal")
 }

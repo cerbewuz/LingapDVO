@@ -113,6 +113,58 @@ namespace LingapDVO.Controllers
                 byte[] encryptedData = memoryStream.ToArray();
                 return Convert.ToBase64String(encryptedData);
             }
+
+            /// <summary>
+            /// Encrypts byte array (used for images) and returns encrypted bytes
+            /// </summary>
+            public byte[] EncryptBytes(byte[] plainBytes)
+            {
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+                aes.GenerateIV();
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var encryptor = aes.CreateEncryptor();
+                using var memoryStream = new MemoryStream();
+
+                // Write IV at the beginning
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Encrypt the data
+                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                {
+                    cryptoStream.Write(plainBytes, 0, plainBytes.Length);
+                    cryptoStream.FlushFinalBlock();
+                }
+
+                return memoryStream.ToArray();
+            }
+
+            /// <summary>
+            /// Decrypts byte array (used for images) and returns decrypted bytes
+            /// </summary>
+            public byte[] DecryptBytes(byte[] encryptedBytes)
+            {
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+
+                // Extract IV from the beginning
+                byte[] iv = new byte[16];
+                Array.Copy(encryptedBytes, 0, iv, 0, 16);
+                aes.IV = iv;
+
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var decryptor = aes.CreateDecryptor();
+                using var memoryStream = new MemoryStream(encryptedBytes, 16, encryptedBytes.Length - 16);
+                using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                using var resultStream = new MemoryStream();
+
+                cryptoStream.CopyTo(resultStream);
+                return resultStream.ToArray();
+            }
         }
 
         /// <summary>
@@ -408,14 +460,20 @@ namespace LingapDVO.Controllers
                         var backIdPath = Path.Combine(validImgPath, backIdFileName);
                         var selfiePath = Path.Combine(usersImgPath, selfieFileName);
 
-                        // Save files
-                        await System.IO.File.WriteAllBytesAsync(frontIdPath, frontIdBytes);
-                        await System.IO.File.WriteAllBytesAsync(backIdPath, backIdBytes);
+                        // Encrypt front and back ID images using AES-256
+                        _logger.LogInformation("🔐 Encrypting ID images with AES-256...");
+                        var encryptedFrontIdBytes = _encryptionHelper.EncryptBytes(frontIdBytes);
+                        var encryptedBackIdBytes = _encryptionHelper.EncryptBytes(backIdBytes);
+                        _logger.LogInformation("✅ ID images encrypted successfully");
+
+                        // Save encrypted ID files and unencrypted selfie
+                        await System.IO.File.WriteAllBytesAsync(frontIdPath, encryptedFrontIdBytes);
+                        await System.IO.File.WriteAllBytesAsync(backIdPath, encryptedBackIdBytes);
                         await System.IO.File.WriteAllBytesAsync(selfiePath, selfieBytes);
 
                         _logger.LogInformation("✅ Files saved successfully:");
-                        _logger.LogInformation("   - Front ID: {FileName} ({Size} KB)", frontIdFileName, Math.Round(frontIdBytes.Length / 1024.0, 2));
-                        _logger.LogInformation("   - Back ID: {FileName} ({Size} KB)", backIdFileName, Math.Round(backIdBytes.Length / 1024.0, 2));
+                        _logger.LogInformation("   - Front ID (encrypted): {FileName} ({Size} KB)", frontIdFileName, Math.Round(encryptedFrontIdBytes.Length / 1024.0, 2));
+                        _logger.LogInformation("   - Back ID (encrypted): {FileName} ({Size} KB)", backIdFileName, Math.Round(encryptedBackIdBytes.Length / 1024.0, 2));
                         _logger.LogInformation("   - Selfie: {FileName} ({Size} KB)", selfieFileName, Math.Round(selfieBytes.Length / 1024.0, 2));
                     }
                     catch (Exception ex)

@@ -725,6 +725,122 @@ label {
     max-width: 100%;
 }
 
+/* Ensure selfie camera view is visible */
+#selfie-camera-view:not(.hidden) {
+    display: block !important;
+}
+
+#selfie-camera-view:not(.hidden) #selfie-modal-video {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
+    background: #000 !important;
+}
+
+/* ID Camera views - tighter aspect ratio */
+#front-camera-view .relative,
+#back-camera-view .relative {
+    aspect-ratio: 4/3;
+}
+
+#front-modal-video,
+#back-modal-video {
+    min-height: 220px;
+    max-height: 300px;
+    width: 100%;
+    height: 100%;
+}
+
+/* Selfie camera - portrait orientation */
+#selfie-modal-video {
+    min-height: 320px;
+    aspect-ratio: 3/4;
+}
+
+/* ===== ALWAYS VISIBLE GUIDES ===== */
+/* These styles ensure ID rectangle and face oval guides NEVER disappear */
+
+/* Front ID Rectangle Guide - Always visible */
+#front-camera-view:not(.hidden) .absolute.inset-0 {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 20 !important;
+}
+
+/* Back ID Rectangle Guide - Always visible */
+#back-camera-view:not(.hidden) .absolute.inset-0 {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 20 !important;
+}
+
+/* Selfie Face Oval Guide - Always visible */
+#selfie-camera-view:not(.hidden) .absolute.inset-0 {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 20 !important;
+}
+
+/* Guide border elements - ensure visibility */
+#front-camera-view .border-4.border-green-400,
+#back-camera-view .border-4.border-green-400,
+#selfie-camera-view .border-4.border-green-400 {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Corner markers always visible */
+#front-camera-view .border-t-4.border-l-4,
+#front-camera-view .border-t-4.border-r-4,
+#front-camera-view .border-b-4.border-l-4,
+#front-camera-view .border-b-4.border-r-4,
+#back-camera-view .border-t-4.border-l-4,
+#back-camera-view .border-t-4.border-r-4,
+#back-camera-view .border-b-4.border-l-4,
+#back-camera-view .border-b-4.border-r-4 {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* SVG Oval Guide - Ensure visibility on all devices including Android */
+.selfie-oval-svg {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: none;
+}
+
+/* Selfie camera container responsive */
+.selfie-camera-container {
+    max-width: 280px;
+    margin: 0 auto;
+}
+
+@media (min-width: 400px) {
+    .selfie-camera-container {
+        max-width: 300px;
+    }
+}
+
+@media (min-width: 640px) {
+    .selfie-camera-container {
+        max-width: 320px;
+    }
+}
+
+/* Selfie video wrapper */
+.selfie-video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 133.33%; /* 3:4 aspect ratio */
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
 /* Countdown overlay animation */
 #selfie-countdown-overlay {
     animation: fadeIn 0.2s ease-out;
@@ -746,8 +862,269 @@ label {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MODAL RESPONSIVE STYLES - FULL SCREEN ON MOBILE/TABLET
+   CAMERA VIEW RESPONSIVE STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Base camera container styles */
+#front-camera-view,
+#back-camera-view,
+#selfie-camera-view {
+    width: 100%;
+}
+
+#front-camera-view .relative,
+#back-camera-view .relative {
+    width: 100%;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+#selfie-camera-view .relative {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+/* Video elements base styles */
+#front-modal-video,
+#back-modal-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #000;
+}
+
+#selfie-modal-video {
+    width: 100%;
+    object-fit: cover;
+    background: #000;
+}
+
+/* Desktop and Tablet (min-width: 640px) */
+@media (min-width: 640px) {
+    #front-camera-view .relative,
+    #back-camera-view .relative {
+        max-height: 320px;
+    }
+
+    #front-modal-video,
+    #back-modal-video {
+        min-height: 260px;
+        max-height: 320px;
+    }
+
+    #selfie-modal-video {
+        min-height: 360px;
+        max-height: 420px;
+    }
+
+    /* ID Guide rectangle - desktop size */
+    #front-id-guide-overlay .relative,
+    #back-id-guide-overlay .relative {
+        width: 85%;
+        max-width: 320px;
+    }
+
+    /* Face oval guide - desktop size */
+    #selfie-face-guide-overlay .relative {
+        width: 65%;
+        max-width: 220px;
+    }
+}
+
+/* Mobile (max-width: 639px) */
+@media (max-width: 639px) {
+    #front-camera-view .relative,
+    #back-camera-view .relative {
+        max-height: 280px;
+    }
+
+    #front-modal-video,
+    #back-modal-video {
+        min-height: 200px;
+        max-height: 280px;
+    }
+
+    #selfie-modal-video {
+        min-height: 300px;
+        max-height: 360px;
+    }
+
+    /* ID Guide rectangle - mobile size */
+    #front-id-guide-overlay .relative,
+    #back-id-guide-overlay .relative {
+        width: 88%;
+        max-width: 280px;
+    }
+
+    /* Face oval guide - mobile size */
+    #selfie-face-guide-overlay .relative {
+        width: 60%;
+        max-width: 180px;
+    }
+
+    /* Camera action buttons */
+    #front-camera-view .flex.gap-2,
+    #back-camera-view .flex.gap-2 {
+        flex-direction: column;
+    }
+
+    #front-camera-view .flex.gap-2 button,
+    #back-camera-view .flex.gap-2 button {
+        width: 100%;
+    }
+}
+
+/* Extra small screens (max-width: 480px) */
+@media (max-width: 480px) {
+    #front-camera-view .relative,
+    #back-camera-view .relative {
+        max-height: 240px;
+    }
+
+    #front-modal-video,
+    #back-modal-video {
+        min-height: 180px;
+        max-height: 240px;
+    }
+
+    #selfie-modal-video {
+        min-height: 260px;
+        max-height: 320px;
+    }
+
+    /* ID Guide rectangle - extra small */
+    #front-id-guide-overlay .relative,
+    #back-id-guide-overlay .relative {
+        width: 90%;
+        max-width: 260px;
+    }
+
+    /* Face oval guide - extra small */
+    #selfie-face-guide-overlay .relative {
+        width: 55%;
+        max-width: 160px;
+    }
+
+    /* Guide text smaller on mobile */
+    #front-id-guide-overlay span,
+    #back-id-guide-overlay span,
+    #selfie-face-guide-overlay span {
+        font-size: 0.65rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+
+    /* Corner markers smaller */
+    #front-id-rectangle .border-t-4,
+    #front-id-rectangle .border-b-4,
+    #back-id-rectangle .border-t-4,
+    #back-id-rectangle .border-b-4 {
+        width: 0.75rem !important;
+        height: 0.75rem !important;
+        border-width: 3px !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UPLOAD AREA RESPONSIVE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.upload-area-modal {
+    transition: all 0.3s ease;
+}
+
+/* Preview images responsive */
+#modal-preview-front,
+#modal-preview-back {
+    max-width: 100%;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 0.5rem;
+}
+
+#modal-preview-selfie {
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+@media (min-width: 640px) {
+    #modal-preview-front,
+    #modal-preview-back {
+        max-height: 280px;
+    }
+
+    #modal-preview-selfie {
+        width: 12rem;
+        height: 12rem;
+    }
+}
+
+@media (max-width: 639px) {
+    #modal-preview-front,
+    #modal-preview-back {
+        max-height: 200px;
+    }
+
+    #modal-preview-selfie {
+        width: 9rem;
+        height: 9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #modal-preview-front,
+    #modal-preview-back {
+        max-height: 160px;
+    }
+
+    #modal-preview-selfie {
+        width: 7rem;
+        height: 7rem;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PROGRESS INDICATOR RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+    /* Progress steps on very small screens */
+    .modal-body .flex.items-center.gap-2 {
+        gap: 0.25rem !important;
+    }
+
+    .modal-body .w-8.h-8 {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    .modal-body .w-8.sm\:w-12 {
+        width: 1rem !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TIPS SECTION RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+    .modal-body .rounded-xl.p-3 {
+        padding: 0.5rem !important;
+    }
+
+    .modal-body .rounded-xl.p-3 .text-xs {
+        font-size: 0.65rem !important;
+    }
+
+    .modal-body .rounded-xl.p-3 i {
+        font-size: 0.75rem !important;
+    }
+}
 
 /* Mobile: Full-screen modal for better UX and consistency */
 @media (max-width: 991px) {

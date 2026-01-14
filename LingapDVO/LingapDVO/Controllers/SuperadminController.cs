@@ -101,7 +101,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = HospitalAssistance.BlkLotStreet;
             ViewData["SubVill"] = HospitalAssistance.SubVill;
             ViewData["Brgy"] = HospitalAssistance.Brgy;
-            ViewData["District"] = HospitalAssistance.District;
             ViewData["Sex"] = HospitalAssistance.Sex;
             ViewData["PhilHealth"] = HospitalAssistance.PhilHealth;
             ViewData["PhilHealthNo"] = HospitalAssistance.PhilHealthNo;
@@ -116,7 +115,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = HospitalAssistance.RBlkLotStreet;
             ViewData["RSubVill"] = HospitalAssistance.RSubVill;
             ViewData["RBrgy"] = HospitalAssistance.RBrgy;
-            ViewData["RDistrict"] = HospitalAssistance.RDistrict;
             ViewData["RelationshipPatient"] = HospitalAssistance.RelationshipPatient;
             ViewData["ContactNo"] = HospitalAssistance.ContactNo;
 
@@ -180,7 +178,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] =  FuneralAssistance.BlkLotStreet;
             ViewData["SubVill"] =  FuneralAssistance.SubVill;
             ViewData["Brgy"] =  FuneralAssistance.Brgy;
-            ViewData["District"] =  FuneralAssistance.District;
             ViewData["Sex"] =  FuneralAssistance.Sex;
             ViewData["PhilHealth"] =  FuneralAssistance.PhilHealth;
             ViewData["PhilHealthNo"] =  FuneralAssistance.PhilHealthNo;
@@ -195,8 +192,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] =  FuneralAssistance.RBlkLotStreet;
             ViewData["RSubVill"] =  FuneralAssistance.RSubVill;
             ViewData["RBrgy"] =  FuneralAssistance.RBrgy;
-            ViewData["RDistrict"] =  FuneralAssistance.RDistrict;
-            ViewData["RelationshipPatient"] =  FuneralAssistance.RelationshipPatient;
             ViewData["ContactNo"] =  FuneralAssistance.ContactNo;
 
             // Type of assistance and CMO details
@@ -257,7 +252,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] =    OtherAssistance.BlkLotStreet;
             ViewData["SubVill"] =    OtherAssistance.SubVill;
             ViewData["Brgy"] =    OtherAssistance.Brgy;
-            ViewData["District"] =    OtherAssistance.District;
             ViewData["Sex"] =    OtherAssistance.Sex;
             ViewData["PhilHealth"] =    OtherAssistance.PhilHealth;
             ViewData["PhilHealthNo"] =    OtherAssistance.PhilHealthNo;
@@ -272,7 +266,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] =    OtherAssistance.RBlkLotStreet;
             ViewData["RSubVill"] =    OtherAssistance.RSubVill;
             ViewData["RBrgy"] =    OtherAssistance.RBrgy;
-            ViewData["RDistrict"] =    OtherAssistance.RDistrict;
             ViewData["RelationshipPatient"] =    OtherAssistance.RelationshipPatient;
             ViewData["ContactNo"] =    OtherAssistance.ContactNo;
 
@@ -492,3 +485,4 @@ namespace LingapDVO.Controllers
 
     }
 }
+

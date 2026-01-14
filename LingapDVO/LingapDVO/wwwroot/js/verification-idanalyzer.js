@@ -337,21 +337,23 @@ const ACCEPTED_ID_TYPES = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Validate if address is from Davao City and barangay is valid
-// NOTE: This ONLY validates the API address data, NOT the user's input from Tab 1
+// NOTE: This ONLY validates the API address data (Address1 ONLY), NOT the user's input from Tab 1
+// IMPORTANT: Only uses Address1, ignores Address2 and Place of Birth
 function validateDavaoCityAddress(address1, address2) {
-    const fullAddress = `${address1 || ''} ${address2 || ''}`.toUpperCase().trim();
+    // ONLY USE ADDRESS1 - Ignore address2, placeOfBirth, and other fields
+    const fullAddress = (address1 || '').toUpperCase().trim();
 
-    console.log('🏠 Address Validation - API Data:');
+    console.log('🏠 Address Validation - API Data (Address1 ONLY):');
     console.log('   Address 1:', address1 || 'N/A');
-    console.log('   Address 2:', address2 || 'N/A');
-    console.log('   Full Address:', fullAddress || 'EMPTY');
+    console.log('   Address 2 (IGNORED):', address2 || 'N/A');
+    console.log('   Using Address:', fullAddress || 'EMPTY');
 
-    // If no address data from API, skip validation (API might not always return address)
+    // If no address1 data from API, skip validation (API might not always return address)
     if (!fullAddress || fullAddress === '') {
-        console.warn('⚠️ No address data from API - Skipping address validation');
+        console.warn('⚠️ No Address1 data from API - Skipping address validation');
         return {
             valid: true,
-            message: 'Address validation skipped (no data from API)',
+            message: 'Address validation skipped (no Address1 data from API)',
             warning: true
         };
     }
@@ -372,12 +374,40 @@ function validateDavaoCityAddress(address1, address2) {
         };
     }
 
-    // Check if barangay is in the Davao City barangays list
+    // Flexible barangay validation - normalize and compare
+    // Helper function to normalize barangay names for comparison
+    function normalizeBarangay(barangay) {
+        if (!barangay) return '';
+
+        // Convert to uppercase, remove special characters, extra spaces
+        let normalized = barangay.toUpperCase()
+            .replace(/\(POB\.?\)/gi, '')
+            .replace(/PROPER/gi, '')
+            .replace(/[().,]/g, '')
+            .replace(/-/g, ' ')
+            .trim();
+
+        // Remove extra spaces
+        while (normalized.includes('  ')) {
+            normalized = normalized.replace('  ', ' ');
+        }
+
+        return normalized;
+    }
+
+    // Normalize the full address
+    const normalizedAddress = normalizeBarangay(fullAddress);
+
+    // Check if barangay is in the Davao City barangays list (flexible matching)
     let barangayFound = false;
     let matchedBarangay = '';
 
     for (const barangay of DAVAO_CITY_BARANGAYS) {
-        if (fullAddress.includes(barangay.toUpperCase())) {
+        const normalizedBarangay = normalizeBarangay(barangay);
+
+        // Check for exact match or partial match (contains)
+        if (normalizedAddress.includes(normalizedBarangay) ||
+            normalizedBarangay.includes(normalizedAddress.split(/\s+/)[0])) {
             barangayFound = true;
             matchedBarangay = barangay;
             break;
@@ -517,10 +547,200 @@ function validateNameMatch(apiData, registeredData) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// GENDER VALIDATION - Compare user-selected gender with API-extracted gender
+// ═══════════════════════════════════════════════════════════════════════════════
+function validateGenderMatch(userGender, apiGender) {
+    console.log('⚧️ Gender Validation:');
+    console.log('   User selected:', userGender);
+    console.log('   ID shows:', apiGender);
+
+    // If API didn't return gender, skip validation
+    if (!apiGender || apiGender.trim() === '') {
+        console.log('⚠️ Gender not extracted from ID - skipping validation');
+        return { valid: true, message: 'Gender validation skipped (not extracted from ID)', skipped: true };
+    }
+
+    // If user didn't select gender, require it
+    if (!userGender || userGender.trim() === '') {
+        return { valid: false, message: 'Please select your gender in Personal Info tab' };
+    }
+
+    // Normalize gender values for comparison
+    const normalizeGender = (gender) => {
+        const g = (gender || '').toUpperCase().trim();
+        // Map common variations to standard values
+        if (['M', 'MALE', 'LALAKI', 'MAN', 'BOY'].includes(g)) return 'MALE';
+        if (['F', 'FEMALE', 'BABAE', 'WOMAN', 'GIRL'].includes(g)) return 'FEMALE';
+        return g;
+    };
+
+    const normalizedUser = normalizeGender(userGender);
+    const normalizedApi = normalizeGender(apiGender);
+
+    console.log('   Normalized user:', normalizedUser);
+    console.log('   Normalized API:', normalizedApi);
+
+    if (normalizedUser !== normalizedApi) {
+        console.log('❌ Gender mismatch detected');
+        return {
+            valid: false,
+            message: `Gender mismatch: You selected "${userGender}" but your ID shows "${apiGender}". Please correct your gender selection.`
+        };
+    }
+
+    console.log('✅ Gender matches');
+    return { valid: true, message: 'Gender matches ID document' };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BIRTHDATE VALIDATION - Compare user-entered birthdate with API-extracted birthdate
+// ═══════════════════════════════════════════════════════════════════════════════
+function validateBirthdateMatch(userBirthdate, apiBirthdate) {
+    console.log('📅 Birthdate Validation:');
+    console.log('   User entered:', userBirthdate);
+    console.log('   ID shows:', apiBirthdate);
+
+    // If API didn't return birthdate, skip validation
+    if (!apiBirthdate || apiBirthdate.trim() === '') {
+        console.log('⚠️ Birthdate not extracted from ID - skipping validation');
+        return { valid: true, message: 'Birthdate validation skipped (not extracted from ID)', skipped: true };
+    }
+
+    // If user didn't enter birthdate, require it
+    if (!userBirthdate || userBirthdate.trim() === '') {
+        return { valid: false, message: 'Please enter your date of birth in Personal Info tab' };
+    }
+
+    // Parse dates for comparison
+    // User format: YYYY-MM-DD (from date input)
+    // API format: Various (YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY, etc.)
+    const parseDate = (dateStr) => {
+        if (!dateStr) return null;
+        
+        // Try YYYY-MM-DD format first
+        let match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (match) {
+            return { year: parseInt(match[1]), month: parseInt(match[2]), day: parseInt(match[3]) };
+        }
+        
+        // Try MM/DD/YYYY format
+        match = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (match) {
+            return { year: parseInt(match[3]), month: parseInt(match[1]), day: parseInt(match[2]) };
+        }
+        
+        // Try DD/MM/YYYY format (common in PH)
+        match = dateStr.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+        if (match) {
+            return { year: parseInt(match[3]), month: parseInt(match[2]), day: parseInt(match[1]) };
+        }
+        
+        // Try parsing as Date object
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+            return { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
+        }
+        
+        return null;
+    };
+
+    const userDate = parseDate(userBirthdate);
+    const apiDate = parseDate(apiBirthdate);
+
+    console.log('   Parsed user date:', userDate);
+    console.log('   Parsed API date:', apiDate);
+
+    if (!userDate) {
+        return { valid: false, message: 'Invalid date format entered' };
+    }
+
+    if (!apiDate) {
+        console.log('⚠️ Could not parse API birthdate - skipping validation');
+        return { valid: true, message: 'Birthdate validation skipped (could not parse ID date)', skipped: true };
+    }
+
+    // Compare year, month, and day
+    if (userDate.year !== apiDate.year || userDate.month !== apiDate.month || userDate.day !== apiDate.day) {
+        console.log('❌ Birthdate mismatch detected');
+        const userFormatted = `${userDate.month}/${userDate.day}/${userDate.year}`;
+        const apiFormatted = `${apiDate.month}/${apiDate.day}/${apiDate.year}`;
+        return {
+            valid: false,
+            message: `Birthdate mismatch: You entered "${userFormatted}" but your ID shows "${apiFormatted}". Please correct your date of birth.`
+        };
+    }
+
+    console.log('✅ Birthdate matches');
+    return { valid: true, message: 'Birthdate matches ID document' };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUFFIX VALIDATION - Compare user-selected suffix with API-extracted suffix
+// ═══════════════════════════════════════════════════════════════════════════════
+function validateSuffixMatch(userSuffix, apiSuffix) {
+    console.log('📛 Suffix Validation:');
+    console.log('   User selected:', userSuffix);
+    console.log('   ID shows:', apiSuffix);
+
+    // Normalize suffix values
+    const normalizeSuffix = (suffix) => {
+        const s = (suffix || '').toUpperCase().trim().replace('.', '');
+        if (s === 'NONE' || s === '' || s === 'N/A') return '';
+        if (s === 'JUNIOR') return 'JR';
+        if (s === 'SENIOR') return 'SR';
+        return s;
+    };
+
+    const normalizedUser = normalizeSuffix(userSuffix);
+    const normalizedApi = normalizeSuffix(apiSuffix);
+
+    console.log('   Normalized user:', normalizedUser || '(none)');
+    console.log('   Normalized API:', normalizedApi || '(none)');
+
+    // If API didn't extract suffix, skip validation (optional field)
+    if (normalizedApi === '') {
+        console.log('⚠️ Suffix not extracted from ID - skipping validation');
+        return { valid: true, message: 'Suffix validation skipped (not extracted from ID)', skipped: true };
+    }
+
+    // If API shows suffix but user didn't select one
+    if (normalizedApi !== '' && normalizedUser === '') {
+        console.log('⚠️ ID shows suffix but user selected none - warning only');
+        return { 
+            valid: true, 
+            message: `Your ID shows suffix "${apiSuffix}" but you selected "None". Please verify this is correct.`,
+            warning: true 
+        };
+    }
+
+    // If user selected suffix but API doesn't show one
+    if (normalizedUser !== '' && normalizedApi === '') {
+        console.log('⚠️ User selected suffix but ID shows none - warning only');
+        return { 
+            valid: true, 
+            message: `You selected suffix "${userSuffix}" but your ID doesn't show a suffix. Please verify this is correct.`,
+            warning: true 
+        };
+    }
+
+    // Both have suffix - must match
+    if (normalizedUser !== normalizedApi) {
+        console.log('❌ Suffix mismatch detected');
+        return {
+            valid: false,
+            message: `Suffix mismatch: You selected "${userSuffix}" but your ID shows "${apiSuffix}". Please correct your suffix selection.`
+        };
+    }
+
+    console.log('✅ Suffix matches');
+    return { valid: true, message: 'Suffix matches ID document' };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // BARANGAY VALIDATION FUNCTION
 // ═══════════════════════════════════════════════════════════════════════════════
 // Compares user-selected barangay with barangay found in ID address
-// Uses partial, case-insensitive matching (e.g., 'Brgy. Talomo' matches 'Talomo')
+// Uses flexible matching with normalization for common variations
 function validateBarangayMatch(address1, userSelectedBarangay) {
     console.log('🏘️ Barangay Validation Input:', {
         address1: address1,
@@ -546,30 +766,125 @@ function validateBarangayMatch(address1, userSelectedBarangay) {
         };
     }
 
+    // Normalize function for barangay names - handles common variations
+    const normalizeBarangayName = (name) => {
+        if (!name) return '';
+        return name.toUpperCase()
+            .replace(/^BRGY\.?\s*/i, '')           // Remove "Brgy." prefix
+            .replace(/^BARANGAY\s*/i, '')          // Remove "Barangay" prefix
+            .replace(/\(POB\.?\)/gi, '')           // Remove "(Pob.)" suffix
+            .replace(/PROPER$/i, '')               // Remove "Proper" suffix
+            .replace(/[().,\-]/g, ' ')             // Replace punctuation with spaces
+            .replace(/\s+/g, ' ')                  // Normalize multiple spaces
+            .trim();
+    };
+
     const fullAddress = address1.toUpperCase().trim();
-    const selectedBarangay = userSelectedBarangay.toUpperCase().trim();
+    const normalizedAddress = normalizeBarangayName(fullAddress);
+    const normalizedUserBarangay = normalizeBarangayName(userSelectedBarangay);
 
-    // Remove common prefixes for matching (Brgy., Barangay, etc.)
-    const cleanBarangay = selectedBarangay
-        .replace(/^BRGY\.?\s*/i, '')
-        .replace(/^BARANGAY\s*/i, '')
-        .trim();
+    console.log('🏘️ Normalized values:', {
+        normalizedAddress: normalizedAddress,
+        normalizedUserBarangay: normalizedUserBarangay
+    });
 
-    // Check if address contains the barangay (partial match)
-    const barangayFound = fullAddress.includes(selectedBarangay) ||
-                         fullAddress.includes(cleanBarangay);
-
-    if (!barangayFound) {
+    // Strategy 1: Direct contains check (most common case)
+    if (normalizedAddress.includes(normalizedUserBarangay)) {
+        console.log('✅ Barangay found via direct contains match');
         return {
-            valid: false,
-            message: `Your ID address does not match the selected barangay "${userSelectedBarangay}"`
+            valid: true,
+            message: `Barangay confirmed: ${userSelectedBarangay}`,
+            matchedBarangay: userSelectedBarangay
         };
     }
 
+    // Strategy 2: Word-by-word matching for compound barangay names
+    // Split the user's barangay into words and check if ALL words appear in address
+    const barangayWords = normalizedUserBarangay.split(/\s+/).filter(w => w.length >= 2);
+    if (barangayWords.length > 0) {
+        const allWordsFound = barangayWords.every(word => normalizedAddress.includes(word));
+        if (allWordsFound) {
+            console.log('✅ Barangay found via word-by-word match:', barangayWords);
+            return {
+                valid: true,
+                message: `Barangay confirmed: ${userSelectedBarangay}`,
+                matchedBarangay: userSelectedBarangay
+            };
+        }
+    }
+
+    // Strategy 3: Check if the first significant word of barangay appears in address
+    // This handles cases like "Matina Crossing" where only "MATINA" appears in ID
+    const firstWord = barangayWords[0];
+    if (firstWord && firstWord.length >= 4 && normalizedAddress.includes(firstWord)) {
+        console.log('✅ Barangay found via primary word match:', firstWord);
+        return {
+            valid: true,
+            message: `Barangay confirmed: ${userSelectedBarangay}`,
+            matchedBarangay: userSelectedBarangay
+        };
+    }
+
+    // Strategy 4: Fuzzy matching - check if barangay is a substring or vice versa
+    // This handles abbreviated names on IDs
+    const addressWords = normalizedAddress.split(/\s+/).filter(w => w.length >= 3);
+    for (const addressWord of addressWords) {
+        // Check if user barangay contains this address word (or vice versa)
+        if (normalizedUserBarangay.includes(addressWord) || addressWord.includes(normalizedUserBarangay)) {
+            console.log('✅ Barangay found via fuzzy match:', addressWord);
+            return {
+                valid: true,
+                message: `Barangay confirmed: ${userSelectedBarangay}`,
+                matchedBarangay: userSelectedBarangay
+            };
+        }
+        // Check individual barangay words
+        for (const barangayWord of barangayWords) {
+            if (addressWord.includes(barangayWord) || barangayWord.includes(addressWord)) {
+                if (barangayWord.length >= 4 && addressWord.length >= 4) {
+                    console.log('✅ Barangay found via word fuzzy match:', { addressWord, barangayWord });
+                    return {
+                        valid: true,
+                        message: `Barangay confirmed: ${userSelectedBarangay}`,
+                        matchedBarangay: userSelectedBarangay
+                    };
+                }
+            }
+        }
+    }
+
+    // Strategy 5: Check against DAVAO_CITY_BARANGAYS list for common variations
+    // Find all possible barangay names in the address
+    const detectedBarangays = [];
+    for (const brgy of DAVAO_CITY_BARANGAYS) {
+        const normalizedBrgy = normalizeBarangayName(brgy);
+        if (normalizedAddress.includes(normalizedBrgy) || normalizedBrgy.includes(normalizedAddress.split(/\s+/)[0])) {
+            detectedBarangays.push(brgy);
+        }
+    }
+
+    // If the user's selected barangay is in the detected list, it's valid
+    if (detectedBarangays.length > 0) {
+        console.log('🏘️ Detected barangays in address:', detectedBarangays);
+        const normalizedDetected = detectedBarangays.map(b => normalizeBarangayName(b));
+        if (normalizedDetected.includes(normalizedUserBarangay)) {
+            console.log('✅ Barangay found via list comparison');
+            return {
+                valid: true,
+                message: `Barangay confirmed: ${userSelectedBarangay}`,
+                matchedBarangay: userSelectedBarangay
+            };
+        }
+    }
+
+    console.log('❌ Barangay validation failed - no match found');
+    console.log('   User selected:', userSelectedBarangay);
+    console.log('   ID Address:', address1);
+    console.log('   Detected barangays:', detectedBarangays);
+
     return {
-        valid: true,
-        message: `Barangay confirmed: ${userSelectedBarangay}`,
-        matchedBarangay: userSelectedBarangay
+        valid: false,
+        message: `Your ID address does not match the selected barangay "${userSelectedBarangay}". ID shows: "${address1}"`
     };
 }
 
@@ -595,7 +910,10 @@ function runTab3Validations() {
             validations: {
                 nameValidation: { valid: false, message: 'No verification data available' },
                 barangayValidation: { valid: false, message: 'No verification data available' },
-                davaoCityValidation: { valid: false, message: 'No verification data available' }
+                davaoCityValidation: { valid: false, message: 'No verification data available' },
+                genderValidation: { valid: false, message: 'No verification data available' },
+                birthdateValidation: { valid: false, message: 'No verification data available' },
+                suffixValidation: { valid: false, message: 'No verification data available' }
             }
         };
     }
@@ -633,10 +951,28 @@ function runTab3Validations() {
         null
     );
 
-    // Determine overall pass/fail
+    // VALIDATION 4: Gender Matching
+    const userGender = (document.getElementById('gender')?.value || '').trim();
+    const apiGender = apiData.data?.sex || apiData.sex || VerificationState.scanResult?.data?.sex || '';
+    const genderValidation = validateGenderMatch(userGender, apiGender);
+
+    // VALIDATION 5: Birthdate Matching
+    const userBirthdate = (document.getElementById('birthdate')?.value || '').trim();
+    const apiBirthdate = apiData.data?.dateOfBirth || apiData.dateOfBirth || VerificationState.scanResult?.data?.dateOfBirth || '';
+    const birthdateValidation = validateBirthdateMatch(userBirthdate, apiBirthdate);
+
+    // VALIDATION 6: Suffix Matching
+    const userSuffix = (document.getElementById('suffix')?.value || '').trim();
+    const apiSuffix = apiData.data?.suffix || apiData.suffix || VerificationState.scanResult?.data?.suffix || '';
+    const suffixValidation = validateSuffixMatch(userSuffix, apiSuffix);
+
+    // Determine overall pass/fail (suffix is warning only, not blocking)
     const overallPass = nameValidation.valid &&
                        barangayValidation.valid &&
-                       davaoCityValidation.valid;
+                       davaoCityValidation.valid &&
+                       genderValidation.valid &&
+                       birthdateValidation.valid &&
+                       suffixValidation.valid;
 
     return {
         hasData: true,
@@ -644,7 +980,10 @@ function runTab3Validations() {
         validations: {
             nameValidation,
             barangayValidation,
-            davaoCityValidation
+            davaoCityValidation,
+            genderValidation,
+            birthdateValidation,
+            suffixValidation
         }
     };
 }
@@ -725,6 +1064,24 @@ function showFailureAnimation(message = 'Verification Failed', details = '') {
             </button>
         </div>
     `;
+
+    // Show retry button on error
+    showRetryButton();
+}
+
+// Helper function to show retry button
+function showRetryButton() {
+    const retryBtn = document.getElementById('retry-verification-btn');
+    const startBtn = document.getElementById('start-verification-btn');
+
+    if (retryBtn) {
+        retryBtn.classList.remove('hidden');
+        retryBtn.classList.add('flex');
+    }
+    if (startBtn) {
+        startBtn.classList.add('hidden');
+        startBtn.style.display = 'none';
+    }
 }
 
 // Close processing modal
@@ -859,18 +1216,35 @@ window.submitVerification = async function() {
 
             const validationErrors = [];
 
-            // VALIDATION 1: Check ID Type (documentName)
-            const idTypeValidation = validateIdType(result.data?.documentName);
+            // VALIDATION 1: Check ID Type - PRIORITIZE MANUAL SELECTION
+            // Check if user has manually selected ID type from dropdown
+            const manuallySelectedIdType = document.getElementById('idtype-display')?.value;
+            let idTypeValidation;
+
+            if (manuallySelectedIdType && manuallySelectedIdType !== '') {
+                // User has manually selected ID type - use that instead of API detection
+                console.log('✅ ID Type manually selected by user:', manuallySelectedIdType);
+                idTypeValidation = {
+                    valid: true,
+                    idType: manuallySelectedIdType,
+                    message: `ID Type manually selected: ${manuallySelectedIdType}`
+                };
+            } else {
+                // No manual selection - validate using API's documentName
+                console.log('📋 No manual ID Type selection - Using API detection');
+                idTypeValidation = validateIdType(result.data?.documentName);
+            }
+
             if (!idTypeValidation.valid) {
                 validationErrors.push(idTypeValidation.message);
             } else {
                 console.log('✅ ID Type Validation:', idTypeValidation.message);
             }
 
-            // VALIDATION 2: Check Davao City Address (address1 + address2)
+            // VALIDATION 2: Check Davao City Address (ONLY Address1, NOT Address2)
             const addressValidation = validateDavaoCityAddress(
                 result.data?.address1,
-                result.data?.address2
+                null  // Explicitly pass null for address2 to ensure it's not used
             );
             if (!addressValidation.valid) {
                 validationErrors.push(addressValidation.message);
@@ -892,6 +1266,39 @@ window.submitVerification = async function() {
                 console.log('✅ Name Validation:', nameValidation.message);
             }
 
+            // VALIDATION 4: Check Gender Matching
+            const userGender = document.getElementById('gender')?.value || '';
+            const apiGender = result.data?.sex || '';
+            const genderValidation = validateGenderMatch(userGender, apiGender);
+            if (!genderValidation.valid) {
+                validationErrors.push(genderValidation.message);
+            } else if (!genderValidation.skipped) {
+                console.log('✅ Gender Validation:', genderValidation.message);
+            }
+
+            // VALIDATION 5: Check Birthdate Matching
+            const userBirthdate = document.getElementById('birthdate')?.value || '';
+            const apiBirthdate = result.data?.dateOfBirth || '';
+            const birthdateValidation = validateBirthdateMatch(userBirthdate, apiBirthdate);
+            if (!birthdateValidation.valid) {
+                validationErrors.push(birthdateValidation.message);
+            } else if (!birthdateValidation.skipped) {
+                console.log('✅ Birthdate Validation:', birthdateValidation.message);
+            }
+
+            // VALIDATION 6: Check Suffix Matching (warning only, not blocking)
+            const userSuffix = document.getElementById('suffix')?.value || '';
+            const apiSuffix = result.data?.suffix || '';
+            const suffixValidation = validateSuffixMatch(userSuffix, apiSuffix);
+            if (!suffixValidation.valid) {
+                validationErrors.push(suffixValidation.message);
+            } else if (suffixValidation.warning) {
+                console.log('⚠️ Suffix Warning:', suffixValidation.message);
+                // Show warning but don't block
+            } else if (!suffixValidation.skipped) {
+                console.log('✅ Suffix Validation:', suffixValidation.message);
+            }
+
             // If any validation failed, show error and stop
             if (validationErrors.length > 0) {
                 const errorMessage = validationErrors.join('<br>');
@@ -908,16 +1315,36 @@ window.submitVerification = async function() {
             VerificationState.verificationComplete = true;
             console.log('✅ All validations passed! Verification ACCEPTED');
 
-            // Auto-populate ID Type if API returns "accept"
+            // ID Type - User must select manually (auto-detection disabled)
             const idTypeField = document.getElementById('idtype-display');
             const idTypeHidden = document.getElementById('document-type'); // Hidden form field for submission
-            if (idTypeField && idTypeValidation.idType) {
-                idTypeField.value = idTypeValidation.idType;
-                // Also sync to the hidden form field for form submission
-                if (idTypeHidden) {
-                    idTypeHidden.value = idTypeValidation.idType;
-                }
-                console.log('✅ ID Type auto-populated:', idTypeValidation.idType);
+            const idTypeVerifiedBadge = document.getElementById('idtype-verified-badge');
+            const idTypeHelpText = document.getElementById('idtype-help-text');
+
+            // Keep the badge hidden - no auto-detection
+            if (idTypeVerifiedBadge) {
+                idTypeVerifiedBadge.classList.add('hidden');
+            }
+            
+            // Update help text to remind user to select ID type
+            if (idTypeHelpText) {
+                idTypeHelpText.textContent = 'Please select your ID type from the dropdown';
+                idTypeHelpText.parentElement.classList.remove('text-gray-500', 'text-green-600');
+                idTypeHelpText.parentElement.classList.add('text-blue-600');
+            }
+
+            // Remove any auto-detected styling
+            if (idTypeField) {
+                idTypeField.classList.remove('border-green-300', 'bg-green-50');
+                idTypeField.classList.add('border-gray-300', 'bg-white');
+            }
+
+            // Add change event listener to sync dropdown with hidden field
+            if (idTypeField && idTypeHidden) {
+                idTypeField.addEventListener('change', function() {
+                    idTypeHidden.value = this.value;
+                    console.log('ID Type manually selected:', this.value);
+                });
             }
 
             // Auto-populate ID Number if API returns "accept"
@@ -968,7 +1395,7 @@ window.submitVerification = async function() {
                 nextButton.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
                 const nextBtnText = nextButton.querySelector('#next-btn-text');
                 if (nextBtnText) {
-                    nextBtnText.textContent = 'Next: Review & Submit';
+                    nextBtnText.textContent = 'Next';
                 }
                 const nextBtnIcon = nextButton.querySelector('i');
                 if (nextBtnIcon) {
@@ -9688,17 +10115,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 birthField.value = birthdate;
             } else {
             }
+            
+            // Store API-extracted gender for validation comparison
+            if (sex) {
+                window.apiExtractedGender = sex;
+                console.log('📌 API-extracted gender stored:', sex);
+            }
+            
+            // Gender validation: Compare user-selected gender with ID-extracted gender
+            const userSelectedGender = genderField?.value || '';
+            if (sex && userSelectedGender) {
+                const genderValidation = window.validateGenderMatch ? window.validateGenderMatch(userSelectedGender, sex) : { isValid: true };
+                if (!genderValidation.isValid) {
+                    console.warn('⚠️ Gender mismatch detected:', genderValidation.message);
+                    // Show warning but don't block - user may have selected correctly
+                    const genderErrorDiv = document.getElementById('gender-error');
+                    if (genderErrorDiv) {
+                        genderErrorDiv.textContent = genderValidation.message;
+                        genderErrorDiv.classList.remove('hidden');
+                    }
+                } else {
+                    console.log('✅ Gender validation passed');
+                    const genderErrorDiv = document.getElementById('gender-error');
+                    if (genderErrorDiv) {
+                        genderErrorDiv.classList.add('hidden');
+                    }
+                }
+            }
+            
             // Convert gender from ID Analyzer format (M/F) to form format (Male/Female)
+            // NOTE: Gender field is NOT auto-populated - user must select manually
+            // The API-extracted gender is only used for validation comparison
             if (sex && genderField) {
                 let genderValue = sex.toUpperCase().trim();
-                if (genderValue === 'M' || genderValue === 'MALE') {
-                    genderField.value = 'Male';
-                } else if (genderValue === 'F' || genderValue === 'FEMALE') {
-                    genderField.value = 'Female';
-                } else {
-                    genderField.value = sex; // Fallback to original value
-                }
-                console.log(`✅ Gender populated: ${sex} → ${genderField.value}`);
+                // Do NOT auto-populate gender - just log for reference
+                console.log(`📌 ID shows gender: ${sex} (user selected: ${genderField.value})`);
             } else {
                 if (!sex) {
                     console.log('⚠️ Gender not extracted from ID');

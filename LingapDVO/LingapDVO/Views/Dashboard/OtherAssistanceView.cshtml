@@ -692,7 +692,7 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Address:</div>
-                            <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"], @ViewData["District"]</div>
+                            <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"]</div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">Sex:</div>
@@ -729,7 +729,7 @@
                 </div>
                 <div class="info-row">
                     <div class="info-label">Address:</div>
-                    <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"], @ViewData["RDistrict"]</div>
+                    <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"]</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">Relationship to Patient:</div>
@@ -752,9 +752,10 @@
                 <h5 class="section-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
                     <button type="button" class="btn btn-sm btn-primary" id="viewAdditionalInfoBtn"
-                            onclick="openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields())"
+                            onclick="toggleAdditionalInfo()"
+                            data-decrypted="false"
                             title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Additional Information
+                        <i class="bi bi-eye-fill me-2" id="additionalBtnIcon"></i><span id="additionalBtnText">View Additional Information</span>
                     </button>
                 </h5>
                 <div class="row g-3">
@@ -802,33 +803,51 @@
             <div class="receipt-section">
                 <!-- Valid ID Section -->
                 <div class="receipt-section">
-                    <h5 class="section-header">Valid ID</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <h6>Front ID</h6>
-                            @if (ViewData["ValidfrontimageBase64"] != null)
-                            {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["ValidfrontimageBase64"]" alt="Front ID" class="id-image" />
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No front ID image available</p>
-                            }
+                    <h5 class="section-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-shield-lock-fill me-2"></i>Valid ID (Encrypted)</span>
+                        @* Button to decrypt/hide Valid ID with toggle functionality *@
+                        @if (!string.IsNullOrEmpty(ViewData["Validfrontimage"]?.ToString()) || !string.IsNullOrEmpty(ViewData["ValidBackimage"]?.ToString()))
+                        {
+                            <button type="button" class="btn btn-sm btn-primary" id="viewValidIDBtn"
+                                    onclick="toggleValidID('/Validimg/@ViewData["Validfrontimage"]', '/Validimg/@ViewData["ValidBackimage"]')"
+                                    data-decrypted="false"
+                                    title="Click to view/hide encrypted ID images">
+                                <i class="bi bi-eye-fill me-1" id="validIDBtnIcon"></i>
+                                <span id="validIDBtnText">View Valid ID</span>
+                            </button>
+                        }
+                    </h5>
+                    
+                    <!-- Alert shown when IDs are encrypted -->
+                    <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <div>
+                            <strong>ID Images are Encrypted</strong><br>
+                            For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <h6>Back ID</h6>
-                            @if (ViewData["ValidBackimageBase64"] != null)
-                            {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["ValidBackimageBase64"]" alt="Back ID" class="id-image" />
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No back ID image available</p>
-                            }
+                    </div>
+
+                    <!-- Loading Container (shown while decrypting) -->
+                    <div class="valid-id-loading" id="validIDLoading">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">Decrypting ID images... Please wait</p>
+                        </div>
+                    </div>
+
+                    <!-- Valid ID Container (hidden by default, shown after successful decryption) -->
+                    <div class="valid-id-container" id="validIDContainer">
+                        <div class="row">
+                            <div class="col-md-6 mb-3" id="frontIDInlineContainer">
+                                <h6><i class="bi bi-credit-card-2-front me-2"></i>Front ID</h6>
+                                <img id="decryptedFrontIDInline" src="" alt="Front ID" class="id-image" style="display: none;" onclick="zoomImage(this.src)" />
+                            </div>
+                            <div class="col-md-6 mb-3" id="backIDInlineContainer">
+                                <h6><i class="bi bi-credit-card-2-back me-2"></i>Back ID</h6>
+                                <img id="decryptedBackIDInline" src="" alt="Back ID" class="id-image" style="display: none;" onclick="zoomImage(this.src)" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1275,20 +1294,48 @@
             };
         }
 
+        // Toggle function for Additional Information (View/Hide)
+        function toggleAdditionalInfo() {
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+            
+            if (isDecrypted) {
+                // Currently showing decrypted data, hide it
+                hideAdditionalInfo();
+            } else {
+                // Currently hidden, show the decrypt modal
+                openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields());
+            }
+        }
+
         // Function to hide additional information
         function hideAdditionalInfo() {
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
             const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const btnIcon = document.getElementById('additionalBtnIcon');
+            const btnText = document.getElementById('additionalBtnText');
 
             if (additionalInfoContainer) {
                 additionalInfoContainer.classList.remove('additional-info-visible');
                 additionalInfoContainer.style.display = 'none';
             }
 
-            // Show the button again when hiding the info
+            // Update button to "View" state
             if (viewButton) {
-                viewButton.style.display = 'inline-block';
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
             }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Additional Information';
+            }
+            
+            // Clear decrypted data
+            window.decryptedAdditionalData = {};
         }
 
         // Function to show additional information after successful decryption
@@ -1299,12 +1346,6 @@
             const loadingContainer = document.getElementById('additionalLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'none';
-            }
-
-            // Hide the "View Additional Information" button
-            const viewButton = document.getElementById('viewAdditionalInfoBtn');
-            if (viewButton) {
-                viewButton.style.display = 'none';
             }
 
             // Show the additional information container
@@ -1320,6 +1361,24 @@
                 setTimeout(() => {
                     additionalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
+            }
+            
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const btnIcon = document.getElementById('additionalBtnIcon');
+            const btnText = document.getElementById('additionalBtnText');
+            
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Additional Information';
             }
         }
 
@@ -1601,4 +1660,5 @@
     </script>
 
     @Html.Partial("_ViewEncryptedDataModalForAdmin")
+    @Html.Partial("_ViewEncryptedIDModal")
 }

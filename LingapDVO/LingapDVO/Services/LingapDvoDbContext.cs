@@ -166,7 +166,6 @@ public partial class LingapDvoDbContext : DbContext
             entity.Property(e => e.Rdistrict)
                 .HasMaxLength(100)
                 .HasColumnName("RDistrict");
-            entity.Property(e => e.RelationshipPatient).HasMaxLength(100);
             entity.Property(e => e.RelationshipToDeceased).HasMaxLength(200);
             entity.Property(e => e.Rfirstname)
                 .HasMaxLength(100)

@@ -195,6 +195,48 @@
         .alert-danger i {
             margin-right: 0.5rem;
         }
+
+        /* Responsive Styles */
+        @@media (max-width: 768px) {
+            .section-header {
+                font-size: 1.1rem;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.9rem;
+            }
+            
+            .btn-submit {
+                padding: 8px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .upload-box {
+                padding: 1rem;
+            }
+            
+            .upload-icon {
+                font-size: 1.5rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .section-header {
+                font-size: 1rem;
+            }
+            
+            .form-check-label {
+                font-size: 0.85rem;
+            }
+            
+            .text-muted {
+                font-size: 0.75rem;
+            }
+        }
     </style>
 }
 
@@ -212,7 +254,6 @@
         var isBlkLotStreetReadonly = ViewBag.BlkLotStreet != null && !string.IsNullOrEmpty(ViewBag.BlkLotStreet.ToString());
         var isSubVillReadonly = ViewBag.SubVill != null && !string.IsNullOrEmpty(ViewBag.SubVill.ToString());
         var isBarangayReadonly = ViewBag.Barangay != null && !string.IsNullOrEmpty(ViewBag.Barangay.ToString());
-        var isDistrictReadonly = ViewBag.District != null && !string.IsNullOrEmpty(ViewBag.District.ToString());
         var isPhonenumberReadonly = ViewBag.Phonenumber != null && !string.IsNullOrEmpty(ViewBag.Phonenumber.ToString());
     }
     <div class="row g-3">
@@ -323,31 +364,10 @@
             }
             <span asp-validation-for="RBrgy" class="text-danger"></span>
         </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <label class="form-label">District</label>
-            @if (isDistrictReadonly)
-            {
-                <input asp-for="RDistrict" type="text" value="@ViewBag.District"
-                       class="form-control readonly-field" readonly>
-            }
-            else
-            {
-                <input asp-for="RDistrict" type="text" value="@ViewBag.District"
-                       class="form-control">
-            }
-            <span asp-validation-for="RDistrict" class="text-danger"></span>
-        </div>
     </div>
 
     <div class="row g-3 mt-2">
         <div class="col-lg-4 col-md-6 col-sm-12">
-            <label class="form-label">Relationship to Patient</label>
-            <input asp-for="RelationshipPatient" type="text" class="form-control">
-            <span asp-validation-for="RelationshipPatient" class="text-danger"></span>
-        </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12">
             <label class="form-label">Contact No.</label>
             @if (isPhonenumberReadonly)
             {
@@ -370,35 +390,6 @@
             }
             <span asp-validation-for="ContactNo"></span>
             <small class="text-muted">Format: 09123456789 (11 digits)</small>
-        </div>
-    </div>
-
-    <!-- Applying for self button -->
-    <div class="mb-3 mt-3">
-        <div class="d-flex align-items-center gap-2">
-            <button type="button"
-                    class="btn btn-outline-success transition-all duration-300 ease-in-out font-medium
-                       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-green-500/30
-                       focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
-                       active:scale-95"
-                    id="sameAsPatientBtn">
-                <i class="bi bi-clipboard-check"></i> Copy Information from Above
-            </button>
-
-            <button type="button"
-                    class="btn btn-outline-warning transition-all duration-300 ease-in-out font-medium
-                       hover:-translate-y-0.5 hover:shadow-lg hover:shadow-yellow-500/30
-                       focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50
-                       active:scale-95"
-                    id="clearAutoFillBtn"
-                    style="display: none;">
-                <i class="bi bi-eraser"></i> Clear Auto-Fill
-            </button>
-
-            <small class="text-muted ms-2">
-                Click "Copy Information from Above" to auto-fill patient details with your information.
-                Click "Clear auto-fill" if you clicked the button by accident.
-            </small>
         </div>
     </div>
 
@@ -579,12 +570,6 @@
                     <option value="Wines">Wines</option>
                 </select>
                 <span asp-validation-for="Brgy" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label">District</label>
-                <input asp-for="District" type="text" class="form-control" required>
-                <span asp-validation-for="District" class="text-danger"></span>
             </div>
         </div>
 
@@ -842,7 +827,6 @@
             initializeDateOfBirth();
             initializeFormValidation();
             initializeImageModal();
-            initializeAutoFill();
             initializePatientToggle();
 
             // Check for successful form submission
@@ -1193,179 +1177,6 @@
                 resetZoom();
                 modalImage.style.transform = 'scale(1) translate(0, 0)';
             });
-        }
-
-        // Auto-fill functionality
-        function initializeAutoFill() {
-            const sameAsPatientBtn = document.getElementById('sameAsPatientBtn');
-            const clearAutoFillBtn = document.getElementById('clearAutoFillBtn');
-            if (!sameAsPatientBtn || !clearAutoFillBtn) return;
-
-            const patientLastname = document.getElementById('Lastname');
-            const patientFirstname = document.getElementById('Firstname');
-            const patientMiddlename = document.getElementById('Middlename');
-            const patientSuffix = document.getElementById('Suffix');
-            const patientBlkLotStreet = document.getElementById('BlkLotStreet');
-            const patientSubVill = document.getElementById('SubVill');
-            const patientBrgy = document.getElementById('Brgy');
-            const patientDistrict = document.getElementById('District');
-
-            const requestorLastname = document.getElementById('RLastname');
-            const requestorFirstname = document.getElementById('RFirstname');
-            const requestorMiddlename = document.getElementById('RMiddlename');
-            const requestorSuffix = document.getElementById('RSuffix');
-            const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
-            const requestorSubVill = document.getElementById('RSubVill');
-            const requestorBrgy = document.getElementById('RBrgy');
-            const requestorDistrict = document.getElementById('RDistrict');
-            const relationshipPatient = document.getElementById('RelationshipPatient');
-
-            let originalPatientValues = {};
-            let autoFillUsed = false;
-
-            function storeOriginalValues() {
-                const fields = ['Lastname', 'Firstname', 'Middlename', 'Suffix', 'BlkLotStreet', 'SubVill', 'Brgy', 'District'];
-                originalPatientValues = {};
-                fields.forEach(field => {
-                    const element = document.getElementById(field);
-                    if (element) {
-                        originalPatientValues[field] = element.value;
-                    }
-                });
-            }
-
-            function restoreOriginalValues() {
-                Object.keys(originalPatientValues).forEach(field => {
-                    const element = document.getElementById(field);
-                    if (element) {
-                        element.value = originalPatientValues[field];
-                    }
-                });
-
-                const maleRadio = document.getElementById('male');
-                const femaleRadio = document.getElementById('female');
-                if (maleRadio) maleRadio.checked = false;
-                if (femaleRadio) femaleRadio.checked = false;
-
-                const dateOfBirthField = document.getElementById('dateOfBirth');
-                const ageField = document.getElementById('ageInput');
-                if (dateOfBirthField) dateOfBirthField.value = '';
-                if (ageField) ageField.value = '';
-            }
-
-            function checkIfAllPatientFieldsEmpty() {
-                const patientFieldsList = [
-                    patientLastname, patientFirstname, patientMiddlename,
-                    patientSuffix, patientBlkLotStreet, patientSubVill,
-                    patientBrgy, patientDistrict
-                ];
-                return patientFieldsList.every(field => !field || !field.value.trim());
-            }
-
-            sameAsPatientBtn.addEventListener('click', function() {
-                if (!autoFillUsed) {
-                    storeOriginalValues();
-                }
-                autoFillUsed = true;
-
-                if (requestorLastname && requestorLastname.value) patientLastname.value = requestorLastname.value;
-                if (requestorFirstname && requestorFirstname.value) patientFirstname.value = requestorFirstname.value;
-                if (requestorMiddlename && requestorMiddlename.value) patientMiddlename.value = requestorMiddlename.value;
-                if (requestorSuffix) {
-                    patientSuffix.value = (requestorSuffix.value && requestorSuffix.value.trim()) ? requestorSuffix.value : "None";
-                }
-                if (requestorBlkLotStreet && requestorBlkLotStreet.value) patientBlkLotStreet.value = requestorBlkLotStreet.value;
-                if (requestorSubVill && requestorSubVill.value) patientSubVill.value = requestorSubVill.value;
-                if (requestorBrgy && requestorBrgy.value) patientBrgy.value = requestorBrgy.value;
-                if (requestorDistrict && requestorDistrict.value) patientDistrict.value = requestorDistrict.value;
-
-                if (relationshipPatient) relationshipPatient.value = "Self";
-
-                const userGender = '@ViewBag.Gender';
-                if (userGender) {
-                    const maleRadio = document.getElementById('male');
-                    const femaleRadio = document.getElementById('female');
-                    if (userGender.toLowerCase() === 'male' && maleRadio) {
-                        maleRadio.checked = true;
-                    } else if (userGender.toLowerCase() === 'female' && femaleRadio) {
-                        femaleRadio.checked = true;
-                    }
-                }
-
-                const userDateOfBirth = '@ViewBag.Dateofbirth';
-                const dateOfBirthField = document.getElementById('dateOfBirth');
-                if (userDateOfBirth && dateOfBirthField) {
-                    dateOfBirthField.value = userDateOfBirth;
-                    const ageField = document.getElementById('ageInput');
-                    if (ageField) {
-                        ageField.value = calculateAge(userDateOfBirth);
-                    }
-                }
-
-                const userBarangay = '@ViewBag.Barangay';
-                if (userBarangay && patientBrgy) {
-                    patientBrgy.value = userBarangay;
-                }
-
-                const userDistrict = '@ViewBag.District';
-                if (userDistrict && patientDistrict) {
-                    patientDistrict.value = userDistrict;
-                }
-
-                sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
-                sameAsPatientBtn.classList.remove('btn-outline-success', 'animate-pulse');
-                sameAsPatientBtn.classList.add('btn-success', 'ring-2', 'ring-green-500');
-
-                clearAutoFillBtn.style.display = 'block';
-                clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                clearAutoFillBtn.classList.add('btn-outline-warning');
-
-                const patientSection = document.getElementById('patientDetailsSection');
-                const toggleBtn = document.getElementById('togglePatientBtn');
-                if (patientSection) {
-                    patientSection.style.display = 'block';
-                    if (toggleBtn) {
-                        toggleBtn.textContent = 'Hide Patient Details';
-                        toggleBtn.classList.remove('btn-outline-primary');
-                        toggleBtn.classList.add('btn-primary');
-                    }
-                }
-
-                setTimeout(() => {
-                    sameAsPatientBtn.innerHTML = '<i class="bi bi-clipboard-check"></i> Copy Information from Above';
-                    sameAsPatientBtn.classList.remove('btn-success', 'ring-2', 'ring-green-500');
-                    sameAsPatientBtn.classList.add('btn-outline-success');
-                }, 2000);
-            });
-
-            clearAutoFillBtn.addEventListener('click', function() {
-                restoreOriginalValues();
-                autoFillUsed = false;
-                clearAutoFillBtn.innerHTML = '<i class="bi bi-check-circle"></i> Cleared!';
-                clearAutoFillBtn.classList.remove('btn-outline-warning');
-                clearAutoFillBtn.classList.add('btn-warning', 'ring-2', 'ring-yellow-500');
-
-                setTimeout(() => {
-                    clearAutoFillBtn.innerHTML = '<i class="bi bi-eraser"></i> Clear Auto-Fill';
-                    clearAutoFillBtn.classList.remove('btn-warning', 'ring-2', 'ring-yellow-500');
-                    clearAutoFillBtn.classList.add('btn-outline-warning');
-                    if (checkIfAllPatientFieldsEmpty()) {
-                        clearAutoFillBtn.style.display = 'none';
-                    }
-                }, 1500);
-            });
-
-            function checkInitialState() {
-                const anyFieldHasContent = !checkIfAllPatientFieldsEmpty();
-                if (anyFieldHasContent) {
-                    storeOriginalValues();
-                    autoFillUsed = true;
-                    clearAutoFillBtn.style.display = 'block';
-                }
-            }
-
-            checkInitialState();
         }
 
         // Patient Details Toggle

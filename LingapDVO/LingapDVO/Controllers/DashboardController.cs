@@ -204,7 +204,6 @@ namespace LingapDVO.Controllers
                      ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
                      ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
                      ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-                     ViewBag.District = HttpContext.Session.GetString("District");
                      ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
                      ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
                      ViewBag.Gender = HttpContext.Session.GetString("Gender");
@@ -412,7 +411,6 @@ namespace LingapDVO.Controllers
             ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
             ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
             ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-            ViewBag.District = HttpContext.Session.GetString("District");
             ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
             ViewBag.Gender = HttpContext.Session.GetString("Gender");
             ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
@@ -638,6 +636,58 @@ namespace LingapDVO.Controllers
                 byte[] decryptedBytes = decryptor.TransformFinalBlock(cipherText, 0, cipherText.Length);
                 return Encoding.UTF8.GetString(decryptedBytes);
             }
+
+            /// <summary>
+            /// Encrypts byte array (used for images) and returns encrypted bytes
+            /// </summary>
+            public byte[] EncryptBytes(byte[] plainBytes)
+            {
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+                aes.GenerateIV();
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var encryptor = aes.CreateEncryptor();
+                using var memoryStream = new MemoryStream();
+
+                // Write IV at the beginning
+                memoryStream.Write(aes.IV, 0, aes.IV.Length);
+
+                // Encrypt the data
+                using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                {
+                    cryptoStream.Write(plainBytes, 0, plainBytes.Length);
+                    cryptoStream.FlushFinalBlock();
+                }
+
+                return memoryStream.ToArray();
+            }
+
+            /// <summary>
+            /// Decrypts byte array (used for images) and returns decrypted bytes
+            /// </summary>
+            public byte[] DecryptBytes(byte[] encryptedBytes)
+            {
+                using var aes = Aes.Create();
+                aes.Key = _aesKey;
+
+                // Extract IV from the beginning
+                byte[] iv = new byte[16];
+                Array.Copy(encryptedBytes, 0, iv, 0, 16);
+                aes.IV = iv;
+
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using var decryptor = aes.CreateDecryptor();
+                using var memoryStream = new MemoryStream(encryptedBytes, 16, encryptedBytes.Length - 16);
+                using var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                using var resultStream = new MemoryStream();
+
+                cryptoStream.CopyTo(resultStream);
+                return resultStream.ToArray();
+            }
         }
 
         // 1. DECRYPTION HELPER METHOD USING CONFIGURATION-BASED AES KEY
@@ -818,7 +868,6 @@ namespace LingapDVO.Controllers
                     BlkLotStreet = HospitalAssistanceDto.BlkLotStreet,
                     SubVill = HospitalAssistanceDto.SubVill,
                     Brgy = HospitalAssistanceDto.Brgy,
-                    District = HospitalAssistanceDto.District,
                     Sex = HospitalAssistanceDto.Sex,
                     PhilHealth = HospitalAssistanceDto.PhilHealth,
                     PhilHealthNo = HospitalAssistanceDto.PhilHealthNo,
@@ -833,7 +882,6 @@ namespace LingapDVO.Controllers
                     RBlkLotStreet = HospitalAssistanceDto.RBlkLotStreet,
                     RSubVill = HospitalAssistanceDto.RSubVill,
                     RBrgy = HospitalAssistanceDto.RBrgy,
-                    RDistrict = HospitalAssistanceDto.RDistrict,
                     RelationshipPatient = HospitalAssistanceDto.RelationshipPatient,
                     ContactNo = HospitalAssistanceDto.ContactNo,
 
@@ -913,7 +961,6 @@ namespace LingapDVO.Controllers
                 ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
                 ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
                 ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-                ViewBag.District = HttpContext.Session.GetString("District");
                 ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
                 ViewBag.Gender = HttpContext.Session.GetString("Gender");
                 ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
@@ -974,7 +1021,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = HospitalAssistance.BlkLotStreet;
             ViewData["SubVill"] = HospitalAssistance.SubVill;
             ViewData["Brgy"] = HospitalAssistance.Brgy;
-            ViewData["District"] = HospitalAssistance.District;
             ViewData["Sex"] = HospitalAssistance.Sex;
             ViewData["PhilHealth"] = HospitalAssistance.PhilHealth;
             ViewData["PhilHealthNo"] = HospitalAssistance.PhilHealthNo;
@@ -989,7 +1035,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = HospitalAssistance.RBlkLotStreet;
             ViewData["RSubVill"] = HospitalAssistance.RSubVill;
             ViewData["RBrgy"] = HospitalAssistance.RBrgy;
-            ViewData["RDistrict"] = HospitalAssistance.RDistrict;
             ViewData["RelationshipPatient"] = HospitalAssistance.RelationshipPatient;
             ViewData["ContactNo"] = HospitalAssistance.ContactNo;
 
@@ -1245,7 +1290,6 @@ namespace LingapDVO.Controllers
                 existing.BlkLotStreet = dto.BlkLotStreet ?? existing.BlkLotStreet;
                 existing.SubVill = dto.SubVill ?? existing.SubVill;
                 existing.Brgy = dto.Brgy ?? existing.Brgy;
-                existing.District = dto.District ?? existing.District;
                 existing.Sex = dto.Sex ?? existing.Sex;
                 existing.PhilHealth = dto.PhilHealth ?? existing.PhilHealth;
                 existing.PhilHealthNo = dto.PhilHealthNo ?? existing.PhilHealthNo;
@@ -1260,7 +1304,6 @@ namespace LingapDVO.Controllers
                 existing.RBlkLotStreet = dto.RBlkLotStreet ?? existing.RBlkLotStreet;
                 existing.RSubVill = dto.RSubVill ?? existing.RSubVill;
                 existing.RBrgy = dto.RBrgy ?? existing.RBrgy;
-                existing.RDistrict = dto.RDistrict ?? existing.RDistrict;
                 existing.RelationshipPatient = dto.RelationshipPatient ?? existing.RelationshipPatient;
                 existing.ContactNo = dto.ContactNo ?? existing.ContactNo;
 
@@ -1384,7 +1427,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = existing.BlkLotStreet;
             ViewData["SubVill"] = existing.SubVill;
             ViewData["Brgy"] = existing.Brgy;
-            ViewData["District"] = existing.District;
             ViewData["Sex"] = existing.Sex;
             ViewData["PhilHealth"] = existing.PhilHealth;
             ViewData["PhilHealthNo"] = existing.PhilHealthNo;
@@ -1398,7 +1440,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
             ViewData["RSubVill"] = existing.RSubVill;
             ViewData["RBrgy"] = existing.RBrgy;
-            ViewData["RDistrict"] = existing.RDistrict;
             ViewData["RelationshipPatient"] = existing.RelationshipPatient;
             ViewData["ContactNo"] = existing.ContactNo;
 
@@ -1472,7 +1513,6 @@ namespace LingapDVO.Controllers
             ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
             ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
             ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-            ViewBag.District = HttpContext.Session.GetString("District");
             ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
             ViewBag.Gender = HttpContext.Session.GetString("Gender");
             ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
@@ -1596,7 +1636,6 @@ namespace LingapDVO.Controllers
                     BlkLotStreet = OtherAssistanceDto.BlkLotStreet,
                     SubVill = OtherAssistanceDto.SubVill,
                     Brgy = OtherAssistanceDto.Brgy,
-                    District = OtherAssistanceDto.District,
                     Sex = OtherAssistanceDto.Sex,
                     PhilHealth = OtherAssistanceDto.PhilHealth,
                     PhilHealthNo = OtherAssistanceDto.PhilHealthNo,
@@ -1611,7 +1650,6 @@ namespace LingapDVO.Controllers
                     RBlkLotStreet = OtherAssistanceDto.RBlkLotStreet,
                     RSubVill = OtherAssistanceDto.RSubVill,
                     RBrgy = OtherAssistanceDto.RBrgy,
-                    RDistrict = OtherAssistanceDto.RDistrict,
                     RelationshipPatient = OtherAssistanceDto.RelationshipPatient,
                     ContactNo = OtherAssistanceDto.ContactNo,
 
@@ -1717,7 +1755,6 @@ namespace LingapDVO.Controllers
                 ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
                 ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
                 ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-                ViewBag.District = HttpContext.Session.GetString("District");
                 ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
                 ViewBag.Gender = HttpContext.Session.GetString("Gender");
                 ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
@@ -1780,7 +1817,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = medicallabform.BlkLotStreet;
             ViewData["SubVill"] = medicallabform.SubVill;
             ViewData["Brgy"] = medicallabform.Brgy;
-            ViewData["District"] = medicallabform.District;
             ViewData["Sex"] = medicallabform.Sex;
             ViewData["PhilHealth"] = medicallabform.PhilHealth;
             ViewData["PhilHealthNo"] = medicallabform.PhilHealthNo;
@@ -1795,7 +1831,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = medicallabform.RBlkLotStreet;
             ViewData["RSubVill"] = medicallabform.RSubVill;
             ViewData["RBrgy"] = medicallabform.RBrgy;
-            ViewData["RDistrict"] = medicallabform.RDistrict;
             ViewData["RelationshipPatient"] = medicallabform.RelationshipPatient;
             ViewData["ContactNo"] = medicallabform.ContactNo;
 
@@ -2115,7 +2150,6 @@ namespace LingapDVO.Controllers
                 existing.BlkLotStreet = OtherAssistanceDto.BlkLotStreet ?? existing.BlkLotStreet;
                 existing.SubVill = OtherAssistanceDto.SubVill ?? existing.SubVill;
                 existing.Brgy = OtherAssistanceDto.Brgy ?? existing.Brgy;
-                existing.District = OtherAssistanceDto.District ?? existing.District;
                 existing.Sex = OtherAssistanceDto.Sex ?? existing.Sex;
                 existing.PhilHealth = OtherAssistanceDto.PhilHealth ?? existing.PhilHealth;
                 existing.PhilHealthNo = OtherAssistanceDto.PhilHealthNo ?? existing.PhilHealthNo;
@@ -2130,7 +2164,6 @@ namespace LingapDVO.Controllers
                 existing.RBlkLotStreet = OtherAssistanceDto.RBlkLotStreet ?? existing.RBlkLotStreet;
                 existing.RSubVill = OtherAssistanceDto.RSubVill ?? existing.RSubVill;
                 existing.RBrgy = OtherAssistanceDto.RBrgy ?? existing.RBrgy;
-                existing.RDistrict = OtherAssistanceDto.RDistrict ?? existing.RDistrict;
                 existing.RelationshipPatient = OtherAssistanceDto.RelationshipPatient ?? existing.RelationshipPatient;
                 existing.ContactNo = OtherAssistanceDto.ContactNo ?? existing.ContactNo;
 
@@ -2287,7 +2320,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = existing.BlkLotStreet;
             ViewData["SubVill"] = existing.SubVill;
             ViewData["Brgy"] = existing.Brgy;
-            ViewData["District"] = existing.District;
             ViewData["Sex"] = existing.Sex;
             ViewData["PhilHealth"] = existing.PhilHealth;
             ViewData["PhilHealthNo"] = existing.PhilHealthNo;
@@ -2302,7 +2334,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
             ViewData["RSubVill"] = existing.RSubVill;
             ViewData["RBrgy"] = existing.RBrgy;
-            ViewData["RDistrict"] = existing.RDistrict;
             ViewData["RelationshipPatient"] = existing.RelationshipPatient;
             ViewData["ContactNo"] = existing.ContactNo;
 
@@ -2416,7 +2447,6 @@ namespace LingapDVO.Controllers
             ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
             ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
             ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-            ViewBag.District = HttpContext.Session.GetString("District");
             ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
             ViewBag.Gender = HttpContext.Session.GetString("Gender");
             ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
@@ -2545,7 +2575,6 @@ namespace LingapDVO.Controllers
                     BlkLotStreet = FuneralAssistanceDto.BlkLotStreet,
                     SubVill = FuneralAssistanceDto.SubVill,
                     Brgy = FuneralAssistanceDto.Brgy,
-                    District = FuneralAssistanceDto.District,
                     Sex = FuneralAssistanceDto.Sex,
                     PhilHealth = FuneralAssistanceDto.PhilHealth,
                     PhilHealthNo = FuneralAssistanceDto.PhilHealthNo,
@@ -2560,8 +2589,6 @@ namespace LingapDVO.Controllers
                     RBlkLotStreet = FuneralAssistanceDto.RBlkLotStreet,
                     RSubVill = FuneralAssistanceDto.RSubVill,
                     RBrgy = FuneralAssistanceDto.RBrgy,
-                    RDistrict = FuneralAssistanceDto.RDistrict,
-                    RelationshipPatient = FuneralAssistanceDto.RelationshipPatient,
                     ContactNo = FuneralAssistanceDto.ContactNo,
 
                     // Assistance Type - Set to default "Funeral Assistance" since no checkboxes
@@ -2642,7 +2669,6 @@ namespace LingapDVO.Controllers
                 ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
                 ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
                 ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
-                ViewBag.District = HttpContext.Session.GetString("District");
                 ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
                 ViewBag.Gender = HttpContext.Session.GetString("Gender");
                 ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
@@ -2704,7 +2730,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = FuneralAssistance.BlkLotStreet;
             ViewData["SubVill"] = FuneralAssistance.SubVill;
             ViewData["Brgy"] = FuneralAssistance.Brgy;
-            ViewData["District"] = FuneralAssistance.District;
             ViewData["Sex"] = FuneralAssistance.Sex;
             ViewData["PhilHealth"] = FuneralAssistance.PhilHealth;
             ViewData["PhilHealthNo"] = FuneralAssistance.PhilHealthNo;
@@ -2719,9 +2744,7 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = FuneralAssistance.RBlkLotStreet;
             ViewData["RSubVill"] = FuneralAssistance.RSubVill;
             ViewData["RBrgy"] = FuneralAssistance.RBrgy;
-            ViewData["RDistrict"] = FuneralAssistance.RDistrict;
-            ViewData["RelationshipPatient"] = FuneralAssistance.RelationshipPatient;
-            ViewData["ContactNo"] = FuneralAssistance.ContactNo;
+                        ViewData["ContactNo"] = FuneralAssistance.ContactNo;
 
             // Type of assistance
             var typeAssistanceRaw = FuneralAssistance.Typeassistance ?? "";
@@ -2981,7 +3004,6 @@ namespace LingapDVO.Controllers
                 existing.BlkLotStreet = dto.BlkLotStreet ?? existing.BlkLotStreet;
                 existing.SubVill = dto.SubVill ?? existing.SubVill;
                 existing.Brgy = dto.Brgy ?? existing.Brgy;
-                existing.District = dto.District ?? existing.District;
                 existing.Sex = dto.Sex ?? existing.Sex;
                 existing.PhilHealth = dto.PhilHealth ?? existing.PhilHealth;
                 existing.PhilHealthNo = dto.PhilHealthNo ?? existing.PhilHealthNo;
@@ -2996,8 +3018,6 @@ namespace LingapDVO.Controllers
                 existing.RBlkLotStreet = dto.RBlkLotStreet ?? existing.RBlkLotStreet;
                 existing.RSubVill = dto.RSubVill ?? existing.RSubVill;
                 existing.RBrgy = dto.RBrgy ?? existing.RBrgy;
-                existing.RDistrict = dto.RDistrict ?? existing.RDistrict;
-                existing.RelationshipPatient = dto.RelationshipPatient ?? existing.RelationshipPatient;
                 existing.ContactNo = dto.ContactNo ?? existing.ContactNo;
 
                 // ? 8. Update assistance information
@@ -3129,7 +3149,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = existing.BlkLotStreet;
             ViewData["SubVill"] = existing.SubVill;
             ViewData["Brgy"] = existing.Brgy;
-            ViewData["District"] = existing.District;
             ViewData["Sex"] = existing.Sex;
             ViewData["PhilHealth"] = existing.PhilHealth;
             ViewData["PhilHealthNo"] = existing.PhilHealthNo;
@@ -3143,8 +3162,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = existing.RBlkLotStreet;
             ViewData["RSubVill"] = existing.RSubVill;
             ViewData["RBrgy"] = existing.RBrgy;
-            ViewData["RDistrict"] = existing.RDistrict;
-            ViewData["RelationshipPatient"] = existing.RelationshipPatient;
             ViewData["ContactNo"] = existing.ContactNo;
 
             ViewData["Typeassistance"] = existing.Typeassistance;
@@ -3482,7 +3499,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = HospitalAssistance.BlkLotStreet;
             ViewData["SubVill"] = HospitalAssistance.SubVill;
             ViewData["Brgy"] = HospitalAssistance.Brgy;
-            ViewData["District"] = HospitalAssistance.District;
             ViewData["Sex"] = HospitalAssistance.Sex;
             ViewData["PhilHealth"] = HospitalAssistance.PhilHealth;
             ViewData["PhilHealthNo"] = HospitalAssistance.PhilHealthNo;
@@ -3497,7 +3513,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = HospitalAssistance.RBlkLotStreet;
             ViewData["RSubVill"] = HospitalAssistance.RSubVill;
             ViewData["RBrgy"] = HospitalAssistance.RBrgy;
-            ViewData["RDistrict"] = HospitalAssistance.RDistrict;
             ViewData["RelationshipPatient"] = HospitalAssistance.RelationshipPatient;
             ViewData["ContactNo"] = HospitalAssistance.ContactNo;
 
@@ -3682,7 +3697,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = FuneralAssistance.BlkLotStreet;
             ViewData["SubVill"] = FuneralAssistance.SubVill;
             ViewData["Brgy"] = FuneralAssistance.Brgy;
-            ViewData["District"] = FuneralAssistance.District;
             ViewData["Sex"] = FuneralAssistance.Sex;
             ViewData["PhilHealth"] = FuneralAssistance.PhilHealth;
             ViewData["PhilHealthNo"] = FuneralAssistance.PhilHealthNo;
@@ -3697,9 +3711,7 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = FuneralAssistance.RBlkLotStreet;
             ViewData["RSubVill"] = FuneralAssistance.RSubVill;
             ViewData["RBrgy"] = FuneralAssistance.RBrgy;
-            ViewData["RDistrict"] = FuneralAssistance.RDistrict;
-            ViewData["RelationshipPatient"] = FuneralAssistance.RelationshipPatient;
-            ViewData["ContactNo"] = FuneralAssistance.ContactNo;
+                        ViewData["ContactNo"] = FuneralAssistance.ContactNo;
 
             // Type of assistance
             var typeAssistanceRaw = FuneralAssistance.Typeassistance ?? "";
@@ -3885,7 +3897,6 @@ namespace LingapDVO.Controllers
             ViewData["BlkLotStreet"] = medicallabform.BlkLotStreet;
             ViewData["SubVill"] = medicallabform.SubVill;
             ViewData["Brgy"] = medicallabform.Brgy;
-            ViewData["District"] = medicallabform.District;
             ViewData["Sex"] = medicallabform.Sex;
             ViewData["PhilHealth"] = medicallabform.PhilHealth;
             ViewData["PhilHealthNo"] = medicallabform.PhilHealthNo;
@@ -3900,7 +3911,6 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = medicallabform.RBlkLotStreet;
             ViewData["RSubVill"] = medicallabform.RSubVill;
             ViewData["RBrgy"] = medicallabform.RBrgy;
-            ViewData["RDistrict"] = medicallabform.RDistrict;
             ViewData["RelationshipPatient"] = medicallabform.RelationshipPatient;
             ViewData["ContactNo"] = medicallabform.ContactNo;
 
@@ -4700,6 +4710,168 @@ namespace LingapDVO.Controllers
         }
 
         // ========================================================
+        // ?? DECRYPT ENCRYPTED IMAGES (ID CARDS)
+        // ========================================================
+        [HttpPost]
+        public IActionResult DecryptImage(string imagePath)
+        {
+            try
+            {
+                // Get current user info
+                var userIdString = HttpContext.Session.GetString("UserId");
+                var adminFullname = HttpContext.Session.GetString("AdminFullname");
+                var isAdmin = HttpContext.Session.GetString("IsAdmin");
+                var isSuperadmin = HttpContext.Session.GetString("IsSuperadmin");
+
+                // Authorization check - support both regular users and admins
+                bool isUserAuthenticated = !string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int userId);
+                bool isAdminAuthenticated = !string.IsNullOrEmpty(adminFullname) && 
+                                           (isAdmin == "true" || isSuperadmin == "true");
+                
+                if (!isUserAuthenticated && !isAdminAuthenticated)
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                Console.WriteLine($"=== DecryptImage Debug ===");
+                Console.WriteLine($"Image path: {imagePath}");
+                Console.WriteLine($"User authenticated: {isUserAuthenticated}, Admin authenticated: {isAdminAuthenticated}");
+
+                // Construct full file path
+                var webRootPath = environment.WebRootPath;
+                var fullPath = Path.Combine(webRootPath, imagePath.TrimStart('/').Replace("/", "\\"));
+
+                Console.WriteLine($"Full path: {fullPath}");
+
+                // Check if file exists
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    Console.WriteLine($"File not found: {fullPath}");
+                    return Json(new { success = false, message = "Image file not found" });
+                }
+
+                // Read encrypted image bytes
+                byte[] encryptedBytes = System.IO.File.ReadAllBytes(fullPath);
+                Console.WriteLine($"Read {encryptedBytes.Length} encrypted bytes");
+
+                // Initialize AES encryption helper
+                var encryptionHelper = new AesEncryptionHelper(_configuration);
+
+                // Decrypt the image
+                byte[] decryptedBytes = encryptionHelper.DecryptBytes(encryptedBytes);
+                Console.WriteLine($"Decrypted to {decryptedBytes.Length} bytes");
+
+                // Convert to Base64 for frontend display
+                string base64Image = Convert.ToBase64String(decryptedBytes);
+
+                // Determine image type from file extension
+                string extension = Path.GetExtension(fullPath).ToLower();
+                string mimeType = extension switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    _ => "image/jpeg"
+                };
+
+                return Json(new
+                {
+                    success = true,
+                    imageData = $"data:{mimeType};base64,{base64Image}",
+                    mimeType = mimeType
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"=== DecryptImage Error ===");
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                Console.WriteLine($"==========================");
+
+                return Json(new { success = false, message = $"Decryption failed: {ex.Message}" });
+            }
+        }
+
+        // ========================================================
+        // ?? ENCRYPT FIELD (FOR RE-ENCRYPTION)
+        // ========================================================
+        [HttpPost]
+        public IActionResult EncryptField(string fieldValue, string formType, int formId)
+        {
+            try
+            {
+                // Get current user info
+                var userIdString = HttpContext.Session.GetString("UserId");
+                var isAdmin = HttpContext.Session.GetString("AdminFullname");
+                var isSuperadmin = HttpContext.Session.GetString("IsSuperadmin");
+
+                // Authorization check
+                if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+                {
+                    return Json(new { success = false, message = "User not authenticated" });
+                }
+
+                Console.WriteLine($"=== EncryptField Debug ===");
+                Console.WriteLine($"Form type: {formType}");
+                Console.WriteLine($"Form ID: {formId}");
+                Console.WriteLine($"User ID: {userId}");
+                Console.WriteLine($"Field value length: {fieldValue?.Length ?? 0}");
+
+                // Check if user has permission to encrypt
+                bool canEncrypt = false;
+
+                if (isAdmin == "true" || isSuperadmin == "true")
+                {
+                    // Admin and Superadmin can encrypt all records
+                    canEncrypt = true;
+                }
+                else
+                {
+                    // Regular users can only encrypt their own records
+                    int? recordUserId = null;
+
+                    switch (formType)
+                    {
+                        case "Hospital":
+                            var hospitalRecord = context.HospitalAssistance.Find(formId);
+                            recordUserId = hospitalRecord?.UserId;
+                            break;
+                        case "Funeral":
+                            var funeralRecord = context.FuneralAssistance.Find(formId);
+                            recordUserId = funeralRecord?.UserId;
+                            break;
+                        case "Other":
+                            var otherRecord = context.OtherAssistance.Find(formId);
+                            recordUserId = otherRecord?.UserId;
+                            break;
+                    }
+
+                    canEncrypt = recordUserId.HasValue && recordUserId.Value == userId;
+                }
+
+                if (!canEncrypt)
+                {
+                    return Json(new { success = false, message = "You don't have permission to encrypt this record" });
+                }
+
+                // Encrypt the field value
+                string encryptedValue = _aesEncryptionService.Encrypt(fieldValue);
+                Console.WriteLine($"✓ Field encrypted successfully");
+
+                return Json(new { success = true, data = encryptedValue });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"=== EncryptField Error ===");
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                Console.WriteLine($"==========================");
+
+                return Json(new { success = false, message = $"Encryption failed: {ex.Message}" });
+            }
+        }
+
+        // ========================================================
         // ?? PASSWORD VERIFICATION FOR VIEWING ENCRYPTED DATA
         // ========================================================
         [HttpPost]
@@ -4856,3 +5028,4 @@ namespace LingapDVO.Controllers
         }
     }
 }
+

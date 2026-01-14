@@ -36,9 +36,6 @@ namespace LingapDVO.Models
         public string Brgy { get; set; } = "";
 
         [MaxLength(100)]
-        public string District { get; set; } = "";
-
-        [MaxLength(100)]
         public string Sex { get; set; } = "";
 
         [MaxLength(100)]
@@ -80,9 +77,6 @@ namespace LingapDVO.Models
 
         [MaxLength(100)]
         public string? RBrgy { get; set; } = "";
-
-        [MaxLength(100)]
-        public string? RDistrict { get; set; } = "";
 
         [MaxLength(100)]
         public string? RelationshipPatient { get; set; } = "";

@@ -61,9 +61,15 @@
                         </div>
                     </div>
 
-      
+                    <!-- Decrypted Data Container -->
+                    <div id="decryptedDataContainer" class="mb-3">
+                        <!-- Decrypted fields will be populated here by JavaScript -->
+                    </div>
 
-                    <div class="mt-3 d-grid">
+                    <div class="mt-3 d-grid gap-2">
+                        <button type="button" class="btn btn-warning" id="reEncryptBtn" onclick="reEncryptFields()">
+                            <i class="bi bi-lock-fill me-2"></i>Re-Encrypt & Hide Data
+                        </button>
                         <button type="button" class="btn btn-success" data-bs-dismiss="modal">
                             <i class="bi bi-check-circle-fill me-2"></i>Continue to Processing
                         </button>
@@ -286,7 +292,8 @@
                     if (response.success) {
                         // Password verified, now decrypt all fields
                         console.log('Password verified successfully, decrypting fields...');
-                        decryptAllFields(formType, formId, encryptedFields);
+                        // NEW: Decrypt directly to page, close modal immediately
+                        decryptAndDisplayOnPage(formType, formId, encryptedFields);
                     } else {
                         // Password incorrect
                         console.log('Password verification failed:', response.message);
@@ -307,7 +314,90 @@
             });
         });
 
-        // Function to decrypt all fields and display them
+        // NEW: Function to decrypt and display directly on page (no modal display)
+        function decryptAndDisplayOnPage(formType, formId, encryptedFields) {
+            const controllerRoute = getControllerRoute();
+            const decryptPromises = [];
+            const fieldLabels = encryptedFields.labels;
+            const fieldValues = encryptedFields.values;
+            const fieldNames = encryptedFields.names;
+
+            console.log('Starting decryption for', fieldNames.length, 'fields (direct to page)');
+
+            // Create decrypt requests for all fields
+            for (let i = 0; i < fieldNames.length; i++) {
+                if (fieldValues[i] && fieldValues[i].trim() !== '') {
+                    console.log('Decrypting field:', fieldNames[i]);
+                    decryptPromises.push(
+                        $.ajax({
+                            url: controllerRoute + '/DecryptField',
+                            type: 'POST',
+                            data: {
+                                fieldValue: fieldValues[i],
+                                formType: formType,
+                                formId: formId
+                            },
+                            dataType: 'json'
+                        }).then(function(response) {
+                            return {
+                                name: fieldNames[i],
+                                label: fieldLabels[i],
+                                value: response.success ? response.data : ''
+                            };
+                        }).fail(function(xhr, status, error) {
+                            console.error('Decryption failed for field ' + fieldNames[i] + ':', error);
+                            return {
+                                name: fieldNames[i],
+                                label: fieldLabels[i],
+                                value: 'Error: ' + error
+                            };
+                        })
+                    );
+                }
+            }
+
+            // Wait for all decryptions to complete
+            Promise.all(decryptPromises).then(function(decryptedData) {
+                console.log('All fields decrypted:', decryptedData);
+
+                // Store decrypted data globally
+                if (formType === 'Hospital') {
+                    window.decryptedHospitalData = {};
+                    decryptedData.forEach(function(field) {
+                        window.decryptedHospitalData[field.name] = field.value;
+                    });
+                } else if (formType === 'Other') {
+                    window.decryptedAdditionalData = {};
+                    decryptedData.forEach(function(field) {
+                        window.decryptedAdditionalData[field.name] = field.value;
+                    });
+                } else if (formType === 'Funeral') {
+                    window.decryptedFuneralData = {};
+                    decryptedData.forEach(function(field) {
+                        window.decryptedFuneralData[field.name] = field.value;
+                    });
+                }
+
+                // Close the modal immediately
+                var modalElement = document.getElementById('viewAdditionalInfoModal');
+                if (modalElement) {
+                    var modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    }
+                }
+
+                // Trigger the page display update (modal close event will handle this)
+                // The modal close handler will populate the fields on the page
+            }).catch(function(error) {
+                console.error('Decryption failed:', error);
+                $('#loadingSpinner').hide();
+                $('#passwordVerificationStep').show();
+                $('#passwordError').text('Failed to decrypt data: ' + error + '. Please try again.').show();
+            });
+        }
+
+        // OLD: Function to decrypt all fields and display them (KEPT FOR COMPATIBILITY)
         function decryptAllFields(formType, formId, encryptedFields) {
             const controllerRoute = getControllerRoute();
             const decryptPromises = [];
@@ -442,6 +532,9 @@
                         if (typeof showHospitalInfoAfterDecryption === 'function') {
                             showHospitalInfoAfterDecryption();
                         }
+
+                        // Update button to "Hide Information" state
+                        updateViewButton('Hospital', true);
                     }, 100);
                 }
             } else if (formType === 'Other') {
@@ -526,6 +619,9 @@
                         if (typeof showAdditionalInfoAfterDecryption === 'function') {
                             showAdditionalInfoAfterDecryption();
                         }
+
+                        // Update button to "Hide Information" state
+                        updateViewButton('Other', true);
                     }, 100);
                 }
             } else if (formType === 'Funeral') {
@@ -576,6 +672,9 @@
                         if (typeof showFuneralInfoAfterDecryption === 'function') {
                             showFuneralInfoAfterDecryption();
                         }
+
+                        // Update button to "Hide Information" state
+                        updateViewButton('Funeral', true);
                     }, 100);
                 }
             }
@@ -587,6 +686,221 @@
             $('#verificationPassword').val('');
             $('#passwordError').hide().text('');
             $('#decryptedDataContainer').html('');
+        });
+    }
+
+    // ========================================================
+    // BUTTON STATE MANAGEMENT
+    // ========================================================
+    function updateViewButton(formType, isDecrypted) {
+        // Find the view button and its child elements for this form type
+        let buttonId = '';
+        let iconId = '';
+        let textId = '';
+        let hideText = '';
+        let viewText = '';
+        
+        if (formType === 'Hospital') {
+            buttonId = 'viewHospitalInfoBtn';
+            iconId = 'hospitalBtnIcon';
+            textId = 'hospitalBtnText';
+            hideText = 'Hide Hospital Information';
+            viewText = 'View Hospital Information';
+        } else if (formType === 'Other') {
+            buttonId = 'viewAdditionalInfoBtn';
+            iconId = 'additionalBtnIcon';
+            textId = 'additionalBtnText';
+            hideText = 'Hide Additional Information';
+            viewText = 'View Additional Information';
+        } else if (formType === 'Funeral') {
+            buttonId = 'viewFuneralInfoBtn';
+            iconId = 'funeralBtnIcon';
+            textId = 'funeralBtnText';
+            hideText = 'Hide Funeral Information';
+            viewText = 'View Funeral Information';
+        }
+
+        const button = document.getElementById(buttonId);
+        const btnIcon = document.getElementById(iconId);
+        const btnText = document.getElementById(textId);
+        
+        if (!button) {
+            console.warn('Button not found for form type:', formType);
+            return;
+        }
+
+        if (isDecrypted) {
+            // Change to "Hide Information" state
+            button.setAttribute('data-decrypted', 'true');
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-warning');
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = hideText;
+            }
+        } else {
+            // Change to "View Information" state
+            button.setAttribute('data-decrypted', 'false');
+            button.classList.remove('btn-warning');
+            button.classList.add('btn-primary');
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = viewText;
+            }
+        }
+    }
+
+    function hideInformation(formType) {
+        console.log('Hiding information for:', formType);
+
+        // Hide the decrypted containers and call the page-specific hide functions if available
+        if (formType === 'Hospital') {
+            if (typeof hideHospitalInfo === 'function') {
+                hideHospitalInfo();
+            } else {
+                $('#hospitalInfoContainer').hide();
+                window.decryptedHospitalData = {};
+                updateViewButton('Hospital', false);
+            }
+        } else if (formType === 'Other') {
+            if (typeof hideAdditionalInfo === 'function') {
+                hideAdditionalInfo();
+            } else {
+                $('#additionalInfoContainer').hide();
+                window.decryptedAdditionalData = {};
+                updateViewButton('Other', false);
+            }
+        } else if (formType === 'Funeral') {
+            if (typeof hideFuneralInfo === 'function') {
+                hideFuneralInfo();
+            } else {
+                $('#funeralInfoContainer').hide();
+                window.decryptedFuneralData = {};
+                updateViewButton('Funeral', false);
+            }
+        }
+    }
+
+    // ========================================================
+    // RE-ENCRYPTION FUNCTIONALITY
+    // ========================================================
+    function reEncryptFields() {
+        const formType = $('#viewAdditionalInfoModal').data('formType');
+        const formId = $('#viewAdditionalInfoModal').data('formId');
+        const controllerRoute = getControllerRoute();
+
+        console.log('Re-encrypting fields for form type:', formType, 'ID:', formId);
+
+        // Show loading
+        $('#loadingSpinner').show();
+        $('#decryptedDataStep').hide();
+
+        // Get the decrypted data based on form type
+        let decryptedData = null;
+        if (formType === 'Hospital' && window.decryptedHospitalData) {
+            decryptedData = window.decryptedHospitalData;
+        } else if (formType === 'Other' && window.decryptedAdditionalData) {
+            decryptedData = window.decryptedAdditionalData;
+        } else if (formType === 'Funeral' && window.decryptedFuneralData) {
+            decryptedData = window.decryptedFuneralData;
+        }
+
+        if (!decryptedData || Object.keys(decryptedData).length === 0) {
+            console.error('No decrypted data found to re-encrypt');
+            alert('No decrypted data found to re-encrypt');
+            $('#loadingSpinner').hide();
+            $('#decryptedDataStep').show();
+            return;
+        }
+
+        // Re-encrypt all fields
+        const encryptPromises = [];
+        const fieldNames = Object.keys(decryptedData);
+
+        console.log('Re-encrypting', fieldNames.length, 'fields');
+
+        fieldNames.forEach(function(fieldName) {
+            const fieldValue = decryptedData[fieldName];
+            if (fieldValue && fieldValue.trim() !== '') {
+                encryptPromises.push(
+                    $.ajax({
+                        url: controllerRoute + '/EncryptField',
+                        type: 'POST',
+                        data: {
+                            fieldValue: fieldValue,
+                            formType: formType,
+                            formId: formId
+                        },
+                        dataType: 'json'
+                    }).then(function(response) {
+                        console.log('Re-encryption response for field ' + fieldName + ':', response);
+                        return {
+                            name: fieldName,
+                            encrypted: response.success ? response.data : null
+                        };
+                    }).fail(function(xhr, status, error) {
+                        console.error('Re-encryption failed for field ' + fieldName + ':', error);
+                        return {
+                            name: fieldName,
+                            encrypted: null,
+                            error: error
+                        };
+                    })
+                );
+            }
+        });
+
+        // Wait for all re-encryptions to complete
+        Promise.all(encryptPromises).then(function(encryptedFields) {
+            console.log('All fields re-encrypted:', encryptedFields);
+
+            // Hide the decrypted data containers on the page
+            if (formType === 'Hospital') {
+                $('#hospitalInfoContainer').hide();
+                $('#hospitalInfoLoading').hide();
+                $('#hospitalInfoAlert').show();
+
+                // Clear the decrypted data
+                window.decryptedHospitalData = {};
+            } else if (formType === 'Other') {
+                $('#additionalInfoContainer').hide();
+                $('#additionalInfoLoading').hide();
+                $('#additionalInfoAlert').show();
+
+                // Clear the decrypted data
+                window.decryptedAdditionalData = {};
+            } else if (formType === 'Funeral') {
+                $('#funeralInfoContainer').hide();
+                $('#funeralInfoLoading').hide();
+                $('#funeralInfoAlert').show();
+
+                // Clear the decrypted data
+                window.decryptedFuneralData = {};
+            }
+
+            // Show success message and close modal
+            $('#loadingSpinner').hide();
+            alert('Data has been re-encrypted successfully! The decrypted view has been hidden.');
+
+            // Close the modal
+            var modalElement = document.getElementById('viewAdditionalInfoModal');
+            if (modalElement) {
+                var modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
+            }
+        }).catch(function(error) {
+            console.error('Re-encryption failed:', error);
+            $('#loadingSpinner').hide();
+            $('#decryptedDataStep').show();
+            alert('Failed to re-encrypt data: ' + error);
         });
     }
 </script>

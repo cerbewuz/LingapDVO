@@ -29,9 +29,6 @@ namespace LingapDVO.Models
         public string Brgy { get; set; } = "";
 
         [Required]
-        public string District { get; set; } = "";
-
-        [Required]
         public string Sex { get; set; } = "";
 
         [Required]
@@ -72,9 +69,6 @@ namespace LingapDVO.Models
 
     
         public string? RBrgy { get; set; } = "";
-
-     
-        public string? RDistrict { get; set; } = "";
 
   
         public string? RelationshipPatient { get; set; } = "";

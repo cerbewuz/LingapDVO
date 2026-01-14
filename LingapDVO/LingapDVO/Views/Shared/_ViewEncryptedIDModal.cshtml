@@ -1,0 +1,491 @@
+@*
+    Reusable Modal Component for Viewing Encrypted ID Images
+    Password verification modal that decrypts and displays ID images on the page (inline)
+    No extra modal - IDs are shown directly in the Valid ID section after decryption
+*@
+
+<!-- Password Verification Modal for ID Decryption -->
+<div class="modal fade" id="viewEncryptedIDModal" tabindex="-1" aria-labelledby="viewEncryptedIDModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="viewEncryptedIDModalLabel">
+                    <i class="bi bi-shield-lock-fill me-2"></i>Verify Password to View IDs
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Password Verification Step -->
+                <div id="idPasswordVerificationStep">
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                        <div>
+                            <strong>Security Verification Required</strong><br>
+                            Please enter your password to view the encrypted ID images.
+                        </div>
+                    </div>
+
+                    <form id="idPasswordVerificationForm">
+                        <div class="mb-3">
+                            <label for="idVerificationPassword" class="form-label fw-bold">
+                                <i class="bi bi-key-fill me-2"></i>Your Password
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="idVerificationPassword"
+                                       placeholder="Enter your password" required autocomplete="current-password">
+                                <button class="btn btn-outline-secondary" type="button" id="toggleIDPasswordVisibility">
+                                    <i class="bi bi-eye" id="toggleIDPasswordIcon"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Enter the password you use to log into your account.</div>
+                            <div id="idPasswordError" class="text-danger mt-2" style="display: none;"></div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="verifyIDPasswordBtn">
+                                <i class="bi bi-unlock-fill me-2"></i>Verify & View IDs
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="idLoadingSpinner" style="display: none;" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Verifying password and decrypting IDs...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Fix z-index to ensure modal appears above backdrop */
+    #viewEncryptedIDModal {
+        z-index: 1060 !important;
+    }
+
+    #viewEncryptedIDModal ~ .modal-backdrop {
+        z-index: 1055 !important;
+    }
+
+    .modal-backdrop.show {
+        z-index: 1055 !important;
+    }
+
+    #viewEncryptedIDModal .modal-content {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1060 !important;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #viewEncryptedIDModal .modal-dialog {
+        z-index: 1060 !important;
+    }
+
+    #viewEncryptedIDModal .modal-header {
+        border-bottom: 3px solid #0056b3;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+
+    /* Inline ID Container Styles */
+    .valid-id-container {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .valid-id-container.visible {
+        display: block;
+    }
+
+    .valid-id-container .id-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .valid-id-container .id-image:hover {
+        transform: scale(1.02);
+    }
+
+    .valid-id-loading {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    .valid-id-loading.visible {
+        display: block;
+    }
+</style>
+
+<script>
+    // Detect which controller we're using based on current URL
+    function getIDControllerRoute() {
+        const currentPath = window.location.pathname.toLowerCase();
+        if (currentPath.includes('/adminuser/')) {
+            return '/Adminuser';
+        }
+        return '/Dashboard';  // Default to Dashboard for user side
+    }
+
+    // Global variable to track ID decryption state
+    window.isIDDecrypted = false;
+
+    // Toggle function for Valid ID (View/Hide)
+    function toggleValidID(frontIDPath, backIDPath) {
+        if (window.isIDDecrypted) {
+            // Currently showing decrypted IDs, hide them
+            hideValidID();
+        } else {
+            // Currently hidden, show the password modal
+            openViewEncryptedIDModal(frontIDPath, backIDPath);
+        }
+    }
+
+    // Hide Valid ID and reset to encrypted state
+    function hideValidID() {
+        const idContainer = document.getElementById('validIDContainer');
+        const idAlert = document.getElementById('validIDAlert');
+        const viewButton = document.getElementById('viewValidIDBtn');
+        const btnIcon = document.getElementById('validIDBtnIcon');
+        const btnText = document.getElementById('validIDBtnText');
+
+        if (idContainer) {
+            idContainer.classList.remove('visible');
+            idContainer.style.display = 'none';
+        }
+        if (idAlert) {
+            idAlert.style.display = 'block';
+        }
+
+        // Update button to "View" state
+        if (viewButton) {
+            viewButton.setAttribute('data-decrypted', 'false');
+            viewButton.classList.remove('btn-warning');
+            viewButton.classList.add('btn-primary');
+        }
+        if (btnIcon) {
+            btnIcon.classList.remove('bi-eye-slash-fill');
+            btnIcon.classList.add('bi-eye-fill');
+        }
+        if (btnText) {
+            btnText.textContent = 'View Valid ID';
+        }
+
+        window.isIDDecrypted = false;
+    }
+
+    // Show Valid ID after decryption
+    function showValidIDAfterDecryption() {
+        const idContainer = document.getElementById('validIDContainer');
+        const idAlert = document.getElementById('validIDAlert');
+        const idLoading = document.getElementById('validIDLoading');
+        const viewButton = document.getElementById('viewValidIDBtn');
+        const btnIcon = document.getElementById('validIDBtnIcon');
+        const btnText = document.getElementById('validIDBtnText');
+
+        if (idLoading) {
+            idLoading.classList.remove('visible');
+            idLoading.style.display = 'none';
+        }
+        if (idContainer) {
+            idContainer.classList.add('visible');
+            idContainer.style.display = 'block';
+        }
+        if (idAlert) {
+            idAlert.style.display = 'none';
+        }
+
+        // Update button to "Hide" state
+        if (viewButton) {
+            viewButton.setAttribute('data-decrypted', 'true');
+            viewButton.classList.remove('btn-primary');
+            viewButton.classList.add('btn-warning');
+        }
+        if (btnIcon) {
+            btnIcon.classList.remove('bi-eye-fill');
+            btnIcon.classList.add('bi-eye-slash-fill');
+        }
+        if (btnText) {
+            btnText.textContent = 'Hide Valid ID';
+        }
+
+        window.isIDDecrypted = true;
+
+        // Scroll to the ID section
+        setTimeout(() => {
+            if (idContainer) {
+                idContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
+    }
+
+    // Start ID loading animation
+    function startValidIDLoading() {
+        const idLoading = document.getElementById('validIDLoading');
+        const idContainer = document.getElementById('validIDContainer');
+
+        if (idLoading) {
+            idLoading.classList.add('visible');
+            idLoading.style.display = 'block';
+        }
+        if (idContainer) {
+            idContainer.classList.remove('visible');
+            idContainer.style.display = 'none';
+        }
+    }
+
+    // Global function to open the ID password modal
+    function openViewEncryptedIDModal(frontIDPath, backIDPath) {
+        console.log('Opening ID password modal');
+        console.log('Front ID:', frontIDPath);
+        console.log('Back ID:', backIDPath);
+
+        // Wait for jQuery to be loaded
+        if (typeof jQuery === 'undefined') {
+            console.error('jQuery is not loaded yet!');
+            setTimeout(function() {
+                openViewEncryptedIDModal(frontIDPath, backIDPath);
+            }, 100);
+            return;
+        }
+
+        // Reset modal state
+        $('#idPasswordVerificationStep').show();
+        $('#idLoadingSpinner').hide();
+        $('#idVerificationPassword').val('');
+        $('#idPasswordError').hide().text('');
+
+        // Store paths in modal for later use
+        $('#viewEncryptedIDModal').data('frontIDPath', frontIDPath);
+        $('#viewEncryptedIDModal').data('backIDPath', backIDPath);
+
+        // Show modal
+        var modalElement = document.getElementById('viewEncryptedIDModal');
+        if (modalElement) {
+            var modal = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: true,
+                focus: true
+            });
+            modal.show();
+            console.log('ID Password Modal opened successfully');
+        } else {
+            console.error('ID Password Modal element not found!');
+        }
+    }
+
+    // Initialize modal when jQuery is ready
+    if (typeof jQuery !== 'undefined') {
+        $(document).ready(function() {
+            initializeIDModal();
+        });
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            var checkJQuery = setInterval(function() {
+                if (typeof jQuery !== 'undefined') {
+                    clearInterval(checkJQuery);
+                    $(document).ready(function() {
+                        initializeIDModal();
+                    });
+                }
+            }, 100);
+        });
+    }
+
+    function initializeIDModal() {
+        // Toggle password visibility
+        $('#toggleIDPasswordVisibility').on('click', function() {
+            const passwordInput = $('#idVerificationPassword');
+            const icon = $('#toggleIDPasswordIcon');
+
+            if (passwordInput.attr('type') === 'password') {
+                passwordInput.attr('type', 'text');
+                icon.removeClass('bi-eye').addClass('bi-eye-slash');
+            } else {
+                passwordInput.attr('type', 'password');
+                icon.removeClass('bi-eye-slash').addClass('bi-eye');
+            }
+        });
+
+        // Handle password verification form submission
+        $('#idPasswordVerificationForm').on('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const password = $('#idVerificationPassword').val();
+            const frontIDPath = $('#viewEncryptedIDModal').data('frontIDPath');
+            const backIDPath = $('#viewEncryptedIDModal').data('backIDPath');
+
+            console.log('Password verification started for IDs');
+
+            if (!password) {
+                $('#idPasswordError').text('Please enter your password').show();
+                return;
+            }
+
+            // Show loading, hide form
+            $('#idPasswordVerificationStep').hide();
+            $('#idLoadingSpinner').show();
+            $('#idPasswordError').hide();
+
+            // Get the appropriate controller route
+            const controllerRoute = getIDControllerRoute();
+            console.log('Using controller route:', controllerRoute);
+
+            // Verify password
+            $.ajax({
+                url: controllerRoute + '/VerifyPasswordForDecryption',
+                type: 'POST',
+                data: { password: password },
+                dataType: 'json',
+                success: function(response) {
+                    console.log('Password verification response:', response);
+                    if (response.success) {
+                        // Password verified, close modal and decrypt IDs on the page
+                        console.log('Password verified successfully, decrypting IDs on page...');
+                        
+                        // Close the modal
+                        var modalElement = document.getElementById('viewEncryptedIDModal');
+                        if (modalElement) {
+                            var modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) {
+                                modal.hide();
+                            }
+                        }
+
+                        // Start loading and decrypt IDs on the page
+                        startValidIDLoading();
+                        decryptIDImagesOnPage(frontIDPath, backIDPath);
+                    } else {
+                        // Password incorrect
+                        console.log('Password verification failed:', response.message);
+                        $('#idLoadingSpinner').hide();
+                        $('#idPasswordVerificationStep').show();
+                        $('#idPasswordError').text(response.message || 'Invalid password. Please try again.').show();
+                        $('#idVerificationPassword').val('').focus();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Password verification error:', error);
+                    $('#idLoadingSpinner').hide();
+                    $('#idPasswordVerificationStep').show();
+                    $('#idPasswordError').text('An error occurred: ' + error + '. Please try again.').show();
+                }
+            });
+        });
+
+        // Function to decrypt and display ID images on the page (not in modal)
+        function decryptIDImagesOnPage(frontIDPath, backIDPath) {
+            const controllerRoute = getIDControllerRoute();
+            let completedCount = 0;
+            const totalToDecrypt = 2;
+
+            function checkComplete() {
+                completedCount++;
+                if (completedCount >= totalToDecrypt) {
+                    // All IDs decrypted, show the container
+                    showValidIDAfterDecryption();
+                }
+            }
+
+            // Decrypt front ID
+            $.ajax({
+                url: controllerRoute + '/DecryptImage',
+                type: 'POST',
+                data: { imagePath: frontIDPath },
+                dataType: 'json',
+                success: function(response) {
+                    console.log('Front ID decryption response:', response);
+                    if (response.success) {
+                        const frontImg = document.getElementById('decryptedFrontIDInline');
+                        if (frontImg) {
+                            frontImg.src = response.imageData;
+                            frontImg.style.display = 'block';
+                        }
+                    } else {
+                        const frontContainer = document.getElementById('frontIDInlineContainer');
+                        if (frontContainer) {
+                            frontContainer.innerHTML = '<div class="alert alert-danger">Failed to decrypt front ID: ' + response.message + '</div>';
+                        }
+                    }
+                    checkComplete();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Front ID decryption error:', error);
+                    const frontContainer = document.getElementById('frontIDInlineContainer');
+                    if (frontContainer) {
+                        frontContainer.innerHTML = '<div class="alert alert-danger">Error decrypting front ID: ' + error + '</div>';
+                    }
+                    checkComplete();
+                }
+            });
+
+            // Decrypt back ID
+            $.ajax({
+                url: controllerRoute + '/DecryptImage',
+                type: 'POST',
+                data: { imagePath: backIDPath },
+                dataType: 'json',
+                success: function(response) {
+                    console.log('Back ID decryption response:', response);
+                    if (response.success) {
+                        const backImg = document.getElementById('decryptedBackIDInline');
+                        if (backImg) {
+                            backImg.src = response.imageData;
+                            backImg.style.display = 'block';
+                        }
+                    } else {
+                        const backContainer = document.getElementById('backIDInlineContainer');
+                        if (backContainer) {
+                            backContainer.innerHTML = '<div class="alert alert-danger">Failed to decrypt back ID: ' + response.message + '</div>';
+                        }
+                    }
+                    checkComplete();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Back ID decryption error:', error);
+                    const backContainer = document.getElementById('backIDInlineContainer');
+                    if (backContainer) {
+                        backContainer.innerHTML = '<div class="alert alert-danger">Error decrypting back ID: ' + error + '</div>';
+                    }
+                    checkComplete();
+                }
+            });
+        }
+
+        // Handle modal close event - reset state
+        $('#viewEncryptedIDModal').on('hidden.bs.modal', function() {
+            console.log('ID Password Modal closed');
+
+            // Reset modal state
+            $('#idPasswordVerificationStep').show();
+            $('#idLoadingSpinner').hide();
+            $('#idVerificationPassword').val('');
+            $('#idPasswordError').hide().text('');
+        });
+    }
+</script>

@@ -196,6 +196,48 @@
         .alert-danger i {
             margin-right: 0.5rem;
         }
+
+        /* Responsive Styles */
+        @@media (max-width: 768px) {
+            .section-header {
+                font-size: 1.1rem;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.9rem;
+            }
+            
+            .btn-submit {
+                padding: 8px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .upload-box {
+                padding: 1rem;
+            }
+            
+            .upload-icon {
+                font-size: 1.5rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .section-header {
+                font-size: 1rem;
+            }
+            
+            .form-check-label {
+                font-size: 0.85rem;
+            }
+            
+            .text-muted {
+                font-size: 0.75rem;
+            }
+        }
     </style>
 }
 
@@ -213,7 +255,6 @@
         var isBlkLotStreetReadonly = ViewBag.BlkLotStreet != null && !string.IsNullOrEmpty(ViewBag.BlkLotStreet.ToString());
         var isSubVillReadonly = ViewBag.SubVill != null && !string.IsNullOrEmpty(ViewBag.SubVill.ToString());
         var isBarangayReadonly = ViewBag.Barangay != null && !string.IsNullOrEmpty(ViewBag.Barangay.ToString());
-        var isDistrictReadonly = ViewBag.District != null && !string.IsNullOrEmpty(ViewBag.District.ToString());
         var isPhonenumberReadonly = ViewBag.Phonenumber != null && !string.IsNullOrEmpty(ViewBag.Phonenumber.ToString());
     }
     <div class="row g-3">
@@ -323,21 +364,6 @@
                        class="form-control">
             }
             <span asp-validation-for="RBrgy" class="text-danger"></span>
-        </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <label class="form-label">District</label>
-            @if (isDistrictReadonly)
-            {
-                <input asp-for="RDistrict" type="text" value="@ViewBag.District"
-                       class="form-control readonly-field" readonly>
-            }
-            else
-            {
-                <input asp-for="RDistrict" type="text" value="@ViewBag.District"
-                       class="form-control">
-            }
-            <span asp-validation-for="RDistrict" class="text-danger"></span>
         </div>
     </div>
 
@@ -579,12 +605,6 @@
                     <option value="Wines">Wines</option>
                 </select>
                 <span asp-validation-for="Brgy" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label">District</label>
-                <input asp-for="District" type="text" class="form-control" required>
-                <span asp-validation-for="District" class="text-danger"></span>
             </div>
         </div>
 
@@ -1397,7 +1417,6 @@
             const patientBlkLotStreet = document.getElementById('BlkLotStreet');
             const patientSubVill = document.getElementById('SubVill');
             const patientBrgy = document.getElementById('Brgy');
-            const patientDistrict = document.getElementById('District');
 
             const requestorLastname = document.getElementById('RLastname');
             const requestorFirstname = document.getElementById('RFirstname');
@@ -1406,14 +1425,13 @@
             const requestorBlkLotStreet = document.getElementById('RBlkLotStreet');
             const requestorSubVill = document.getElementById('RSubVill');
             const requestorBrgy = document.getElementById('RBrgy');
-            const requestorDistrict = document.getElementById('RDistrict');
             const relationshipPatient = document.getElementById('RelationshipPatient');
 
             let originalPatientValues = {};
             let autoFillUsed = false;
 
             function storeOriginalValues() {
-                const fields = ['Lastname', 'Firstname', 'Middlename', 'Suffix', 'BlkLotStreet', 'SubVill', 'Brgy', 'District'];
+                const fields = ['Lastname', 'Firstname', 'Middlename', 'Suffix', 'BlkLotStreet', 'SubVill', 'Brgy'];
                 originalPatientValues = {};
                 fields.forEach(field => {
                     const element = document.getElementById(field);
@@ -1446,7 +1464,7 @@
                 const patientFieldsList = [
                     patientLastname, patientFirstname, patientMiddlename,
                     patientSuffix, patientBlkLotStreet, patientSubVill,
-                    patientBrgy, patientDistrict
+                    patientBrgy
                 ];
                 return patientFieldsList.every(field => !field || !field.value.trim());
             }
@@ -1466,7 +1484,6 @@
                 if (requestorBlkLotStreet && requestorBlkLotStreet.value) patientBlkLotStreet.value = requestorBlkLotStreet.value;
                 if (requestorSubVill && requestorSubVill.value) patientSubVill.value = requestorSubVill.value;
                 if (requestorBrgy && requestorBrgy.value) patientBrgy.value = requestorBrgy.value;
-                if (requestorDistrict && requestorDistrict.value) patientDistrict.value = requestorDistrict.value;
 
                 if (relationshipPatient) relationshipPatient.value = "Self";
 
@@ -1494,11 +1511,6 @@
                 const userBarangay = '@ViewBag.Barangay';
                 if (userBarangay && patientBrgy) {
                     patientBrgy.value = userBarangay;
-                }
-
-                const userDistrict = '@ViewBag.District';
-                if (userDistrict && patientDistrict) {
-                    patientDistrict.value = userDistrict;
                 }
 
                 sameAsPatientBtn.innerHTML = '<i class="bi bi-check-circle"></i> Details Copied!';
@@ -1701,41 +1713,89 @@
             }
         }
 
-        // Medical Needs Checkboxes - Show/Hide conditional sections
+        // Medical Needs Radio Buttons - Show/Hide conditional sections (single selection only)
         function initializeMedicalNeedsCheckboxes() {
-            const medicineCheckbox = document.getElementById('medicineAssistance');
-            const laboratoryCheckbox = document.getElementById('laboratoryAssistance');
-            const therapyCheckbox = document.getElementById('therapyAssistance');
-            const apparatusCheckbox = document.getElementById('apparatusAssistance');
+            const medicineRadio = document.getElementById('medicineAssistance');
+            const laboratoryRadio = document.getElementById('laboratoryAssistance');
+            const therapyRadio = document.getElementById('therapyAssistance');
+            const apparatusRadio = document.getElementById('apparatusAssistance');
 
             const medicinesSection = document.getElementById('medicinesSection');
             const laboratorySection = document.getElementById('laboratorySection');
             const therapySection = document.getElementById('therapySection');
             const apparatusSection = document.getElementById('apparatusSection');
 
-            if (medicineCheckbox) {
-                medicineCheckbox.addEventListener('change', function() {
-                    medicinesSection.style.display = this.checked ? 'block' : 'none';
+            // Function to hide all sections and clear their inputs
+            function hideAllSections() {
+                if (medicinesSection) {
+                    medicinesSection.style.display = 'none';
+                    clearSectionInputs(medicinesSection);
+                }
+                if (laboratorySection) {
+                    laboratorySection.style.display = 'none';
+                    clearSectionInputs(laboratorySection);
+                }
+                if (therapySection) {
+                    therapySection.style.display = 'none';
+                    clearSectionInputs(therapySection);
+                }
+                if (apparatusSection) {
+                    apparatusSection.style.display = 'none';
+                    clearSectionInputs(apparatusSection);
+                }
+            }
+
+            // Function to clear inputs in a section
+            function clearSectionInputs(section) {
+                if (!section) return;
+                const inputs = section.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
                 });
             }
 
-            if (laboratoryCheckbox) {
-                laboratoryCheckbox.addEventListener('change', function() {
-                    laboratorySection.style.display = this.checked ? 'block' : 'none';
-                });
+            // Function to show only the selected section
+            function showSelectedSection(selectedType) {
+                hideAllSections();
+                
+                switch(selectedType) {
+                    case 'Medicine Assistance':
+                        if (medicinesSection) medicinesSection.style.display = 'block';
+                        break;
+                    case 'Laboratory':
+                        if (laboratorySection) laboratorySection.style.display = 'block';
+                        break;
+                    case 'Therapy':
+                        if (therapySection) therapySection.style.display = 'block';
+                        break;
+                    case 'Medical Equipment/ Apparatus':
+                        if (apparatusSection) apparatusSection.style.display = 'block';
+                        break;
+                }
             }
 
-            if (therapyCheckbox) {
-                therapyCheckbox.addEventListener('change', function() {
-                    therapySection.style.display = this.checked ? 'block' : 'none';
-                });
-            }
+            // Add event listeners to all radio buttons
+            const allRadios = [medicineRadio, laboratoryRadio, therapyRadio, apparatusRadio];
+            allRadios.forEach(radio => {
+                if (radio) {
+                    radio.addEventListener('change', function() {
+                        if (this.checked) {
+                            showSelectedSection(this.value);
+                        }
+                    });
+                }
+            });
 
-            if (apparatusCheckbox) {
-                apparatusCheckbox.addEventListener('change', function() {
-                    apparatusSection.style.display = this.checked ? 'block' : 'none';
-                });
-            }
+            // Initialize - check if any radio is already selected on page load
+            allRadios.forEach(radio => {
+                if (radio && radio.checked) {
+                    showSelectedSection(radio.value);
+                }
+            });
         }
 
         // Age calculation helper function

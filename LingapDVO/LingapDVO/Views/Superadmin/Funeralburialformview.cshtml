@@ -1,4 +1,4 @@
-﻿@model FuneralAssistanceDto
+@model FuneralAssistanceDto
 @{
     Layout = null;
     var selectedSex = ViewData["Sex"]?.ToString();
@@ -223,12 +223,6 @@
                     <input value="@ViewData["Brgy"]" asp-for="Brgy" type="text" class="form-control" required disabled>
                     <span asp-validation-for="Brgy" class="text-danger"></span>
                 </div>
-
-                <div class="col-md-3">
-                    <label class="">District</label>
-                    <input value="@ViewData["District"]" asp-for="District" type="text" class="form-control" required disabled>
-                    <span asp-validation-for="District" class="text-danger"></span>
-                </div>
             </div>
 
             <!-- Gender, PhilHealth, DOB, Age -->
@@ -335,21 +329,9 @@
                     <span asp-validation-for="RBrgy"></span>
                 </div>
 
-                <div class="col-md-3">
-                    <label class="">District</label>
-                    <input value="@ViewData["RDistrict"]" asp-for="RDistrict" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RDistrict"></span>
-                </div>
-
             </div>
 
             <div class="row g-3 mt-2">
-                <div class="col-md-6">
-                    <label class="">Relationship to Patient</label>
-                    <input value="@ViewData["RelationshipPatient"]" asp-for="RelationshipPatient" type="text" class="form-control" disabled>
-                    <span asp-validation-for="RelationshipPatient"></span>
-                </div>
-
                 <div class="col-md-6">
                     <label class="">Contact No.</label>
                     <input value="@ViewData["ContactNo"]" asp-for="ContactNo" type="text" class="form-control" disabled>
@@ -1101,3 +1083,4 @@
 </body>
 
 </html>
+
