@@ -3475,7 +3475,6 @@ namespace LingapDVO.Controllers
             return View(viewModel);
         }
 
-
         public IActionResult HospitalAssistanceview(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
@@ -3553,7 +3552,7 @@ namespace LingapDVO.Controllers
                     {
                         byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
-                        debugMessages.Add("? Front ID decrypted");
+                        debugMessages.Add("✓ Front ID decrypted");
                     }
                 }
 
@@ -3565,17 +3564,17 @@ namespace LingapDVO.Controllers
                     {
                         byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
-                        debugMessages.Add("? Back ID decrypted");
+                        debugMessages.Add("✓ Back ID decrypted");
                     }
                 }
 
-                // ? DOCTOR PRESCRIPTION - UPDATED
+                // Doctor Prescription - UPDATED
                 if (!string.IsNullOrEmpty(HospitalAssistance.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, HospitalAssistance.DoctorPrescription);
-                    debugMessages.Add($"?? Doctor Prescription filename: {HospitalAssistance.DoctorPrescription}");
-                    debugMessages.Add($"?? Full path: {prescPath}");
-                    debugMessages.Add($"?? File exists: {System.IO.File.Exists(prescPath)}");
+                    debugMessages.Add($"🔍 Doctor Prescription filename: {HospitalAssistance.DoctorPrescription}");
+                    debugMessages.Add($"🔍 Full path: {prescPath}");
+                    debugMessages.Add($"🔍 File exists: {System.IO.File.Exists(prescPath)}");
 
                     if (System.IO.File.Exists(prescPath))
                     {
@@ -3589,32 +3588,32 @@ namespace LingapDVO.Controllers
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
-                            debugMessages.Add($"? Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
-                            debugMessages.Add($"?? IsDoctorPrescriptionPdf = {isPdf}");
-                            debugMessages.Add($"?? PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"✓ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"? Doctor Prescription decryption failed: {ex.Message}");
+                            debugMessages.Add($"⚠ Doctor Prescription decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("? Doctor Prescription file NOT FOUND");
+                        debugMessages.Add("⚠ Doctor Prescription file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("?? No Doctor Prescription in database");
+                    debugMessages.Add("🔍 No Doctor Prescription in database");
                 }
 
-                // ? DEATH CERTIFICATE - UPDATED
+                // Death Certificate - UPDATED
                 if (!string.IsNullOrEmpty(HospitalAssistance.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, HospitalAssistance.DeathCertificate);
-                    debugMessages.Add($"?? Death Certificate filename: {HospitalAssistance.DeathCertificate}");
-                    debugMessages.Add($"?? Full path: {deathPath}");
-                    debugMessages.Add($"?? File exists: {System.IO.File.Exists(deathPath)}");
+                    debugMessages.Add($"🔍 Death Certificate filename: {HospitalAssistance.DeathCertificate}");
+                    debugMessages.Add($"🔍 Full path: {deathPath}");
+                    debugMessages.Add($"🔍 File exists: {System.IO.File.Exists(deathPath)}");
 
                     if (System.IO.File.Exists(deathPath))
                     {
@@ -3628,28 +3627,28 @@ namespace LingapDVO.Controllers
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
-                            debugMessages.Add($"? Death Certificate decrypted - {decryptedDeath.Length} bytes");
-                            debugMessages.Add($"?? IsDeathCertificatePdf = {isPdf}");
-                            debugMessages.Add($"?? PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"✓ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"🔍 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"? Death Certificate decryption failed: {ex.Message}");
+                            debugMessages.Add($"⚠ Death Certificate decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("? Death Certificate file NOT FOUND");
+                        debugMessages.Add("⚠ Death Certificate file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("?? No Death Certificate in database");
+                    debugMessages.Add("🔍 No Death Certificate in database");
                 }
             }
             catch (Exception ex)
             {
-                debugMessages.Add($"? GENERAL ERROR: {ex.Message}");
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
                 ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
             }
 
@@ -3670,6 +3669,96 @@ namespace LingapDVO.Controllers
             ViewData["AdmissionDate"] = DecryptFieldText(HospitalAssistance.AdmissionDate);
             ViewData["DischargeDate"] = DecryptFieldText(HospitalAssistance.DischargeDate);
             ViewData["WardRoomType"] = DecryptFieldText(HospitalAssistance.WardRoomType);
+
+            // ============================================
+            // ADD TRACKING DATA FOR TIMELINE
+            // ============================================
+
+            // Created/Submitted Date
+            ViewData["CreatedAt"] = HospitalAssistance.CreatedAt;
+
+            // Processing Date
+            ViewData["ProcessAt"] = HospitalAssistance.ProcessAt;
+            ViewData["Processby"] = HospitalAssistance.Processby;
+
+            // Result Date (Approval/Disapproval/Retake)
+            ViewData["Result"] = HospitalAssistance.Result;
+            ViewData["Status2"] = HospitalAssistance.Status2;
+            ViewData["RetakeReason"] = HospitalAssistance.RetakeReason;
+
+            // Claimed Date
+            ViewData["ClaimedAt"] = HospitalAssistance.ClaimedAt;
+            ViewData["Status3"] = HospitalAssistance.Status3;
+
+            // ============================================
+            // ADDITIONAL VIEWDATA FOR TRACKING DISPLAY
+            // ============================================
+
+            // Determine the current status badge type
+            string currentStatusBadge = "";
+            if (HospitalAssistance.Status2 == "Approve")
+            {
+                if (HospitalAssistance.Status3 == "Claimed")
+                {
+                    currentStatusBadge = "status-claimed-badge";
+                }
+                else
+                {
+                    currentStatusBadge = "status-approved-badge";
+                }
+            }
+            else if (HospitalAssistance.Status2 == "Disapprove" || HospitalAssistance.Status2 == "Unapproved")
+            {
+                currentStatusBadge = "status-disapproved-badge";
+            }
+            else if (HospitalAssistance.Status2 == "Retake")
+            {
+                currentStatusBadge = "status-retake-badge";
+            }
+            else
+            {
+                currentStatusBadge = "status-pending-badge";
+            }
+
+            ViewData["CurrentStatusBadge"] = currentStatusBadge;
+            ViewData["CurrentStatusText"] = HospitalAssistance.Status2 == "Approve" && HospitalAssistance.Status3 == "Claimed"
+                ? "CLAIMED"
+                : !string.IsNullOrEmpty(HospitalAssistance.Status2)
+                    ? HospitalAssistance.Status2.ToUpper()
+                    : "PENDING";
+
+            // For timeline display
+            ViewData["HasProcessing"] = HospitalAssistance.ProcessAt > DateTime.MinValue &&
+                                        HospitalAssistance.ProcessAt.Year > 1 &&
+                                        !string.IsNullOrWhiteSpace(HospitalAssistance.Processby);
+
+            ViewData["HasResult"] = HospitalAssistance.Result > DateTime.MinValue &&
+                                   HospitalAssistance.Result.Year > 1;
+
+            ViewData["HasClaimed"] = HospitalAssistance.ClaimedAt > DateTime.MinValue &&
+                                    HospitalAssistance.ClaimedAt.Year > 1 &&
+                                    HospitalAssistance.Status3 == "Claimed";
+
+            ViewData["IsApproved"] = HospitalAssistance.Status2 == "Approve";
+            ViewData["IsRetake"] = HospitalAssistance.Status2 == "Retake";
+            ViewData["IsUnapproved"] = HospitalAssistance.Status2 == "Disapprove" ||
+                                       HospitalAssistance.Status2 == "Unapproved";
+
+            ViewData["IsReadyForClaim"] = HospitalAssistance.Status2 == "Approve" &&
+                                          string.IsNullOrEmpty(HospitalAssistance.Status3);
+
+            // ============================================
+            // FOR ADMIN STATUS UPDATE
+            // ============================================
+            if (HttpContext.Session.GetString("UserRole") == "Admin")
+            {
+                ViewData["IsAdmin"] = true;
+                ViewData["AdminFullname"] = HttpContext.Session.GetString("AdminFullname");
+            }
+            else
+            {
+                ViewData["IsAdmin"] = false;
+            }
 
             return View();
         }
