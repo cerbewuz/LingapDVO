@@ -119,6 +119,10 @@ builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>(
 builder.Services.AddHttpClient<IVerificationService, IdAnalyzerService>();
 builder.Services.AddScoped<IVerificationService, IdAnalyzerService>();
 
+// OCR.space Service (Secondary OCR for text extraction after ID Analyzer accepts)
+builder.Services.AddHttpClient<IOcrSpaceService, OcrSpaceService>();
+builder.Services.AddScoped<IOcrSpaceService, OcrSpaceService>();
+
 // AES Encryption Service (Centralized encryption/decryption)
 builder.Services.AddScoped<IAesEncryptionService, AesEncryptionService>();
 

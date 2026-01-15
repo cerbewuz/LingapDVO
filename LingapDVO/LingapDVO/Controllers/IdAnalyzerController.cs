@@ -22,6 +22,7 @@ namespace LingapDVO.Controllers
     public class IdAnalyzerController : ControllerBase
     {
         private readonly IVerificationService _verificationService;
+        private readonly IOcrSpaceService _ocrSpaceService;
         private readonly ILogger<IdAnalyzerController> _logger;
         private readonly IWebHostEnvironment _environment;
         private readonly IConfiguration _configuration;
@@ -30,12 +31,14 @@ namespace LingapDVO.Controllers
 
         public IdAnalyzerController(
             IVerificationService verificationService,
+            IOcrSpaceService ocrSpaceService,
             ILogger<IdAnalyzerController> logger,
             IWebHostEnvironment environment,
             IConfiguration configuration,
             LingapDVO.Services.ApplicationDbContext context)
         {
             _verificationService = verificationService;
+            _ocrSpaceService = ocrSpaceService;
             _logger = logger;
             _environment = environment;
             _configuration = configuration;
@@ -689,6 +692,141 @@ namespace LingapDVO.Controllers
             }
         }
 
+        /// <summary>
+        /// OCR.space API endpoint for extracting text from ID images
+        /// Called ONLY after ID Analyzer returns "accept" decision
+        /// This provides EXCLUSIVE OCR for data extraction using OCR.space
+        /// IMPORTANT: Only National ID, Driver's License, and UMID are accepted
+        /// </summary>
+        [HttpPost("ocr")]
+        public async Task<IActionResult> ExtractTextWithOcr([FromBody] OcrSpaceRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("═══════════════════════════════════════════════════════════════");
+                _logger.LogInformation("📥 OCR.SPACE REQUEST RECEIVED (EXCLUSIVE DATA EXTRACTION)");
+                _logger.LogInformation("═══════════════════════════════════════════════════════════════");
+                _logger.LogInformation("   Front ID (Base64): {HasFront} ({Length} chars)", !string.IsNullOrEmpty(request.FrontImage), request.FrontImage?.Length ?? 0);
+                _logger.LogInformation("   Back ID (Base64): {HasBack} ({Length} chars)", !string.IsNullOrEmpty(request.BackImage), request.BackImage?.Length ?? 0);
+                _logger.LogInformation("   ID Type: {IdType}", request.IdType ?? "Not specified");
+                _logger.LogInformation("═══════════════════════════════════════════════════════════════");
+
+                // VALIDATION 1: Front ID image is required
+                if (string.IsNullOrEmpty(request.FrontImage))
+                {
+                    return BadRequest(new { success = false, error = "Front ID image is required" });
+                }
+
+                // VALIDATION 2: ID Type must be specified and must be one of the three accepted types
+                var acceptedIdTypes = new[] { "National ID", "Driver's License", "UMID" };
+                var idType = request.IdType?.Trim() ?? "";
+
+                if (string.IsNullOrEmpty(idType))
+                {
+                    _logger.LogWarning("❌ ID Type not specified");
+                    return BadRequest(new { success = false, error = "ID type is required. Please select National ID, Driver's License, or UMID." });
+                }
+
+                var isValidIdType = acceptedIdTypes.Any(t => t.Equals(idType, StringComparison.OrdinalIgnoreCase));
+                if (!isValidIdType)
+                {
+                    _logger.LogWarning("❌ Invalid ID Type: {IdType}", idType);
+                    return BadRequest(new
+                    {
+                        success = false,
+                        error = $"Invalid ID type: \"{idType}\". Only National ID, Driver's License, and UMID are accepted."
+                    });
+                }
+
+                _logger.LogInformation("✅ ID Type validated: {IdType}", idType);
+
+                // Clean Base64 strings
+                var frontBase64 = RemoveDataUrlPrefix(request.FrontImage);
+                var backBase64 = !string.IsNullOrEmpty(request.BackImage) ? RemoveDataUrlPrefix(request.BackImage) : null;
+
+                // Extract text from both images using OCR.space
+                var ocrResult = await _ocrSpaceService.ExtractTextFromImagesAsync(frontBase64, backBase64);
+
+                if (!ocrResult.Success)
+                {
+                    _logger.LogWarning("❌ OCR.space extraction failed: {Error}", ocrResult.ErrorMessage);
+                    return Ok(new
+                    {
+                        success = false,
+                        error = ocrResult.ErrorMessage ?? "Failed to read your ID. Please take clearer photos and try again."
+                    });
+                }
+
+                _logger.LogInformation("✅ OCR.space extraction successful");
+                _logger.LogInformation("   Front text length: {Length} chars", ocrResult.FrontText?.Length ?? 0);
+                _logger.LogInformation("   Back text length: {Length} chars", ocrResult.BackText?.Length ?? 0);
+
+                // VALIDATION 3: Verify the detected ID type matches the selected ID type
+                var detectedIdType = _ocrSpaceService.DetectIdTypeFromText(ocrResult.ExtractedText ?? "");
+                if (!string.IsNullOrEmpty(detectedIdType))
+                {
+                    var idTypeMatch = _ocrSpaceService.ValidateIdTypeMatch(ocrResult.ExtractedText ?? "", idType);
+                    if (!idTypeMatch)
+                    {
+                        _logger.LogWarning("⚠️ ID Type mismatch detected - Selected: {Selected}, Detected: {Detected}", idType, detectedIdType);
+                        // Continue but log the mismatch - we'll use the user-selected type for parsing
+                    }
+                }
+
+                // Parse the extracted text to get structured data using the SELECTED ID type
+                var extractedData = _ocrSpaceService.ParsePhilippineIdText(ocrResult.ExtractedText ?? "", idType);
+
+                _logger.LogInformation("═══════════════════════════════════════════════════════════════");
+                _logger.LogInformation("📋 EXTRACTED DATA (OCR.space EXCLUSIVE SOURCE):");
+                _logger.LogInformation("═══════════════════════════════════════════════════════════════");
+                _logger.LogInformation("   - ID Type: {IdType}", extractedData.IdType ?? idType);
+                _logger.LogInformation("   - ID Number: {IdNumber}", extractedData.IdNumber ?? "N/A");
+                _logger.LogInformation("   - First Name: {FirstName}", extractedData.FirstName ?? "N/A");
+                _logger.LogInformation("   - Middle Name: {MiddleName}", extractedData.MiddleName ?? "N/A");
+                _logger.LogInformation("   - Last Name: {LastName}", extractedData.LastName ?? "N/A");
+                _logger.LogInformation("   - Suffix: {Suffix}", extractedData.Suffix ?? "N/A");
+                _logger.LogInformation("   - Gender: {Gender}", extractedData.Gender ?? "N/A");
+                _logger.LogInformation("   - Date of Birth: {DOB}", extractedData.DateOfBirth ?? "N/A");
+                _logger.LogInformation("   - Address: {Address}", extractedData.Address ?? "N/A");
+                _logger.LogInformation("═══════════════════════════════════════════════════════════════");
+
+                return Ok(new
+                {
+                    success = true,
+                    rawText = new
+                    {
+                        front = ocrResult.FrontText,
+                        back = ocrResult.BackText,
+                        combined = ocrResult.ExtractedText
+                    },
+                    detectedIdType = detectedIdType,
+                    data = new
+                    {
+                        idType = extractedData.IdType ?? idType,
+                        idNumber = extractedData.IdNumber,
+                        firstName = extractedData.FirstName,
+                        middleName = extractedData.MiddleName,
+                        lastName = extractedData.LastName,
+                        suffix = extractedData.Suffix,
+                        gender = extractedData.Gender,
+                        dateOfBirth = extractedData.DateOfBirth,
+                        address = extractedData.Address,
+                        city = extractedData.City,
+                        barangay = extractedData.Barangay
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing OCR.space request");
+                return StatusCode(500, new { success = false, error = "Internal server error during OCR processing" });
+            }
+        }
+
+        // NOTE: AES-256 encryption of ID images is handled by LoginController
+        // when the user submits the verification form. This ensures images are only
+        // encrypted and stored permanently after the complete verification process.
+
         private string RemoveDataUrlPrefix(string dataUrl)
         {
             if (string.IsNullOrEmpty(dataUrl))
@@ -752,4 +890,19 @@ namespace LingapDVO.Controllers
         public string? BackIdFileName { get; set; }
         public string? SelfieFileName { get; set; }
     }
+
+    /// <summary>
+    /// Request model for OCR.space text extraction
+    /// Used after ID Analyzer returns "accept" to extract text data from ID images
+    /// </summary>
+    public class OcrSpaceRequest
+    {
+        public string FrontImage { get; set; } = string.Empty;  // Front ID as Base64
+        public string? BackImage { get; set; }                   // Back ID as Base64
+        public string? IdType { get; set; }                      // ID Type (National ID, Driver's License, UMID)
+    }
+
+    // NOTE: AES-256 encryption of ID images is handled by LoginController
+    // when the user submits the verification form. The EncryptIdImagesRequest
+    // model is not needed here.
 }

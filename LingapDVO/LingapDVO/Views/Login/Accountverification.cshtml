@@ -138,6 +138,98 @@
             opacity: 0;
             transition: opacity 0.5s ease-out;
         }
+
+        /* ═══════════════════════════════════════════════════════════════════════════ */
+        /* RESPONSIVE ENHANCEMENTS FOR MOBILE DEVICES */
+        /* ═══════════════════════════════════════════════════════════════════════════ */
+
+        /* Ensure text doesn't overflow on mobile */
+        .break-words {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        /* Better touch targets for mobile */
+        @@media (max-width: 640px) {
+            /* Larger touch targets for buttons */
+            button, .btn, [role="button"] {
+                min-height: 44px;
+            }
+
+            /* Better spacing for form fields */
+            input, select, textarea {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+
+            /* Compact modal headers on mobile */
+            .modal-header {
+                padding-top: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+            }
+
+            /* Stack modal footer buttons vertically on very small screens */
+            .modal-footer {
+                flex-direction: column-reverse !important;
+            }
+
+            .modal-footer button {
+                width: 100% !important;
+            }
+
+            /* Ensure modals don't have horizontal overflow */
+            .modal-content {
+                max-width: 100vw;
+                overflow-x: hidden;
+            }
+
+            /* Better padding for small screens */
+            .modal-body {
+                padding: 1rem !important;
+            }
+
+            /* Compact validation messages */
+            #validation-results-container .rounded-xl {
+                padding: 0.75rem !important;
+            }
+        }
+
+        /* Extra small screens (below 400px) */
+        @@media (max-width: 400px) {
+            /* Even more compact spacing */
+            .modal-body {
+                padding: 0.75rem !important;
+            }
+
+            /* Smaller icons */
+            .modal-header .w-10.h-10 {
+                width: 2rem !important;
+                height: 2rem !important;
+            }
+
+            /* Compact tab indicators */
+            #tab-indicator-1, #tab-indicator-2, #tab-indicator-3 {
+                width: 2rem !important;
+                height: 2rem !important;
+                font-size: 0.875rem !important;
+            }
+
+            /* Shorter connector lines */
+            #connector-1-2, #connector-2-3 {
+                width: 1.5rem !important;
+            }
+        }
+
+        /* Prevent horizontal scroll on body */
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Ensure images don't overflow */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
     </style>
 
     <!-- Session Timeout -->
@@ -594,22 +686,18 @@
                                 <span asp-validation-for="IDtype" class="text-red-500 text-sm mt-1 block"></span>
                             </div>
 
-                            <!-- ID Type Field (dropdown, user selects before upload) - Manual selection required -->
-                            <div id="idtype-container">
+                            <!-- ID Type Field (read-only, auto-detected by OCR) - Hidden until verification -->
+                            <div id="idtype-container" class="hidden">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    ID Type <span class="text-red-500">*</span>
-                                    <span id="idtype-verified-badge" class="text-green-600 text-xs hidden"><i class="fas fa-check-circle"></i> Selected</span>
+                                    ID Type <span id="idtype-verified-badge" class="text-green-600 text-xs"><i class="fas fa-check-circle"></i> Auto-detected</span>
                                 </label>
-                                <select id="idtype-display"
-                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl bg-white text-gray-800 font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                                        required>
-                                    <option value="">Select ID Type</option>
-                                    <option value="National ID">National ID</option>
-                                    <option value="Driver's License">Driver's License</option>
-                                    <option value="Unified Multipurpose ID">Unified Multipurpose ID (UMID)</option>
-                                </select>
-                                <div class="text-xs text-blue-600 mt-1">
-                                    <i class="fas fa-info-circle"></i> <span id="idtype-help-text">Please select your ID type before uploading</span>
+                                <input type="text" id="idtype-display"
+                                       class="w-full px-4 py-3 border-2 border-green-300 rounded-xl bg-green-50 text-gray-800 font-medium"
+                                       placeholder="Will be auto-detected from your ID"
+                                       readonly />
+                                <input type="hidden" id="idtype-hidden" name="IDType" value="" />
+                                <div class="text-xs text-green-600 mt-1">
+                                    <i class="fas fa-robot"></i> <span id="idtype-help-text">ID type automatically detected from your document</span>
                                 </div>
                             </div>
 
@@ -763,12 +851,12 @@
                                 </div>
 
                                 <!-- Personal Information Review -->
-                                <div class="bg-white border-2 border-gray-200 rounded-xl p-6">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                        <i class="fas fa-user text-green-500"></i>
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6">
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                        <i class="fas fa-user text-green-500 text-sm sm:text-base"></i>
                                         Personal Information
                                     </h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <div>
                                             <span class="text-sm font-medium text-gray-500">Last Name:</span>
                                             <p id="review-lastname" class="text-gray-800 font-semibold">-</p>
@@ -805,78 +893,78 @@
                                 </div>
 
                                 <!-- Address Information Review -->
-                                <div class="bg-white border-2 border-gray-200 rounded-xl p-6">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                        <i class="fas fa-home text-purple-500"></i>
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6">
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                        <i class="fas fa-home text-purple-500 text-sm sm:text-base"></i>
                                         Address Information
                                     </h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="md:col-span-2">
-                                            <span class="text-sm font-medium text-gray-500">Block/Lot/Street:</span>
-                                            <p id="review-blklotstreet" class="text-gray-800 font-semibold">-</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                        <div class="sm:col-span-2">
+                                            <span class="text-xs sm:text-sm font-medium text-gray-500">Block/Lot/Street:</span>
+                                            <p id="review-blklotstreet" class="text-gray-800 font-semibold text-sm sm:text-base">-</p>
                                         </div>
                                         <div>
-                                            <span class="text-sm font-medium text-gray-500">Subdivision/Village:</span>
-                                            <p id="review-subdivision" class="text-gray-800 font-semibold">-</p>
+                                            <span class="text-xs sm:text-sm font-medium text-gray-500">Subdivision/Village:</span>
+                                            <p id="review-subdivision" class="text-gray-800 font-semibold text-sm sm:text-base">-</p>
                                         </div>
                                         <div>
-                                            <span class="text-sm font-medium text-gray-500">Barangay:</span>
-                                            <p id="review-barangay" class="text-gray-800 font-semibold">-</p>
+                                            <span class="text-xs sm:text-sm font-medium text-gray-500">Barangay:</span>
+                                            <p id="review-barangay" class="text-gray-800 font-semibold text-sm sm:text-base">-</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- ID Verification Review -->
-                                <div class="bg-white border-2 border-gray-200 rounded-xl p-6">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                        <i class="fas fa-id-card text-blue-500"></i>
+                                <div class="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6">
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                        <i class="fas fa-id-card text-blue-500 text-sm sm:text-base"></i>
                                         ID Verification
                                     </h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                                         <!-- Front ID Review -->
                                         <div class="text-center">
-                                            <span class="text-sm font-medium text-gray-500 block mb-2">Front of ID</span>
+                                            <span class="text-xs sm:text-sm font-medium text-gray-500 block mb-2">Front of ID</span>
                                             <div class="border-2 border-gray-200 rounded-lg p-2 bg-gray-50">
-                                                <img id="review-front-img" src="#" alt="Front ID" class="w-full h-32 object-contain rounded hidden">
-                                                <div id="review-front-placeholder" class="w-full h-32 flex items-center justify-center text-gray-400">
-                                                    <i class="fas fa-image text-4xl"></i>
+                                                <img id="review-front-img" src="#" alt="Front ID" class="w-full h-24 sm:h-32 object-contain rounded hidden">
+                                                <div id="review-front-placeholder" class="w-full h-24 sm:h-32 flex items-center justify-center text-gray-400">
+                                                    <i class="fas fa-image text-3xl sm:text-4xl"></i>
                                                 </div>
                                             </div>
                                         </div>
                                         <!-- Back ID Review -->
                                         <div class="text-center">
-                                            <span class="text-sm font-medium text-gray-500 block mb-2">Back of ID</span>
+                                            <span class="text-xs sm:text-sm font-medium text-gray-500 block mb-2">Back of ID</span>
                                             <div class="border-2 border-gray-200 rounded-lg p-2 bg-gray-50">
-                                                <img id="review-back-img" src="#" alt="Back ID" class="w-full h-32 object-contain rounded hidden">
-                                                <div id="review-back-placeholder" class="w-full h-32 flex items-center justify-center text-gray-400">
-                                                    <i class="fas fa-image text-4xl"></i>
+                                                <img id="review-back-img" src="#" alt="Back ID" class="w-full h-24 sm:h-32 object-contain rounded hidden">
+                                                <div id="review-back-placeholder" class="w-full h-24 sm:h-32 flex items-center justify-center text-gray-400">
+                                                    <i class="fas fa-image text-3xl sm:text-4xl"></i>
                                                 </div>
                                             </div>
                                         </div>
                                         <!-- Selfie Review -->
                                         <div class="text-center">
-                                            <span class="text-sm font-medium text-gray-500 block mb-2">Selfie</span>
+                                            <span class="text-xs sm:text-sm font-medium text-gray-500 block mb-2">Selfie</span>
                                             <div class="border-2 border-gray-200 rounded-lg p-2 bg-gray-50">
-                                                <img id="review-selfie-img" src="#" alt="Selfie" class="w-full h-32 object-cover rounded hidden">
-                                                <div id="review-selfie-placeholder" class="w-full h-32 flex items-center justify-center text-gray-400">
-                                                    <i class="fas fa-user text-4xl"></i>
+                                                <img id="review-selfie-img" src="#" alt="Selfie" class="w-full h-24 sm:h-32 object-cover rounded hidden">
+                                                <div id="review-selfie-placeholder" class="w-full h-24 sm:h-32 flex items-center justify-center text-gray-400">
+                                                    <i class="fas fa-user text-3xl sm:text-4xl"></i>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="mt-4">
-                                        <span class="text-sm font-medium text-gray-500">ID Number:</span>
-                                        <p id="review-idnumber" class="text-gray-800 font-semibold text-lg">-</p>
+                                    <div class="mt-3 sm:mt-4">
+                                        <span class="text-xs sm:text-sm font-medium text-gray-500">ID Number:</span>
+                                        <p id="review-idnumber" class="text-gray-800 font-semibold text-base sm:text-lg">-</p>
                                     </div>
                                 </div>
 
                                 <!-- Terms Confirmation -->
-                                <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                                    <div class="flex items-start gap-3">
-                                        <i class="fas fa-check-circle text-blue-500 mt-1"></i>
+                                <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-3 sm:p-4">
+                                    <div class="flex items-start gap-2 sm:gap-3">
+                                        <i class="fas fa-check-circle text-blue-500 mt-0.5 sm:mt-1 text-sm sm:text-base"></i>
                                         <div>
-                                            <p class="text-sm font-semibold text-blue-800">Terms and Conditions</p>
-                                            <p id="review-terms-status" class="text-sm text-blue-700">Not accepted</p>
+                                            <p class="text-xs sm:text-sm font-semibold text-blue-800">Terms and Conditions</p>
+                                            <p id="review-terms-status" class="text-xs sm:text-sm text-blue-700">Not accepted</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1742,12 +1830,12 @@
 
                 if (!results.hasData) {
                     container.innerHTML = `
-                        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-3 sm:p-4">
+                            <div class="flex items-center gap-2 sm:gap-3">
+                                <i class="fas fa-exclamation-triangle text-red-500 text-base sm:text-xl"></i>
                                 <div>
-                                    <p class="font-semibold text-red-800">Verification Required</p>
-                                    <p class="text-sm text-red-600">Please complete ID verification in Tab 2 before proceeding.</p>
+                                    <p class="font-semibold text-red-800 text-sm sm:text-base">Verification Required</p>
+                                    <p class="text-xs sm:text-sm text-red-600">Please complete ID verification in Tab 2 before proceeding.</p>
                                 </div>
                             </div>
                         </div>
@@ -1758,7 +1846,7 @@
                 const { nameValidation, barangayValidation, davaoCityValidation } = results.validations;
 
                 container.innerHTML = `
-                    <div class="space-y-3">
+                    <div class="space-y-2 sm:space-y-3">
                         ${this.renderValidationItem('Name Verification', nameValidation)}
                         ${this.renderValidationItem('Barangay Verification', barangayValidation)}
                         ${this.renderValidationItem('Davao City Residency', davaoCityValidation)}
@@ -1780,9 +1868,9 @@
                 let detailsHtml = '';
                 if (validation.errors && validation.errors.length > 0) {
                     detailsHtml = `
-                        <ul class="mt-2 text-sm ${textColor} space-y-1">
-                            ${validation.errors.map(err => `<li class="flex items-start gap-2">
-                                <i class="fas fa-circle text-xs mt-1"></i>
+                        <ul class="mt-1 sm:mt-2 text-xs sm:text-sm ${textColor} space-y-1">
+                            ${validation.errors.map(err => `<li class="flex items-start gap-1.5 sm:gap-2">
+                                <i class="fas fa-circle text-[6px] sm:text-xs mt-1.5 sm:mt-1"></i>
                                 <span>${err}</span>
                             </li>`).join('')}
                         </ul>
@@ -1790,12 +1878,12 @@
                 }
 
                 return `
-                    <div class="${bgColor} border-2 ${borderColor} rounded-xl p-4">
-                        <div class="flex items-start gap-3">
-                            <i class="fas ${icon} ${iconColor} text-xl mt-0.5"></i>
-                            <div class="flex-1">
-                                <p class="font-semibold ${textColor}">${title}</p>
-                                <p class="text-sm ${textColor} mt-1">${validation.message}</p>
+                    <div class="${bgColor} border-2 ${borderColor} rounded-xl p-3 sm:p-4">
+                        <div class="flex items-start gap-2 sm:gap-3">
+                            <i class="fas ${icon} ${iconColor} text-base sm:text-xl mt-0.5"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold ${textColor} text-sm sm:text-base">${title}</p>
+                                <p class="text-xs sm:text-sm ${textColor} mt-0.5 sm:mt-1 break-words">${validation.message}</p>
                                 ${detailsHtml}
                             </div>
                         </div>
@@ -1838,17 +1926,19 @@
             // ═══════════════════════════════════════════════════════════════════════════
             // SYNC ID TYPE AND ID NUMBER FROM TAB 2 TO HIDDEN FORM FIELDS
             // ═══════════════════════════════════════════════════════════════════════════
-            // These fields are populated by the ID Analyzer API in Tab 2 (ID Verification Tab)
+            // ID Type is auto-detected by the OCR system in Tab 2 (ID Verification Tab)
             // We need to copy the values to the hidden form fields before submission
             // ═══════════════════════════════════════════════════════════════════════════
-            
+
             const idTypeDisplay = document.getElementById('idtype-display');
             const idTypeHidden = document.getElementById('document-type');
-            if (idTypeDisplay && idTypeHidden && idTypeDisplay.value) {
-                idTypeHidden.value = idTypeDisplay.value;
-                console.log('✅ Synced ID Type:', idTypeDisplay.value);
+            const idTypeHiddenAlt = document.getElementById('idtype-hidden');
+            if (idTypeDisplay && idTypeDisplay.value) {
+                if (idTypeHidden) idTypeHidden.value = idTypeDisplay.value;
+                if (idTypeHiddenAlt) idTypeHiddenAlt.value = idTypeDisplay.value;
+                console.log('✅ Synced Auto-detected ID Type:', idTypeDisplay.value);
             }
-            
+
             const idNumberField = document.getElementById('idnumber');
             if (idNumberField && idNumberField.value) {
                 console.log('✅ ID Number already populated:', idNumberField.value);
@@ -1950,12 +2040,12 @@
             }
 
             // ═══════════════════════════════════════════════════════════════════════════
-            // STEP 4: Validate ID Type Selection
+            // STEP 4: Validate ID Type (Auto-detected from ID verification)
             // ═══════════════════════════════════════════════════════════════════════════
 
-            const idTypeSelect = document.getElementById('idtype-display');
-            if (!idTypeSelect || !idTypeSelect.value) {
-                errors.push('ID Type must be selected');
+            const idTypeField = document.getElementById('idtype-display');
+            if (!idTypeField || !idTypeField.value) {
+                errors.push('ID Type could not be detected. Please complete ID verification first.');
             }
 
             // ═══════════════════════════════════════════════════════════════════════════
@@ -3676,14 +3766,7 @@
         
         // Start the upload flow
         startFlow() {
-            // Validate ID Type is selected before starting
-            const idTypeField = document.getElementById('idtype-display');
-            if (!idTypeField || !idTypeField.value) {
-                alert('Please select your ID Type before starting verification.');
-                idTypeField?.focus();
-                return;
-            }
-
+            // ID Type is now auto-detected - no manual selection required
             this.init();
             this.resetState();
             this.modals.front.show();
@@ -3748,29 +3831,25 @@
             // ID Type dropdown stays visible - don't hide it
             if (idNumberContainer) idNumberContainer.classList.add('hidden');
 
-            // Reset ID Type and ID Number fields (but keep dropdown functional)
+            // Reset ID Type and ID Number fields (auto-detected fields)
             const idTypeDisplay = document.getElementById('idtype-display');
-            const idTypeHidden = document.getElementById('document-type');
+            const idTypeHidden = document.getElementById('idtype-hidden');
+            const idTypeHiddenAlt = document.getElementById('document-type');
             const idNumberField = document.getElementById('idnumber');
-            const idTypeVerifiedBadge = document.getElementById('idtype-verified-badge');
-            const idTypeHelpText = document.getElementById('idtype-help-text');
+            const idTypeContainer = document.getElementById('idtype-container');
+            const idNumberContainer = document.getElementById('idnumber-container');
 
+            // Reset and hide ID Type field (will be shown after auto-detection)
             if (idTypeDisplay) {
                 idTypeDisplay.value = '';
-                // Reset dropdown styling
-                idTypeDisplay.classList.remove('border-green-300', 'bg-green-50');
-                idTypeDisplay.classList.add('border-gray-300', 'bg-white');
             }
             if (idTypeHidden) idTypeHidden.value = '';
+            if (idTypeHiddenAlt) idTypeHiddenAlt.value = '';
             if (idNumberField) idNumberField.value = '';
 
-            // Hide verified badge and reset help text
-            if (idTypeVerifiedBadge) idTypeVerifiedBadge.classList.add('hidden');
-            if (idTypeHelpText) {
-                idTypeHelpText.textContent = 'Please select your ID type before uploading';
-                idTypeHelpText.parentElement.classList.remove('text-gray-500');
-                idTypeHelpText.parentElement.classList.add('text-blue-600');
-            }
+            // Hide ID Type and ID Number containers until verification
+            if (idTypeContainer) idTypeContainer.classList.add('hidden');
+            if (idNumberContainer) idNumberContainer.classList.add('hidden');
 
             // Hide OCR status container
             const ocrStatusContainer = document.getElementById('ocr-status-container');
@@ -3847,7 +3926,13 @@
             document.getElementById('front-next-btn').disabled = true;
             document.getElementById('back-next-btn').disabled = true;
             document.getElementById('finish-upload-btn').disabled = true;
-            document.getElementById('capture-selfie-btn').classList.add('hidden');
+
+            // CRITICAL FIX: Reset capture button - both hidden AND disabled states
+            const captureSelfieBtn = document.getElementById('capture-selfie-btn');
+            if (captureSelfieBtn) {
+                captureSelfieBtn.classList.add('hidden');
+                captureSelfieBtn.disabled = false;  // Reset disabled state for retry
+            }
 
             // Reset file inputs to allow re-selection of the same file
             const frontFileInput = document.getElementById('modal-file-input-front');

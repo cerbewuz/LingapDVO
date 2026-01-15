@@ -739,8 +739,75 @@ function validateSuffixMatch(userSuffix, apiSuffix) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // BARANGAY VALIDATION FUNCTION
 // ═══════════════════════════════════════════════════════════════════════════════
-// Compares user-selected barangay with barangay found in ID address
-// Uses flexible matching with normalization for common variations
+// NEW IMPROVED LOGIC:
+// 1. Use the DAVAO_CITY_BARANGAYS list as reference to find the barangay in the OCR-extracted address
+// 2. Compare the found barangay with the user's selected barangay from the dropdown
+// This ensures precise barangay validation by searching for known barangays within the address
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Helper function to normalize barangay names for comparison
+function normalizeBarangayName(name) {
+    if (!name) return '';
+    return name.toUpperCase()
+        .replace(/^BRGY\.?\s*/i, '')           // Remove "Brgy." prefix
+        .replace(/^BARANGAY\s*/i, '')          // Remove "Barangay" prefix
+        .replace(/\(POB\.?\)/gi, '')           // Remove "(Pob.)" suffix
+        .replace(/PROPER$/i, '')               // Remove "Proper" suffix
+        .replace(/[().,\-]/g, ' ')             // Replace punctuation with spaces
+        .replace(/\s+/g, ' ')                  // Normalize multiple spaces
+        .trim();
+}
+
+// Extract barangay from address using DAVAO_CITY_BARANGAYS list as reference
+// Returns the first matching barangay found in the address, or null if none found
+function extractBarangayFromAddress(address) {
+    if (!address || address.trim() === '') return null;
+
+    const normalizedAddress = normalizeBarangayName(address);
+
+    console.log('🔍 Searching for barangay in address:', normalizedAddress);
+
+    // Sort barangays by length (longest first) to match more specific names first
+    // e.g., "Catalunan Grande" should be matched before "Catalunan"
+    const sortedBarangays = [...DAVAO_CITY_BARANGAYS].sort((a, b) => b.length - a.length);
+
+    for (const barangay of sortedBarangays) {
+        const normalizedBarangay = normalizeBarangayName(barangay);
+
+        // Strategy 1: Direct contains check
+        if (normalizedAddress.includes(normalizedBarangay)) {
+            console.log('✅ Found barangay via direct match:', barangay);
+            return barangay;
+        }
+
+        // Strategy 2: Word-by-word matching for compound barangay names
+        const barangayWords = normalizedBarangay.split(/\s+/).filter(w => w.length >= 3);
+        if (barangayWords.length > 1) {
+            // For compound names, check if ALL significant words appear in the address
+            const allWordsFound = barangayWords.every(word => normalizedAddress.includes(word));
+            if (allWordsFound) {
+                console.log('✅ Found barangay via compound word match:', barangay);
+                return barangay;
+            }
+        }
+
+        // Strategy 3: Check if the main word of the barangay (first word, min 4 chars) appears
+        // This handles abbreviated addresses like "MATINA" for "Matina Crossing"
+        const primaryWord = barangayWords.find(w => w.length >= 4);
+        if (primaryWord && normalizedAddress.includes(primaryWord)) {
+            // Verify the word appears as a distinct word (not part of another word)
+            const regex = new RegExp(`\\b${primaryWord}\\b`, 'i');
+            if (regex.test(normalizedAddress)) {
+                console.log('✅ Found barangay via primary word match:', barangay, '(matched:', primaryWord + ')');
+                return barangay;
+            }
+        }
+    }
+
+    console.log('⚠️ No barangay found in address using reference list');
+    return null;
+}
+
 function validateBarangayMatch(address1, userSelectedBarangay) {
     console.log('🏘️ Barangay Validation Input:', {
         address1: address1,
@@ -766,31 +833,86 @@ function validateBarangayMatch(address1, userSelectedBarangay) {
         };
     }
 
-    // Normalize function for barangay names - handles common variations
-    const normalizeBarangayName = (name) => {
-        if (!name) return '';
-        return name.toUpperCase()
-            .replace(/^BRGY\.?\s*/i, '')           // Remove "Brgy." prefix
-            .replace(/^BARANGAY\s*/i, '')          // Remove "Barangay" prefix
-            .replace(/\(POB\.?\)/gi, '')           // Remove "(Pob.)" suffix
-            .replace(/PROPER$/i, '')               // Remove "Proper" suffix
-            .replace(/[().,\-]/g, ' ')             // Replace punctuation with spaces
-            .replace(/\s+/g, ' ')                  // Normalize multiple spaces
-            .trim();
-    };
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // NEW LOGIC: Extract barangay from address using the DAVAO_CITY_BARANGAYS list
+    // Then compare with user's selection
+    // ═══════════════════════════════════════════════════════════════════════════════
 
-    const fullAddress = address1.toUpperCase().trim();
-    const normalizedAddress = normalizeBarangayName(fullAddress);
+    const extractedBarangay = extractBarangayFromAddress(address1);
     const normalizedUserBarangay = normalizeBarangayName(userSelectedBarangay);
 
-    console.log('🏘️ Normalized values:', {
-        normalizedAddress: normalizedAddress,
+    console.log('🏘️ Barangay extraction result:', {
+        extractedBarangay: extractedBarangay,
+        userSelectedBarangay: userSelectedBarangay,
         normalizedUserBarangay: normalizedUserBarangay
     });
 
-    // Strategy 1: Direct contains check (most common case)
+    // If we found a barangay in the address
+    if (extractedBarangay) {
+        const normalizedExtracted = normalizeBarangayName(extractedBarangay);
+
+        // Check if the extracted barangay matches the user's selection
+        if (normalizedExtracted === normalizedUserBarangay) {
+            console.log('✅ Barangay validation PASSED - exact match');
+            return {
+                valid: true,
+                message: `Barangay confirmed: ${userSelectedBarangay}`,
+                matchedBarangay: userSelectedBarangay,
+                extractedBarangay: extractedBarangay
+            };
+        }
+
+        // Check for partial matches (e.g., "Matina" vs "Matina Crossing")
+        // User selected barangay should contain or be contained by extracted
+        if (normalizedUserBarangay.includes(normalizedExtracted) ||
+            normalizedExtracted.includes(normalizedUserBarangay)) {
+            console.log('✅ Barangay validation PASSED - partial match');
+            return {
+                valid: true,
+                message: `Barangay confirmed: ${userSelectedBarangay}`,
+                matchedBarangay: userSelectedBarangay,
+                extractedBarangay: extractedBarangay
+            };
+        }
+
+        // Check word-level matches for compound barangay names
+        const extractedWords = normalizedExtracted.split(/\s+/).filter(w => w.length >= 3);
+        const userWords = normalizedUserBarangay.split(/\s+/).filter(w => w.length >= 3);
+
+        // If any significant word matches between extracted and user selection
+        const hasWordMatch = extractedWords.some(ew =>
+            userWords.some(uw => ew === uw || ew.includes(uw) || uw.includes(ew))
+        );
+
+        if (hasWordMatch) {
+            console.log('✅ Barangay validation PASSED - word-level match');
+            return {
+                valid: true,
+                message: `Barangay confirmed: ${userSelectedBarangay}`,
+                matchedBarangay: userSelectedBarangay,
+                extractedBarangay: extractedBarangay
+            };
+        }
+
+        // Barangay was found but doesn't match user's selection
+        console.log('❌ Barangay MISMATCH - ID shows different barangay');
+        return {
+            valid: false,
+            message: `Barangay mismatch: Your ID shows "${extractedBarangay}" but you selected "${userSelectedBarangay}". Please ensure your barangay selection matches your ID.`,
+            extractedBarangay: extractedBarangay
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // FALLBACK: If no barangay was found using the reference list,
+    // check if the user's selected barangay appears anywhere in the address
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const normalizedAddress = normalizeBarangayName(address1);
+
+    // Direct contains check
     if (normalizedAddress.includes(normalizedUserBarangay)) {
-        console.log('✅ Barangay found via direct contains match');
+        console.log('✅ Barangay found via fallback direct match');
         return {
             valid: true,
             message: `Barangay confirmed: ${userSelectedBarangay}`,
@@ -798,13 +920,12 @@ function validateBarangayMatch(address1, userSelectedBarangay) {
         };
     }
 
-    // Strategy 2: Word-by-word matching for compound barangay names
-    // Split the user's barangay into words and check if ALL words appear in address
-    const barangayWords = normalizedUserBarangay.split(/\s+/).filter(w => w.length >= 2);
+    // Word-by-word matching for compound barangay names
+    const barangayWords = normalizedUserBarangay.split(/\s+/).filter(w => w.length >= 3);
     if (barangayWords.length > 0) {
-        const allWordsFound = barangayWords.every(word => normalizedAddress.includes(word));
-        if (allWordsFound) {
-            console.log('✅ Barangay found via word-by-word match:', barangayWords);
+        const primaryWord = barangayWords.find(w => w.length >= 4) || barangayWords[0];
+        if (primaryWord && normalizedAddress.includes(primaryWord)) {
+            console.log('✅ Barangay found via fallback word match:', primaryWord);
             return {
                 valid: true,
                 message: `Barangay confirmed: ${userSelectedBarangay}`,
@@ -813,78 +934,14 @@ function validateBarangayMatch(address1, userSelectedBarangay) {
         }
     }
 
-    // Strategy 3: Check if the first significant word of barangay appears in address
-    // This handles cases like "Matina Crossing" where only "MATINA" appears in ID
-    const firstWord = barangayWords[0];
-    if (firstWord && firstWord.length >= 4 && normalizedAddress.includes(firstWord)) {
-        console.log('✅ Barangay found via primary word match:', firstWord);
-        return {
-            valid: true,
-            message: `Barangay confirmed: ${userSelectedBarangay}`,
-            matchedBarangay: userSelectedBarangay
-        };
-    }
-
-    // Strategy 4: Fuzzy matching - check if barangay is a substring or vice versa
-    // This handles abbreviated names on IDs
-    const addressWords = normalizedAddress.split(/\s+/).filter(w => w.length >= 3);
-    for (const addressWord of addressWords) {
-        // Check if user barangay contains this address word (or vice versa)
-        if (normalizedUserBarangay.includes(addressWord) || addressWord.includes(normalizedUserBarangay)) {
-            console.log('✅ Barangay found via fuzzy match:', addressWord);
-            return {
-                valid: true,
-                message: `Barangay confirmed: ${userSelectedBarangay}`,
-                matchedBarangay: userSelectedBarangay
-            };
-        }
-        // Check individual barangay words
-        for (const barangayWord of barangayWords) {
-            if (addressWord.includes(barangayWord) || barangayWord.includes(addressWord)) {
-                if (barangayWord.length >= 4 && addressWord.length >= 4) {
-                    console.log('✅ Barangay found via word fuzzy match:', { addressWord, barangayWord });
-                    return {
-                        valid: true,
-                        message: `Barangay confirmed: ${userSelectedBarangay}`,
-                        matchedBarangay: userSelectedBarangay
-                    };
-                }
-            }
-        }
-    }
-
-    // Strategy 5: Check against DAVAO_CITY_BARANGAYS list for common variations
-    // Find all possible barangay names in the address
-    const detectedBarangays = [];
-    for (const brgy of DAVAO_CITY_BARANGAYS) {
-        const normalizedBrgy = normalizeBarangayName(brgy);
-        if (normalizedAddress.includes(normalizedBrgy) || normalizedBrgy.includes(normalizedAddress.split(/\s+/)[0])) {
-            detectedBarangays.push(brgy);
-        }
-    }
-
-    // If the user's selected barangay is in the detected list, it's valid
-    if (detectedBarangays.length > 0) {
-        console.log('🏘️ Detected barangays in address:', detectedBarangays);
-        const normalizedDetected = detectedBarangays.map(b => normalizeBarangayName(b));
-        if (normalizedDetected.includes(normalizedUserBarangay)) {
-            console.log('✅ Barangay found via list comparison');
-            return {
-                valid: true,
-                message: `Barangay confirmed: ${userSelectedBarangay}`,
-                matchedBarangay: userSelectedBarangay
-            };
-        }
-    }
-
-    console.log('❌ Barangay validation failed - no match found');
+    // No match found at all
+    console.log('❌ Barangay validation failed - no barangay found in address');
     console.log('   User selected:', userSelectedBarangay);
     console.log('   ID Address:', address1);
-    console.log('   Detected barangays:', detectedBarangays);
 
     return {
         valid: false,
-        message: `Your ID address does not match the selected barangay "${userSelectedBarangay}". ID shows: "${address1}"`
+        message: `Could not verify barangay. Your ID address "${address1}" does not contain the selected barangay "${userSelectedBarangay}".`
     };
 }
 
@@ -1315,36 +1372,150 @@ window.submitVerification = async function() {
             VerificationState.verificationComplete = true;
             console.log('✅ All validations passed! Verification ACCEPTED');
 
-            // ID Type - User must select manually (auto-detection disabled)
+            // ═══════════════════════════════════════════════════════════════════════════
+            // AUTO-DETECT ID TYPE from API response
+            // Maps API document type/name to dropdown display values
+            // ═══════════════════════════════════════════════════════════════════════════
             const idTypeField = document.getElementById('idtype-display');
             const idTypeHidden = document.getElementById('document-type'); // Hidden form field for submission
             const idTypeVerifiedBadge = document.getElementById('idtype-verified-badge');
             const idTypeHelpText = document.getElementById('idtype-help-text');
 
-            // Keep the badge hidden - no auto-detection
-            if (idTypeVerifiedBadge) {
-                idTypeVerifiedBadge.classList.add('hidden');
-            }
-            
-            // Update help text to remind user to select ID type
-            if (idTypeHelpText) {
-                idTypeHelpText.textContent = 'Please select your ID type from the dropdown';
-                idTypeHelpText.parentElement.classList.remove('text-gray-500', 'text-green-600');
-                idTypeHelpText.parentElement.classList.add('text-blue-600');
+            // Auto-detect ID type from API response
+            const apiDocName = (result.data?.documentName || '').toUpperCase();
+            const apiDocType = (result.data?.documentType || '').toUpperCase();
+            let detectedDisplayIdType = null;
+
+            console.log('🔍 Auto-detecting ID Type from API:', { apiDocName, apiDocType });
+
+            // Detection logic based on API document name and type
+            // Maps to dropdown option values: "National ID", "Driver's License", "Unified Multipurpose ID"
+            // Note: SSS ID is a separate ID type from UMID - UMID is the Unified Multi-Purpose ID card
+
+            // ACCEPTED ID TYPES - Only these three provide complete address and information for eligibility
+            const ACCEPTED_ID_KEYWORDS = {
+                'National ID': ['NATIONAL', 'PHILSYS', 'PHIL-SYS', 'PHILIPPINE IDENTIFICATION', 'PSN', 'PHILID'],
+                "Driver's License": ['DRIVER', 'LICENSE', 'LTO'],
+                'Unified Multipurpose ID': ['UMID', 'UNIFIED MULTI', 'MULTI-PURPOSE', 'MULTIPURPOSE']
+            };
+
+            // UNSUPPORTED ID TYPES - These do not provide complete address information
+            const UNSUPPORTED_ID_KEYWORDS = [
+                'SSS', 'SOCIAL SECURITY', 'PHILHEALTH', 'PHIL HEALTH', 'HEALTH INSURANCE',
+                'SENIOR CITIZEN', 'SENIOR', 'PWD', 'PERSON WITH DISABILITY', 'DISABILITY',
+                'POSTAL', 'POST OFFICE', 'VOTER', 'VOTERS', 'COMELEC',
+                'PASSPORT', 'PRC', 'PROFESSIONAL', 'TIN', 'BIR',
+                'BARANGAY', 'BRGY', 'CEDULA', 'POLICE', 'NBI', 'CLEARANCE',
+                'STUDENT', 'SCHOOL', 'EMPLOYEE', 'COMPANY', 'OFFICE'
+            ];
+
+            // Check for accepted ID types first
+            for (const [idType, keywords] of Object.entries(ACCEPTED_ID_KEYWORDS)) {
+                if (keywords.some(keyword => apiDocName.includes(keyword))) {
+                    detectedDisplayIdType = idType;
+                    break;
+                }
             }
 
-            // Remove any auto-detected styling
-            if (idTypeField) {
-                idTypeField.classList.remove('border-green-300', 'bg-green-50');
-                idTypeField.classList.add('border-gray-300', 'bg-white');
+            // Special case: documentType 'I' without specific name defaults to National ID
+            if (!detectedDisplayIdType && apiDocType === 'I') {
+                detectedDisplayIdType = 'National ID';
+            }
+            // Special case: documentType 'D' defaults to Driver's License
+            if (!detectedDisplayIdType && apiDocType === 'D') {
+                detectedDisplayIdType = "Driver's License";
             }
 
-            // Add change event listener to sync dropdown with hidden field
-            if (idTypeField && idTypeHidden) {
-                idTypeField.addEventListener('change', function() {
-                    idTypeHidden.value = this.value;
-                    console.log('ID Type manually selected:', this.value);
-                });
+            // Check if unsupported ID type was uploaded
+            const isUnsupportedId = UNSUPPORTED_ID_KEYWORDS.some(keyword => apiDocName.includes(keyword));
+
+            if (isUnsupportedId && !detectedDisplayIdType) {
+                console.log('❌ Unsupported ID type detected:', apiDocName);
+                VerificationState.verificationInProgress = false;
+
+                // Show error modal explaining why only specific IDs are accepted
+                showFailureAnimation(
+                    'Unsupported ID Type',
+                    `<div class="text-left">
+                        <p class="mb-3">The ID you uploaded (<strong>${result.data?.documentName || 'Unknown'}</strong>) is not accepted for Lingap assistance verification.</p>
+
+                        <p class="mb-2 font-semibold">Only the following IDs are accepted:</p>
+                        <ul class="list-disc list-inside mb-3 text-sm">
+                            <li><strong>Philippine National ID (PhilSys)</strong></li>
+                            <li><strong>Driver's License (LTO)</strong></li>
+                            <li><strong>UMID (Unified Multi-Purpose ID)</strong></li>
+                        </ul>
+
+                        <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Why only these IDs?</strong><br>
+                            These government-issued IDs contain your <strong>complete residential address</strong> and other essential information that the Lingap system needs to verify your eligibility for assistance. Other IDs may not include the required address details.
+                        </p>
+                    </div>`
+                );
+
+                if (verifyButton) {
+                    verifyButton.disabled = false;
+                    verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Try Different ID';
+                }
+                return;
+            }
+
+            // Auto-populate ID type field (read-only input, not dropdown)
+            if (detectedDisplayIdType && idTypeField) {
+                idTypeField.value = detectedDisplayIdType;
+                console.log('✅ ID Type auto-detected:', detectedDisplayIdType);
+
+                // Sync to hidden fields for form submission
+                if (idTypeHidden) {
+                    idTypeHidden.value = detectedDisplayIdType;
+                }
+                const idTypeHiddenAlt = document.getElementById('idtype-hidden');
+                if (idTypeHiddenAlt) {
+                    idTypeHiddenAlt.value = detectedDisplayIdType;
+                }
+
+                // Show the ID Type container (it's hidden by default)
+                const idTypeContainer = document.getElementById('idtype-container');
+                if (idTypeContainer) {
+                    idTypeContainer.classList.remove('hidden');
+                }
+
+                // Update help text to show auto-detection
+                if (idTypeHelpText) {
+                    idTypeHelpText.textContent = 'ID type automatically detected from your document';
+                }
+            } else {
+                // Could not auto-detect - likely an unsupported or unrecognized ID
+                console.log('⚠️ Could not auto-detect ID type from:', apiDocName);
+                VerificationState.verificationInProgress = false;
+
+                // Show error modal explaining accepted IDs
+                showFailureAnimation(
+                    'Unable to Verify ID Type',
+                    `<div class="text-left">
+                        <p class="mb-3">We could not identify the type of ID you uploaded. The Lingap system only accepts specific government-issued IDs for verification.</p>
+
+                        <p class="mb-2 font-semibold">Please upload one of these accepted IDs:</p>
+                        <ul class="list-disc list-inside mb-3 text-sm">
+                            <li><strong>Philippine National ID (PhilSys)</strong></li>
+                            <li><strong>Driver's License (LTO)</strong></li>
+                            <li><strong>UMID (Unified Multi-Purpose ID)</strong></li>
+                        </ul>
+
+                        <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Why only these IDs?</strong><br>
+                            These government-issued IDs contain your <strong>complete residential address</strong> and other essential information that the Lingap system needs to verify your eligibility for assistance.
+                        </p>
+                    </div>`
+                );
+
+                if (verifyButton) {
+                    verifyButton.disabled = false;
+                    verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Try Different ID';
+                }
+                return;
             }
 
             // Auto-populate ID Number if API returns "accept"
@@ -5302,16 +5473,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Final check: If still no valid ID type, show error
             if (!idTypeToProcess || !ALLOWED_ID_TYPES.includes(idTypeToProcess)) {
-                let errorMessage = 'Unable to detect ID type from the uploaded image.\n\n';
-                errorMessage += 'Please ensure:\n';
-                errorMessage += '1. The image is clear and well-lit\n';
-                errorMessage += '2. All text on the ID is readable\n';
-                errorMessage += '3. The entire ID is visible in the image\n';
-                errorMessage += '4. You are using one of these ACCEPTED IDs ONLY:\n';
-                errorMessage += '   • Philippine National ID (PhilSys)\n';
-                errorMessage += '   • Driver\'s License (LTO)\n';
-                errorMessage += '   • UMID (Unified Multi-Purpose ID)\n';
-                errorMessage += '   ❌ NOT ACCEPTED: PhilHealth, Senior Citizen, PWD, Postal ID, etc.\n\n';
+                let errorMessage = 'Unable to verify ID type from the uploaded image.\n\n';
+                errorMessage += 'The Lingap system only accepts these government-issued IDs:\n\n';
+                errorMessage += '✓ Philippine National ID (PhilSys)\n';
+                errorMessage += '✓ Driver\'s License (LTO)\n';
+                errorMessage += '✓ UMID (Unified Multi-Purpose ID)\n\n';
+                errorMessage += '❌ NOT ACCEPTED: SSS ID, PhilHealth, Senior Citizen ID, PWD ID, Postal ID, Voter\'s ID, Barangay ID, etc.\n\n';
+                errorMessage += 'WHY ONLY THESE IDs?\n';
+                errorMessage += 'These IDs contain your complete residential address and other essential information that the Lingap system needs to verify your eligibility for assistance. Other IDs may not include the required address details.\n\n';
+                errorMessage += 'Please upload one of the accepted ID types.';
 
                 showVerificationErrorModal(errorMessage);
                 return;
@@ -10682,22 +10852,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="flex items-start">
                     <i class="fas fa-times-circle text-red-500 text-3xl mr-4"></i>
                     <div>
-                        <h3 class="text-lg font-bold text-red-700 mb-2">Invalid ID Type - Verification Blocked</h3>
-                        <p class="text-red-600 mb-3">The ID you uploaded is not accepted for verification.</p>
+                        <h3 class="text-lg font-bold text-red-700 mb-2">Unsupported ID Type</h3>
+                        <p class="text-red-600 mb-3">The ID you uploaded (<strong>${detectedType || 'Unknown'}</strong>) is not accepted for Lingap assistance verification.</p>
 
                         <div class="bg-white p-3 rounded-lg mb-3">
-                            <p class="text-sm mb-2"><strong>Detected ID:</strong> ${detectedType || 'Unknown/Unrecognized ID'}</p>
-                            <p class="text-sm"><strong>Accepted IDs:</strong></p>
-                            <ul class="list-disc list-inside text-sm mt-1 text-gray-700">
-                                <li>Philippine National ID (PhilSys)</li>
-                                <li>Driver's License</li>
-                                <li>UMID</li>
+                            <p class="text-sm font-semibold mb-2">Only the following IDs are accepted:</p>
+                            <ul class="list-disc list-inside text-sm text-gray-700">
+                                <li><strong>Philippine National ID (PhilSys)</strong></li>
+                                <li><strong>Driver's License (LTO)</strong></li>
+                                <li><strong>UMID (Unified Multi-Purpose ID)</strong></li>
                             </ul>
                         </div>
 
-                        <p class="text-gray-700 text-sm">
-                            Please upload one of the accepted ID types to proceed with verification.
-                        </p>
+                        <div class="bg-blue-50 p-3 rounded-lg text-sm text-gray-700">
+                            <p class="font-semibold mb-1"><i class="fas fa-info-circle mr-1 text-blue-500"></i> Why only these IDs?</p>
+                            <p>These government-issued IDs contain your <strong>complete residential address</strong> and other essential information that the Lingap system needs to verify your eligibility for assistance. Other IDs may not include the required address details.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -10709,7 +10879,7 @@ document.addEventListener('DOMContentLoaded', function () {
             resultBox.classList.remove('hidden');
         }
 
-        alert(`ID Not Accepted\n\nOnly these IDs can be used for verification:\n\n✓ Philippine National ID (PhilSys)\n✓ Driver's License (LTO)\n✓ UMID\n\nPlease upload one of the accepted ID types.`);
+        alert(`Unsupported ID Type\n\nThe Lingap system only accepts these IDs:\n\n✓ Philippine National ID (PhilSys)\n✓ Driver's License (LTO)\n✓ UMID (Unified Multi-Purpose ID)\n\nWhy? These IDs contain your complete residential address and other essential information needed to verify your eligibility for assistance.\n\nPlease upload one of the accepted ID types.`);
 
         clearUploadedFiles();
     }
