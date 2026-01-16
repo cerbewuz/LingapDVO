@@ -2097,68 +2097,80 @@
             }
 
             // Update table with applications
-            function updateTable(applications) {
-                if (!pastDataTableBody) return;
+        // Update table with applications
+        function updateTable(applications) {
+            if (!pastDataTableBody) return;
 
-                pastDataTableBody.innerHTML = '';
+            pastDataTableBody.innerHTML = '';
 
-                if (applications.length === 0) {
-                    pastDataTableBody.innerHTML = `
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 2rem;">
-                                <i class="fas fa-folder-open" style="font-size: 2rem; color: var(--secondary-color); margin-bottom: 1rem; display: block;"></i>
-                                <p style="color: var(--secondary-color); margin: 0;">No applications found in the selected date range.</p>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                applications.forEach(app => {
-                    const row = document.createElement('tr');
-
-                    // Determine status badge class
-                    let statusClass = 'status-pending';
-                    let statusDisplay = app.status;
-
-                    if (app.status === 'Retake') {
-                        statusClass = 'status-retake';
-                        statusDisplay = 'Retake';
-                    } else if (app.status === 'Approve') {
-                        statusClass = 'status-approved';
-                        statusDisplay = 'Approved';
-                    } else if (app.status === 'Processing') {
-                        statusClass = 'status-processing';
-                        statusDisplay = 'Processing';
-                    } else if (app.status === 'Unapproved' || app.status === 'Disapprove') {
-                        statusClass = 'status-unapproved';
-                        statusDisplay = 'Disapproved';
-                    } else if (app.status === 'Claimed') {
-                        statusClass = 'status-claimed';
-                        statusDisplay = 'Claimed';
-                    } else {
-                        statusDisplay = 'Pending';
-                    }
-
-                    row.innerHTML = `
-                        <td>${app.type}</td>
-                        <td>${app.name}</td>
-                        <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
-                        <td>${formatDate(new Date(app.submittedDate))}</td>
-                        <td>${app.processedDate ? formatDate(app.processedDate) : '-'}</td>
-                        <td>${app.resultDate ? formatDate(app.resultDate) : '-'}</td>
-                        <td>${app.claimedDate ? formatDate(app.claimedDate) : '-'}</td>
-                        <td>
-                            ${app.id ? `<a href="/HospitalAssistanceview/${app.id}" class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
-                                <i class="fas fa-eye"></i> View
-                            </a>` : ''}
+            if (applications.length === 0) {
+                pastDataTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-folder-open" style="font-size: 2rem; color: var(--secondary-color); margin-bottom: 1rem; display: block;"></i>
+                            <p style="color: var(--secondary-color); margin: 0;">No applications found in the selected date range.</p>
                         </td>
-                    `;
-
-                    pastDataTableBody.appendChild(row);
-                });
+                    </tr>
+                `;
+                return;
             }
 
+            applications.forEach(app => {
+                const row = document.createElement('tr');
+
+                // Determine status badge class
+                let statusClass = 'status-pending';
+                let statusDisplay = app.status;
+
+                if (app.status === 'Retake') {
+                    statusClass = 'status-retake';
+                    statusDisplay = 'Retake';
+                } else if (app.status === 'Approve') {
+                    statusClass = 'status-approved';
+                    statusDisplay = 'Approved';
+                } else if (app.status === 'Processing') {
+                    statusClass = 'status-processing';
+                    statusDisplay = 'Processing';
+                } else if (app.status === 'Unapproved' || app.status === 'Disapprove') {
+                    statusClass = 'status-unapproved';
+                    statusDisplay = 'Disapproved';
+                } else if (app.status === 'Claimed') {
+                    statusClass = 'status-claimed';
+                    statusDisplay = 'Claimed';
+                } else {
+                    statusDisplay = 'Pending';
+                }
+
+                // Determine the correct view URL based on application type
+                let viewUrl = '';
+                if (app.id) {
+                    if (app.type.includes('Hospital') || app.type === 'Hospital Assistance') {
+                        viewUrl = `/HospitalAssistanceview/${app.id}`;
+                    } else if (app.type.includes('Medical') || app.type === 'Medical Procedure') {
+                        viewUrl = `/OtherAssistanceView/${app.id}`;
+                    } else if (app.type.includes('Funeral') || app.type === 'Funeral Assistance') {
+                        viewUrl = `/FuneralAssistanceView/${app.id}`;
+                    }
+                }
+
+                row.innerHTML = `
+                    <td>${app.type}</td>
+                    <td>${app.name}</td>
+                    <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
+                    <td>${formatDate(new Date(app.submittedDate))}</td>
+                    <td>${app.processedDate ? formatDate(app.processedDate) : '-'}</td>
+                    <td>${app.resultDate ? formatDate(app.resultDate) : '-'}</td>
+                    <td>${app.claimedDate ? formatDate(app.claimedDate) : '-'}</td>
+                    <td>
+                        ${viewUrl ? `<a href="${viewUrl}" class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
+                            <i class="fas fa-eye"></i> View
+                        </a>` : ''}
+                    </td>
+                `;
+
+                pastDataTableBody.appendChild(row);
+            });
+        }
             // Format date for display
             function formatDate(date) {
                 return date.toLocaleDateString('en-US', {
