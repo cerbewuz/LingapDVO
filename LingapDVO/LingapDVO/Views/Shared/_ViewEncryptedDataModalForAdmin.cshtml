@@ -9,7 +9,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="viewAdditionalInfoModalLabel">
-                    <i class="bi bi-shield-lock-fill me-2"></i>Funeral Information (Encrypted)
+                    <i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -40,7 +40,7 @@
                         <i class="bi bi-info-circle-fill me-3 fs-4"></i>
                         <div>
                             <strong>Security Verification Required</strong><br>
-                            Please enter your password to view the decrypted Funeral Information.
+                            Please enter your password to view the decrypted Additional Information.
                         </div>
                     </div>
 
@@ -282,12 +282,6 @@
             $('#encryptedDataStep').show();
         });
 
-        // Button to go back from action buttons to password verification
-        $('#backToPasswordBtn').on('click', function() {
-            $('#actionButtonsStep').hide();
-            $('#passwordVerificationStep').show();
-        });
-
         // Handle password verification form submission
         $('#passwordVerificationForm').on('submit', function(e) {
             e.preventDefault();
@@ -377,6 +371,12 @@
                     'BurialCremationTime',
                     'BurialCremationType'
                 ];
+            } else if (formType === 'Other') {
+                // Get the field names from the encrypted fields data stored in the modal
+                const encryptedFieldsData = $('#viewAdditionalInfoModal').data('encryptedFields');
+                if (encryptedFieldsData && encryptedFieldsData.names) {
+                    fieldNames = encryptedFieldsData.names;
+                }
             }
 
             console.log('Starting decryption for', fieldNames.length, 'fields for form type:', formType);
@@ -426,6 +426,11 @@
                     decryptedData.forEach(function(field) {
                         window.decryptedFuneralData[field.name] = field.value;
                     });
+                } else if (formType === 'Other') {
+                    window.decryptedAdditionalData = {};
+                    decryptedData.forEach(function(field) {
+                        window.decryptedAdditionalData[field.name] = field.value;
+                    });
                 }
 
                 // Show action buttons, hide loading
@@ -446,8 +451,20 @@
             const formType = $('#viewAdditionalInfoModal').data('formType');
             console.log('Form type on modal close:', formType);
 
-            // Check if we have decrypted data
-            if (formType === 'Funeral' && window.decryptedFuneralData && Object.keys(window.decryptedFuneralData).length > 0) {
+            // Check if we have decrypted data for Other Assistance
+            if (formType === 'Other' && window.decryptedAdditionalData && Object.keys(window.decryptedAdditionalData).length > 0) {
+                console.log('Calling onAdditionalInfoDecrypted for Other Assistance');
+
+                // Call the page-specific callback function
+                if (typeof window.onAdditionalInfoDecrypted === 'function') {
+                    window.onAdditionalInfoDecrypted();
+                }
+
+                // Update button to "Hide Information" state
+                updateViewButton('Other', true);
+            }
+            // Check if we have decrypted data for Funeral
+            else if (formType === 'Funeral' && window.decryptedFuneralData && Object.keys(window.decryptedFuneralData).length > 0) {
                 console.log('Populating funeral info container with decrypted data');
 
                 // Start the loading animation for funeral info
@@ -573,6 +590,12 @@
             textId = 'hospitalBtnText';
             hideText = 'Hide Hospital Information';
             viewText = 'View Hospital Information';
+        } else if (formType === 'Other') {
+            buttonId = 'viewAdditionalInfoBtn';
+            iconId = 'additionalBtnIcon';
+            textId = 'additionalBtnText';
+            hideText = 'Hide Additional Information';
+            viewText = 'View Additional Information';
         }
 
         const button = document.getElementById(buttonId);

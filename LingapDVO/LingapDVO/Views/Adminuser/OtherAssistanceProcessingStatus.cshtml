@@ -8,6 +8,13 @@
 }
 
 <style>
+    .decrypted-field .info-label {
+        color: #bdc3c7 !important;
+    }
+
+        .decrypted-field .info-label i {
+            color: #ecf0f1 !important;
+        }
     .align-first-checkbox {
         margin-top: 0 !important;
     }
@@ -615,22 +622,131 @@
         color: #ff6f00;
     }
 
-    /* Additional Information Container */
+    /* Black/Grey Additional Information Container (Matching Hospital Assistance) */
     .additional-info-container {
         display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1rem;
-        border: 1px solid #dee2e6;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
     }
 
     .additional-info-visible {
         display: block;
     }
 
+    .decrypted-display {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .decrypted-header {
+        color: #ecf0f1;
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
+
+    .decrypted-field {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .decrypted-field:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+    .decrypted-value {
+        color: #ecf0f1;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .encrypted-display {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
+    /* Alert styling */
+    .alert-info {
+        background-color: #e7f3ff;
+        border-color: #b3d9ff;
+        color: #004085;
+    }
+
+        .alert-info i {
+            font-size: 1.25rem;
+            color: #0066cc;
+        }
+
     /* Additional Information Loading Container */
     .additional-loading-container {
+        display: none;
+        background-color: #2c3e50;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #34495e;
+        text-align: center;
+        color: white;
+    }
+
+        .additional-loading-container .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .additional-loading-container .progress-bar {
+            background-color: #3498db;
+        }
+
+    /* Valid ID Styles */
+    .valid-id-loading {
         display: none;
         background-color: #f8f9fa;
         border-radius: 8px;
@@ -638,6 +754,17 @@
         margin-top: 1rem;
         border: 1px solid #dee2e6;
         text-align: center;
+    }
+
+    .valid-id-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
     }
 
     /* Status Buttons Styling */
@@ -1029,11 +1156,22 @@
                 <h5 class="section-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
                     <button type="button" class="btn btn-sm btn-primary" id="viewAdditionalInfoBtn"
-                            onclick="openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields())"
-                            title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Additional Information
+                            onclick="toggleAdditionalInfo()"
+                            data-decrypted="false"
+                            title="Click to view encrypted additional information">
+                        <i class="bi bi-eye-fill me-2" id="additionalBtnIcon"></i><span id="additionalBtnText">View Additional Information</span>
                     </button>
                 </h5>
+
+                <!-- Alert shown when Additional Info is encrypted -->
+                <div class="alert alert-info d-flex align-items-center mb-3" id="additionalInfoAlert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <div>
+                        <strong>Additional Information is Encrypted</strong><br>
+                        For security and privacy, additional information is encrypted. Click the "View Additional Information" button above and enter your password to view it.
+                    </div>
+                </div>
+
                 <!-- Encrypted Additional Information Display (shown by default) -->
                 <div class="encrypted-info-section" id="additionalInfoEncrypted">
                     @if (ViewData["Typeassistance"]?.ToString() == "Medicine Assistance")
@@ -1043,19 +1181,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineName"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineQuantity"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineQuantityEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineCost"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineCostEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1063,13 +1201,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Prescribing Doctor:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["PrescribingDoctor"]</span>
+                                        <span class="encrypted-text">@ViewData["PrescribingDoctorEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Doctor Contact Detail:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DoctorContactDetail"]</span>
+                                        <span class="encrypted-text">@ViewData["DoctorContactDetailEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1082,19 +1220,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterName"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddressEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Test Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestName"]</span>
+                                        <span class="encrypted-text">@ViewData["TestNameEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1102,13 +1240,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Test Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestCost"]</span>
+                                        <span class="encrypted-text">@ViewData["TestCostEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Other Information:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestOtherInfo"]</span>
+                                        <span class="encrypted-text">@ViewData["TestOtherInfoEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1121,13 +1259,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityName"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddressEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1135,13 +1273,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Contact:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityContact"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityContactEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Type:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyType"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyTypeEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1154,19 +1292,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentName"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Brand:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentBrand"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentBrandEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Category:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCategory"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCategoryEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1174,13 +1312,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentQuantity"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentQuantityEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCost"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCostEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1203,9 +1341,201 @@
                 </div>
 
                 <!-- Additional Information Container (hidden by default, shown after successful decryption) -->
-                <div class="additional-info-container" id="additionalInfoContainer">
-                    <div class="row">
-                        <!-- Fields will be dynamically populated here based on assistance type -->
+                <div class="additional-info-container decrypted-display" id="additionalInfoContainer">
+                    <div class="decrypted-header mb-3">
+                        <i class="bi bi-unlock-fill me-2"></i>
+                        <strong>Decrypted Additional Information</strong>
+                    </div>
+                    <div class="row g-3" id="additionalInfoFields">
+                        @if (ViewData["Typeassistance"]?.ToString() == "Medicine Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-capsule me-1"></i>Medicine Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineName">
+                                        @ViewData["MedicineName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-123 me-1"></i>Medicine Quantity:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineQuantity">
+                                        @ViewData["MedicineQuantity"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Medicine Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineCost">
+                                        @ViewData["MedicineCost"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-person-badge me-1"></i>Prescribing Doctor:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="prescribingDoctor">
+                                        @ViewData["PrescribingDoctor"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-telephone me-1"></i>Doctor Contact Detail:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="doctorContact">
+                                        @ViewData["DoctorContactDetail"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Laboratory/X-ray/ECG/2D Echo Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-building me-1"></i>Laboratory Center Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="labCenterName">
+                                        @ViewData["LaboratoryCenterName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>Laboratory Center Address:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="labCenterAddress">
+                                        @ViewData["LaboratoryCenterAddress"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-clipboard-data me-1"></i>Test Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testName">
+                                        @ViewData["TestName"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Test Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testCost">
+                                        @ViewData["TestCost"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-info-circle me-1"></i>Test Other Info:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testOtherInfo">
+                                        @ViewData["TestOtherInfo"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Therapy/Rehabilitation Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-hospital me-1"></i>Therapy Facility Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityName">
+                                        @ViewData["TherapyFacilityName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>Therapy Facility Address:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityAddress">
+                                        @ViewData["TherapyFacilityAddress"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-telephone me-1"></i>Therapy Facility Contact:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityContact">
+                                        @ViewData["TherapyFacilityContact"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-heart-pulse me-1"></i>Therapy Type:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyType">
+                                        @ViewData["TherapyType"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Medical Equipment/Apparatus Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-tools me-1"></i>Equipment Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentName">
+                                        @ViewData["EquipmentName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-tag me-1"></i>Equipment Brand:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentBrand">
+                                        @ViewData["EquipmentBrand"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-grid-3x3 me-1"></i>Equipment Category:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentCategory">
+                                        @ViewData["EquipmentCategory"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-123 me-1"></i>Equipment Quantity:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentQuantity">
+                                        @ViewData["EquipmentQuantity"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Equipment Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentCost">
+                                        @ViewData["EquipmentCost"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No additional information available for this assistance type.
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -1296,7 +1626,7 @@
                             </button>
                         }
                     </h5>
-                    
+
                     <!-- Encrypted ID Display (shown by default) -->
                     <div class="encrypted-id-section" id="validIDEncrypted">
                         <div class="row g-3">
@@ -1752,7 +2082,7 @@
             // Conditional fields based on assistance type
             if (assistanceType === 'Medicine Assistance') {
                 fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
-                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
+                fieldLabels = ['Medicine Name', 'Medicine Quantity', 'Medicine Cost', 'Prescribing Doctor', 'Doctor Contact Detail'];
                 fieldValues = [
                     '@ViewData["MedicineName"]',
                     '@ViewData["MedicineQuantity"]',
@@ -1760,9 +2090,9 @@
                     '@ViewData["PrescribingDoctor"]',
                     '@ViewData["DoctorContactDetail"]'
                 ];
-            } else if (assistanceType === 'Laboratory') {
+            } else if (assistanceType === 'Laboratory/X-ray/ECG/2D Echo Assistance') {
                 fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
-                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
+                fieldLabels = ['Laboratory Center Name', 'Laboratory Center Address', 'Test Name', 'Test Cost', 'Test Other Info'];
                 fieldValues = [
                     '@ViewData["LaboratoryCenterName"]',
                     '@ViewData["LaboratoryCenterAddress"]',
@@ -1770,18 +2100,18 @@
                     '@ViewData["TestCost"]',
                     '@ViewData["TestOtherInfo"]'
                 ];
-            } else if (assistanceType === 'Therapy') {
+            } else if (assistanceType === 'Therapy/Rehabilitation Assistance') {
                 fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
-                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
+                fieldLabels = ['Therapy Facility Name', 'Therapy Facility Address', 'Therapy Facility Contact', 'Therapy Type'];
                 fieldValues = [
                     '@ViewData["TherapyFacilityName"]',
                     '@ViewData["TherapyFacilityAddress"]',
                     '@ViewData["TherapyFacilityContact"]',
                     '@ViewData["TherapyType"]'
                 ];
-            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+            } else if (assistanceType === 'Medical Equipment/Apparatus Assistance') {
                 fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
-                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
+                fieldLabels = ['Equipment Name', 'Equipment Brand', 'Equipment Category', 'Equipment Quantity', 'Equipment Cost'];
                 fieldValues = [
                     '@ViewData["EquipmentName"]',
                     '@ViewData["EquipmentBrand"]',
@@ -1798,20 +2128,61 @@
             };
         }
 
+        // Toggle function for Additional Information (View/Hide)
+        function toggleAdditionalInfo() {
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                // Currently showing decrypted data, hide it
+                hideAdditionalInfo();
+            } else {
+                // Currently hidden, show the decrypt modal
+                openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields());
+            }
+        }
+
         // Function to hide additional information
         function hideAdditionalInfo() {
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
             const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const btnIcon = document.getElementById('additionalBtnIcon');
+            const btnText = document.getElementById('additionalBtnText');
 
+            // Hide decrypted data container
             if (additionalInfoContainer) {
                 additionalInfoContainer.classList.remove('additional-info-visible');
                 additionalInfoContainer.style.display = 'none';
             }
 
-            // Show the button again when hiding the info
-            if (viewButton) {
-                viewButton.style.display = 'inline-block';
+            // Show encrypted data display
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'block';
             }
+
+            // Show alert
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'flex';
+            }
+
+            // Update button to "View" state
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Additional Information';
+            }
+
+            // Clear decrypted data
+            window.decryptedAdditionalData = {};
         }
 
         // Function to show additional information after successful decryption
@@ -1824,17 +2195,23 @@
                 loadingContainer.style.display = 'none';
             }
 
-            // Hide the "View Additional Information" button
-            const viewButton = document.getElementById('viewAdditionalInfoBtn');
-            if (viewButton) {
-                viewButton.style.display = 'none';
+            // Hide the encrypted display section
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'none';
             }
 
-            // Show the additional information container
+            // Hide the alert
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'none';
+            }
+
+            // Show the additional information container (decrypted)
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
             if (additionalInfoContainer) {
                 additionalInfoContainer.style.display = 'block';
-                additionalInfoContainer.classList.add('additional-info-visible');
+                additionalInfoContainer.classList.add('additional-info-visible', 'decrypted-display');
 
                 // Populate the fields based on assistance type
                 populateAdditionalInfoFields();
@@ -1844,12 +2221,30 @@
                     additionalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             }
+
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const btnIcon = document.getElementById('additionalBtnIcon');
+            const btnText = document.getElementById('additionalBtnText');
+
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Additional Information';
+            }
         }
 
         // Function to populate additional information fields
         function populateAdditionalInfoFields() {
             const assistanceType = '@ViewData["Typeassistance"]';
-            const container = document.getElementById('additionalInfoContainer');
+            const container = document.getElementById('additionalInfoFields');
 
             if (!container) return;
 
@@ -1858,120 +2253,208 @@
             if (assistanceType === 'Medicine Assistance') {
                 htmlContent = `
                     <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Medicine Name:</div>
-                            <div class="info-value" id="medicineName">@ViewData["MedicineName"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-capsule me-1"></i>Medicine Name:
+                            </div>
+                            <div class="info-value decrypted-value" id="medicineName">
+                                @ViewData["MedicineName"]
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <div class="info-label">Quantity:</div>
-                            <div class="info-value" id="medicineQuantity">@ViewData["MedicineQuantity"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-123 me-1"></i>Medicine Quantity:
+                            </div>
+                            <div class="info-value decrypted-value" id="medicineQuantity">
+                                @ViewData["MedicineQuantity"]
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <div class="info-label">Cost:</div>
-                            <div class="info-value" id="medicineCost">@ViewData["MedicineCost"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Prescribing Doctor:</div>
-                            <div class="info-value" id="prescribingDoctor">@ViewData["PrescribingDoctor"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Doctor Contact:</div>
-                            <div class="info-value" id="doctorContact">@ViewData["DoctorContactDetail"]</div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Laboratory') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Laboratory Center Name:</div>
-                            <div class="info-value" id="labCenterName">@ViewData["LaboratoryCenterName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Center Address:</div>
-                            <div class="info-value" id="labCenterAddress">@ViewData["LaboratoryCenterAddress"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Test Name:</div>
-                            <div class="info-value" id="testName">@ViewData["TestName"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-cash-stack me-1"></i>Medicine Cost:
+                            </div>
+                            <div class="info-value decrypted-value" id="medicineCost">
+                                @ViewData["MedicineCost"]
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Test Cost:</div>
-                            <div class="info-value" id="testCost">@ViewData["TestCost"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-person-badge me-1"></i>Prescribing Doctor:
+                            </div>
+                            <div class="info-value decrypted-value" id="prescribingDoctor">
+                                @ViewData["PrescribingDoctor"]
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <div class="info-label">Other Information:</div>
-                            <div class="info-value" id="testOtherInfo">@ViewData["TestOtherInfo"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-telephone me-1"></i>Doctor Contact Detail:
+                            </div>
+                            <div class="info-value decrypted-value" id="doctorContact">
+                                @ViewData["DoctorContactDetail"]
+                            </div>
                         </div>
                     </div>
                 `;
-            } else if (assistanceType === 'Therapy') {
+            } else if (assistanceType === 'Laboratory/X-ray/ECG/2D Echo Assistance') {
                 htmlContent = `
                     <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Therapy Facility Name:</div>
-                            <div class="info-value" id="therapyFacilityName">@ViewData["TherapyFacilityName"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-building me-1"></i>Laboratory Center Name:
+                            </div>
+                            <div class="info-value decrypted-value" id="labCenterName">
+                                @ViewData["LaboratoryCenterName"]
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <div class="info-label">Facility Address:</div>
-                            <div class="info-value" id="therapyFacilityAddress">@ViewData["TherapyFacilityAddress"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-geo-alt-fill me-1"></i>Laboratory Center Address:
+                            </div>
+                            <div class="info-value decrypted-value" id="labCenterAddress">
+                                @ViewData["LaboratoryCenterAddress"]
+                            </div>
+                        </div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-clipboard-data me-1"></i>Test Name:
+                            </div>
+                            <div class="info-value decrypted-value" id="testName">
+                                @ViewData["TestName"]
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Facility Contact:</div>
-                            <div class="info-value" id="therapyFacilityContact">@ViewData["TherapyFacilityContact"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-cash-stack me-1"></i>Test Cost:
+                            </div>
+                            <div class="info-value decrypted-value" id="testCost">
+                                @ViewData["TestCost"]
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <div class="info-label">Therapy Type:</div>
-                            <div class="info-value" id="therapyType">@ViewData["TherapyType"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-info-circle me-1"></i>Test Other Info:
+                            </div>
+                            <div class="info-value decrypted-value" id="testOtherInfo">
+                                @ViewData["TestOtherInfo"]
+                            </div>
                         </div>
                     </div>
                 `;
-            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+            } else if (assistanceType === 'Therapy/Rehabilitation Assistance') {
                 htmlContent = `
                     <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Equipment Name:</div>
-                            <div class="info-value" id="equipmentName">@ViewData["EquipmentName"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-hospital me-1"></i>Therapy Facility Name:
+                            </div>
+                            <div class="info-value decrypted-value" id="therapyFacilityName">
+                                @ViewData["TherapyFacilityName"]
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <div class="info-label">Brand:</div>
-                            <div class="info-value" id="equipmentBrand">@ViewData["EquipmentBrand"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Category:</div>
-                            <div class="info-value" id="equipmentCategory">@ViewData["EquipmentCategory"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-geo-alt-fill me-1"></i>Therapy Facility Address:
+                            </div>
+                            <div class="info-value decrypted-value" id="therapyFacilityAddress">
+                                @ViewData["TherapyFacilityAddress"]
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Quantity:</div>
-                            <div class="info-value" id="equipmentQuantity">@ViewData["EquipmentQuantity"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-telephone me-1"></i>Therapy Facility Contact:
+                            </div>
+                            <div class="info-value decrypted-value" id="therapyFacilityContact">
+                                @ViewData["TherapyFacilityContact"]
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <div class="info-label">Cost:</div>
-                            <div class="info-value" id="equipmentCost">@ViewData["EquipmentCost"]</div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-heart-pulse me-1"></i>Therapy Type:
+                            </div>
+                            <div class="info-value decrypted-value" id="therapyType">
+                                @ViewData["TherapyType"]
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (assistanceType === 'Medical Equipment/Apparatus Assistance') {
+                htmlContent = `
+                    <div class="col-md-6">
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-tools me-1"></i>Equipment Name:
+                            </div>
+                            <div class="info-value decrypted-value" id="equipmentName">
+                                @ViewData["EquipmentName"]
+                            </div>
+                        </div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-tag me-1"></i>Equipment Brand:
+                            </div>
+                            <div class="info-value decrypted-value" id="equipmentBrand">
+                                @ViewData["EquipmentBrand"]
+                            </div>
+                        </div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-grid-3x3 me-1"></i>Equipment Category:
+                            </div>
+                            <div class="info-value decrypted-value" id="equipmentCategory">
+                                @ViewData["EquipmentCategory"]
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-123 me-1"></i>Equipment Quantity:
+                            </div>
+                            <div class="info-value decrypted-value" id="equipmentQuantity">
+                                @ViewData["EquipmentQuantity"]
+                            </div>
+                        </div>
+                        <div class="decrypted-field mb-3">
+                            <div class="info-label">
+                                <i class="bi bi-cash-stack me-1"></i>Equipment Cost:
+                            </div>
+                            <div class="info-value decrypted-value" id="equipmentCost">
+                                @ViewData["EquipmentCost"]
+                            </div>
                         </div>
                     </div>
                 `;
             }
 
-            container.querySelector('.row').innerHTML = htmlContent;
+            container.innerHTML = htmlContent;
         }
 
         // Function to start the 5-second loading animation
         function startAdditionalInfoLoading() {
             console.log('Starting additional information loading...');
 
+            // Hide alert
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'none';
+            }
+
             // Show loading container
             const loadingContainer = document.getElementById('additionalLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'block';
+            }
+
+            // Hide encrypted display
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'none';
             }
 
             // Hide any existing additional info container
@@ -2005,6 +2488,59 @@
                 }, interval);
             }
         }
+
+        // IMPORTANT: This function is called from the shared modal after successful decryption
+        window.onAdditionalInfoDecrypted = function() {
+            startAdditionalInfoLoading();
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize button state
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+            }
+
+            // Initialize Others checkbox visibility
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const othersRow = document.getElementById('cmoOthersRow');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+
+            if (othersCheckbox && othersRow && cmoNotesInput) {
+                if (othersCheckbox.checked) {
+                    othersRow.style.display = 'flex';
+                    cmoNotesInput.required = true;
+                } else {
+                    othersRow.style.display = 'none';
+                    cmoNotesInput.required = false;
+                    cmoNotesInput.classList.remove('is-invalid');
+                }
+            }
+
+            // Add change event listener to Others checkbox
+            if (othersCheckbox) {
+                othersCheckbox.addEventListener('change', function() {
+                    if (othersCheckbox.checked) {
+                        othersRow.style.display = 'flex';
+                        cmoNotesInput.required = true;
+                    } else {
+                        othersRow.style.display = 'none';
+                        cmoNotesInput.required = false;
+                        cmoNotesInput.classList.remove('is-invalid');
+                    }
+                });
+            }
+
+            // Make sure the encrypted section is visible by default
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
+
+            if (additionalInfoEncrypted) additionalInfoEncrypted.style.display = 'block';
+            if (additionalInfoContainer) additionalInfoContainer.style.display = 'none';
+            if (additionalInfoAlert) additionalInfoAlert.style.display = 'flex';
+        });
 
         // Form Validation Function
         function validateCMOForm() {
@@ -2639,6 +3175,157 @@
 
                 return true;
             };
+        });
+
+        // Function to toggle Valid ID view (similar to Additional Information)
+        function toggleValidID(frontImagePath, backImagePath) {
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                // Currently showing decrypted data, hide it
+                hideValidID();
+            } else {
+                // Currently hidden, show the decrypt modal for ID
+                openViewIDModal('@ViewData["Id"]', frontImagePath, backImagePath);
+            }
+        }
+
+        // Function to hide Valid ID
+        function hideValidID() {
+            const validIDContainer = document.getElementById('validIDContainer');
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const btnIcon = document.getElementById('validIDBtnIcon');
+            const btnText = document.getElementById('validIDBtnText');
+
+            // Hide decrypted ID container
+            if (validIDContainer) {
+                validIDContainer.style.display = 'none';
+            }
+
+            // Show encrypted ID display
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'block';
+            }
+
+            // Update button to "View" state
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Valid ID';
+            }
+        }
+
+        // Function to show Valid ID after successful decryption
+        window.onValidIDDecrypted = function(frontImageData, backImageData) {
+            console.log('Showing Valid ID after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('validIDLoading');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the encrypted display section
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'none';
+            }
+
+            // Show the Valid ID container (decrypted)
+            const validIDContainer = document.getElementById('validIDContainer');
+            const frontImage = document.getElementById('decryptedFrontIDInline');
+            const backImage = document.getElementById('decryptedBackIDInline');
+            const frontContainer = document.getElementById('frontIDInlineContainer');
+            const backContainer = document.getElementById('backIDInlineContainer');
+
+            if (validIDContainer && frontImage && backImage && frontContainer && backContainer) {
+                // Set the image sources
+                if (frontImageData) {
+                    frontImage.src = 'data:image/jpeg;base64,' + frontImageData;
+                    frontImage.style.display = 'block';
+                    frontContainer.style.display = 'block';
+                } else {
+                    frontContainer.style.display = 'none';
+                }
+
+                if (backImageData) {
+                    backImage.src = 'data:image/jpeg;base64,' + backImageData;
+                    backImage.style.display = 'block';
+                    backContainer.style.display = 'block';
+                } else {
+                    backContainer.style.display = 'none';
+                }
+
+                // Show the container
+                validIDContainer.style.display = 'block';
+                validIDContainer.classList.add('valid-id-container');
+
+                // Scroll to the Valid ID section
+                setTimeout(() => {
+                    validIDContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const btnIcon = document.getElementById('validIDBtnIcon');
+            const btnText = document.getElementById('validIDBtnText');
+
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Valid ID';
+            }
+        };
+
+        // Function to show loading for Valid ID
+        function startValidIDLoading() {
+            console.log('Starting Valid ID loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('validIDLoading');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide encrypted display
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'none';
+            }
+
+            // Hide any existing Valid ID container
+            const validIDContainer = document.getElementById('validIDContainer');
+            if (validIDContainer) {
+                validIDContainer.style.display = 'none';
+            }
+        }
+
+        // Make sure the encrypted ID section is visible by default
+        document.addEventListener('DOMContentLoaded', function() {
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            const validIDContainer = document.getElementById('validIDContainer');
+            const validIDLoading = document.getElementById('validIDLoading');
+
+            if (validIDEncrypted) validIDEncrypted.style.display = 'block';
+            if (validIDContainer) validIDContainer.style.display = 'none';
+            if (validIDLoading) validIDLoading.style.display = 'none';
         });
     </script>
 
