@@ -3945,10 +3945,22 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = FuneralAssistance.Comments;
 
             // ============================================
-            // ADD DECRYPTION FOR THESE 10 FIELDS ONLY
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES FOR THE 10 FIELDS
             // ============================================
 
-            // Use your existing DecryptFile logic to decrypt text fields
+            // Store ENCRYPTED values (for initial display in grey/black boxes or for admin verification)
+            ViewData["DeceasedPersonNameEncrypted"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceasedEncrypted"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeathEncrypted"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeathEncrypted"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeathEncrypted"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeNameEncrypted"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddressEncrypted"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDateEncrypted"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTimeEncrypted"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationTypeEncrypted"] = FuneralAssistance.BurialCremationType;
+
+            // Store DECRYPTED values (for display after password verification)
             ViewData["DeceasedPersonName"] = DecryptFieldText(FuneralAssistance.DeceasedPersonName);
             ViewData["RelationshipToDeceased"] = DecryptFieldText(FuneralAssistance.RelationshipToDeceased);
             ViewData["DateOfDeath"] = DecryptFieldText(FuneralAssistance.DateOfDeath);
