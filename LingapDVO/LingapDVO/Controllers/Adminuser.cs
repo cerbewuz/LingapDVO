@@ -1218,7 +1218,7 @@ namespace LingapDVO.Controllers
                     {
                         byte[] decryptedFront = DecryptFile(frontPath);
                         ViewData["ValidfrontimageBase64"] = Convert.ToBase64String(decryptedFront);
-                        debugMessages.Add("? Front ID decrypted");
+                        debugMessages.Add("✓ Front ID decrypted");
                     }
                 }
 
@@ -1230,17 +1230,17 @@ namespace LingapDVO.Controllers
                     {
                         byte[] decryptedBack = DecryptFile(backPath);
                         ViewData["ValidBackimageBase64"] = Convert.ToBase64String(decryptedBack);
-                        debugMessages.Add("? Back ID decrypted");
+                        debugMessages.Add("✓ Back ID decrypted");
                     }
                 }
 
-                // ? DOCTOR PRESCRIPTION - UPDATED
+                // ✅ DOCTOR PRESCRIPTION - UPDATED
                 if (!string.IsNullOrEmpty(HospitalAssistance.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, HospitalAssistance.DoctorPrescription);
-                    debugMessages.Add($"?? Doctor Prescription filename: {HospitalAssistance.DoctorPrescription}");
-                    debugMessages.Add($"?? Full path: {prescPath}");
-                    debugMessages.Add($"?? File exists: {System.IO.File.Exists(prescPath)}");
+                    debugMessages.Add($"🔍 Doctor Prescription filename: {HospitalAssistance.DoctorPrescription}");
+                    debugMessages.Add($"📁 Full path: {prescPath}");
+                    debugMessages.Add($"📄 File exists: {System.IO.File.Exists(prescPath)}");
 
                     if (System.IO.File.Exists(prescPath))
                     {
@@ -1254,32 +1254,32 @@ namespace LingapDVO.Controllers
                             bool isPdf = IsPdfFile(decryptedPresc);
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
-                            debugMessages.Add($"? Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
-                            debugMessages.Add($"?? IsDoctorPrescriptionPdf = {isPdf}");
-                            debugMessages.Add($"?? PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"✓ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"📋 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"? Doctor Prescription decryption failed: {ex.Message}");
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("? Doctor Prescription file NOT FOUND");
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("?? No Doctor Prescription in database");
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ? DEATH CERTIFICATE - UPDATED
+                // ✅ DEATH CERTIFICATE - UPDATED
                 if (!string.IsNullOrEmpty(HospitalAssistance.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, HospitalAssistance.DeathCertificate);
-                    debugMessages.Add($"?? Death Certificate filename: {HospitalAssistance.DeathCertificate}");
-                    debugMessages.Add($"?? Full path: {deathPath}");
-                    debugMessages.Add($"?? File exists: {System.IO.File.Exists(deathPath)}");
+                    debugMessages.Add($"🔍 Death Certificate filename: {HospitalAssistance.DeathCertificate}");
+                    debugMessages.Add($"📁 Full path: {deathPath}");
+                    debugMessages.Add($"📄 File exists: {System.IO.File.Exists(deathPath)}");
 
                     if (System.IO.File.Exists(deathPath))
                     {
@@ -1293,28 +1293,28 @@ namespace LingapDVO.Controllers
                             bool isPdf = IsPdfFile(decryptedDeath);
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
-                            debugMessages.Add($"? Death Certificate decrypted - {decryptedDeath.Length} bytes");
-                            debugMessages.Add($"?? IsDeathCertificatePdf = {isPdf}");
-                            debugMessages.Add($"?? PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"✓ Death Certificate decrypted - {decryptedDeath.Length} bytes");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"📋 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"? Death Certificate decryption failed: {ex.Message}");
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("? Death Certificate file NOT FOUND");
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("?? No Death Certificate in database");
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
                 }
             }
             catch (Exception ex)
             {
-                debugMessages.Add($"? GENERAL ERROR: {ex.Message}");
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
                 ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
             }
 
@@ -1324,10 +1324,18 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = HospitalAssistance.Comments;
 
             // ============================================
-            // ADD DECRYPTION FOR THESE 7 FIELDS ONLY
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES
             // ============================================
+            // Store ENCRYPTED values (for initial display in grey/black boxes)
+            ViewData["HospitalFacilityNameEncrypted"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddressEncrypted"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalConditionEncrypted"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCostEncrypted"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDateEncrypted"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDateEncrypted"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomTypeEncrypted"] = HospitalAssistance.WardRoomType;
 
-            // Use your existing DecryptFile logic to decrypt text fields
+            // Store DECRYPTED values (for display after password verification)
             ViewData["HospitalFacilityName"] = DecryptFieldText(HospitalAssistance.HospitalFacilityName);
             ViewData["HospitalFacilityAddress"] = DecryptFieldText(HospitalAssistance.HospitalFacilityAddress);
             ViewData["DiagnosisMedicalCondition"] = DecryptFieldText(HospitalAssistance.DiagnosisMedicalCondition);
