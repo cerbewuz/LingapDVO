@@ -36,25 +36,45 @@
         padding: 1rem !important;
     }
 
-    /* Application Tracking Timeline Styles */
-    .tracking-container {
+    /* Main container for two-column layout */
+    .application-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .application-details {
+        flex: 1;
+        min-width: 300px;
         background: white;
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
         overflow: hidden;
         border: 2px solid #f1f5f9;
-        transition: all 0.3s ease;
-        position: relative;
     }
 
-        .tracking-container:hover {
+    .application-tracking {
+        width: 400px;
+        min-width: 350px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 2px solid #f1f5f9;
+        height: fit-content;
+        position: sticky;
+        top: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .application-tracking:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(67, 97, 238, 0.15);
             border-color: #67AFEB;
         }
 
-        .tracking-container::before {
+        .application-tracking::before {
             content: '';
             position: absolute;
             top: 0;
@@ -66,7 +86,7 @@
 
     .tracking-header {
         background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-        padding: 1.5rem 1.75rem;
+        padding: 1.25rem 1.5rem;
         border-bottom: 2px solid #e2e8f0;
     }
 
@@ -84,22 +104,46 @@
         font-size: 0.85rem;
         color: #6c757d;
         margin-top: 0.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
 
     .tracking-body {
-        padding: 1.5rem;
+        padding: 1.25rem;
+        max-height: 600px;
+        overflow-y: auto;
     }
 
-    /* REVERSED TIMELINE STYLES - Latest first */
+        /* Scrollbar styling */
+        .tracking-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .tracking-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .tracking-body::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+            .tracking-body::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+
+    /* Standard timeline for vertical display */
     .timeline {
         position: relative;
-        padding-right: 2rem;
+        padding-left: 2rem;
     }
 
         .timeline::before {
             content: '';
             position: absolute;
-            right: 16px;
+            left: 16px;
             top: 0;
             bottom: 0;
             width: 2px;
@@ -108,10 +152,7 @@
 
     .timeline-item {
         position: relative;
-        margin-bottom: 1.25rem;
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
+        margin-bottom: 1.5rem;
     }
 
         .timeline-item:last-child {
@@ -120,7 +161,7 @@
 
     .timeline-marker {
         position: absolute;
-        right: -2rem;
+        left: -2rem;
         top: 0;
         width: 32px;
         height: 32px;
@@ -132,6 +173,7 @@
         font-size: 0.8rem;
         z-index: 1;
         border: 3px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .timeline-content {
@@ -139,7 +181,7 @@
         border-radius: 8px;
         padding: 1rem;
         border: 1px solid #f1f5f9;
-        width: calc(100% - 40px);
+        margin-left: 0.5rem;
     }
 
         .timeline-content h6 {
@@ -238,7 +280,27 @@
         border: 1px solid #bee5eb;
     }
 
-    /* Existing styles for other elements */
+    /* Application ID Display */
+    .application-id {
+        font-family: 'Courier New', monospace;
+        background-color: #f8f9fa;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        font-size: 0.85rem;
+    }
+
+    .date-info {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Existing styles for other elements (keep from original) */
     .zoom-modal {
         display: none;
         position: fixed;
@@ -741,15 +803,26 @@
             color: #16496B;
         }
 
-    /* Application ID Display */
-    .application-id {
-        font-family: 'Courier New', monospace;
-        background-color: #f8f9fa;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        border: 1px solid #dee2e6;
-        display: inline-block;
-        margin-bottom: 1rem;
+    /* Responsive adjustments */
+    @@media (max-width: 992px) {
+        .application-container {
+            flex-direction: column;
+        }
+
+        .application-tracking {
+            width: 100%;
+            min-width: auto;
+            position: static;
+            order: -1; /* Show tracking first on mobile */
+        }
+
+        .timeline {
+            padding-left: 1.5rem;
+        }
+
+        .timeline-marker {
+            left: -1.75rem;
+        }
     }
 </style>
 
@@ -855,289 +928,91 @@
     </div>
 </div>
 
-<div class="container" style="margin-top: 1rem; max-width: 1200px;">
-    <!-- Application Tracking Section -->
-    <div class="tracking-container">
-        <div class="tracking-header">
-            <h5>
-                <i class="fas fa-file-medical"></i>Application Tracking
-                @{
-                    var currentStatusBadge = "";
-                    if (status2 == "Approve")
-                    {
-                        if (status3 == "Claimed")
-                        {
-                            currentStatusBadge = "status-claimed-badge";
-                        }
-                        else
-                        {
-                            currentStatusBadge = "status-approved-badge";
-                        }
-                    }
-                    else if (status2 == "Disapprove" || status2 == "Unapproved")
-                    {
-                        currentStatusBadge = "status-disapproved-badge";
-                    }
-                    else if (status2 == "Retake")
-                    {
-                        currentStatusBadge = "status-retake-badge";
-                    }
-                    else
-                    {
-                        currentStatusBadge = "status-pending-badge";
-                    }
-                }
-                <span class="current-status-badge @currentStatusBadge">
-                    @if (status2 == "Approve" && status3 == "Claimed")
-                    {
-                        <text>CLAIMED</text>
-                    }
-                    else if (!string.IsNullOrEmpty(status2))
-                    {
-                        <text>@status2.ToUpper()</text>
-                    }
-                    else
-                    {
-                        <text>PENDING</text>
-                    }
-                </span>
-            </h5>
-            <div class="tracking-date">
-                <i class="fas fa-hashtag me-1"></i>Application ID: <span class="application-id">@applicationId</span>
-                <i class="fas fa-calendar ms-3 me-1"></i>Submitted: @createdDate.ToString("dd MMM yyyy, hh:mm tt")
-            </div>
-        </div>
-        <div class="tracking-body">
-            <div class="timeline">
-                <!-- REVERSED ORDER: Latest updates at the top (newest first) -->
-                <!-- Step 4: Claim Status (Only show if approved) - TOP -->
-                @if (status2 == "Approve")
-                {
-                    @if (claimedDate > DateTime.MinValue && claimedDate.Year > 1 && status3 == "Claimed")
-                    {
-                        <div class="timeline-item">
-                            <div class="timeline-marker claimed">
-                                <i class="fas fa-hands-helping"></i>
-                            </div>
-                            <div class="timeline-content">
-                                <h6>Assistance Released</h6>
-                                <span class="timeline-date">@claimedDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                <p class="timeline-description">
-                                    Your assistance has been released and completed.
-                                </p>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="timeline-item">
-                            <div class="timeline-marker waiting">
-                                <i class="fas fa-gift"></i>
-                            </div>
-                            <div class="timeline-content">
-                                <h6>Ready for Release</h6>
-                                <p class="waiting-text">Your assistance is ready. Please visit our office to collect it.</p>
-                            </div>
-                        </div>
-                    }
-                }
+<div class="container" style="margin-top: 1rem; max-width: 1400px;">
+    <!-- Two-Column Layout Container -->
+    <div class="application-container">
+        <!-- Left Column: Application Details -->
+        <div class="application-details">
+            <div class="receipt-container">
+                <form asp-action="HospitalAssistanceApproveStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
+                    @Html.AntiForgeryToken()
 
-                <!-- Step 3.9: Result if NOT approve and NOT retake -->
-                @if (resultDate > DateTime.MinValue && resultDate.Year > 1 && status2 != "Approve" && status2 != "Retake")
-                {
-                    <div class="timeline-item">
-                        <div class="timeline-marker unapproved">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <h6>Decision Made</h6>
-                            <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                            <p class="timeline-description">We have made a decision on your application.</p>
-                            @if (!string.IsNullOrWhiteSpace(comments))
-                            {
-                                <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
-                            }
-                        </div>
-                    </div>
-                }
+                    <!-- Hidden fields for form submission -->
+                    <input type="hidden" name="id" value="@ViewData["Id"]" />
+                    <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
+                    <input type="hidden" id="commentsInput" name="Comments" value="" />
+                    <input type="hidden" id="forCMOPersonnelInput" name="ForCMOPERSONNEL" value="@ViewData["ForCMOPERSONNEL"]" />
+                    <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
 
-                <!-- Step 3.5: Retake Request (Show if Status2 is "Retake") -->
-                @if (status2 == "Retake")
-                {
-                    <div class="timeline-item">
-                        <div class="timeline-marker retake">
-                            <i class="fas fa-arrow-rotate-left"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <h6>?? Action Required - Retake Application</h6>
-                            <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                            <p class="timeline-description">
-                                We need additional documents or corrections for your application. Please review the comments below and resubmit your application with the required updates.
-                            </p>
-                            @if (!string.IsNullOrWhiteSpace(retakeReason))
-                            {
-                                <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
-                                    <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
-                                    <p class="mb-0" style="color: #666;">@retakeReason</p>
+                    <div class="receipt-body">
+                        <!-- Patient Information -->
+                        <div class="receipt-section">
+                            <h5 class="section-header">Patient Information</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-row">
+                                        <div class="info-label">Name:</div>
+                                        <div class="info-value">
+                                            @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
+                                            @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Address:</div>
+                                        <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"]</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Sex:</div>
+                                        <div class="info-value">@ViewData["Sex"]</div>
+                                    </div>
                                 </div>
-                            }
+                                <div class="col-md-6">
+                                    <div class="info-row">
+                                        <div class="info-label">Date of Birth:</div>
+                                        <div class="info-value">@ViewData["Dateofbirth"]</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Age:</div>
+                                        <div class="info-value">@ViewData["Age"]</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">PhilHealth:</div>
+                                        <div class="info-value">@ViewData["PhilHealth"]</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">PhilHealth No:</div>
+                                        <div class="info-value">@ViewData["PhilHealthNo"]</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                }
 
-                <!-- Step 3: Result (EXCLUDE Retake) -->
-                @if (resultDate > DateTime.MinValue && resultDate.Year > 1 && status2 != "Retake")
-                {
-                    <div class="timeline-item">
-                        <div class="timeline-marker @(status2 == "Approve" ? "approved" : "unapproved")">
-                            <i class="fas @(status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <h6>Application @(status2 == "Approve" ? "Approved" : status2)</h6>
-                            <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                            <p class="timeline-description text-gray-700 leading-relaxed">
-                                @if (status2 == "Approve")
-                                {
-                                    <text>Your application has been approved. You can now claim your assistance.</text>
-                                }
-                                else
-                                {
-                                    <text>Your application was not approved at this time.</text>
-                                }
-                            </p>
-
-                            @if (!string.IsNullOrWhiteSpace(comments))
-                            {
-                                <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
-                            }
-                        </div>
-                    </div>
-                }
-
-                <!-- Step 2: Processing -->
-                @if (processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy))
-                {
-                    <div class="timeline-item">
-                        <div class="timeline-marker processing">
-                            <i class="fas fa-user-check"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <h6>Being Reviewed</h6>
-                            <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                            <p class="timeline-description">Your application is being reviewed by <strong>@processBy</strong></p>
-                        </div>
-                    </div>
-                }
-                else if (resultDate <= DateTime.MinValue || resultDate.Year <= 1)
-                {
-                    <div class="timeline-item">
-                        <div class="timeline-marker waiting">
-                            <i class="fas fa-hourglass-half"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <h6>Waiting for Review</h6>
-                            <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
-                        </div>
-                    </div>
-                }
-
-                <!-- Step 1: Document Submitted - BOTTOM -->
-                <div class="timeline-item">
-                    <div class="timeline-marker submitted">
-                        <i class="fas fa-paper-plane"></i>
-                    </div>
-                    <div class="timeline-content">
-                        <h6>Application Submitted</h6>
-                        <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                        <p class="timeline-description">We have received your application for Hospital assistance.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Application Details Section -->
-    <div class="receipt-container">
-        <form asp-action="HospitalAssistanceApproveStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
-            @Html.AntiForgeryToken()
-
-            <!-- Hidden fields for form submission -->
-            <input type="hidden" name="id" value="@ViewData["Id"]" />
-            <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
-            <input type="hidden" id="commentsInput" name="Comments" value="" />
-            <input type="hidden" id="forCMOPersonnelInput" name="ForCMOPERSONNEL" value="@ViewData["ForCMOPERSONNEL"]" />
-            <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
-
-            <div class="receipt-body">
-
-                <!-- Patient Information -->
-                <div class="receipt-section">
-                    <h5 class="section-header">Patient Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
+                        <!-- Requestor Details -->
+                        <div class="receipt-section">
+                            <h5 class="section-header">Requestor's Details</h5>
                             <div class="info-row">
-                                <div class="info-label">Name:</div>
-                                <div class="info-value">
-                                    @ViewData["Firstname"] @ViewData["Middlename"] @ViewData["Lastname"]
-                                    @(ViewData["Suffix"]?.ToString() == "None" ? "" : " " + ViewData["Suffix"])
-                                </div>
+                                <div class="info-label">Full Name:</div>
+                                <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
                             </div>
                             <div class="info-row">
                                 <div class="info-label">Address:</div>
-                                <div class="info-value">@ViewData["BlkLotStreet"], @ViewData["SubVill"], @ViewData["Brgy"]</div>
+                                <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"]</div>
                             </div>
                             <div class="info-row">
-                                <div class="info-label">Sex:</div>
-                                <div class="info-value">@ViewData["Sex"]</div>
+                                <div class="info-label">Relationship to Patient:</div>
+                                <div class="info-value">@ViewData["RelationshipPatient"]</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Contact No:</div>
+                                <div class="info-value">@ViewData["ContactNo"]</div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="info-row">
-                                <div class="info-label">Date of Birth:</div>
-                                <div class="info-value">@ViewData["Dateofbirth"]</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Age:</div>
-                                <div class="info-value">@ViewData["Age"]</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">PhilHealth:</div>
-                                <div class="info-value">@ViewData["PhilHealth"]</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">PhilHealth No:</div>
-                                <div class="info-value">@ViewData["PhilHealthNo"]</div>
-                            </div>
+
+                        <!-- Assistance Requested -->
+                        <div class="receipt-section">
+                            <h5 class="section-header">Assistance Requested</h5>
+                            <div class="info-value">@ViewData["Typeassistance"]</div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Requestor Details -->
-                <div class="receipt-section">
-                    <h5 class="section-header">Requestor's Details</h5>
-                    <div class="info-row">
-                        <div class="info-label">Full Name:</div>
-                        <div class="info-value">@ViewData["RLastname"], @ViewData["RFirstname"] @ViewData["RMiddlename"] @ViewData["RSuffix"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Address:</div>
-                        <div class="info-value">@ViewData["RBlkLotStreet"], @ViewData["RSubVill"], @ViewData["RBrgy"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Relationship to Patient:</div>
-                        <div class="info-value">@ViewData["RelationshipPatient"]</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Contact No:</div>
-                        <div class="info-value">@ViewData["ContactNo"]</div>
-                    </div>
-                </div>
-
-                <!-- Assistance Requested -->
-                <div class="receipt-section">
-                    <h5 class="section-header">Assistance Requested</h5>
-                    <div class="info-value">@ViewData["Typeassistance"]</div>
-                </div>
 
                 <!-- Hospital Information Section (Password-Protected) -->
                 <div class="receipt-section">
@@ -1202,236 +1077,413 @@
                         </div>
                     </div>
 
-                    <!-- Hospital Loading Container (shown while decrypting) -->
-                    <div class="hospital-loading-container" id="hospitalLoadingContainer">
-                        <div class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-3">Decrypting hospital information... Please wait 5 seconds</p>
-                            <div class="progress mt-2" style="height: 8px;">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                     role="progressbar" id="hospitalLoadingProgress" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
-                    <div class="hospital-info-container" id="hospitalInfoContainer">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="info-row">
-                                    <div class="info-label">Hospital/Facility Name:</div>
-                                    <div class="info-value" id="hospitalName">@ViewData["HospitalFacilityName"]</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Hospital Address:</div>
-                                    <div class="info-value" id="hospitalAddress">@ViewData["HospitalFacilityAddress"]</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Diagnosis/Medical Condition:</div>
-                                    <div class="info-value" id="diagnosis">@ViewData["DiagnosisMedicalCondition"]</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Ward/Room Type:</div>
-                                    <div class="info-value" id="wardRoomType">@ViewData["WardRoomType"]</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-row">
-                                    <div class="info-label">Hospital Bill/Cost:</div>
-                                    <div class="info-value" id="hospitalBill">@ViewData["HospitalBillCost"]</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Admission Date:</div>
-                                    <div class="info-value" id="admissionDate">@ViewData["AdmissionDate"]</div>
-                                </div>
-                                <div class="info-row">
-                                    <div class="info-label">Discharge Date:</div>
-                                    <div class="info-value" id="dischargeDate">@ViewData["DischargeDate"]</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CMO Section -->
-                <div class="receipt-section">
-                    <h5 class="section-header">CMO Details</h5>
-                    <div class="info-value">@ViewData["ForCMOPERSONNEL"]</div>
-                </div>
-
-                <!-- Valid ID and Submitted Documents Section -->
-                <div class="receipt-section">
-                    <!-- Valid ID Section -->
-                    <div class="receipt-section">
-                        <h5 class="section-header d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-shield-lock-fill me-2"></i>Valid ID (Encrypted)</span>
-                            @* Button to decrypt/hide Valid ID with toggle functionality *@
-                            @if (!string.IsNullOrEmpty(ViewData["Validfrontimage"]?.ToString()) || !string.IsNullOrEmpty(ViewData["ValidBackimage"]?.ToString()))
-                            {
-                                <button type="button" class="btn btn-sm btn-primary" id="viewValidIDBtn"
-                                        onclick="toggleValidID('/Validimg/@ViewData["Validfrontimage"]', '/Validimg/@ViewData["ValidBackimage"]')"
-                                        data-decrypted="false"
-                                        title="Click to view/hide encrypted ID images">
-                                    <i class="bi bi-eye-fill me-1" id="validIDBtnIcon"></i>
-                                    <span id="validIDBtnText">View Valid ID</span>
-                                </button>
-                            }
-                        </h5>
-
-                        <!-- Encrypted ID Display (shown by default) -->
-                        <div class="encrypted-id-section" id="validIDEncrypted">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="info-label"><i class="bi bi-credit-card-2-front me-2"></i>Front ID (Encrypted):</div>
-                                    <div class="encrypted-display">
-                                        <i class="bi bi-file-earmark-lock me-2"></i>
-                                        <span class="encrypted-text">@ViewData["Validfrontimage"]</span>
+                            <!-- Hospital Loading Container (shown while decrypting) -->
+                            <div class="hospital-loading-container" id="hospitalLoadingContainer">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
                                     </div>
-                                    <div class="file-path">File: /Validimg/@ViewData["Validfrontimage"]</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="info-label"><i class="bi bi-credit-card-2-back me-2"></i>Back ID (Encrypted):</div>
-                                    <div class="encrypted-display">
-                                        <i class="bi bi-file-earmark-lock me-2"></i>
-                                        <span class="encrypted-text">@ViewData["ValidBackimage"]</span>
+                                    <p class="mt-3">Decrypting hospital information... Please wait 5 seconds</p>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                             role="progressbar" id="hospitalLoadingProgress" style="width: 0%"></div>
                                     </div>
-                                    <div class="file-path">File: /Validimg/@ViewData["ValidBackimage"]</div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Loading Container (shown while decrypting) -->
-                        <div class="valid-id-loading" id="validIDLoading">
-                            <div class="text-center py-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-3">Decrypting ID images... Please wait</p>
-                            </div>
-                        </div>
-
-                        <!-- Valid ID Container (hidden by default, shown after successful decryption) -->
-                        <div class="valid-id-container" id="validIDContainer">
-                            <div class="row">
-                                <div class="col-md-6 mb-3" id="frontIDInlineContainer">
-                                    <h6><i class="bi bi-credit-card-2-front me-2"></i>Front ID</h6>
-                                    <img id="decryptedFrontIDInline" src="" alt="Front ID" class="id-image" style="display: none;" onclick="zoomImage(this.src)" />
-                                </div>
-                                <div class="col-md-6 mb-3" id="backIDInlineContainer">
-                                    <h6><i class="bi bi-credit-card-2-back me-2"></i>Back ID</h6>
-                                    <img id="decryptedBackIDInline" src="" alt="Back ID" class="id-image" style="display: none;" onclick="zoomImage(this.src)" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Doctor Prescription -->
-                    @if (ViewData["DoctorPrescriptionBase64"] != null)
-                    {
-                        <div class="receipt-section">
-                            <h5 class="section-header">Supporting Document</h5>
-                            @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
-                            {
-                                <div class="pdf-container">
-                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
-                                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                        <div class="pdf-info">
-                                            <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                            <span class="pdf-label">Click to view PDF</span>
+                            <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
+                            <div class="hospital-info-container" id="hospitalInfoContainer">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-row">
+                                            <div class="info-label">Hospital/Facility Name:</div>
+                                            <div class="info-value" id="hospitalName">@ViewData["HospitalFacilityName"]</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label">Hospital Address:</div>
+                                            <div class="info-value" id="hospitalAddress">@ViewData["HospitalFacilityAddress"]</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label">Diagnosis/Medical Condition:</div>
+                                            <div class="info-value" id="diagnosis">@ViewData["DiagnosisMedicalCondition"]</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label">Ward/Room Type:</div>
+                                            <div class="info-value" id="wardRoomType">@ViewData["WardRoomType"]</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-row">
+                                            <div class="info-label">Hospital Bill/Cost:</div>
+                                            <div class="info-value" id="hospitalBill">@ViewData["HospitalBillCost"]</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label">Admission Date:</div>
+                                            <div class="info-value" id="admissionDate">@ViewData["AdmissionDate"]</div>
+                                        </div>
+                                        <div class="info-row">
+                                            <div class="info-label">Discharge Date:</div>
+                                            <div class="info-value" id="dischargeDate">@ViewData["DischargeDate"]</div>
                                         </div>
                                     </div>
                                 </div>
-                            }
-                            else
-                            {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
-                                </div>
-                            }
+                            </div>
                         </div>
-                    }
 
-                    <!-- Medical Certificate -->
-                    @if (ViewData["MedicalCertificateBase64"] != null)
-                    {
+                        <!-- CMO Section -->
                         <div class="receipt-section">
-                            <h5 class="section-header">Supporting Document</h5>
-                            @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
-                            {
-                                <div class="pdf-container">
-                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
-                                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                        <div class="pdf-info">
-                                            <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
-                                            <span class="pdf-label">Click to view PDF</span>
+                            <h5 class="section-header">CMO Details</h5>
+                            <div class="info-value">@ViewData["ForCMOPERSONNEL"]</div>
+                        </div>
+
+                        <!-- Valid ID and Submitted Documents Section -->
+                        <div class="receipt-section">
+                            <!-- Valid ID Section -->
+                            <div class="receipt-section">
+                                <h5 class="section-header d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-shield-lock-fill me-2"></i>Valid ID (Encrypted)</span>
+                                    @* Button to decrypt/hide Valid ID with toggle functionality *@
+                                    @if (!string.IsNullOrEmpty(ViewData["Validfrontimage"]?.ToString()) || !string.IsNullOrEmpty(ViewData["ValidBackimage"]?.ToString()))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-primary" id="viewValidIDBtn"
+                                                onclick="toggleValidID('/Validimg/@ViewData["Validfrontimage"]', '/Validimg/@ViewData["ValidBackimage"]')"
+                                                data-decrypted="false"
+                                                title="Click to view/hide encrypted ID images">
+                                            <i class="bi bi-eye-fill me-1" id="validIDBtnIcon"></i>
+                                            <span id="validIDBtnText">View Valid ID</span>
+                                        </button>
+                                    }
+                                </h5>
+
+                        <!-- Alert shown when IDs are encrypted -->
+                        <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <div>
+                                <strong>ID Images are Encrypted</strong><br>
+                                For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
+                            </div>
+                        </div>
+
+                                <!-- Loading Container (shown while decrypting) -->
+                                <div class="valid-id-loading" id="validIDLoading">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-3">Decrypting ID images... Please wait</p>
+                                    </div>
+                                </div>
+
+                                <!-- Valid ID Container (hidden by default, shown after successful decryption) -->
+                                <div class="valid-id-container" id="validIDContainer">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3" id="frontIDInlineContainer">
+                                            <h6><i class="bi bi-credit-card-2-front me-2"></i>Front ID</h6>
+                                            <img id="decryptedFrontIDInline" src="" alt="Front ID" class="id-image" style="display: none;" onclick="zoomImage(this.src)" />
+                                        </div>
+                                        <div class="col-md-6 mb-3" id="backIDInlineContainer">
+                                            <h6><i class="bi bi-credit-card-2-back me-2"></i>Back ID</h6>
+                                            <img id="decryptedBackIDInline" src="" alt="Back ID" class="id-image" style="display: none;" onclick="zoomImage(this.src)" />
                                         </div>
                                     </div>
                                 </div>
-                            }
-                            else
-                            {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
-                                </div>
-                            }
-                        </div>
-                    }
+                            </div>
 
-                    <!-- Death Certificate -->
-                    @if (ViewData["DeathCertificateBase64"] != null)
-                    {
-                        <div class="receipt-section">
-                            <h5 class="section-header">Supporting Document</h5>
-                            @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                            <!-- Doctor Prescription -->
+                            @if (ViewData["DoctorPrescriptionBase64"] != null)
                             {
-                                <div class="pdf-container">
-                                    <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
-                                        <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                        <div class="pdf-info">
-                                            <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                            <span class="pdf-label">Click to view PDF</span>
+                                <div class="receipt-section">
+                                    <h5 class="section-header">Supporting Document</h5>
+                                    @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                                    {
+                                        <div class="pdf-container">
+                                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                                <div class="pdf-info">
+                                                    <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                                    <span class="pdf-label">Click to view PDF</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                            <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="id-image" />
+                                        </div>
+                                    }
                                 </div>
                             }
-                            else
-                            {
-                                <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
 
-                <!-- Status Action Buttons (Only show if user has admin rights) -->
-                @if (Context.Session.GetString("UserRole") == "Admin")
-                {
-                    <div class="receipt-section">
-                        <h5 class="section-header">Update Application Status</h5>
-                        <div class="status-buttons">
-                            <button type="button" class="btn-approved" onclick="markAsApprove()">
-                                <i class="fas fa-check-circle me-2"></i>Approve
-                            </button>
-                            <button type="button" class="btn-disapproved" onclick="showCommentsModal()">
-                                <i class="fas fa-times-circle me-2"></i>Disapprove
-                            </button>
-                            <button type="button" class="btn-retake" onclick="markAsRetake()">
-                                <i class="fas fa-arrow-rotate-left me-2"></i>Mark as Retake
-                            </button>
-                            @if (status2 == "Approve" && status3 != "Claimed")
+                            <!-- Medical Certificate -->
+                            @if (ViewData["MedicalCertificateBase64"] != null)
                             {
-                                <button type="button" class="btn-claimed" onclick="markAsClaimed()">
-                                    <i class="fas fa-hands-helping me-2"></i>Mark as Claimed
-                                </button>
+                                <div class="receipt-section">
+                                    <h5 class="section-header">Supporting Document</h5>
+                                    @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                                    {
+                                        <div class="pdf-container">
+                                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                                <div class="pdf-info">
+                                                    <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                                    <span class="pdf-label">Click to view PDF</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]')">
+                                            <img src="data:image/jpeg;base64,@ViewData["MedicalCertificateBase64"]" alt="Medical Certificate" class="id-image" />
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <!-- Death Certificate -->
+                            @if (ViewData["DeathCertificateBase64"] != null)
+                            {
+                                <div class="receipt-section">
+                                    <h5 class="section-header">Supporting Document</h5>
+                                    @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                                    {
+                                        <div class="pdf-container">
+                                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                                <div class="pdf-info">
+                                                    <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                                    <span class="pdf-label">Click to view PDF</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="id-image-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]')">
+                                            <img src="data:image/jpeg;base64,@ViewData["DeathCertificateBase64"]" alt="Death Certificate" class="id-image" />
+                                        </div>
+                                    }
+                                </div>
                             }
                         </div>
+
+                        <!-- Status Action Buttons (Only show if user has admin rights) -->
+                        @if (Context.Session.GetString("UserRole") == "Admin")
+                        {
+                            <div class="receipt-section">
+                                <h5 class="section-header">Update Application Status</h5>
+                                <div class="status-buttons">
+                                    <button type="button" class="btn-approved" onclick="markAsApprove()">
+                                        <i class="fas fa-check-circle me-2"></i>Approve
+                                    </button>
+                                    <button type="button" class="btn-disapproved" onclick="showCommentsModal()">
+                                        <i class="fas fa-times-circle me-2"></i>Disapprove
+                                    </button>
+                                    <button type="button" class="btn-retake" onclick="markAsRetake()">
+                                        <i class="fas fa-arrow-rotate-left me-2"></i>Mark as Retake
+                                    </button>
+                                    @if (status2 == "Approve" && status3 != "Claimed")
+                                    {
+                                        <button type="button" class="btn-claimed" onclick="markAsClaimed()">
+                                            <i class="fas fa-hands-helping me-2"></i>Mark as Claimed
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
                     </div>
-                }
+                </form>
             </div>
-        </form>
+        </div>
+
+        <!-- Right Column: Application Tracking -->
+        <div class="application-tracking">
+            <div class="tracking-header">
+                <h5>
+                    <i class="fas fa-file-medical"></i> Application Tracking
+                    @{
+                        var currentStatusBadge = "";
+                        if (status2 == "Approve")
+                        {
+                            if (status3 == "Claimed")
+                            {
+                                currentStatusBadge = "status-claimed-badge";
+                            }
+                            else
+                            {
+                                currentStatusBadge = "status-approved-badge";
+                            }
+                        }
+                        else if (status2 == "Disapprove" || status2 == "Unapproved")
+                        {
+                            currentStatusBadge = "status-disapproved-badge";
+                        }
+                        else if (status2 == "Retake")
+                        {
+                            currentStatusBadge = "status-retake-badge";
+                        }
+                        else
+                        {
+                            currentStatusBadge = "status-pending-badge";
+                        }
+                    }
+                    <span class="current-status-badge @currentStatusBadge">
+                        @if (status2 == "Approve" && status3 == "Claimed")
+                        {
+                            <text>CLAIMED</text>
+                        }
+                        else if (!string.IsNullOrEmpty(status2))
+                        {
+                            <text>@status2.ToUpper()</text>
+                        }
+                        else
+                        {
+                            <text>PENDING</text>
+                        }
+                    </span>
+                </h5>
+                <div class="tracking-date">
+                    <span class="date-info">
+                        <i class="fas fa-hashtag me-1"></i>
+                        <span class="application-id">@applicationId</span>
+                    </span>
+                    <span class="date-info">
+                        <i class="fas fa-calendar me-1"></i>
+                        @createdDate.ToString("dd MMM yyyy")
+                    </span>
+                </div>
+            </div>
+            <div class="tracking-body">
+                <div class="timeline">
+                    <!-- Standard timeline order: Top to bottom, oldest to newest -->
+                    <!-- Step 1: Document Submitted - TOP (oldest) -->
+                    <div class="timeline-item">
+                        <div class="timeline-marker submitted">
+                            <i class="fas fa-paper-plane"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h6>Application Submitted</h6>
+                            <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                            <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Processing -->
+                    @if (processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy))
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-marker processing">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Being Reviewed</h6>
+                                <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">Your application is being reviewed by <strong>@processBy</strong></p>
+                            </div>
+                        </div>
+                    }
+                    else if (resultDate <= DateTime.MinValue || resultDate.Year <= 1)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-marker waiting">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Waiting for Review</h6>
+                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Step 3: Result -->
+                    @if (resultDate > DateTime.MinValue && resultDate.Year > 1)
+                    {
+                        @if (status2 == "Retake")
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker retake">
+                                    <i class="fas fa-arrow-rotate-left"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Action Required - Retake Application</h6>
+                                    <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">
+                                        We need additional documents or corrections for your application. Please review the comments below and resubmit your application with the required updates.
+                                    </p>
+                                    @if (!string.IsNullOrWhiteSpace(retakeReason))
+                                    {
+                                        <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
+                                            <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
+                                            <p class="mb-0" style="color: #666;">@retakeReason</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker @(status2 == "Approve" ? "approved" : "unapproved")">
+                                    <i class="fas @(status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Application @(status2 == "Approve" ? "Approved" : status2)</h6>
+                                    <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                        @if (status2 == "Approve")
+                                        {
+                                            <text>Your application has been approved. You can now claim your assistance.</text>
+                                        }
+                                        else
+                                        {
+                                            <text>Your application was not approved at this time.</text>
+                                        }
+                                    </p>
+
+                                    @if (!string.IsNullOrWhiteSpace(comments))
+                                    {
+                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <!-- Step 4: Claim Status (Only show if approved) - BOTTOM (newest) -->
+                    @if (status2 == "Approve")
+                    {
+                        @if (claimedDate > DateTime.MinValue && claimedDate.Year > 1 && status3 == "Claimed")
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker claimed">
+                                    <i class="fas fa-hands-helping"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Assistance Released</h6>
+                                    <span class="timeline-date">@claimedDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">
+                                        Your assistance has been released and completed.
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                        else if (status2 == "Approve")
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker waiting">
+                                    <i class="fas fa-gift"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Ready for Release</h6>
+                                    <p class="waiting-text">Your assistance is ready. Please visit our office to collect it.</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1477,7 +1529,7 @@
             }
         });
 
-        // PDF Viewer Function
+        // PDF Viewer Function (same as before)
         async function viewPDFInModal(fileName, fileType, displayName) {
             const modal = document.getElementById('pdfViewerModal');
             const title = document.getElementById('pdfViewerTitle');
@@ -1628,7 +1680,7 @@
             }
         }
 
-        // Status Submission Functions
+        // Status Submission Functions (same as before)
         function markAsApprove() {
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
@@ -1733,17 +1785,14 @@
             }, 2000); // Show modal for 2 seconds before redirecting
         }
 
-        // Hospital Information Functions
-        // Toggle function for Hospital Information (View/Hide)
+        // Hospital Information Functions (same as before)
         function toggleHospitalInfo() {
             const viewButton = document.getElementById('viewHospitalInfoBtn');
             const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
 
             if (isDecrypted) {
-                // Currently showing decrypted data, hide it
                 hideHospitalInfo();
             } else {
-                // Currently hidden, show the decrypt modal
                 openViewAdditionalInfoModal('Hospital', '@ViewData["Id"]', {
                     labels: ['Hospital/Facility Name', 'Hospital Address', 'Diagnosis/Medical Condition', 'Ward/Room Type', 'Hospital Bill/Cost', 'Admission Date', 'Discharge Date'],
                     values: ['@ViewData["HospitalFacilityName"]', '@ViewData["HospitalFacilityAddress"]', '@ViewData["DiagnosisMedicalCondition"]', '@ViewData["WardRoomType"]', '@ViewData["HospitalBillCost"]', '@ViewData["AdmissionDate"]', '@ViewData["DischargeDate"]'],
@@ -1765,11 +1814,6 @@
                 hospitalInfoContainer.style.display = 'none';
             }
 
-            // Show encrypted data display
-            if (hospitalInfoEncrypted) {
-                hospitalInfoEncrypted.style.display = 'block';
-            }
-
             // Update button to "View" state
             if (viewButton) {
                 viewButton.setAttribute('data-decrypted', 'false');
@@ -1784,39 +1828,28 @@
                 btnText.textContent = 'View Hospital Information';
             }
 
-            // Clear decrypted data
             window.decryptedHospitalData = {};
         }
 
-        // Function to show hospital information after successful decryption
         function showHospitalInfoAfterDecryption() {
             console.log('Showing hospital information after decryption...');
 
-            // Hide the loading container
             const loadingContainer = document.getElementById('hospitalLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'none';
             }
 
-            // Hide the encrypted display section
-            const hospitalInfoEncrypted = document.getElementById('hospitalInfoEncrypted');
-            if (hospitalInfoEncrypted) {
-                hospitalInfoEncrypted.style.display = 'none';
-            }
-
-            // Show the hospital information container (decrypted)
+            // Show the hospital information container
             const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
             if (hospitalInfoContainer) {
                 hospitalInfoContainer.style.display = 'block';
                 hospitalInfoContainer.classList.add('hospital-info-visible', 'decrypted-display');
 
-                // Scroll to the hospital information section
                 setTimeout(() => {
                     hospitalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             }
 
-            // Update button to "Hide" state
             const viewButton = document.getElementById('viewHospitalInfoBtn');
             const btnIcon = document.getElementById('hospitalBtnIcon');
             const btnText = document.getElementById('hospitalBtnText');
@@ -1835,29 +1868,25 @@
             }
         }
 
-        // Function to start the 5-second loading animation
         function startHospitalInfoLoading() {
             console.log('Starting hospital information loading...');
 
-            // Show loading container
             const loadingContainer = document.getElementById('hospitalLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'block';
             }
 
-            // Hide any existing hospital info container
             const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
             if (hospitalInfoContainer) {
                 hospitalInfoContainer.style.display = 'none';
                 hospitalInfoContainer.classList.remove('hospital-info-visible');
             }
 
-            // Start 5-second progress bar
             const progressBar = document.getElementById('hospitalLoadingProgress');
             if (progressBar) {
                 let progress = 0;
-                const totalTime = 5000; // 5 seconds
-                const interval = 100; // Update every 100ms
+                const totalTime = 5000;
+                const interval = 100;
                 const increment = (interval / totalTime) * 100;
 
                 const progressInterval = setInterval(() => {
@@ -1866,7 +1895,6 @@
                         progress = 100;
                         clearInterval(progressInterval);
 
-                        // After 5 seconds, show the hospital information
                         setTimeout(() => {
                             showHospitalInfoAfterDecryption();
                         }, 300);
