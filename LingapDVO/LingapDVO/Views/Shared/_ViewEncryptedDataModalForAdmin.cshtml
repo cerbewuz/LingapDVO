@@ -788,6 +788,193 @@
     }
 
     // ========================================================
+    // SHOW/HIDE FUNCTIONS FOR ENCRYPTED/DECRYPTED TOGGLE
+    // ========================================================
+
+    // Hospital Information toggle functions
+    window.showHospitalInfoAfterDecryption = function() {
+        // Hide the encrypted display section
+        const encryptedSection = document.getElementById('hospitalInfoEncrypted');
+        if (encryptedSection) {
+            encryptedSection.style.display = 'none';
+        }
+
+        // Hide loading container
+        const loadingContainer = document.getElementById('hospitalLoadingContainer');
+        if (loadingContainer) {
+            loadingContainer.style.display = 'none';
+        }
+
+        // Show the decrypted info container
+        const infoContainer = document.getElementById('hospitalInfoContainer');
+        if (infoContainer) {
+            infoContainer.style.display = 'block';
+        }
+    };
+
+    window.hideHospitalInfo = function() {
+        // Show the encrypted display section
+        const encryptedSection = document.getElementById('hospitalInfoEncrypted');
+        if (encryptedSection) {
+            encryptedSection.style.display = 'block';
+        }
+
+        // Hide the decrypted info container
+        const infoContainer = document.getElementById('hospitalInfoContainer');
+        if (infoContainer) {
+            infoContainer.style.display = 'none';
+        }
+
+        // Clear the decrypted data
+        window.decryptedHospitalData = {};
+
+        // Update button state
+        updateViewButton('Hospital', false);
+    };
+
+    window.startHospitalInfoLoading = function() {
+        const loadingContainer = document.getElementById('hospitalLoadingContainer');
+        if (loadingContainer) {
+            loadingContainer.style.display = 'block';
+        }
+
+        // Animate progress bar
+        const progressBar = document.getElementById('hospitalLoadingProgress');
+        if (progressBar) {
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 20;
+                progressBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        }
+    };
+
+    // Funeral Information toggle functions
+    window.showFuneralInfoAfterDecryption = function() {
+        // Hide the encrypted display section
+        const encryptedSection = document.getElementById('funeralInfoEncrypted');
+        if (encryptedSection) {
+            encryptedSection.style.display = 'none';
+        }
+
+        // Hide loading container
+        const loadingContainer = document.getElementById('funeralLoadingContainer');
+        if (loadingContainer) {
+            loadingContainer.style.display = 'none';
+        }
+
+        // Show the decrypted info container
+        const infoContainer = document.getElementById('funeralInfoContainer');
+        if (infoContainer) {
+            infoContainer.style.display = 'block';
+        }
+    };
+
+    window.hideFuneralInfo = function() {
+        // Show the encrypted display section
+        const encryptedSection = document.getElementById('funeralInfoEncrypted');
+        if (encryptedSection) {
+            encryptedSection.style.display = 'block';
+        }
+
+        // Hide the decrypted info container
+        const infoContainer = document.getElementById('funeralInfoContainer');
+        if (infoContainer) {
+            infoContainer.style.display = 'none';
+        }
+
+        // Clear the decrypted data
+        window.decryptedFuneralData = {};
+
+        // Update button state
+        updateViewButton('Funeral', false);
+    };
+
+    window.startFuneralInfoLoading = function() {
+        const loadingContainer = document.getElementById('funeralLoadingContainer');
+        if (loadingContainer) {
+            loadingContainer.style.display = 'block';
+        }
+
+        // Animate progress bar
+        const progressBar = document.getElementById('funeralLoadingProgress');
+        if (progressBar) {
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 20;
+                progressBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        }
+    };
+
+    // Additional (Other) Information toggle functions
+    window.showAdditionalInfoAfterDecryption = function() {
+        // Hide the encrypted display section
+        const encryptedSection = document.getElementById('additionalInfoEncrypted');
+        if (encryptedSection) {
+            encryptedSection.style.display = 'none';
+        }
+
+        // Hide loading container
+        const loadingContainer = document.getElementById('additionalLoadingContainer');
+        if (loadingContainer) {
+            loadingContainer.style.display = 'none';
+        }
+
+        // Show the decrypted info container
+        const infoContainer = document.getElementById('additionalInfoContainer');
+        if (infoContainer) {
+            infoContainer.style.display = 'block';
+        }
+    };
+
+    window.hideAdditionalInfo = function() {
+        // Show the encrypted display section
+        const encryptedSection = document.getElementById('additionalInfoEncrypted');
+        if (encryptedSection) {
+            encryptedSection.style.display = 'block';
+        }
+
+        // Hide the decrypted info container
+        const infoContainer = document.getElementById('additionalInfoContainer');
+        if (infoContainer) {
+            infoContainer.style.display = 'none';
+        }
+
+        // Clear the decrypted data
+        window.decryptedAdditionalData = {};
+
+        // Update button state
+        updateViewButton('Other', false);
+    };
+
+    window.startAdditionalInfoLoading = function() {
+        const loadingContainer = document.getElementById('additionalLoadingContainer');
+        if (loadingContainer) {
+            loadingContainer.style.display = 'block';
+        }
+
+        // Animate progress bar
+        const progressBar = document.getElementById('additionalLoadingProgress');
+        if (progressBar) {
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 20;
+                progressBar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        }
+    };
+
+    // ========================================================
     // RE-ENCRYPTION FUNCTIONALITY
     // ========================================================
     function reEncryptFields() {
@@ -860,28 +1047,37 @@
         Promise.all(encryptPromises).then(function(encryptedFields) {
             console.log('All fields re-encrypted:', encryptedFields);
 
-            // Hide the decrypted data containers on the page
+            // Hide the decrypted data containers on the page and show encrypted sections
             if (formType === 'Hospital') {
                 $('#hospitalInfoContainer').hide();
-                $('#hospitalInfoLoading').hide();
-                $('#hospitalInfoAlert').show();
+                $('#hospitalLoadingContainer').hide();
+                $('#hospitalInfoEncrypted').show();
 
                 // Clear the decrypted data
                 window.decryptedHospitalData = {};
+
+                // Update button state
+                updateViewButton('Hospital', false);
             } else if (formType === 'Other') {
                 $('#additionalInfoContainer').hide();
-                $('#additionalInfoLoading').hide();
-                $('#additionalInfoAlert').show();
+                $('#additionalLoadingContainer').hide();
+                $('#additionalInfoEncrypted').show();
 
                 // Clear the decrypted data
                 window.decryptedAdditionalData = {};
+
+                // Update button state
+                updateViewButton('Other', false);
             } else if (formType === 'Funeral') {
                 $('#funeralInfoContainer').hide();
-                $('#funeralInfoLoading').hide();
-                $('#funeralInfoAlert').show();
+                $('#funeralLoadingContainer').hide();
+                $('#funeralInfoEncrypted').show();
 
                 // Clear the decrypted data
                 window.decryptedFuneralData = {};
+
+                // Update button state
+                updateViewButton('Funeral', false);
             }
 
             // Show success message and close modal

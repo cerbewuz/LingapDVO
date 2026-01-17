@@ -758,17 +758,158 @@
                         <i class="bi bi-eye-fill me-2" id="additionalBtnIcon"></i><span id="additionalBtnText">View Additional Information</span>
                     </button>
                 </h5>
-                <div class="row g-3">
-                    <div class="col-12">
-                        <div class="alert alert-info d-flex align-items-center" role="alert">
-                            <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
-                            <div>
-                                <strong>This additional information is encrypted for security.</strong><br>
-                                Click the "View Additional Information" button above and enter your password to view the details.
-                                The fields shown will depend on the type of assistance requested.
+                <!-- Encrypted Additional Information Display (shown by default) -->
+                <div class="encrypted-info-section" id="additionalInfoEncrypted">
+                    @if (ViewData["Typeassistance"]?.ToString() == "Medicine Assistance")
+                    {
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Medicine Name:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["MedicineName"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Medicine Quantity:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["MedicineQuantity"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Medicine Cost:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["MedicineCost"]</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Prescribing Doctor:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["PrescribingDoctor"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Doctor Contact Detail:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["DoctorContactDetail"]</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
+                    else if (ViewData["Typeassistance"]?.ToString() == "Laboratory")
+                    {
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Laboratory/Diagnostic Center Name:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterName"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Laboratory/Diagnostic Center Address:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddress"]</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Test Name:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["TestName"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Test Cost:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["TestCost"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Other Information:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["TestOtherInfo"]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (ViewData["Typeassistance"]?.ToString() == "Therapy/Rehabilitation")
+                    {
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Therapy Facility Name:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityName"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Therapy Facility Address:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddress"]</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Therapy Facility Contact:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityContact"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Therapy Type:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["TherapyType"]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (ViewData["Typeassistance"]?.ToString() == "Medical Equipment/Apparatus")
+                    {
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Equipment Name:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["EquipmentName"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Equipment Brand:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["EquipmentBrand"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Equipment Category:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["EquipmentCategory"]</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="info-label">Equipment Quantity:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["EquipmentQuantity"]</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="info-label">Equipment Cost:</div>
+                                    <div class="encrypted-display">
+                                        <span class="encrypted-text">@ViewData["EquipmentCost"]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
 
                 <!-- Additional Information Loading Container (shown while decrypting) -->
@@ -818,12 +959,25 @@
                         }
                     </h5>
                     
-                    <!-- Alert shown when IDs are encrypted -->
-                    <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        <div>
-                            <strong>ID Images are Encrypted</strong><br>
-                            For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
+                    <!-- Encrypted ID Display (shown by default) -->
+                    <div class="encrypted-id-section" id="validIDEncrypted">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="info-label"><i class="bi bi-credit-card-2-front me-2"></i>Front ID (Encrypted):</div>
+                                <div class="encrypted-display">
+                                    <i class="bi bi-file-earmark-lock me-2"></i>
+                                    <span class="encrypted-text">@ViewData["Validfrontimage"]</span>
+                                </div>
+                                <div class="file-path">File: /Validimg/@ViewData["Validfrontimage"]</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-label"><i class="bi bi-credit-card-2-back me-2"></i>Back ID (Encrypted):</div>
+                                <div class="encrypted-display">
+                                    <i class="bi bi-file-earmark-lock me-2"></i>
+                                    <span class="encrypted-text">@ViewData["ValidBackimage"]</span>
+                                </div>
+                                <div class="file-path">File: /Validimg/@ViewData["ValidBackimage"]</div>
+                            </div>
                         </div>
                     </div>
 
@@ -1311,13 +1465,20 @@
         // Function to hide additional information
         function hideAdditionalInfo() {
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
             const viewButton = document.getElementById('viewAdditionalInfoBtn');
             const btnIcon = document.getElementById('additionalBtnIcon');
             const btnText = document.getElementById('additionalBtnText');
 
+            // Hide decrypted data container
             if (additionalInfoContainer) {
                 additionalInfoContainer.classList.remove('additional-info-visible');
                 additionalInfoContainer.style.display = 'none';
+            }
+
+            // Show encrypted data display
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'block';
             }
 
             // Update button to "View" state
@@ -1333,7 +1494,7 @@
             if (btnText) {
                 btnText.textContent = 'View Additional Information';
             }
-            
+
             // Clear decrypted data
             window.decryptedAdditionalData = {};
         }
@@ -1348,11 +1509,17 @@
                 loadingContainer.style.display = 'none';
             }
 
-            // Show the additional information container
+            // Hide the encrypted display section
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'none';
+            }
+
+            // Show the additional information container (decrypted)
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
             if (additionalInfoContainer) {
                 additionalInfoContainer.style.display = 'block';
-                additionalInfoContainer.classList.add('additional-info-visible');
+                additionalInfoContainer.classList.add('additional-info-visible', 'decrypted-display');
 
                 // Populate the fields based on assistance type
                 populateAdditionalInfoFields();

@@ -761,13 +761,53 @@
                         <i class="bi bi-eye-fill me-2"></i>View Hospital Information
                     </button>
                 </h5>
-                <div class="row g-3">
-                    <div class="col-12">
-                        <div class="alert alert-info d-flex align-items-center" role="alert">
-                            <i class="bi bi-shield-lock-fill me-3 fs-5"></i>
-                            <div>
-                                <strong>This hospital information is encrypted for security.</strong><br>
-                                Click the "View Hospital Information" button above and enter your password to view the details.
+                <!-- Encrypted Hospital Information Display (shown by default) -->
+                <div class="encrypted-info-section" id="hospitalInfoEncrypted">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="info-label">Hospital/Facility Name:</div>
+                                <div class="encrypted-display">
+                                    <span class="encrypted-text">@ViewData["HospitalFacilityName"]</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="info-label">Hospital Address:</div>
+                                <div class="encrypted-display">
+                                    <span class="encrypted-text">@ViewData["HospitalFacilityAddress"]</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="info-label">Diagnosis/Medical Condition:</div>
+                                <div class="encrypted-display">
+                                    <span class="encrypted-text">@ViewData["DiagnosisMedicalCondition"]</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="info-label">Ward/Room Type:</div>
+                                <div class="encrypted-display">
+                                    <span class="encrypted-text">@ViewData["WardRoomType"]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="info-label">Hospital Bill/Cost:</div>
+                                <div class="encrypted-display">
+                                    <span class="encrypted-text">@ViewData["HospitalBillCost"]</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="info-label">Admission Date:</div>
+                                <div class="encrypted-display">
+                                    <span class="encrypted-text">@ViewData["AdmissionDate"]</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="info-label">Discharge Date:</div>
+                                <div class="encrypted-display">
+                                    <span class="encrypted-text">@ViewData["DischargeDate"]</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -851,12 +891,25 @@
                         }
                     </h5>
                     
-                    <!-- Alert shown when IDs are encrypted -->
-                    <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        <div>
-                            <strong>ID Images are Encrypted</strong><br>
-                            For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
+                    <!-- Encrypted ID Display (shown by default) -->
+                    <div class="encrypted-id-section" id="validIDEncrypted">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="info-label"><i class="bi bi-credit-card-2-front me-2"></i>Front ID (Encrypted):</div>
+                                <div class="encrypted-display">
+                                    <i class="bi bi-file-earmark-lock me-2"></i>
+                                    <span class="encrypted-text">@ViewData["Validfrontimage"]</span>
+                                </div>
+                                <div class="file-path">File: /Validimg/@ViewData["Validfrontimage"]</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-label"><i class="bi bi-credit-card-2-back me-2"></i>Back ID (Encrypted):</div>
+                                <div class="encrypted-display">
+                                    <i class="bi bi-file-earmark-lock me-2"></i>
+                                    <span class="encrypted-text">@ViewData["ValidBackimage"]</span>
+                                </div>
+                                <div class="file-path">File: /Validimg/@ViewData["ValidBackimage"]</div>
+                            </div>
                         </div>
                     </div>
 
@@ -1283,17 +1336,38 @@
         // Hospital Information Functions
         function hideHospitalInfo() {
             const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
+            const hospitalInfoEncrypted = document.getElementById('hospitalInfoEncrypted');
             const viewButton = document.getElementById('viewHospitalInfoBtn');
+            const btnIcon = document.getElementById('hospitalBtnIcon');
+            const btnText = document.getElementById('hospitalBtnText');
 
+            // Hide decrypted data container
             if (hospitalInfoContainer) {
                 hospitalInfoContainer.classList.remove('hospital-info-visible');
                 hospitalInfoContainer.style.display = 'none';
             }
 
-            // Show the button again when hiding the info
-            if (viewButton) {
-                viewButton.style.display = 'inline-block';
+            // Show encrypted data display
+            if (hospitalInfoEncrypted) {
+                hospitalInfoEncrypted.style.display = 'block';
             }
+
+            // Update button to "View" state
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Hospital Information';
+            }
+
+            // Clear decrypted data
+            window.decryptedHospitalData = {};
         }
 
         // Function to show hospital information after successful decryption
@@ -1306,22 +1380,40 @@
                 loadingContainer.style.display = 'none';
             }
 
-            // Hide the "View Hospital Information" button
-            const viewButton = document.getElementById('viewHospitalInfoBtn');
-            if (viewButton) {
-                viewButton.style.display = 'none';
+            // Hide the encrypted display section
+            const hospitalInfoEncrypted = document.getElementById('hospitalInfoEncrypted');
+            if (hospitalInfoEncrypted) {
+                hospitalInfoEncrypted.style.display = 'none';
             }
 
-            // Show the hospital information container
+            // Show the hospital information container (decrypted)
             const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
             if (hospitalInfoContainer) {
                 hospitalInfoContainer.style.display = 'block';
-                hospitalInfoContainer.classList.add('hospital-info-visible');
+                hospitalInfoContainer.classList.add('hospital-info-visible', 'decrypted-display');
 
                 // Scroll to the hospital information section
                 setTimeout(() => {
                     hospitalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
+            }
+
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewHospitalInfoBtn');
+            const btnIcon = document.getElementById('hospitalBtnIcon');
+            const btnText = document.getElementById('hospitalBtnText');
+
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Hospital Information';
             }
         }
 

@@ -168,17 +168,20 @@
     // Hide Valid ID and reset to encrypted state
     function hideValidID() {
         const idContainer = document.getElementById('validIDContainer');
-        const idAlert = document.getElementById('validIDAlert');
+        const idEncrypted = document.getElementById('validIDEncrypted');
         const viewButton = document.getElementById('viewValidIDBtn');
         const btnIcon = document.getElementById('validIDBtnIcon');
         const btnText = document.getElementById('validIDBtnText');
 
+        // Hide decrypted ID images
         if (idContainer) {
             idContainer.classList.remove('visible');
             idContainer.style.display = 'none';
         }
-        if (idAlert) {
-            idAlert.style.display = 'block';
+
+        // Show encrypted ID display
+        if (idEncrypted) {
+            idEncrypted.style.display = 'block';
         }
 
         // Update button to "View" state
@@ -201,22 +204,27 @@
     // Show Valid ID after decryption
     function showValidIDAfterDecryption() {
         const idContainer = document.getElementById('validIDContainer');
-        const idAlert = document.getElementById('validIDAlert');
+        const idEncrypted = document.getElementById('validIDEncrypted');
         const idLoading = document.getElementById('validIDLoading');
         const viewButton = document.getElementById('viewValidIDBtn');
         const btnIcon = document.getElementById('validIDBtnIcon');
         const btnText = document.getElementById('validIDBtnText');
 
+        // Hide loading indicator
         if (idLoading) {
             idLoading.classList.remove('visible');
             idLoading.style.display = 'none';
         }
-        if (idContainer) {
-            idContainer.classList.add('visible');
-            idContainer.style.display = 'block';
+
+        // Hide encrypted ID display
+        if (idEncrypted) {
+            idEncrypted.style.display = 'none';
         }
-        if (idAlert) {
-            idAlert.style.display = 'none';
+
+        // Show decrypted ID container
+        if (idContainer) {
+            idContainer.classList.add('visible', 'decrypted-display');
+            idContainer.style.display = 'block';
         }
 
         // Update button to "Hide" state
