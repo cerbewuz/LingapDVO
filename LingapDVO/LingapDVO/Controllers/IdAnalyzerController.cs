@@ -11,9 +11,13 @@ namespace LingapDVO.Controllers
     /// API Controller for ID Analyzer v2 operations
     /// Base URL: https://api2.idanalyzer.com
     ///
+    /// PRIVACY NOTE: Selfie/face images are NOT stored in the system.
+    /// Only ID images (front/back) are saved with AES-256 encryption.
+    /// Selfies are only used for real-time face matching via ID Analyzer API.
+    ///
     /// Endpoints:
-    /// - POST /api/IdAnalyzer/saveSelfie - Save selfie image to disk
-    /// - POST /api/IdAnalyzer/scan - Standard ID Scan
+    /// - POST /api/IdAnalyzer/saveSelfie - Validate selfie (NOT saved to disk)
+    /// - POST /api/IdAnalyzer/scan - Standard ID Scan (saves encrypted ID images only)
     /// - POST /api/IdAnalyzer/face - Face Verification
     /// - GET /api/IdAnalyzer/health - Health Check
     /// </summary>
@@ -171,59 +175,48 @@ namespace LingapDVO.Controllers
         }
 
         /// <summary>
-        /// Save selfie image to /wwwroot/UsersImg directory
-        /// This endpoint stores the selfie before sending to ID Analyzer API
+        /// Validate selfie image for ID Analyzer API verification
+        /// NOTE: Selfie/face images are NOT saved to disk for privacy reasons.
+        /// They are only used for real-time face matching with ID Analyzer API.
         /// </summary>
         [HttpPost("saveSelfie")]
-        public async Task<IActionResult> SaveSelfie([FromBody] SaveSelfieRequest request)
+        public Task<IActionResult> SaveSelfie([FromBody] SaveSelfieRequest request)
         {
             try
             {
                 if (string.IsNullOrEmpty(request.ImageData))
                 {
-                    return BadRequest(new { success = false, error = "Image data is required" });
+                    return Task.FromResult<IActionResult>(BadRequest(new { success = false, error = "Image data is required" }));
                 }
 
-                // Remove data URL prefix if present
+                // Remove data URL prefix if present and validate format
                 var base64Data = RemoveDataUrlPrefix(request.ImageData);
 
-                // Generate unique filename
-                var fileName = $"selfie_{Guid.NewGuid():N}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
-                var usersImgPath = Path.Combine(_environment.WebRootPath, "UsersImg");
-
-                // Ensure directory exists
-                if (!Directory.Exists(usersImgPath))
-                {
-                    Directory.CreateDirectory(usersImgPath);
-                    _logger.LogInformation("Created UsersImg directory: {Path}", usersImgPath);
-                }
-
-                var filePath = Path.Combine(usersImgPath, fileName);
-
-                // Convert base64 to bytes and save
+                // Validate base64 format without saving to disk
                 var imageBytes = Convert.FromBase64String(base64Data);
-                await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
 
-                _logger.LogInformation("✅ Selfie saved successfully: {FileName} ({Size} bytes)", fileName, imageBytes.Length);
+                _logger.LogInformation("✅ Selfie validated successfully ({Size} bytes) - NOT saved to disk for privacy", imageBytes.Length);
 
-                return Ok(new
+                // Return success without saving the file
+                // Selfie is only used for ID Analyzer API verification, not stored in system
+                return Task.FromResult<IActionResult>(Ok(new
                 {
                     success = true,
-                    fileName = fileName,
-                    filePath = $"/UsersImg/{fileName}",
+                    fileName = "", // No file saved
+                    filePath = "", // No file path
                     fileSize = imageBytes.Length,
-                    message = "Selfie saved successfully"
-                });
+                    message = "Selfie validated successfully (not stored for privacy)"
+                }));
             }
             catch (FormatException ex)
             {
                 _logger.LogError(ex, "Invalid base64 format");
-                return BadRequest(new { success = false, error = "Invalid image format" });
+                return Task.FromResult<IActionResult>(BadRequest(new { success = false, error = "Invalid image format" }));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving selfie");
-                return StatusCode(500, new { success = false, error = "Failed to save selfie" });
+                _logger.LogError(ex, "Error validating selfie");
+                return Task.FromResult<IActionResult>(StatusCode(500, new { success = false, error = "Failed to validate selfie" }));
             }
         }
 
@@ -357,13 +350,16 @@ namespace LingapDVO.Controllers
         }
 
         /// <summary>
-        /// Standard ID Scan - Scans ID document, extracts data, and optionally matches face
-        /// NEW FLOW:
-        /// 1. Receive files directly from frontend
-        /// 2. Apply AES-256 encryption
-        /// 3. Send encrypted data to ID Analyzer API
-        /// 4. ONLY if decision = "accept" → Save original files to storage (Validimg/UsersImg)
-        /// This ensures only verified files are stored permanently
+        /// Standard ID Scan - Scans ID document, extracts data, and matches face
+        ///
+        /// PRIVACY FLOW:
+        /// 1. Receive ID images and selfie from frontend as Base64
+        /// 2. Send to ID Analyzer API for verification and face matching
+        /// 3. ONLY if decision = "accept" → Save ID images ONLY (encrypted with AES-256)
+        /// 4. Selfie/face image is NEVER saved - only used for API verification
+        ///
+        /// This ensures verified ID documents are stored securely while
+        /// protecting user privacy by not retaining biometric face data.
         /// API Reference: https://developer.idanalyzer.com/reference/post-scan
         /// </summary>
         [HttpPost("scan")]
@@ -436,32 +432,29 @@ namespace LingapDVO.Controllers
 
                 if (decision == "accept" && result.Success)
                 {
-                    _logger.LogInformation("💾 Decision is 'accept' - Saving files to disk...");
+                    _logger.LogInformation("💾 Decision is 'accept' - Saving ID images to disk...");
+                    _logger.LogInformation("🔒 NOTE: Selfie/face image is NOT saved for privacy reasons");
 
                     try
                     {
-                        // Convert Base64 back to bytes for saving
+                        // Convert Base64 back to bytes for saving (ID images only, NOT selfie)
                         var frontIdBytes = Convert.FromBase64String(documentBase64);
                         var backIdBytes = Convert.FromBase64String(backBase64);
-                        var selfieBytes = Convert.FromBase64String(faceBase64);
+                        // Selfie is NOT saved to disk - only used for ID Analyzer API verification
 
-                        // Create directories if they don't exist
+                        // Create directory for encrypted ID images
                         var validImgPath = Path.Combine(_environment.WebRootPath, "Validimg");
-                        var usersImgPath = Path.Combine(_environment.WebRootPath, "UsersImg");
                         Directory.CreateDirectory(validImgPath);
-                        Directory.CreateDirectory(usersImgPath);
 
-                        // Generate unique filenames
+                        // Generate unique filenames for ID images only
                         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
                         var guid = Guid.NewGuid().ToString("N").Substring(0, 8);
 
                         var frontIdFileName = $"front_id_{guid}_{timestamp}.jpg";
                         var backIdFileName = $"back_id_{guid}_{timestamp}.jpg";
-                        var selfieFileName = $"selfie_{guid}_{timestamp}.jpg";
 
                         var frontIdPath = Path.Combine(validImgPath, frontIdFileName);
                         var backIdPath = Path.Combine(validImgPath, backIdFileName);
-                        var selfiePath = Path.Combine(usersImgPath, selfieFileName);
 
                         // Encrypt front and back ID images using AES-256
                         _logger.LogInformation("🔐 Encrypting ID images with AES-256...");
@@ -469,19 +462,18 @@ namespace LingapDVO.Controllers
                         var encryptedBackIdBytes = _encryptionHelper.EncryptBytes(backIdBytes);
                         _logger.LogInformation("✅ ID images encrypted successfully");
 
-                        // Save encrypted ID files and unencrypted selfie
+                        // Save encrypted ID files only (NO selfie saved)
                         await System.IO.File.WriteAllBytesAsync(frontIdPath, encryptedFrontIdBytes);
                         await System.IO.File.WriteAllBytesAsync(backIdPath, encryptedBackIdBytes);
-                        await System.IO.File.WriteAllBytesAsync(selfiePath, selfieBytes);
 
-                        _logger.LogInformation("✅ Files saved successfully:");
-                        _logger.LogInformation("   - Front ID (encrypted): {FileName} ({Size} KB)", frontIdFileName, Math.Round(encryptedFrontIdBytes.Length / 1024.0, 2));
-                        _logger.LogInformation("   - Back ID (encrypted): {FileName} ({Size} KB)", backIdFileName, Math.Round(encryptedBackIdBytes.Length / 1024.0, 2));
-                        _logger.LogInformation("   - Selfie: {FileName} ({Size} KB)", selfieFileName, Math.Round(selfieBytes.Length / 1024.0, 2));
+                        _logger.LogInformation("✅ ID images saved successfully (encrypted with AES-256):");
+                        _logger.LogInformation("   - Front ID: {FileName} ({Size} KB)", frontIdFileName, Math.Round(encryptedFrontIdBytes.Length / 1024.0, 2));
+                        _logger.LogInformation("   - Back ID: {FileName} ({Size} KB)", backIdFileName, Math.Round(encryptedBackIdBytes.Length / 1024.0, 2));
+                        _logger.LogInformation("   - Selfie: NOT SAVED (privacy protection)");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "❌ Error saving files to disk");
+                        _logger.LogError(ex, "❌ Error saving ID images to disk");
                         // Continue execution - file save error should not fail the entire verification
                     }
                 }
