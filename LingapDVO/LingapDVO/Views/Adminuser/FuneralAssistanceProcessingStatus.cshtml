@@ -615,15 +615,16 @@
         color: #ff6f00;
     }
 
-    /* Funeral Information Container */
+    /* Black/Grey Funeral Information Container (Updated to match requested design) */
     .funeral-info-container {
         display: none;
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 2px solid #67AFEB;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
         border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1rem;
         animation: fadeInScale 0.4s ease-out;
+        color: white;
     }
 
     .funeral-info-visible {
@@ -631,39 +632,45 @@
     }
 
     .decrypted-display {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 2px solid #67AFEB;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
         border-radius: 12px;
         padding: 1.5rem;
+        color: white;
     }
 
     .decrypted-header {
-        color: #16496B;
+        color: #ecf0f1;
         font-size: 1.1rem;
         padding-bottom: 0.75rem;
-        border-bottom: 2px solid #67AFEB;
+        border-bottom: 2px solid #3498db;
         margin-bottom: 1rem !important;
     }
 
     .decrypted-field {
-        background-color: white;
+        background-color: rgba(255, 255, 255, 0.1);
         border-radius: 8px;
         padding: 0.75rem;
-        border: 1px solid #e0f2fe;
+        border: 1px solid rgba(255, 255, 255, 0.2);
         transition: all 0.3s ease;
     }
 
         .decrypted-field:hover {
-            border-color: #67AFEB;
-            box-shadow: 0 2px 8px rgba(103, 175, 235, 0.15);
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
             transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.15);
         }
 
     .decrypted-value {
-        color: #1e293b;
+        color: #ecf0f1;
         font-weight: 500;
         font-size: 0.95rem;
         margin-top: 0.25rem;
+    }
+
+    .info-label {
+        color: #bdc3c7;
     }
 
     /* Animation for decrypted display */
@@ -718,13 +725,22 @@
     /* Funeral Information Loading Container */
     .funeral-loading-container {
         display: none;
-        background-color: #f8f9fa;
+        background-color: #2c3e50;
         border-radius: 8px;
         padding: 2rem;
         margin-top: 1rem;
-        border: 1px solid #dee2e6;
+        border: 1px solid #34495e;
         text-align: center;
+        color: white;
     }
+
+        .funeral-loading-container .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .funeral-loading-container .progress-bar {
+            background-color: #3498db;
+        }
 
     /* Valid ID Styles */
     .valid-id-loading {
@@ -739,12 +755,13 @@
 
     .valid-id-container {
         display: none;
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 2px solid #67AFEB;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
         border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1rem;
         animation: fadeInScale 0.4s ease-out;
+        color: white;
     }
 
     /* Status Buttons Styling */
