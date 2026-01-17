@@ -729,19 +729,108 @@
         margin-bottom: 1rem;
     }
 
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .encrypted-display {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
     /* Funeral Information Container */
     .funeral-info-container {
         display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #67AFEB;
+        border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1rem;
-        border: 1px solid #dee2e6;
+        animation: fadeInScale 0.4s ease-out;
     }
 
     .funeral-info-visible {
         display: block;
     }
+
+    .decrypted-display {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #67AFEB;
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .decrypted-header {
+        color: #16496B;
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #67AFEB;
+        margin-bottom: 1rem !important;
+    }
+
+    .decrypted-field {
+        background-color: white;
+        border-radius: 8px;
+        padding: 0.75rem;
+        border: 1px solid #e0f2fe;
+        transition: all 0.3s ease;
+    }
+
+        .decrypted-field:hover {
+            border-color: #67AFEB;
+            box-shadow: 0 2px 8px rgba(103, 175, 235, 0.15);
+            transform: translateY(-1px);
+        }
+
+    .decrypted-value {
+        color: #1e293b;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
+
+    /* Alert styling */
+    .alert-info {
+        background-color: #e7f3ff;
+        border-color: #b3d9ff;
+        color: #004085;
+    }
+
+        .alert-info i {
+            font-size: 1.25rem;
+            color: #0066cc;
+        }
 
     /* Funeral Loading Container */
     .funeral-loading-container {
@@ -752,6 +841,27 @@
         margin-top: 1rem;
         border: 1px solid #dee2e6;
         text-align: center;
+    }
+
+    /* Valid ID Styles */
+    .valid-id-loading {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    .valid-id-container {
+        display: none;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #67AFEB;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
     }
 
     /* Retake Comments Modal */
@@ -805,24 +915,27 @@
 
     /* Responsive adjustments */
     @@media (max-width: 992px) {
-        .application-container {
-            flex-direction: column;
-        }
+        .application-container
 
-        .application-tracking {
-            width: 100%;
-            min-width: auto;
-            position: static;
-            order: -1; /* Show tracking first on mobile */
-        }
+    {
+        flex-direction: column;
+    }
 
-        .timeline {
-            padding-left: 1.5rem;
-        }
+    .application-tracking {
+        width: 100%;
+        min-width: auto;
+        position: static;
+        order: -1; /* Show tracking first on mobile */
+    }
 
-        .timeline-marker {
-            left: -1.75rem;
-        }
+    .timeline {
+        padding-left: 1.5rem;
+    }
+
+    .timeline-marker {
+        left: -1.75rem;
+    }
+
     }
 </style>
 
@@ -1010,86 +1123,96 @@
                             <div class="info-value">@ViewData["Typeassistance"]</div>
                         </div>
 
-            <!-- Funeral Information Section (Password-Protected) -->
-            <div class="receipt-section">
-                <h5 class="section-header d-flex align-items-center justify-content-between">
-                    <span><i class="bi bi-shield-lock-fill me-2"></i>Funeral Information (Encrypted)</span>
-                    <button type="button" class="btn btn-sm btn-primary" id="viewFuneralInfoBtn"
-                            onclick="toggleFuneralInfo()"
-                            data-decrypted="false"
-                            title="Click to view encrypted funeral information">
-                        <i class="bi bi-eye-fill me-2" id="funeralBtnIcon"></i><span id="funeralBtnText">View Funeral Information</span>
-                    </button>
-                </h5>
-                <!-- Encrypted Funeral Information Display (shown by default) -->
-                <div class="encrypted-info-section" id="funeralInfoEncrypted">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <div class="info-label">Name of Deceased Person:</div>
-                                <div class="encrypted-display">
-                                   <span class="encrypted-text">@ViewData["DeceasedPersonNameEncrypted"]</span>
+                        <!-- Funeral Information Section (Password-Protected) -->
+                        <div class="receipt-section">
+                            <h5 class="section-header d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-shield-lock-fill me-2"></i>Funeral Information (Encrypted)</span>
+                                <button type="button" class="btn btn-sm btn-primary" id="viewFuneralInfoBtn"
+                                        onclick="toggleFuneralInfo()"
+                                        data-decrypted="false"
+                                        title="Click to view encrypted funeral information">
+                                    <i class="bi bi-eye-fill me-2" id="funeralBtnIcon"></i><span id="funeralBtnText">View Funeral Information</span>
+                                </button>
+                            </h5>
+
+                            <!-- Alert shown when Funeral Info is encrypted -->
+                            <div class="alert alert-info d-flex align-items-center mb-3" id="funeralInfoAlert">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <div>
+                                    <strong>Funeral Information is Encrypted</strong><br>
+                                    For security and privacy, funeral information is encrypted. Click the "View Funeral Information" button above and enter your password to view it.
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <div class="info-label">Relationship to Deceased:</div>
-                                <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["RelationshipToDeceasedEncrypted"]</span>
+
+                            <!-- Encrypted Funeral Information Display (shown by default) -->
+                            <div class="encrypted-info-section" id="funeralInfoEncrypted">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="info-label">Name of Deceased Person:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["DeceasedPersonNameEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Relationship to Deceased:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["RelationshipToDeceasedEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Date of Death:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["DateOfDeathEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Time of Death:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["TimeOfDeathEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Cause of Death:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["CauseOfDeathEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="info-label">Funeral Home/Parlor Name:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["FuneralHomeNameEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Funeral Home/Parlor Address:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["FuneralHomeAddressEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Date of Burial/Cremation:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["BurialCremationDateEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Time of Burial/Cremation:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["BurialCremationTimeEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Type (Burial/Cremation):</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["BurialCremationTypeEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <div class="info-label">Date of Death:</div>
-                                <div class="encrypted-display">
-                                     <span class="encrypted-text">@ViewData["DateOfDeathEncrypted"]</span>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="info-label">Time of Death:</div>
-                                <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["TimeOfDeathEncrypted"]</span>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="info-label">Cause of Death:</div>
-                                <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["CauseOfDeathEncrypted"]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <div class="info-label">Funeral Home/Parlor Name:</div>
-                                <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["FuneralHomeNameEncrypted"]</span>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="info-label">Funeral Home/Parlor Address:</div>
-                                <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["FuneralHomeAddressEncrypted"]</span>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="info-label">Date of Burial/Cremation:</div>
-                                <div class="encrypted-display">
-                                     <span class="encrypted-text">@ViewData["BurialCremationDateEncrypted"]</span>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="info-label">Time of Burial/Cremation:</div>
-                                <div class="encrypted-display">
-                                      <span class="encrypted-text">@ViewData["BurialCremationTimeEncrypted"]</span>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="info-label">Type (Burial/Cremation):</div>
-                                <div class="encrypted-display">
-                                      <span class="encrypted-text">@ViewData["BurialCremationTypeEncrypted"]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                             <!-- Funeral Loading Container (shown while decrypting) -->
                             <div class="funeral-loading-container" id="funeralLoadingContainer">
@@ -1106,50 +1229,94 @@
                             </div>
 
                             <!-- Funeral Information Container (hidden by default, shown after successful decryption) -->
-                            <div class="funeral-info-container" id="funeralInfoContainer">
-                                <div class="row">
+                            <div class="funeral-info-container decrypted-display" id="funeralInfoContainer">
+                                <div class="decrypted-header mb-3">
+                                    <i class="bi bi-unlock-fill me-2"></i>
+                                    <strong>Decrypted Funeral Information</strong>
+                                </div>
+                                <div class="row g-3">
                                     <div class="col-md-6">
-                                        <div class="info-row">
-                                            <div class="info-label">Name of Deceased Person:</div>
-                                            <div class="info-value" id="deceasedPersonName">@ViewData["DeceasedPersonName"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-person-fill me-1"></i>Name of Deceased Person:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="deceasedPersonName">
+                                                @ViewData["DeceasedPersonName"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Relationship to Deceased:</div>
-                                            <div class="info-value" id="relationshipToDeceased">@ViewData["RelationshipToDeceased"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-people-fill me-1"></i>Relationship to Deceased:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="relationshipToDeceased">
+                                                @ViewData["RelationshipToDeceased"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Date of Death:</div>
-                                            <div class="info-value" id="dateOfDeath">@ViewData["DateOfDeath"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-calendar-x me-1"></i>Date of Death:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="dateOfDeath">
+                                                @ViewData["DateOfDeath"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Time of Death:</div>
-                                            <div class="info-value" id="timeOfDeath">@ViewData["TimeOfDeath"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-clock me-1"></i>Time of Death:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="timeOfDeath">
+                                                @ViewData["TimeOfDeath"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Cause of Death:</div>
-                                            <div class="info-value" id="causeOfDeath">@ViewData["CauseOfDeath"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-heart-pulse me-1"></i>Cause of Death:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="causeOfDeath">
+                                                @ViewData["CauseOfDeath"]
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="info-row">
-                                            <div class="info-label">Funeral Home/Parlor Name:</div>
-                                            <div class="info-value" id="funeralHomeName">@ViewData["FuneralHomeName"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-building me-1"></i>Funeral Home/Parlor Name:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="funeralHomeName">
+                                                @ViewData["FuneralHomeName"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Funeral Home/Parlor Address:</div>
-                                            <div class="info-value" id="funeralHomeAddress">@ViewData["FuneralHomeAddress"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-geo-alt-fill me-1"></i>Funeral Home/Parlor Address:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="funeralHomeAddress">
+                                                @ViewData["FuneralHomeAddress"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Date of Burial/Cremation:</div>
-                                            <div class="info-value" id="burialCremationDate">@ViewData["BurialCremationDate"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-calendar-event me-1"></i>Date of Burial/Cremation:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="burialCremationDate">
+                                                @ViewData["BurialCremationDate"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Time of Burial/Cremation:</div>
-                                            <div class="info-value" id="burialCremationTime">@ViewData["BurialCremationTime"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-clock-fill me-1"></i>Time of Burial/Cremation:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="burialCremationTime">
+                                                @ViewData["BurialCremationTime"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Type (Burial/Cremation):</div>
-                                            <div class="info-value" id="burialCremationType">@ViewData["BurialCremationType"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-card-checklist me-1"></i>Type (Burial/Cremation):
+                                            </div>
+                                            <div class="info-value decrypted-value" id="burialCremationType">
+                                                @ViewData["BurialCremationType"]
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1162,33 +1329,33 @@
                             <div class="info-value">@ViewData["ForCMOPERSONNEL"]</div>
                         </div>
 
-            <!-- Valid ID and Submitted Documents Section -->
-            <div class="receipt-section">
-                <!-- Valid ID Section -->
-                <div class="receipt-section">
-                    <h5 class="section-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-shield-lock-fill me-2"></i>Valid ID (Encrypted)</span>
-                        @* Button to decrypt/hide Valid ID with toggle functionality *@
-                        @if (!string.IsNullOrEmpty(ViewData["Validfrontimage"]?.ToString()) || !string.IsNullOrEmpty(ViewData["ValidBackimage"]?.ToString()))
-                        {
-                            <button type="button" class="btn btn-sm btn-primary" id="viewValidIDBtn"
-                                    onclick="toggleValidID('/Validimg/@ViewData["Validfrontimage"]', '/Validimg/@ViewData["ValidBackimage"]')"
-                                    data-decrypted="false"
-                                    title="Click to view/hide encrypted ID images">
-                                <i class="bi bi-eye-fill me-1" id="validIDBtnIcon"></i>
-                                <span id="validIDBtnText">View Valid ID</span>
-                            </button>
-                        }
-                    </h5>
-                    
-                    <!-- Alert shown when IDs are encrypted -->
-                    <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        <div>
-                            <strong>ID Images are Encrypted</strong><br>
-                            For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
-                        </div>
-                    </div>
+                        <!-- Valid ID and Submitted Documents Section -->
+                        <div class="receipt-section">
+                            <!-- Valid ID Section -->
+                            <div class="receipt-section">
+                                <h5 class="section-header d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-shield-lock-fill me-2"></i>Valid ID (Encrypted)</span>
+                                    @* Button to decrypt/hide Valid ID with toggle functionality *@
+                                    @if (!string.IsNullOrEmpty(ViewData["Validfrontimage"]?.ToString()) || !string.IsNullOrEmpty(ViewData["ValidBackimage"]?.ToString()))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-primary" id="viewValidIDBtn"
+                                                onclick="toggleValidID('/Validimg/@ViewData["Validfrontimage"]', '/Validimg/@ViewData["ValidBackimage"]')"
+                                                data-decrypted="false"
+                                                title="Click to view/hide encrypted ID images">
+                                            <i class="bi bi-eye-fill me-1" id="validIDBtnIcon"></i>
+                                            <span id="validIDBtnText">View Valid ID</span>
+                                        </button>
+                                    }
+                                </h5>
+
+                                <!-- Alert shown when IDs are encrypted -->
+                                <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <div>
+                                        <strong>ID Images are Encrypted</strong><br>
+                                        For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
+                                    </div>
+                                </div>
 
                                 <!-- Loading Container (shown while decrypting) -->
                                 <div class="valid-id-loading" id="validIDLoading">
@@ -1875,6 +2042,7 @@
         function hideFuneralInfo() {
             const funeralInfoContainer = document.getElementById('funeralInfoContainer');
             const funeralInfoEncrypted = document.getElementById('funeralInfoEncrypted');
+            const funeralInfoAlert = document.getElementById('funeralInfoAlert');
             const viewButton = document.getElementById('viewFuneralInfoBtn');
             const btnIcon = document.getElementById('funeralBtnIcon');
             const btnText = document.getElementById('funeralBtnText');
@@ -1888,6 +2056,11 @@
             // Show encrypted data display
             if (funeralInfoEncrypted) {
                 funeralInfoEncrypted.style.display = 'block';
+            }
+
+            // Show alert
+            if (funeralInfoAlert) {
+                funeralInfoAlert.style.display = 'flex';
             }
 
             // Update button to "View" state
@@ -1922,6 +2095,12 @@
             const funeralInfoEncrypted = document.getElementById('funeralInfoEncrypted');
             if (funeralInfoEncrypted) {
                 funeralInfoEncrypted.style.display = 'none';
+            }
+
+            // Hide the alert
+            const funeralInfoAlert = document.getElementById('funeralInfoAlert');
+            if (funeralInfoAlert) {
+                funeralInfoAlert.style.display = 'none';
             }
 
             // Show the funeral information container (decrypted)
@@ -1959,10 +2138,22 @@
         function startFuneralInfoLoading() {
             console.log('Starting funeral information loading...');
 
+            // Hide alert
+            const funeralInfoAlert = document.getElementById('funeralInfoAlert');
+            if (funeralInfoAlert) {
+                funeralInfoAlert.style.display = 'none';
+            }
+
             // Show loading container
             const loadingContainer = document.getElementById('funeralLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'block';
+            }
+
+            // Hide encrypted display
+            const funeralInfoEncrypted = document.getElementById('funeralInfoEncrypted');
+            if (funeralInfoEncrypted) {
+                funeralInfoEncrypted.style.display = 'none';
             }
 
             // Hide any existing funeral info container
