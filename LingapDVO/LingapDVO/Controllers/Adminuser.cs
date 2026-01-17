@@ -1407,7 +1407,6 @@ namespace LingapDVO.Controllers
 
 
 
-
         public IActionResult OtherAssistanceProcessingStatus(int id)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("AdminFullname")))
@@ -1631,9 +1630,38 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = medicallabform.Comments;
 
             // ============================================
-            // ADD DECRYPTION FOR THESE 19 FIELDS ONLY
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES
             // ============================================
 
+            // Store ENCRYPTED values (for initial display in grey/black boxes)
+            // Medicine Assistance Fields
+            ViewData["MedicineNameEncrypted"] = medicallabform.MedicineName;
+            ViewData["MedicineQuantityEncrypted"] = medicallabform.MedicineQuantity;
+            ViewData["MedicineCostEncrypted"] = medicallabform.MedicineCost;
+            ViewData["PrescribingDoctorEncrypted"] = medicallabform.PrescribingDoctor;
+            ViewData["DoctorContactDetailEncrypted"] = medicallabform.DoctorContactDetail;
+
+            // Laboratory Assistance Fields
+            ViewData["LaboratoryCenterNameEncrypted"] = medicallabform.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddressEncrypted"] = medicallabform.LaboratoryCenterAddress;
+            ViewData["TestNameEncrypted"] = medicallabform.TestName;
+            ViewData["TestCostEncrypted"] = medicallabform.TestCost;
+            ViewData["TestOtherInfoEncrypted"] = medicallabform.TestOtherInfo;
+
+            // Therapy Assistance Fields
+            ViewData["TherapyFacilityNameEncrypted"] = medicallabform.TherapyFacilityName;
+            ViewData["TherapyFacilityAddressEncrypted"] = medicallabform.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContactEncrypted"] = medicallabform.TherapyFacilityContact;
+            ViewData["TherapyTypeEncrypted"] = medicallabform.TherapyType;
+
+            // Equipment Assistance Fields
+            ViewData["EquipmentNameEncrypted"] = medicallabform.EquipmentName;
+            ViewData["EquipmentBrandEncrypted"] = medicallabform.EquipmentBrand;
+            ViewData["EquipmentCategoryEncrypted"] = medicallabform.EquipmentCategory;
+            ViewData["EquipmentQuantityEncrypted"] = medicallabform.EquipmentQuantity;
+            ViewData["EquipmentCostEncrypted"] = medicallabform.EquipmentCost;
+
+            // Store DECRYPTED values (for display after password verification)
             // Medicine Assistance Fields
             ViewData["MedicineName"] = DecryptFieldText(medicallabform.MedicineName);
             ViewData["MedicineQuantity"] = DecryptFieldText(medicallabform.MedicineQuantity);
@@ -1663,7 +1691,6 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
 
         public IActionResult FuneralAssistanceProcessingStatus(int id)
         {
