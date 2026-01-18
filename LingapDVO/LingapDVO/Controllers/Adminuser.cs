@@ -3956,7 +3956,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] = HospitalAssistance.Status2;
+            ViewData["Status3"] = HospitalAssistance.Status3;
             ViewData["Id"] = HospitalAssistance.Id;
             ViewData["Lastname"] = HospitalAssistance.Lastname;
             ViewData["Firstname"] = HospitalAssistance.Firstname;
